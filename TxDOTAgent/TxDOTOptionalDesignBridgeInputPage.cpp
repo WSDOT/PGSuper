@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "HtmlHelp\TogaHelp.hh"
 #include "TxDOTOptionalDesignBridgeInputPage.h"
 
 #include "TxDOTOptionalDesignUtilities.h"
@@ -32,6 +31,7 @@
 
 #include <MfcTools\CustomDDX.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 
 // CTxDOTOptionalDesignBridgeInputPage dialog
@@ -400,9 +400,7 @@ HBRUSH CTxDOTOptionalDesignBridgeInputPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UIN
 
 void CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGE_DESCRIPTION );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_BRIDGE_DESCRIPTION );
 }
 
 void CTxDOTOptionalDesignBridgeInputPage::LoadProjectCriteriaLibraryNames()

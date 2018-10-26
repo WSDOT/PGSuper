@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1272,7 +1272,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
       else
       {
          const CClosureJointData* pClosure = rOther.GetClosureJoint(0);
-         EventIndexType eventIdx = rOther.GetBridgeDescription()->GetTimelineManager()->GetCastClosureJointEventIndex(pClosure->GetID());
+         EventIndexType eventIdx = rOther.GetBridgeDescription()->GetTimelineManager()->GetCastClosureJointEventIndex(pClosure);
          SetSegmentConnectionType(rOther.m_SegmentConnectionType,eventIdx);
       }
    }
@@ -1489,9 +1489,8 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
       CClosureJointData* pClosure = GetClosureJoint(0);
       if ( pClosure )
       {
-         IDType closureID = pClosure->GetID();
          CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
-         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(closureID);
+         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
          pTimelineMgr->GetEventByIndex(eventIdx)->GetCastClosureJointActivity().RemovePier(GetID());
       }
 

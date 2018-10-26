@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,6 @@
 
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
-#include "HtmlHelp\HelpTopics.hh"
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -338,8 +336,7 @@ void CPierLayoutPage::FillPierModelTypeComboBox()
 
 void CPierLayoutPage::OnHelp() 
 {
-#pragma Reminder("UPDATE: Update the help context id")
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PIERDETAILS_CONNECTIONS );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PIERDETAILS_LAYOUT );
 }
 
 void CPierLayoutPage::OnUserEc()

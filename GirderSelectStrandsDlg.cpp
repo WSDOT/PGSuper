@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\resource.h"
 #include "GirderSelectStrandsDlg.h"
-#include "htmlhelp\HelpTopics.hh"
 #include <WBFLGenericBridgeTools.h>
 
 #include <EAF\EAFDisplayUnits.h>
@@ -41,7 +40,7 @@
 inline void UpdateHarpedOffsetLabel(CWnd* pwnd, HarpedStrandOffsetType type, bool areHarpedStraight)
 {
    CString msg;
-   CString mss(areHarpedStraight ? _T("S-W") : _T("HS"));
+   CString mss(areHarpedStraight ? _T("A-S") : _T("HS"));
    switch(type)
    {
       case hsoCGFROMTOP:

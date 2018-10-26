@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "PGSuperCatalogServers.h"
 #include <EAF\EAFApp.h>
 #include <EAF\EAFCustomReport.h>
+#include <EAF\EAFAppPluginDocumentationImpl.h>
 
 #include "PGSuperBaseCommandLineInfo.h"
 
@@ -45,7 +46,7 @@ public:
    virtual void OnFinalRelease();
 
    // call these from Init and Terminate
-   virtual void DefaultInit();
+   virtual void DefaultInit(IEAFAppPlugin* pAppPlugin);
    virtual void DefaultTerminate();
 
 
@@ -71,6 +72,11 @@ public:
    // CEAFCustomReportMixin
    virtual void LoadCustomReportInformation();
    virtual void SaveCustomReportInformation();
+
+   virtual CString GetDocumentationURL();
+   virtual CString GetDocumentationMapFile();
+   virtual void LoadDocumentationMap();
+   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL);
 
 protected:
    CString m_strAppProfileName; // this is the original app profile name before we mess with it
@@ -134,4 +140,5 @@ protected:
 private:
    CPGSuperCatalogServers m_CatalogServers;
    CComPtr<IAppUnitSystem> m_AppUnitSystem;
+   CEAFAppPluginDocumentationImpl m_DocumentationImpl;
 };

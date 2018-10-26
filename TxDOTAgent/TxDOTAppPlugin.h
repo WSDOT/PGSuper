@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #pragma once
 #include <EAF\EAFAppPlugin.h>
 #include <EAF\EAFUIIntegration.h>
+#include <EAF\EAFAppPluginDocumentationImpl.h>
 #include "resource.h"
 
 class CTxDOTAppPlugin;
@@ -73,6 +74,11 @@ public:
    virtual std::vector<CEAFDocTemplate*> CreateDocTemplates();
    virtual HMENU GetSharedMenuHandle();
    virtual CString GetName();
+   virtual CString GetDocumentationSetName();
+   virtual CString GetDocumentationURL();
+   virtual CString GetDocumentationMapFile();
+   virtual void LoadDocumentationMap();
+   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL);
 
 // IEAFAppCommandLine
 public:
@@ -84,6 +90,9 @@ public:
    virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
    virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const;
    virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
+
+private:
+   CEAFAppPluginDocumentationImpl m_DocumentationImpl;
 };
 
 

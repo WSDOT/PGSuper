@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,63 @@
 #define INCLUDED_POIKEY_H_
 
 #include <PgsExt\ReportPointOfInterest.h>
+
+
+template <class P,class S>
+class TKey2
+{
+public:
+   TKey2(const P& primaryKey,const S& secondaryKey) :
+      m_PrimaryKey(primaryKey), m_SecondaryKey(secondaryKey)
+      {}
+
+   TKey2(const TKey2& rOther)
+   {
+      m_PrimaryKey        = rOther.m_PrimaryKey;
+      m_SecondaryKey      = rOther.m_SecondaryKey;
+   }
+
+   TKey2& operator=(const TKey2& rOther)
+   {
+      m_PrimaryKey        = rOther.m_Primary;
+      m_SecondaryKey      = rOther.m_SecondaryKey;
+      return *this;
+   }
+
+   bool operator<(const TKey2& rOther) const
+   {
+      if ( m_PrimaryKey < rOther.m_PrimaryKey ) return true;
+      if ( rOther.m_PrimaryKey < m_PrimaryKey ) return false;
+
+      if (m_SecondaryKey         < rOther.m_SecondaryKey         ) return true;
+      if (rOther.m_SecondaryKey  < m_SecondaryKey                ) return false;
+
+      return false;
+   }
+
+   bool operator==(const TKey2& rOther) const
+   {
+      if ( m_PrimaryKey != rOther.m_PrimaryKey )
+      {
+         return false;
+      }
+
+      if ( m_SecondaryKey != rOther.m_SecondaryKey )
+      {
+         return false;
+      }
+
+      return true;
+   }
+
+   const P& GetPrimaryKey() const {return m_PrimaryKey;}
+   const S& GetSecondaryKey() const { return m_SecondaryKey; }
+
+private:
+   P m_PrimaryKey;
+   S m_SecondaryKey;
+};
+
 
 template <class T>
 class TPoiKey

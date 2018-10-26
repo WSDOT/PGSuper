@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,6 +43,13 @@ m_bIsSlabOffsetApplicable(false)
 {
    m_Provided = 0;
    m_Required = 0;
+   m_SlabOffsetWarningTolerance = ::ConvertToSysUnits(0.25,unitMeasure::Inch); // WSDOT standard
+   m_MinimumRequiredFillet = 0;
+   m_ProvidedFillet = 0;
+
+   m_ProvidedAtBearingCLs  = 0;
+   m_RequiredAtBearingCLs  = 0;
+   m_bIsHaunchAtBearingCLsApplicable = false;
   
    m_bIsBottomFlangeClearanceApplicable = false;
    m_C = 0;
@@ -92,6 +99,41 @@ Float64 pgsConstructabilityArtifact::GetRequiredSlabOffset() const
    return m_Required;
 }
 
+void pgsConstructabilityArtifact::SetSlabOffsetWarningTolerance(Float64 val)
+{
+   m_SlabOffsetWarningTolerance = val;
+}
+
+Float64 pgsConstructabilityArtifact::GetSlabOffsetWarningTolerance() const
+{
+   return m_SlabOffsetWarningTolerance;
+}
+
+void pgsConstructabilityArtifact::SetRequiredMinimumFillet(Float64 reqd)
+{
+   m_MinimumRequiredFillet = reqd;
+}
+
+Float64 pgsConstructabilityArtifact::GetRequiredMinimumFillet() const
+{
+   return m_MinimumRequiredFillet;
+}
+
+void pgsConstructabilityArtifact::SetProvidedFillet(Float64 provided)
+{
+   m_ProvidedFillet = provided;
+}
+
+Float64 pgsConstructabilityArtifact::GetProvidedFillet() const
+{
+   return m_ProvidedFillet;
+}
+
+bool pgsConstructabilityArtifact::MinimumFilletPassed() const
+{
+   return m_ProvidedFillet + TOLERANCE > m_MinimumRequiredFillet;
+}
+
 void pgsConstructabilityArtifact::SetSlabOffsetApplicability(bool bSet)
 {
    m_bIsSlabOffsetApplicable = bSet;
@@ -119,7 +161,7 @@ pgsConstructabilityArtifact::SlabOffsetStatusType pgsConstructabilityArtifact::S
       return Fail;
    }
 
-   if ( (m_Required + ::ConvertToSysUnits(0.25,unitMeasure::Inch)) < m_Provided )
+   if ( (m_Required + m_SlabOffsetWarningTolerance) < m_Provided )
    {
       return Excessive;
    }
@@ -129,7 +171,7 @@ pgsConstructabilityArtifact::SlabOffsetStatusType pgsConstructabilityArtifact::S
 
 bool pgsConstructabilityArtifact::SlabOffsetPassed() const
 {
-   return ( SlabOffsetStatus() == Fail ) ? false : true;
+   return ( SlabOffsetStatus()==Fail ) ? false : true;
 }
 
 void pgsConstructabilityArtifact::CheckStirrupLength(bool bCheck)
@@ -142,12 +184,49 @@ bool pgsConstructabilityArtifact::CheckStirrupLength() const
    return m_bIsSlabOffsetApplicable && m_bCheckStirrupLength;
 }
 
+void pgsConstructabilityArtifact::SetProvidedHaunchAtBearingCLs(Float64 provided)
+{
+   m_ProvidedAtBearingCLs = provided;
+}
+
+Float64 pgsConstructabilityArtifact::GetProvidedHaunchAtBearingCLs() const
+{
+   ATLASSERT(m_bIsHaunchAtBearingCLsApplicable);
+   return m_ProvidedAtBearingCLs;
+}
+
+void pgsConstructabilityArtifact::SetRequiredHaunchAtBearingCLs(Float64 reqd)
+{
+   m_RequiredAtBearingCLs = reqd;
+}
+
+Float64 pgsConstructabilityArtifact::GetRequiredHaunchAtBearingCLs() const
+{
+   ATLASSERT(m_bIsHaunchAtBearingCLsApplicable);
+   return m_RequiredAtBearingCLs;
+}
+
+void pgsConstructabilityArtifact::SetHaunchAtBearingCLsApplicability(bool bSet)
+{
+   m_bIsHaunchAtBearingCLsApplicable = bSet;
+}
+
+bool pgsConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
+{
+   return m_bIsHaunchAtBearingCLsApplicable;
+}
+
+bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const
+{
+   return  m_ProvidedAtBearingCLs+TOLERANCE >= m_RequiredAtBearingCLs;
+}
+
 void pgsConstructabilityArtifact::SetBottomFlangeClearanceApplicability(bool bSet)
 {
    m_bIsBottomFlangeClearanceApplicable = bSet;
 }
 
-bool pgsConstructabilityArtifact::IsBottomFlangeClearnceApplicable() const
+bool pgsConstructabilityArtifact::IsBottomFlangeClearanceApplicable() const
 {
    return m_bIsBottomFlangeClearanceApplicable;
 }
@@ -181,6 +260,16 @@ bool pgsConstructabilityArtifact::Passed() const
       return false;
    }
 
+   if (IsHaunchAtBearingCLsApplicable() && !HaunchAtBearingCLsPassed())
+   {
+      return false;
+   }
+
+   if (!MinimumFilletPassed())
+   {
+      return false;
+   }
+
    if ( !BottomFlangeClearancePassed() )
    {
       return false;
@@ -200,8 +289,16 @@ void pgsConstructabilityArtifact::MakeCopy(const pgsConstructabilityArtifact& rO
 {
    m_Provided = rOther.m_Provided;
    m_Required = rOther.m_Required;
+   m_SlabOffsetWarningTolerance = rOther.m_SlabOffsetWarningTolerance;
    m_bCheckStirrupLength = rOther.m_bCheckStirrupLength;
    m_bIsSlabOffsetApplicable = rOther.m_bIsSlabOffsetApplicable;
+
+   m_MinimumRequiredFillet = rOther.m_MinimumRequiredFillet;
+   m_ProvidedFillet = rOther.m_ProvidedFillet;
+
+   m_ProvidedAtBearingCLs  = rOther.m_ProvidedAtBearingCLs;
+   m_RequiredAtBearingCLs  = rOther.m_RequiredAtBearingCLs;
+   m_bIsHaunchAtBearingCLsApplicable  = rOther.m_bIsHaunchAtBearingCLsApplicable;
 
    m_bIsBottomFlangeClearanceApplicable = rOther.m_bIsBottomFlangeClearanceApplicable;
    m_C = rOther.m_C;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,8 +35,6 @@
 #include <MfcTools\CustomDDX.h>
 
 #include <Lrfd\RebarPool.h>
-
-#include "..\htmlhelp\HelpTopics.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -449,9 +447,7 @@ BOOL CShearSteelPage::OnSetActive()
 
 void CShearSteelPage::OnHelp() 
 {
-   UINT helpID = IDH_TRANSVERSE_REINFORCEMENT_TAB;
-
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_TRANSVERSE_REINFORCEMENT );
 }
 
 void CShearSteelPage::FillBarComboBox(CComboBox* pcbRebar)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_MANAGE_PLUGINS };
 
-   void Init(LPCTSTR strSection,const CATID& catid);
+   void Init(LPCTSTR strSection,const CATID& catid,LPCTSTR lpszAppName);
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -49,6 +49,8 @@ protected:
 
    CATID m_CATID;
    CString m_Section;
+
+   CString m_AppName;
 
 	CCheckListBox 	m_ctlPluginList;
    std::vector<CString> m_CLSIDs;

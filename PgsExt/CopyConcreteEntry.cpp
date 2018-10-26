@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include "resource.h"
 
 #include "CopyConcreteEntry.h"
-#include "..\htmlhelp\helptopics.hh"
 
 #include <PsgLib\ConcreteLibraryEntry.h>
 
@@ -35,6 +34,7 @@
 #include <AgentTools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFUtilities.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -139,5 +139,5 @@ BOOL CCopyConcreteEntry::OnInitDialog()
 
 void CCopyConcreteEntry::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_COPY_CONCRETE );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_COPY_CONCRETE );
 }

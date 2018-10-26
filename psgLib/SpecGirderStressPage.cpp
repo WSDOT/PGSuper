@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,8 +27,7 @@
 #include <psgLib\psglib.h>
 #include "SpecGirderStressPage.h"
 #include "SpecMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
-
+#include <EAF\EAFDocument.h>
 
 // CSpecGirderStressPage dialog
 
@@ -65,7 +64,7 @@ BEGIN_MESSAGE_MAP(CSpecGirderStressPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX, OnCheckSevereServiceIIITensionMax)
 
    ON_BN_CLICKED(IDC_CHECK_TEMPORARY_STRESSES, OnCheckTemporaryStresses)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -254,9 +253,7 @@ void CSpecGirderStressPage::OnCheckTemporaryStresses()
    GetDlgItem(IDC_AFTER_DECK_TENSION_MAX_UNIT)->EnableWindow(bEnable3);
 }
 
-#pragma Reminder("UPDATE: need correct help context id")
-LRESULT CSpecGirderStressPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CSpecGirderStressPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGESITE_2_TAB );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_PRESTRESS_ELEMENTS );
 }

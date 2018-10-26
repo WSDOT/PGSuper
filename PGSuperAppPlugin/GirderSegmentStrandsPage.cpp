@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,13 +32,12 @@
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 #include <IFace\Intervals.h>
 
 #include <Material\PsStrand.h>
 #include <LRFD\StrandPool.h>
-
-#include "HtmlHelp\HelpTopics.hh"
 
 #include "PGSuperColors.h"
 #include <PgsExt\DesignConfigUtil.h>
@@ -353,7 +352,7 @@ void CGirderSegmentStrandsPage::UpdateStrandControls()
 
 void CGirderSegmentStrandsPage::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDERWIZ_PRESTRESS );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_DIRECST_STRAND_INPUT );
 }
 
 void CGirderSegmentStrandsPage::OnEpoxyChanged()

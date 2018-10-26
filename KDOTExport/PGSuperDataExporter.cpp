@@ -5,6 +5,8 @@
 #include "ExportDlg.h"
 
 #include <MFCTools\Prompts.h>
+#include <MFCTools\VersionInfo.h>
+
 #include "PGSuperInterfaces.h"
 
 #include <EAF\EAFUtilities.h>
@@ -945,7 +947,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             // Get cambers at POI
             Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,mpoi,bat,rtCumulative,false);
             Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,mpoi,bat,rtCumulative,false);
-            Float64 Dcreep = pCamber->GetCreepDeflection( mpoi, ICamber::cpReleaseToDeck, CREEP_MAXTIME );
+            Float64 Dcreep = pCamber->GetCreepDeflection( mpoi, ICamber::cpReleaseToDeck, CREEP_MAXTIME, pgsTypes::pddErected );
 
             Float64 releaseCamber = DpsRelease + DgdrRelease;
             Float64 slabCastingCamber = releaseCamber + Dcreep;
@@ -1039,5 +1041,89 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
    }
    } // progress window scope
 
+   return S_OK;
+}
+
+//////////////////////////////////////////////////
+// IPGSDocumentation
+STDMETHODIMP CPGSuperDataExporter::GetDocumentationSetName(BSTR* pbstrName)
+{
+   CComBSTR bstrDocSetName(_T("KDOT"));
+   bstrDocSetName.CopyTo(pbstrName);
+   return S_OK;
+}
+
+CString CPGSuperDataExporter::GetDocumentationURL()
+{
+   USES_CONVERSION;
+
+   CComBSTR bstrDocSetName;
+   GetDocumentationSetName(&bstrDocSetName);
+   CString strDocSetName(OLE2T(bstrDocSetName));
+
+   CEAFApp* pApp = EAFGetApp();
+   CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();
+
+   CString strDocumentationURL;
+   strDocumentationURL.Format(_T("%s%s/"),strDocumentationRootLocation,strDocSetName);
+
+   if ( pApp->UseOnlineDocumentation() )
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+      CVersionInfo verInfo;
+      CString strAppName = AfxGetAppName(); // needs module state
+      strAppName += _T(".dll");
+      verInfo.Load(strAppName);
+
+      CString strVersion = verInfo.GetProductVersionAsString();
+
+      // remove the build and release number
+      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
+      strVersion = strVersion.Left(pos);
+      pos = strVersion.ReverseFind(_T('.')); // find the last '.'
+      strVersion = strVersion.Left(pos);
+
+      CString strURL;
+      strURL.Format(_T("%s%s/"),strDocumentationURL,strVersion);
+      strDocumentationURL = strURL;
+   }
+
+   return strDocumentationURL;
+}
+
+STDMETHODIMP CPGSuperDataExporter::LoadDocumentationMap()
+{
+   USES_CONVERSION;
+
+   CComBSTR bstrDocSetName;
+   GetDocumentationSetName(&bstrDocSetName);
+
+   CString strDocSetName(OLE2T(bstrDocSetName));
+
+   CEAFApp* pApp = EAFGetApp();
+
+   CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();
+
+   CString strDocumentationURL = GetDocumentationURL();
+
+   CString strDocMapFile = EAFGetDocumentationMapFile(strDocSetName,strDocumentationURL,strDocumentationRootLocation);
+
+   EAFLoadDocumentationMap(strDocMapFile,m_HelpTopics);
+   return S_OK;
+}
+
+STDMETHODIMP CPGSuperDataExporter::GetDocumentLocation(UINT nHID,BSTR* pbstrURL)
+{
+   std::map<UINT,CString>::iterator found = m_HelpTopics.find(nHID);
+   if ( found == m_HelpTopics.end() )
+   {
+      return E_FAIL;
+   }
+
+   CString strURL;
+   strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
+   CComBSTR bstrURL(strURL);
+   bstrURL.CopyTo(pbstrURL);
    return S_OK;
 }

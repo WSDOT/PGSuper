@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -97,7 +97,15 @@ CGirderGroupData::~CGirderGroupData()
    m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
    m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
 
-   Clear();
+   std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
+   std::vector<CSplicedGirderData*>::iterator end(m_Girders.end());
+   for ( ; iter != end; iter++ )
+   {
+      CSplicedGirderData* pGirder = *iter;
+      delete pGirder;
+   }
+
+   m_Girders.clear();
 }
 
 CGirderGroupData& CGirderGroupData::operator=(const CGirderGroupData& rOther)
@@ -444,6 +452,15 @@ void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
 void CGirderGroupData::Initialize(GirderIndexType nGirders)
 {
    Clear();
+   std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
+   std::vector<CSplicedGirderData*>::iterator end(m_Girders.end());
+   for ( ; iter != end; iter++ )
+   {
+      CSplicedGirderData* pGirder = *iter;
+      delete pGirder;
+   }
+
+   m_Girders.clear();
 
    PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
    PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
@@ -493,6 +510,7 @@ void CGirderGroupData::RemoveGirders(GirderIndexType nGirdersToRemove)
    for ( ; iter != end; iter++ )
    {
       CSplicedGirderData* pSplicedGirder = *iter;
+      pSplicedGirder->Clear();
       delete pSplicedGirder;
       pSplicedGirder = NULL;
 
@@ -1333,7 +1351,8 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
                var.vt = VT_R8;
                hr = pStrLoad->get_Property(_T("SlabOffset"),&var);
-               vSlabOffset.push_back(var.dblVal);
+               // Insert for all girders so our data structure is sized properly
+               vSlabOffset.insert(vSlabOffset.begin(),nGirders,var.dblVal);
             }
          }
          else
@@ -1498,6 +1517,7 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
       if ( pMyGirder )
       {
          pMyGirder->SetGirderGroup(NULL); // this removes the girder from its group which removes it from the bridge. it does not alter the timeline events
+         pMyGirder->Clear();
          delete pMyGirder; // done with this girder
       }
       pMyGirder = NULL;
@@ -1537,6 +1557,7 @@ void CGirderGroupData::RemoveGirder(GirderIndexType gdrIdx)
 {
    CSplicedGirderData* pSplicedGirder = m_Girders[gdrIdx];
    m_Girders.erase( m_Girders.begin() + gdrIdx );
+   pSplicedGirder->Clear();
    delete pSplicedGirder;
 }
 
@@ -1547,10 +1568,9 @@ void CGirderGroupData::Clear()
    for ( ; iter != end; iter++ )
    {
       CSplicedGirderData* pGirder = *iter;
-      delete pGirder;
+      pGirder->Clear();
    }
 
-   m_Girders.clear();
    m_GirderTypeGroups.clear();
 
    m_SlabOffsets.clear();
@@ -1584,6 +1604,12 @@ void CGirderGroupData::UpdateSlabOffsets(PierIndexType newPierIdx)
    // use the reference pier's slab offsets
    m_SlabOffsets.insert(m_SlabOffsets.begin() + relPierIdx + 1,m_SlabOffsets[relPierIdx]);
 }
+
+GirderIndexType CGirderGroupData::GetPrivateGirderCount() const
+{
+   return (GirderIndexType)m_Girders.size();
+}
+
 
 #if defined _DEBUG
 void CGirderGroupData::AssertValid()

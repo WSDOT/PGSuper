@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -309,8 +309,10 @@ LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState)
       _T("Service III (Legal - Special)"),
       _T("Strength II (Routine Permit Rating)"),
       _T("Service I (Routine Permit Rating)"),
+      _T("Service III (Routine Permit Rating)"),
       _T("Strength II (Special Permit Rating)"),
-      _T("Service I (Special Permit Rating)")
+      _T("Service I (Special Permit Rating)"),
+      _T("Service III (Special Permit Rating)")
    };
 
    // the direct lookup in the array is faster, however if the enum changes (number of values or order of values)
@@ -384,12 +386,20 @@ LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState)
          strName = _T("Service I (Routine Permit Rating)");
          break;
 
+      case pgsTypes::ServiceIII_PermitRoutine:
+         strName = _T("Service III (Routine Permit Rating)");
+         break;
+
       case pgsTypes::StrengthII_PermitSpecial:
          strName = _T("Strength II (Special Permit Rating)");
          break;
 
       case pgsTypes::ServiceI_PermitSpecial:
          strName = _T("Service I (Special Permit Rating)");
+         break;
+
+      case pgsTypes::ServiceIII_PermitSpecial:
+         strName = _T("Service III (Special Permit Rating)");
          break;
 
       default:

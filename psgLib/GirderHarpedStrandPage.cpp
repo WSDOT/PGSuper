@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,8 +27,8 @@
 #include <psgLib\psglib.h>
 #include "GirderHarpedStrandPage.h"
 #include "GirderMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
 #include <PgsExt\GirderLabel.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -84,7 +84,7 @@ BEGIN_MESSAGE_MAP(CGirderPermanentStrandPage, CPropertyPage)
 	ON_WM_NCACTIVATE()
 	ON_BN_CLICKED(IDC_MIDVIEW, OnMidview)
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 
    ON_BN_CLICKED(IDC_REVERSE_HARPED_STRAND_ORDER,OnReverseHarpedStrandOrder)
    ON_BN_CLICKED(IDC_GENERATE,OnGenerateStrandPositions)
@@ -187,11 +187,9 @@ bool CGirderPermanentStrandPage::DoUseHarpedGrid()
    }
 }
 
-LRESULT CGirderPermanentStrandPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CGirderPermanentStrandPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_HARPED_STRANDS_TAB );
-
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_PERMANENT_STRANDS );
 }
 
 void CGirderPermanentStrandPage::OnAppendGlobalStrand() 

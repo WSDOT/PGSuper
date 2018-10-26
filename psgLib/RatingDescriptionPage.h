@@ -59,7 +59,7 @@ protected:
 	virtual BOOL OnInitDialog();
    afx_msg void OnSpecificationChanged();
 	//}}AFX_MSG
-   afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
+   afx_msg void OnHelp();
 	DECLARE_MESSAGE_MAP()
 
 };

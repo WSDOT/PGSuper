@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuperIE - PGSuper Import/Export Plug-in
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -97,4 +97,15 @@ interface IPGSDataExporter : IUnknown
    HRESULT GetBitmapHandle([out]HBITMAP* phBmp);
    HRESULT GetCommandHintText([out]BSTR*  bstrText);
    HRESULT Export([in]IBroker* pBroker);
+};
+
+[
+   uuid(45C667CB-67C4-4b2e-89CD-51D07D665507),
+   pointer_default(unique)
+]
+interface IPGSDocumentation : IUnknown
+{
+   [helpstring("method GetDocumentationSetName")] HRESULT GetDocumentationSetName(BSTR* pbstrName);
+   [helpstring("method LoadDocumentationMap")] HRESULT LoadDocumentationMap();
+   [helpstring("method GetDocumentLocation")] HRESULT GetDocumentLocation(UINT nHID,BSTR* pbstrURL);
 };

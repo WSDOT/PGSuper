@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@
 #include <MfcTools\CustomDDX.h>
 
 #include <Units\sysUnits.h>
-#include "..\htmlhelp\HelpTopics.hh"
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -99,6 +98,7 @@ void CGirderMainSheet::UpdatePropertyPages(CLSID clsidBeamFamily)
       //AddPage(&m_ShearDesignPage); // no shear design for spliced girders
       //AddPage(&m_LongSteelPage); // no default long. reinforcement for spliced girders
       //AddPage(&m_ShearSteelPage); // no default trans. reinforcement for spliced girders
+      AddPage(&m_GirderHaunchAndCamberPage);
       AddPage(&m_DiaphragmPage);
    }
    else
@@ -111,6 +111,7 @@ void CGirderMainSheet::UpdatePropertyPages(CLSID clsidBeamFamily)
       AddPage(&m_HarpPointPage);
       AddPage(&m_LongSteelPage);
       AddPage(&m_ShearSteelPage);
+      AddPage(&m_GirderHaunchAndCamberPage);
       AddPage(&m_DiaphragmPage);
    }
 }
@@ -129,14 +130,16 @@ void CGirderMainSheet::Init()
    // Turn on help for the property sheet
    m_psh.dwFlags                            |= PSH_HASHELP | PSH_NOAPPLYNOW;
    m_GirderDimensionsPage.m_psp.dwFlags     |= PSP_HASHELP;
-   m_GirderPermanentStrandPage.m_psp.dwFlags   |= PSP_HASHELP;
-   m_GirderTemporaryStrandPage.m_psp.dwFlags |= PSP_HASHELP;
+   m_GirderPermanentStrandPage.m_psp.dwFlags|= PSP_HASHELP;
+   m_GirderTemporaryStrandPage.m_psp.dwFlags|= PSP_HASHELP;
    m_LongSteelPage.m_psp.dwFlags            |= PSP_HASHELP;
    m_ShearSteelPage.m_psp.dwFlags           |= PSP_HASHELP;
    m_HarpPointPage.m_psp.dwFlags            |= PSP_HASHELP;
    m_DiaphragmPage.m_psp.dwFlags            |= PSP_HASHELP;
-   m_FlexureDesignPage.m_psp.dwFlags |= PSP_HASHELP;
-   m_ShearDesignPage.m_psp.dwFlags     |= PSP_HASHELP;
+   m_FlexureDesignPage.m_psp.dwFlags        |= PSP_HASHELP;
+   m_ShearDesignPage.m_psp.dwFlags          |= PSP_HASHELP;
+   m_GirderHaunchAndCamberPage.m_psp.dwFlags   |= PSP_HASHELP;
+
 
    CComPtr<IBeamFactory> factory;
    m_Entry.GetBeamFactory(&factory);
@@ -615,6 +618,49 @@ void CGirderMainSheet::ExchangeHarpPointData(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_MIN_HP, IDC_MIN_HP_UNIT, m_Entry.m_MinHarpingPointLocation, pDisplayUnits->SpanLength );
    DDV_UnitValueZeroOrMore(pDX, IDC_MIN_HP,m_Entry.m_MinHarpingPointLocation, pDisplayUnits->SpanLength );
+}
+
+void CGirderMainSheet::ExchangeHaunchData(CDataExchange* pDX)
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   DDX_UnitValueAndTag(pDX, IDC_MIN_FILLET, IDC_MIN_FILLET_UNIT, m_Entry.m_MinFilletValue, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_HARP_LOCATION,m_Entry.m_MinFilletValue, pDisplayUnits->ComponentDim);
+
+   DDX_UnitValueAndTag(pDX, IDC_MIN_HAUNCH_BC, IDC_MIN_HAUNCH_BC_UNIT, m_Entry.m_MinHaunchAtBearingLines, pDisplayUnits->ComponentDim);
+
+   int bMin;
+   if ( pDX->m_bSaveAndValidate )
+   {
+      DDX_Check(pDX,IDC_CHECK_CL,bMin);
+      m_Entry.m_DoCheckMinHaunchAtBearingLines = bMin==0?false:true;
+
+      if (m_Entry.m_DoCheckMinHaunchAtBearingLines )
+      {
+         DDV_UnitValueZeroOrMore(pDX, IDC_MIN_HAUNCH_BC,m_Entry.m_MinHaunchAtBearingLines, pDisplayUnits->ComponentDim);
+      }
+   }
+   else
+   {
+      bMin = m_Entry.m_DoCheckMinHaunchAtBearingLines;
+      DDX_Check(pDX,IDC_CHECK_CL,bMin);
+   }
+
+   DDX_UnitValueAndTag(pDX, IDC_EXCESS_HAUNCH, IDC_EXCESS_HAUNCH_UNIT, m_Entry.m_ExcessiveSlabOffsetWarningTolerance, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_EXCESS_HAUNCH,m_Entry.m_ExcessiveSlabOffsetWarningTolerance, pDisplayUnits->ComponentDim);
+
+   // Don't exchange multiplier data for spliced projects
+   if (!this->IsSplicedGirder()) 
+   {
+ 	   DDX_Text(pDX, IDC_ERECTION,   m_Entry.m_CamberMultipliers.ErectionFactor);
+ 	   DDX_Text(pDX, IDC_CREEP,      m_Entry.m_CamberMultipliers.CreepFactor);
+ 	   DDX_Text(pDX, IDC_DIAPHRAGM,  m_Entry.m_CamberMultipliers.DiaphragmFactor);
+ 	   DDX_Text(pDX, IDC_DECK_PANEL, m_Entry.m_CamberMultipliers.DeckPanelFactor);
+ 	   DDX_Text(pDX, IDC_SLAB,       m_Entry.m_CamberMultipliers.SlabUser1Factor);
+ 	   DDX_Text(pDX, IDC_HAUNCH,     m_Entry.m_CamberMultipliers.SlabPadLoadFactor);
+ 	   DDX_Text(pDX, IDC_BARRIER,    m_Entry.m_CamberMultipliers.BarrierSwOverlayUser2Factor);
+   }
 }
 
 void CGirderMainSheet::ExchangeFlexuralCriteriaData(CDataExchange* pDX)

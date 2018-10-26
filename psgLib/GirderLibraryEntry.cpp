@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -83,7 +83,8 @@ static char THIS_FILE[] = __FILE__;
 // from 22   to 23   Changed ForceHarpedStrandsStraight to AdjustableStrandType for more flexibility
 // from 23   to 24   Added Prestressed design strategies (2.9), Added option for variable depth girders (3.0)
 // from 24   to 25   Added Publisher Contact Information
-#define CURRENT_VERSION 25.0
+// from 25   to 26   Added haunch checking and camber multiplication factors
+#define CURRENT_VERSION 26.0
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) {
@@ -134,7 +135,11 @@ m_MaxDebondedStrandsPerSection(0.40),
 m_MinDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)), // not aashto, but reasonable
 m_DefaultDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)),
 m_MaxDebondLengthBySpanFraction(-1.0), // 
-m_MaxDebondLengthByHardDistance(-1.0)
+m_MaxDebondLengthByHardDistance(-1.0),
+m_MinFilletValue(::ConvertToSysUnits(0.75,unitMeasure::Inch)),
+m_DoCheckMinHaunchAtBearingLines(false),
+m_MinHaunchAtBearingLines(0.0),
+m_ExcessiveSlabOffsetWarningTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
 {
 	CWaitCursor cursor;
 
@@ -624,6 +629,25 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->EndUnit();
    }
    pSave->EndUnit(); // PrestressDesignStrategies
+
+   // Haunch and camber stuff added in version 26
+   pSave->Property(_T("MinFilletValue"), m_MinFilletValue);
+   pSave->Property(_T("DoCheckMinHaunchAtBearingLines"), m_DoCheckMinHaunchAtBearingLines);
+   pSave->Property(_T("MinHaunchAtBearingLines"), m_MinHaunchAtBearingLines);
+   pSave->Property(_T("ExcessiveSlabOffsetWarningTolerance"), m_ExcessiveSlabOffsetWarningTolerance);
+
+   pSave->BeginUnit(_T("CamberMultipliers"),1.0);
+   {
+      pSave->Property(_T("ErectionFactor"), m_CamberMultipliers.ErectionFactor);
+      pSave->Property(_T("CreepFactor"), m_CamberMultipliers.CreepFactor);
+      pSave->Property(_T("DiaphragmFactor"), m_CamberMultipliers.DiaphragmFactor);
+      pSave->Property(_T("DeckPanelFactor"), m_CamberMultipliers.DeckPanelFactor);
+      pSave->Property(_T("SlabUser1Factor"), m_CamberMultipliers.SlabUser1Factor);
+      pSave->Property(_T("HaunchLoadFactor"), m_CamberMultipliers.SlabPadLoadFactor);
+      pSave->Property(_T("BarrierSwOverlayUser2Factor"), m_CamberMultipliers.BarrierSwOverlayUser2Factor);
+   }
+   pSave->EndUnit(); // CamberMultipliers
+
 
    pSave->EndUnit();
 
@@ -2612,6 +2636,75 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          SetDefaultPrestressDesignStrategy();
       }
 
+      if (26.0 <= version)
+      {
+         if ( !pLoad->Property(_T("MinFilletValue"),&m_MinFilletValue) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("DoCheckMinHaunchAtBearingLines"),&m_DoCheckMinHaunchAtBearingLines) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("MinHaunchAtBearingLines"),&m_MinHaunchAtBearingLines) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("ExcessiveSlabOffsetWarningTolerance"),&m_ExcessiveSlabOffsetWarningTolerance) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (!pLoad->BeginUnit(_T("CamberMultipliers")))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("ErectionFactor"), &m_CamberMultipliers.ErectionFactor))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("CreepFactor"), &m_CamberMultipliers.CreepFactor))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("DiaphragmFactor"), &m_CamberMultipliers.DiaphragmFactor))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("DeckPanelFactor"), &m_CamberMultipliers.DeckPanelFactor))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("SlabUser1Factor"), &m_CamberMultipliers.SlabUser1Factor))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("HaunchLoadFactor"), &m_CamberMultipliers.SlabPadLoadFactor))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("BarrierSwOverlayUser2Factor"), &m_CamberMultipliers.BarrierSwOverlayUser2Factor))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if(!pLoad->EndUnit())// CamberMultipliers
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+
       if(!pLoad->EndUnit())
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2855,6 +2948,16 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
    test &= m_LongShearCapacityIncreaseMethod == rOther.m_LongShearCapacityIncreaseMethod;
 
    test &= m_PrestressDesignStrategies == rOther.m_PrestressDesignStrategies;
+
+   test &= ::IsEqual(m_MinFilletValue, rOther.m_MinFilletValue);
+   test &= m_DoCheckMinHaunchAtBearingLines == rOther.m_DoCheckMinHaunchAtBearingLines;
+   if (m_DoCheckMinHaunchAtBearingLines)
+   {
+      test &= ::IsEqual(m_MinHaunchAtBearingLines, rOther.m_MinHaunchAtBearingLines);
+   }
+   test &= m_ExcessiveSlabOffsetWarningTolerance == rOther.m_ExcessiveSlabOffsetWarningTolerance;
+
+   test &= m_CamberMultipliers == rOther.m_CamberMultipliers;
 
    if (considerName)
    {
@@ -4333,6 +4436,14 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_LongShearCapacityIncreaseMethod = rOther.m_LongShearCapacityIncreaseMethod;
 
    m_PrestressDesignStrategies     = rOther.m_PrestressDesignStrategies;
+
+   m_MinFilletValue                       = rOther.m_MinFilletValue;
+   m_DoCheckMinHaunchAtBearingLines       = rOther.m_DoCheckMinHaunchAtBearingLines;
+   m_MinHaunchAtBearingLines              = rOther.m_MinHaunchAtBearingLines;
+   m_ExcessiveSlabOffsetWarningTolerance  = rOther.m_ExcessiveSlabOffsetWarningTolerance;
+
+   m_CamberMultipliers                    = rOther.m_CamberMultipliers;
+
 }
 
 void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
@@ -4861,6 +4972,52 @@ void GirderLibraryEntry::SetDefaultPrestressDesignStrategy()
    }
 
    m_PrestressDesignStrategies.push_back(ds);
+}
+
+Float64 GirderLibraryEntry::GetMinFilletValue() const
+{
+   return m_MinFilletValue;
+}
+
+void GirderLibraryEntry::SetMinFilletValue(Float64 minVal)
+{
+   m_MinFilletValue = minVal;
+}
+
+bool GirderLibraryEntry::GetMinHaunchAtBearingLines(Float64* minVal) const
+{
+   if (m_DoCheckMinHaunchAtBearingLines)
+   {
+      *minVal = m_MinHaunchAtBearingLines;
+   }
+
+   return m_DoCheckMinHaunchAtBearingLines;
+}
+
+void GirderLibraryEntry::SetMinHaunchAtBearingLines(bool doCheck, Float64 minVal)
+{
+   m_DoCheckMinHaunchAtBearingLines = doCheck;
+   m_MinHaunchAtBearingLines = minVal;
+}
+
+Float64 GirderLibraryEntry::GetExcessiveSlabOffsetWarningTolerance() const
+{
+   return m_ExcessiveSlabOffsetWarningTolerance;
+}
+
+void GirderLibraryEntry::SetExcessiveSlabOffsetWarningTolerance(Float64 tol)
+{
+   m_ExcessiveSlabOffsetWarningTolerance = tol;
+}
+
+void GirderLibraryEntry::SetCamberMultipliers(CamberMultipliers& factors)
+{
+   m_CamberMultipliers = factors;
+}
+
+CamberMultipliers GirderLibraryEntry::GetCamberMultipliers() const
+{
+   return m_CamberMultipliers;
 }
 
 //======================== ACCESS     =======================================

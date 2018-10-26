@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,8 @@
 #include "LLDFFillDlg.h"
 #include "LiveLoadDistFactorsDlg.h"
 
-#include <..\htmlhelp\helptopics.hh>
 #include <IFace\Project.h>
+#include <EAF\EAFDocument.h>
 
 // CLLDFFillDlg dialog
 
@@ -424,5 +424,5 @@ LldfRangeOfApplicabilityAction CLLDFFillDlg::GetLldfRangeOfApplicabilityAction()
 
 void CLLDFFillDlg::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_FILL_DISTRIBUTION_FACTORS);
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_FILL_DISTRIBUTION_FACTORS);
 }

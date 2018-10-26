@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\GirderHandling.h>
 
 #include <PGSuperColors.h>
 
@@ -438,8 +439,22 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    }
 
    // Draw support at end of segment
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+   IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-   PoiAttributeType poiReference = (pIntervals->GetErectSegmentInterval(segmentKey) <= intervalIdx ? POI_ERECTED_SEGMENT : POI_RELEASED_SEGMENT);
+   PoiAttributeType poiReference;
+   if ( intervalIdx == releaseIntervalIdx )
+      poiReference = POI_RELEASED_SEGMENT;
+   else if ( intervalIdx == liftingIntervalIdx )
+      poiReference = POI_LIFT_SEGMENT;
+   else if ( intervalIdx == storageIntervalIdx )
+      poiReference = POI_STORAGE_SEGMENT;
+   else if ( intervalIdx == haulingIntervalIdx )
+      poiReference = POI_HAUL_SEGMENT;
+   else
+      poiReference = POI_ERECTED_SEGMENT;
 
    PoiAttributeType attribute = (endType == pgsTypes::metStart ? POI_0L : POI_10L);
    std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,poiReference | attribute,POIFIND_AND));
@@ -448,14 +463,37 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
 
    Float64 Xg = pIPoi->ConvertPoiToGirderlineCoordinate(poiCLBrg);
 
-   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-   if ( intervalIdx == storageIntervalIdx )
+   if ( intervalIdx == releaseIntervalIdx )
    {
       Float64 left_support, right_support;
       GET_IFACE(IGirder,pGirder);
-      pGirder->GetSegmentStorageSupportLocations(segmentKey,&left_support,&right_support);
+      pGirder->GetSegmentReleaseSupportLocations(segmentKey,&left_support,&right_support);
 
       Xg += (endType == pgsTypes::metStart ? left_support : -right_support);
+   }
+   else if ( intervalIdx == liftingIntervalIdx )
+   {
+      //GET_IFACE(ISegmentLifting,pSegmentLifting);
+      //Float64 leftOverhang  = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
+      //Float64 rightOverhang = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
+
+      //Xg += (endType == pgsTypes::metStart ? leftOverhang : -rightOverhang);
+   }
+   else if ( intervalIdx == storageIntervalIdx )
+   {
+      //Float64 left_support, right_support;
+      //GET_IFACE(IGirder,pGirder);
+      //pGirder->GetSegmentStorageSupportLocations(segmentKey,&left_support,&right_support);
+
+      //Xg += (endType == pgsTypes::metStart ? left_support : -right_support);
+   }
+   else if ( intervalIdx == haulingIntervalIdx )
+   {
+      //GET_IFACE(ISegmentHauling,pSegmentHauling);
+      //Float64 leftOverhang  = pSegmentHauling->GetTrailingOverhang(segmentKey);
+      //Float64 rightOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
+
+      //Xg += (endType == pgsTypes::metStart ? leftOverhang : -rightOverhang);
    }
 
    Float64 X = m_pUnitConverter->Convert(Xg+beamShift);
@@ -608,8 +646,9 @@ void CDrawBeamTool::DrawIntermediateTemporarySupport(Float64 beamShift,const CPr
 void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPier,const CPoint& p,CDC* pDC)
 {
    CBrush pier_brush(PIER_FILL_COLOR);
-   CPen pier_pen(PS_SOLID,1,PIER_BORDER_COLOR);
    CBrush* pOldBrush = pDC->SelectObject(&pier_brush);
+
+   CPen pier_pen(PS_SOLID,1,PIER_BORDER_COLOR);
    CPen*   pOldPen = pDC->SelectObject(&pier_pen);
 
    if ( pPier->IsBoundaryPier() )

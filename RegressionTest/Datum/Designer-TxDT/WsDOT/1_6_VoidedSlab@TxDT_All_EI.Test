@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 17.17    5   0.00                   1      1      Slab         20   0.6  270   6.80   6.75   4   2.00   18     4    2   2   0   0   0   4.800  8.400   2.942    -2.961     1301   0.340  0.577   2.577 -0.314 -0.037 -0.092 -0.442  63.79  160.29    1.75    5.00    5.00 
+ 17.17    5   0.00                   1      1      Slab         20   0.6  270   6.80   6.75   4   2.00   18     4    2   2   0   0   0   4.800  8.400   2.951    -2.970     1301   0.340  0.577   2.577 -0.319 -0.037 -0.092 -0.447  63.79  160.05    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -13,7 +13,7 @@ Splitting zone check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
-Slab Offset ("A" Dimension) check failed
+Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -31,6 +31,7 @@ Splitting zone check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -48,5 +49,6 @@ Splitting zone check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
 
 

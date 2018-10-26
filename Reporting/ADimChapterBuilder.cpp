@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,13 +70,21 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone || !pSpecEntry->IsSlabOffsetCheckEnabled() )
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   if ( !pSpecEntry->IsSlabOffsetCheckEnabled() )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
       *pPara << _T("Slab Offset check disabled in Project Criteria library entry. No analysis performed.") << rptNewLine;
+      return pChapter;
+   }
+   else if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      *pPara << _T("This bridge does not have a deck. No analysis performed.") << rptNewLine;
       return pChapter;
    }
 

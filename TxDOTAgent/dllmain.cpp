@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "dllmain.h"
 #include "EAF\EAFUtilities.h"
 #include "EAF\EAFApp.h"
+#include <EAF\EAFDocument.h>
 
 
 CTxDOTAgentModule _AtlModule;
@@ -40,45 +41,24 @@ public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
 
+   afx_msg void OnHelp();
+
 	DECLARE_MESSAGE_MAP()
 };
 
 BEGIN_MESSAGE_MAP(CTxDOTAgentApp, CWinApp)
+   ON_BN_CLICKED(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
 CTxDOTAgentApp theApp;
 
+void CTxDOTAgentApp::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_WELCOME);
+}
+
 BOOL CTxDOTAgentApp::InitInstance()
 {
-   // Deal with help file name
-   // Help files are located in the same folder as the main executable
-   // During development, the help files are located at in the \ARP\BridgeLink folder
-   CEAFApp* pParentApp = EAFGetApp();
-   if ( pParentApp )
-   {
-      CString strHelpFile(pParentApp->m_pszHelpFilePath);
-#if defined _DEBUG
-#if defined _WIN64
-      strHelpFile.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
-#else
-      strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
-#endif
-#else
-   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
-   // ok... the replace will fail and the string wont be altered.
-#if defined _WIN64
-      strHelpFile.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
-#else
-      strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
-#endif
-#endif
-      free((void*)m_pszHelpFilePath);
-      m_pszHelpFilePath = _tcsdup(strHelpFile);
-   }
-
-   // pretty sure this is required
-   EnableHtmlHelp();
-
    // Set up the root of the registry keys
    SetRegistryKey( _T("Washington State Department of Transportation") );
    free((void*)m_pszProfileName);

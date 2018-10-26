@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -245,13 +245,18 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
          pgsPointOfInterest& curpoi = *iter;
          if ( curpoi.AtSamePlace(poi) )
          {
-            if ( curpoi.MergeAttributes(poi) )
+            if ( curpoi.CanMerge() && curpoi.MergeAttributes(poi) )
             {
                return curpoi.m_ID; // no need to re-sort vector
             }
             else
             {
-               break; // poi's can't be merged... just break out of here and continue
+               // sometimes there are multiple POI at the same location... make sure
+               // the next poi is not at the same location... if it is, continue, otherwise bail out
+               if ( iter+1 != end && !poi.AtSamePlace(*(iter+1)) )
+               {
+                  break; // poi's can't be merged... just break out of here and continue
+               }
             }
          }
       }

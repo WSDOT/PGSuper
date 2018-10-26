@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -129,13 +129,13 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(CReportSpecification*
    }
 
    // Constructability check
-   rptRcTable* hdtable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,girder_list,pDisplayUnits);
-   if (hdtable!=NULL)
-   {
-      rptParagraph* p = new rptParagraph;
-      *p << hdtable << rptNewLine;
-      *pChapter << p;
-   }
+   CConstructabilityCheckTable().BuildSlabOffsetTable(pChapter,pBroker,girder_list,pDisplayUnits);
+
+   // Min Haunch at bearing centerlines check
+   CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter,pBroker,girder_list,pDisplayUnits);
+
+   // Fillet Check
+   CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girder_list,pDisplayUnits);
 
    return pChapter;
 }
@@ -369,9 +369,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
             (*pTable)(row,0) << _T("Deflection (Prestressing including temp strands)");
 
          if (isSingleGirder)
-            (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,true) );
+            (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,pgsTypes::pddErected) );
 
-         (*pTable)(row,col) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,true) );
+         (*pTable)(row,col) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,pgsTypes::pddErected) );
       }
       else
       {
@@ -379,9 +379,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
             (*pTable)(row,0) << _T("Deflection (Prestressing)");
 
          if (isSingleGirder)
-            (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,false) );
+            (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,pgsTypes::pddRelease) );
 
-         (*pTable)(row,col) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,false) );
+         (*pTable)(row,col) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,pgsTypes::pddRelease) );
       }
       row++;
 

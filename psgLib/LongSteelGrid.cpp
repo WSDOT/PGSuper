@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -333,7 +333,7 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
          );
 
 
-   CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
+   CLongSteelPage* pParent = (CLongSteelPage*)GetParent();
    matRebar::Type type;
    matRebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);

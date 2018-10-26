@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -219,6 +219,9 @@ private:
 
    void UpdatePiers();
    void UpdateSlabOffsets(PierIndexType newPierIdx);
+
+   GirderIndexType GetPrivateGirderCount() const;
+   friend CBridgeDescription2;
 
 #if defined _DEBUG
    // Giving other classes access to our internal data members for debugging purposes only

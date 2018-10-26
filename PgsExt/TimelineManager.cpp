@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1427,9 +1427,13 @@ EventIDType CTimelineManager::GetFirstSegmentErectionEventID() const
 
 EventIndexType CTimelineManager::GetCastClosureJointEventIndex(ClosureIDType closureID) const
 {
-   ASSERT_VALID;
-
    const CClosureJointData* pClosure = m_pBridgeDesc->FindClosureJoint(closureID);
+   return GetCastClosureJointEventIndex(pClosure);
+}
+
+EventIndexType CTimelineManager::GetCastClosureJointEventIndex(const CClosureJointData* pClosure) const
+{
+   ASSERT_VALID;
 
    if ( pClosure == NULL )
    {
@@ -1458,9 +1462,13 @@ EventIndexType CTimelineManager::GetCastClosureJointEventIndex(ClosureIDType clo
 
 EventIDType CTimelineManager::GetCastClosureJointEventID(ClosureIDType closureID) const
 {
-   ASSERT_VALID;
-
    const CClosureJointData* pClosure = m_pBridgeDesc->FindClosureJoint(closureID);
+   return GetCastClosureJointEventID(pClosure);
+}
+
+EventIDType CTimelineManager::GetCastClosureJointEventID(const CClosureJointData* pClosure) const
+{
+   ASSERT_VALID;
 
    if ( pClosure == NULL )
    {
@@ -1489,9 +1497,13 @@ EventIDType CTimelineManager::GetCastClosureJointEventID(ClosureIDType closureID
 
 void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,EventIndexType eventIdx)
 {
-   ASSERT_VALID;
-
    const CClosureJointData* pClosure = m_pBridgeDesc->FindClosureJoint(closureID);
+   SetCastClosureJointEventByIndex(pClosure,eventIdx);
+}
+
+void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* pClosure,EventIndexType eventIdx)
+{
+   ASSERT_VALID;
 
    if ( pClosure == NULL )
    {
@@ -1546,6 +1558,18 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
 
 void CTimelineManager::SetCastClosureJointEventByID(ClosureIDType closureID,EventIDType ID)
 {
+   const CClosureJointData* pClosure = m_pBridgeDesc->FindClosureJoint(closureID);
+   SetCastClosureJointEventByID(pClosure,ID);
+}
+
+void CTimelineManager::SetCastClosureJointEventByID(const CClosureJointData* pClosure,EventIDType ID)
+{
+   if ( pClosure == NULL )
+   {
+      ATLASSERT(false); // there should be a closure
+      return;
+   }
+
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1554,7 +1578,7 @@ void CTimelineManager::SetCastClosureJointEventByID(ClosureIDType closureID,Even
       if ( pTimelineEvent->GetID() == ID )
       {
          EventIndexType eventIdx = iter-m_TimelineEvents.begin();
-         SetCastClosureJointEventByIndex(closureID,eventIdx);
+         SetCastClosureJointEventByIndex(pClosure,eventIdx);
          break;
       }
    }
@@ -2195,7 +2219,7 @@ int CTimelineManager::Validate() const
 
                   // and cast after the adjent segments are erected
                   EventIndexType erectRightSegmentEventIdx = GetSegmentErectionEventIndex(pClosureJoint->GetRightSegment()->GetID());
-                  EventIndexType castClosureEventIdx = GetCastClosureJointEventIndex(pClosureJoint->GetID());
+                  EventIndexType castClosureEventIdx = GetCastClosureJointEventIndex(pClosureJoint);
                   if ( castClosureEventIdx < erectSegmentEventIdx ||   // must be cast after left segment is erected
                        castClosureEventIdx < erectRightSegmentEventIdx // must be cast after right segment is erected
                      )

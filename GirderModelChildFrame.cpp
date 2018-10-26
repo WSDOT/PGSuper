@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,6 @@
 #include "EditPointLoadDlg.h"
 #include "EditDistributedLoadDlg.h"
 #include "EditMomentLoadDlg.h"
-#include "htmlhelp\HelpTopics.hh"
 
 #include <PgsExt\InsertDeleteLoad.h>
 
@@ -60,6 +59,24 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// template function to directly set item data in a combo box
+template <class T>
+int SetCBCurSelItemData( CComboBox* pCB, T& itemdata )
+{
+   int succ=CB_ERR;
+   int count = pCB->GetCount();
+   for ( int i = 0; i < count; i++ )
+   {
+      if ( ((T)pCB->GetItemData(i)) == itemdata )
+      {
+         pCB->SetCurSel(i);
+         succ=i;
+         break;
+      }
+   }
+
+   return succ;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderModelChildFrame
@@ -118,7 +135,7 @@ END_MESSAGE_MAP()
 // CGirderModelChildFrame message handlers
 void CGirderModelChildFrame::SelectGirder(const CGirderKey& girderKey,bool bDoUpdate)
 {
-   if ( m_GirderKey.groupIndex == INVALID_INDEX && m_GirderKey.girderIndex == INVALID_INDEX )
+   if ( girderKey.groupIndex != INVALID_INDEX && girderKey.girderIndex != INVALID_INDEX )
    {
       m_GirderKey = girderKey;
       UpdateBar();
@@ -370,7 +387,7 @@ void CGirderModelChildFrame::UpdateBar()
       pcbGroup->SetItemData(idx,(DWORD_PTR)grpIdx);
    }
 
-   curSel = pcbGroup->SetCurSel(curSel);
+   curSel = SetCBCurSelItemData(pcbGroup, m_GirderKey.groupIndex);
    
    if ( curSel == CB_ERR )
    {
@@ -396,10 +413,11 @@ void CGirderModelChildFrame::UpdateBar()
    {
       CString strLabel;
       strLabel.Format(_T("Girder %s"), LABEL_GIRDER(gdrIdx));
-      pcbGirder->AddString(strLabel);
+      idx = pcbGirder->AddString(strLabel);
+      pcbGirder->SetItemData(idx,(DWORD_PTR)gdrIdx);
    }
    
-   curSel = pcbGirder->SetCurSel(curSel);
+   curSel = SetCBCurSelItemData(pcbGirder, m_GirderKey.girderIndex);
 
    if ( curSel == CB_ERR )
    {
@@ -763,7 +781,8 @@ void CGirderModelChildFrame::OnAddMoment()
 
 LRESULT CGirderModelChildFrame::OnCommandHelp(WPARAM, LPARAM lParam)
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_VIEW );
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_VIEW );
    return TRUE;
 }
 

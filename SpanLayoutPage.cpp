@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,8 +32,6 @@
 #include "SelectItemDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
-#include "HtmlHelp\HelpTopics.hh"
-
 #include <MFCTools\CustomDDX.h>
 
 #ifdef _DEBUG
@@ -231,7 +229,7 @@ BOOL CSpanLayoutPage::OnInitDialog()
 
 void CSpanLayoutPage::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPANDETAILS_GENERAL );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_SPANDETAILS_GENERAL );
 }
 
 HBRUSH CSpanLayoutPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
@@ -251,10 +249,6 @@ HBRUSH CSpanLayoutPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 LRESULT CSpanLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
    pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
@@ -294,6 +288,10 @@ LRESULT CSpanLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
       // going from span-by-span to one for the entire bridge
       // need to check the span values and if they are different, ask the user which one is to
       // be used for the entire bridge
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // get current values out of the controls
       Float64 slabOffset[2];

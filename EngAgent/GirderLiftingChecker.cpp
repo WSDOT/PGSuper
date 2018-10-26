@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -736,13 +736,13 @@ bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey&
    GET_IFACE(ICamber,pCamber);
    if ( bUseConfig && !liftConfig.bIgnoreGirderConfig )
    {
-      ps_camber = pCamber->GetPrestressDeflection(poi_ms,liftConfig.GdrConfig,false);
-      temp_ps_camber = pCamber->GetInitialTempPrestressDeflection(poi_ms,liftConfig.GdrConfig,false);
+      ps_camber = pCamber->GetPrestressDeflection(poi_ms,liftConfig.GdrConfig,pgsTypes::pddRelease);
+      temp_ps_camber = pCamber->GetInitialTempPrestressDeflection(poi_ms,liftConfig.GdrConfig,pgsTypes::pddRelease);
    }
    else
    {
-      ps_camber = pCamber->GetPrestressDeflection(poi_ms,false);
-      temp_ps_camber = pCamber->GetInitialTempPrestressDeflection(poi_ms,false);
+      ps_camber = pCamber->GetPrestressDeflection(poi_ms,pgsTypes::pddRelease);
+      temp_ps_camber = pCamber->GetInitialTempPrestressDeflection(poi_ms,pgsTypes::pddRelease);
    }
 
    ps_camber += temp_ps_camber;

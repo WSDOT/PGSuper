@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@
 #include <IFace\PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
+#include <EAF\EAFDocument.h>
 
 #include <GraphicsLib\AxisXY.h>
 
@@ -80,6 +81,8 @@ m_XAxisType(X_AXIS_TIME_LOG)
    m_pGraphController = new CStressHistoryGraphController;
 
    SetName(_T("Stress History"));
+   
+   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_STRESS_HISTORY);
 
    m_Scalar.Width = 7;
    m_Scalar.Precision = 0;

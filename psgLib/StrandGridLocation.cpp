@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <psgLib\psglib.h>
 #include "StrandGridLocation.h"
 #include <MfcTools\CustomDDX.h>
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -152,7 +152,7 @@ BEGIN_MESSAGE_MAP(CStrandGridLocation, CDialog)
 	//{{AFX_MSG_MAP(CStrandGridLocation)
 	ON_CBN_SELCHANGE(IDC_STRAND_TYPE, OnSelchangeStrandType)
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -194,11 +194,10 @@ BOOL CStrandGridLocation::OnInitDialog()
    ASSERT(pdel);
    pdel->SetWindowText(strg);
 
-   BOOL enable = (m_StrandType==1 && m_UseHarpedGrid) ? TRUE : FALSE;
-   EnableEndBox(enable);
-
    BOOL show =  (m_StrandType==0) ? TRUE : FALSE;
    ShowDebondCtrl(show);
+
+   OnSelchangeStrandType();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -211,13 +210,16 @@ void CStrandGridLocation::OnSelchangeStrandType()
    CString str;
    pdel->GetWindowText(str);
 
+   CWnd* pHPBox = GetDlgItem(IDC_HP_BOX);
+
    if (str==_T("Harped"))
    {
+      pHPBox->SetWindowText(_T("Location at Harping Points"));
       ShowDebondCtrl(FALSE);
 
       if (m_UseHarpedGrid)
       {
-         EnableEndBox(TRUE);
+         ShowEndBox();
 
          CWnd* pdel = GetDlgItem(IDC_GEX);
          ASSERT(pdel);
@@ -233,57 +235,27 @@ void CStrandGridLocation::OnSelchangeStrandType()
    }
    else if (str==_T("Straight"))
    {
+      pHPBox->SetWindowText(_T("Location along Girder"));
       ShowDebondCtrl(TRUE);
 
       if (m_UseHarpedGrid)
       {
-         EnableEndBox(FALSE);
-
-         CWnd* pdel = GetDlgItem(IDC_GEX);
-         ASSERT(pdel);
-         CString strg; // blank string
-         pdel->SetWindowText(strg);
-
-         pdel = GetDlgItem(IDC_GEY);
-         ASSERT(pdel);
-         pdel->SetWindowText(strg);
+         HideEndBox();
       }
    }
    else if (str==_T("Adjustable") || str==_T("Adj. Straight"))
    {
+      pHPBox->SetWindowText(_T("Location along Girder"));
       ShowDebondCtrl(FALSE);
 
       if (m_UseHarpedGrid)
       {
-         EnableEndBox(FALSE);
-
-         CWnd* pdel = GetDlgItem(IDC_GEX);
-         ASSERT(pdel);
-         CString strg; // blank string
-         pdel->SetWindowText(strg);
-
-         pdel = GetDlgItem(IDC_GEY);
-         ASSERT(pdel);
-         pdel->SetWindowText(strg);
+         HideEndBox();
       }
    }
    else
    {
       ATLASSERT(false);
-   }
-}
-
-void CStrandGridLocation::EnableEndBox(BOOL enable)
-{
-
-   int idx=0;
-   while (ENDBOX_CTRLS[idx] != -1)
-   {
-      CWnd* pdel = GetDlgItem(ENDBOX_CTRLS[idx]);
-      ASSERT(pdel);
-      pdel->EnableWindow(enable);
-
-      idx++;
    }
 }
 
@@ -301,6 +273,20 @@ void CStrandGridLocation::HideEndBox()
    }
 }
 
+void CStrandGridLocation::ShowEndBox()
+{
+
+   int idx=0;
+   while (ENDBOX_CTRLS[idx] != -1)
+   {
+      CWnd* pdel = GetDlgItem(ENDBOX_CTRLS[idx]);
+      ASSERT(pdel);
+      pdel->ShowWindow(SW_SHOW);
+
+      idx++;
+   }
+}
+
 
 void CStrandGridLocation::ShowDebondCtrl(BOOL show)
 {
@@ -309,9 +295,7 @@ void CStrandGridLocation::ShowDebondCtrl(BOOL show)
       pdel->ShowWindow(show);
 }
 
-LRESULT CStrandGridLocation::OnCommandHelp(WPARAM, LPARAM lParam)
+void CStrandGridLocation::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_HARPED_STRANDS_TAB );
-
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_STRAND_LOCATION );
 }

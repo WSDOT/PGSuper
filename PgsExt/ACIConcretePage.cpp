@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,10 +28,10 @@
 #include <PgsExt\ACIConcretePage.h>
 #include <PgsExt\ConcreteDetailsDlg.h>
 #include "ACIParametersDlg.h"
-#include "HtmlHelp\HelpTopics.hh"
 
 #include <Material\ACI209Concrete.h>
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
 
 
 // CACIConcretePage dialog
@@ -70,7 +70,7 @@ void CACIConcretePage::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CACIConcretePage, CPropertyPage)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
    ON_BN_CLICKED(IDC_USER, &CACIConcretePage::OnUserParameters)
    ON_CBN_SELCHANGE(IDC_CURE_METHOD, &CACIConcretePage::OnCureMethod)
    ON_CBN_SELCHANGE(IDC_CEMENT_TYPE, &CACIConcretePage::OnCementType)
@@ -106,11 +106,9 @@ BOOL CACIConcretePage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-LRESULT CACIConcretePage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CACIConcretePage::OnHelp()
 {
-#pragma Reminder("UPDATE: Update help file reference for this topic")
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_CONCRETE_ENTRY_DIALOG );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONCRETE_ACI );
 }
 
 void CACIConcretePage::OnUserParameters()

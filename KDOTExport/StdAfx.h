@@ -19,3 +19,7 @@ extern CComModule _Module;
 
 #include "KDOTExport.h"
 //#include "KDOTExporter.h"
+
+#include "Documentation\KDOT.hh"
+
+#include <EAF\EAFHelp.h>

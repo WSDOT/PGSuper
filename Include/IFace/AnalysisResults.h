@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include <vector>
 #include <PGSuperTypes.h>
 #include "Details.h"
+#include <pgsExt\CamberMultipliers.h>
 
 // PROJECT INCLUDES
 //
@@ -124,6 +125,23 @@ typedef struct EquivPretensionLoad
    Float64 M;  // magnitude of equivalent moment
 } EquivPretensionLoad;
 
+
+// Simple span bearing reactions can occur at back/ahead. Continuous and pier reactions are at mid
+typedef enum PierReactionFaceType 
+{
+   rftBack, 
+   rftMid, 
+   rftAhead
+} PierReactionFaceType;
+
+struct ReactionLocation
+{
+   PierIndexType        PierIdx;   // Index of the pier where reactions are reported
+   PierReactionFaceType Face;      // Face of pier that reaction applies to
+   CGirderKey           GirderKey; // GirderKey for the girder that provides the reaction
+   std::_tstring        PierLabel; // Label (Abutment 1, Pier 2, etc)
+};
+
 /*****************************************************************************
 INTERFACE
    IProductLoads
@@ -175,6 +193,7 @@ interface IProductLoads : IUnknown
    virtual void GetOverlayLoad(const CSegmentKey& segmentKey,std::vector<OverlayLoad>* pOverlayLoads)=0;
 
    // construction loads
+   virtual bool HasConstructionLoad(const CGirderKey& girderKey) = 0;
    virtual void GetConstructionLoad(const CSegmentKey& segmentKey,std::vector<ConstructionLoad>* pConstructionLoads)=0;
 
    // slab loads
@@ -256,7 +275,7 @@ interface IProductForces : IUnknown
    virtual void GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop=NULL,AxleConfiguration* pMaxAxleConfigTop=NULL,AxleConfiguration* pMinAxleConfigBot=NULL,AxleConfiguration* pMaxAxleConfigBot=NULL) = 0;
 
    // This is the deflection due to self weight of the girder, when the girder
-   // is in the casting yard, supported on its final bearing points. Modulus
+   // is in the casting yard, supported at the storage support points. Modulus
    // of elasticity is equal to Eci.  This differs from GetDeflection above
    // in that the span length L is the span length of the girder instead of the
    // girder length usually used in the casting yard.
@@ -595,17 +614,13 @@ interface ICamber : IUnknown
 
    // Deflection caused by prestressing alone (Harped and Straight Strands only).
    // Deflections are computed using the concrete properties at release.
-   // If bRelativeToBearings is true, the deflection is relative to the bearings
-   // otherwise it is relative to the end of the girder
-   virtual Float64 GetPrestressDeflection(const pgsPointOfInterest& poi,bool bRelativeToBearings) = 0;
-   virtual Float64 GetPrestressDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bRelativeToBearings) = 0;
+   virtual Float64 GetPrestressDeflection(const pgsPointOfInterest& poi,pgsTypes::PrestressDeflectionDatum datum) = 0;
+   virtual Float64 GetPrestressDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::PrestressDeflectionDatum datum) = 0;
 
    // Deflection caused by temporary prestressing alone when stressed at casting.
    // Deflections are computed using the concrete properties at release.
-   // If bRelativeToBearings is true, the deflection is relative to the bearings
-   // otherwise it is relative to the end of the girder
-   virtual Float64 GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi,bool bRelativeToBearings) = 0;
-   virtual Float64 GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bRelativeToBearings) = 0;
+   virtual Float64 GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi,pgsTypes::PrestressDeflectionDatum datum) = 0;
+   virtual Float64 GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::PrestressDeflectionDatum datum) = 0;
 
    // Returns the amount the girder deflects when the temporary strands are
    // removed.  Deflections are computed using 28day concrete properties.
@@ -614,8 +629,8 @@ interface ICamber : IUnknown
    virtual Float64 GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
 
    // Returns the deflection due to creep at the end of a creep period
-   virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate) = 0;
-   virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, const GDRCONFIG& config, CreepPeriod creepPeriod, Int16 constructionRate) = 0;
+   virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum) = 0;
+   virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, const GDRCONFIG& config, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum) = 0;
 
    // Returns the amount the girder deflects when the deck is
    // cast.  Deflections are computed using 28day concrete properties.
@@ -626,6 +641,16 @@ interface ICamber : IUnknown
    // cast.  Deflections are computed using 28day concrete properties.
    virtual Float64 GetDeckPanelDeflection(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetDeckPanelDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
+
+   // Returns the amount the girder deflects when the shear keys are
+   // cast.  Deflections are computed using 28day concrete properties.
+   virtual Float64 GetShearKeyDeflection(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetShearKeyDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
+
+   // Returns the amount the girder deflects when the construction load is
+   // applied.  Deflections are computed using 28day concrete properties.
+   virtual Float64 GetConstructionLoadDeflection(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetConstructionLoadDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
 
    // Returns the amount the girder deflects when the diaphragms are
    // cast.  Deflections are computed using 28day concrete properties.
@@ -660,13 +685,15 @@ interface ICamber : IUnknown
    virtual Float64 GetExcessCamberRotation(const pgsPointOfInterest& poi,Int16 time) = 0;
    virtual Float64 GetExcessCamberRotation(const pgsPointOfInterest& poi,const GDRCONFIG& config,Int16 time) = 0;
 
-   // This is the camber that remains in the girder after the slab pour
-   // It is equal to the Total camber less the slab deflection.
+   // This is the camber in the girder, just prior to slab casting.
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time) = 0;
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,const GDRCONFIG& config,Int16 time) = 0; 
 
    // This is the factor that the min timing camber is multiplied by the compute the lower bound camber
    virtual Float64 GetLowerBoundCamberVariabilityFactor()const = 0;
+
+   // Camber multipliers for final factored camber
+   virtual CamberMultipliers GetCamberMultipliers(const CSegmentKey& segmentKey) = 0;
 };
 
 
@@ -720,41 +747,36 @@ DEFINE_GUID(IID_IBearingDesign,
 0xdacec889, 0x2b86, 0x46e9, 0x8b, 0x47, 0x8, 0x75, 0xbc, 0x9b, 0x19, 0xa5);
 interface IBearingDesign : IUnknown
 {
-   // Determine if bearing reactions are available for the girder in question. Function will return true if girder has a
-   // simply supported boundary connection. Passed-in bools will be true for simple-supported ends.
-   virtual bool AreBearingReactionsAvailable(IntervalIndexType intervalIdx,const CGirderKey& girderKey, bool* pBleft, bool* pBright)=0;
+   // Returns a list of piers where bearing reactions are available
+   virtual std::vector<PierIndexType> GetBearingReactionPiers(IntervalIndexType intervalIdx,const CGirderKey& girderKey) = 0;
 
-   // From IProductForces
-   virtual void GetBearingProductReaction(IntervalIndexType intervalIdx,pgsTypes::ProductForceType type,const CGirderKey& girderKey,
-                                          pgsTypes::BridgeAnalysisType bat, ResultsType cmbtype, Float64* pLftEnd,Float64* pRgtEnd)=0;
+   // Returns the bearing reaction due to a product load
+   virtual Float64 GetBearingProductReaction(IntervalIndexType intervalIdx,const ReactionLocation& location,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) = 0;
 
-   virtual void GetBearingLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,
-                                           pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
-                                           Float64* pLeftRmin,Float64* pLeftRmax,Float64* pLeftTmin,Float64* pLeftTmax,
-                                           Float64* pRightRmin,Float64* pRightRmax,Float64* pRightTmin,Float64* pRightTmax,
-                                           VehicleIndexType* pLeftMinVehIdx = NULL,VehicleIndexType* pLeftMaxVehIdx = NULL,
-                                           VehicleIndexType* pRightMinVehIdx = NULL,VehicleIndexType* pRightMaxVehIdx = NULL)=0;
+   // Returns the max and min live load reaction at the specified reaction location along with the corresponding rotation
+   virtual void GetBearingLiveLoadReaction(IntervalIndexType intervalIdx,const ReactionLocation& location,pgsTypes::LiveLoadType llType,
+                                pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
+                                Float64* pRmin,Float64* pRmax,Float64* pTmin,Float64* pTmax,
+                                VehicleIndexType* pMinVehIdx = NULL,VehicleIndexType* pMaxVehIdx = NULL) = 0;
 
-   virtual void GetBearingLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,
-                                           pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
-                                           Float64* pLeftTmin,Float64* pLeftTmax,Float64* pLeftRmin,Float64* pLeftRmax,
-                                           Float64* pRightTmin,Float64* pRightTmax,Float64* pRightRmin,Float64* pRightRmax,
-                                           VehicleIndexType* pLeftMinVehIdx = NULL,VehicleIndexType* pLeftMaxVehIdx = NULL,
-                                           VehicleIndexType* pRightMinVehIdx = NULL,VehicleIndexType* pRightMaxVehIdx = NULL)=0;
-   // From ICombinedForces
-   virtual void GetBearingCombinedReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const CGirderKey& girderKey,
-                                           pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pLftEnd,Float64* pRgtEnd)=0;
+   // Returns the max and min live load rotation at the specified reaction location along with the corresponding reaction
+   virtual void GetBearingLiveLoadRotation(IntervalIndexType intervalIdx,const ReactionLocation& location,pgsTypes::LiveLoadType llType,
+                                   pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
+                                   Float64* pTmin,Float64* pTmax,Float64* pRmin,Float64* pRmax,
+                                   VehicleIndexType* pMinVehIdx = NULL,VehicleIndexType* pMaxVehIdx = NULL) = 0;
 
-   virtual void GetBearingCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,
+   // Returns the bearing reaction due to a load combination (DC, DW, etc)
+   virtual Float64 GetBearingCombinedReaction(IntervalIndexType intervalIdx,const ReactionLocation& location,LoadingCombinationType combo,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) = 0;
+
+   // Returns the per-girder min/max reaction at the specified reaction location
+   virtual void GetBearingCombinedLiveLoadReaction(IntervalIndexType intervalIdx,const ReactionLocation& location,pgsTypes::LiveLoadType llType,
                                                    pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,
-                                                   Float64* pLeftRmin, Float64* pLeftRmax, 
-                                                   Float64* pRightRmin,Float64* pRightRmax)=0;
+                                                   Float64* pRmin,Float64* pRmax) = 0;
 
-   // From ILimitStateForces
-   virtual void GetBearingLimitStateReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const CGirderKey& girderKey,
+   // Returns the bearing reaction due to a limit state combintation.
+   virtual void GetBearingLimitStateReaction(IntervalIndexType intervalIdx,const ReactionLocation& location,pgsTypes::LimitState limitState,
                                              pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,
-                                             Float64* pLeftRmin, Float64* pLeftRmax, 
-                                             Float64* pRightRmin,Float64* pRightRmax)=0;
+                                             Float64* pRmin,Float64* pRmax) = 0;
 };
 
 /*****************************************************************************
@@ -820,10 +842,10 @@ interface IReactions : IUnknown
    virtual void GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
    virtual void GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL) = 0;
 
-   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinVehIdx = NULL,VehicleIndexType* pMaxVehIdx = NULL) = 0;
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<VehicleIndexType>* pMinConfig = NULL,std::vector<VehicleIndexType>* pMaxConfig = NULL) = 0;
-   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
-   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<Float64>* pTmin,std::vector<Float64>* pTmax,std::vector<VehicleIndexType>* pMinConfig = NULL,std::vector<VehicleIndexType>* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinVehIdx = NULL,VehicleIndexType* pMaxVehIdx = NULL) = 0;
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<Float64>* pTmin,std::vector<Float64>* pTmax,std::vector<VehicleIndexType>* pMinVehIdx = NULL,std::vector<VehicleIndexType>* pMaxVehIdx = NULL) = 0;
 
    virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) = 0;
    virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) = 0;

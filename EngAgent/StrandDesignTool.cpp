@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1940,7 +1940,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
             // stress coeff is zero, no tensile capacity
             fc_reqd = -1;
             LOG(_T("WARNING: Have applied tension with zero tension allowed - Should not happen"));
-            ATLASSERT(false);
+            //ATLASSERT(false);
             return ConcFailed;
          }
 

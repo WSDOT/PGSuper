@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <psgLib\psglib.h>
 #include "GirderHarpPointPage.h"
 #include "GirderMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 
 #ifdef _DEBUG
@@ -75,7 +75,7 @@ BOOL CGirderHarpPointPage::OnInitDialog()
 
 BEGIN_MESSAGE_MAP(CGirderHarpPointPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderHarpPointPage)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
    ON_BN_CLICKED(IDC_MINIMUM,OnMinimum)
    ON_CBN_SELCHANGE(IDC_L,OnSelectionChanged)
 	//}}AFX_MSG_MAP
@@ -83,10 +83,9 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderHarpPointPage message handlers
-LRESULT CGirderHarpPointPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CGirderHarpPointPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_HARPING_POINTS_TAB );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_HARPING_POINTS );
 }
 
 

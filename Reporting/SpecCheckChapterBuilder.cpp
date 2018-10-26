@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -476,13 +476,13 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // "A" Dimension check
    std::vector<CGirderKey> girderList;
    girderList.push_back(girderKey);
-   rptRcTable* atable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,girderList,pDisplayUnits);
-   if (atable!=NULL)
-   { 
-      rptParagraph* p = new rptParagraph;
-      *p << atable << rptNewLine;
-      *pChapter << p;
-   }
+   CConstructabilityCheckTable().BuildSlabOffsetTable(pChapter,pBroker,girderList,pDisplayUnits);
+
+   // Min Haunch at bearing centerlines check
+   CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter,pBroker,girderList,pDisplayUnits);
+
+   // Fillet Check
+   CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girderList,pDisplayUnits);
 
    // Camber Check
    CConstructabilityCheckTable().BuildCamberCheck(pChapter,pBroker,girderKey,pDisplayUnits);

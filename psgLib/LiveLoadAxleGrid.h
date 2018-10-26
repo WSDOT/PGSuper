@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,9 +64,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    // virtual overrides for grid
-   int GetColWidth(ROWCOL nCol);
-   BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
-   BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+   virtual int GetColWidth(ROWCOL nCol);
+   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
+   virtual BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+
 public:
    // custom stuff for grid
    void CustomInit();

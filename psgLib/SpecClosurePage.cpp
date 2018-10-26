@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,8 +27,7 @@
 #include <psgLib\psglib.h>
 #include "SpecClosurePage.h"
 #include "SpecMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
-
+#include <EAF\EAFDocument.h>
 
 // CSpecClosurePage dialog
 
@@ -55,8 +54,13 @@ void CSpecClosurePage::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CSpecClosurePage, CPropertyPage)
+   ON_BN_CLICKED(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
+void CSpecClosurePage::OnHelp()
+{
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_CLOSURE_JOINTS);
+}
 
 // CSpecClosurePage message handlers
 BOOL CSpecClosurePage::OnInitDialog()

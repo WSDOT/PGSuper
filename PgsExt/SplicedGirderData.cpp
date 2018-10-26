@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -153,10 +153,14 @@ CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup)
 
 CSplicedGirderData::~CSplicedGirderData()
 {
-   RemoveSegmentsFromTimelineManager();
-   RemoveClosureJointsFromTimelineManager();
    DeleteSegments();
    DeleteClosures();
+}
+
+void CSplicedGirderData::Clear()
+{
+   RemoveSegmentsFromTimelineManager();
+   RemoveClosureJointsFromTimelineManager();
 }
 
 void CSplicedGirderData::DeleteSegments()
@@ -1596,28 +1600,21 @@ void CSplicedGirderData::RemoveSegmentsFromTimelineManager()
 
 void CSplicedGirderData::RemoveClosureJointFromTimelineManager(const CClosureJointData* pClosure)
 {
-   if ( m_pGirderGroup )
+   if ( m_pGirderGroup && m_pGirderGroup->GetGirderCount() == 1 )
    {
-      if ( m_GirderIndex < m_pGirderGroup->GetGirderCount()-1 )
-      {
-         // Any particular closure joint is cast for all girders at the same time. Even though we
-         // model every closure joint individually in the physical model, they are cast at the same time.
-         // For example, the closure between segment 2 and 3 for all girders are cast at the same time.
-         // The closure between segment 3 and 4 for all girders are also cast at the same time, but not
-         // necessarily at the same time as the closure between segments 2 and 3.
-         //
-         // For this reason, we only remove the closure from the timeline when this is the last
-         // (right-most) girder
-         return;
-      }
+      // Any particular closure joint is cast for all girders at the same time. Even though we
+      // model every closure joint individually in the physical model, they are cast at the same time.
+      // For example, the closure between segment 2 and 3 for all girders is cast at the same time.
+      // The closure between segment 3 and 4 for all girders is also cast at the same time, but not
+      // necessarily at the same time as the closure between segments 2 and 3.
+      //
+      // For this reason, we only remove the closure casting activity from the timeline when 
+      // there is only one girder
 
       CTimelineManager* pTimelineMgr = GetTimelineManager();
       if ( pTimelineMgr )
       {
-         // closures are stored by the ID of the segment on the left side of the closure
-         SegmentIDType segID = pClosure->GetLeftSegment()->GetID();
-
-         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(segID);
+         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
          if ( eventIdx != INVALID_INDEX )
          {
             CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
@@ -1627,7 +1624,7 @@ void CSplicedGirderData::RemoveClosureJointFromTimelineManager(const CClosureJoi
                pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
             }
 
-            if ( pClosure->GetTemporarySupport() )
+            if ( pClosure->GetTemporarySupport() && m_pGirderGroup->GetGirderCount() == 1 )
             {
                pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
             }

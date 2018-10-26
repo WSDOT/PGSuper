@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -134,6 +134,18 @@ public:
    Float64 ServiceI_CR;
    Float64 ServiceI_SH;
    Float64 ServiceI_PS;
+
+   Float64 ServiceIII_DC;
+   Float64 ServiceIII_DW;
+   Float64 ServiceIII_LL_Routine;
+   Float64 ServiceIII_LL_Special;
+   Float64 ServiceIII_CR;
+   Float64 ServiceIII_SH;
+   Float64 ServiceIII_PS;
+
+
+   bool    bRateForStress;
+   Float64 AllowableTensionCoefficient;
 
    bool    bRateForShear;
    bool    bCheckReinforcementYielding;

@@ -135,8 +135,7 @@ void CCastClosureJointDlg::FillLists()
 
       while ( pClosure )
       {
-         ClosureIDType closureID = pClosure->GetID();
-         EventIndexType castClosureJointEventIdx = m_TimelineMgr.GetCastClosureJointEventIndex(closureID);
+         EventIndexType castClosureJointEventIdx = m_TimelineMgr.GetCastClosureJointEventIndex(pClosure);
 
          if ( pClosure->GetPier() )
          {
@@ -148,13 +147,13 @@ void CCastClosureJointDlg::FillLists()
             if ( castClosureJointEventIdx == m_EventIndex )
             {
                // erected during this event, put it in the target list
-               m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,closureID);
+               m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,pClosure->GetID());
             }
             else
             {
                // not erected during this event, put it in the source list
                CTimelineItemDataPtr::State state = (bHasClosure ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
-               m_lbSource.AddItem(label,state,closureID);
+               m_lbSource.AddItem(label,state,pClosure->GetID());
             }
          }
          else
@@ -167,12 +166,12 @@ void CCastClosureJointDlg::FillLists()
 
             if ( castClosureJointEventIdx == m_EventIndex )
             {
-               m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,closureID);
+               m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,pClosure->GetID());
             }
             else
             {
                CTimelineItemDataPtr::State state = (bHasClosure ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
-               m_lbSource.AddItem(label,state,closureID);
+               m_lbSource.AddItem(label,state,pClosure->GetID());
             }
          }
 

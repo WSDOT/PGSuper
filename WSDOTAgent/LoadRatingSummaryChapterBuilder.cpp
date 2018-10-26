@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,14 +58,11 @@ LPCTSTR CLoadRatingSummaryChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
-   GroupIndexType grpIdx = pGdrRptSpec->GetGroupIndex();
    GirderIndexType gdrIdx = pGdrRptSpec->GetGirderIndex();
-   CGirderKey girderKey(grpIdx,gdrIdx);
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   CGirderKey girderKey(ALL_GROUPS,gdrIdx);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -168,12 +165,33 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       bIsWSDOTRating = false;
    }
 
+   if ( !pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) || !pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) ||
+        !pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine)    || !pRatingSpec->RateForShear(pgsTypes::lrLegal_Special)    ||
+        !pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine)   || !pRatingSpec->RateForShear(pgsTypes::lrPermit_Special)
+      )
+   {
+      bIsWSDOTRating = false;
+   }
+
+   if ( !pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine)  || !pRatingSpec->RateForStress(pgsTypes::lrLegal_Special) ||
+        !pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine) || !pRatingSpec->RateForStress(pgsTypes::lrPermit_Special)
+      )
+   {
+      bIsWSDOTRating = false;
+   }
+
+   if ( !pRatingSpec->CheckYieldStress(pgsTypes::lrPermit_Routine) || !pRatingSpec->CheckYieldStress(pgsTypes::lrPermit_Special)
+      )
+   {
+      bIsWSDOTRating = false;
+   }
+
    if ( !bIsWSDOTRating )
    {
-      (*pPara) << _T("The load rating settings do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
-      (*pPara) << _T("Select Project | Load Rating Options to change the load rating settings to the required settings shown below.") << rptNewLine;
+      (*pPara) << _T("The selected load rating options do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
+      (*pPara) << _T("Select Project | Load Rating Options to change the load rating options to the required settings given below.") << rptNewLine;
 
-	   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T("Load Rating Criteria"));
+	   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T("Required Load Rating Options"));
 
       // left justify all columns
       pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -185,9 +203,16 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
       RowIndexType row = 0;
       (*pPara) << pTable << rptNewLine;
-      (*pTable)(row,0) << _T("");
+      (*pTable)(row,0) << _T("Load Rating Option");
       (*pTable)(row,1) << _T("Current Setting");
       (*pTable)(row,2) << _T("Required Setting");
+      row++;
+
+      // General Tab
+      pTable->SetColumnSpan(row,0,3);
+      pTable->SetColumnSpan(row,1,SKIP_CELL);
+      pTable->SetColumnSpan(row,2,SKIP_CELL);
+      (*pTable)(row,0) << Bold(_T("General"));
       row++;
 
       (*pTable)(row,0) << _T("Load Rating Criteria");
@@ -195,22 +220,29 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       (*pTable)(row,2) << _T("WSDOT");
       row++;
 
-      (*pTable)(row,0) << _T("Design Rating");
+      (*pTable)(row,0) << _T("Rating Type: Design");
       (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
       (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 
-      (*pTable)(row,0) << _T("Legal Rating");
+      (*pTable)(row,0) << _T("Rating Type: Legal");
       (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
       (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 
-      (*pTable)(row,0) << _T("Permit Rating");
+      (*pTable)(row,0) << _T("Rating Type: Permit");
       (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
       (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 
-      (*pTable)(row,0) << _T("Design Load Rating: Live Loads for Design");
+      // Design Tab
+      pTable->SetColumnSpan(row,0,3);
+      pTable->SetColumnSpan(row,1,SKIP_CELL);
+      pTable->SetColumnSpan(row,2,SKIP_CELL);
+      (*pTable)(row,0) << Bold(_T("Design"));
+      row++;
+
+      (*pTable)(row,0) << _T("Design Load Rating: Live Loads for Design") << rptNewLine << _T("(This setting found in Loads > Live Loads...)");
       std::vector<std::_tstring>::iterator nameIter(design_permit_loads.begin());
       std::vector<std::_tstring>::iterator nameIterEnd(design_permit_loads.end());
       for ( ; nameIter != nameIterEnd; nameIter++ )
@@ -219,6 +251,18 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       }
       (*pTable)(row,1) << _T("");
       (*pTable)(row,2) << _T("HL-93");
+      row++;
+
+      (*pTable)(row,0) << _T("Rate for Shear");
+      (*pTable)(row,1) << ((!pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) || !pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
+      row++;
+
+      // Legal Tab
+      pTable->SetColumnSpan(row,0,3);
+      pTable->SetColumnSpan(row,1,SKIP_CELL);
+      pTable->SetColumnSpan(row,2,SKIP_CELL);
+      (*pTable)(row,0) << Bold(_T("Legal"));
       row++;
 
       (*pTable)(row,0) << _T("Legal Load Rating: Live Loads for Routine Commercial Vehicles");
@@ -241,6 +285,23 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       }
       (*pTable)(row,1) << _T("");
       (*pTable)(row,2) << _T("Notional Rating Load (NRL)");
+      row++;
+
+      (*pTable)(row,0) << _T("Rate for Service III Stress");
+      (*pTable)(row,1) << ((!pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine) || !pRatingSpec->RateForStress(pgsTypes::lrLegal_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
+      row++;
+
+      (*pTable)(row,0) << _T("Rate for Shear");
+      (*pTable)(row,1) << ((!pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) || !pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
+      row++;
+
+      // Permit Tab
+      pTable->SetColumnSpan(row,0,3);
+      pTable->SetColumnSpan(row,1,SKIP_CELL);
+      pTable->SetColumnSpan(row,2,SKIP_CELL);
+      (*pTable)(row,0) << Bold(_T("Permit"));
       row++;
 
       (*pTable)(row,0) << _T("Permit Load Rating: Live Loads for Routine/Annual Permit Vehicles");
@@ -272,13 +333,28 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       {
          (*pTable)(row,2) << _T("OL2 (Neg Moment)") << rptNewLine;
       }
-      row;
+      row++;
+
+      (*pTable)(row,0) << _T("Rate for Service III Stress");
+      (*pTable)(row,1) << ((!pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine) || !pRatingSpec->RateForStress(pgsTypes::lrPermit_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
+      row++;
+
+      (*pTable)(row,0) << _T("Check reinforcement yielding");
+      (*pTable)(row,1) << ((!pRatingSpec->CheckYieldStress(pgsTypes::lrPermit_Routine) || !pRatingSpec->CheckYieldStress(pgsTypes::lrPermit_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
+      row++;
+
+      (*pTable)(row,0) << _T("Rate for Shear");
+      (*pTable)(row,1) << ((!pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) || !pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
+      row++;
 
       return pChapter;
    }
 
    // The rating settings are consistent with WSDOT policies... report the rating
-
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    sysDate date;

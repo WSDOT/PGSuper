@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -93,7 +93,7 @@ void CPGSpliceAppPlugin::ConfigurePlugins()
 
    CAutoRegistry autoReg(GetAppName());
 
-   CPluginManagerDlg dlg(_T("Manage PGSplice Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSpliceDataImporter,CATID_PGSpliceDataExporter,CATID_PGSpliceExtensionAgent);
+   CPluginManagerDlg dlg(_T("Manage PGSplice Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSpliceDataImporter,CATID_PGSpliceDataExporter,CATID_PGSpliceExtensionAgent,GetAppName());
    dlg.DoModal(); // this DoModal is correct... the dialog takes care of its own data
 }
 
@@ -102,7 +102,7 @@ BOOL CPGSpliceAppPlugin::Init(CEAFApp* pParent)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pMyApp = AfxGetApp();
 
-   DefaultInit();
+   DefaultInit(this);
 
    // See MSKB Article ID: Q118435, _T("Sharing Menus Between MDI Child Windows")
    m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSPLICE) );
@@ -179,6 +179,31 @@ HMENU CPGSpliceAppPlugin::GetSharedMenuHandle()
 CString CPGSpliceAppPlugin::GetName()
 {
    return CString(_T("PGSplice"));
+}
+
+CString CPGSpliceAppPlugin::GetDocumentationSetName()
+{
+   return GetName();
+}
+
+CString CPGSpliceAppPlugin::GetDocumentationURL()
+{
+   return CPGSAppPluginBase::GetDocumentationURL();
+}
+
+CString CPGSpliceAppPlugin::GetDocumentationMapFile()
+{
+   return CPGSAppPluginBase::GetDocumentationMapFile();
+}
+
+void CPGSpliceAppPlugin::LoadDocumentationMap()
+{
+   return CPGSAppPluginBase::LoadDocumentationMap();
+}
+
+eafTypes::HelpResult CPGSpliceAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+{
+   return CPGSAppPluginBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
 CString CPGSpliceAppPlugin::GetUsageMessage()

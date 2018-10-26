@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,8 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+#include <EAF\EAFChildFrame.h>
+
 // :TRICKY: rab 11.23.96 : Modifying default behavior
 // :FILE: ChildFrm.h
 //
@@ -42,7 +44,7 @@
 // MDI child windows containing differnt view types would
 // show MYDOC:1 and MYDOC:2 if the document were named MYDOC.
 
-class CChildFrame : public CMDIChildWnd
+class CChildFrame : public CEAFChildFrame
 {
 	DECLARE_DYNCREATE(CChildFrame)
 public:

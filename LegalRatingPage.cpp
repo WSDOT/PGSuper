@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,9 +28,10 @@
 #include "RatingOptionsDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
+
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
-#include "HtmlHelp\HelpTopics.hh"
 
 // CLegalRatingPage dialog
 
@@ -325,5 +326,5 @@ BOOL CLegalRatingPage::OnSetActive()
 
 void CLegalRatingPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_RATING_LEGAL_TAB );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_RATING_LEGAL_TAB );
 }

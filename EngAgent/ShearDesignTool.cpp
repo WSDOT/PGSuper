@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -427,17 +427,28 @@ void pgsShearDesignTool::ResetDesign(const std::vector<pgsPointOfInterest>& pois
 {
    ATLASSERT(m_pBroker!=NULL); // make sure Intialize was called
 
-   // locate and cache points of interest for design
-   ValidatePointsOfInterest(pois);
-
    // Reset check artifacts
    m_StirrupCheckArtifact.Clear();
+
+   // clear the cached critical section calculations
+   GET_IFACE(IShearCapacity,pShearCapacity);
+   pShearCapacity->ClearDesignCriticalSections();
+
+   // locate and cache points of interest for design
+   ValidatePointsOfInterest(pois);
 }
 
 const std::vector<pgsPointOfInterest>& pgsShearDesignTool::GetDesignPoi() const
 {
    ATLASSERT(!m_DesignPois.empty());
    return m_DesignPois;
+}
+
+std::vector<pgsPointOfInterest> pgsShearDesignTool::GetCriticalSections() const
+{
+   std::vector<pgsPointOfInterest> vPoi;
+   m_PoiMgr.GetPointsOfInterest(m_SegmentKey,POI_CRITSECTSHEAR1,POIFIND_OR,&vPoi);
+   return vPoi;
 }
 
 pgsStirrupCheckArtifact* pgsShearDesignTool::GetStirrupCheckArtifact()
@@ -691,7 +702,10 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(m_SegmentKey);
    Float64 endDist   = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
    m_DesignPois.clear();
-   std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(m_DesignPois), PoiIsOutsideOfBearings(endDist,endDist+segmentSpanLength));
+   std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(m_DesignPois), PoiIsOutsideOfBearings(m_SegmentKey,endDist,endDist+segmentSpanLength));
+
+   // Remove any POIs that are out on the cantilever (some may be at the bearings and didn't get removed in the previous call)
+   m_DesignPois.erase(std::remove_if(m_DesignPois.begin(),m_DesignPois.end(),RemoveIfPoiHasAttribute(POI_CANTILEVER)),m_DesignPois.end());
 }
 
 pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate()
@@ -830,6 +844,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       // Use math function to perform mirroring
       mathPwLinearFunction2dUsingPoints mirror_avs;
       IndexType idx=0;
+      Float64 last_x = -99999;
       std::vector<pgsPointOfInterest>::const_iterator i( m_DesignPois.begin());
       std::vector<pgsPointOfInterest>::const_iterator end( m_DesignPois.end());
       for ( ; i != end; i++, idx++ )
@@ -837,7 +852,11 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
          const pgsPointOfInterest& poi = *i;
          Float64 x = poi.GetDistFromStart();
          Float64 y  = rDemandAtPois[idx];
-         mirror_avs.AddPoint(gpPoint2d(x,y));
+         if ( !IsEqual(last_x,x) )
+         {
+            mirror_avs.AddPoint(gpPoint2d(x,y));
+         }
+         last_x = x;
       }
       
       // mathPwLinearFunction2dUsingPoints can throw, and it's probably not the end of the world
@@ -2189,14 +2208,19 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
       ATLASSERT(tensile_development_length>0.0);
    }
 
+   // make sure we have the POI's at the end faces of the precast element
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi = m_DesignPois;
+   std::vector<pgsPointOfInterest> vPoi2(pPoi->GetPointsOfInterest(m_SegmentKey,POI_FACEOFSUPPORT));
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+
    Float64 As=0.0;
    for(Int32 ils=0; ils<nls; ils++)
    {
-      std::vector<pgsPointOfInterest>::const_iterator i( m_DesignPois.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end( m_DesignPois.end());
-      while ( i != end)
+      BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
          Float64 location = poi.GetDistFromStart();
 
          if ( startSl <= location && location <= endSl )
@@ -2272,9 +2296,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                }
             }
          }
-
-         i++;
-      }
+       }
    }
 
    if (0.0 < As)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,6 +47,7 @@
 #include <IFace\PrestressForce.h>
 
 #include <EAF\EAFGraphView.h>
+#include <EAF\EAFDocument.h>
 
 #include <PgsExt\ClosureJointData.h>
 
@@ -98,6 +99,8 @@ CAnalysisResultsGraphBuilder::~CAnalysisResultsGraphBuilder()
 void CAnalysisResultsGraphBuilder::Init()
 {
    SetName(_T("Analysis Results"));
+
+   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_ANALYSIS_RESULTS);
 
    m_Graph.SetGridPenStyle(GRAPH_GRID_PEN_STYLE, GRAPH_GRID_PEN_WEIGHT, GRAPH_GRID_COLOR);
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
@@ -1186,12 +1189,12 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                intervalIdx = vIntervals.back();
             }
 
-            std::vector<pgsPointOfInterest> vPoi2;
-            std::vector<Float64> xVals2;
-            if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
-            {
-               GetSecondaryXValues(vPoi,xVals,&vPoi2,&xVals2);
-            }
+            //std::vector<pgsPointOfInterest> vPoi2;
+            //std::vector<Float64> xVals2;
+            //if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
+            //{
+            //   GetSecondaryXValues(vPoi,xVals,&vPoi2,&xVals2);
+            //}
 
             IDType graphID = ((CAnalysisResultsGraphController*)m_pGraphController)->SelectedGraphIndexToGraphID(graphIdx);
             const CAnalysisResultsGraphDefinition& graphDef = m_pGraphDefinitions->GetGraphDefinition(graphID);
@@ -1207,10 +1210,10 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                }
                else
                {
-                  if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
-                  {
-                     ProductLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
-                  }
+                  //if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
+                  //{
+                  //   ProductLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
+                  //}
                   ProductLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals,false);
                }
                break;
@@ -1222,10 +1225,10 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                }
                else
                {
-                  if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
-                  {
-                     CombinedLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
-                  }
+                  //if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
+                  //{
+                  //   CombinedLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
+                  //}
                   CombinedLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals,false);
                }
                break;
@@ -1247,10 +1250,10 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                }
                else
                {
-                  if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
-                  {
-                     LimitStateLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
-                  }
+                  //if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
+                  //{
+                  //   LimitStateLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
+                  //}
                   LimitStateLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals,false);
                }
                break;
@@ -1262,10 +1265,10 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                }
                else
                {
-                  if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
-                  {
-                     LiveLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
-                  }
+                  //if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
+                  //{
+                  //   LiveLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
+                  //}
                   LiveLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals,false);
                }
                break;
@@ -1277,10 +1280,10 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                }
                else
                {
-                  if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
-                  {
-                     VehicularLiveLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
-                  }
+                  //if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
+                  //{
+                  //   VehicularLiveLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi2,xVals2,true);
+                  //}
                   VehicularLiveLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals,false);
                }
                break;
@@ -1288,8 +1291,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             case graphDeckShrinkageStress:
                {
                   ATLASSERT(actionType == actionStress);
-
-                  // Casting yard stress is its own animal
                   DeckShrinkageStressGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals);
                   break; 
                }
@@ -1326,7 +1327,7 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-      int penStyle = (liveLoadIntervalIdx <= intervalIdx && actionType == actionShear && !bIsFinalShear ? PS_DOT : PS_SOLID);
+      int penStyle = (/*liveLoadIntervalIdx <= intervalIdx && actionType == actionShear && !bIsFinalShear ? PS_DOT :*/ PS_SOLID);
 
       if ( analysisType == pgsTypes::Envelope )
       {
@@ -1937,7 +1938,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
    GET_IFACE(ICombinedForces2,pForces);
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
-   if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING )
+   if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING && !strDataLabel.IsEmpty() )
    {
       strDataLabel += _T(" (per girder)");
    }
@@ -1949,12 +1950,12 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
    IndexType max_data_series;
    if (actionType == actionShear )
    {
-      if (actionType == actionShear && !bIsFinalShear)
-      {
-         strDataLabel = _T("");
-      }
+      //if (actionType == actionShear && !bIsFinalShear)
+      //{
+      //   strDataLabel = _T("");
+      //}
 
-      int penStyle = (liveLoadIntervalIdx <= intervalIdx && actionType == actionShear && !bIsFinalShear ? PS_DOT : PS_SOLID);
+      int penStyle = (/*liveLoadIntervalIdx <= intervalIdx && actionType == actionShear && !bIsFinalShear ? PS_DOT :*/ PS_SOLID);
 
       min_data_series = m_Graph.CreateDataSeries(strDataLabel, penStyle, penWeight, c);
       max_data_series = m_Graph.CreateDataSeries(_T(""),       penStyle, penWeight, c);
@@ -2131,8 +2132,6 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
    }
 
    // Live Load
-   GET_IFACE(IProductForces2,pForces);
-
    COLORREF c(GetGraphColor(graphIdx,intervalIdx));
    int penWeight = GRAPH_PEN_WEIGHT;
 
@@ -2149,8 +2148,10 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
       return;
    }
 
+   GET_IFACE(IProductForces2,pForces);
+
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
-   if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING )
+   if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING && !strDataLabel.IsEmpty() )
    {
       strDataLabel += _T(" (per lane)");
    }
@@ -2160,12 +2161,12 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
    IndexType max_data_series = m_Graph.CreateDataSeries(_T(""),PS_SOLID,penWeight,c);
    if (actionType == actionShear )
    {
-      if (actionType == actionShear && !bIsFinalShear)
-      {
-         strDataLabel = _T("");
-      }
+      //if (actionType == actionShear && !bIsFinalShear)
+      //{
+      //   strDataLabel = _T("");
+      //}
 
-      int penStyle = (liveLoadIntervalIdx <= intervalIdx && actionType == actionShear && !bIsFinalShear ? PS_DOT : PS_SOLID);
+      int penStyle = (/*liveLoadIntervalIdx <= intervalIdx && actionType == actionShear && !bIsFinalShear ? PS_DOT :*/ PS_SOLID);
 
       min_data_series = m_Graph.CreateDataSeries(strDataLabel, penStyle, penWeight, c);
       max_data_series = m_Graph.CreateDataSeries(_T(""), penStyle, penWeight, c);
@@ -2488,11 +2489,21 @@ void CAnalysisResultsGraphBuilder::GetSegmentXValues(const CGirderKey& girderKey
    for ( ; segmentKeyIter != segmentKeyIterEnd; segmentKeyIter++ )
    {
       const CSegmentKey& segmentKey = *segmentKeyIter;
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-      PoiAttributeType attrib = (intervalIdx < storageIntervalIdx ? POI_RELEASED_SEGMENT : POI_STORAGE_SEGMENT);
-      std::vector<pgsPointOfInterest> vPoi1( pIPoi->GetPointsOfInterest(segmentKey,POI_0L | attrib) );
-      std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_10L | attrib) );
+
+      PoiAttributeType poiReference;
+      if ( intervalIdx == pIntervals->GetPrestressReleaseInterval(segmentKey) )
+         poiReference = POI_RELEASED_SEGMENT;
+      else if ( intervalIdx == pIntervals->GetLiftSegmentInterval(segmentKey) )
+         poiReference = POI_LIFT_SEGMENT;
+      else if ( intervalIdx == pIntervals->GetStorageInterval(segmentKey) )
+         poiReference = POI_STORAGE_SEGMENT;
+      else if ( intervalIdx == pIntervals->GetHaulSegmentInterval(segmentKey) )
+         poiReference = POI_HAUL_SEGMENT;
+      else
+         poiReference = POI_ERECTED_SEGMENT;
+
+      std::vector<pgsPointOfInterest> vPoi1( pIPoi->GetPointsOfInterest(segmentKey,POI_0L | poiReference) );
+      std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_10L | poiReference) );
       ATLASSERT(vPoi1.size() == 1);
       ATLASSERT(vPoi2.size() == 1);
       
@@ -2550,14 +2561,23 @@ void CAnalysisResultsGraphBuilder::GetSupportXValues(const CGirderKey& girderKey
    // get temporary support locations
    if ( bIncludeTemporarySupports )
    {
+      SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
+      SpanIndexType endSpanIdx = (SpanIndexType)(endPierIdx-1);
+
       SupportIndexType nTS = pBridge->GetTemporarySupportCount();
       for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
       {
          if ( pBridge->GetTemporarySupportType(tsIdx) == pgsTypes::ErectionTower )
          {
-            Float64 Xgp = pBridge->GetTemporarySupportLocation(tsIdx,girderKey.girderIndex);
-            Float64 Xg = pIPoi->ConvertGirderPathCoordinateToGirderCoordinate(girderKey,Xgp);
-            supportMap.insert(std::make_pair(Xg,std::make_pair(tsIdx,pgsTypes::stTemporary)));
+            SpanIndexType spanIdx;
+            Float64 Xspan;
+            pBridge->GetTemporarySupportLocation(tsIdx,girderKey.girderIndex,&spanIdx,&Xspan);
+            if ( startSpanIdx <= spanIdx && spanIdx <= endSpanIdx )
+            {
+               Float64 Xgp = pBridge->GetTemporarySupportLocation(tsIdx,girderKey.girderIndex);
+               Float64 Xg = pIPoi->ConvertGirderPathCoordinateToGirderCoordinate(girderKey,Xgp);
+               supportMap.insert(std::make_pair(Xg,std::make_pair(tsIdx,pgsTypes::stTemporary)));
+            }
          }
       }
    }
@@ -2953,7 +2973,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadReactionGraph(IndexType graphIdx,cons
    }
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
-   if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING )
+   if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING && !strDataLabel.IsEmpty() )
    {
       strDataLabel += _T(" (per girder)");
    }
@@ -3044,7 +3064,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
 
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
-   if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING )
+   if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING && !strDataLabel.IsEmpty() )
    {
       strDataLabel += _T(" (per lane)");
    }
@@ -3260,12 +3280,13 @@ IntervalIndexType CAnalysisResultsGraphBuilder::GetBeamDrawInterval()
    return 0;
 }
 
-void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,std::vector<pgsPointOfInterest>* pPoi,std::vector<Float64>* pXvalues)
+void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,std::vector<pgsPointOfInterest>* pvPoi,std::vector<Float64>* pXvalues)
 {
    *pXvalues = xVals;
 
    GET_IFACE(IShearCapacity,pShearCapacity);
-   GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
+   const std::vector<CRITSECTDETAILS>& vCSDetails = pShearCapacity->GetCriticalSectionDetails(pgsTypes::StrengthI,vPoi.front().GetSegmentKey());
 
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
@@ -3278,16 +3299,16 @@ void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const std::vector<pgsPoin
 #if defined _DEBUG
          Float64 start,end;
          pShearCapacity->GetCriticalSectionZoneBoundary(pgsTypes::StrengthI,poi.GetSegmentKey(),csZoneIdx,&start,&end);
-         Float64 Xg = pIPoi->ConvertPoiToGirderCoordinate(poi);
+         Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
          ATLASSERT( ::InRange(start,Xg,end) );
 #endif
 
-         std::vector<pgsPointOfInterest> vCSPoi(pIPoi->GetCriticalSections(pgsTypes::StrengthI,poi.GetSegmentKey()));
-         pPoi->push_back(vCSPoi[csZoneIdx]);
+         std::vector<pgsPointOfInterest> vCSPoi(pPoi->GetCriticalSections(pgsTypes::StrengthI,poi.GetSegmentKey()));
+         pvPoi->push_back(vCSPoi[csZoneIdx]);
       }
       else
       {
-         pPoi->push_back(poi);
+         pvPoi->push_back(poi);
       }
     }
 }

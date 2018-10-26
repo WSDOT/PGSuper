@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,8 +29,9 @@
 #include "SectionCutDlgEx.h"
 #include <ostream>
 
-#include "HtmlHelp\HelpTopics.hh"
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
+
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
@@ -105,7 +106,7 @@ BOOL CSectionCutDlgEx::OnInitDialog()
 
 void CSectionCutDlgEx::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_SECTIONCUT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_SECTIONCUT );
 }
 
 pgsPointOfInterest CSectionCutDlgEx::GetPOI()

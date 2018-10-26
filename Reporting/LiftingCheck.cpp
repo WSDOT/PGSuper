@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -383,7 +383,10 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
       p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
       *p << p_table;
+
       (*p_table)(0,0) << _T("Factor of Safety Against Failure (FS") << Sub(_T("f")) << _T(")");
       (*p_table)(1,0) << _T("Allowable Factor of Safety Against Failure");
       (*p_table)(2,0) << _T("Status");

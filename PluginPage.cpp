@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,6 @@
 #include "PluginPage.h"
 #include "PGSuperPluginMgr.h"
 
-#include "HtmlHelp\HelpTopics.hh"
-
 #include <EAF\EAFApp.h>
 
 // CPluginPage dialog
@@ -53,10 +51,11 @@ void CPluginPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PLUGIN_LIST, m_ctlPluginList);
 }
 
-void CPluginPage::Init(LPCTSTR strSection,const CATID& catid)
+void CPluginPage::Init(LPCTSTR strSection,const CATID& catid,LPCTSTR lpszAppName)
 {
    m_Section = strSection;
    m_CATID   = catid;
+   m_AppName = lpszAppName;
 }
 
 BEGIN_MESSAGE_MAP(CPluginPage, CPropertyPage)
@@ -73,7 +72,9 @@ BOOL CPluginPage::OnInitDialog()
    bool bResult = InitList();
 
    if ( !bResult )
+   {
       return FALSE;
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -133,9 +134,13 @@ bool CPluginPage::InitList()
          ::CoTaskMemFree((void*)pszCLSID);
 
          if ( strState.CompareNoCase(_T("Enabled")) == 0 )
+         {
             m_ctlPluginList.SetCheck(idx,TRUE);
+         }
          else
+         {
             m_ctlPluginList.SetCheck(idx,FALSE);
+         }
       }
    }
 
@@ -162,5 +167,5 @@ void CPluginPage::OnOK()
 
 void CPluginPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PLUGINS );
+   EAFHelp( m_AppName, IDH_PLUGINS);
 }

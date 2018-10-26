@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -299,6 +299,17 @@ txnPermitRatingData::txnPermitRatingData()
    ServiceI_SH = 1.0;
    ServiceI_PS = 1.0;
 
+   ServiceIII_DC = 1.0;
+   ServiceIII_DW = 1.0;
+   ServiceIII_LL_Routine = -1;
+   ServiceIII_LL_Special = -1;
+   ServiceIII_CR = 1.0;
+   ServiceIII_SH = 1.0;
+   ServiceIII_PS = 1.0;
+
+   bRateForStress = false;
+   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+
    bRateForShear = true;
    bCheckReinforcementYielding = true;
    YieldStressCoefficient = 0.9;
@@ -367,6 +378,35 @@ bool txnPermitRatingData::operator==(const txnPermitRatingData& other) const
       return false;
    
    if ( !IsEqual(ServiceI_PS,other.ServiceI_PS) )
+      return false;
+
+
+
+   if ( !IsEqual(ServiceIII_DC,other.ServiceIII_DC) )
+      return false;
+
+   if ( !IsEqual(ServiceIII_DW,other.ServiceIII_DW) )
+      return false;
+
+   if ( !IsEqual(ServiceIII_LL_Routine,other.ServiceIII_LL_Routine) )
+      return false;
+
+   if ( !IsEqual(ServiceIII_LL_Special,other.ServiceIII_LL_Special) )
+      return false;
+
+   if ( !IsEqual(ServiceIII_CR,other.ServiceIII_CR) )
+      return false;
+
+   if ( !IsEqual(ServiceIII_SH,other.ServiceIII_SH) )
+      return false;
+   
+   if ( !IsEqual(ServiceIII_PS,other.ServiceIII_PS) )
+      return false;
+
+   if ( bRateForStress != other.bRateForStress )
+      return false;
+
+   if ( !IsEqual(AllowableTensionCoefficient,other.AllowableTensionCoefficient) )
       return false;
 
 
@@ -479,7 +519,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::StrengthI_Inventory,m_Data[i].m_Design.StrengthI_LL_Inventory);
    pRatingSpec->SetCreepFactor(            pgsTypes::StrengthI_Inventory,m_Data[i].m_Design.StrengthI_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::StrengthI_Inventory,m_Data[i].m_Design.StrengthI_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthI_Inventory,m_Data[i].m_Design.StrengthI_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthI_Inventory,m_Data[i].m_Design.StrengthI_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::StrengthI_Inventory,m_Data[i].m_Design.StrengthI_PS);
 
    pRatingSpec->SetDeadLoadFactor(         pgsTypes::ServiceIII_Inventory,m_Data[i].m_Design.ServiceIII_DC);
@@ -487,7 +527,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::ServiceIII_Inventory,m_Data[i].m_Design.ServiceIII_LL);
    pRatingSpec->SetCreepFactor(            pgsTypes::ServiceIII_Inventory,m_Data[i].m_Design.ServiceIII_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::ServiceIII_Inventory,m_Data[i].m_Design.ServiceIII_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_Inventory,m_Data[i].m_Design.ServiceIII_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_Inventory,m_Data[i].m_Design.ServiceIII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceIII_Inventory,m_Data[i].m_Design.ServiceIII_PS);
 
    pRatingSpec->SetDeadLoadFactor(         pgsTypes::StrengthI_Operating,m_Data[i].m_Design.StrengthI_DC);
@@ -495,7 +535,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::StrengthI_Operating,m_Data[i].m_Design.StrengthI_LL_Operating);
    pRatingSpec->SetCreepFactor(            pgsTypes::StrengthI_Operating,m_Data[i].m_Design.StrengthI_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::StrengthI_Operating,m_Data[i].m_Design.StrengthI_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthI_Operating,m_Data[i].m_Design.StrengthI_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthI_Operating,m_Data[i].m_Design.StrengthI_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::StrengthI_Operating,m_Data[i].m_Design.StrengthI_PS);
 
    pRatingSpec->SetDeadLoadFactor(         pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_DC);
@@ -503,7 +543,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_LL);
    pRatingSpec->SetCreepFactor(            pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_PS);
 
    pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory,m_Data[i].m_Design.AllowableTensionCoefficient );
@@ -521,7 +561,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::StrengthI_LegalRoutine,m_Data[i].m_Legal.StrengthI_LL_Routine);
    pRatingSpec->SetCreepFactor(            pgsTypes::StrengthI_LegalRoutine,m_Data[i].m_Legal.StrengthI_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::StrengthI_LegalRoutine,m_Data[i].m_Legal.StrengthI_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthI_LegalRoutine,m_Data[i].m_Legal.StrengthI_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthI_LegalRoutine,m_Data[i].m_Legal.StrengthI_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::StrengthI_LegalRoutine,m_Data[i].m_Legal.StrengthI_PS);
 
    pRatingSpec->SetDeadLoadFactor(         pgsTypes::ServiceIII_LegalRoutine,m_Data[i].m_Legal.ServiceIII_DC);
@@ -529,7 +569,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::ServiceIII_LegalRoutine,m_Data[i].m_Legal.ServiceIII_LL_Routine);
    pRatingSpec->SetCreepFactor(            pgsTypes::ServiceIII_LegalRoutine,m_Data[i].m_Legal.ServiceIII_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::ServiceIII_LegalRoutine,m_Data[i].m_Legal.ServiceIII_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_LegalRoutine,m_Data[i].m_Legal.ServiceIII_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_LegalRoutine,m_Data[i].m_Legal.ServiceIII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalRoutine,m_Data[i].m_Legal.ServiceIII_PS);
 
    // Specialized Hauling Vehicles
@@ -538,7 +578,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::StrengthI_LegalSpecial,m_Data[i].m_Legal.StrengthI_LL_Special);
    pRatingSpec->SetCreepFactor(            pgsTypes::StrengthI_LegalSpecial,m_Data[i].m_Legal.StrengthI_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::StrengthI_LegalSpecial,m_Data[i].m_Legal.StrengthI_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthI_LegalSpecial,m_Data[i].m_Legal.StrengthI_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthI_LegalSpecial,m_Data[i].m_Legal.StrengthI_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::StrengthI_LegalSpecial,m_Data[i].m_Legal.StrengthI_PS);
 
    pRatingSpec->SetDeadLoadFactor(         pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_DC);
@@ -546,7 +586,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_LL_Special);
    pRatingSpec->SetCreepFactor(            pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_PS);
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
@@ -576,7 +616,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::StrengthII_PermitRoutine,m_Data[i].m_Permit.StrengthII_LL_Routine);
    pRatingSpec->SetCreepFactor(            pgsTypes::StrengthII_PermitRoutine,m_Data[i].m_Permit.StrengthII_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::StrengthII_PermitRoutine,m_Data[i].m_Permit.StrengthII_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthII_PermitRoutine,m_Data[i].m_Permit.StrengthII_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthII_PermitRoutine,m_Data[i].m_Permit.StrengthII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::StrengthII_PermitRoutine,m_Data[i].m_Permit.StrengthII_PS);
 
    pRatingSpec->SetDeadLoadFactor(         pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_DC);
@@ -584,7 +624,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_LL_Routine);
    pRatingSpec->SetCreepFactor(            pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_PS);
 
    // Permit Rating Parameters - Special
@@ -593,7 +633,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::StrengthII_PermitSpecial,m_Data[i].m_Permit.StrengthII_LL_Special);
    pRatingSpec->SetCreepFactor(            pgsTypes::StrengthII_PermitSpecial,m_Data[i].m_Permit.StrengthII_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::StrengthII_PermitSpecial,m_Data[i].m_Permit.StrengthII_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthII_PermitSpecial,m_Data[i].m_Permit.StrengthII_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::StrengthII_PermitSpecial,m_Data[i].m_Permit.StrengthII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::StrengthII_PermitSpecial,m_Data[i].m_Permit.StrengthII_PS);
 
    pRatingSpec->SetDeadLoadFactor(         pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_DC);
@@ -601,8 +641,16 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(         pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_LL_Special);
    pRatingSpec->SetCreepFactor(            pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_CR);
    pRatingSpec->SetShrinkageFactor(        pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_SH);
-   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_CR);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_PS);
+
+   pRatingSpec->SetDeadLoadFactor(         pgsTypes::ServiceIII_PermitSpecial,m_Data[i].m_Permit.ServiceIII_DC);
+   pRatingSpec->SetWearingSurfaceFactor(   pgsTypes::ServiceIII_PermitSpecial,m_Data[i].m_Permit.ServiceIII_DW);
+   pRatingSpec->SetLiveLoadFactor(         pgsTypes::ServiceIII_PermitSpecial,m_Data[i].m_Permit.ServiceIII_LL_Special);
+   pRatingSpec->SetCreepFactor(            pgsTypes::ServiceIII_PermitSpecial,m_Data[i].m_Permit.ServiceIII_CR);
+   pRatingSpec->SetShrinkageFactor(        pgsTypes::ServiceIII_PermitSpecial,m_Data[i].m_Permit.ServiceIII_SH);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_PermitSpecial,m_Data[i].m_Permit.ServiceIII_CR); // RE
+   pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceIII_PermitSpecial,m_Data[i].m_Permit.ServiceIII_PS);
 
    pLiveLoads->SetLiveLoadNames(pgsTypes::lltPermitRating_Routine,m_Data[i].m_Permit.RoutinePermitNames);
    pLiveLoads->SetTruckImpact(  pgsTypes::lltPermitRating_Routine,m_Data[i].m_Permit.IM_Truck_Routine);
@@ -612,8 +660,13 @@ void txnEditRatingCriteria::Execute(int i)
    pLiveLoads->SetTruckImpact(  pgsTypes::lltPermitRating_Special,m_Data[i].m_Permit.IM_Truck_Special);
    pLiveLoads->SetLaneImpact(   pgsTypes::lltPermitRating_Special,m_Data[i].m_Permit.IM_Lane_Special);
    
-   pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.bCheckReinforcementYielding);
-   pRatingSpec->RateForStress(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.bCheckReinforcementYielding);
+   pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.bRateForStress);
+   pRatingSpec->RateForStress(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.bRateForStress);
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.AllowableTensionCoefficient );
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.AllowableTensionCoefficient );
+
+   pRatingSpec->CheckYieldStress(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.bCheckReinforcementYielding);
+   pRatingSpec->CheckYieldStress(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.bCheckReinforcementYielding);
    pRatingSpec->SetYieldStressLimitCoefficient( m_Data[i].m_Permit.YieldStressCoefficient );
 
    pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.bRateForShear);

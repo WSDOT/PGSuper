@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1651,6 +1651,14 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
       bool bIsClosure2Effective = (bIsInClosure2 ? m_pIntervals->GetCompositeClosureJointInterval(closureKey2) <= intervalIdx : false);
       bool bIsOnSegment2 = m_pPoi->IsOnSegment(poi2);
 
+      if ( (!bIsClosure1Effective && !bIsOnSegment1) || (!bIsClosure2Effective && !bIsOnSegment2) )
+      {
+         // poi1 or poi2 is not on a segment and the closure joint is not yet effective
+         // there is nothing to load
+         // this typically happens when one of the POIs is in an intermediate diaphragm and it hasn't been cast yet.
+         continue;
+      }
+
       TIME_STEP_DETAILS& tsDetails1(details1.TimeStepDetails[intervalIdx]);
       TIME_STEP_DETAILS& tsDetails2(details2.TimeStepDetails[intervalIdx]);
 
@@ -2056,9 +2064,18 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          else if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
          {
             // get the section forces in the restrained system due to the artifical restraining load
-            CString strLoadName = m_pLosses->GetRestrainingLoadName(intervalIdx,pfType-pgsTypes::pftCreep);
-            dP = m_pExternalLoading->GetAxial(intervalIdx,strLoadName,poi,m_Bat, rtIncremental);
-            dM = m_pExternalLoading->GetMoment(intervalIdx,strLoadName,poi,m_Bat, rtIncremental);
+            if ( 0 < tsDetails.tEnd - tsDetails.tStart )
+            {
+               CString strLoadName = m_pLosses->GetRestrainingLoadName(intervalIdx,pfType-pgsTypes::pftCreep);
+               dP = m_pExternalLoading->GetAxial(intervalIdx,strLoadName,poi,m_Bat, rtIncremental);
+               dM = m_pExternalLoading->GetMoment(intervalIdx,strLoadName,poi,m_Bat, rtIncremental);
+            }
+            else
+            {
+               // No duration... not time-dependent response
+               dP = 0;
+               dM = 0;
+            }
 
             // change in force this interval
             tsDetails.dPi[pfType] += dP;

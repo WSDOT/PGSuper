@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,9 +27,9 @@
 #include <psgLib\psglib.h>
 #include "SpecLossPage.h"
 #include "SpecMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
 
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,7 +69,7 @@ BEGIN_MESSAGE_MAP(CSpecLossPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_LOSS_METHOD, OnLossMethodChanged)
 	ON_CBN_SELCHANGE(IDC_SHIPPING_LOSS_METHOD, OnShippingLossMethodChanged)
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -256,10 +256,9 @@ BOOL CSpecLossPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-LRESULT CSpecLossPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CSpecLossPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPEC_LOSSES );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_LOSSES );
 }
 
 BOOL CSpecLossPage::IsFractionalShippingLoss()

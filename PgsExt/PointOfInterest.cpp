@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -215,11 +215,18 @@ bool pgsPointOfInterest::operator<=(const pgsPointOfInterest& rOther) const
 
 bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 {
-   if ( AtSamePlace(rOther) && IsTenthPoint(POI_SPAN) == 11 && rOther.IsTenthPoint(POI_SPAN) == 1 )
+   if ( AtSamePlace(rOther) && // POIs are at exactly the same location and...
+        (
+          (IsTenthPoint(POI_SPAN) == 11 && rOther.IsTenthPoint(POI_SPAN) == 1) ||  // this poi is at the end of a span and the other is at the start of the span. This poi is less (Span i, 1.0L < Span i+1, 0.0L)
+          (HasAttribute(POI_SPAN | POI_CANTILEVER) && rOther.IsTenthPoint(POI_SPAN) == 1) || 
+          (HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER) && rOther.IsTenthPoint(POI_ERECTED_SEGMENT) == 1) ||
+          (HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER) && rOther.IsTenthPoint(POI_STORAGE_SEGMENT) == 1) ||
+          (IsTenthPoint(POI_SPAN) == 11 && rOther.HasAttribute(POI_SPAN | POI_CANTILEVER)) || 
+          (IsTenthPoint(POI_ERECTED_SEGMENT) == 11 && rOther.HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER)) || 
+          (IsTenthPoint(POI_STORAGE_SEGMENT) == 11 && rOther.HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER))
+        ) 
+      )
    {
-      // POIs are at exactly the same location and this poi is at the end of a span and 
-      // the other poi is at the start of a span (1.0L/0.0L)
-      // this poi is before (less than) the other poi
       return true;
    }
 

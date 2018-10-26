@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,8 +33,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
-
-#include "HtmlHelp\HelpTopics.hh"
 
 #include <MFCTools\CustomDDX.h>
 
@@ -587,7 +585,7 @@ void CGirderDescDebondPage::OnSymmetricDebond()
 
 void CGirderDescDebondPage::OnHelp() 
 {
-	::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDERWIZ_DEBOND );
+	EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_DEBOND );
 }
 
 LPCTSTR CGirderDescDebondPage::GetGirderName()

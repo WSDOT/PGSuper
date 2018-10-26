@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -286,8 +286,10 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
          segmentKey.girderIndex = 0;
          const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
 
-         const CPierData2* pStartPier = pSegment->GetStartClosure()->GetPier();
-         const CTemporarySupportData* pStartTS = pSegment->GetStartClosure()->GetTemporarySupport();
+         const CPierData2* pStartPier;
+         const CTemporarySupportData* pStartTS;
+         pSegment->GetSupport(pgsTypes::metStart,&pStartPier,&pStartTS);
+
          const CGirderSpacing2* pStartSpacing;
          Float64 start_station, start_skew_angle;
          if ( pStartPier )
@@ -314,8 +316,10 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
             pStartSpacing = pStartTS->GetSegmentSpacing();
          }
 
-         const CPierData2* pEndPier = pSegment->GetEndClosure()->GetPier();
-         const CTemporarySupportData* pEndTS = pSegment->GetEndClosure()->GetTemporarySupport();
+         const CPierData2* pEndPier;
+         const CTemporarySupportData* pEndTS;
+         pSegment->GetSupport(pgsTypes::metEnd,&pEndPier,&pEndTS);
+
          const CGirderSpacing2* pEndSpacing;
          Float64 end_station, end_skew_angle;
          if ( pEndPier )

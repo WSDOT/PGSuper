@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,6 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
 #include <PGSuperUnits.h>
-#include "HtmlHelp\HelpTopics.hh"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -540,7 +539,7 @@ void CBridgeDescRailingSystemPage::EnableInteriorBarrier(BOOL bEnable,int nID)
 
 void CBridgeDescRailingSystemPage::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGEDESC_RAILING );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_BRIDGEDESC_RAILING );
 }
 
 void CBridgeDescRailingSystemPage::OnLeftExteriorBarrierChanged()

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,11 +28,17 @@
 #include <PgsExt\GirderModelFactory.h>
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\GirderLabel.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\GirderHandling.h>
+
+#if defined _DEBUG
+#include <IFace\DocumentType.h>
+#endif
 
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\PrecastSegmentData.h>
@@ -45,22 +51,32 @@ LOGFILE(lf),m_pBroker(pBroker)
 void CSegmentModelManager::Clear()
 {
    m_ReleaseModels.clear();
+   m_LiftingModels.clear();
    m_StorageModels.clear();
+   m_HaulingModels.clear();
    m_LoadCombinationMaps.clear();
 }
 
 void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx)
 {
+   DumpAnalysisModels(gdrIdx,&m_ReleaseModels,_T("Release"));
+   DumpAnalysisModels(gdrIdx,&m_LiftingModels,_T("Lifting"));
+   DumpAnalysisModels(gdrIdx,&m_StorageModels,_T("Storage"));
+   DumpAnalysisModels(gdrIdx,&m_HaulingModels,_T("Hauling"));
+}
+
+void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx,SegmentModels* pModels,LPCTSTR name)
+{
    USES_CONVERSION;
-   SegmentModels::iterator iter(m_StorageModels.begin());
-   SegmentModels::iterator end(m_StorageModels.end());
+   SegmentModels::iterator iter(pModels->begin());
+   SegmentModels::iterator end(pModels->end());
    for ( ; iter != end; iter++ )
    {
       CSegmentKey segmentKey(iter->first);
       CSegmentModelData& segmentModelData(iter->second);
 
       CString strFilename;
-      strFilename.Format(_T("Segment_%d_Storage_Fem2d.xml"),segmentKey.segmentIndex+1);
+      strFilename.Format(_T("Segment_%d_%s_Fem2d.xml"),LABEL_SEGMENT(segmentKey.segmentIndex),name);
 
       CComPtr<IStructuredSave2> save;
       save.CoCreateInstance(CLSID_StructuredSave2);
@@ -1783,22 +1799,80 @@ void CSegmentModelManager::BuildReleaseModel(const CSegmentKey& segmentKey)
       os << "Building prestress release model" << std::ends;
       pProgress->UpdateMessage( os.str().c_str() );
 
-      CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,releaseIntervalIdx,0.0,0.0,POI_RELEASED_SEGMENT);
+      // generally, segments are supported at their ends at release, but this may not be true
+      // for all segments in a spliced girder. Cantilever pier segments, with heavy PS in the top
+      // flange and possibly a tapered profile, could be considered supported near the middle of the segment
+      // The support location is an input for PGSplice to allow the engineer to control the release condition
+      GET_IFACE(IGirder,pGirder);
+      Float64 left,right;
+      pGirder->GetSegmentReleaseSupportLocations(segmentKey,&left,&right);
+
+#if defined _DEBUG
+      GET_IFACE(IDocumentType,pDocType);
+      if ( pDocType->IsPGSuperDocument() )
+      {
+         // must be supported at ends for PGSuper... this should be enforced through the UI
+         // as there isn't a way for the user to change the default values
+         ATLASSERT(IsZero(left) && IsZero(right));
+      }
+#endif
+
+      CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,releaseIntervalIdx,left,right,POI_RELEASED_SEGMENT);
       std::pair<SegmentModels::iterator,bool> result = m_ReleaseModels.insert( std::make_pair(segmentKey,segmentModel) );
       ATLASSERT( result.second == true );
    }
-
 }
 
-CSegmentModelData* CSegmentModelManager::GetSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx)
+void CSegmentModelManager::BuildLiftingModel(const CSegmentKey& segmentKey)
 {
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-   ATLASSERT(releaseIntervalIdx <= intervalIdx && intervalIdx <= erectionIntervalIdx);
+   CSegmentModelData* pModelData = GetModelData(m_LiftingModels,segmentKey);
+   if ( pModelData == 0 )
+   {
+      GET_IFACE(IProgress,pProgress);
+      CEAFAutoProgress ap(pProgress);
 
-   return (intervalIdx < storageIntervalIdx ? GetReleaseModel(segmentKey) : GetStorageModel(segmentKey));
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+
+      // Build the model
+      std::_tostringstream os;
+      os << "Building lifting model" << std::ends;
+      pProgress->UpdateMessage( os.str().c_str() );
+
+      GET_IFACE(ISegmentLifting, pSegmentLifting);
+      Float64 leftOverhang  = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
+      Float64 rightOverhang = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
+
+      CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,liftingIntervalIdx,leftOverhang,rightOverhang,POI_LIFT_SEGMENT);
+      std::pair<SegmentModels::iterator,bool> result = m_LiftingModels.insert( std::make_pair(segmentKey,segmentModel) );
+      ATLASSERT( result.second == true );
+   }
+}
+
+void CSegmentModelManager::BuildHaulingModel(const CSegmentKey& segmentKey)
+{
+   CSegmentModelData* pModelData = GetModelData(m_HaulingModels,segmentKey);
+   if ( pModelData == 0 )
+   {
+      GET_IFACE(IProgress,pProgress);
+      CEAFAutoProgress ap(pProgress);
+
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
+      // Build the model
+      std::_tostringstream os;
+      os << "Building hauling model" << std::ends;
+      pProgress->UpdateMessage( os.str().c_str() );
+
+      GET_IFACE(ISegmentHauling, pSegmentHauling);
+      Float64 leftOverhang  = pSegmentHauling->GetTrailingOverhang(segmentKey);
+      Float64 rightOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
+
+      CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,haulingIntervalIdx,leftOverhang,rightOverhang,POI_HAUL_SEGMENT);
+      std::pair<SegmentModels::iterator,bool> result = m_HaulingModels.insert( std::make_pair(segmentKey,segmentModel) );
+      ATLASSERT( result.second == true );
+   }
 }
 
 void CSegmentModelManager::BuildStorageModel(const CSegmentKey& segmentKey)
@@ -1827,6 +1901,29 @@ void CSegmentModelManager::BuildStorageModel(const CSegmentKey& segmentKey)
    }
 }
 
+CSegmentModelData* CSegmentModelManager::GetSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx)
+{
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+   IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   ATLASSERT(releaseIntervalIdx <= intervalIdx && intervalIdx <= erectionIntervalIdx);
+
+   if ( intervalIdx < liftingIntervalIdx )
+      return GetReleaseModel(segmentKey);
+   else if ( liftingIntervalIdx <= intervalIdx && intervalIdx < storageIntervalIdx )
+      return GetLiftingModel(segmentKey);
+   else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulingIntervalIdx )
+      return GetStorageModel(segmentKey);
+   else if ( haulingIntervalIdx <= intervalIdx && intervalIdx < erectionIntervalIdx )
+      return GetHaulingModel(segmentKey);
+
+   ATLASSERT(false);
+   return NULL;
+}
+
 CSegmentModelData* CSegmentModelManager::GetReleaseModel(const CSegmentKey& segmentKey)
 {
    CSegmentModelData* pModelData = GetModelData(m_ReleaseModels,segmentKey);
@@ -1834,6 +1931,32 @@ CSegmentModelData* CSegmentModelManager::GetReleaseModel(const CSegmentKey& segm
    {
       BuildReleaseModel(segmentKey);
       pModelData = GetModelData(m_ReleaseModels,segmentKey);
+      ATLASSERT(pModelData != NULL);
+   }
+
+   return pModelData;
+}
+
+CSegmentModelData* CSegmentModelManager::GetLiftingModel(const CSegmentKey& segmentKey)
+{
+   CSegmentModelData* pModelData = GetModelData(m_LiftingModels,segmentKey);
+   if ( pModelData == NULL )
+   {
+      BuildLiftingModel(segmentKey);
+      pModelData = GetModelData(m_LiftingModels,segmentKey);
+      ATLASSERT(pModelData != NULL);
+   }
+
+   return pModelData;
+}
+
+CSegmentModelData* CSegmentModelManager::GetHaulingModel(const CSegmentKey& segmentKey)
+{
+   CSegmentModelData* pModelData = GetModelData(m_HaulingModels,segmentKey);
+   if ( pModelData == NULL )
+   {
+      BuildHaulingModel(segmentKey);
+      pModelData = GetModelData(m_HaulingModels,segmentKey);
       ATLASSERT(pModelData != NULL);
    }
 
@@ -1907,7 +2030,22 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    bool bModelRightCantilever = true;
    if ( refAttribute == POI_STORAGE_SEGMENT )
    {
-      pBridge->ModelCantilevers(segmentKey,&bModelLeftCantilever,&bModelRightCantilever);
+      // Overhangs are modeled as cantilevers if they are longer than the height of the segment at the CL Bearing
+      GET_IFACE(IPointOfInterest,pPoi);
+      pgsPointOfInterest poiStartBrg = pPoi->GetPointOfInterest(segmentKey,leftSupportDistance);
+      pgsPointOfInterest poiEndBrg   = pPoi->GetPointOfInterest(segmentKey,Ls-rightSupportDistance);
+
+      ATLASSERT(poiStartBrg.GetID() != INVALID_ID);
+      ATLASSERT(poiEndBrg.GetID()   != INVALID_ID);
+
+      GET_IFACE(IGirder,pGdr);
+      Float64 segment_height_start = pGdr->GetHeight(poiStartBrg);
+      Float64 segment_height_end   = pGdr->GetHeight(poiEndBrg);
+
+      // the cantilevers at the ends of the segment are modeled as flexural members
+      // if the cantilever length exceeds 110% of the height of the girder
+      bModelLeftCantilever  = (::IsLT(1.1*segment_height_start,leftSupportDistance)  ? true : false);
+      bModelRightCantilever = (::IsLT(1.1*segment_height_end,  rightSupportDistance) ? true : false);
    }
 
    pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ec,lcid,bModelLeftCantilever,bModelRightCantilever,vPOI,&model_data.Model,&model_data.PoiMap);

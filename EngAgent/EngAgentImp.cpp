@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,7 +63,7 @@ static char THIS_FILE[] = __FILE__;
 
 // NOTE: Critical Section for Shear
 // In PGSuper 2.x and earlier, the critical section for shear was at each end of a span/girder.
-// In PGSuper 3.x and later (PGSuper unified with PGSpliced) the critical section for shear are
+// In PGSuper 3.x and later (PGSuper unified with PGSplice) the critical section for shear are
 // located by pier. There is a critical section along a girder on each side of every support.
 // Consider a two span spliced girder bridge made up of three segments. The center segment is 
 // cantilevered over the intermediate pier. Segments 1 and 3 have only one critical section for 
@@ -710,7 +710,7 @@ void CEngAgentImp::InvalidateFpc()
 void CEngAgentImp::InvalidateShearCritSection()
 {
    LOG(_T("Invalidating critical section for shear"));
-   CollectionIndexType size = sizeof(m_CritSectionDetails)/sizeof(std::map<CSegmentKey,std::vector<CRITSECTDETAILS>>);
+   CollectionIndexType size = sizeof(m_CritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
    for (CollectionIndexType idx = 0; idx < size; idx++ )
    {
       m_CritSectionDetails[idx].clear();
@@ -755,6 +755,47 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
 
    std::pair<std::map<CGirderKey,std::vector<CRITSECTDETAILS>>::iterator,bool> retval;
    retval = m_CritSectionDetails[LimitStateToShearIndex(limitState)].insert( std::make_pair(girderKey,vCSD) );
+   ATLASSERT(retval.second == true);
+   return retval.first->second;
+}
+
+const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey,const GDRCONFIG& config)
+{
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
+   // so critical section is not a function of the limit state. We will work with the Strength I limit state
+   if ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   {
+      limitState = pgsTypes::StrengthI;
+   }
+
+   std::map<CGirderKey,std::vector<CRITSECTDETAILS>>::iterator found;
+   found = m_DesignCritSectionDetails[LimitStateToShearIndex(limitState)].find(girderKey);
+   if ( found != m_DesignCritSectionDetails[LimitStateToShearIndex(limitState)].end() )
+   {
+      // We already have the value for this girder...
+      return found->second;
+   }
+
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+
+   GET_IFACE(IProductLoads,pProductLoads);
+   std::_tostringstream os;
+
+   os << _T("Computing ") << pProductLoads->GetLimitStateName(limitState) << _T(" critical section for shear for Girder ")
+      << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
+
+   pProgress->UpdateMessage( os.str().c_str() );
+
+   // calculations
+   std::vector<CRITSECTDETAILS> vCSD(CalculateShearCritSection(limitState,girderKey,config));
+
+   std::pair<std::map<CGirderKey,std::vector<CRITSECTDETAILS>>::iterator,bool> retval;
+   retval = m_DesignCritSectionDetails[LimitStateToShearIndex(limitState)].insert( std::make_pair(girderKey,vCSD) );
    ATLASSERT(retval.second == true);
    return retval.first->second;
 }
@@ -1114,16 +1155,16 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
             // (If this is the first segment of the girder, CS-zone starts at start face of girder)
             if ( poiFaceOfSupport.GetSegmentKey().segmentIndex == 0 )
             {
-               csDetails.Start = 0.0;
+               csDetails.Start = pBridge->GetSegmentStartEndDistance(poiFaceOfSupport.GetSegmentKey());
             }
             else
             {
                // CS-zone starts where the CL Pier intersects the segment
-               Float64 distFromStart;
-               bool bResult = pBridge->GetPierLocation(pierIdx,csDetails.pCriticalSection->Poi.GetSegmentKey(),&distFromStart);
+               Float64 Xpoi;
+               bool bResult = pBridge->GetPierLocation(pierIdx,csDetails.pCriticalSection->Poi.GetSegmentKey(),&Xpoi);
                ATLASSERT(bResult == true);
 
-               csDetails.Start = distFromStart;
+               csDetails.Start = Xpoi;
             }
 
             csDetails.End = csDetails.pCriticalSection->Poi.GetDistFromStart();
@@ -1138,15 +1179,15 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
             SegmentIndexType nSegments = pGroup->GetGirder(girderKey.girderIndex)->GetSegmentCount();
             if( poiFaceOfSupport.GetSegmentKey().segmentIndex == nSegments-1 )
             {
-               csDetails.End = pBridge->GetSegmentLength(poiFaceOfSupport.GetSegmentKey());
+               csDetails.End = pBridge->GetSegmentLength(poiFaceOfSupport.GetSegmentKey()) - pBridge->GetSegmentEndEndDistance(poiFaceOfSupport.GetSegmentKey());
             }
             else
             {
-               Float64 distFromStart;
-               bool bResult = pBridge->GetPierLocation(pierIdx,csDetails.pCriticalSection->Poi.GetSegmentKey(),&distFromStart);
+               Float64 Xpoi;
+               bool bResult = pBridge->GetPierLocation(pierIdx,csDetails.pCriticalSection->Poi.GetSegmentKey(),&Xpoi);
                ATLASSERT(bResult == true);
 
-               csDetails.End = distFromStart;
+               csDetails.End = Xpoi;
             }
          }
 
@@ -3325,12 +3366,12 @@ void CEngAgentImp::GetMomentCapacityDetails(IntervalIndexType intervalIdx,const 
 
 void CEngAgentImp::GetMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
-    if (poi.GetID() == INVALID_ID)
-    {
-        // Never store temporary pois
-       *pmcd = ComputeMomentCapacity(intervalIdx,poi,config,bPositiveMoment);
-    }
-    else
+    //if (poi.GetID() == INVALID_ID)
+    //{
+    //    // Never store temporary pois
+    //   *pmcd = ComputeMomentCapacity(intervalIdx,poi,config,bPositiveMoment);
+    //}
+    //else
     {
        // Get the current configuration and compare it to the provided one
        // If same, call GetMomentCapacityDetails w/o config.
@@ -3735,15 +3776,7 @@ void CEngAgentImp::GetCriticalSectionZoneBoundary(pgsTypes::LimitState limitStat
    // this method is supposed to return them in girder coordinates.
    // do the coordinate coversion.
    GET_IFACE(IPointOfInterest,pPoi);
-   pgsPointOfInterest csPoi;
-   if ( csDetails.bAtFaceOfSupport )
-   {
-      csPoi = csDetails.poiFaceOfSupport;
-   }
-   else 
-   {
-      csPoi = csDetails.pCriticalSection->Poi;
-   }
+   const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
 
    *pStart = pPoi->ConvertPoiToGirderCoordinate(pgsPointOfInterest(csPoi.GetSegmentKey(),csDetails.Start));
    *pEnd   = pPoi->ConvertPoiToGirderCoordinate(pgsPointOfInterest(csPoi.GetSegmentKey(),csDetails.End));
@@ -3765,17 +3798,10 @@ std::vector<Float64> CEngAgentImp::GetCriticalSectionFromDetails(const std::vect
    std::vector<CRITSECTDETAILS>::const_iterator end(csDetails.end());
    for ( ; iter != end; iter++ )
    {
-      const CRITSECTDETAILS& details(*iter);
-      if ( details.bAtFaceOfSupport )
-      {
-         Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(details.poiFaceOfSupport);
-         csLoc.push_back(Xg);
-      }
-      else
-      {
-         Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(details.pCriticalSection->Poi);
-         csLoc.push_back(Xg);
-      }
+      const CRITSECTDETAILS& csDetails(*iter);
+      const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
+      Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(csPoi);
+      csLoc.push_back(Xg);
    }
 
    return csLoc;
@@ -3794,7 +3820,7 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::GetCriticalSectionDetails(pgsT
 
 std::vector<CRITSECTDETAILS> CEngAgentImp::GetCriticalSectionDetails(pgsTypes::LimitState limitState,const CGirderKey& girderKey,const GDRCONFIG& config)
 {
-   return CalculateShearCritSection(limitState,girderKey,config);
+   return ValidateShearCritSection( limitState, girderKey, config );
 }
 
 std::vector<SHEARCAPACITYDETAILS> CEngAgentImp::GetShearCapacityDetails(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi)
@@ -3811,6 +3837,15 @@ std::vector<SHEARCAPACITYDETAILS> CEngAgentImp::GetShearCapacityDetails(pgsTypes
    }
 
    return details;
+}
+
+void CEngAgentImp::ClearDesignCriticalSections()
+{
+   CollectionIndexType size = sizeof(m_DesignCritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
+   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   {
+      m_DesignCritSectionDetails[idx].clear();
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////

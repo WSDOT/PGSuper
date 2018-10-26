@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@
 #include "GirderDebondCriteriaPage.h"
 #include "GirderErrorDlg.h"
 #include "ShearDesignPage.h"
+#include "GirderHaunchAndCamberPage.h"
 
 #include <units\Measure.h>
 
@@ -73,7 +74,8 @@ public:
    CGirderHarpPointPage      m_HarpPointPage;
    CGirderDiaphragmPage      m_DiaphragmPage;
    CGirderDebondCriteriaPage m_FlexureDesignPage;
-   CShearDesignPage    m_ShearDesignPage;
+   CShearDesignPage          m_ShearDesignPage;
+   CGirderHaunchAndCamberPage   m_GirderHaunchAndCamberPage;
 
    CGirderErrorDlg       m_GirderErrorDlg;
 
@@ -115,6 +117,7 @@ public:
    void UploadLongitudinalData();
    void ExchangeDiaphragmData(CDataExchange* pDX);
    void ExchangeHarpPointData(CDataExchange* pDX);
+   void ExchangeHaunchData(CDataExchange* pDX);
    void ExchangeFlexuralCriteriaData(CDataExchange* pDX);
    void ExchangeDebondCriteriaData(CDataExchange* pDX);
    void ExchangeFlexuralDesignStrategyCriteriaData(CDataExchange* pDX);

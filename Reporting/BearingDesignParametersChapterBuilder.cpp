@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,12 +86,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
-   GET_IFACE2(pBroker,IBearingDesign,pBearing);
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
    // Don't create much of report if no simple span ends
-   bool doStartPier, doEndPier;
-   pBearing->AreBearingReactionsAvailable(intervalIdx, girderKey, &doStartPier, &doEndPier);
-   bool doFinalLoads = doStartPier || doEndPier;
+   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx,girderKey);
+   bool doFinalLoads = (0 < vPiers.size() ? true : false);
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
@@ -204,19 +203,20 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       *p << CUserRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),intervalIdx,pDisplayUnits) << rptNewLine;
    }
 
-   p = new rptParagraph;
-   *pChapter << p;
+   //p = new rptParagraph;
+   //*pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Rotation due to Excess Camber"));
-   *p << pTable << rptNewLine;
-
+   //rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Rotation due to Excess Camber"));
+   //*p << pTable << rptNewLine;
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   (*pTable)(0,0) << _T("");
-   (*pTable)(0,1) << _T("Rotation") << rptNewLine << _T("(rad)");
+   ColumnIndexType col = 0;
 
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   //(*pTable)(0,col++) << _T("");
+   //(*pTable)(0,col++) << _T("Rotation") << rptNewLine << _T("(rad)");
+
+   //RowIndexType row = pTable->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
@@ -226,55 +226,39 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi1( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND) );
-   std::vector<pgsPointOfInterest> vPoi2( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,nSegments-1),POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND) );
-
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    // TRICKY: use adapter class to get correct reaction interfaces
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
 
-   PierIndexType pierIdx = 0;
-   for ( pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
-   {
-      if (!pForces->DoReportAtPier(pierIdx, girderKey))
-      {
-         // Don't report pier if information is not available
-         continue;
-      }      
-      
-      ColumnIndexType col = 0;
+   //PierIndexType pierIdx = 0;
+   //for ( pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+   //{
+   //   col = 0;
+   //   if (!pForces->DoReportAtPier(pierIdx, girderKey))
+   //   {
+   //      // Don't report pier if information is not available
+   //      continue;
+   //   }      
 
-      pgsTypes::PierFaceType pierFace = (pierIdx == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
+   //   if ( pBridge->IsAbutment(pierIdx) )
+   //   {
+   //      (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
+   //   }
+   //   else
+   //   {
+   //      (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
+   //   }
 
-      if ( pierIdx == 0 || pierIdx == nPiers-1 )
-      {
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
-      }
-      else
-      {
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
-      }
+   //   pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
 
-      pgsPointOfInterest poi;
-      if ( pierIdx == startPierIdx )
-      {
-         poi = vPoi1.front();
-      }
-      else
-      {
-         poi = vPoi2.front();
-      }
+   //   Float64 rotation = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
+   //   (*pTable)(row,col++) << scalar.SetValue(rotation);
 
-      Float64 rotation = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
-      (*pTable)(row,col++) << scalar.SetValue(rotation);
-
-      row++;
-   }
+   //   row++;
+   //}
 
 
-   //////////////////////
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(),    false );
@@ -283,7 +267,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Corresponding Live Load Bearing Reactions and Rotations"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Corresponding Live Load Bearing Reactions and Rotations"));
    *p << pTable << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
@@ -318,99 +302,111 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
 
    // First get primary reaction with corresp rotations and primary rotations with corresp reactions
-   Float64 startRPmax,startRPmin,startTCmin,startTCmax;
-   Float64 startRCmax,startRCmin,startTPmin,startTPmax;
-   Float64 endRPmax,endRPmin,endTCmin,endTCmax;
-   Float64 endRCmax,endRCmin,endTPmin,endTPmax;
-   if ( analysisType == pgsTypes::Envelope )
+   std::vector<Float64> vMaxReaction, vMaxReaction_Rotation; // max reaction and rotation that corresponds to max reaction
+   std::vector<Float64> vMinReaction, vMinReaction_Rotation; // min reaction and rotation that corresponds to min reaction
+   std::vector<Float64> vMaxRotation, vMaxRotation_Reaction; // max rotation and reaction that corresponds to max rotation
+   std::vector<Float64> vMinRotation, vMinRotation_Reaction; // min rotation and reaction that corresponds to min rotation
+
+   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
-      Float64 fdummy;
+      if (!pForces->DoReportAtPier(pierIdx, girderKey))
+      {
+         // Don't report pier if information is not available
+         continue;
+      }
 
-      // reactions and corresponding rotations
-      pBearing->GetBearingLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, true,
-                                           &fdummy, &startRPmax, &fdummy, &startTCmax, &fdummy, &endRPmax, &fdummy, &endTCmax,
-                                           NULL, NULL, NULL, NULL);
+      ReactionLocation location;
+      location.PierIdx = pierIdx;
+      location.GirderKey = girderKey;
+      if ( pierIdx == startPierIdx )
+      {
+         location.Face = rftAhead;
+      }
+      else if ( pierIdx == endPierIdx )
+      {
+         location.Face = rftBack;
+      }
+      else
+      {
+         location.Face = rftMid;
+      }
 
-      pBearing->GetBearingLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, girderKey, pgsTypes::MinSimpleContinuousEnvelope, false, true,
-                                           &startRPmin, &fdummy, &startTCmin, &fdummy, &endRPmin, &fdummy, &endTCmin, &fdummy,
-                                           NULL, NULL, NULL, NULL);
+      if ( analysisType == pgsTypes::Envelope )
+      {
+         // reactions and corresponding rotations
+         Float64 Rmin, Rmax, Tmin, Tmax;
+         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MaxSimpleContinuousEnvelope, false, true, &Rmin, &Rmax, &Tmin, &Tmax);
+         vMaxReaction.push_back(Rmax);
+         vMaxReaction_Rotation.push_back(Tmax);
 
-      // rotations and corresponding reactions
-      pBearing->GetBearingLiveLoadRotation( intervalIdx, pgsTypes::lltDesign, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, true,
-                                           &fdummy, &startTPmax, &fdummy, &startRCmax, &fdummy, &endTPmax, &fdummy, &endRCmax,
-                                           NULL, NULL, NULL, NULL);
+         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MinSimpleContinuousEnvelope, false, true, &Rmin, &Rmax, &Tmin, &Tmax);
+         vMinReaction.push_back(Rmin);
+         vMinReaction_Rotation.push_back(Tmin);
 
-      pBearing->GetBearingLiveLoadRotation( intervalIdx, pgsTypes::lltDesign, girderKey, pgsTypes::MinSimpleContinuousEnvelope, false, true,
-                                           &startTPmin, &fdummy, &startRCmin, &fdummy, &endTPmin, &fdummy, &endRCmin, &fdummy,
-                                           NULL, NULL, NULL, NULL);
-   }
-   else
-   {
-      pgsTypes::BridgeAnalysisType batype = analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan;
+         // rotations and corresponding reactions
+         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MaxSimpleContinuousEnvelope, false, true, &Tmin, &Tmax, &Rmin, &Rmax);
+         vMaxRotation.push_back(Tmax);
+         vMaxRotation_Reaction.push_back(Rmax);
 
-      pBearing->GetBearingLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, girderKey, batype, false, true,
-                                           &startRPmin, &startRPmax, &startTCmin, &startTCmax, &endRPmin, &endRPmax, &endTCmin, &endTCmax,
-                                           NULL, NULL, NULL, NULL);
+         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MinSimpleContinuousEnvelope, false, true, &Tmin, &Tmax, &Rmin, &Rmax);
+         vMinRotation.push_back(Tmin);
+         vMinRotation_Reaction.push_back(Rmin);
+      }
+      else
+      {
+         pgsTypes::BridgeAnalysisType bat = analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan;
 
-      pBearing->GetBearingLiveLoadRotation( intervalIdx, pgsTypes::lltDesign, girderKey, batype, false, true,
-                                           &startTPmin, &startTPmax, &startRCmin, &startRCmax, &endTPmin, &endTPmax, &endRCmin, &endRCmax,
-                                           NULL, NULL, NULL, NULL);
+         Float64 Rmin, Rmax, Tmin, Tmax;
+         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, bat, false, true, &Rmin, &Rmax, &Tmin, &Tmax);
+         vMinReaction.push_back(Rmin);
+         vMinReaction_Rotation.push_back(Tmin);
+         vMaxReaction.push_back(Rmax);
+         vMaxReaction_Rotation.push_back(Tmax);
+
+         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, bat, false, true, &Tmin, &Tmax, &Rmin, &Rmax);
+         vMinRotation.push_back(Tmin);
+         vMinRotation_Reaction.push_back(Rmin);
+         vMaxRotation.push_back(Tmax);
+         vMaxRotation_Reaction.push_back(Rmax);
+      }
    }
 
    // Write table values
-   row = pTable->GetNumberOfHeaderRows();
-   ColumnIndexType col = 0;
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   if(doStartPier)
-   {
-      if ( startPierIdx == 0 || startPierIdx == nPiers-1 )
-      {
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(startPierIdx);
-      }
-      else
-      {
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(startPierIdx);
-      }
-
-      (*pTable)(row,col++) << reaction.SetValue( startRPmax );
-      (*pTable)(row,col++) << rotation.SetValue( startTCmax );
-
-      (*pTable)(row,col++) << reaction.SetValue( startRPmin );
-      (*pTable)(row,col++) << rotation.SetValue( startTCmin );
-
-      (*pTable)(row,col++) << rotation.SetValue( startTPmax );
-      (*pTable)(row,col++) << reaction.SetValue( startRCmax );
-
-      (*pTable)(row,col++) << rotation.SetValue( startTPmin );
-      (*pTable)(row,col++) << reaction.SetValue( startRCmin );
-
-      row++;
-   }
-
-   if(doEndPier)
+   int i = 0;
+   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++, i++ )
    {
       col = 0;
 
-      if ( endPierIdx == 0 || endPierIdx == nPiers-1 )
+      if (!pForces->DoReportAtPier(pierIdx, girderKey))
       {
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(endPierIdx);
+         // Don't report pier if information is not available
+         continue;
+      }
+
+      if ( pBridge->IsAbutment(pierIdx) )
+      {
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
       }
       else
       {
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(endPierIdx);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
       }
 
-      (*pTable)(row,col++) << reaction.SetValue( endRPmax );
-      (*pTable)(row,col++) << rotation.SetValue( endTCmax );
+      (*pTable)(row,col++) << reaction.SetValue( vMaxReaction[i] );
+      (*pTable)(row,col++) << rotation.SetValue( vMaxReaction_Rotation[i] );
 
-      (*pTable)(row,col++) << reaction.SetValue( endRPmin );
-      (*pTable)(row,col++) << rotation.SetValue( endTCmin );
+      (*pTable)(row,col++) << reaction.SetValue( vMinReaction[i] );
+      (*pTable)(row,col++) << rotation.SetValue( vMinReaction_Rotation[i] );
 
-      (*pTable)(row,col++) << rotation.SetValue( endTPmax );
-      (*pTable)(row,col++) << reaction.SetValue( endRCmax );
+      (*pTable)(row,col++) << rotation.SetValue( vMaxRotation[i] );
+      (*pTable)(row,col++) << reaction.SetValue( vMaxRotation_Reaction[i] );
 
-      (*pTable)(row,col++) << rotation.SetValue( endTPmin );
-      (*pTable)(row,col++) << reaction.SetValue( endRCmin );
+      (*pTable)(row,col++) << rotation.SetValue( vMinRotation[i] );
+      (*pTable)(row,col++) << reaction.SetValue( vMinRotation_Reaction[i] );
+
+      row++;
    }
 
    ///////////////////////////////////////
@@ -427,30 +423,30 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    INIT_FRACTIONAL_LENGTH_PROTOTYPE( recess_dimension, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), false, true );
 
-   (*pTable)(0,0) << _T("");
-   (*pTable)(0,1) << _T("Girder") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,2) << _T("Excess") << rptNewLine << _T("Camber") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,3) << _T("Bearing") << rptNewLine << _T("Recess") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,4) << _T("W");
-   (*pTable)(0,5) << _T("D");
-   (*pTable)(0,6) << Sub2(_T("D"),_T("1"));
-   (*pTable)(0,7) << Sub2(_T("D"),_T("2"));
+   col = 0;
+
+   (*pTable)(0,col++) << _T("");
+   (*pTable)(0,col++) << _T("Girder") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,col++) << _T("Excess") << rptNewLine << _T("Camber") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,col++) << _T("Bearing") << rptNewLine << _T("Recess") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,col++) << _T("W");
+   (*pTable)(0,col++) << _T("D");
+   (*pTable)(0,col++) << Sub2(_T("D"),_T("1"));
+   (*pTable)(0,col++) << Sub2(_T("D"),_T("2"));
 
    row = pTable->GetNumberOfHeaderRows();
 
-   for ( pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
+      col = 0;
+
       if (!pForces->DoReportAtPier(pierIdx, girderKey))
       {
          // Don't report pier if information is not available
          continue;
       }      
 
-      ColumnIndexType col = 0;
-
-      pgsTypes::PierFaceType pierFace = (pierIdx == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
-
-      if ( pierIdx == 0 || pierIdx == nPiers-1 )
+      if ( pBridge->IsAbutment(pierIdx) )
       {
          (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
       }
@@ -459,19 +455,25 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
       }
 
+      CSegmentKey segmentKey = pBridge->GetSegmentAtPier(pierIdx,girderKey);
 
-      Float64 slope1 = pBridge->GetSegmentSlope( pierIdx == startPierIdx ? CSegmentKey(girderKey,0) : CSegmentKey(girderKey,nSegments-1) );
+      Float64 slope1 = pBridge->GetSegmentSlope( segmentKey );
       (*pTable)(row,col++) << scalar.SetValue(slope1);
 
-      
       pgsPointOfInterest poi;
       if ( pierIdx == startPierIdx )
       {
-         poi = vPoi1.front();
+         std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L));
+         poi = vPoi.front();
+      }
+      else if ( pierIdx == endPierIdx )
+      {
+         std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L));
+         poi = vPoi.front();
       }
       else
       {
-         poi = vPoi2.front();
+         poi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
       }
 
       Float64 slope2 = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
@@ -489,7 +491,6 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       (*pTable)(row,col++) << recess_dimension.SetValue(D);
       (*pTable)(row,col++) << recess_dimension.SetValue(D1);
       (*pTable)(row,col++) << recess_dimension.SetValue(D2);
-
 
       row++;
    }

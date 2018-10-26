@@ -41,18 +41,6 @@ DESCRIPTION
 // Enum that describes the type of reaction report to be generated
 enum ReactionTableType { PierReactionsTable, BearingReactionsTable};
 
-// Simple span bearing reactions can occur at back/ahead. Continuous and pier reactions are at mid
-enum PierReactionFaceType {rftBack, rftMid, rftAhead};
-
-class ReactionLocation
-{
-public:
-   PierIndexType        PierIdx;   // Index of the pier where reactions are reported
-   PierReactionFaceType Face;      // Face of pier that reaction applies to
-   CGirderKey           GirderKey; // GirderKey for the girder that provides the reaction
-   std::_tstring        PierLabel; // Label (Abutment 1, Pier 2, etc)
-};
-
 typedef std::vector<ReactionLocation> ReactionLocationContainer;
 typedef std::vector<ReactionLocation>::const_iterator ReactionLocationIterator;
 
@@ -87,7 +75,7 @@ public:
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge)=0;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx, const ReactionLocation& rLocation, pgsTypes::ProductForceType type, pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx, const ReactionLocation& rLocation, pgsTypes::ProductForceType pfType, pgsTypes::BridgeAnalysisType bat) = 0;
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
@@ -106,7 +94,7 @@ public:
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType type,pgsTypes::BridgeAnalysisType bat);
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat);
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);
@@ -130,7 +118,7 @@ public:
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType type,pgsTypes::BridgeAnalysisType bat);
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat);
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);

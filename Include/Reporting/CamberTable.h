@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <Reporting\ReportingExp.h>
 
 interface IEAFDisplayUnits;
+struct CamberMultipliers;
 
 /*****************************************************************************
 CLASS 
@@ -73,29 +74,16 @@ public:
 
    //------------------------------------------------------------------------
    // Build the strand eccentricity tables
-   void Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
-                              IEAFDisplayUnits* pDisplayUnits,Int16 time,
-                              rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
-
-   void Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
-                  IEAFDisplayUnits* pDisplayUnits,Int16 time,
+   void Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey, 
+                  bool bTempStrands, bool bSidewalk, bool bShearKey,bool bConstruction, bool bOverlay, bool bDeckPanels,
+                  IEAFDisplayUnits* pDisplayUnits,Int16 time, const CamberMultipliers& cm,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
-
-   void Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
-                              IEAFDisplayUnits* pDisplayUnits,Int16 time,
-                              rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
-
-   void Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
-                  IEAFDisplayUnits* pDisplayUnits,Int16 time,
-                  rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
-
-   void Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
-                                 IEAFDisplayUnits* pDisplayUnits,Int16 time,
-                                 rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
-                     IEAFDisplayUnits* pDisplayUnits,Int16 time,
+                     bool bTempStrands, bool bSidewalk, bool bShearKey,bool bConstruction, bool bOverlay,
+                     IEAFDisplayUnits* pDisplayUnits,Int16 time, const CamberMultipliers& cm,
                      rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -110,6 +98,7 @@ protected:
    //------------------------------------------------------------------------
    virtual void MakeAssignment(const CCamberTable& rOther);
 
+   void GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,std::vector<pgsPointOfInterest>* pvPoiRelease,std::vector<pgsPointOfInterest>* pvPoiStorage,std::vector<pgsPointOfInterest>* pvPoiErected) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

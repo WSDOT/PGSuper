@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,6 +57,20 @@ BEGIN_MESSAGE_MAP(CParabolicDuctGrid, CGXGridWnd)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+
+int CParabolicDuctGrid::GetColWidth(ROWCOL nCol)
+{
+	CRect rect = GetGridRect( );
+   if ( 0 <= nCol && nCol <= 3 )
+   {
+      return rect.Width()/8;
+   }
+   else
+   {
+      return rect.Width()/4;
+   }
+   //return CGXGridWnd::GetColWidth(nCol);
+}
 
 void CParabolicDuctGrid::CustomInit(CParabolicDuctGridCallback* pCallback)
 {
@@ -156,7 +170,6 @@ void CParabolicDuctGrid::CustomInit(CParabolicDuctGridCallback* pCallback)
 
    // make it so that text fits correctly in header row
 	this->ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
-   //this->ResizeColWidthsToFit(CGXRange(0,0,0,num_cols));
 	this->GetParam( )->EnableUndo(TRUE);
 }
 
@@ -248,8 +261,6 @@ void CParabolicDuctGrid::SetData(const CParabolicDuctGeometry& ductGeometry)
 
    ductGeometry.GetEndPoint(&distance,&offset,&offsetType);
    InsertLastPoint(endSpanIdx,distance,offset,offsetType);
-
-   ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 }
 
 void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance,Float64 offset,CDuctGeometry::OffsetType offsetType)

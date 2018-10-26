@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -724,7 +724,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
 
             Float64 start = (bStartCantilever ? 0 : startEndDist);
             Float64 end   = (bEndCantilever ? pBridge->GetSegmentLength(segmentKey) : startEndDist + segmentSpanLength);
-            std::remove_copy_if(erectedPois.begin(), erectedPois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(start,end));
+            std::remove_copy_if(erectedPois.begin(), erectedPois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(segmentKey,start,end));
          }
 
 
@@ -2807,31 +2807,28 @@ bool pgsDesigner2::IsDeepSection( const pgsPointOfInterest& poi)
 
 ZoneIndexType pgsDesigner2::GetCriticalSectionZone(const pgsPointOfInterest& poi,bool bIncludeCS)
 {
-   Float64 x = poi.GetDistFromStart();
+   Float64 Xpoi = poi.GetDistFromStart();
 
    std::vector<std::pair<CRITSECTDETAILS,bool>>::iterator iter(m_CriticalSections.begin());
    std::vector<std::pair<CRITSECTDETAILS,bool>>::iterator end(m_CriticalSections.end());
    for ( ; iter != end; iter++ )
    {
       CRITSECTDETAILS& csDetails(iter->first);
-      CSegmentKey csSegmentKey = (csDetails.bAtFaceOfSupport ? csDetails.poiFaceOfSupport.GetSegmentKey() : csDetails.pCriticalSection->Poi.GetSegmentKey());
+      const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
+      const CSegmentKey& csSegmentKey = csPoi.GetSegmentKey();
 
-      // generally, the critical section POI is not included in the critical section zone.
-      // however, in some cases, we want to get information about the critical section that
-      // is included in the m_CriticalSections data structure.
-      if ( bIncludeCS )
+      if ( csSegmentKey == poi.GetSegmentKey() && ::InRange(csDetails.Start,Xpoi,csDetails.End) )
       {
-         if ( csSegmentKey == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End) )
+         // poi is in the critical section zone
+         if ( !bIncludeCS && csPoi.AtSamePlace(poi) )
          {
-            return (ZoneIndexType)(iter - m_CriticalSections.begin());
+            // we want to exclude the actual critical section and the poi is at the same place as the critical section
+            // return now with INVALID_INDEX since there is no reason to keep going through the loop
+            return INVALID_INDEX;
          }
-      }
-      else
-      {
-         if ( csSegmentKey == poi.GetSegmentKey() && (csDetails.Start < x && x < csDetails.End) )
-         {
-            return (ZoneIndexType)(iter - m_CriticalSections.begin());
-         }
+
+         // we found the critical section zone that contains our poi
+         return (ZoneIndexType)(iter - m_CriticalSections.begin());
       }
    }
 
@@ -2903,7 +2900,7 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       // strength check is not applicable for this poi
       pArtifact->IsApplicable(false);
 
-      const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.bAtFaceOfSupport ? m_CriticalSections[csZoneIdx].first.poiFaceOfSupport : m_CriticalSections[csZoneIdx].first.pCriticalSection->Poi);
+      const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.GetPointOfInterest());
 
       // the shear reinforcement must be at least as much as at the critical section
       // See LRFD C5.8.3.2 (since the stress in the stirrups doesn't change between
@@ -2966,7 +2963,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
       Float64 avs = pArtifact->GetAvOverS();
 
       // get avs at css
-      const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.bAtFaceOfSupport ? m_CriticalSections[csZoneIdx].first.poiFaceOfSupport : m_CriticalSections[csZoneIdx].first.pCriticalSection->Poi);
+      const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.GetPointOfInterest());
       pgsHorizontalShearArtifact css_Artifact;
       ComputeHorizAvs(csPoi, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  &css_Artifact);
 
@@ -3665,7 +3662,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    if ( bInCriticalSectionZone )
    {
       // we are in a critical section zone
-      const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.bAtFaceOfSupport ? m_CriticalSections[csZoneIdx].first.poiFaceOfSupport : m_CriticalSections[csZoneIdx].first.pCriticalSection->Poi);
+      const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.GetPointOfInterest());
       GET_IFACE(IShearCapacity,pShearCapacity);
       SHEARCAPACITYDETAILS scd2;
       if(pConfig == NULL)
@@ -4027,30 +4024,19 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
    m_CriticalSections.clear();
    // Critical sections not in the POI list - we need to compute them - this is really expensive,
    // and likely for load rating cases only
-   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vCSPoi;
    if( pConfig == NULL)
    {
-      std::vector<pgsPointOfInterest> vCSPoi(pPoi->GetCriticalSections(limitState,segmentKey));
-      const std::vector<CRITSECTDETAILS>& vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey);
+      GET_IFACE(IPointOfInterest,pPoi);
+      vCSPoi = pPoi->GetCriticalSections(limitState,segmentKey);
+      std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey);
       ATLASSERT(vCSPoi.size() == vCS.size());
-      std::vector<CRITSECTDETAILS>::const_iterator iter(vCS.begin());
-      std::vector<CRITSECTDETAILS>::const_iterator end(vCS.end());
-      std::vector<pgsPointOfInterest>::const_iterator poiIter(vCSPoi.begin());
+      std::vector<CRITSECTDETAILS>::iterator iter(vCS.begin());
+      std::vector<CRITSECTDETAILS>::iterator end(vCS.end());
+      std::vector<pgsPointOfInterest>::iterator poiIter(vCSPoi.begin());
       for ( ; iter != end; iter++, poiIter++ )
       {
-         CRITSECTDETAILS csDetails(*iter);
-#if defined _DEBUG
-         if ( csDetails.bAtFaceOfSupport )
-         {
-            ATLASSERT(csDetails.poiFaceOfSupport.GetSegmentKey() == poiIter->GetSegmentKey());
-            ATLASSERT(IsEqual(csDetails.poiFaceOfSupport.GetDistFromStart(),poiIter->GetDistFromStart()));
-         }
-         else
-         {
-            ATLASSERT(csDetails.pCriticalSection->Poi.GetSegmentKey() == poiIter->GetSegmentKey());
-            ATLASSERT(IsEqual(csDetails.pCriticalSection->Poi.GetDistFromStart(),poiIter->GetDistFromStart()));
-         }
-#endif
+         CRITSECTDETAILS& csDetails(*iter);
          if ( csDetails.bAtFaceOfSupport )
          {
             csDetails.poiFaceOfSupport = *poiIter;
@@ -4059,40 +4045,37 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
          {
             csDetails.pCriticalSection->Poi = *poiIter;
          }
+#if defined _DEBUG
+         const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
+         ATLASSERT(csPoi.GetID() != INVALID_ID);
+         ATLASSERT(csPoi.GetSegmentKey() == poiIter->GetSegmentKey());
+         ATLASSERT(IsEqual(csPoi.GetDistFromStart(),poiIter->GetDistFromStart()));
+#endif
          m_CriticalSections.push_back(std::make_pair(csDetails,false));
       }
    }
    else
    {
-      std::vector<pgsPointOfInterest> vCSPoi(pPoi->GetCriticalSections(limitState,segmentKey,*pConfig));
+      //std::vector<pgsPointOfInterest> vCSPoi(pPoi->GetCriticalSections(limitState,segmentKey,*pConfig)); // these POIs don't have IDs assigned (they are temporary POI, not part of the real bridge)
+      vCSPoi = m_ShearDesignTool.GetCriticalSections(); // these POIs have IDs assigned. They are temporary POIs held in the shear design tool. We want to use the ones with IDs so results at critical sections are cached (namely Mn)
+
       std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey,*pConfig);
       ATLASSERT(vCSPoi.size() == vCS.size());
+
+      // Assigned the POIs with IDs to the details because we don't want to work with POIs without valid IDs
       std::vector<CRITSECTDETAILS>::iterator iter(vCS.begin());
       std::vector<CRITSECTDETAILS>::iterator end(vCS.end());
       std::vector<pgsPointOfInterest>::const_iterator poiIter(vCSPoi.begin());
       for ( ; iter != end; iter++, poiIter++ )
       {
          CRITSECTDETAILS csDetails(*iter);
-#if defined _DEBUG
-         if ( csDetails.bAtFaceOfSupport )
-         {
-            ATLASSERT(csDetails.poiFaceOfSupport.GetSegmentKey() == poiIter->GetSegmentKey());
-            ATLASSERT(IsEqual(csDetails.poiFaceOfSupport.GetDistFromStart(),poiIter->GetDistFromStart()));
-         }
-         else
-         {
-            ATLASSERT(csDetails.pCriticalSection->Poi.GetSegmentKey() == poiIter->GetSegmentKey());
-            ATLASSERT(IsEqual(csDetails.pCriticalSection->Poi.GetDistFromStart(),poiIter->GetDistFromStart()));
-         }
-#endif
-         if ( csDetails.bAtFaceOfSupport )
-         {
-            csDetails.poiFaceOfSupport = *poiIter;
-         }
-         else
-         {
-            csDetails.pCriticalSection->Poi = *poiIter;
-         }
+
+         ATLASSERT(csDetails.GetPointOfInterest().GetSegmentKey() == poiIter->GetSegmentKey());
+         ATLASSERT(IsEqual(csDetails.GetPointOfInterest().GetDistFromStart(),poiIter->GetDistFromStart()));
+         ATLASSERT(poiIter->GetID() != INVALID_INDEX);
+
+         csDetails.SetPointOfInterest(*poiIter);
+
          m_CriticalSections.push_back(std::make_pair(csDetails,false));
       }
    }
@@ -4102,17 +4085,8 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
    for ( ; csIter != csIterEnd; csIter++ )
    {
       CRITSECTDETAILS& csDetails(csIter->first);
-      const pgsPointOfInterest& csPoi(csDetails.bAtFaceOfSupport ? csDetails.poiFaceOfSupport : csDetails.pCriticalSection->Poi);
-#if defined _DEBUG
-      if ( pConfig == NULL )
-      {
-         // If we aren't using a config object then we are just checking shear and the critical sections
-         // are real poi. Those poi should have valid IDs.
-         // If we are using a config object, we are designing and the critical section POIs are created on the fly
-         // and don't have valid IDs
-         ATLASSERT(csPoi.GetID() != INVALID_ID);
-      }
-#endif
+      const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
+      ATLASSERT(csPoi.GetID() != INVALID_ID);
 
       // DETERMINE IF vu <= 0.18f'c at each POI... set a boolean flag that indicates if strut and tie analysis is required
       // LRFD 5.8.3.2
@@ -4204,7 +4178,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
       // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
       Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
       Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
-      std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(endDist,endDist+segmentSpanLength));
+      std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(segmentKey,endDist,endDist+segmentSpanLength));
    }
 
    ATLASSERT(pStirrupArtifact != NULL);
@@ -4271,7 +4245,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
       else
       {
          // in a critical section zone... get the demand at the critical section
-         poi_4demand = (m_CriticalSections[csZoneIdx].first.bAtFaceOfSupport ? m_CriticalSections[csZoneIdx].first.poiFaceOfSupport : m_CriticalSections[csZoneIdx].first.pCriticalSection->Poi);
+         poi_4demand = m_CriticalSections[csZoneIdx].first.GetPointOfInterest();
       }
 
       sysSectionValue Vmin, Vmax;
@@ -4792,6 +4766,11 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       pArtifact->SetSlabOffsetApplicability(true);
 
       GET_IFACE(IGirderHaunch,pGdrHaunch);
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
 
       PierIndexType startPierIdx, endPierIdx;
       pBridge->GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
@@ -4807,6 +4786,16 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       // get required slab offset
       Float64 requiredSlabOffset = pGdrHaunch->GetRequiredSlabOffset(girderKey);
       pArtifact->SetRequiredSlabOffset( requiredSlabOffset );
+
+      // minimum fillet requirements
+      Float64 min_fillet = pGirderEntry->GetMinFilletValue();
+      pArtifact->SetRequiredMinimumFillet(min_fillet);
+      Float64 fillet = pBridge->GetFillet();
+      pArtifact->SetProvidedFillet(fillet);
+
+      // warning tolerance for excessive haunch
+      Float64 warn_tol = pGirderEntry->GetExcessiveSlabOffsetWarningTolerance();
+      pArtifact->SetSlabOffsetWarningTolerance(warn_tol);
 
       // determine if stirrup lengths could be a problem
       GET_IFACE(IStirrupGeometry, pStirrupGeometry);
@@ -4825,9 +4814,26 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       HAUNCHDETAILS haunch_details;
       pGdrHaunch->GetHaunchDetails(girderKey,&haunch_details);
 
-      // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than have the deck thickness"
+#pragma Reminder("Assumes constant slab thickness throughout bridge")
+      // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than half the deck thickness"
       Float64 tSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(CSegmentKey(girderKey,0),0.0));
       pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && tSlab/2 < fabs(haunch_details.HaunchDiff) );
+
+      // Check A requirements at bearing centerlines if appropriate
+      Float64 min_haunch;
+      if (!pGirderEntry->GetMinHaunchAtBearingLines(&min_haunch))
+      {
+         pArtifact->SetHaunchAtBearingCLsApplicability(false);
+      }
+      else
+      {
+         pArtifact->SetHaunchAtBearingCLsApplicability(true);
+
+         pArtifact->SetRequiredHaunchAtBearingCLs(min_haunch);
+
+         Float64 haunchcl = providedSlabOffset - tSlab;
+         pArtifact->SetProvidedHaunchAtBearingCLs(haunchcl);
+      }
    }
 
    
@@ -8859,8 +8865,10 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
    {
       // We are designing...
       ATLASSERT(m_CriticalSections.size() == 2);
-      pgsPointOfInterest& leftCS(m_CriticalSections.front().first.bAtFaceOfSupport ? m_CriticalSections.front().first.poiFaceOfSupport : m_CriticalSections.front().first.pCriticalSection->Poi);
-      pgsPointOfInterest& rightCS(m_CriticalSections.back().first.bAtFaceOfSupport ? m_CriticalSections.back().first.poiFaceOfSupport : m_CriticalSections.back().first.pCriticalSection->Poi);
+      const pgsPointOfInterest& leftCS(m_CriticalSections.front().first.GetPointOfInterest());
+      const pgsPointOfInterest& rightCS(m_CriticalSections.back().first.GetPointOfInterest());
+      ATLASSERT(leftCS.GetID() != INVALID_ID);
+      ATLASSERT(rightCS.GetID() != INVALID_ID);
       pgsShearDesignTool::ShearDesignOutcome sdo = m_ShearDesignTool.DesignStirrups(leftCS.GetDistFromStart(), rightCS.GetDistFromStart());
       if (sdo == pgsShearDesignTool::sdRestartWithAdditionalLongRebar)
       {

@@ -9,7 +9,7 @@
 /// Section Begin - General and relative topics(JavaScript 1.0)
 
 //{{HH_SYMBOL_SECTION
-var HH_ChmFilename = "C:\\arp\\PGSuper\\KDOTExport\\HtmlHelp\\KDOT_XML_Export.chm";
+var HH_ChmFilename = "F:\\ARP\\PGSuper\\KDOTExport\\HtmlHelp\\KDOT_XML_Export.chm";
 var HH_WindowName = "NewWindow";
 var HH_GlossaryFont = "";
 var HH_Glossary = "1";

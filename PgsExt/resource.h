@@ -11,6 +11,9 @@
 #define IDB_IP_HINGES                   292
 #define IDB_IP_ROLLERS                  293
 #define IDB_COLUMN_FIXITY               294
+#define IDB_HAUNCH_SQUARE               295
+#define IDB_BITMAP2                     296
+#define IDB_HAUNCH_FILLETED             296
 #define IDD_CONCRETE_DETAILS            300
 #define IDC_CONCRETE_TYPE               301
 #define IDC_FC_LABEL                    302
@@ -89,7 +92,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        294
+#define _APS_NEXT_RESOURCE_VALUE        297
 #define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1361
 #define _APS_NEXT_SYMED_VALUE           101

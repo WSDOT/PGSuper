@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -151,7 +151,6 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate. 
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
 
 	Initialize( );
 
@@ -452,7 +451,6 @@ UINT CMultiGirderSelectGrid::OnGetDlgCode()
 
 void CMultiGirderSelectGrid::OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, const CRect& rectItem, const CGXStyle& style)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());  
    CGXGridCore::OnDrawItem(pDC, nRow, nCol, rectItem, style);
 }
 

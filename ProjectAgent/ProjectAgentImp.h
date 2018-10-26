@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -420,6 +420,8 @@ public:
    virtual bool RateForShear(pgsTypes::LoadRatingType ratingType);
    virtual void ExcludeLegalLoadLaneLoading(bool bExclude);
    virtual bool ExcludeLegalLoadLaneLoading();
+   virtual void CheckYieldStress(pgsTypes::LoadRatingType ratingType,bool bCheckYieldStress);
+   virtual bool CheckYieldStress(pgsTypes::LoadRatingType ratingType);
    virtual void SetYieldStressLimitCoefficient(Float64 x);
    virtual Float64 GetYieldStressLimitCoefficient();
    virtual void SetSpecialPermitType(pgsTypes::SpecialPermitType type);
@@ -662,7 +664,8 @@ private:
    Float64 m_gLL[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
 
    Float64 m_AllowableTensionCoefficient[6]; // index is load rating type
-   bool    m_bRateForStress[6]; // index is load rating type (for permit rating, it means to do the service I checks, otherwise service III)
+   bool    m_bCheckYieldStress[6]; // index is load rating type
+   bool    m_bRateForStress[6]; // index is load rating type
    bool    m_bRateForShear[6]; // index is load rating type
    bool    m_bEnableRating[6]; // index is load rating type
    Int16 m_ADTT; // < 0 = Unknown

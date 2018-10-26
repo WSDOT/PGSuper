@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,8 +30,6 @@
 
 #include "ReportView.h"
 #include "Hints.h"
-
-#include "htmlhelp\HelpTopics.hh"
 
 #include <IFace\DocumentType.h>
 #include <EAF\EAFAutoProgress.h>
@@ -163,7 +161,8 @@ BOOL CPGSuperReportView::PreTranslateMessage(MSG* pMsg)
    {
       if (pMsg->wParam == VK_F1)
       {
-         ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_REPORT_VIEW );
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+         EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_REPORT_VIEW );
          return TRUE;
       }
    }

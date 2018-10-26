@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <psgLib\psgLib.h>
 #include "LibraryEntryConflict.h"
 #include "RenameLibraryEntry.h"
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,7 +69,7 @@ BEGIN_MESSAGE_MAP(CLibraryEntryConflict, CDialog)
 	//{{AFX_MSG_MAP(CLibraryEntryConflict)
 	ON_BN_CLICKED(IDC_RENAME_ENTRY, OnRenameEntry)
 	ON_BN_CLICKED(IDC_OVERWRITE, OnOverwrite)
-	ON_COMMAND(ID_HELP, OnHelp)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -164,7 +164,11 @@ BOOL CLibraryEntryConflict::OnInitDialog()
 void CLibraryEntryConflict::OnHelp() 
 {
    if (m_IsImported)
-      ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_LIBIMPORTENTRYCONFLICT  );
+   {
+      EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_LIBIMPORTENTRYCONFLICT  );
+   }
    else
-      ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_LIBENTRYCONFLICT );
+   {
+      EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_LIBENTRYCONFLICT );
+   }
 }

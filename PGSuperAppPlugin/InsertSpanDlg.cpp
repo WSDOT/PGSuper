@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,6 @@
 #include "InsertSpanDlg.h"
 #include "TimelineEventDlg.h"
 #include <EAF\EAFDisplayUnits.h>
-
-#include "HtmlHelp\HelpTopics.hh"
 
 #include <PgsExt\BridgeDescription2.h>
 
@@ -199,9 +197,9 @@ BOOL CInsertSpanDlg::OnInitDialog()
 
 void CInsertSpanDlg::OnHelp() 
 {
-#pragma Reminder("IMPLEMENT: CInsertSpanDlg::OnHelp")
+#pragma Reminder("HELP: CInsertSpanDlg::OnHelp")
    AfxMessageBox(_T("IMPLEMENT"));
-   //::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_DESIGNCRITERIA );
+   //EAFHelp( IDH_DIALOG_DESIGNCRITERIA );
 }
 
 void CInsertSpanDlg::OnPierChanged()

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,8 +30,8 @@
 
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
-#include "HtmlHelp\HelpTopics.hh"
-
+#include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 // CPermitRatingPage dialog
 
@@ -95,7 +95,7 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_STRENGTH_II_DC,m_Data.StrengthII_DC);
    DDX_Text(pDX,IDC_STRENGTH_II_DW,m_Data.StrengthII_DW);
    DDX_Keyword(pDX,IDC_STRENGTH_II_LL_PERMIT, _T("Compute"),m_Data.StrengthII_LL_Routine);
-   DDX_Keyword(pDX,IDC_STRENGTH_II_LL_PERMIT2,_T("Compute"),m_Data.StrengthII_LL_Special);
+   DDX_Keyword(pDX,IDC_STRENGTH_II_LL_SPECIAL,_T("Compute"),m_Data.StrengthII_LL_Special);
    DDX_Text(pDX,IDC_STRENGTH_II_CR,m_Data.StrengthII_CR);
    DDX_Text(pDX,IDC_STRENGTH_II_SH,m_Data.StrengthII_SH);
    DDX_Text(pDX,IDC_STRENGTH_II_PS,m_Data.StrengthII_PS);
@@ -103,16 +103,33 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_SERVICE_I_DC,m_Data.ServiceI_DC);
    DDX_Text(pDX,IDC_SERVICE_I_DW,m_Data.ServiceI_DW);
    DDX_Keyword(pDX,IDC_SERVICE_I_LL_PERMIT, _T("Compute"),m_Data.ServiceI_LL_Routine);
-   DDX_Keyword(pDX,IDC_SERVICE_I_LL_PERMIT2,_T("Compute"),m_Data.ServiceI_LL_Special);
+   DDX_Keyword(pDX,IDC_SERVICE_I_LL_SPECIAL,_T("Compute"),m_Data.ServiceI_LL_Special);
    DDX_Text(pDX,IDC_SERVICE_I_CR,m_Data.ServiceI_CR);
    DDX_Text(pDX,IDC_SERVICE_I_SH,m_Data.ServiceI_SH);
    DDX_Text(pDX,IDC_SERVICE_I_PS,m_Data.ServiceI_PS);
+   
+   DDX_Text(pDX,IDC_SERVICE_III_DC,m_Data.ServiceIII_DC);
+   DDX_Text(pDX,IDC_SERVICE_III_DW,m_Data.ServiceIII_DW);
+   DDX_Keyword(pDX,IDC_SERVICE_III_LL_PERMIT, _T("Compute"),m_Data.ServiceIII_LL_Routine);
+   DDX_Keyword(pDX,IDC_SERVICE_III_LL_SPECIAL,_T("Compute"),m_Data.ServiceIII_LL_Special);
+   DDX_Text(pDX,IDC_SERVICE_III_CR,m_Data.ServiceIII_CR);
+   DDX_Text(pDX,IDC_SERVICE_III_SH,m_Data.ServiceIII_SH);
+   DDX_Text(pDX,IDC_SERVICE_III_PS,m_Data.ServiceIII_PS);
 
+   DDX_Check_Bool(pDX,IDC_RATE_FOR_STRESS, m_Data.bRateForStress);
    DDX_Check_Bool(pDX,IDC_RATE_FOR_SHEAR,m_Data.bRateForShear);
    DDX_Check_Bool(pDX,IDC_CHECK_YIELDING,m_Data.bCheckReinforcementYielding);
 
    DDX_Text(pDX,IDC_FY_COEFFICIENT,m_Data.YieldStressCoefficient);
    DDV_Range(pDX,mfcDDV::LE,mfcDDV::GE,m_Data.YieldStressCoefficient,0.0,1.0);
+
+   CComPtr<IBroker> broker;
+   EAFGetBroker(&broker);
+   GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+   DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
+
+   CString tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )");
+   DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
 }
 
 
@@ -121,6 +138,7 @@ BEGIN_MESSAGE_MAP(CPermitRatingPage, CPropertyPage)
    ON_BN_CLICKED(IDC_CHECK_YIELDING, &CPermitRatingPage::OnCheckYieldingClicked)
    ON_CBN_SELCHANGE(IDC_PERMIT_TYPE, &CPermitRatingPage::OnPermitTypeChanged)
 	ON_COMMAND(ID_HELP, OnHelp)
+   ON_BN_CLICKED(IDC_RATE_FOR_STRESS, &CPermitRatingPage::OnRateForStressChanged)
 END_MESSAGE_MAP()
 
 
@@ -205,7 +223,7 @@ BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
          bIsLoadFactorTip = true;
          break;
 
-      case IDC_STRENGTH_II_LL_PERMIT2:
+      case IDC_STRENGTH_II_LL_SPECIAL:
          limit_state = pgsTypes::StrengthII_PermitSpecial;
          bIsLoadFactorTip = true;
          break;
@@ -215,8 +233,18 @@ BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
          bIsLoadFactorTip = true;
          break;
 
-      case IDC_SERVICE_I_LL_PERMIT2:
+      case IDC_SERVICE_I_LL_SPECIAL:
          limit_state = pgsTypes::ServiceI_PermitSpecial;
+         bIsLoadFactorTip = true;
+         break;
+
+      case IDC_SERVICE_III_LL_PERMIT:
+         limit_state = pgsTypes::ServiceIII_PermitRoutine;
+         bIsLoadFactorTip = true;
+         break;
+
+      case IDC_SERVICE_III_LL_SPECIAL:
+         limit_state = pgsTypes::ServiceIII_PermitSpecial;
          bIsLoadFactorTip = true;
          break;
 
@@ -250,6 +278,19 @@ void CPermitRatingPage::OnCheckYieldingClicked()
    GetDlgItem(IDC_FY_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_FY_COEFFICIENT)->EnableWindow(bEnable);
    GetDlgItem(IDC_FY)->EnableWindow(bEnable);
+}
+
+void CPermitRatingPage::OnRateForStressChanged()
+{
+   BOOL bEnable = FALSE;
+   if ( IsDlgButtonChecked(IDC_RATE_FOR_STRESS) )
+   {
+      bEnable = TRUE;
+   }
+
+   GetDlgItem(IDC_ALLOWABLE_TENSION_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_ALLOWABLE_TENSION)->EnableWindow(bEnable);
+   GetDlgItem(IDC_ALLOWABLE_TENSION_UNIT)->EnableWindow(bEnable);
 }
 
 pgsTypes::SpecialPermitType CPermitRatingPage::GetSpecialPermitType()
@@ -286,6 +327,7 @@ void CPermitRatingPage::OnPermitTypeChanged()
 
    GetDlgItem(IDC_STRENGTH_II_LL_SPECIAL)->EnableWindow(bAllowUserOverride ? TRUE : FALSE);
    GetDlgItem(IDC_SERVICE_I_LL_SPECIAL)->EnableWindow(bAllowUserOverride ? TRUE : FALSE);
+   GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(bAllowUserOverride ? TRUE : FALSE);
 }
 
 BOOL CPermitRatingPage::OnSetActive()
@@ -320,6 +362,7 @@ BOOL CPermitRatingPage::OnSetActive()
    {
       GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(TRUE);
       GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_III_LL_PERMIT)->EnableWindow(TRUE);
    }
    else
    {
@@ -327,6 +370,7 @@ BOOL CPermitRatingPage::OnSetActive()
       DDX_Keyword(&dx,IDC_SERVICE_I_LL_PERMIT,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_SERVICE_III_LL_PERMIT)->EnableWindow(FALSE);
    }
 
    GET_IFACE2(broker, ILossParameters, pLossParams);
@@ -347,6 +391,14 @@ BOOL CPermitRatingPage::OnSetActive()
       GetDlgItem(IDC_SERVICE_I_SH_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_SERVICE_I_PS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_SERVICE_I_PS_LABEL)->ShowWindow(SW_HIDE);
+
+      GetDlgItem(IDC_SERVICE_III_PLUS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_CR)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_CR_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_SH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_SH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_PS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_PS_LABEL)->ShowWindow(SW_HIDE);
    }
 
    return TRUE;
@@ -354,5 +406,5 @@ BOOL CPermitRatingPage::OnSetActive()
 
 void CPermitRatingPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_RATING_PERMIT_TAB );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_RATING_PERMIT_TAB );
 }

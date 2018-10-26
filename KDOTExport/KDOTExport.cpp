@@ -44,6 +44,7 @@ public:
 	//{{AFX_MSG(CKDOTExportAppPlugin)
 		// NOTE - the ClassWizard will add and remove member functions here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
+    afx_msg void OnHelp();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -52,10 +53,19 @@ BEGIN_MESSAGE_MAP(CKDOTExportAppPlugin, CWinApp)
 	//{{AFX_MSG_MAP(CKDOTExportAppPlugin)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
+   ON_COMMAND(ID_HELP,OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 CKDOTExportAppPlugin theApp;
+
+void CKDOTExportAppPlugin::OnHelp()
+{
+   // we don't really need to handle this, but
+   // an ID_HELP command handler must be present
+   // or CDialog::OnInitDialog will hide the
+   // [HELP] button on our dialogs
+}
 
 BOOL CKDOTExportAppPlugin::InitInstance()
 {
@@ -64,41 +74,12 @@ BOOL CKDOTExportAppPlugin::InitInstance()
 
     _Module.Init(ObjectMap, m_hInstance, &LIBID_KDOTExport);
 
-   // Deal with help file name
-   CString strHelpFile(m_pszHelpFilePath);
-#if defined _DEBUG
-#if defined _WIN64
-   strHelpFile.Replace(_T("\\RegFreeCOM\\x64\\Debug\\"),_T("\\"));
-#else
-   strHelpFile.Replace(_T("\\RegFreeCOM\\Win32\\Debug\\"),_T("\\"));
-#endif
-#else
-   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
-   // ok... the replace will fail and the string wont be altered.
-#if defined _WIN64
-   strHelpFile.Replace(_T("\\RegFreeCOM\\x64\\Release\\"),_T("\\"));
-#else
-   strHelpFile.Replace(_T("\\RegFreeCOM\\Win32\\Release\\"),_T("\\"));
-#endif
-#endif
-   
-   // rename the file itself
-   int loc = strHelpFile.ReverseFind(_T('\\'));
-   strHelpFile = strHelpFile.Left(loc+1);
-   strHelpFile += _T("KDOT_Export.chm");
-
-   free((void*)m_pszHelpFilePath);
-   m_pszHelpFilePath = _tcsdup(strHelpFile);
-
-   // pretty sure this is required
-   EnableHtmlHelp();
-
-
     return CWinApp::InitInstance();
 }
 
 int CKDOTExportAppPlugin::ExitInstance()
 {
+   ::GXTerminate();
     _Module.Term();
     return CWinApp::ExitInstance();
 }

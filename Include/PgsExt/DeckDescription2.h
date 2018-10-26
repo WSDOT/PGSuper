@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -82,6 +82,7 @@ public:
    pgsTypes::DeckOverhangTaper OverhangTaper;
    Float64 OverhangEdgeDepth; // depth of overhang at edge of slab
    Float64 Fillet;
+   pgsTypes::HaunchShapeType HaunchShape; // square or filleted haunch
    Float64 PanelDepth; // depth of SIP panel
    Float64 PanelSupport; // Width of SIP panel support (deduct this from roughened surface width
                          // for horizontal shear capacity)

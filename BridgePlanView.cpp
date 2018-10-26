@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1466,7 +1466,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pIGirder);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTempSupport); // only gets used if there are temporary supports
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);

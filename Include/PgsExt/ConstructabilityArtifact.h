@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,6 +68,7 @@ class PGSEXTCLASS pgsConstructabilityArtifact
 {
 public:
    // GROUP: ENUM
+   // Status for A dimension check along the girder. Not for check at bearing CL's
    enum SlabOffsetStatusType { Pass, Fail, Excessive, NA };
 
    // GROUP: LIFECYCLE
@@ -94,17 +95,24 @@ public:
    // GROUP: ACCESS
 
    //------------------------------------------------------------------------
+   // Slab offset check along girder
    void SetRequiredSlabOffset(Float64 reqd);
    Float64 GetRequiredSlabOffset() const;
-
    void SetProvidedSlabOffset(Float64 provided);
    Float64 GetProvidedSlabOffset() const;
-
    void SetSlabOffsetApplicability(bool bSet);
    bool IsSlabOffsetApplicable() const;
-
+   void SetSlabOffsetWarningTolerance(Float64 tol);
+   Float64 GetSlabOffsetWarningTolerance() const;
    SlabOffsetStatusType SlabOffsetStatus() const;
    bool SlabOffsetPassed() const;
+
+   // Check for mininum required fillet defined in girder library
+   void SetRequiredMinimumFillet(Float64 reqd);
+   Float64 GetRequiredMinimumFillet() const;
+   void SetProvidedFillet(Float64 provided);
+   Float64 GetProvidedFillet() const;
+   bool MinimumFilletPassed() const;
 
    // do stirrup lengths need to be checked because of the roadway geometry
    // (excessive haunch along the girder could lead to short stirrups in the field.
@@ -112,8 +120,18 @@ public:
    void CheckStirrupLength(bool bCheck);
    bool CheckStirrupLength() const;
 
+   // Slab offset check at bearing centerlines
+   void SetRequiredHaunchAtBearingCLs(Float64 reqd);
+   Float64 GetRequiredHaunchAtBearingCLs() const;
+   void SetProvidedHaunchAtBearingCLs(Float64 provided);
+   Float64 GetProvidedHaunchAtBearingCLs() const;
+   void SetHaunchAtBearingCLsApplicability(bool bSet);
+   bool IsHaunchAtBearingCLsApplicable() const;
+   bool HaunchAtBearingCLsPassed() const;
+
+   // Bottom flange clearance
    void SetBottomFlangeClearanceApplicability(bool bSet);
-   bool IsBottomFlangeClearnceApplicable() const;
+   bool IsBottomFlangeClearanceApplicable() const;
    void SetBottomFlangeClearanceParameters(Float64 C,Float64 Cmin);
    void GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const;
    bool BottomFlangeClearancePassed() const;
@@ -140,8 +158,15 @@ private:
    // GROUP: DATA MEMBERS
    Float64 m_Provided; // The actual slab offset
    Float64 m_Required; // The required required slab offset
+   Float64 m_SlabOffsetWarningTolerance; // if offset is greater than tolerance + required, issue a warning
    bool m_bCheckStirrupLength;
+   Float64 m_ProvidedFillet;
+   Float64 m_MinimumRequiredFillet;
    bool m_bIsSlabOffsetApplicable;
+
+   Float64 m_ProvidedAtBearingCLs; // The actual slab offset
+   Float64 m_RequiredAtBearingCLs; // The required required slab offset
+   bool m_bIsHaunchAtBearingCLsApplicable;
 
    bool m_bIsBottomFlangeClearanceApplicable;
    Float64 m_C;

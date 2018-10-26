@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include "psglib\psglib.h"
 #include "SpecMomentPage.h"
 #include "SpecMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -67,16 +67,15 @@ BEGIN_MESSAGE_MAP(CSpecMomentPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecMomentPage)
 		// NOTE: the ClassWizard will add message map macros here
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecMomentPage message handlers
 
-LRESULT CSpecMomentPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CSpecMomentPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_MOMENT_TAB );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_MOMENT_CAPACITY );
 }
 
 BOOL CSpecMomentPage::OnInitDialog()

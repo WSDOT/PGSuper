@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@ class CBridgeDescDlg;
 #include "resource.h"
 #include <PgsExt\DeckDescription.h>
 #include "BridgeDescDeckPointGrid.h"
+#include <PgsExt\HaunchShapeComboBox.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckDetailsPage dialog
@@ -105,7 +106,7 @@ protected:
    CBridgeDescDeckPointGrid m_Grid;
 
    Float64 m_SlabOffset;
-   bool m_bSlabOffsetWholeBridge;
+   pgsTypes::SlabOffsetType m_SlabOffsetType;
    CString m_strSlabOffsetCache;
 
    int m_PrevDeckEventIdx;
@@ -116,11 +117,15 @@ protected:
 
    Float64 m_AgeAtContinuity; // Age when deck becomes composite with girders (days)
 
+   CHaunchShapeComboBox m_cbHaunchShape;
+
 public:
    afx_msg void OnStnClickedOlayDensityUnit();
    afx_msg void OnBnClickedOlayWeightLabel();
    afx_msg void OnBnClickedOlayDepthLabel();
-   afx_msg void OnBnClickedSameslaboffset();
+   afx_msg void OnBnClickedEditHaunchButton();
+   afx_msg void OnCbnSelchangeSameslaboffset();
+   afx_msg void OnCbnSelchangeHaunchShape2();
 };
 
 //{{AFX_INSERT_LOCATION}}

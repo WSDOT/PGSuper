@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,12 +87,12 @@ protected:
    bool m_bContinuous;
 
    // virtual overrides for grid
-   int GetColWidth(ROWCOL nCol);
-   BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
-   BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
-   BOOL OnEndEditing(ROWCOL nRow, ROWCOL nCol);
-   BOOL PasteTextRowCol(ROWCOL nRow, ROWCOL nCol, const CString& str, UINT nFlags, const CGXStyle* pOldStyle);
-   BOOL ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT nRepCnt, UINT flags);
+   virtual int GetColWidth(ROWCOL nCol);
+   virtual BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
+   virtual BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+   virtual BOOL OnEndEditing(ROWCOL nRow, ROWCOL nCol);
+   virtual BOOL PasteTextRowCol(ROWCOL nRow, ROWCOL nCol, const CString& str, UINT nFlags, const CGXStyle* pOldStyle);
+   virtual BOOL ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT nRepCnt, UINT flags);
 
 private:
    void AddGirderRow(GirderIndexType gdr, const CSpanData2* pSpan);

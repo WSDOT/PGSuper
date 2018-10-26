@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -420,7 +420,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       if (isIBeam)
       {
          // Empty spaces in IGND
-         workerB.WriteBlankSpaces(14);
+         workerB.WriteBlankSpaces(isExtendedVersion ? 14:15);
       }
    }
 
@@ -698,7 +698,7 @@ void CadWriterWorkerBee::WriteTitle(LPCTSTR title, Int16 colWidth)
       *(m_TitleLineCursor++) = _T(' ');
    }
 
-   for (size_t is=0; is<colWidth; is++)
+   for (size_t is=0; is<(size_t)colWidth; is++)
    {
       *(m_DashLineCursor++) = _T('-');
    }

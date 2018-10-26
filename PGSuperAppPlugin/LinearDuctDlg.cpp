@@ -173,7 +173,7 @@ void CLinearDuctDlg::OnMeasurementTypeChanged()
 
 void CLinearDuctDlg::OnHelp()
 {
-#pragma Reminder("IMPLEMENT: OnHelp")
+#pragma Reminder("HELP: OnHelp")
    AfxMessageBox(_T("Implement Help Topic"));
 }
 

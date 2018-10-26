@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,11 +33,10 @@
 #include "BridgeDescDlg.h"
 #include <PgsExt\ConcreteDetailsDlg.h>
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
+#include "PGSuperAppPlugin\EditHaunchDlg.h"
 #include "Hints.h"
 
 #include <System\Flags.h>
-
-#include "HtmlHelp\HelpTopics.hh"
 
 #include <WBFLGenericBridge.h>
 
@@ -52,6 +51,27 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// template function to directly set item data in a combo box
+template <class T>
+bool SetCBItemData( CWnd* pWnd, int nIDC, T itemdata )
+{
+   CComboBox* pCB = (CComboBox*)pWnd->GetDlgItem(nIDC);
+
+   bool succ=false;
+   int count = pCB->GetCount();
+   for ( int i = 0; i < count; i++ )
+   {
+      if ( ((T)pCB->GetItemData(i)) == itemdata )
+      {
+         pCB->SetCurSel(i);
+         succ=true;
+         break;
+      }
+   }
+
+   return succ;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckDetailsPage property page
@@ -80,10 +100,17 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
    CEAFDocument* pDoc = EAFGetDocument();
    
-
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
 
    CPropertyPage::DoDataExchange(pDX);
+
+   // Slab offset data
+   if (!pDX->m_bSaveAndValidate)
+   {
+      m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
+      m_SlabOffset = pParent->m_BridgeDesc.GetSlabOffset();
+      m_strSlabOffsetCache.Format(_T("%s"),FormatDimension(m_SlabOffset,pDisplayUnits->GetComponentDimUnit(), false));
+   }
 
 	//{{AFX_DATA_MAP(CBridgeDescDeckDetailsPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
@@ -91,6 +118,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MOD_E,   m_ctrlEcCheck);
 	DDX_Control(pDX, IDC_SLAB_FC, m_ctrlFc);
 	//}}AFX_DATA_MAP
+
+   DDX_Control(pDX,IDC_HAUNCH_SHAPE2,m_cbHaunchShape);
+   DDX_CBItemData(pDX, IDC_HAUNCH_SHAPE2,  pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape);
 
    // make sure unit tags are always displayed (even if disabled)
    DDX_Tag( pDX, IDC_GROSS_DEPTH_UNIT,    pDisplayUnits->GetComponentDimUnit() );
@@ -114,8 +144,8 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       DDV_UnitValueZeroOrMore( pDX, IDC_FILLET,pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
 
       // slab offset
-      DDX_Check_Bool(pDX,IDC_SAMESLABOFFSET,m_bSlabOffsetWholeBridge);
-      if ( m_bSlabOffsetWholeBridge )
+      DDX_CBItemData(pDX, IDC_SAMESLABOFFSET, m_SlabOffsetType);
+      if ( m_SlabOffsetType==pgsTypes::sotBridge)
       {
          DDX_UnitValueAndTag( pDX, IDC_ADIM, IDC_ADIM_UNIT, m_SlabOffset, pDisplayUnits->GetComponentDimUnit() );
       }
@@ -236,7 +266,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate && deckType != pgsTypes::sdtNone )
    {
       // Validate slab depth
-      if ( m_bSlabOffsetWholeBridge )
+      if ( m_SlabOffsetType==pgsTypes::sotBridge )
       {
          // Slab offset applies to the entire bridge... have users adjust Slab offset if it doesn't
          // fit with the slab depth
@@ -279,9 +309,6 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       {
          // Slab offset is span-by-span or girder-by-girder. Have user adjust the slab depth if it doesn't
          // fit with the current values for slab offset.
-         
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotGirder); // force to girder-by-girder
-
          Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
 
          if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP || 
@@ -386,12 +413,14 @@ BEGIN_MESSAGE_MAP(CBridgeDescDeckDetailsPage, CPropertyPage)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_OLAY_WEIGHT_LABEL, &CBridgeDescDeckDetailsPage::OnBnClickedOlayWeightLabel)
    ON_BN_CLICKED(IDC_OLAY_DEPTH_LABEL, &CBridgeDescDeckDetailsPage::OnBnClickedOlayDepthLabel)
-   ON_BN_CLICKED(IDC_SAMESLABOFFSET, &CBridgeDescDeckDetailsPage::OnBnClickedSameslaboffset)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CBridgeDescDeckDetailsPage::OnConditionFactorTypeChanged)
    ON_CBN_SELCHANGE(IDC_DECK_EVENT, OnDeckEventChanged)
    ON_CBN_DROPDOWN(IDC_DECK_EVENT, OnDeckEventChanging)
    ON_CBN_SELCHANGE(IDC_OVERLAY_EVENT, OnOverlayEventChanged)
    ON_CBN_DROPDOWN(IDC_OVERLAY_EVENT, OnOverlayEventChanging)
+   ON_BN_CLICKED(IDC_EDIT_HAUNCH_BUTTON, &CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton)
+   ON_CBN_SELCHANGE(IDC_SAMESLABOFFSET, &CBridgeDescDeckDetailsPage::OnCbnSelchangeSameslaboffset)
+   ON_CBN_SELCHANGE(IDC_HAUNCH_SHAPE2, &CBridgeDescDeckDetailsPage::OnCbnSelchangeHaunchShape2)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -464,9 +493,15 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
       pCB->EnableWindow(FALSE);
    }
 
-   m_SlabOffset = pParent->m_BridgeDesc.GetSlabOffset();
-   m_bSlabOffsetWholeBridge = pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge ? true : false;
-   m_strSlabOffsetCache.Format(_T("%s"),FormatDimension(m_SlabOffset,pDisplayUnits->GetComponentDimUnit(), false));
+   // Slab offset type combo
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_SAMESLABOFFSET);
+   int sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotBridge));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotBridge);
+   sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotPier));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotPier);
+   sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotGirder));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotGirder);
+
 
    // Initialize the condition factor combo box
    CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
@@ -475,6 +510,8 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    pcbConditionFactor->AddString(_T("Poor (Structure condition rating 4 or lower)"));
    pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
+
+
 
    CPropertyPage::OnInitDialog();
 
@@ -493,13 +530,18 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 	
    OnConditionFactorTypeChanged();
 
+   m_cbHaunchShape.Initialize(pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape);
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_HAUNCH_SHAPE2,pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape);
+
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CBridgeDescDeckDetailsPage::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGEDESC_DECKDETAILS );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_BRIDGEDESC_DECKDETAILS );
 }
 
 BOOL CBridgeDescDeckDetailsPage::OnSetActive() 
@@ -542,14 +584,20 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_OVERHANG_DEPTH_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
    GetDlgItem(IDC_OVERHANG_TAPER)->EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
-   GetDlgItem(IDC_FILLET_LABEL)->EnableWindow( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_FILLET)->EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
+   BOOL show_fillet = deckType == pgsTypes::sdtNone ? FALSE:TRUE;
+   GetDlgItem(IDC_FILLET_LABEL)->EnableWindow(show_fillet);
+   GetDlgItem(IDC_FILLET)->EnableWindow(show_fillet);
+   GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(show_fillet);
 
-   if ( deckType == pgsTypes::sdtCompositeOverlay )
+   GetDlgItem(IDC_HAUNCH_SHAPE2)->EnableWindow(show_fillet);
+   GetDlgItem(IDC_HAUNCH_SHAPE_LABEL)->EnableWindow(show_fillet);
+
+   if ( !show_fillet )
    {
       GetDlgItem(IDC_FILLET)->SetWindowText(_T("0.00"));
+      SetCBItemData(this, IDC_HAUNCH_SHAPE2, pgsTypes::hsSquare);
    }
+
 
    UpdateSlabOffsetControls();
 
@@ -974,24 +1022,46 @@ void CBridgeDescDeckDetailsPage::OnBnClickedOlayDepthLabel()
    OnWearingSurfaceTypeChanged();
 }
 
-void CBridgeDescDeckDetailsPage::OnBnClickedSameslaboffset()
+void CBridgeDescDeckDetailsPage::OnCbnSelchangeSameslaboffset()
 {
-   BOOL bEnable = IsDlgButtonChecked(IDC_SAMESLABOFFSET);
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_SAMESLABOFFSET);
+   int idx = pBox->GetCurSel();
+
+   m_SlabOffsetType = (pgsTypes::SlabOffsetType)pBox->GetItemData(idx);
+
+   // TRICKY: But this takes care of the case when the offset type is changed and never edited:
+   // Use logic in the edit haunch dialog to change the bridge description
+   CEditHaunchDlg dlg(&(pParent->m_BridgeDesc));
+   dlg.ForceToSlabOffsetType(m_SlabOffsetType);
+   dlg.ModifyBridgeDescr(&(pParent->m_BridgeDesc));
+
+   bool bEntireBridge = m_SlabOffsetType==pgsTypes::sotBridge; 
+
+   // Note:: Original UI design (commented below showed a hint dialog and just enabled the input data button.
+   // IMHO, it is better just to pop the input dialog to force users to see data (rdp)
+/*
    CString strHint;
-   if ( bEnable )
+   if ( bEntireBridge )
    {
-      strHint = _T("By checking this box, the same slab offset will be used for the entire bridge");
+      strHint = _T("By selecting this option, the same slab offset will be used for the entire bridge");
    }
-   else
+   else if (m_SlabOffsetType==pgsTypes::sotPier)
    {
-      strHint = _T("By unchecking this box, the slab offset can be specified by span or by girder. Span by span slab offsets can be defined on either the Span or Pier Connections page. Girder by girder slab offsets can be defined on the Girder Spacing or Girder dialogs");
+      strHint = _T("By selecting this option, slab offset values will be set uniquely for each span. Use the Edit Haunch dialog below the check box to specify values as you wish. \n\nHint: Slab offsets can also be changed from the main menu's Edit|Haunch command");
+   }
+   else if (m_SlabOffsetType==pgsTypes::sotGirder)
+   {
+      strHint = _T("By selecting this option, slab offset values will be set uniquely for each girder. Use the Edit Haunch dialog below the check box to specify values as you wish. \n\nHint: Slab offsets can also be changed from the main menu's Edit|Haunch command");
    }
 
    // Show the hint dialog
    UIHint(strHint,UIHINT_SINGLE_SLAB_OFFSET);
-
+*/
    CWnd* pWnd = GetDlgItem(IDC_ADIM);
-   if ( bEnable )   
+   if ( bEntireBridge )   
    {
       // box was checked on so put the cache value into the window
       pWnd->SetWindowText(m_strSlabOffsetCache);
@@ -1004,25 +1074,34 @@ void CBridgeDescDeckDetailsPage::OnBnClickedSameslaboffset()
    }
 
    UpdateSlabOffsetControls();
+
+   // Show dialog 
+   OnBnClickedEditHaunchButton();
 }
+
 
 void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
 {
-   BOOL bEnable = IsDlgButtonChecked(IDC_SAMESLABOFFSET) ? TRUE : FALSE;
+   // Which controls to show
+   int ShowInput  = m_SlabOffsetType==pgsTypes::sotBridge ? SW_SHOW : SW_HIDE;
+   int ShowButton = ShowInput == SW_HIDE ?  SW_SHOW : SW_HIDE;
 
    // enable/disable slab offset controls
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
 
-   if ( bEnable )
-   {
-      bEnable = (deckType != pgsTypes::sdtNone); // if enabled, disable if deck type is none
-   }
+   BOOL bEnable = (deckType != pgsTypes::sdtNone) ? TRUE : FALSE; // if enabled, disable if deck type is none
 
+   GetDlgItem(IDC_ADIM_LABEL)->ShowWindow(ShowInput);
+   GetDlgItem(IDC_ADIM)->ShowWindow(ShowInput);
+   GetDlgItem(IDC_ADIM_UNIT)->ShowWindow(ShowInput);
    GetDlgItem(IDC_ADIM_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_ADIM)->EnableWindow(bEnable);
    GetDlgItem(IDC_ADIM_UNIT)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_EDIT_HAUNCH_BUTTON)->ShowWindow(ShowButton);
+   GetDlgItem(IDC_EDIT_HAUNCH_BUTTON)->EnableWindow(bEnable);
 }
 
 void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
@@ -1281,4 +1360,57 @@ EventIndexType CBridgeDescDeckDetailsPage::CreateEvent()
   }
 
    return INVALID_INDEX;
+}
+
+void CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+   // Update bridge descr with dialog fillet data before entering dialog
+   CDataExchange dx(this,TRUE);
+   dx.PrepareCtrl(IDC_FILLET);
+   DDX_UnitValueAndTag( &dx, IDC_FILLET, IDC_FILLET_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
+
+   CEditHaunchDlg dlg(&(pParent->m_BridgeDesc));
+   dlg.ForceToSlabOffsetType(m_SlabOffsetType);
+   if ( dlg.DoModal() == IDOK )
+   {
+      // Dialog modifies bridge descr
+      dlg.ModifyBridgeDescr(&(pParent->m_BridgeDesc));
+
+      // Upload pertinent changed data back into this dialog
+      bool st = SetCBItemData(this, IDC_HAUNCH_SHAPE2, pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape);
+      ATLASSERT(st);
+
+      // Set slab offset type combo box
+      m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
+
+      st = SetCBItemData(this, IDC_SAMESLABOFFSET, m_SlabOffsetType);
+      ATLASSERT(st);
+
+      // Dialog can change back to single A for whole bridge. Set local values if needed
+      if (m_SlabOffsetType==pgsTypes::sotBridge)
+      {
+         m_SlabOffset = pParent->m_BridgeDesc.GetSlabOffset();
+         m_strSlabOffsetCache.Format(_T("%s"),FormatDimension(m_SlabOffset,pDisplayUnits->GetComponentDimUnit(), false));
+         CWnd* pWnd = GetDlgItem(IDC_ADIM);
+         pWnd->SetWindowText(m_strSlabOffsetCache);
+      }
+
+      UpdateSlabOffsetControls();
+   }
+}
+
+void CBridgeDescDeckDetailsPage::OnCbnSelchangeHaunchShape2()
+{
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+   // keep haunch shape up to date
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_HAUNCH_SHAPE2);
+   int idx = pBox->GetCurSel();
+   pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape = (pgsTypes::HaunchShapeType)pBox->GetItemData(idx);
 }

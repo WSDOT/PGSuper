@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -798,11 +798,6 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
 
       GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       sectionHeight = pSectProp->GetHg(pIntervals->GetPrestressReleaseInterval(segmentKey),poiCLBrg);
-
-      if ( 0 < groupOffset )
-      {
-         groupOffset = 0;
-      }
    }
 
    CComPtr<IPoint2d> point;

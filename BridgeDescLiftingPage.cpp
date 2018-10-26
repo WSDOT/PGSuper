@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,9 +30,6 @@
 
 #include "GirderDescDlg.h"
 #include "PGSuperAppPlugin\GirderSegmentDlg.h"
-
-
-#include "HtmlHelp\HelpTopics.hh"
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -87,18 +84,34 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CGirderDescLiftingPage)
 	//}}AFX_DATA_MAP
 
-   DDX_MetaFileStatic(pDX, IDC_HAULINGOVERHANGS, m_Picture, _T("HaulingOverhangs"), _T("Metafile") );
+   DDX_MetaFileStatic(pDX, IDC_HAULINGOVERHANGS, m_Picture, _T("HaulingOverhangs"), _T("Metafile"), EMF_FIT );
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
+   DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, segmentLength, pDisplayUnits->GetSpanLengthUnit() );
+
+   DDX_KeywordUnitValueAndTag(pDX,IDC_RELEASE_LOCATION,IDC_RELEASE_LOCATION_UNITS,_T("END"),pSegment->HandlingData.LeftReleasePoint, pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, pSegment->HandlingData.LeftLiftPoint, pDisplayUnits->GetSpanLengthUnit() );
    DDX_KeywordUnitValueAndTag(pDX,IDC_STORAGE_LOCATION,IDC_STORAGE_LOCATION_UNITS,_T("BRG"),pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
+
    if ( pDX->m_bSaveAndValidate )
    {
+      // these are always the same at both ends, even thought the implementation in this
+      // software permits them to be different at each end. make the right end the
+      // same as the left end
+      pSegment->HandlingData.RightReleasePoint = pSegment->HandlingData.LeftReleasePoint;
       pSegment->HandlingData.RightLiftPoint    = pSegment->HandlingData.LeftLiftPoint;
       pSegment->HandlingData.RightStoragePoint = pSegment->HandlingData.LeftStoragePoint;
+   }
+
+   if ( pSegment->HandlingData.LeftReleasePoint != -1 )
+   {
+      DDV_UnitValueZeroOrMore( pDX, IDC_RELEASE_LOCATION, pSegment->HandlingData.LeftReleasePoint, pDisplayUnits->GetSpanLengthUnit() );
+      DDV_UnitValueLessThanLimit(pDX, IDC_RELEASE_LOCATION, pSegment->HandlingData.LeftReleasePoint, segmentLength/2, pDisplayUnits->GetSpanLengthUnit(),_T("Release support location must be less than half the segment length. Please enter a value that is less than %f %s") );
    }
 
    DDV_UnitValueZeroOrMore( pDX, IDC_LIFTING_LOOP_LOCATION, pSegment->HandlingData.LeftLiftPoint, pDisplayUnits->GetSpanLengthUnit() );
@@ -106,6 +119,7 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    if ( pSegment->HandlingData.LeftStoragePoint != -1 )
    {
       DDV_UnitValueZeroOrMore( pDX, IDC_STORAGE_LOCATION, pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
+      DDV_UnitValueLessThanLimit(pDX, IDC_STORAGE_LOCATION, pSegment->HandlingData.LeftStoragePoint, segmentLength/2, pDisplayUnits->GetSpanLengthUnit(),_T("Storage support location must be less than half the segment length. Please enter a value that is less than %f %s") );
    }
 
    DDX_UnitValueAndTag( pDX, IDC_LEADINGOVERHANG, IDC_LEADINGOVERHANG_UNITS, pSegment->HandlingData.LeadingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );
@@ -114,14 +128,8 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag( pDX, IDC_TRAILINGOVERHANG, IDC_TRAILINGOVERHANG_UNITS, pSegment->HandlingData.TrailingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );
    DDV_UnitValueZeroOrMore( pDX, IDC_TRAILINGOVERHANG, pSegment->HandlingData.TrailingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   Float64 gdrlength = pBridge->GetSegmentLength(segmentKey);
-   DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, gdrlength, pDisplayUnits->GetSpanLengthUnit() );
-
-#pragma Reminder("IMPLEMENT: Check clear span... make sure it is positive")
-   Float64 clearspan = gdrlength -pSegment->HandlingData.LeadingSupportPoint - pSegment->HandlingData.TrailingSupportPoint;
-//   DDV_UnitValueZeroOrMore( pDX, clearspan, bUnitsSI, usLength, siLength );
+   Float64 clearspan = segmentLength - pSegment->HandlingData.LeadingSupportPoint - pSegment->HandlingData.TrailingSupportPoint;
+   DDV_UnitValueZeroOrMore( pDX, IDC_LEADINGOVERHANG, clearspan, pDisplayUnits->GetSpanLengthUnit() );
 #pragma Reminder("STATUS ITEM: If leading overhang exceeds max, post status item")
 //    // this should be done in an agent
 //   // let the user exceed the maximum so as not to limit the program
@@ -136,6 +144,28 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescLiftingPage message handlers
+BOOL CGirderDescLiftingPage::OnInitDialog()
+{
+	CPropertyPage::OnInitDialog();
+	
+   CWnd* pWnd = GetParent();
+   if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderDescDlg)) )
+   {
+      GetDlgItem(IDC_RELEASE_LOCATION)->EnableWindow(FALSE);
+   }
+   else if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderSegmentDlg)) )
+   {
+      GetDlgItem(IDC_RELEASE_LOCATION)->EnableWindow(TRUE);
+   }
+   else
+   {
+      ATLASSERT(false); // should never get here
+      // is there a new parent dialog???
+   }
+
+   return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
 
 BOOL CGirderDescLiftingPage::OnSetActive() 
 {
@@ -146,7 +176,7 @@ BOOL CGirderDescLiftingPage::OnSetActive()
 
    if(!pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
-      int cntrls[] = {IDC_STATIC_LL,IDC_STATIC_LLE,IDC_LIFTING_LOOP_LOCATION,
+      int cntrls[] = {IDC_STATIC_LLE,IDC_LIFTING_LOOP_LOCATION,
                       IDC_LIFTING_LOOP_LOCATION_UNITS};
 
       int ic=0;
@@ -167,8 +197,8 @@ BOOL CGirderDescLiftingPage::OnSetActive()
    {
       int cntrls[] = {IDC_HAULINGOVERHANGS,IDC_STATIC_TLSO,IDC_TRAILINGOVERHANG,IDC_TRAILINGOVERHANG_UNITS,
                       IDC_STATIC_SLLO,IDC_LEADINGOVERHANG,IDC_LEADINGOVERHANG_UNITS,IDC_STATICSLGL,
-                      IDC_GIRDERLENGTH,IDC_GIRDERLENGTH_UNIT,
-                      IDC_STATIC_SL};
+                      IDC_GIRDERLENGTH,IDC_GIRDERLENGTH_UNIT
+                      };
 
       int ic=0;
       while(true)
@@ -177,7 +207,7 @@ BOOL CGirderDescLiftingPage::OnSetActive()
          ASSERT(pwnd);
          pwnd->EnableWindow(FALSE);
 
-         if (cntrls[ic++] == IDC_STATIC_SL)
+         if (cntrls[ic++] == IDC_GIRDERLENGTH_UNIT)
          {
             break;
          }
@@ -190,5 +220,5 @@ BOOL CGirderDescLiftingPage::OnSetActive()
 
 void CGirderDescLiftingPage::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDERWIZ_LIFTING );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_SUPPORTS );
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -92,7 +92,7 @@ BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
       {
          CPGSAppPluginBase* pBasePlugin = dynamic_cast<CPGSAppPluginBase*>(importerPlugin.p);
          ATLASSERT(pBasePlugin);
-         pBasePlugin->DefaultInit();
+         pBasePlugin->DefaultInit(this);
       }
    }
    return bHandled;
@@ -114,7 +114,7 @@ void CPGSuperAppPlugin::ConfigurePlugins()
 
    CAutoRegistry autoReg(GetAppName());
 
-   CPluginManagerDlg dlg(_T("Manage PGSuper Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSuperDataImporter,CATID_PGSuperDataExporter,CATID_PGSuperExtensionAgent);
+   CPluginManagerDlg dlg(_T("Manage PGSuper Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSuperDataImporter,CATID_PGSuperDataExporter,CATID_PGSuperExtensionAgent,GetAppName());
    dlg.DoModal(); // this DoModal is correct... the dialog takes care of its own data
 }
 
@@ -123,7 +123,7 @@ BOOL CPGSuperAppPlugin::Init(CEAFApp* pParent)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pMyApp = AfxGetApp();
 
-   DefaultInit();
+   DefaultInit(this);
 
    // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
    m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPER) );
@@ -201,6 +201,31 @@ HMENU CPGSuperAppPlugin::GetSharedMenuHandle()
 CString CPGSuperAppPlugin::GetName()
 {
    return CString(_T("PGSuper"));
+}
+
+CString CPGSuperAppPlugin::GetDocumentationSetName()
+{
+   return GetName();
+}
+
+CString CPGSuperAppPlugin::GetDocumentationURL()
+{
+   return CPGSAppPluginBase::GetDocumentationURL();
+}
+
+CString CPGSuperAppPlugin::GetDocumentationMapFile()
+{
+   return CPGSAppPluginBase::GetDocumentationMapFile();
+}
+
+void CPGSuperAppPlugin::LoadDocumentationMap()
+{
+   return CPGSAppPluginBase::LoadDocumentationMap();
+}
+
+eafTypes::HelpResult CPGSuperAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+{
+   return CPGSAppPluginBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
 CString CPGSuperAppPlugin::GetUsageMessage()

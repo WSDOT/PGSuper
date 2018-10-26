@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,6 +50,7 @@ CDeckDescription2::CDeckDescription2()
 
    GrossDepth       = ::ConvertToSysUnits(  8.5, unitMeasure::Inch );
    Fillet           = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
+   HaunchShape      = pgsTypes::hsFilleted; // default until version 2
 
    Concrete.Type             = pgsTypes::Normal;
    Concrete.bHasInitial      = false;
@@ -150,6 +151,11 @@ bool CDeckDescription2::operator == (const CDeckDescription2& rOther) const
    }
 
    if ( !IsEqual( Fillet, rOther.Fillet ) )
+   {
+      return false;
+   }
+
+   if ( HaunchShape != rOther.HaunchShape )
    {
       return false;
    }
@@ -279,6 +285,14 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("Fillet"), &var );
       Fillet = var.dblVal;
 
+      if (1 < version)
+      {
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("HaunchShape"),&var);
+         HaunchShape = (pgsTypes::HaunchShapeType)(var.lVal);
+      }
+
       var.Clear();
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("PanelDepth"),&var );
@@ -381,7 +395,7 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("Deck"),1.0);
+   pStrSave->BeginUnit(_T("Deck"),2.0);
 
    pStrSave->put_Property(_T("SlabType"),         CComVariant(DeckType));
    pStrSave->put_Property(_T("TransverseConnectivity"), CComVariant(TransverseConnectivity)); // added for version 14.0
@@ -405,6 +419,7 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("OverhangEdgeDepth"),CComVariant(OverhangEdgeDepth));
    pStrSave->put_Property(_T("OverhangTaperType"),CComVariant(OverhangTaper));
    pStrSave->put_Property(_T("Fillet"),           CComVariant(Fillet));
+   pStrSave->put_Property(_T("HaunchShape"),      CComVariant(HaunchShape));
    pStrSave->put_Property(_T("PanelDepth"),       CComVariant(PanelDepth));
    pStrSave->put_Property(_T("PanelSupport"),     CComVariant(PanelSupport));
    pStrSave->put_Property(_T("WearingSurfaceType"), CComVariant(WearingSurface));
@@ -482,6 +497,7 @@ void CDeckDescription2::MakeCopy(const CDeckDescription2& rOther,bool bCopyDataO
    OverhangTaper           = rOther.OverhangTaper;
    OverhangEdgeDepth       = rOther.OverhangEdgeDepth;
    Fillet                  = rOther.Fillet;
+   HaunchShape             = rOther.HaunchShape;
 	OverlayWeight           = rOther.OverlayWeight;
    OverlayDensity          = rOther.OverlayDensity;
    OverlayDepth            = rOther.OverlayDepth;

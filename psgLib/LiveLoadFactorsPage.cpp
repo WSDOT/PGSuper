@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include "stdafx.h"
 #include "LiveLoadFactorsPage.h"
 #include "RatingDialog.h"
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 // CLiveLoadFactorsPage dialog
 
@@ -71,7 +71,7 @@ void CLiveLoadFactorsPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CLiveLoadFactorsPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_LL_METHOD, &CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -92,9 +92,13 @@ BOOL CLiveLoadFactorsPage::OnInitDialog()
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllBilinear);
 
    if ( pParent->m_RatingDescriptionPage.GetSpecVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   {
       idx = pcbLLMethod->AddString(_T("Bilinear with vehicle weight"));
+   }
    else
+   {
       idx = pcbLLMethod->AddString(_T("Bilinear with permit weight ratio"));
+   }
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllBilinearWithWeight);
 
    CComboBox* pcbOptions = (CComboBox*)GetDlgItem(IDC_INTERPOLATE);
@@ -357,8 +361,7 @@ void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
    GetDlgItem(IDC_INTERPOLATE)->ShowWindow( bInterpolate ? SW_SHOW : SW_HIDE );
 }
 
-LRESULT CLiveLoadFactorsPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CLiveLoadFactorsPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_LIVE_LOAD_FACTORS );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LOAD_RATING_LIVE_LOAD_FACTORS );
 }

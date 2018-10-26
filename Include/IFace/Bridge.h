@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -553,7 +553,7 @@ interface IBridge : IUnknown
    // computes the distance from the start of the segment to the temporary support. returns false if the temporary support is not located on the segment
    virtual bool GetTemporarySupportLocation(SupportIndexType tsIdx,const CSegmentKey& segmentKey,Float64* pXs) = 0;
 
-   // returns the location of the temporary support measured along the CL girder, measured from the CL of the first pier
+   // returns the location of the temporary support measured along the CL girder, measured from Girder Path Coordinates
    virtual Float64 GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx) = 0;
 
    // returns the temporary support type (StrongBack or ErectionTower)
@@ -1489,6 +1489,7 @@ interface IGirder : public IUnknown
    virtual void GetSegmentEndDistance(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,Float64* pStartEndDistance,Float64* pEndEndDistance) = 0;
    virtual void GetSegmentBearingOffset(const CSegmentKey& segmentKey,Float64* pStartBearingOffset,Float64* pEndBearingOffset) = 0;
    virtual void GetSegmentStorageSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) = 0;
+   virtual void GetSegmentReleaseSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) = 0;
 };
 
 /*****************************************************************************
@@ -1510,6 +1511,7 @@ interface ITendonGeometry : public IUnknown
    // returns the geometric centerline of a duct as a series of points. 
    // use this to plot ducts in the UI
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint2dCollection** ppPoints) = 0;
+   virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint3dCollection** ppPoints) = 0;
 
    // returns the geometric centerline of a duct for the duct configuration given in the girder object.
    // use this to plot ducts in the UI

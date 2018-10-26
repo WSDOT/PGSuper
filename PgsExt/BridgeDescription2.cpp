@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2038,36 +2038,46 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
 
    if ( !IsEqual(pTS->GetStation(),tsData.GetStation()) )
    {
-#pragma Reminder("UPDATE: consider a new implementation for supports that simply move")
-      // if the move is such that the supported segment(s) don't change 
-      // we don't have to remove and re-insert. Removing the temporary support,
-      // if it occurs at a closure joint, causes the right hand segment to be
-      // deleted and the left hand segment extended. If the segments are tapered
-      // it will modify the shape of the segment. In this case, the temporary support
-      // index is the only thing that changes.
-      //
-      // if the move is such that the temporary support goes from one segment to another
-      // remove and re-insert seems to be the only viable option.
-
-      // temporary support has moved... remove it and re-insert it at the new location
-      CTemporarySupportData* pNewTS = new CTemporarySupportData(tsData);
-      pNewTS->SetID(pTS->GetID()); // maintain its ID
-
-      EventIndexType erectionEventIdx, removeEventIdx;
-      m_TimelineManager.GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removeEventIdx);
-
-      EventIndexType castClosureJointEventIdx = INVALID_INDEX;
-      CClosureJointData* pClosure = pTS->GetClosureJoint(0);
-      if ( pClosure )
+      CSpanData2* pSpan = pTS->GetSpan();
+      if ( ::InRange(pSpan->GetPrevPier()->GetStation(),tsData.GetStation(),pSpan->GetNextPier()->GetStation()) )
       {
-         castClosureJointEventIdx = m_TimelineManager.GetCastClosureJointEventIndex(pClosure->GetID());
+         // temporary support is not changing spans
+         std::vector<CTemporarySupportData*> vTS = pSpan->GetTemporarySupports();
+         ATLASSERT( 1 <= vTS.size() );
+         if ( vTS.size() == 1 || // this is only one temp support in the span
+              (tsIdx == 0 && tsData.GetStation() < vTS[1]->GetStation()) || // this is the first temp support and it is still before the second TS
+              (tsIdx == vTS.size()-1 && vTS.back()->GetStation() < tsData.GetStation()) || // this is the last temp support and it is stall after the second to last TS
+              (vTS[tsIdx-1]->GetStation() < tsData.GetStation() && tsData.GetStation() < vTS[tsIdx+1]->GetStation()) // the TS is still between the same two TS
+              )
+         {
+            // temporary support does not change relative position in the span with respect to other
+            // temporary supports
+            pTS->CopyTemporarySupportData(&tsData);
+            return tsIdx;
+         }
       }
+      else
+      {
+         // temporary support has moved... remove it and re-insert it at the new location
+         CTemporarySupportData* pNewTS = new CTemporarySupportData(tsData);
+         pNewTS->SetID(pTS->GetID()); // maintain its ID
 
-      RemoveTemporarySupportByIndex(tsIdx);
+         EventIndexType erectionEventIdx, removeEventIdx;
+         m_TimelineManager.GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removeEventIdx);
 
-      // LEAVE THE FUNCTION HERE
-      AddTemporarySupport(pNewTS,erectionEventIdx,removeEventIdx,castClosureJointEventIdx);
-      return pNewTS->GetIndex();
+         EventIndexType castClosureJointEventIdx = INVALID_INDEX;
+         CClosureJointData* pClosure = pTS->GetClosureJoint(0);
+         if ( pClosure )
+         {
+            castClosureJointEventIdx = m_TimelineManager.GetCastClosureJointEventIndex(pClosure);
+         }
+
+         RemoveTemporarySupportByIndex(tsIdx);
+
+         // LEAVE THE FUNCTION HERE
+         AddTemporarySupport(pNewTS,erectionEventIdx,removeEventIdx,castClosureJointEventIdx);
+         return pNewTS->GetIndex();
+      }
    }
 
    // ONLY CONTINUE ON IF THE TEMPORARY SUPPORT DIDN'T MOVE
@@ -2153,8 +2163,7 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
    //const CClosureJointData* pClosure = pTS->GetClosureJoint(0);
    //if ( pClosure )
    //{
-   //   IDType id = pClosure->GetID();
-   //   EventIndexType castClosureEventIdx = m_TimelineManager.GetCastClosureJointEventIndex(id);
+   //   EventIndexType castClosureEventIdx = m_TimelineManager.GetCastClosureJointEventIndex(pClosure);
    //   m_TimelineManager.GetEventByIndex(castClosureEventIdx)->GetCastClosureJointActivity().RemoveTempSupport(tsID);
    //}
 
@@ -2200,6 +2209,11 @@ SupportIndexType CBridgeDescription2::MoveTemporarySupport(SupportIndexType tsId
 
 void CBridgeDescription2::Clear()
 {
+   m_Deck.DeckEdgePoints.clear();
+   m_Deck.DeckRebarData.NegMomentRebar.clear();
+
+   ClearGirderGroups();
+
    std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
    std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
    for ( ; tsIter != tsIterEnd; tsIter++ )
@@ -2208,14 +2222,6 @@ void CBridgeDescription2::Clear()
       delete pTSData;
    }
    m_TemporarySupports.clear();
-
-   m_TempSupportID = 0;
-   m_SegmentID     = 0;
-   m_PierID        = 0;
-   m_GirderID      = 0;
-
-   m_Deck.DeckEdgePoints.clear();
-   m_Deck.DeckRebarData.NegMomentRebar.clear();
 
    std::vector<CPierData2*>::iterator pierIter(m_Piers.begin());
    std::vector<CPierData2*>::iterator pierIterEnd(m_Piers.end());
@@ -2235,10 +2241,13 @@ void CBridgeDescription2::Clear()
    }
    m_Spans.clear();
 
-
-   ClearGirderGroups();
-
    m_TimelineManager.Clear();
+
+
+   m_TempSupportID = 0;
+   m_SegmentID     = 0;
+   m_PierID        = 0;
+   m_GirderID      = 0;
 }
 
 Float64 CBridgeDescription2::GetLength() const
@@ -2337,7 +2346,7 @@ void CBridgeDescription2::SetGirderCount(GirderIndexType nGirders)
       for ( ; grpIter != grpIterEnd; grpIter++ )
       {
          CGirderGroupData* pGroup = *grpIter;
-         pGroup->SetGirderCount(m_nGirders);
+         pGroup->SetGirderCount(nGirders);
 
          CSpanData2* pStartSpan = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan();
          CSpanData2* pEndSpan   = pGroup->GetPier(pgsTypes::metEnd)->GetNextSpan();
@@ -2351,7 +2360,7 @@ void CBridgeDescription2::SetGirderCount(GirderIndexType nGirders)
             for ( ; tsIter != tsIterEnd; tsIter++ )
             {
                CTemporarySupportData* pTS = *tsIter;
-               pTS->GetSegmentSpacing()->SetGirderCount(m_nGirders);
+               pTS->GetSegmentSpacing()->SetGirderCount(nGirders);
             }
 
             pSpan = pSpan->GetNextPier()->GetNextSpan();
@@ -2847,7 +2856,7 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
    for ( ; grpIter != grpIterEnd; grpIter++ )
    {
       const CGirderGroupData* pGroup = *grpIter;
-      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType nGirders = pGroup->GetPrivateGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
@@ -3801,6 +3810,12 @@ void CBridgeDescription2::ClearGirderGroups()
    {
       CGirderGroupData* pGroupData = *groupIter;
       pGroupData->Clear();
+   }
+
+   groupIter = m_GirderGroups.begin();
+   for ( ; groupIter != groupIterEnd; groupIter++ )
+   {
+      CGirderGroupData* pGroupData = *groupIter;
       delete pGroupData;
    }
    m_GirderGroups.clear();

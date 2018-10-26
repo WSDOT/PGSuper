@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -247,8 +247,10 @@ typedef struct pgsTypes
                      ServiceIII_LegalSpecial = 13,
                      StrengthII_PermitRoutine = 14,
                      ServiceI_PermitRoutine = 15,
-                     StrengthII_PermitSpecial = 16,
-                     ServiceI_PermitSpecial = 17,
+                     ServiceIII_PermitRoutine = 16, // for WSDOT BDM Load Rating Requiements (See BDM Chapter 13)
+                     StrengthII_PermitSpecial = 17,
+                     ServiceI_PermitSpecial = 18,
+                     ServiceIII_PermitSpecial = 19, // for WSDOT BDM Load Rating Requiements (See BDM Chapter 13)
                      LimitStateCount // this should always be the last one as it will define the total number of limit states
                    } LimitState; 
 
@@ -269,6 +271,15 @@ typedef struct pgsTypes
       ttsPTAfterLifting   = 2,
       ttsPTBeforeLifting  = 3,
    } TTSUsage;
+
+   // prestress deflection datum
+   // defines the datum from which prestress deflections are measured
+   typedef enum PrestressDeflectionDatum
+   {
+      pddRelease, // relative to support locations at release
+      pddStorage, // relative to support locations during storage
+      pddErected  // relative to support locations after erection
+   } PrestressDeflectionDatum;
 
 
    typedef enum LiveLoadType
@@ -653,6 +664,12 @@ typedef struct pgsTypes
       lscStrengthAtTimeOfLoading, // use f'ci and f'c from the time-strength curve
       lscSpecifiedStrength // use f'ci at release and f'c at day 28.
    } LimitStateConcreteStrength;
+
+   typedef enum HaunchShapeType
+   {
+      hsSquare,    // Haunch is square (vertical from edge of girder)
+      hsFilleted   // Haunch cut at 45 degrees (like WSDOT)
+   } HaunchShapeType;
 
 } pgsTypes;
 
@@ -1472,7 +1489,9 @@ inline bool IsServiceIIILimitState(pgsTypes::LimitState ls)
            ls == pgsTypes::ServiceIII_Inventory ||
            ls == pgsTypes::ServiceIII_Operating ||
            ls == pgsTypes::ServiceIII_LegalRoutine ||
-           ls == pgsTypes::ServiceIII_LegalSpecial) ? true : false;
+           ls == pgsTypes::ServiceIII_LegalSpecial ||
+           ls == pgsTypes::ServiceIII_PermitRoutine ||
+           ls == pgsTypes::ServiceIII_PermitSpecial) ? true : false;
 }
 
 inline bool IsRatingLiveLoad(pgsTypes::LiveLoadType llType)
@@ -1527,11 +1546,13 @@ inline pgsTypes::LoadRatingType RatingTypeFromLimitState(pgsTypes::LimitState ls
 
    case pgsTypes::StrengthII_PermitRoutine:
    case pgsTypes::ServiceI_PermitRoutine:
+   case pgsTypes::ServiceIII_PermitRoutine:
       ratingType = pgsTypes::lrPermit_Routine;
       break;
 
    case pgsTypes::StrengthII_PermitSpecial:
    case pgsTypes::ServiceI_PermitSpecial:
+   case pgsTypes::ServiceIII_PermitSpecial:
       ratingType = pgsTypes::lrPermit_Special;
       break;
 
@@ -1601,11 +1622,11 @@ inline pgsTypes::LimitState GetServiceLimitStateType(pgsTypes::LoadRatingType ra
       break;
 
    case pgsTypes::lrPermit_Routine:
-      ls = pgsTypes::ServiceI_PermitRoutine;
+      ls = pgsTypes::ServiceIII_PermitRoutine;
       break;
 
    case pgsTypes::lrPermit_Special:
-      ls = pgsTypes::ServiceI_PermitSpecial;
+      ls = pgsTypes::ServiceIII_PermitSpecial;
       break;
 
    default:

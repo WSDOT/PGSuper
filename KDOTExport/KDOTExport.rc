@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,45
- PRODUCTVERSION 3,0,0,45
+ FILEVERSION 3,0,0,46
+ PRODUCTVERSION 3,0,0,46
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -72,12 +72,12 @@ BEGIN
             VALUE "Comments", "PGSuperKDOTExport"
             VALUE "CompanyName", "Kansas Department of Transportation"
             VALUE "FileDescription", "PGSuperKDOTExport  Module"
-            VALUE "FileVersion", "3.0.0.45"
+            VALUE "FileVersion", "3.0.0.46"
             VALUE "InternalName", "PGSuperKDOTExport.dll"
             VALUE "LegalCopyright", "Copyright © 2009-2015, KDOT, All rights reserved"
             VALUE "OriginalFilename", "PGSuperKDOTExport.dll"
             VALUE "ProductName", "PGSuper KDOT Export"
-            VALUE "ProductVersion", "3.0.0.45"
+            VALUE "ProductVersion", "3.0.0.46"
         END
     END
     BLOCK "VarFileInfo"
@@ -111,7 +111,7 @@ BEGIN
     CONTROL         "Custom1",IDC_SELECT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,18,15,306,111
     PUSHBUTTON      "Select All",IDC_SELECT_ALL,218,130,50,14
     PUSHBUTTON      "Clear All",IDC_CLEAR_ALL,273,130,50,14
-    PUSHBUTTON      "Help",IDC_HELPBTN,213,163,50,14
+    PUSHBUTTON      "Help",ID_HELP,213,163,50,14
 END
 
 
@@ -123,10 +123,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "PGSuperKDOTExport"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_E_NOGIRDERS         "Please select at least one girder for the report."
 END
 

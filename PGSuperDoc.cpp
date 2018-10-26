@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@
 #include "DesignGirderDlg.h"
 #include "DesignOutcomeDlg.h"
 #include "StructuralAnalysisMethodDlg.h"
+#include "PGSuperAppPlugin\EditHaunchDlg.h"
 
 // Interfaces
 #include <IFace\EditByUI.h> // for EDG_GENERAL
@@ -49,6 +50,7 @@
 #include "DesignGirder.h"
 #include "EditAnalysisType.h"
 #include <PgsExt\MacroTxn.h>
+#include <PgsExt\EditBridge.h>
 
 
 #ifdef _DEBUG
@@ -74,6 +76,8 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CPGSDocBase)
    ON_COMMAND(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnProjectDesignGirderDirectHoldSlabOffset)
    ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnUpdateProjectDesignGirderDirectHoldSlabOffset)
 	ON_COMMAND(ID_PROJECT_ANALYSIS, OnProjectAnalysis)
+	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
+   ON_UPDATE_COMMAND_UI(ID_EDIT_HAUNCH,OnUpdateEditHaunch)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -374,6 +378,41 @@ void CPGSuperDoc::OnProjectAnalysis()
          pTransactions->Execute(pTxn);
       }
    }
+}
+
+void CPGSuperDoc::OnEditHaunch() 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+
+   const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   CEditHaunchDlg dlg(pOldBridgeDesc);
+   if ( dlg.DoModal() == IDOK )
+   {
+      GET_IFACE(IEnvironment, pEnvironment );
+      enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+      Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
+      CBridgeDescription2 newBridgeDesc = *pOldBridgeDesc;
+
+      // dialog modifies descr
+      dlg.ModifyBridgeDescr(&newBridgeDesc);
+
+      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     newBridgeDesc,
+                                              oldExposureCondition, oldExposureCondition, 
+                                              oldRelHumidity,       oldRelHumidity);
+
+
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+}
+
+void CPGSuperDoc::OnUpdateEditHaunch(CCmdUI* pCmdUI)
+{
+   GET_IFACE_NOCHECK(IBridge,pBridge);
+   pCmdUI->Enable( pBridge->GetDeckType()==pgsTypes::sdtNone ? FALSE : TRUE );
 }
 
 void CPGSuperDoc::OnProjectDesignGirderDirect()

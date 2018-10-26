@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -299,11 +299,30 @@ struct CRITSECTDETAILS
       CsDvt            = other.CsDvt;
 
       if ( &other.CsDv == other.pCriticalSection )
+      {
          pCriticalSection = &CsDv;
+      }
       else if ( &other.CsDvt == other.pCriticalSection )
+      {
          pCriticalSection = &CsDvt;
+      }
       else
+      {
          pCriticalSection = NULL;
+      }
+   }
+
+   const pgsPointOfInterest& GetPointOfInterest() const { return bAtFaceOfSupport ? poiFaceOfSupport : pCriticalSection->Poi; }
+   void SetPointOfInterest(const pgsPointOfInterest& poi)
+   {
+      if ( bAtFaceOfSupport )
+      {
+         poiFaceOfSupport = poi;
+      }
+      else
+      {
+         pCriticalSection->Poi = poi;
+      }
    }
 };
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -118,11 +118,15 @@ private:
 
    typedef std::map<CSegmentKey,CSegmentModelData> SegmentModels;
    SegmentModels m_ReleaseModels;
+   SegmentModels m_LiftingModels;
    SegmentModels m_StorageModels;
+   SegmentModels m_HaulingModels;
 
    typedef std::multimap<LoadingCombinationType,std::_tstring> LoadCombinationMap;
    std::map<CGirderKey,LoadCombinationMap> m_LoadCombinationMaps;
    LoadCombinationMap& GetLoadCombinationMap(const CGirderKey& girderKey);
+
+   void DumpAnalysisModels(GirderIndexType gdrIdx,SegmentModels* pModels,LPCTSTR name);
 
    void GetPrestressSectionStresses(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot);
    void GetPrestressSectionResults(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz);
@@ -149,10 +153,14 @@ private:
 
 
    void BuildReleaseModel(const CSegmentKey& segmentKey);
+   void BuildLiftingModel(const CSegmentKey& segmentKey);
    void BuildStorageModel(const CSegmentKey& segmentKey);
+   void BuildHaulingModel(const CSegmentKey& segmentKey);
 
    CSegmentModelData* GetReleaseModel(const CSegmentKey& segmentKey);
+   CSegmentModelData* GetLiftingModel(const CSegmentKey& segmentKey);
    CSegmentModelData* GetStorageModel(const CSegmentKey& segmentKey);
+   CSegmentModelData* GetHaulingModel(const CSegmentKey& segmentKey);
 
    CSegmentModelData BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance,PoiAttributeType refAttribute);
    PoiIDType AddPointOfInterest(SegmentModels& models,const pgsPointOfInterest& poi);

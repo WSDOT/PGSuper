@@ -12,7 +12,7 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  1      2     WF74G    *    60   0.6  270  31.59  15.99                                              16  70.0  6.0  7.100  9.000   5.988    -5.726    15766   0.640  0.814   6.373 -3.516  0.000 -0.245 -3.762 291.97  431.25    3.75   11.17   11.17 
+ 93.29   12   8.00 SR 5/205 NE 139t  1      2     WF74G    *    60   0.6  270  31.59  15.99                                              16  70.0  6.0  7.100  9.000   5.988    -5.726    15766   0.640  0.814   6.374 -3.516  0.000 -0.245 -3.762 291.97  431.25    3.75   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -23,7 +23,7 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  1      7     WF74G    *    58   0.6  270  31.66  17.24                                              14  70.0  6.0  6.800  8.900   5.882    -5.507    15168   0.640  0.814   6.313 -3.536  0.000  0.000 -3.536 276.78  431.49    3.75   11.17   11.17 
+ 93.29   12   8.00 SR 5/205 NE 139t  1      7     WF74G    *    58   0.6  270  31.66  17.24                                              14  70.0  6.0  6.800  8.900   5.882    -5.507    15168   0.640  0.814   6.314 -3.536  0.000  0.000 -3.536 276.78  431.49    3.75   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -71,7 +71,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  3      1     WF74G    *    54   0.6  270  31.88  16.40                                              14  70.0  6.0  6.400  7.800   5.269    -5.112    14366   0.733  0.820   6.050 -2.738  0.000 -0.191 -2.928 259.44  408.27    1.75    6.17    6.17 
+ 93.29   12   8.00 SR 5/205 NE 139t  3      1     WF74G    *    54   0.6  270  31.88  18.32                                              12  70.0  4.0  6.600  8.000   5.337    -5.166    14443   0.733  0.820   6.071 -2.777  0.000 -0.189 -2.966 256.30  396.65    1.75    6.17    6.17 
 
 
 The Specification Check was Not Successful
@@ -82,7 +82,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  3      2     WF74G    *    52   0.6  270  31.97  15.89                                              14  70.0  6.0  6.100  7.700   5.180    -4.963    13896   0.646  0.820   5.749 -2.759  0.000 -0.190 -2.950 244.85  390.62    1.75    6.17    6.17 
+ 93.29   12   8.00 SR 5/205 NE 139t  3      2     WF74G    *    52   0.6  270  31.97  17.89                                              12  70.0  4.0  6.200  7.700   5.158    -4.943    13889   0.646  0.820   5.610 -2.729  0.000 -0.190 -2.919 241.81  393.35    1.75    6.17    6.17 
 
 
 The Specification Check was Not Successful
@@ -93,7 +93,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  3      7     WF74G    *    50   0.6  270  32.06  17.42                                              12  70.0  4.0  5.900  7.600   5.071    -4.747    13339   0.645  0.820   5.654 -2.755  0.000  0.000 -2.755 228.93  385.25    1.75    6.17    6.17 
+ 93.29   12   8.00 SR 5/205 NE 139t  3      7     WF74G    *    50   0.6  270  32.06  15.34                                              14  70.0  6.0  5.800  7.600   5.071    -4.747    13303   0.645  0.820   5.551 -2.755  0.000  0.000 -2.755 230.48  390.41    1.75    6.17    6.17 
 
 
 The Specification Check was Not Successful
@@ -104,7 +104,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   10   9.77 SR 5/205 NE 139t  4      1     WF74G    *    28   0.6  270  32.80  20.80                                               6  62.0  4.0  4.000  5.000   2.728    -2.596     8460   0.813  0.937   2.805 -0.671  0.000 -0.041 -0.712 103.34  235.93    1.75    6.17    6.17 
+ 93.29   10   9.77 SR 5/205 NE 139t  4      1     WF74G    *    28   0.6  270  32.80  20.80                                               6  62.0  4.0  4.000  5.000   2.728    -2.596     8460   0.813  0.937   2.767 -0.671  0.000 -0.041 -0.712 103.34  235.94    1.75    6.17    6.17 
 
 
 The Specification Check was Not Successful
@@ -116,7 +116,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   10   9.77 SR 5/205 NE 139t  4      2     WF74G    *    31   0.6  270  32.69  19.72                                               7  64.0  4.0  4.100  5.000   3.012    -2.899     9115   0.804  0.937   3.251 -0.902  0.000 -0.047 -0.949 122.97  259.81    1.75    6.17    6.17 
+ 93.29   10   9.77 SR 5/205 NE 139t  4      2     WF74G    *    31   0.6  270  32.69  19.72                                               7  64.0  4.0  4.100  5.000   3.012    -2.899     9115   0.804  0.937   3.165 -0.902  0.000 -0.047 -0.949 122.97  259.81    1.75    6.17    6.17 
 
 
 The Specification Check was Not Successful

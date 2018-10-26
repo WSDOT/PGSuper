@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,10 +27,10 @@
 #include <Reporting\BridgeAnalysisReportDlg.h>
 #include <Reporting\BridgeAnalysisReportSpecification.h>
 #include <MFCTools\CustomDDX.h>
-#include "HtmlHelp\HelpTopics.hh"
 
 #include <IFace\Project.h>
 #include <EAF\EAFUtilities.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -71,7 +71,7 @@ END_MESSAGE_MAP()
 
 void CBridgeAnalysisReportDlg::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_BRIDGEANALYSISREPORT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_BRIDGEANALYSISREPORT );
 }
 
 BOOL CBridgeAnalysisReportDlg::OnInitDialog()

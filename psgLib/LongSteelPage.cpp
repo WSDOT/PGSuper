@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@
 #include "LongSteelPage.h"
 #include "GirderMainSheet.h"
 #include <psglib\LibraryEditorDoc.h>
-#include "..\htmlhelp\HelpTopics.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -91,7 +90,7 @@ BEGIN_MESSAGE_MAP(CLongSteelPage, CPropertyPage)
 	ON_WM_NCACTIVATE()
 	ON_BN_CLICKED(IDC_APPEND_ROW, OnAppendRow)
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -160,13 +159,17 @@ BOOL CLongSteelPage::OnNcActivate(BOOL bActive)
 	return CPropertyPage::OnNcActivate(bActive);
 }
 
-LRESULT CLongSteelPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CLongSteelPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_LONGITUDINAL_REINFORCEMENT_TAB );
-   return TRUE;
+   EAFHelp(  AfxGetAppName(), IDH_GIRDER_LONGITUDINAL_REINFORCEMENT );
 }
 
 void CLongSteelPage::OnAppendRow() 
 {
 	m_Grid.Appendrow();
+}
+
+void CLongSteelPage::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+{
+   m_cbRebar.GetMaterial(pType,pGrade);
 }

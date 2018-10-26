@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,6 @@
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
 #include <EAF\EAFDisplayUnits.h>
-#include "htmlhelp\HelpTopics.hh"
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ClosureJointData.h>
 #include "EditBoundaryConditions.h"
@@ -574,7 +573,8 @@ void CBridgeModelViewChildFrame::ClearSelection()
 
 LRESULT CBridgeModelViewChildFrame::OnCommandHelp(WPARAM, LPARAM lParam)
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGE_VIEW );
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_BRIDGE_VIEW );
    return TRUE;
 }
 

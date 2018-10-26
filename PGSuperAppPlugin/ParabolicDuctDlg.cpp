@@ -35,8 +35,14 @@ void DDV_DuctGeometry(CDataExchange* pDX,int nIDC,CParabolicDuctGeometry& ductGe
          pDX->Fail();
       }
 
-      SpanIndexType nSpans = ductGeometry.GetSpanCount();
-      for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+      const CSplicedGirderData* pGirder = ductGeometry.GetGirder();
+      PierIndexType startPierIdx = pGirder->GetPier(pgsTypes::metStart)->GetIndex();
+      SpanIndexType startSpanIdx = pGirder->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
+      SpanIndexType endSpanIdx   = pGirder->GetPier(pgsTypes::metEnd)->GetPrevSpan()->GetIndex();
+
+      ATLASSERT(ductGeometry.GetSpanCount() == endSpanIdx-startSpanIdx+1);
+
+      for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
       {
          Float64 distLow;
          Float64 offsetLow;
@@ -52,7 +58,7 @@ void DDV_DuctGeometry(CDataExchange* pDX,int nIDC,CParabolicDuctGeometry& ductGe
          }
 
          PierIndexType pierIdx = (PierIndexType)spanIdx;
-         if ( 0 < pierIdx )
+         if ( startPierIdx < pierIdx )
          {
             Float64 distLeftIP;
             Float64 highOffset;
@@ -130,6 +136,6 @@ void CParabolicDuctDlg::OnDuctChanged()
 
 void CParabolicDuctDlg::OnHelp()
 {
-#pragma Reminder("IMPLEMENT: OnHelp")
+#pragma Reminder("HELP: OnHelp")
    AfxMessageBox(_T("Implement Help Topic"));
 }

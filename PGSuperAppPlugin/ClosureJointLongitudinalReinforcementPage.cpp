@@ -7,9 +7,7 @@
 #include "ClosureJointLongitudinalReinforcementPage.h"
 #include "ClosureJointDlg.h"
 #include <EAF\EAFDisplayUnits.h>
-
-#include "HtmlHelp\HelpTopics.hh"
-
+#include <EAF\EAFDocument.h>
 
 // CClosureJointLongitudinalReinforcementPage dialog
 
@@ -103,6 +101,5 @@ void CClosureJointLongitudinalReinforcementPage::OnRemoveRows()
 
 void CClosureJointLongitudinalReinforcementPage::OnHelp() 
 {
-	::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDERWIZ_REBAR );
-	
+	EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_LONGIT_REBAR );
 }

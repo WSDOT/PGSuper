@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -84,10 +84,11 @@ void CPGSAppPluginBase::OnFinalRelease()
    m_AppUnitSystem.Release();
 }
 
-void CPGSAppPluginBase::DefaultInit()
+void CPGSAppPluginBase::DefaultInit(IEAFAppPlugin* pAppPlugin)
 {
    m_CatalogServers.SetTemplateFileExtenstion(GetTemplateFileExtension());
    LoadRegistryValues();
+   m_DocumentationImpl.Init(pAppPlugin);
 }
 
 void CPGSAppPluginBase::DefaultTerminate()
@@ -278,6 +279,30 @@ void CPGSAppPluginBase::SaveCustomReportInformation()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CAutoRegistry autoReg(GetAppName());
    CEAFCustomReportMixin::SaveCustomReportInformation();
+}
+
+CString CPGSAppPluginBase::GetDocumentationURL()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return m_DocumentationImpl.GetDocumentationURL();
+}
+
+CString CPGSAppPluginBase::GetDocumentationMapFile()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return m_DocumentationImpl.GetDocumentationMapFile();
+}
+
+void CPGSAppPluginBase::LoadDocumentationMap()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return m_DocumentationImpl.LoadDocumentationMap();
+}
+
+eafTypes::HelpResult CPGSAppPluginBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
 void CPGSAppPluginBase::RegistryConvert()

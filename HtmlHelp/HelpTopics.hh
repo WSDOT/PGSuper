@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 #define IDH_DIALOG_DESIGNCOMPLETE 105
 #define IDH_DIALOG_UNITS          106
 #define IDH_DIALOG_DESIGNCRITERIA 107
-#define IDH_DIALOG_ENVIRONMENT    108
+#define IDC_BRIDGEDESC_ENVIRONMENTAL    108
 #define IDH_DIALOG_LIBENTRYCONFLICT 109
 #define IDH_DIALOG_SECTIONCUT     110
 #define IDH_DIALOG_LOADMODIFIERS  111
@@ -87,46 +87,46 @@
 #define IDH_CONFIGURE_PGSUPER	 3699
 
 // library editor dialogs
-#define IDH_PGSUPER_LIBRARY_EDITOR                                3700
+#define IDH_LIBRARY_VIEW                                3700
 
 #define IDH_PGSUPER_LIBRARY_DIALOGS                               3701
 #define IDH_CONCRETE_ENTRY_DIALOG                                 3702
 #define IDH_GIRDER_CONNECTION_DIALOG                              3703
 #define IDH_GIRDER_TEMPLATE_EDITING_DIALOG                        3704
-#define IDH_GIRDER_DIMENSIONS_TAB                                 3705
-#define IDH_TEMPORARY_STRANDS_TAB                                 3706
-#define IDH_HARPED_STRANDS_TAB                                    3707
-#define IDH_LONGITUDINAL_REINFORCEMENT_TAB                        3708
-#define IDH_TRANSVERSE_REINFORCEMENT_TAB                          3709
-#define IDH_HARPING_POINTS_TAB                                    3710
-#define IDH_DIAPHRAGM_LAYOUT_DIALOG                               3711
+#define IDH_GIRDER_DIMENSIONS                                 3705
+#define IDH_GIRDER_TEMPORARY_STRANDS                                 3706
+#define IDH_GIRDER_PERMANENT_STRANDS                                    3707
+#define IDH_GIRDER_LONGITUDINAL_REINFORCEMENT                        3708
+#define IDH_GIRDER_TRANSVERSE_REINFORCEMENT                          3709
+#define IDH_GIRDER_HARPING_POINTS                                    3710
+#define IDH_GIRDER_DIAPHRAGMS                               3711
 #define IDH_TRAFFIC_BARRIER_DIALOG                                3712
 #define IDH_SPECIFICATION_ENTRY_DIALOG                            3714
-#define IDH_SPECIFICATION_DESCRIPTION_TAB                         3715
+#define IDH_PROJECT_CRITERIA_GENERAL                         3715
 #define IDH_CASTING_YARD_TAB                                      3716
-#define IDH_HAULING_AND_ERECTION_TAB                              3717
-#define IDH_BRIDGE_SITE_TAB                                       3718
+#define IDH_PROJECT_CRITERIA_HAULING                              3717
+#define IDH_PROJECT_CRITERIA_LOADS                                       3718
 #define IDH_LATERAL_STABILITY_OF_LONG_PRESTRESSED_CONCRETE_BEAMS  3719
-#define IDH_SPEC_LIFTING                                          3720
-#define IDH_SPEC_LOSSES                                           3721
-#define IDH_SPEC_CREEP                                            3722
-#define IDH_SPEC_STRAND                                           3723
+#define IDH_PROJECT_CRITERIA_LIFTING                                          3720
+#define IDH_PROJECT_CRITERIA_LOSSES                                           3721
+#define IDH_PROJECT_CRITERIA_CREEP                                            3722
+#define IDH_PROJECT_CRITERIA_PRESTRESSING                                           3723
 #define IDH_BRIDGESITE_1_TAB                                      3724
-#define IDH_BRIDGESITE_2_TAB                                      3725
+#define IDH_PROJECT_CRITERIA_PRESTRESS_ELEMENTS                                      3725
 #define IDH_COPY_CONCRETE                                         3726
 #define IDH_EDIT_LOADS                                            3727
 #define IDH_EDIT_POINT_LOADS                                      3728
 #define IDH_EDIT_DISTRIBUTED_LOADS                                3729
 #define IDH_DISTRIBUTION_FACTORS                                  3730
-#define IDH_SPEC_DESIGN                                           3732
-#define IDH_SPEC_LIMITS                                           3733
-#define IDH_SHEAR_TAB                                             3735
-#define IDH_MOMENT_TAB                                            3736
+#define IDH_PROJECT_CRITERIA_DESIGN                                           3732
+#define IDH_PROJECT_CRITERIA_LIMITS                                           3733
+#define IDH_PROJECT_CRITERIA_SHEAR_CAPACITY                                             3735
+#define IDH_PROJECT_CRITERIA_MOMENT_CAPACITY                                            3736
 #define IDH_DEFLECTIONS_TAB                                       3737
 #define IDH_DEBONDING_TAB                                         3738
 #define IDH_EDIT_MOMENT_LOADS                                     3739
-#define IDH_GIRDER_DEBOND_CRITERIA                                3740
-#define IDH_SPEC_SHEAR_DESIGN                                     3741
+#define IDH_GIRDER_FLEXURAL_DESIGN                                3740
+#define IDH_GIRDER_SHEAR_DESIGN                                     3741
 
 #define IDH_BRIDGE_VIEW                                           3750
 #define IDH_GIRDER_VIEW                                           3751
@@ -151,7 +151,7 @@
 #define IDH_GENERATE_STRANDS                                      3900
 
 #define IDH_LOAD_RATING_CRITERIA                                  3910
-#define IDH_LIVE_LOAD_FACTORS                                     3911
+#define IDH_LOAD_RATING_LIVE_LOAD_FACTORS                                     3911
 
 #define IDH_CONSTRUCTION_LOADS                                    3920
 #define IDH_FILL_DISTRIBUTION_FACTORS                             3921

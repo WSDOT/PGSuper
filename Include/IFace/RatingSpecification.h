@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -105,6 +105,9 @@ interface IRatingSpecification : IUnknown
    // for ADTT < 500 and in the Engineer's judgement it is warranted
    virtual void ExcludeLegalLoadLaneLoading(bool bExclude) = 0;
    virtual bool ExcludeLegalLoadLaneLoading() = 0;
+
+   virtual void CheckYieldStress(pgsTypes::LoadRatingType ratingType,bool bCheckYieldStress) = 0;
+   virtual bool CheckYieldStress(pgsTypes::LoadRatingType ratingType) = 0;
 
    // returns fraction of yield stress that reinforcement can be stressed to during
    // a permit load rating evaluation MBE 6A.5.4.2.2b

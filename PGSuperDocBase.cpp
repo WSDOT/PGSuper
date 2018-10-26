@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -89,9 +89,6 @@
 #include "DistributedLoadDrawStrategy.h"
 #include "MomentLoadDrawStrategy.h"
 #include "GevEditLoad.h"
-
-
-#include "HtmlHelp\HelpTopics.hh"
 
 #include "Convert.h"
 
@@ -281,6 +278,7 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
    ON_COMMAND_RANGE(FIRST_DATA_EXPORTER_PLUGIN,LAST_DATA_EXPORTER_PLUGIN, OnExport)
 
    ON_COMMAND(ID_HELP_ABOUT, OnAbout)
+   ON_COMMAND(ID_HELP_FINDER, OnHelpFinder)
 
    // this doesn't work for documents... see OnCmdMsg for handling of WM_NOTIFY
    //ON_NOTIFY(TBN_DROPDOWN,ID_STDTOOLBAR,OnViewReports)
@@ -312,6 +310,8 @@ m_bAutoCalcEnabled(true)
    m_bShowProjectProperties = true;
 
    m_pPGSuperDocProxyAgent = NULL;
+
+   m_pPluginMgr = NULL;
 
    m_CallbackID = 0;
 
@@ -1855,6 +1855,10 @@ BOOL CPGSDocBase::Init()
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
+   // must happen before calling base class Init()
+   m_pPluginMgr = CreatePluginManager();
+   m_pPluginMgr->LoadPlugins(); // these are the data importers and exporters
+
    if ( !CEAFBrokerDocument::Init() )
    {
       return FALSE;
@@ -1868,9 +1872,6 @@ BOOL CPGSDocBase::Init()
    {
       return FALSE;
    }
-
-   m_pPluginMgr = CreatePluginManager();
-   m_pPluginMgr->LoadPlugins(); // these are the data importers and exporters
 
    // load up the library manager
    if ( !LoadMasterLibrary() )
@@ -2175,8 +2176,9 @@ void CPGSDocBase::OnEffectiveFlangeWidth()
    CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are consider applicable for skew angles less than 75 degress, L/S less than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
+   CEAFHelpHandler helpHandler(GetDocumentationSetName(),IDH_EFFECTIVE_FLANGE_WIDTH);
    int choice = pEFW->IgnoreEffectiveFlangeWidthLimits() ? 1 : 0;
-   int new_choice = AfxChoose(_T("Effective Flange Width"),strQuestion,strResponses,choice,TRUE);
+   int new_choice = AfxChoose(_T("Effective Flange Width"),strQuestion,strResponses,choice,TRUE,&helpHandler);
    if ( choice != new_choice && 0 <= new_choice )
    {
       txnEditEffectiveFlangeWidth* pTxn = new txnEditEffectiveFlangeWidth(pEFW->IgnoreEffectiveFlangeWidthLimits(),new_choice == 0 ? false : true);
@@ -2324,12 +2326,26 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Permit.ServiceI_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitRoutine);
    oldData.m_Permit.ServiceI_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceI_PermitRoutine);
 
+   oldData.m_Permit.ServiceIII_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_PermitRoutine);
+   oldData.m_Permit.ServiceIII_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_PermitRoutine);
+   oldData.m_Permit.ServiceIII_LL_Routine = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceIII_PermitRoutine);
+   oldData.m_Permit.ServiceIII_CR         = pSpec->GetCreepFactor(         pgsTypes::ServiceIII_PermitRoutine);
+   oldData.m_Permit.ServiceIII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_PermitRoutine);
+   oldData.m_Permit.ServiceIII_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_PermitRoutine);
+
    oldData.m_Permit.ServiceI_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
    oldData.m_Permit.ServiceI_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitSpecial);
    oldData.m_Permit.ServiceI_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
    oldData.m_Permit.ServiceI_CR         = pSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitSpecial);
    oldData.m_Permit.ServiceI_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitSpecial);
    oldData.m_Permit.ServiceI_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceI_PermitSpecial);
+
+   oldData.m_Permit.ServiceIII_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_PermitSpecial);
+   oldData.m_Permit.ServiceIII_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_PermitSpecial);
+   oldData.m_Permit.ServiceIII_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceIII_PermitSpecial);
+   oldData.m_Permit.ServiceIII_CR         = pSpec->GetCreepFactor(         pgsTypes::ServiceIII_PermitSpecial);
+   oldData.m_Permit.ServiceIII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_PermitSpecial);
+   oldData.m_Permit.ServiceIII_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_PermitSpecial);
 
    oldData.m_Permit.IM_Truck_Routine = pLiveLoads->GetTruckImpact(pgsTypes::lltPermitRating_Routine);
    oldData.m_Permit.IM_Lane_Routine  = pLiveLoads->GetLaneImpact( pgsTypes::lltPermitRating_Routine);
@@ -2338,7 +2354,9 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Permit.IM_Lane_Special  = pLiveLoads->GetLaneImpact( pgsTypes::lltPermitRating_Special);
 
    oldData.m_Permit.bRateForShear = pSpec->RateForShear(pgsTypes::lrPermit_Routine);
-   oldData.m_Permit.bCheckReinforcementYielding = pSpec->RateForStress(pgsTypes::lrPermit_Routine);
+   oldData.m_Permit.bRateForStress = pSpec->RateForStress(pgsTypes::lrPermit_Routine);
+   oldData.m_Permit.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrPermit_Routine);
+   oldData.m_Permit.bCheckReinforcementYielding = pSpec->CheckYieldStress(pgsTypes::lrPermit_Routine);
    oldData.m_Permit.YieldStressCoefficient = pSpec->GetYieldStressLimitCoefficient();
    oldData.m_Permit.SpecialPermitType = pSpec->GetSpecialPermitType();
 
@@ -2502,8 +2520,9 @@ void CPGSDocBase::OnLoadsLoadModifiers()
    loadModifiers.RedundancyLevel   = pLoadModifiers->GetRedundancyLevel();
    loadModifiers.RedundancyFactor  = pLoadModifiers->GetRedundancyFactor();
 
+   CEAFHelpHandler helpHandler(GetDocumentationSetName(),IDH_DIALOG_LOADMODIFIERS);
    CLoadModifiersDlg dlg;
-   dlg.SetHelpData( AfxGetApp()->m_pszHelpFilePath, IDH_DIALOG_LOADMODIFIERS, IDH_DIALOG_LOADMODIFIERS, IDH_DIALOG_LOADMODIFIERS);
+   dlg.SetHelpData( &helpHandler, &helpHandler, &helpHandler );
 
    dlg.SetLoadModifiers( loadModifiers.DuctilityFactor,
                          ((loadModifiers.DuctilityLevel == ILoadModifiers::High)  ? 0 : (loadModifiers.DuctilityLevel  == ILoadModifiers::Normal ? 1 : 2)),
@@ -3218,7 +3237,7 @@ BOOL CPGSDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) const
    CPGSDocBase* pThis = const_cast<CPGSDocBase*>(this);
    
    CComPtr<IPGSDataExporter> exporter;
-   pThis->m_pPluginMgr->GetPGSuperExporter(nID,false,&exporter);
+   pThis->m_pPluginMgr->GetExporter(nID,false,&exporter);
    if ( exporter )
    {
       CComBSTR bstr;
@@ -3230,7 +3249,7 @@ BOOL CPGSDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) const
    }
    
    CComPtr<IPGSDataImporter> importer;
-   pThis->m_pPluginMgr->GetPGSuperImporter(nID,false,&importer);
+   pThis->m_pPluginMgr->GetImporter(nID,false,&importer);
    if ( importer )
    {
       CComBSTR bstr;
@@ -3258,7 +3277,7 @@ BOOL CPGSDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
    CPGSDocBase* pThis = const_cast<CPGSDocBase*>(this);
    
    CComPtr<IPGSDataExporter> exporter;
-   pThis->m_pPluginMgr->GetPGSuperExporter(nID,false,&exporter);
+   pThis->m_pPluginMgr->GetExporter(nID,false,&exporter);
    if ( exporter )
    {
       CComBSTR bstr;
@@ -3274,7 +3293,7 @@ BOOL CPGSDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
    }
    
    CComPtr<IPGSDataImporter> importer;
-   pThis->m_pPluginMgr->GetPGSuperImporter(nID,false,&importer);
+   pThis->m_pPluginMgr->GetImporter(nID,false,&importer);
    if ( importer )
    {
       CComBSTR bstr;
@@ -3865,6 +3884,37 @@ void CPGSDocBase::SaveDocumentSettings()
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("ShowProjectProperties"),m_bShowProjectProperties ? _T("On") : _T("Off") ));
 }
 
+void CPGSDocBase::LoadDocumentationMap()
+{
+   // Load up the normal documentation maps
+   CEAFBrokerDocument::LoadDocumentationMap();
+
+   // Load up the document maps for our plugins (importers/exporters)
+   m_pPluginMgr->LoadDocumentationMaps();
+}
+
+CString CPGSDocBase::GetDocumentationRootLocation()
+{
+   CEAFApp* pApp = EAFGetApp();
+   return pApp->GetDocumentationRootLocation();
+}
+
+eafTypes::HelpResult CPGSDocBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL)
+{
+   // do the normal work first
+   eafTypes::HelpResult helpResult = CEAFBrokerDocument::GetDocumentLocation(lpszDocSetName,nHID,strURL);
+
+   if ( helpResult == eafTypes::hrOK || helpResult== eafTypes::hrTopicNotFound )
+   {
+      // if we have a good help document location or if the doc set was found but the HID was bad,
+      // we are done... return the result
+      return helpResult;
+   }
+
+   // Check our plugins
+   return m_pPluginMgr->GetDocumentLocation(lpszDocSetName,nHID,strURL);
+}
+
 void CPGSDocBase::OnLogFileOpened()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -4037,15 +4087,15 @@ void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
       for ( idx = 0; idx < nImporters; idx++ )
       {
          CComPtr<IPGSDataImporter> importer;
-         m_pPluginMgr->GetPGSuperImporter(idx,true,&importer);
+         m_pPluginMgr->GetImporter(idx,true,&importer);
 
-         UINT cmdID = m_pPluginMgr->GetPGSuperImporterCommand(idx);
+         UINT cmdID = m_pPluginMgr->GetImporterCommand(idx);
 
          CComBSTR bstrMenuText;
          importer->GetMenuText(&bstrMenuText);
          pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
 
-         const CBitmap* pBmp = m_pPluginMgr->GetPGSuperImporterBitmap(idx);
+         const CBitmap* pBmp = m_pPluginMgr->GetImporterBitmap(idx);
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,NULL);
 
    	   pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
@@ -4092,16 +4142,16 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
       for ( idx = 0; idx < nExporters; idx++ )
       {
          CComPtr<IPGSDataExporter> exporter;
-         m_pPluginMgr->GetPGSuperExporter(idx,true,&exporter);
+         m_pPluginMgr->GetExporter(idx,true,&exporter);
 
-         UINT cmdID = m_pPluginMgr->GetPGSuperExporterCommand(idx);
+         UINT cmdID = m_pPluginMgr->GetExporterCommand(idx);
 
          CComBSTR bstrMenuText;
          exporter->GetMenuText(&bstrMenuText);
 
          pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
 
-         const CBitmap* pBmp = m_pPluginMgr->GetPGSuperExporterBitmap(idx);
+         const CBitmap* pBmp = m_pPluginMgr->GetExporterBitmap(idx);
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,NULL);
 
          pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
@@ -4116,7 +4166,7 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
 void CPGSDocBase::OnImport(UINT nID)
 {
    CComPtr<IPGSDataImporter> importer;
-   m_pPluginMgr->GetPGSuperImporter(nID,false,&importer);
+   m_pPluginMgr->GetImporter(nID,false,&importer);
 
    if ( importer )
    {
@@ -4127,12 +4177,17 @@ void CPGSDocBase::OnImport(UINT nID)
 void CPGSDocBase::OnExport(UINT nID)
 {
    CComPtr<IPGSDataExporter> exporter;
-   m_pPluginMgr->GetPGSuperExporter(nID,false,&exporter);
+   m_pPluginMgr->GetExporter(nID,false,&exporter);
 
    if ( exporter )
    {
       exporter->Export(m_pBroker);
    }
+}
+
+void CPGSDocBase::OnHelpFinder()
+{
+   EAFHelp(GetDocumentationSetName(),IDH_PGSUPER);
 }
 
 void CPGSDocBase::OnAbout()

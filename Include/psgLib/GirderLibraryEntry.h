@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,6 +48,7 @@
 #include <Material\Rebar.h>
 
 #include <psgLib\ShearData.h>
+#include <pgsExt\CamberMultipliers.h>
 // LOCAL INCLUDES
 //
 
@@ -691,6 +692,22 @@ public:
    // call this to set data to strategy used before strategies were added
    void SetDefaultPrestressDesignStrategy();
 
+   // Minimum Fillet value allowed for this girder
+   Float64 GetMinFilletValue() const;
+   void SetMinFilletValue(Float64 minVal);
+
+   // Minimum A dimension at bearling line location
+   bool GetMinHaunchAtBearingLines(Float64* minVal) const; // returns true if we are checking. If false, value is bogus
+   void SetMinHaunchAtBearingLines(bool doCheck, Float64 minVal); // returns true if we are checking. If false, value is bogus
+
+   // Issue a warning if the input slab offset exceeds the design value by this much
+   Float64 GetExcessiveSlabOffsetWarningTolerance() const;
+   void SetExcessiveSlabOffsetWarningTolerance(Float64 minVal);
+
+   // Factors to be applied to deflections to compute camber
+   void SetCamberMultipliers(CamberMultipliers& factors);
+   CamberMultipliers GetCamberMultipliers() const;
+
 protected:
    void MakeCopy(const GirderLibraryEntry& rOther);
 
@@ -982,6 +999,13 @@ private:
 
    PrestressDesignStrategyContainer m_PrestressDesignStrategies;
 
+   // Version 26
+   Float64 m_MinFilletValue;
+   bool m_DoCheckMinHaunchAtBearingLines;
+   Float64 m_MinHaunchAtBearingLines;
+   Float64 m_ExcessiveSlabOffsetWarningTolerance;
+
+   CamberMultipliers m_CamberMultipliers;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

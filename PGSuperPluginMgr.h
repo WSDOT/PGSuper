@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,12 +37,14 @@ public:
    void UnloadPlugins();
    CollectionIndexType GetImporterCount();
    CollectionIndexType GetExporterCount();
-   void GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
-   void GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
-   UINT GetPGSuperImporterCommand(CollectionIndexType idx);
-   UINT GetPGSuperExporterCommand(CollectionIndexType idx);
-   const CBitmap* GetPGSuperImporterBitmap(CollectionIndexType idx);
-   const CBitmap* GetPGSuperExporterBitmap(CollectionIndexType idx);
+   void GetImporter(CollectionIndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
+   void GetExporter(CollectionIndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
+   UINT GetImporterCommand(CollectionIndexType idx);
+   UINT GetExporterCommand(CollectionIndexType idx);
+   const CBitmap* GetImporterBitmap(CollectionIndexType idx);
+   const CBitmap* GetExporterBitmap(CollectionIndexType idx);
+   void LoadDocumentationMaps();
+   eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL);
 
 protected:
    virtual CATID GetImporterCATID() = 0;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,6 +54,7 @@
 #define TLM_SUCCESS                                      0xffffffff // event was successfully added
 
 class CBridgeDescription2;
+class CClosureJointData;
 
 /*****************************************************************************
 CLASS 
@@ -182,10 +183,14 @@ public:
    EventIndexType GetFirstSegmentErectionEventIndex() const;
    EventIDType GetFirstSegmentErectionEventID() const;
 
+   EventIndexType GetCastClosureJointEventIndex(const CClosureJointData* pClosure) const;
+   EventIDType GetCastClosureJointEventID(const CClosureJointData* pClosure) const;
    EventIndexType GetCastClosureJointEventIndex(ClosureIDType closureID) const;
    EventIDType GetCastClosureJointEventID(ClosureIDType closureID) const;
    void SetCastClosureJointEventByIndex(ClosureIDType closureID,EventIndexType eventIdx);
+   void SetCastClosureJointEventByIndex(const CClosureJointData* pClosure,EventIndexType eventIdx);
    void SetCastClosureJointEventByID(ClosureIDType closureID,EventIDType ID);
+   void SetCastClosureJointEventByID(const CClosureJointData* pClosure,EventIDType ID);
 
    // Events when tendons are stressed.
    EventIndexType GetStressTendonEventIndex(GirderIDType girderID,DuctIndexType ductIdx) const;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,11 +27,11 @@
 #include <psgLib\psglib.h>
 #include "GirderDiaphragmPage.h"
 #include "GirderMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
 
 #include "DiaphragmDefinitionDlg.h"
 
 #include <IFace\BeamFactory.h>
+#include <EAF\EAFDocument.h>
 
 
 #ifdef _DEBUG
@@ -98,7 +98,7 @@ BOOL CGirderDiaphragmPage::OnInitDialog()
 
 BEGIN_MESSAGE_MAP(CGirderDiaphragmPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderDiaphragmPage)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
    ON_BN_CLICKED(IDC_ADD,OnAdd)
    ON_BN_CLICKED(IDC_EDIT1,OnEdit)
    ON_BN_CLICKED(IDC_DELETE,OnDelete)
@@ -107,10 +107,9 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDiaphragmPage message handlers
-LRESULT CGirderDiaphragmPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CGirderDiaphragmPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIAPHRAGM_LAYOUT_DIALOG );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_DIAPHRAGMS );
 }
 
 void CGirderDiaphragmPage::OnAdd()

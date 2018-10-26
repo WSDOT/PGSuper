@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -690,12 +690,20 @@ void CDuctGrid::UpdateMaxPjack(ROWCOL nRow)
    GetParam()->SetLockReadOnly(TRUE);
 }
 
+bool CDuctGrid::ComputePjackMax(ROWCOL row)
+{
+   return (0 < _tstoi(GetCellValue(row,nPjackCheckCol)) ? false : true);
+}
+
 void CDuctGrid::OnStrandChanged()
 {
    ROWCOL nRows = GetRowCount();
    for ( ROWCOL row = 0; row < nRows; row++ )
    {
-      UpdateMaxPjack(row+1);
+      if ( ComputePjackMax(row+1) )
+      {
+         UpdateMaxPjack(row+1);
+      }
    }
 }
 
@@ -722,7 +730,7 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
    duct.Name             = vNames[ductNameIdx];
    duct.nStrands         = _tstoi(GetCellValue(row,nNumStrandCol));
    duct.JackingEnd       = (pgsTypes::JackingEndType)_tstoi(GetCellValue(row,nJackEndCol));
-   duct.bPjCalc          = 0 < _tstoi(GetCellValue(row,nPjackCheckCol)) ? false : true;
+   duct.bPjCalc          = ComputePjackMax(row);
    duct.Pj               = _tstof(GetCellValue(row,nPjackCol));
    duct.Pj               = ::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    duct.LastUserPj       = _tstof(GetCellValue(row,nPjackUserCol));

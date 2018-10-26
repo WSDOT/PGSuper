@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,8 +27,6 @@
 #include "PGSuperAppPlugin\Resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LiveLoadSelectDlg.h"
-#include <..\htmlhelp\helptopics.hh>
-
 
 #include <PgsExt\BridgeDescription2.h>
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
@@ -161,7 +159,7 @@ END_MESSAGE_MAP()
 
 void CLiveLoadSelectDlg::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SELECT_LIVELOAD);
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_SELECT_LIVELOAD);
 }
 
 BOOL CLiveLoadSelectDlg::OnInitDialog() 

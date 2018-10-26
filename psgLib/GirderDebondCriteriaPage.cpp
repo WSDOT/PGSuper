@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <psgLib\psgLib.h>
 #include "GirderDebondCriteriaPage.h"
 #include "GirderMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,7 +70,7 @@ void CGirderDebondCriteriaPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGirderDebondCriteriaPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderDebondCriteriaPage)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 	ON_BN_CLICKED(IDC_CHECK_MAX_LENGTH_FRACTION, OnCheckMaxLengthFraction)
 	ON_BN_CLICKED(IDC_CHECK_MAX_LENGTH, OnCheckMaxLength)
 	//}}AFX_MSG_MAP
@@ -117,10 +117,10 @@ BOOL CGirderDebondCriteriaPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-LRESULT CGirderDebondCriteriaPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CGirderDebondCriteriaPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_DEBOND_CRITERIA );
-   return TRUE;
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_FLEXURAL_DESIGN );
 }
 
 void CGirderDebondCriteriaPage::UpdateCheckBoxes()

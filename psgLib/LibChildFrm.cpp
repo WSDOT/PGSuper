@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include "stdafx.h"
 #include <psgLib\psgLib.h>
 #include <psgLib\LibChildFrm.h>
-#include <..\htmlhelp\helptopics.hh>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -183,12 +183,14 @@ void CLibChildFrame::OnUpdateRenameEntry(CCmdUI* pCmdUI)
 
 void CLibChildFrame::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PGSUPER_LIBRARY_EDITOR);
+#pragma Reminder("HELP: why two help calls?")
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LIBRARY_VIEW);
 }
 
 void CLibChildFrame::OnHelpFinder()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PGSUPER_LIBRARY_EDITOR);
+#pragma Reminder("HELP: why two help calls?")
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LIBRARY_VIEW);
 }
 
 void CLibChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)

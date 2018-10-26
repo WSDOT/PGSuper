@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,13 +27,13 @@
 #include <psgLib\psgLib.h>
 #include "GirderMainSheet.h"
 #include "GirderDimensionsPage.h"
-#include "..\htmlhelp\HelpTopics.hh"
 #include "ComCat.h"
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
 #include "SectionViewDialog.h"
 #include <PsgLib\BeamFamilyManager.h>
 #include <IFace\BeamFactory.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -124,7 +124,7 @@ void CGirderDimensionsPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGirderDimensionsPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderDimensionsPage)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
    ON_CBN_DROPDOWN(IDC_BEAMTYPES, OnBeamTypesChanging)
 	ON_CBN_SELCHANGE(IDC_BEAMTYPES, OnBeamTypeChanged)
    ON_WM_DESTROY()
@@ -136,10 +136,9 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDimensionsPage message handlers
-LRESULT CGirderDimensionsPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CGirderDimensionsPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_DIMENSIONS_TAB );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_DIMENSIONS );
 }
 
 BOOL CGirderDimensionsPage::OnInitDialog() 

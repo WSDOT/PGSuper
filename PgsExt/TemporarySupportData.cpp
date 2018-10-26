@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -423,19 +423,16 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::TempSupportSegmentConnec
       return; // nothing changed;
    }
 
-   m_ConnectionType = newType;
-
    CBridgeDescription2* pBridgeDesc = m_pSpan->GetBridgeDescription();
-   if ( m_ConnectionType == pgsTypes::tsctContinuousSegment )
+   if ( newType == pgsTypes::tsctContinuousSegment )
    {
       // before the closure joints go away, remove their casting event from the timeline
       // manager
       CClosureJointData* pClosure = GetClosureJoint(0);
       if ( pClosure )
       {
-         IDType closureID = pClosure->GetID();
          CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
-         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(closureID);
+         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
          pTimelineMgr->GetEventByIndex(eventIdx)->GetCastClosureJointActivity().RemoveTempSupport(GetID());
       }
 
@@ -448,7 +445,7 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::TempSupportSegmentConnec
          pGirder->JoinSegmentsAtTemporarySupport(m_Index);
       }
    }
-   else if ( m_ConnectionType == pgsTypes::tsctClosureJoint )
+   else if ( newType == pgsTypes::tsctClosureJoint )
    {
       // connection has changed from continuous to closure joint... split at this temporary support
       CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_pSpan);
@@ -467,6 +464,8 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::TempSupportSegmentConnec
 
       m_Spacing.SetGirderCount(nGirders);
    }
+
+   m_ConnectionType = newType;
 }
 
 pgsTypes::TempSupportSegmentConnectionType CTemporarySupportData::GetConnectionType() const

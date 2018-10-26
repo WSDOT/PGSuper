@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,8 +48,9 @@ class StirrupZoneIter;
 class PoiIsOutsideOfBearings
 {
 public:
-   PoiIsOutsideOfBearings(Float64 startBrg,Float64 endBrg) 
+   PoiIsOutsideOfBearings(const CSegmentKey& segmentKey,Float64 startBrg,Float64 endBrg) 
    {
+      m_SegmentKey = segmentKey;
       m_StartBrg = startBrg; 
       m_EndBrg = endBrg;
    }
@@ -58,13 +59,22 @@ public:
    {
       // returning true causes the poi to be excluded from the container
       // return false for those poi that match the search criteria... return false for the poi we want to keep
+      if ( poi.GetSegmentKey() != m_SegmentKey )
+      {
+         return false; // want to keep
+      }
 
       if ( poi.HasAttribute(POI_CLOSURE) )
       {
          return false; // want to keep
       }
 
-      if ( (poi.GetDistFromStart() < m_StartBrg || m_EndBrg < poi.GetDistFromStart()) )
+      Float64 Xpoi = poi.GetDistFromStart();
+      if ( 
+           (Xpoi < m_StartBrg || m_EndBrg < Xpoi) ||
+           (IsEqual(Xpoi,m_StartBrg) && poi.HasAttribute(POI_CANTILEVER)) || // POI is at the left bearing but it is on the cantilever side
+           (IsEqual(Xpoi,m_EndBrg)   && poi.HasAttribute(POI_CANTILEVER))    // POI is at the right bearing but it is on the cantilever side
+         )
       {
          return true; // don't want to keep
       }
@@ -73,6 +83,7 @@ public:
    }
 
 private:
+   CSegmentKey m_SegmentKey;
    Float64 m_StartBrg;
    Float64 m_EndBrg;
 };
@@ -151,6 +162,8 @@ public:
 
    // Pois for spec check and design
    const std::vector<pgsPointOfInterest>& GetDesignPoi() const;
+
+   std::vector<pgsPointOfInterest> GetCriticalSections() const;
 
    // Get our check artifact to hand off to spec check routine
    pgsStirrupCheckArtifact* GetStirrupCheckArtifact();

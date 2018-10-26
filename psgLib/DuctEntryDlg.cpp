@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include "stdafx.h"
 #include <psgLib\psgLib.h>
 #include "DuctEntryDlg.h"
-#include "..\htmlhelp\HelpTopics.hh"
 #include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
@@ -85,6 +84,7 @@ void CDuctEntryDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CDuctEntryDlg, CDialog)
 	//{{AFX_MSG_MAP(CDuctEntryDlg)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+   ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -92,9 +92,9 @@ END_MESSAGE_MAP()
 // CDuctEntryDlg message handlers
 LRESULT CDuctEntryDlg::OnCommandHelp(WPARAM, LPARAM lParam)
 {
-#pragma Reminder("UPDATE: need to add help topic")
+#pragma Reminder("HELP: need to add help topic")
    AfxMessageBox(_T("Implement help topic"));
-   //::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DUCT_DIALOG );
+   //EAFHelp( IDH_DUCT_DIALOG );
    return TRUE;
 }
 
@@ -117,6 +117,35 @@ BOOL CDuctEntryDlg::OnInitDialog()
 
    CDialog::OnInitDialog();
 	
+   EnableToolTips(TRUE);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BOOL CDuctEntryDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
+{
+   TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
+   HWND hwndTool = (HWND)pNMHDR->idFrom;
+   if ( pTTT->uFlags & TTF_IDISHWND )
+   {
+      // idFrom is actually HWND of tool
+      UINT nID = ::GetDlgCtrlID(hwndTool);
+      switch(nID)
+      {
+      case IDC_Z:
+         m_strTip = _T("LRFD C5.9.1.6\n3\" OD and less, Z = 1/2\"\nOver 3\" OD to 4\", Z = 3/4\"\nOver 4\" OD, Z = 1\"");
+         break;
+
+      default:
+         return FALSE;
+      }
+
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
+      pTTT->lpszText = m_strTip.GetBuffer();
+      pTTT->hinst = NULL;
+      return TRUE;
+   }
+   return FALSE;
 }

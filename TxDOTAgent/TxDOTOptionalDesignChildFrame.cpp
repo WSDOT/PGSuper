@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,9 +25,10 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "HtmlHelp\TogaHelp.hh"
 
 #include "TxDOTOptionalDesignChildFrame.h"
+#include <EAF\EAFDocument.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -113,26 +114,18 @@ void CTxDOTOptionalDesignChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 
 void CTxDOTOptionalDesignChildFrame::OnLicenseAgreement()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CWinApp* papp = AfxGetApp();
-   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_LICENSE );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LICENSE );
 }
 
 BOOL CTxDOTOptionalDesignChildFrame::OnHelpInfo(HELPINFO* pHelpInfo)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_INPUT );
-
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_INPUT );
    return TRUE;
 }
 
 void CTxDOTOptionalDesignChildFrame::OnHelpFinder()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_WELCOME );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_WELCOME );
 }
 
 void CTxDOTOptionalDesignChildFrame::OnGetMinMaxInfo(MINMAXINFO* lpMMI)

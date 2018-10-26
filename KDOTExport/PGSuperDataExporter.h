@@ -18,7 +18,8 @@ class LiveLoadLibraryEntry;
 class ATL_NO_VTABLE CPGSuperDataExporter : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CPGSuperDataExporter, &CLSID_PGSuperDataExporter>,
-   public IPGSDataExporter
+   public IPGSDataExporter,
+   public IPGSDocumentation
 {
 public:
 	CPGSuperDataExporter()
@@ -35,6 +36,7 @@ DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 BEGIN_COM_MAP(CPGSuperDataExporter)
    COM_INTERFACE_ENTRY(IPGSDataExporter)
+   COM_INTERFACE_ENTRY(IPGSDocumentation)
 END_COM_MAP()
 
 // IPGSDataExporter
@@ -45,10 +47,18 @@ public:
    STDMETHOD(GetCommandHintText)(BSTR*  bstrText);
    STDMETHOD(Export)(/*[in]*/IBroker* pBroker);
 
+// IPGSDocumentation
+public:
+   STDMETHOD(GetDocumentationSetName)(BSTR* pbstrName);
+   STDMETHOD(LoadDocumentationMap)();
+   STDMETHOD(GetDocumentLocation)(UINT nHID,BSTR* pbstrURL);
+
 private:
    Float64 m_BearingHeight;
    HRESULT Export(IBroker* pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys);
 
+   std::map<UINT,CString> m_HelpTopics;
+   CString GetDocumentationURL();
 };
 
 #endif //__PGSUPEREXPORTER_H_

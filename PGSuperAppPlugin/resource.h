@@ -125,6 +125,7 @@
 #define IDD_BRIDGEDESC_DECKREINFORCEMENT 238
 #define IDI_TXDOT                       239
 #define IDD_BRIDGEDESC_LONGITUDINAL_REBAR 240
+#define IDC_FILLET_UNITS                240
 #define IDD_GIRDERDESC_LONGITUDINAL_REBAR 241
 #define IDD_PIER_CONNECTIONS            242
 #define IDD_PGSUPER_CATALOG             243
@@ -218,6 +219,10 @@
 #define IDD_DIALOG3                     364
 #define IDD_CEBFIP_CONCRETE             364
 #define IDD_CEBFIP_PARAMETERS           365
+#define IDD_EDIT_HAUNCH                 367
+#define IDD_HAUNCHSAME4_BRIDGE          369
+#define IDD_HAUNCH_SPAN_BY_SPAN         370
+#define IDD_HAUNCH_BY_GIRDER            371
 #define IDD_GIRDER_SELECT_STRANDS       390
 #define IDD_PIERCONNECTIONS2            391
 #define IDR_PGSUPER_TEMPLATE_ICON       500
@@ -465,6 +470,7 @@
 #define IDC_MOVE_RIGHT                  1163
 #define IDC_COPY_TO_END                 1163
 #define IDC_COMPUTE                     1163
+#define IDC_EDIT_HAUNCH_BUTTON          1163
 #define IDC_PRINT                       1164
 #define IDC_SELECT_ALL2                 1164
 #define IDC_CLEAR_ALL                   1164
@@ -522,8 +528,11 @@
 #define IDC_LIFTING_LOOP_LOCATION_UNITS2 1203
 #define IDC_STORAGE_LOCATION_UNITS      1203
 #define IDC_TRAILINGOVERHANG_UNITS      1204
+#define IDC_RELEASE_LOCATION            1205
 #define IDC_LEADINGOVERHANG             1206
 #define IDC_PI_STATION                  1207
+#define IDC_STORAGE_LOCATION_UNITS2     1207
+#define IDC_RELEASE_LOCATION_UNITS      1207
 #define IDC_LEADINGOVERHANG_UNITS       1208
 #define IDC_FWD_TANGENT                 1209
 #define IDC_BK_TANGENT                  1210
@@ -783,9 +792,12 @@
 #define IDC_BACK_DIAPHRAGM_LOAD         1407
 #define IDC_ADJUSTABLE_COMBO            1407
 #define IDC_PIER_MODEL_TYPE             1407
+#define IDC_HAUNCH_SHAPE                1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_GIRDER_GIRDER               1408
 #define IDC_AHEAD_DIAPHRAGM_LOAD        1408
+#define IDC_A_TYPE                      1408
+#define IDC_HAUNCH_SHAPE2               1408
 #define IDC_PIER                        1409
 #define IDC_FATIGUE_PEDES_COMBO         1409
 #define IDC_HP_COMBO_END                1410
@@ -912,6 +924,7 @@
 #define IDC_CHECK_HAULING               1497
 #define IDC_STATIC_LLE2                 1497
 #define IDC_CHECK_SLOPE                 1498
+#define IDC_STATIC_LLE3                 1498
 #define IDC_CHECK_HOLDDOWN              1499
 #define IDC_LEFT_BOUNDARY_CONDITIONS    1500
 #define IDC_RIGHT_BOUNDARY_CONDITIONS   1501
@@ -1051,7 +1064,7 @@
 #define IDC_LIVELOAD2                   1563
 #define IDC_LOAD_RATING                 1563
 #define IDC_REMOVE_SPAN                 1564
-#define IDC_SERVICE_III_PS              1564
+#define IDC_SERVICE_III_LL_PERMIT       1564
 #define IDC_LINK_TARGET_NOTE            1565
 #define IDC_SERVICE_I_LL_PERMIT2        1565
 #define IDC_FATIGUE_I_CR                1565
@@ -1064,7 +1077,6 @@
 #define IDC_SERVICE_III_SH2             1567
 #define IDC_BACK_PIER_SPACING_LABEL     1568
 #define IDC_SERVICE_IA_CR               1568
-#define IDC_SERVICE_III_PS2             1568
 #define IDC_AHEAD_PIER_SPACING_LABEL    1569
 #define IDC_SERVICE_IA_SH               1569
 #define IDC_GIRDER_SPACING_NOTE_BACK    1570
@@ -1456,12 +1468,16 @@
 #define IDC_SERVICE_I_PS_LABEL          1763
 #define IDC_RIGHT_MORE                  1764
 #define IDC_STRENGTH_I_PLUS             1764
+#define IDC_SERVICE_I_PLUS2             1764
 #define IDC_LEFT_DENSITY                1765
 #define IDC_STRENGTH_I_CR_LABEL         1765
+#define IDC_SERVICE_I_CR_LABEL2         1765
 #define IDC_LEFT_DENSITY_UNIT           1766
 #define IDC_STRENGTH_I_SH_LABEL         1766
+#define IDC_SERVICE_I_SH_LABEL2         1766
 #define IDC_RIGHT_DENSITY               1767
 #define IDC_STRENGTH_I_PS_LABEL         1767
+#define IDC_SERVICE_I_PS_LABEL2         1767
 #define IDC_LEFT_DENSITY_UNIT2          1768
 #define IDC_STRENGTH_I_PLUS2            1768
 #define IDC_STRENGTH_II_PLUS            1768
@@ -1590,12 +1606,13 @@
 #define IDC_FY_LABEL                    1863
 #define IDC_BOTTOM_COVER_LABEL          1863
 #define IDC_FY                          1864
-#define IDC_SERVICE_III_PLUS            1864
+#define IDC_SERVICE_III_PLUS            1899
 #define IDC_TOP_MAT_BAR_LABEL           1864
 #define IDC_SERVICE_III_CR_LABEL        1865
 #define IDC_BOTTOM_MAT_BAR_LABEL        1865
 #define IDC_SERVICE_III_SH_LABEL        1866
 #define IDC_TOP_MAT_BAR_AT              1866
+#define IDC_SERVICE_I_SH2               1866
 #define IDC_SERVICE_III_PS_LABEL        1867
 #define IDC_TOP_MAT_BAR_PLUS            1867
 #define IDC_FATIGUE_I_PLUS              1868
@@ -1612,7 +1629,15 @@
 #define IDC_SECONDARY_REBAR_GROUP_LABEL 1873
 #define IDC_SERVICE_IA_SH_LABEL         1874
 #define IDC_HPOFFSET_START_LABEL        1874
+#define IDC_SERVICE_III_PS              1875
 #define IDC_HPOFFSET_END_LABEL          1875
+#define IDC_SLAB_OFFSET_UNITS           1876
+#define IDC_A_BOX                       1877
+#define IDC_HAUNCH_GRID                 1878
+#define IDC_CUSTOM1                     1879
+#define IDC_HAUNCH_SHAPE_LABEL          1880
+#define IDC_FILLET_TITLE                1881
+#define IDC_ALLOWABLE_TENSION_LABEL     1882
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
 #define IDR_PGSUPER_STDTOOLBAR          12129
@@ -1766,14 +1791,15 @@
 #define ID_HELP_ABOUT                   36990
 #define ID_PROJECT_PROFILE              36991
 #define ID_BUTTON36993                  36993
+#define ID_EDIT_HAUNCH                  36994
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        367
+#define _APS_NEXT_RESOURCE_VALUE        372
 #define _APS_NEXT_COMMAND_VALUE         36994
-#define _APS_NEXT_CONTROL_VALUE         1876
+#define _APS_NEXT_CONTROL_VALUE         1883
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

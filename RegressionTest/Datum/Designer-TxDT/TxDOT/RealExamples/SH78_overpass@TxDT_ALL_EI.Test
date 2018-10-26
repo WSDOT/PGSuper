@@ -50,7 +50,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.17    8   5.00 SH 78 overpass a  3      1      Tx40         28   1/2  270  14.60  11.74                                               4  24.5  4.5  4.100  5.100   2.951    -2.797     2918   0.250  0.250   2.629 -1.095  0.000 -0.202 -1.297  55.58  152.49    1.00    1.00    1.00 
+ 33.17    8   5.00 SH 78 overpass a  3      1      Tx40         28   1/2  270  14.60  11.74                                               4  24.5  4.5  4.100  5.100   2.951    -2.797     2918   0.250  0.250   2.628 -1.095  0.000 -0.202 -1.297  55.58  152.49    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -58,7 +58,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.17    8   5.00 SH 78 overpass a  3      2      Tx40         48   1/2  270  13.02   8.35                                               8  36.5  8.5  5.900  6.100   3.625    -3.964     4825   0.555  0.756   4.536 -1.780 -0.095 -0.162 -2.036 143.99  397.28    1.00    1.00    1.00 
+ 33.17    8   5.00 SH 78 overpass a  3      2      Tx40         48   1/2  270  13.02   8.35                                               8  36.5  8.5  5.900  6.100   3.625    -3.964     4825   0.555  0.756   4.535 -1.780 -0.095 -0.162 -2.036 143.99  397.28    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -66,7 +66,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.17    8   5.00 SH 78 overpass a  3      5      Tx40         46   1/2  270  13.17   8.30                                               8  36.5  8.5  5.700  5.900   3.576    -3.827     4671   0.555  0.756   4.380 -1.780 -0.129  0.000 -1.909 134.68  373.17    1.00    1.00    1.00 
+ 33.17    8   5.00 SH 78 overpass a  3      5      Tx40         46   1/2  270  13.17   8.30                                               8  36.5  8.5  5.700  5.900   3.576    -3.827     4671   0.555  0.756   4.379 -1.780 -0.129  0.000 -1.909 134.68  373.17    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -82,7 +82,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.17    5   8.75 SH 78 overpass a  4      2      Tx40         22   1/2  270  14.87  13.78                                               4  10.5  4.5  4.100  5.100   1.748    -2.233     3042   0.797  1.138   1.908 -0.433 -0.028 -0.023 -0.484  47.08  127.71    1.00    1.00    1.00 
+ 33.17    5   8.75 SH 78 overpass a  4      2      Tx40         22   1/2  270  14.87  13.78                                               4  10.5  4.5  4.100  5.100   1.748    -2.233     3042   0.797  1.138   1.909 -0.433 -0.028 -0.023 -0.484  47.08  127.71    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -90,7 +90,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.17    5   8.75 SH 78 overpass a  4      3      Tx40         24   1/2  270  14.77  13.43                                               4  12.5  4.5  4.100  5.100   1.787    -2.402     3312   0.797  1.138   2.114 -0.433 -0.028 -0.058 -0.520  55.73  147.25    1.00    1.00    1.00 
+ 33.17    5   8.75 SH 78 overpass a  4      3      Tx40         24   1/2  270  14.77  13.43                                               4  12.5  4.5  4.100  5.100   1.787    -2.402     3312   0.797  1.138   2.115 -0.433 -0.028 -0.058 -0.520  55.73  147.25    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

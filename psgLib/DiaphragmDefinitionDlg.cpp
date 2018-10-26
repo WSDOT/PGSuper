@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "DiaphragmDefinitionDlg.h"
 #include <MFCTools\MFCTools.h>
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -401,6 +402,5 @@ pgsTypes::DiaphragmType CDiaphragmDefinitionDlg::ConstructionTypeToDiaphragmType
 
 void CDiaphragmDefinitionDlg::OnBnClickedHelp()
 {
-   // TODO: Add your control notification handler code here
-#pragma Reminder("UPDATE: implement help topic")
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(),IDH_DIAPHRAGM_LAYOUT_RULES);
 }

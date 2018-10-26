@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,9 +28,9 @@
 #include "LiveLoadDlg.h"
 #include <MfcTools\CustomDDX.h>
 #include <psgLib\LiveLoadLibraryEntry.h>
-#include <..\htmlhelp\helptopics.hh>
 
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -120,16 +120,15 @@ BEGIN_MESSAGE_MAP(CLiveLoadDlg, CDialog)
 	ON_BN_CLICKED(IDC_ADD, OnAdd)
 	ON_BN_CLICKED(IDC_DELETE, OnDelete)
 	ON_CBN_SELCHANGE(IDC_CONFIG_TYPE, OnSelchangeConfigType)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CLiveLoadDlg message handlers
-LRESULT CLiveLoadDlg::OnCommandHelp(WPARAM, LPARAM lParam)
+void CLiveLoadDlg::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_LIVELOAD_DIALOG );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LIVELOAD_DIALOG );
 }
 
 BOOL CLiveLoadDlg::OnInitDialog() 

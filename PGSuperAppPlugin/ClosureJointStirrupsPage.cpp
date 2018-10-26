@@ -10,8 +10,6 @@
 
 #include <EAF\EAFDisplayUnits.h>
 
-#include "HtmlHelp\HelpTopics.hh"
-
 #include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG

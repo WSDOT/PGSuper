@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@
 #include <MFCTools\CustomDDX.h>
 #include <Material\ACI209Concrete.h>
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
 
 // CACIConcretePage dialog
 
@@ -68,6 +69,7 @@ BEGIN_MESSAGE_MAP(CACIConcretePage, CPropertyPage)
    ON_BN_CLICKED(IDC_USER, &CACIConcretePage::OnUserParameters)
    ON_CBN_SELCHANGE(IDC_CURE_METHOD, &CACIConcretePage::OnCureMethod)
    ON_CBN_SELCHANGE(IDC_CEMENT_TYPE, &CACIConcretePage::OnCementType)
+   ON_BN_CLICKED(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -138,4 +140,9 @@ void CACIConcretePage::UpdateParameters()
                                          &m_A,&m_B);
 
    UpdateData(FALSE);
+}
+
+void CACIConcretePage::OnHelp()
+{
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONCRETE_ACI );
 }

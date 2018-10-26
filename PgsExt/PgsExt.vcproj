@@ -54,7 +54,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -153,7 +153,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -252,7 +252,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
 				PreprocessorDefinitions="BUILDPGSEXTLIB;_USRDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -350,7 +350,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
 				PreprocessorDefinitions="BUILDPGSEXTLIB;_USRDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -453,7 +453,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -557,7 +557,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -1739,6 +1739,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\HaunchShapeComboBox.cpp"
+				>
 			</File>
 			<File
 				RelativePath="HoldDownForceArtifact.cpp"
@@ -3366,6 +3370,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\HaunchShapeComboBox.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\HoldDownForceArtifact.h"
 				>
 			</File>
@@ -3624,11 +3632,23 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath=".\res\bitmap1.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\bitmap2.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\res\ColumnFixity.bmp"
 				>
 			</File>
 			<File
 				RelativePath=".\res\Continuous.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\HaunchSquare.bmp"
 				>
 			</File>
 			<File

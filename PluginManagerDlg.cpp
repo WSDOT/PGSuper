@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,16 +31,16 @@
 
 IMPLEMENT_DYNAMIC(CPluginManagerDlg, CPropertySheet)
 
-CPluginManagerDlg::CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent)
+CPluginManagerDlg::CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent,LPCTSTR lpszAppName)
 	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage)
 {
-   Init(catidDataImporter,catidDataExporter,catidExtensionAgent);
+   Init(catidDataImporter,catidDataExporter,catidExtensionAgent,lpszAppName);
 }
 
-CPluginManagerDlg::CPluginManagerDlg(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent)
+CPluginManagerDlg::CPluginManagerDlg(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent,LPCTSTR lpszAppName)
 	:CPropertySheet(pszCaption, pParentWnd, iSelectPage)
 {
-   Init(catidDataImporter,catidDataExporter,catidExtensionAgent);
+   Init(catidDataImporter,catidDataExporter,catidExtensionAgent,lpszAppName);
 }
 
 CPluginManagerDlg::~CPluginManagerDlg()
@@ -48,7 +48,7 @@ CPluginManagerDlg::~CPluginManagerDlg()
 }
 
 
-void CPluginManagerDlg::Init(const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent)
+void CPluginManagerDlg::Init(const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent,LPCTSTR lpszAppName)
 {
    m_psh.dwFlags |= PSH_HASHELP | PSH_NOAPPLYNOW;
 
@@ -60,9 +60,9 @@ void CPluginManagerDlg::Init(const CATID& catidDataImporter,const CATID& catidDa
    m_DataExporterPage.m_psp.pszTitle = _T("Data Exporters");
    m_ExtensionAgentPage.m_psp.pszTitle = _T("Extensions");
 
-   m_DataImporterPage.Init(_T("Plugins"),catidDataImporter);
-   m_DataExporterPage.Init(_T("Plugins"),catidDataExporter);
-   m_ExtensionAgentPage.Init(_T("Extensions"),catidExtensionAgent);
+   m_DataImporterPage.Init(_T("Plugins"),catidDataImporter,lpszAppName);
+   m_DataExporterPage.Init(_T("Plugins"),catidDataExporter,lpszAppName);
+   m_ExtensionAgentPage.Init(_T("Extensions"),catidExtensionAgent,lpszAppName);
 
    AddPage(&m_DataImporterPage);
    AddPage(&m_DataExporterPage);

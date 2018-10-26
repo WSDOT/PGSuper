@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -90,6 +90,9 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
+
+   GirderIndexType nGirdersFirstGroup = pBridge->GetGirderCount(0);
+   Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(0,Min(girderKey.girderIndex,nGirdersFirstGroup-1),0));
  
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bReportAxial = pProductLoads->ReportAxialResults();
@@ -190,7 +193,6 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
 
-   Float64 cumm_span_length = 0;
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
@@ -199,7 +201,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
 
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(thisGirderKey,ALL_SEGMENTS), POI_SPAN) );
 
       std::vector<Float64> dummy;
       std::vector<Float64> Pmin, Pmax;
@@ -265,12 +267,12 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
 
          col = 0;
 
-         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
          if ( bReportTruckConfig )
          {
-            Float64 Xg = pIPoi->ConvertPoiToGirderCoordinate(poi);
-            (*p_table)(row,col++) << span_location.SetValue(cumm_span_length + Xg);
+            Float64 Xgl = pIPoi->ConvertPoiToGirderlineCoordinate(poi); // measured from start face of first segment... we want measured from CL Brg
+            (*p_table)(row,col++) << span_location.SetValue(Xgl - end_distance); // deduct start end distance to get measured from CL Brg
          }
 
          if ( bReportAxial )
@@ -345,9 +347,6 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
 
          row++;
       }
-
-      Float64 span_length = pBridge->GetGirderLayoutLength(thisGirderKey);
-      cumm_span_length += span_length;
    }
 
    return p_table;

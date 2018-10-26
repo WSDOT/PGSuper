@@ -106,6 +106,7 @@
 #define IDD_DUCT_ENTRY                  309
 #define IDD_DIALOG1                     310
 #define IDD_CEBFIP_CONCRETE             310
+#define IDD_GIRDER_HAUNCH_CAMBER        311
 #define IDC_D1                          1001
 #define IDC_W1                          1002
 #define IDC_D2                          1003
@@ -1193,6 +1194,32 @@
 #define IDC_PUSH_METHOD                 1606
 #define IDC_FC2                         1607
 #define IDC_FC_GROUP                    1608
+#define IDC_MIN_FILLET                  1609
+#define IDC_MIN_FILLET_UNIT             1610
+#define IDC_MIN_HAUNCH_BC               1611
+#define IDC_MIN_HAUNCH_BC_UNIT          1612
+#define IDC_EXCESS_HAUNCH               1613
+#define IDC_EXCESS_HAUNCH_UNIT          1614
+#define IDC_CHECK_CL                    1615
+#define IDC_BARRIER                     1616
+#define IDC_HAUNCH                      1617
+#define IDC_SLAB                        1618
+#define IDC_DECK_PANEL                  1619
+#define IDC_DIAPHRAGM                   1620
+#define IDC_ERECTION                    1621
+#define IDC_STATIC_MULT1                1622
+#define IDC_STATIC_MULT2                1623
+#define IDC_STATIC_MULT3                1624
+#define IDC_STATIC_MULT4                1625
+#define IDC_STATIC_MULT5                1626
+#define IDC_STATIC_MULT6                1627
+#define IDC_STATIC_MULT8                1628
+#define IDC_STATIC_MULT9                1629
+#define IDC_STATIC_MULT10               1630
+#define IDC_STATIC_MULT11               1631
+#define IDC_DIAPHRAGM2                  1632
+#define IDC_CREEP                       1632
+#define IDC_STATIC_MULT7                1633
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
 #define IDS_E_INVALIDFORMAT             1640
@@ -1230,7 +1257,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        311
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1609
+#define _APS_NEXT_CONTROL_VALUE         1632
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

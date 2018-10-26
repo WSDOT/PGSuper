@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ class CDesignLosses
       LOSSDETAILS m_Details;
    };
 
-   std::map<pgsPointOfInterest,Losses> m_Losses;
+   std::map<pgsPointOfInterest,Losses,ComparePoi> m_Losses;
    
 public:
    CDesignLosses();

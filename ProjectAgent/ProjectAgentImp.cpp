@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -319,6 +319,14 @@ CProjectAgentImp::CProjectAgentImp()
    m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = -1;
 
+   m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
+   m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
+   m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = -1;
+
    m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.50;
    m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
@@ -335,6 +343,14 @@ CProjectAgentImp::CProjectAgentImp()
    m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = -1;
 
+   m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
+   m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
+   m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = -1;
+
    m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory] = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
    m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating] = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
    m_AllowableTensionCoefficient[pgsTypes::lrLegal_Routine]    = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
@@ -342,12 +358,19 @@ CProjectAgentImp::CProjectAgentImp()
    m_AllowableTensionCoefficient[pgsTypes::lrPermit_Routine]   = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
    m_AllowableTensionCoefficient[pgsTypes::lrPermit_Special]   = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
 
+   m_bCheckYieldStress[pgsTypes::lrDesign_Inventory] = false;
+   m_bCheckYieldStress[pgsTypes::lrDesign_Operating] = false;
+   m_bCheckYieldStress[pgsTypes::lrLegal_Routine]    = false;
+   m_bCheckYieldStress[pgsTypes::lrLegal_Special]    = false;
+   m_bCheckYieldStress[pgsTypes::lrPermit_Routine]   = true;
+   m_bCheckYieldStress[pgsTypes::lrPermit_Special]   = true;
+
    m_bRateForStress[pgsTypes::lrDesign_Inventory] = true;
    m_bRateForStress[pgsTypes::lrDesign_Operating] = false; // see MBE C6A.5.4.1
    m_bRateForStress[pgsTypes::lrLegal_Routine]    = true;
    m_bRateForStress[pgsTypes::lrLegal_Special]    = true;
-   m_bRateForStress[pgsTypes::lrPermit_Routine]   = true;
-   m_bRateForStress[pgsTypes::lrPermit_Special]   = true;
+   m_bRateForStress[pgsTypes::lrPermit_Routine]   = false;
+   m_bRateForStress[pgsTypes::lrPermit_Special]   = false;
 
    m_bRateForShear[pgsTypes::lrDesign_Inventory] = true;
    m_bRateForShear[pgsTypes::lrDesign_Operating] = true;
@@ -636,7 +659,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Special]));
       pSave->EndUnit(); // LegalSpecialRating
 
-      pSave->BeginUnit(_T("PermitRoutineRating"),4.0);
+      pSave->BeginUnit(_T("PermitRoutineRating"),5.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Routine]));
       pSave->put_Property(_T("DC_StrengthII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
       pSave->put_Property(_T("DW_StrengthII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
@@ -652,12 +675,25 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RE_ServiceI"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
       pSave->put_Property(_T("PS_ServiceI"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
       pSave->put_Property(_T("LL_ServiceI"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
+
+      // Added in version 5
+      pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)]));
+      pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)]));
+      pSave->put_Property(_T("CR_ServiceIII"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)]));
+      pSave->put_Property(_T("SH_ServiceIII"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)]));
+      pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)]));
+      pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)]));
+      pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)]));
+      pSave->put_Property(_T("CheckYieldStress"),CComVariant(pObj->m_bCheckYieldStress[pgsTypes::lrPermit_Routine]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrPermit_Routine]));
+      // End of added in version 5
+
       pSave->put_Property(_T("AllowableYieldStressCoefficient"),CComVariant(pObj->m_AllowableYieldStressCoefficient));
       pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrPermit_Routine]));
       pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrPermit_Routine]));
       pSave->EndUnit(); // PermitRoutineRating
 
-      pSave->BeginUnit(_T("PermitSpecialRating"),4.0);
+      pSave->BeginUnit(_T("PermitSpecialRating"),5.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Special]));
       pSave->put_Property(_T("DC_StrengthII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
       pSave->put_Property(_T("DW_StrengthII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
@@ -673,6 +709,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RE_ServiceI"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
       pSave->put_Property(_T("PS_ServiceI"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
       pSave->put_Property(_T("LL_ServiceI"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
+
+
+      // Added in version 5
+      pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)]));
+      pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)]));
+      pSave->put_Property(_T("CR_ServiceIII"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)]));
+      pSave->put_Property(_T("SH_ServiceIII"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)]));
+      pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)]));
+      pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)]));
+      pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)]));
+      pSave->put_Property(_T("CheckYieldStress"),CComVariant(pObj->m_bCheckYieldStress[pgsTypes::lrPermit_Special]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrPermit_Special]));
+      // End of added in version 5
+
       pSave->put_Property(_T("SpecialPermitType"),CComVariant(pObj->m_SpecialPermitType));
       pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrPermit_Special]));
       pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrPermit_Special]));
@@ -1153,6 +1203,38 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          pLoad->get_Property(_T("LL_ServiceI"),&var);
          pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)+indexOffset] = var.dblVal;
 
+         if ( 4 < version )
+         {
+            pLoad->get_Property(_T("DC_ServiceIII"),&var);
+            pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("DW_ServiceIII"),&var);
+            pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("CR_ServiceIII"),&var);
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("SH_ServiceIII"),&var);
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("RE_ServiceIII"),&var);
+            pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("PS_ServiceIII"),&var);
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("LL_ServiceIII"),&var);
+            pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+         
+            var.vt = VT_BOOL;
+            pLoad->get_Property(_T("CheckYieldStress"),&var);
+            pObj->m_bCheckYieldStress[pgsTypes::lrPermit_Routine] = (var.boolVal == VARIANT_TRUE ? true : false);
+
+            var.vt = VT_R8;
+            pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
+            pObj->m_AllowableTensionCoefficient[pgsTypes::lrPermit_Routine] = var.dblVal;
+         }
+
          pLoad->get_Property(_T("AllowableYieldStressCoefficient"),&var);
          pObj->m_AllowableYieldStressCoefficient = var.dblVal;
 
@@ -1162,6 +1244,13 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          
          pLoad->get_Property(_T("RateForStress"),&var);
          pObj->m_bRateForStress[pgsTypes::lrPermit_Routine] = (var.boolVal == VARIANT_TRUE ? true : false);
+         if ( version < 5 )
+         {
+            // prior to version 5, the yield stress check was stored with the RateForStress tag
+            // it moved to the CheckYieldStress tag in version 5. Make the adjustment here
+            pObj->m_bCheckYieldStress[pgsTypes::lrPermit_Routine] = pObj->m_bRateForStress[pgsTypes::lrPermit_Routine];
+            pObj->m_bRateForStress[pgsTypes::lrPermit_Routine] = false;
+         }
 
          pLoad->EndUnit(); // PermitRoutineRating
          }
@@ -1238,6 +1327,39 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          pLoad->get_Property(_T("LL_ServiceI"),&var);
          pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)+indexOffset] = var.dblVal;
 
+
+         if ( 4 < version )
+         {
+            pLoad->get_Property(_T("DC_ServiceIII"),&var);
+            pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("DW_ServiceIII"),&var);
+            pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("CR_ServiceIII"),&var);
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("SH_ServiceIII"),&var);
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("RE_ServiceIII"),&var);
+            pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("PS_ServiceIII"),&var);
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+
+            pLoad->get_Property(_T("LL_ServiceIII"),&var);
+            pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+         
+            var.vt = VT_BOOL;
+            pLoad->get_Property(_T("CheckYieldStress"),&var);
+            pObj->m_bCheckYieldStress[pgsTypes::lrPermit_Special] = (var.boolVal == VARIANT_TRUE ? true : false);
+
+            var.vt = VT_R8;
+            pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
+            pObj->m_AllowableTensionCoefficient[pgsTypes::lrPermit_Special] = var.dblVal;
+         }
+
          var.vt = VT_I4;
          pLoad->get_Property(_T("SpecialPermitType"),&var);
          pObj->m_SpecialPermitType = (pgsTypes::SpecialPermitType)var.lVal;
@@ -1248,6 +1370,13 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          
          pLoad->get_Property(_T("RateForStress"),&var);
          pObj->m_bRateForStress[pgsTypes::lrPermit_Special] = (var.boolVal == VARIANT_TRUE ? true : false);
+         if ( version < 5 )
+         {
+            // prior to version 5, the yield stress check was stored with the RateForStress tag
+            // it moved to the CheckYieldStress tag in version 5. Make the adjustment here
+            pObj->m_bCheckYieldStress[pgsTypes::lrPermit_Special] = pObj->m_bRateForStress[pgsTypes::lrPermit_Special];
+            pObj->m_bRateForStress[pgsTypes::lrPermit_Special] = false;
+         }
 
          pLoad->EndUnit(); // PermitSpecialRating
          }
@@ -5014,6 +5143,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
    ASSERTVALID;
 
+   Fire_BridgeChanged();
+
    return hr;
 }
 
@@ -5993,40 +6124,32 @@ EventIDType CProjectAgentImp::GetSegmentErectionEventID(const CSegmentKey& segme
 
 EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx)
 {
-   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
-   SegmentIDType segmentID = pSegment->GetID();
-
-   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(segmentID);
+   const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
+   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(pClosure);
 }
 
 EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx)
 {
-   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
-   SegmentIDType segmentID = pSegment->GetID();
-
-   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(segmentID);
+   const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
+   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(pClosure);
 }
 
 void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx)
 {
-   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
-   SegmentIDType segmentID = pSegment->GetID();
-
-   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(segmentID) )
+   const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
+   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(pClosure) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByIndex(segmentID,eventIdx);
+      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByIndex(pClosure,eventIdx);
       Fire_BridgeChanged();
    }
 }
 
 void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,IDType eventID)
 {
-   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
-   SegmentIDType segmentID = pSegment->GetID();
-
-   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(segmentID) )
+   const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
+   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(pClosure) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByID(segmentID,eventID);
+      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByID(pClosure,eventID);
       Fire_BridgeChanged();
    }
 }
@@ -7344,6 +7467,20 @@ void CProjectAgentImp::ExcludeLegalLoadLaneLoading(bool bExclude)
 bool CProjectAgentImp::ExcludeLegalLoadLaneLoading()
 {
    return m_bExcludeLegalLoadLaneLoading;
+}
+
+void CProjectAgentImp::CheckYieldStress(pgsTypes::LoadRatingType ratingType,bool bCheckYieldStress)
+{
+   if ( m_bCheckYieldStress[ratingType] != bCheckYieldStress )
+   {
+      m_bCheckYieldStress[ratingType] = bCheckYieldStress;
+      RatingSpecificationChanged(true);
+   }
+}
+
+bool CProjectAgentImp::CheckYieldStress(pgsTypes::LoadRatingType ratingType)
+{
+   return m_bCheckYieldStress[ratingType];
 }
 
 void CProjectAgentImp::SetYieldStressLimitCoefficient(Float64 x)

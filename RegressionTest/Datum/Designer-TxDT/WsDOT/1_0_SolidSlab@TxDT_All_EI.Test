@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 17.17    5   0.00                   1      1      Slab         16   0.6  270   4.00   4.00   0   2.00   16     0    0   0   0   0   0   4.700  5.700   2.645    -2.799      678   0.331  0.331   1.924 -0.249 -0.024 -0.059 -0.332  49.25  131.64    0.00    5.00    5.00 
+ 17.17    5   0.00                   1      1      Slab         16   0.6  270   4.00   4.00   0   2.00   16     0    0   0   0   0   0   4.700  5.700   2.654    -2.808      677   0.331  0.331   1.924 -0.254 -0.024 -0.059 -0.336  49.25  131.43    0.00    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -10,6 +10,7 @@ Tensile stress check failed for Service III Limit State in Interval 10 Open to T
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -24,6 +25,7 @@ Tensile stress check failed for Service III Limit State in Interval 10 Open to T
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -38,5 +40,6 @@ Tensile stress check failed for Service III Limit State in Interval 10 Open to T
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
 
 

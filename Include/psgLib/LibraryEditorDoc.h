@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,6 +69,8 @@ public:
 
    virtual void LoadDocumentSettings();
    virtual void SaveDocumentSettings();
+
+   virtual CString GetDocumentationRootLocation();
 
    void OnImport(); // import library entries (command handler)
 

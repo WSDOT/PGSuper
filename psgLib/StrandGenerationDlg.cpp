@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include "stdafx.h"
 #include "StrandGenerationDlg.h"
 #include <EAF\EAFApp.h>
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 #include "GirderHarpedStrandPage.h"
 
 static const int ENDBOX_CTRLS[] = {IDC_GROUP2, IDC_HEADING2, IDC_X_LABEL2, IDC_Y_LABEL2, IDC_START_LABEL2, IDC_START_X2, 
@@ -84,8 +84,7 @@ BEGIN_MESSAGE_MAP(CStrandGenerationDlg, CDialog)
    ON_CBN_SELCHANGE(IDC_LAYOUT, &CStrandGenerationDlg::OnLayoutTypeChanged)
    ON_CBN_SELCHANGE(IDC_STRAND_GENERATION, &CStrandGenerationDlg::OnStrandGenerationTypeChanged)
    ON_CBN_SELCHANGE(IDC_STRAND_TYPE, &CStrandGenerationDlg::OnStrandTypeChanged)
-   ON_BN_CLICKED(IDC_HELP, &CStrandGenerationDlg::OnHelp)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+   ON_BN_CLICKED(ID_HELP, &CStrandGenerationDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -254,9 +253,7 @@ void CStrandGenerationDlg::UpdateSchematic()
 	m_Schematic.SetImage(strSchematic, _T("Metafile") );
 }
 
-LRESULT CStrandGenerationDlg::OnCommandHelp(WPARAM, LPARAM lParam)
+void CStrandGenerationDlg::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GENERATE_STRANDS );
-
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GENERATE_STRANDS );
 }

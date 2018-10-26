@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -664,6 +664,18 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
    if ( !pConstruct->SlabOffsetPassed() )
    {
       CString strMsg(_T("Slab Offset (\"A\" Dimension) check failed"));
+      rFailures.push_back(strMsg.GetBuffer());
+   }
+
+   if ( pConstruct->IsHaunchAtBearingCLsApplicable() && !pConstruct->HaunchAtBearingCLsPassed() )
+   {
+      CString strMsg(_T("Minimum haunch depth at bearing centerlines check failed"));
+      rFailures.push_back(strMsg.GetBuffer());
+   }
+
+   if ( !pConstruct->MinimumFilletPassed() )
+   {
+      CString strMsg(_T("Minimum fillet value exceeded for bridge check failed"));
       rFailures.push_back(strMsg.GetBuffer());
    }
 

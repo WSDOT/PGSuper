@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include <LRFD\ConcreteUtil.h>
 
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -115,7 +116,7 @@ void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CTrafficBarrierDlg, CDialog)
 	//{{AFX_MSG_MAP(CTrafficBarrierDlg)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 	ON_CBN_SELCHANGE(IDC_WEIGHT_METHOD, OnWeightMethodChanged)
 	ON_BN_CLICKED(IDC_ADD, OnAdd)
 	ON_BN_CLICKED(IDC_DELETE, OnDelete)
@@ -127,10 +128,9 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CTrafficBarrierDlg message handlers
-LRESULT CTrafficBarrierDlg::OnCommandHelp(WPARAM, LPARAM lParam)
+void CTrafficBarrierDlg::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_TRAFFIC_BARRIER_DIALOG );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_TRAFFIC_BARRIER_DIALOG );
 }
 
 BOOL CTrafficBarrierDlg::OnInitDialog() 

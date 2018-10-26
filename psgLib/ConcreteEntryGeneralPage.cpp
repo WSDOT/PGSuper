@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,7 @@
 #include <Colors.h>
 
 #include <EAF\EAFApp.h>
-
-#include "..\htmlhelp\helptopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -120,7 +119,7 @@ void CConcreteEntryGeneralPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CConcreteEntryGeneralPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CConcreteEntryGeneralPage)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
 	ON_BN_CLICKED(IDC_MOD_E, OnModE)
    ON_CBN_SELCHANGE(IDC_CONCRETE_TYPE,OnConcreteType)
 	//}}AFX_MSG_MAP
@@ -129,10 +128,9 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CConcreteEntryGeneralPage message handlers
-LRESULT CConcreteEntryGeneralPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CConcreteEntryGeneralPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_CONCRETE_ENTRY_DIALOG );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONCRETE_GENERAL );
 }
 
 

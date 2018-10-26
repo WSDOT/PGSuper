@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,29 +50,16 @@ const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, co
 {
    Losses* pLosses = NULL;
 
-   std::map<pgsPointOfInterest,Losses>::iterator found(m_Losses.find(poi));
+   std::map<pgsPointOfInterest,Losses,ComparePoi>::iterator found(m_Losses.find(poi));
    if ( found != m_Losses.end() )
    {
       pLosses = &(found->second);
    }
 
-   //std::map<pgsPointOfInterest,Losses>::iterator iter(m_Losses.begin() );
-   //std::map<pgsPointOfInterest,Losses>::iterator end(m_Losses.end() );
-   //for ( ; iter != end; iter++ )
-   //{
-   //   const pgsPointOfInterest& p = iter->first;
-   //   // check equality based only on location, not POI ID... sometimes temporary POIs (ID < 0) are 
-   //   // used during design
-   //   if ( p.GetSegmentKey() == poi.GetSegmentKey() && IsEqual(p.GetDistFromStart(),poi.GetDistFromStart()) )
-   //   {
-   //      // Found it!
-   //      pLosses = &(iter->second);
-   //      break;
-   //   }
-   //}
-
    if ( pLosses == NULL )
+   {
       return NULL; // not found... we don't have it cached
+   }
 
    // have results for this POI cached, but was it for the same configuration?
    if ( config.IsFlexuralDataEqual(pLosses->m_Config) )
@@ -97,7 +84,7 @@ void CDesignLosses::SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& 
    l.m_Config = config;
    l.m_Details = losses;
 
-   std::pair<std::map<pgsPointOfInterest,Losses>::iterator,bool> result = m_Losses.insert( std::make_pair(poi,l) );
+   std::pair<std::map<pgsPointOfInterest,Losses,ComparePoi>::iterator,bool> result = m_Losses.insert( std::make_pair(poi,l) );
    ATLASSERT( result.second == true );
 }
 

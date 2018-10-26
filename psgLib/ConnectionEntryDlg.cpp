@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,8 +27,8 @@
 #include <psgLib\psgLib.h>
 #include "ConnectionEntryDlg.h"
 #include <MfcTools\CustomDDX.h>
-#include "..\htmlhelp\HelpTopics.hh"
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
 
 #include "PGSuperColors.h"
 
@@ -119,7 +119,7 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CConnectionEntryDlg, CDialog)
 	//{{AFX_MSG_MAP(CConnectionEntryDlg)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 	ON_BN_CLICKED(IDC_APPLY_DR_TO_BEARING, OnApplyDrToBearing)
 	ON_BN_CLICKED(IDC_APPLY_DR_TO_BEAM, OnApplyDrToBeam)
 	ON_BN_CLICKED(IDC_DONT_APPLY, OnDontApply)
@@ -131,10 +131,9 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CConnectionEntryDlg message handlers
-LRESULT CConnectionEntryDlg::OnCommandHelp(WPARAM, LPARAM lParam)
+void CConnectionEntryDlg::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_CONNECTION_DIALOG );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_CONNECTION_DIALOG );
 }
 
 BOOL CConnectionEntryDlg::OnInitDialog() 

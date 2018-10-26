@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,10 +26,11 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\resource.h"
 #include "GirderSelectStrandsPage.h"
-#include "htmlhelp\HelpTopics.hh"
 #include <WBFLGenericBridgeTools.h>
 
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
+
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
 
@@ -43,7 +44,7 @@
 inline void UpdateHarpedOffsetLabel(CWnd* pwnd, HarpedStrandOffsetType type, bool areHarpedStraight)
 {
    CString msg;
-   CString mss(areHarpedStraight ? _T("S-W") : _T("HS"));
+   CString mss(areHarpedStraight ? _T("A-S") : _T("HS"));
    switch(type)
    {
       case hsoCGFROMTOP:
@@ -249,18 +250,37 @@ void CGirderSelectStrandsPage::InitializeData(const CSegmentKey& segmentKey, CSt
 
    m_AdjustableStrandType = m_pStrands->GetAdjustableStrandType();
 
-   m_bAllowEndAdjustment = allowEndAdjustment;
-   m_bAllowHpAdjustment  = allowHpAdjustment;
+   // If adjustable strands are straight, we use adjustment values for the ends
+   if (m_AdjustableStrandType != pgsTypes::asStraight)
+   {
+      m_bAllowEndAdjustment = allowEndAdjustment;
+      m_bAllowHpAdjustment  = allowHpAdjustment;
 
-   // Get current offset input values - we will force in bounds if needed
-   // Make sure legacy values can't sneak in
-   m_HsoEndMeasurement = (endMeasureType == hsoLEGACY ? hsoCGFROMTOP    : endMeasureType);
-   m_HsoHpMeasurement  = (hpMeasureType  == hsoLEGACY ? hsoCGFROMBOTTOM : hpMeasureType);
+      // Get current offset input values - we will force in bounds if needed
+      // Make sure legacy values can't sneak in
+      m_HsoEndMeasurement = (endMeasureType == hsoLEGACY ? hsoCGFROMTOP    : endMeasureType);
+      m_HsoHpMeasurement  = (hpMeasureType  == hsoLEGACY ? hsoCGFROMBOTTOM : hpMeasureType);
 
-   m_HpOffsetAtEnd[pgsTypes::metStart] = hpOffsetAtStart;
-   m_HpOffsetAtEnd[pgsTypes::metEnd]   = hpOffsetAtEnd;
-   m_HpOffsetAtHp[pgsTypes::metStart]  = hpOffsetAtHp1;
-   m_HpOffsetAtHp[pgsTypes::metEnd]    = hpOffsetAtHp2;
+      m_HpOffsetAtEnd[pgsTypes::metStart] = hpOffsetAtStart;
+      m_HpOffsetAtEnd[pgsTypes::metEnd]   = hpOffsetAtEnd;
+      m_HpOffsetAtHp[pgsTypes::metStart]  = hpOffsetAtHp1;
+      m_HpOffsetAtHp[pgsTypes::metEnd]    = hpOffsetAtHp2;
+   }
+   else
+   {
+      m_bAllowEndAdjustment = allowEndAdjustment;
+      m_bAllowHpAdjustment  = m_bAllowEndAdjustment;
+
+      // Get current offset input values - we will force in bounds if needed
+      // Make sure legacy values can't sneak in
+      m_HsoEndMeasurement = (endMeasureType == hsoLEGACY ? hsoCGFROMTOP    : endMeasureType);
+      m_HsoHpMeasurement  = m_HsoEndMeasurement;
+
+      m_HpOffsetAtEnd[pgsTypes::metStart] = hpOffsetAtStart;
+      m_HpOffsetAtEnd[pgsTypes::metEnd]   = hpOffsetAtEnd;
+      m_HpOffsetAtHp[pgsTypes::metStart]  = m_HpOffsetAtEnd[pgsTypes::metStart];
+      m_HpOffsetAtHp[pgsTypes::metEnd]    = m_HpOffsetAtEnd[pgsTypes::metEnd];  
+   }
 
    m_HgEnd[pgsTypes::metStart] = HgStart;
    m_HgEnd[pgsTypes::metEnd]   = HgEnd;
@@ -431,15 +451,15 @@ void CGirderSelectStrandsPage::OnPaint()
 
 
    pgsTypes::MemberEndType endType = pgsTypes::metStart;
-   Float64 absol_end_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(m_pGdrEntry->GetName().c_str(),endType,m_AdjustableStrandType, m_HgEnd[pgsTypes::metStart], m_HgHp[pgsTypes::metStart], m_HgHp[pgsTypes::metEnd], m_HgEnd[pgsTypes::metEnd],
+   Float64 absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_pGdrEntry->GetName().c_str(),endType,m_AdjustableStrandType, m_HgEnd[pgsTypes::metStart], m_HgHp[pgsTypes::metStart], m_HgHp[pgsTypes::metEnd], m_HgEnd[pgsTypes::metEnd],
                                                                                   harped_fillvec, m_HsoEndMeasurement,m_HpOffsetAtEnd[endType]);
 
    Float64 absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_pGdrEntry->GetName().c_str(), endType,m_AdjustableStrandType,m_HgEnd[pgsTypes::metStart], m_HgHp[pgsTypes::metStart], m_HgHp[pgsTypes::metEnd], m_HgEnd[pgsTypes::metEnd],
                                                         harped_fillvec, m_HsoHpMeasurement, m_HpOffsetAtHp[endType]);
 
    // We need a strand mover to adjust harped strands
-   Float64 end_incr = m_pGdrEntry->IsVerticalAdjustmentAllowedEnd() ? 0.0 : -1.0;
-   Float64 hp_incr  = m_pGdrEntry->IsVerticalAdjustmentAllowedHP() ? 0.0 : -1.0;
+   Float64 end_incr = m_bAllowEndAdjustment ? 0.0 : -1.0;
+   Float64 hp_incr  = m_bAllowHpAdjustment  ? 0.0 : -1.0;
 
    CComPtr<IStrandMover> strand_mover;
    factory->CreateStrandMover(dimensions, -1,
@@ -651,7 +671,7 @@ void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, I
          else
          {
             x = xs;
-            y = -ys;
+            y = ys;
             offset = absol_end_offset;
          }
 
@@ -1246,9 +1266,7 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpHpCb()
 
 void CGirderSelectStrandsPage::OnHelp()
 {
-   UINT helpID = IDH_GIRDER_DIRECT_STRAND_FILL;
-
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_DIRECT_STRAND_FILL );
 }
 
 void CGirderSelectStrandsPage::OnGetMinMaxInfo(MINMAXINFO* lpMMI)

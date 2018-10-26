@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -412,4 +412,40 @@ public:
    std::_tstring m_strAttributes;
    void UpdateAttributeString();
 #endif // _DEBUG
+};
+
+
+// Remove a poi from a sequence if it contains the specified attribute
+// usage example
+// vPoi.erase(std::remove_if(vPoi.begin(),vPoi.end(),RemoveIfPoiHasAttribute(POI_CLOSURE)),vPoi.end());
+class RemoveIfPoiHasAttribute
+{
+public:
+   RemoveIfPoiHasAttribute(PoiAttributeType attribute) { m_Attribute = attribute; }
+   bool operator()(const pgsPointOfInterest& poi) { return poi.HasAttribute(m_Attribute); }
+private:
+   PoiAttributeType m_Attribute;
+};
+
+// Used to compare POI without using the < operator
+class ComparePoi
+{
+public:
+   bool operator()(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2) const
+   {
+      if ( poi1.AtSamePlace(poi2) )
+      {
+         //if ( poi1.GetID() == INVALID_ID || poi2.GetID() == INVALID_ID )
+         //{
+         //   // never match an invalid ID
+         //   return false;
+         //}
+
+         return poi1.GetID() < poi2.GetID();
+      }
+      else
+      {
+         return poi1 < poi2;
+      }
+   }
 };

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ CConstructabilityCheckTable& CConstructabilityCheckTable::operator= (const CCons
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
@@ -84,7 +84,7 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
    bool IsSingleGirder = girderList.size()==1;
 
    ColumnIndexType nCols = IsSingleGirder ? 4 : 6; // put span/girder in table if multi girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Slab Offset (\"A\" Dimension)"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
@@ -105,7 +105,6 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
    (*pTable)(0,col++) << _T("Notes");
 
    // First thing - check if we can generate the girder schedule table at all.
-   bool areAnyRows(false);
    std::vector<CGirderKey>::const_iterator girderIter(girderList.begin());
    std::vector<CGirderKey>::const_iterator girderIterEnd(girderList.end());
    RowIndexType row=0;
@@ -177,12 +176,144 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
    // Only return a table if it has content
    if (0 < row)
    {
-      return pTable;
+      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      *pChapter << pTitle;
+      *pTitle << _T("Slab Offset (\"A\" Dimension)");
+      rptParagraph* pBody = new rptParagraph;
+      *pChapter << pBody;
+      *pBody << pTable;
    }
    else
    {
       delete pTable;
-      return NULL;
+   }
+}
+
+void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+
+   // Create table - delete it later if we don't need it
+   bool IsSingleGirder = girderList.size()==1;
+
+   ColumnIndexType nCols = IsSingleGirder ? 3 : 5; // put span/girder in table if multi girder
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
+
+   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+   if (!IsSingleGirder)
+   {
+      (*pTable)(0,col++) << _T("Span");
+      (*pTable)(0,col++) << _T("Girder");
+   }
+
+   (*pTable)(0,col++) << COLHDR(_T("Min. Provided") << rptNewLine << _T("Haunch Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Required")      << rptNewLine << _T("Haunch Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << _T("Status");
+
+   std::vector<CGirderKey>::const_iterator girderIter(girderList.begin());
+   std::vector<CGirderKey>::const_iterator girderIterEnd(girderList.end());
+   RowIndexType row=0;
+   for ( ; girderIter != girderIterEnd; girderIter++ )
+   {
+      const CGirderKey& girderKey(*girderIter);
+
+      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
+
+      const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
+      
+      if (pArtifact->IsHaunchAtBearingCLsApplicable())
+      {
+         row++;
+         col = 0;
+
+         if (!IsSingleGirder)
+         {
+            SpanIndexType span = girderKey.groupIndex;
+            GirderIndexType girder = girderKey.girderIndex;
+            (*pTable)(row, col++) << LABEL_SPAN(span);
+            (*pTable)(row, col++) << LABEL_GIRDER(girder);
+         }
+
+         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedHaunchAtBearingCLs());
+         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredHaunchAtBearingCLs());
+
+         if( pArtifact->HaunchAtBearingCLsPassed() )
+         {
+            (*pTable)(row, col++) << RPT_PASS;
+         }
+         else
+         {
+            (*pTable)(row, col++) << RPT_FAIL;
+         }
+      }
+   } // next girder
+
+   // Only add table if it has content
+   if (0 < row)
+   {
+      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      *pChapter << pTitle;
+      *pTitle << _T("Minimum Haunch Depth at Bearing Centerlines");
+      rptParagraph* pBody = new rptParagraph;
+      *pChapter << pBody;
+      *pBody << pTable;
+   }
+   else
+   {
+      delete pTable;
+   }
+}
+void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+
+   // Check is for entire bridge
+   ColumnIndexType nCols = 3;
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+
+   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
+   *pTitle << _T("Minimum Filllet Depth");
+   rptParagraph* pBody = new rptParagraph;
+   *pChapter << pBody;
+   *pBody << pTable;
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
+
+   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+   (*pTable)(0,col++) << COLHDR(_T("Fillet Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Fillet Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << _T("Status");
+
+   // only need to report for first girder in list
+   std::vector<CGirderKey>::const_iterator girderIter(girderList.begin());
+   ATLASSERT(girderIter!=girderList.end());
+   const CGirderKey& girderKey(*girderIter);
+   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
+   const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
+      
+   RowIndexType row=1;
+   col = 0;
+   (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedFillet());
+   (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredMinimumFillet());
+
+   if( pArtifact->MinimumFilletPassed() )
+   {
+      (*pTable)(row, col++) << RPT_PASS;
+   }
+   else
+   {
+      (*pTable)(row, col++) << RPT_FAIL;
    }
 }
 
@@ -474,7 +605,7 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
 {
    const pgsConstructabilityArtifact* pArtifact = pGirderArtifact->GetConstructabilityArtifact();
    
-   if ( !pArtifact->IsBottomFlangeClearnceApplicable() )
+   if ( !pArtifact->IsBottomFlangeClearanceApplicable() )
    {
       return;
    }

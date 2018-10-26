@@ -7,10 +7,6 @@
 #include "GirderSegmentDlg.h"
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
-
-
-#include "HtmlHelp\HelpTopics.hh"
-
 #include <LRFD\RebarPool.h>
 
 // CGirderSegmentStirrupsPage dialog

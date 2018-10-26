@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -75,13 +75,32 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
    pPoi->RemovePointsOfInterest(vPoi,POI_STORAGE_SEGMENT, POI_SPAN);
    pPoi->RemovePointsOfInterest(vPoi,POI_HAUL_SEGMENT,    POI_SPAN);
 
+   // we don't load rate for shear in interior piers so make another collection
+   // of POI for shear... Same as for flexure but remove the POIs that are outside of the bearings
+   std::vector<pgsPointOfInterest> vShearPoi(vPoi);
+   GET_IFACE(IBridge,pBridge);
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : firstGroupIdx);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   {
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,girderKey.girderIndex));
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
+         Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
+         std::remove_if(vShearPoi.begin(), vShearPoi.end(), PoiIsOutsideOfBearings(segmentKey,endDist,endDist+segmentSpanLength));
+      }
+   }
+   std::sort(vShearPoi.begin(),vShearPoi.end());
+   vShearPoi.erase(std::unique(vShearPoi.begin(),vShearPoi.end()),vShearPoi.end());
+
    pgsRatingArtifact ratingArtifact;
 
    // Rate for positive moment - flexure
    MomentRating(girderKey,vPoi,true,ratingType,vehicleIdx,ratingArtifact);
 
    // Rate for negative moment - flexure, if applicable
-   GET_IFACE(IBridge,pBridge);
    if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
    {
       MomentRating(girderKey,vPoi,false,ratingType,vehicleIdx,ratingArtifact);
@@ -90,26 +109,22 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
    // Rate for shear if applicable
    if ( pRatingSpec->RateForShear(ratingType) )
    {
-      ShearRating(girderKey,vPoi,ratingType,vehicleIdx,ratingArtifact);
+      ShearRating(girderKey,vShearPoi,ratingType,vehicleIdx,ratingArtifact);
    }
 
    // Rate for stress if applicable
    if ( pRatingSpec->RateForStress(ratingType) )
    {
-      if ( ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special )
-      {
-         // Service I reinforcement yield check if permit rating
-         CheckReinforcementYielding(girderKey,vPoi,ratingType,vehicleIdx,true,ratingArtifact);
+      StressRating(girderKey,vPoi,ratingType,vehicleIdx,ratingArtifact);
+   }
 
-         if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
-         {
-            CheckReinforcementYielding(girderKey,vPoi,ratingType,vehicleIdx,false,ratingArtifact);
-         }
-      }
-      else
+   if ( pRatingSpec->CheckYieldStress(ratingType) )
+   {
+      CheckReinforcementYielding(girderKey,vPoi,ratingType,vehicleIdx,true,ratingArtifact);
+
+      if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
       {
-         // Service III flexure if other rating type
-         StressRating(girderKey,vPoi,ratingType,vehicleIdx,ratingArtifact);
+         CheckReinforcementYielding(girderKey,vPoi,ratingType,vehicleIdx,false,ratingArtifact);
       }
    }
 
@@ -570,7 +585,9 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
 {
    ATLASSERT(ratingType == pgsTypes::lrDesign_Inventory || 
              ratingType == pgsTypes::lrLegal_Routine    ||
-             ratingType == pgsTypes::lrLegal_Special ); // see MBE C6A.5.4.1
+             ratingType == pgsTypes::lrLegal_Special    || // see MBE C6A.5.4.1
+             ratingType == pgsTypes::lrPermit_Routine   || // WSDOT BDM
+             ratingType == pgsTypes::lrPermit_Special );   // WSDOT BDM
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IProgress, pProgress);
@@ -766,7 +783,6 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
 
 void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Checking for reinforcement yielding"));
@@ -815,7 +831,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    std::vector<Float64> vPLmin,vPLmax;
    GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPoi, vDCmin, vDCmax, vDWmin, vDWmax, vCRmin, vCRmax, vSHmin, vSHmax, vREmin, vREmax, vPSmin, vPSmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
 
-   pgsTypes::LimitState ls = ::GetServiceLimitStateType(ratingType);
+   pgsTypes::LimitState ls = (ratingType == pgsTypes::lrPermit_Routine ? pgsTypes::ServiceI_PermitRoutine : pgsTypes::ServiceI_PermitSpecial);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
@@ -1131,7 +1147,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
          CR = (bPositiveMoment ? vCRmax[i]   : vCRmin[i]);
          SH = (bPositiveMoment ? vSHmax[i]   : vSHmin[i]);
          RE = (bPositiveMoment ? vREmax[i]   : vREmin[i]);
-         PS   = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
+         PS = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
       }
       else
       {
@@ -1154,6 +1170,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       CString strProgress;
       if ( poi.HasGirderCoordinate() )
       {
+         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
          strProgress.Format(_T("Checking for reinforcement yielding %s for %s moment at %s"),strVehicleName.c_str(),bPositiveMoment ? _T("positive") : _T("negative"),
             ::FormatDimension(poi.GetGirderCoordinate(),pDisplayUnits->GetSpanLengthUnit()));
       }

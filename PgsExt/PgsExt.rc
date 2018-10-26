@@ -9,7 +9,6 @@
 //
 #include "afxres.h"
 #include "grid/gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -65,8 +64,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,45
- PRODUCTVERSION 3,0,0,45
+ FILEVERSION 3,0,0,46
+ PRODUCTVERSION 3,0,0,46
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -84,12 +83,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "3.0.0.45"
+            VALUE "FileVersion", "3.0.0.46"
             VALUE "InternalName", "PgsExt"
-            VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.45"
+            VALUE "ProductVersion", "3.0.0.46"
         END
     END
     BLOCK "VarFileInfo"
@@ -285,6 +284,8 @@ IDB_CONTINUOUS          BITMAP                  "res\\Continuous.bmp"
 IDB_IP_HINGES           BITMAP                  "res\\InteriorPierHinges.bmp"
 IDB_IP_ROLLERS          BITMAP                  "res\\InteriorPierRollers.bmp"
 IDB_COLUMN_FIXITY       BITMAP                  "res\\ColumnFixity.bmp"
+IDB_HAUNCH_SQUARE       BITMAP                  "res\\HaunchSquare.bmp"
+IDB_HAUNCH_FILLETED     BITMAP                  "res\\HaunchFilleted.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -400,7 +401,6 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid/gxres.rc"               // Objective Grid resources
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

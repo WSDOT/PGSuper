@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -190,7 +190,7 @@ CollectionIndexType CPGSuperPluginMgrBase::GetExporterCount()
    return m_ExporterPlugins.size();
 }
 
-void CPGSuperPluginMgrBase::GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSDataImporter** ppImporter)
+void CPGSuperPluginMgrBase::GetImporter(CollectionIndexType key,bool bByIndex,IPGSDataImporter** ppImporter)
 {
    if ( bByIndex )
    {
@@ -212,7 +212,7 @@ void CPGSuperPluginMgrBase::GetPGSuperImporter(CollectionIndexType key,bool bByI
    }
 }
 
-void CPGSuperPluginMgrBase::GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSDataExporter** ppExporter)
+void CPGSuperPluginMgrBase::GetExporter(CollectionIndexType key,bool bByIndex,IPGSDataExporter** ppExporter)
 {
    if ( bByIndex )
    {
@@ -234,22 +234,101 @@ void CPGSuperPluginMgrBase::GetPGSuperExporter(CollectionIndexType key,bool bByI
    }
 }
 
-UINT CPGSuperPluginMgrBase::GetPGSuperImporterCommand(CollectionIndexType idx)
+UINT CPGSuperPluginMgrBase::GetImporterCommand(CollectionIndexType idx)
 {
    return m_ImporterPlugins[idx].commandID;
 }
 
-UINT CPGSuperPluginMgrBase::GetPGSuperExporterCommand(CollectionIndexType idx)
+UINT CPGSuperPluginMgrBase::GetExporterCommand(CollectionIndexType idx)
 {
    return m_ExporterPlugins[idx].commandID;
 }
 
-const CBitmap* CPGSuperPluginMgrBase::GetPGSuperImporterBitmap(CollectionIndexType idx)
+const CBitmap* CPGSuperPluginMgrBase::GetImporterBitmap(CollectionIndexType idx)
 {
    return &m_ImporterPlugins[idx].Bitmap;
 }
 
-const CBitmap* CPGSuperPluginMgrBase::GetPGSuperExporterBitmap(CollectionIndexType idx)
+const CBitmap* CPGSuperPluginMgrBase::GetExporterBitmap(CollectionIndexType idx)
 {
    return &m_ExporterPlugins[idx].Bitmap;
+}
+
+void CPGSuperPluginMgrBase::LoadDocumentationMaps()
+{
+   BOOST_FOREACH(ImporterRecord& record,m_ImporterPlugins )
+   {
+      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
+      if ( pDocumentation )
+      {
+         pDocumentation->LoadDocumentationMap();
+      }
+   }
+
+   BOOST_FOREACH(ExporterRecord& record,m_ExporterPlugins )
+   {
+      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
+      if ( pDocumentation )
+      {
+         pDocumentation->LoadDocumentationMap();
+      }
+   }
+}
+
+eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL)
+{
+   USES_CONVERSION;
+   CComBSTR bstrTargetDocSetName(lpszDocSetName);
+
+   BOOST_FOREACH(ImporterRecord& record,m_ImporterPlugins )
+   {
+      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
+      if ( pDocumentation )
+      {
+         CComBSTR bstrDocSetName;
+         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
+
+         if ( bstrDocSetName == bstrTargetDocSetName )
+         {
+            CComBSTR bstrURL;
+            HRESULT hr = pDocumentation->GetDocumentLocation(nHID,&bstrURL);
+            if ( SUCCEEDED(hr) )
+            {
+               strURL = OLE2T(bstrURL);
+               return eafTypes::hrOK;
+            }
+            else
+            {
+               return eafTypes::hrTopicNotFound;
+            }
+         }
+      }
+   }
+
+   BOOST_FOREACH(ExporterRecord& record,m_ExporterPlugins )
+   {
+      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
+      if ( pDocumentation )
+      {
+         CComBSTR bstrDocSetName;
+         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
+
+         if ( bstrDocSetName == bstrTargetDocSetName )
+         {
+            CComBSTR bstrURL;
+            HRESULT hr = pDocumentation->GetDocumentLocation(nHID,&bstrURL);
+            if ( SUCCEEDED(hr) )
+            {
+               strURL = OLE2T(bstrURL);
+               return eafTypes::hrOK;
+            }
+            else
+            {
+               return eafTypes::hrTopicNotFound;
+            }
+         }
+      }
+   }
+
+   return eafTypes::hrDocSetNotFound;
 }

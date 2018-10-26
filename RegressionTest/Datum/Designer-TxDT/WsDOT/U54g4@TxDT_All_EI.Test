@@ -1,9 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.25    5   8.00                   1      1     U54G4         64   0.6  270  17.59  -2.03   0   2.00   16     0    0   0   0   0   0   6.300 11.300   7.649    -5.165    11510   0.540  0.763   4.175 -2.531 -0.191 -0.201 -2.922 281.94  471.57    1.75    5.00    5.00 
+ 38.25    5   8.00                   1      1     U54G4         64   0.6  270  17.59  -2.03   0   2.00   16     0    0   0   0   0   0   6.300 11.300   7.665    -5.175    11505   0.540  0.763   4.175 -2.547 -0.191 -0.201 -2.939 281.94  470.81    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Hauling checks failed
 
 

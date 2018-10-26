@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,7 @@
 #include <IFace\PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
+#include <EAF\EAFDocument.h>
 
 #include <GraphicsLib\AxisXY.h>
 
@@ -73,6 +74,8 @@ m_XAxisType(X_AXIS_TIME_LOG)
    Init();
 
    SetName(_T("Concrete Properties"));
+
+   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_CONCRETE_PROPERTIES);
 }
 
 CConcretePropertyGraphBuilder::CConcretePropertyGraphBuilder(const CConcretePropertyGraphBuilder& other) :

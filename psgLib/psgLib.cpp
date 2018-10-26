@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -114,11 +114,9 @@ public:
 	//{{AFX_MSG(CPsgLibApp)
 		// NOTE - the ClassWizard will add and remove member functions here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
+   afx_msg void OnHelp();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
-   public:
-      bool SetHelpFilePath(const std::_tstring& path);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -129,11 +127,12 @@ BEGIN_MESSAGE_MAP(CPsgLibApp, CWinApp)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG_MAP
-	ON_COMMAND(ID_HELP_FINDER, OnHelpFinder)
+	//ON_COMMAND(ID_HELP_FINDER, OnHelpFinder)
 	ON_COMMAND(ID_HELP, OnHelp)
-	ON_COMMAND(ID_CONTEXT_HELP, OnContextHelp)
-	ON_COMMAND(ID_DEFAULT_HELP, OnHelpFinder)
+	//ON_COMMAND(ID_CONTEXT_HELP, OnContextHelp)
+	//ON_COMMAND(ID_DEFAULT_HELP, OnHelpFinder)
 END_MESSAGE_MAP()
+#pragma Reminder("HELP: do we need OnHelpFinder and OnHelp") // commented out during development of new documentation system
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsgLibApp construction
@@ -172,13 +171,6 @@ BOOL CPsgLibApp::InitInstance()
 	return TRUE;
 }
 
-bool CPsgLibApp::SetHelpFilePath(const std::_tstring& rpath)
-{
-   if (m_pszHelpFilePath!=NULL) 	free((void*)m_pszHelpFilePath);
-   m_pszHelpFilePath = _tcsdup(rpath.c_str());
-   return true;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // Special entry points required for inproc servers
 
@@ -198,12 +190,11 @@ int CPsgLibApp::ExitInstance()
 	return CWinApp::ExitInstance();
 }
 
-bool PSGLIBFUNC WINAPI psglibSetHelpFileLocation(const std::_tstring& rpath)
+void CPsgLibApp::OnHelp()
 {
-   return theApp.SetHelpFilePath(rpath);
+   // must have a handler for ID_HELP otherwise CDialog::InitDialog() will hide the help button
+#pragma Reminder("HELP: need to provide help")
 }
-
-
 
 std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)
 {

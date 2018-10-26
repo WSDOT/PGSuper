@@ -19,13 +19,12 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 #include <System\Tokenizer.h>
 #include <Material\Material.h>
 
 #include <PgsExt\ConcreteDetailsDlg.h>
-
-#include "HtmlHelp\HelpTopics.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -758,7 +757,7 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
 
 void CClosureJointGeneralPage::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDERWIZ_SHEARDESC );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_TRANSV_REBAR );
 }
 
 void CClosureJointGeneralPage::FillEventList()

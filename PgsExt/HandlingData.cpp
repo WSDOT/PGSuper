@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,8 +38,10 @@ CLASS
 
 CHandlingData::CHandlingData()
 {
-   LeftStoragePoint     = -1;
-   RightStoragePoint    = -1;
+   LeftReleasePoint     = -1; // -1 means supported at left end at release
+   RightReleasePoint    = -1; // -1 means supported at right end at release
+   LeftStoragePoint     = -1; // -1 means storage at final bearing locations
+   RightStoragePoint    = -1; // -1 means storage at final bearing locations
    LeftLiftPoint        = 0;
    RightLiftPoint       = 0;
    LeadingSupportPoint  = 0;
@@ -67,6 +69,16 @@ CHandlingData& CHandlingData::operator= (const CHandlingData& rOther)
 
 bool CHandlingData::operator==(const CHandlingData& rOther) const
 {
+   if ( !IsEqual(LeftReleasePoint,rOther.LeftReleasePoint) )
+   {
+      return false;
+   }
+
+   if ( !IsEqual(RightReleasePoint,rOther.RightReleasePoint) )
+   {
+      return false;
+   }
+
    if ( !IsEqual(LeftStoragePoint,rOther.LeftStoragePoint) )
    {
       return false;
@@ -120,6 +132,16 @@ HRESULT CHandlingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       Float64 version;
       pStrLoad->get_Version(&version);
+
+      if ( 2.0 < version )
+      {
+         hr = pStrLoad->get_Property(_T("LeftReleasePoint"),&var);
+         LeftReleasePoint = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightReleasePoint"),&var);
+         RightReleasePoint = var.dblVal;
+      }
+
       if ( 1.0 < version )
       {
          hr = pStrLoad->get_Property(_T("LeftStoragePoint"),&var);
@@ -156,9 +178,11 @@ HRESULT CHandlingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("HandlingData"),2.0);
-   pStrSave->put_Property(_T("LeftStoragePoint"),CComVariant(LeftStoragePoint));
-   pStrSave->put_Property(_T("RightStoragePoint"),CComVariant(RightStoragePoint));
+   pStrSave->BeginUnit(_T("HandlingData"),3.0);
+   pStrSave->put_Property(_T("LeftReleasePoint"),CComVariant(LeftReleasePoint)); // added in version 3
+   pStrSave->put_Property(_T("RightReleasePoint"),CComVariant(RightReleasePoint)); // added in version 3
+   pStrSave->put_Property(_T("LeftStoragePoint"),CComVariant(LeftStoragePoint)); // added in version 2
+   pStrSave->put_Property(_T("RightStoragePoint"),CComVariant(RightStoragePoint)); // added in version 2
    pStrSave->put_Property(_T("LeftLiftPoint"),CComVariant(LeftLiftPoint));
    pStrSave->put_Property(_T("RightLiftPoint"),CComVariant(RightLiftPoint));
    pStrSave->put_Property(_T("LeadingSupportPoint"),CComVariant(LeadingSupportPoint));
@@ -170,6 +194,8 @@ HRESULT CHandlingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 void CHandlingData::MakeCopy(const CHandlingData& rOther)
 {
+   LeftReleasePoint     = rOther.LeftReleasePoint;
+   RightReleasePoint    = rOther.RightReleasePoint;
    LeftStoragePoint     = rOther.LeftStoragePoint;
    RightStoragePoint    = rOther.RightStoragePoint;
    LeftLiftPoint        = rOther.LeftLiftPoint;

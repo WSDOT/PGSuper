@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -171,17 +171,15 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
 
          if ( pRatingSpec->RateForStress(ratingType) )
          {
-            if ( ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special )
+            StressRatingDetails(pChapter,pBroker,girderKey,pRatingArtifact,bSplicedGirder);
+         }
+
+         if ( pRatingSpec->CheckYieldStress(ratingType) )
+         {
+            ReinforcementYieldingDetails(pChapter,pBroker,girderKey,true,pRatingArtifact,bSplicedGirder);
+            if ( bNegMoments )
             {
-               ReinforcementYieldingDetails(pChapter,pBroker,girderKey,true,pRatingArtifact,bSplicedGirder);
-               if ( bNegMoments )
-               {
-                  ReinforcementYieldingDetails(pChapter,pBroker,girderKey,false,pRatingArtifact,bSplicedGirder);
-               }
-            }
-            else
-            {
-               StressRatingDetails(pChapter,pBroker,girderKey,pRatingArtifact,bSplicedGirder);
+               ReinforcementYieldingDetails(pChapter,pBroker,girderKey,false,pRatingArtifact,bSplicedGirder);
             }
          }
 
@@ -893,7 +891,7 @@ bool CLoadRatingDetailsChapterBuilder::ReportAtThisPoi(const pgsPointOfInterest&
    if ( poi == controllingPoi || 
         poi.IsTenthPoint(POI_SPAN) || 
         poi.HasAttribute(POI_CLOSURE) || 
-        poi.HasAttribute(POI_SPAN | POI_CANTILEVER)
+        poi.HasAttribute(POI_CANTILEVER)
       )
    {
       return true;

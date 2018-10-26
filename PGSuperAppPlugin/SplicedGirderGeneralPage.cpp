@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -137,28 +137,6 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_SlabOffsetGrid(pDX,IDC_SLABOFFSET_GRID);
 
-   // Validate the timeline
-   if ( pDX->m_bSaveAndValidate )
-   {
-      CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
-
-      DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-      {
-         pTimelineMgr->SetStressTendonEventByIndex(pParent->m_GirderID,ductIdx,m_TendonStressingEvent[ductIdx]);
-      }
-
-      int result = pTimelineMgr->Validate();
-      if ( result != TLM_SUCCESS )
-      {
-         pDX->PrepareCtrl(IDC_GIRDER_GRID);
-         CString strMsg = pTimelineMgr->GetErrorMessage(result);
-         AfxMessageBox(strMsg);
-         pDX->Fail();
-      }
-   }
-
-
    Float64 conditionFactor;
    pgsTypes::ConditionFactorType conditionFactorType;
    pgsTypes::DuctType ductType;
@@ -197,6 +175,27 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
    // NOTE: must come after DDX for strand installation type
    DDV_GXGridWnd(pDX,&m_DuctGrid);
    DDX_PTData(pDX,IDC_DUCT_GRID,pParent->m_pGirder->GetPostTensioning());
+
+   // Validate the timeline
+   if ( pDX->m_bSaveAndValidate )
+   {
+      CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
+
+      DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
+      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      {
+         pTimelineMgr->SetStressTendonEventByIndex(pParent->m_GirderID,ductIdx,m_TendonStressingEvent[ductIdx]);
+      }
+
+      int result = pTimelineMgr->Validate();
+      if ( result != TLM_SUCCESS )
+      {
+         pDX->PrepareCtrl(IDC_GIRDER_GRID);
+         CString strMsg = pTimelineMgr->GetErrorMessage(result);
+         AfxMessageBox(strMsg);
+         pDX->Fail();
+      }
+   }
 }
 
 
@@ -520,7 +519,7 @@ int CSplicedGirderGeneralPage::GetDuctCount()
 
 void CSplicedGirderGeneralPage::OnHelp()
 {
-#pragma Reminder("IMPLEMENT Help topic")
+#pragma Reminder("HELP: Help topic")
    AfxMessageBox(_T("Add Help topic"));
 }
 

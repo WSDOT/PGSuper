@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1092,75 +1092,73 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
    // Girder bearing reactions
    GET_IFACE(IBearingDesign,pBearingDesign);
-   bool bleft, bright;
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-   if(pBearingDesign->AreBearingReactionsAvailable(erectSegmentIntervalIdx,segmentKey,&bleft,&bright))
+   // NOTE: These regression test results will not align with those from versions of PGSuper prior to 3.0
+   // The concept of reactions has been generized and the old method of dumping results no longer worked
+   GET_IFACE(IBridge,pBridge);
+   PierIndexType startPierIdx, endPierIdx;
+   pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
+   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(liveLoadIntervalIdx,segmentKey);
+   BOOST_FOREACH(PierIndexType pierIdx,vPiers)
    {
-      Float64 lftReact, rgtReact;
+      ReactionLocation location;
+      location.Face = (pierIdx == startPierIdx ? rftAhead : rftBack);
+      location.GirderKey = segmentKey;
+      location.PierIdx = pierIdx;
+
+
+      Float64 R;
       // girder
-      pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, pgsTypes::pftGirder, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165000, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165001,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location, pgsTypes::pftGirder, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165000, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // diaphragm
-      pBearingDesign->GetBearingProductReaction(castDeckIntervalIdx, pgsTypes::pftDiaphragm, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165002, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165003,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location,   pgsTypes::pftDiaphragm, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165002, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // ShearKey
-      pBearingDesign->GetBearingProductReaction(castDeckIntervalIdx, pgsTypes::pftShearKey, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165004, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165005,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location,   pgsTypes::pftShearKey, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165004, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // slab
-      pBearingDesign->GetBearingProductReaction(castDeckIntervalIdx, pgsTypes::pftSlab, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165006, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165007,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location, pgsTypes::pftSlab, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165006, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // DC - BSS1
-      pBearingDesign->GetBearingCombinedReaction(castDeckIntervalIdx, lcDC, segmentKey, bat, rtCumulative, &lftReact, &rgtReact); 
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165008, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165009,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-
+      R = pBearingDesign->GetBearingCombinedReaction(castDeckIntervalIdx, location, lcDC, bat, rtCumulative); 
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165008, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      
       // DW - BSS1
-      pBearingDesign->GetBearingCombinedReaction(castDeckIntervalIdx, lcDW, segmentKey, bat, rtCumulative, &lftReact, &rgtReact); 
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165010, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165011,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingCombinedReaction(castDeckIntervalIdx, location, lcDW, bat, rtCumulative); 
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165010, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // overlay
-      pBearingDesign->GetBearingProductReaction(overlayIntervalIdx, pgsTypes::pftOverlay, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165012, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165013,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location, pgsTypes::pftOverlay, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165012, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // barrier
-      pBearingDesign->GetBearingProductReaction(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165014, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165015,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location, pgsTypes::pftTrafficBarrier, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165014, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // sidewalk
-      pBearingDesign->GetBearingProductReaction(railingSystemIntervalIdx, pgsTypes::pftSidewalk, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165016, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165017,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location, pgsTypes::pftSidewalk, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165016, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // DC - BSS3
-      pBearingDesign->GetBearingCombinedReaction(liveLoadIntervalIdx, lcDC, segmentKey, bat, rtCumulative, &lftReact, &rgtReact); 
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165018, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165019,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingCombinedReaction(liveLoadIntervalIdx, location, lcDC, bat, rtCumulative); 
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165018, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // DW - BSS3
-      pBearingDesign->GetBearingCombinedReaction(liveLoadIntervalIdx, lcDW, segmentKey, bat, rtCumulative, &lftReact, &rgtReact); 
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165020, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165021,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingCombinedReaction(liveLoadIntervalIdx, location, lcDW, bat, rtCumulative); 
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165020, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // user loads
-      pBearingDesign->GetBearingProductReaction(liveLoadIntervalIdx, pgsTypes::pftUserDW, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165022, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165023,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location, pgsTypes::pftUserDW, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165022, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // user live load
-      pBearingDesign->GetBearingProductReaction(liveLoadIntervalIdx, pgsTypes::pftUserLLIM, segmentKey, bat, rtCumulative, &lftReact, &rgtReact);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165024, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165025,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      R = pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, location, pgsTypes::pftUserLLIM, bat, rtCumulative);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165024, 0.000, ")<< QUITE(::ConvertFromSysUnits( R, unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
    }
    return true;
 }
@@ -1398,34 +1396,36 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34050, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-      bool isLeft, isRight;
-      pBearingDesign->AreBearingReactionsAvailable(liveLoadIntervalIdx,segmentKey, &isLeft, &isRight);
-      if (isLeft || isRight)
+      // NOTE: These regression test results will not align with those from versions of PGSuper prior to 3.0
+      // The concept of reactions has been generized and the old method of dumping results no longer worked
+      PierIndexType startPierIdx, endPierIdx;
+      pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
+      std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(liveLoadIntervalIdx,segmentKey);
+      BOOST_FOREACH(PierIndexType pierIdx,vPiers)
       {
-         Float64 leftVal, rightVal;
-         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &leftVal, &dummy, &rightVal);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34044, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34044, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         ReactionLocation location;
+         location.Face = (pierIdx == startPierIdx ? rftAhead : rftBack);
+         location.GirderKey = segmentKey;
+         location.PierIdx = pierIdx;
 
-         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true, &leftVal, &dummy, &rightVal, &dummy);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34045, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34045, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         Float64 Val;
+         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, location, pgsTypes::StrengthI, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &Val);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34044, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(Val, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &leftVal, &dummy, &rightVal);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34046, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34046, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, location, pgsTypes::StrengthI, pgsTypes::MinSimpleContinuousEnvelope, true, &Val, &dummy);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34045, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(Val, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true, &leftVal, &dummy, &rightVal, &dummy);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34047, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34047, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, location, pgsTypes::ServiceI, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &Val);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34046, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(Val, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-         pBearingDesign->GetBearingLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, true, &dummy, &leftVal, &dummy, &dummy, &dummy, &rightVal, &dummy, &dummy);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34050, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34050, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, location, pgsTypes::ServiceI, pgsTypes::MinSimpleContinuousEnvelope, true, &Val, &dummy);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34047, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(Val, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-         pBearingDesign->GetBearingLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true, true, &leftVal, &dummy, &dummy, &dummy, &rightVal, &dummy, &dummy, &dummy);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         pBearingDesign->GetBearingLiveLoadReaction(liveLoadIntervalIdx, location, pgsTypes::lltDesign, pgsTypes::MaxSimpleContinuousEnvelope, true, true, &dummy, &Val,  &dummy, &dummy);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34050, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(Val, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+
+         pBearingDesign->GetBearingLiveLoadReaction(liveLoadIntervalIdx, location, pgsTypes::lltDesign, pgsTypes::MinSimpleContinuousEnvelope, true, true, &Val,  &dummy, &dummy, &dummy);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(Val, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       }
    }
    else
@@ -1449,28 +1449,30 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34042, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34043, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-      bool isLeft, isRight;
-      pBearingDesign->AreBearingReactionsAvailable(liveLoadIntervalIdx,segmentKey, &isLeft, &isRight);
-      if (isLeft || isRight)
+      // NOTE: These regression test results will not align with those from versions of PGSuper prior to 3.0
+      // The concept of reactions has been generized and the old method of dumping results no longer worked
+      PierIndexType startPierIdx, endPierIdx;
+      pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
+      std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(liveLoadIntervalIdx,segmentKey);
+      BOOST_FOREACH(PierIndexType pierIdx,vPiers)
       {
-         Float64 leftMinVal, rightMinVal, leftMaxVal, rightMaxVal;
-         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, segmentKey, bat, true, &leftMinVal, &leftMaxVal, &rightMinVal, &rightMaxVal);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34044, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftMaxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34044, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightMaxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34045, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftMinVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34045, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightMinVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         ReactionLocation location;
+         location.Face = (pierIdx == startPierIdx ? rftAhead : rftBack);
+         location.GirderKey = segmentKey;
+         location.PierIdx = pierIdx;
 
-         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, segmentKey, bat, true, &leftMinVal, &leftMaxVal, &rightMinVal, &rightMaxVal);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34046, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftMaxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34046, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightMaxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34047, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftMinVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34047, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightMinVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         Float64 minVal, maxVal;
+         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, location, pgsTypes::StrengthI, bat, true, &minVal, &maxVal);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34044, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(minVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34045, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(maxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-         pBearingDesign->GetBearingLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, segmentKey, bat, true, true, &leftMinVal, &leftMaxVal, &dummy, &dummy, &rightMinVal, &rightMaxVal, &dummy, &dummy);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34050, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftMaxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34050, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightMaxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leftMinVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rightMinVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         pBearingDesign->GetBearingLimitStateReaction(liveLoadIntervalIdx, location,   pgsTypes::ServiceI, bat, true, &minVal, &maxVal);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34046, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(minVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34047, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(maxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+
+         pBearingDesign->GetBearingLiveLoadReaction(liveLoadIntervalIdx, location,   pgsTypes::lltDesign, bat, true, true, &minVal, &maxVal, &dummy, &dummy);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34050, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(minVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(maxVal, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       }
    }
 

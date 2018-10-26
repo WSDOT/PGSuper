@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -452,12 +452,12 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    if ( 0 < pStrands->GetStrandCount(pgsTypes::Temporary) && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPTBeforeShipping )
    {
       (*pTable)(row,0) << _T("Deflection (Prestressing including temp strands)");
-      (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,true) );
+      (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,pgsTypes::pddErected) );
    }
    else
    {
       (*pTable)(row,0) << _T("Deflection (Prestressing)");
-      (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,false) );
+      (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,pgsTypes::pddRelease) );
    }
    row++;
 
@@ -494,7 +494,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    if ( deckType == pgsTypes::sdtNone )
    {
       (*pTable)(row,0) << _T("Initial Camber, ") << Sub2(_T("C"),_T("i"));
-      (*pTable)(row,1) << camber.SetValue( pCamber->GetCreepDeflection(poi,ICamber::cpReleaseToDiaphragm,CREEP_MAXTIME) );
+      (*pTable)(row,1) << camber.SetValue( pCamber->GetCreepDeflection(poi,ICamber::cpReleaseToDiaphragm,CREEP_MAXTIME,pgsTypes::pddErected) );
       row++;
 
       (*pTable)(row,0) << _T("Concrete Topping, Barrier, and Overlay ") << Sub2(_T("C"),_T("topping"));

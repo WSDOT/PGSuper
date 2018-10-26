@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include "psgLib\psglib.h"
 #include "SpecDescrPage.h"
 #include "SpecMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CSpecDescrPage, CPropertyPage)
 
-CSpecDescrPage::CSpecDescrPage() : CPropertyPage(CSpecDescrPage::IDD,IDS_SPEC_DESCRIPTION)
+CSpecDescrPage::CSpecDescrPage() : CPropertyPage(CSpecDescrPage::IDD)
 {
 	//{{AFX_DATA_INIT(CSpecDescrPage)
 	//}}AFX_DATA_INIT
@@ -68,15 +68,14 @@ BEGIN_MESSAGE_MAP(CSpecDescrPage, CPropertyPage)
 	ON_WM_CANCELMODE()
     ON_CBN_SELCHANGE(IDC_SPECIFICATION,OnSpecificationChanged)
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecDescrPage message handlers
-LRESULT CSpecDescrPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CSpecDescrPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPECIFICATION_DESCRIPTION_TAB );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_GENERAL );
 }
 
 BOOL CSpecDescrPage::OnInitDialog() 

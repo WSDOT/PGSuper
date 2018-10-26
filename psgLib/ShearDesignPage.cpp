@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,10 +31,11 @@
 #include "GirderMainSheet.h"
 
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
+
 #include <system\tokenizer.h>
 #include <MfcTools\CustomDDX.h>
 #include <boost/algorithm/string.hpp>
-#include "..\htmlhelp\HelpTopics.hh"
 
 // CShearDesignPage dialog
 static const Float64 SPACING_TOL=1.0e-6;
@@ -243,15 +244,14 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CShearDesignPage, CPropertyPage)
    ON_BN_CLICKED(IDC_REMOVEROWS, &CShearDesignPage::OnRemoveRows)
    ON_BN_CLICKED(IDC_INSERTROW, &CShearDesignPage::OnInsertRow)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
 
 // CShearDesignPage message handlers
-LRESULT CShearDesignPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CShearDesignPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPEC_SHEAR_DESIGN );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_SHEAR_DESIGN );
 }
 
 BOOL CShearDesignPage::OnInitDialog()

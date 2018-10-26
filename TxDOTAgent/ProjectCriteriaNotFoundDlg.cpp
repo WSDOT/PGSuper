@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,8 +24,7 @@
 
 #include "stdafx.h"
 #include "ProjectCriteriaNotFoundDlg.h"
-#include "HtmlHelp\TogaHelp.hh"
-
+#include <EAF\EAFDocument.h>
 
 // CProjectCriteriaNotFoundDlg dialog
 
@@ -96,5 +95,5 @@ BOOL CProjectCriteriaNotFoundDlg::OnInitDialog()
 
 void CProjectCriteriaNotFoundDlg::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_NO_PROJ_CRIT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_NO_PROJ_CRIT );
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,8 +30,7 @@
 #include <MfcTools\CustomDDX.h>
 
 #include <EAF\EAFApp.h>
-
-#include "..\htmlhelp\helptopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -94,18 +93,16 @@ void CAASHTOConcretePage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CAASHTOConcretePage, CPropertyPage)
 	//{{AFX_MSG_MAP(CAASHTOConcretePage)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
    ON_BN_CLICKED(IDC_HAS_AGG_STRENGTH,OnAggSplittingStrengthClicked)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CAASHTOConcretePage message handlers
-LRESULT CAASHTOConcretePage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CAASHTOConcretePage::OnHelp()
 {
-#pragma Reminder("UPDATE: Update help file reference for this topic")
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_CONCRETE_ENTRY_DIALOG );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONCRETE_AASHTO );
 }
 
 

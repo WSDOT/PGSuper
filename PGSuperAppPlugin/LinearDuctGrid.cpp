@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -62,6 +62,19 @@ BEGIN_MESSAGE_MAP(CLinearDuctGrid, CGXGridWnd)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+int CLinearDuctGrid::GetColWidth(ROWCOL nCol)
+{
+	CRect rect = GetGridRect( );
+   if ( 0 <= nCol && nCol <= 2 )
+   {
+      return rect.Width()/6;
+   }
+   else
+   {
+      return rect.Width()/4;
+   }
+   //return CGXGridWnd::GetColWidth(nCol);
+}
 
 void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
 {
@@ -138,7 +151,6 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
 
    // make it so that text fits correctly in header row
 	this->ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
-   //this->ResizeColWidthsToFit(CGXRange(0,0,0,num_cols));
 	this->GetParam( )->EnableUndo(TRUE);
 }
 
@@ -298,8 +310,6 @@ void CLinearDuctGrid::FillRow(ROWCOL row,Float64 location,Float64 offset,CLinear
    SetValueRange(CGXRange(row,nOffsetCol),strOffset);
 
    SetValueRange(CGXRange(row,nOffsetTypeCol),(long)offsetType);
-
-   this->ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 }
 
 void CLinearDuctGrid::GetPoint(ROWCOL row,Float64* pLocation,Float64* pOffset,CLinearDuctGeometry::OffsetType* pOffsetType)

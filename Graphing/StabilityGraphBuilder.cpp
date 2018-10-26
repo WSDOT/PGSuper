@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFAutoProgress.h>
+#include <EAF\EAFDocument.h>
 
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
@@ -71,6 +72,8 @@ m_pYFormat(0)
 {
    m_pGraphController = new CStabilityGraphController;
    SetName(_T("Girder Stability"));
+
+   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_STABILITY_VIEW);
 }
 
 CStabilityGraphBuilder::CStabilityGraphBuilder(const CStabilityGraphBuilder& other) :

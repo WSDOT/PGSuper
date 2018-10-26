@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,6 @@
 #include "EditMomentLoadDlg.h"
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <..\htmlhelp\HelpTopics.hh>
 
 #include <PgsExt\InsertDeleteLoad.h>
 
@@ -745,7 +744,7 @@ void CEditLoadsView::OnSize(UINT nType, int cx, int cy)
 
 void CEditLoadsView::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_EDIT_LOADS );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_EDIT_LOADS );
 }
 
 BOOL CEditLoadsView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)

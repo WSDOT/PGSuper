@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -336,9 +336,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
       // For girder bearing reactions
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-      bool bDoBearingReaction, bDummy;
-      bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(lastIntervalIdx,thisGirderKey,&bDummy,&bDummy);
-      if(bDoBearingReaction)
+      std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx,thisGirderKey);
+      if( 0 < vPiers.size() )
       {
          *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
@@ -362,7 +361,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
             {
                *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,PierReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
-               if(bDoBearingReaction)
+               if( 0 < vPiers.size() )
                {
                   *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
                }
@@ -447,7 +446,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       } // if design
 
 
-      bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(lastIntervalIdx,thisGirderKey,&bDummy,&bDummy);
+      vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx,thisGirderKey);
 
       // Load Combinations (DC, DW, etc) & Limit States
       // if we are doing a time-step analysis, we need to report for all intervals from
@@ -507,7 +506,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          if ( castDeckIntervalIdx <= intervalIdx )
          {
             CCombinedReactionTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx,analysisType,PierReactionsTable, bDesign, bRating);
-            if( bDoBearingReaction )
+            if( 0 < vPiers.size() )
             {
                CCombinedReactionTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
             }
@@ -529,7 +528,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       p->SetName(_T("Live Load Reactions Without Impact"));
       //CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,thisGirderKey,pDisplayUnits);
       CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,thisGirderKey,pDisplayUnits,analysisType,PierReactionsTable, false, true, false);
-      if(bDoBearingReaction)
+
+      if( 0 < vPiers.size() )
       {
          CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,thisGirderKey,pDisplayUnits,analysisType,BearingReactionsTable, false, true, false);
       }

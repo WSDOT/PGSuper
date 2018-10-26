@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <psgLib\psglib.h>
 #include "SpecCreepPage.h"
 #include "SpecMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,7 +66,7 @@ BEGIN_MESSAGE_MAP(CSpecCreepPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecCreepPage)
 	ON_BN_CLICKED(IDC_CREEP_METHOD, OnWsdotCreepMethod)
 	ON_BN_CLICKED(IDC_CREEP_METHOD2, OnWsdotCreepMethod)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -104,8 +104,7 @@ BOOL CSpecCreepPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-LRESULT CSpecCreepPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CSpecCreepPage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPEC_CREEP );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_CREEP );
 }

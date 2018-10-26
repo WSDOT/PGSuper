@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,12 +30,12 @@ class CPluginManagerDlg : public CPropertySheet
 	DECLARE_DYNAMIC(CPluginManagerDlg)
 
 public:
-	CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent);
-	CPluginManagerDlg(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent);
+	CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent,LPCTSTR lpszAppName);
+	CPluginManagerDlg(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent,LPCTSTR lpszAppName);
 	virtual ~CPluginManagerDlg();
 
 protected:
-   void Init(const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent);
+   void Init(const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent,LPCTSTR lpszAppName);
 
 protected:
    CPluginPage m_DataImporterPage;

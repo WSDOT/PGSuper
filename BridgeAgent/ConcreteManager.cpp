@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -221,7 +221,7 @@ void CConcreteManager::ValidateConcrete()
             if ( segIdx < nSegments-1 )
             {
                const CClosureJointData* pClosure  = pGirder->GetClosureJoint(segIdx);
-               EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure->GetID());
+               EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
                Float64 closure_casting_time       = pTimelineMgr->GetStart(castClosureEventIdx);
                Float64 closure_age_at_continuity  = pTimelineMgr->GetEventByIndex(castClosureEventIdx)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
                Float64 closure_cure_time          = closure_age_at_continuity;

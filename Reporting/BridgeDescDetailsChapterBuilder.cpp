@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,6 +58,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
 void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
 void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
+void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
 
 std::_tstring get_bearing_measure_string(ConnectionLibraryEntry::BearingOffsetMeasurementType type)
 {
@@ -187,6 +188,8 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
             }
 
             write_debonding(pChapter, pBroker, pDisplayUnits, segmentKey);
+
+            write_camber_factors(pChapter, pBroker, pDisplayUnits, segmentKey);
 
             pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pHead;
@@ -383,6 +386,49 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
          }
       }
    }
+}
+
+void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
+{
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+   CamberMultipliers cm = pGdrEntry->GetCamberMultipliers();
+
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara<<_T("Camber Deflection Multipliers")<<rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   *pPara << _T("The factors below are multiplied by the specified load case's deflections when computing excess camber") << rptNewLine;
+
+   rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(2);
+   *pPara << pTable1;
+
+   (*pTable1)(0,0) << _T("Load Cases");
+   (*pTable1)(0,1) << _T("Factor");
+
+   ColumnIndexType row = 1;
+   (*pTable1)(row,0) << _T("Erection (Girder, Prestress)");
+   (*pTable1)(row++,1) << scalar.SetValue(cm.ErectionFactor);
+   (*pTable1)(row,0) << _T("Creep");
+   (*pTable1)(row++,1) << scalar.SetValue(cm.CreepFactor);
+   (*pTable1)(row,0) << _T("Diaphragm, Construction, Shear key");
+   (*pTable1)(row++,1) << scalar.SetValue(cm.DiaphragmFactor);
+   (*pTable1)(row,0) << _T("Deck Panels");
+   (*pTable1)(row++,1) << scalar.SetValue(cm.DeckPanelFactor);
+   (*pTable1)(row,0) << _T("Slab, User Bridge Site 1");
+   (*pTable1)(row++,1) << scalar.SetValue(cm.CreepFactor);
+   (*pTable1)(row,0) << _T("Haunch");
+   (*pTable1)(row++,1) << scalar.SetValue(cm.SlabPadLoadFactor);
+   (*pTable1)(row,0) << _T("Barrier, Sidewalk, Railing, Overlay, User Bridge Site 2");
+   (*pTable1)(row++,1) << scalar.SetValue(cm.BarrierSwOverlayUser2Factor);
 }
 
 void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)

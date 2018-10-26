@@ -1,0 +1,29 @@
+Flexural Design {#appendix_b_girder_flexural_design}
+==============================================
+Parameters that control the flexular design of this girder type are defined on this tab. Parameters include debonding limits, location of debonding sections, and the strategies that are to be used for service limit state design.
+
+Debonding Strand Limits (5.11.4.3)
+----------------------------------
+These parameters are used to check and design debonded sections to ensure that local stress concentrations at debond locations are excessive
+
+Item | Description
+------|---------
+Maximum total debonded strands | Enter this value as a percentage of the total number of permanent strands
+Maximum debonded strands per row | Enter this value as a percentage of the number of permanent strands in a row
+Maximum debonded strands per section | These values limit the number of strands that can be debonded at a given longitudinal location. Enter both a total number and a percentage of the total number of debonded strands. The number of debonded strands will be limited to the greater of the two values.
+
+Criteria for Debond Distances
+-----------------------------
+These parameters guide the automated designer in selecting the location of sections where debonding begins and terminates along teh length of the precast element.
+
+Item | Description
+------|------------
+Maximum Debond Length | The maximum distance from the end of a precast element to any given debonded section cannot exceed lesser of: <ul><li>half the length of the precast element minus the strand development length computed per LRFD 5.11.4.3</li><li>a specified percentage of the overall length of the precast element</li><li>a specified length</li></ul>
+Minimum Debond Length | The minimum distance between adjacent debond sections. Note that this value should always be less than the prestress transfer length for the currently selected strand material, otherwise the debond design algorithm may create designs that do not pass the specification check.
+Default Debond Length | This value is used for design, and as an initial value in the debonding grid. This value cannot be less than the minimum length specified above.
+
+Prestressing Optimization Strategies for the Automated Girder Designer
+-----------------------------------------------------------------------
+Use the controls in this group to direct PGSuper's prestress Girder Designer which strategies to use for the girder type in question. Strategies are attempted from top to bottom in the order shown on the dialog until a successful design is found, or all strategies are exhausted. 
+
+Refer to Advanced Flexural Design - Multiple Prestress Optimization Strategies in the User Guide for more information

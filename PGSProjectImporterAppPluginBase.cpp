@@ -43,7 +43,7 @@ void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
    CString str;
    str.Format(_T("Manage %s Project Importers"),GetAppName());
    CATID catid = GetProjectImporterCATID();
-   std::vector<CEAFPluginState> vPluginStates = EAFManageApplicationPlugins(str,_T("Select the Project Importers that you want to be available."),catid,EAFGetMainFrame());
+   std::vector<CEAFPluginState> vPluginStates = EAFManageApplicationPlugins(str,_T("Select the Project Importers that you want to be available."),catid,EAFGetMainFrame(),IDH_PLUGINS,GetAppName());
    if ( vPluginStates.size() == 0 )
    {
       return;
@@ -123,7 +123,7 @@ BOOL CPGSProjectImporterAppPluginBase::Init(CEAFApp* pParent)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   DefaultInit();
+   DefaultInit(this);
 
    // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
    UINT nResource = GetMenuResourceID();
@@ -200,6 +200,32 @@ CString CPGSProjectImporterAppPluginBase::GetName()
    CString str;
    str.Format(_T("%s Project Importer"),GetAppName());
    return str;
+}
+
+CString CPGSProjectImporterAppPluginBase::GetDocumentationSetName()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return AfxGetAppName();
+}
+
+CString CPGSProjectImporterAppPluginBase::GetDocumentationURL()
+{
+   return CPGSAppPluginBase::GetDocumentationURL();
+}
+
+CString CPGSProjectImporterAppPluginBase::GetDocumentationMapFile()
+{
+   return CPGSAppPluginBase::GetDocumentationMapFile();
+}
+
+void CPGSProjectImporterAppPluginBase::LoadDocumentationMap()
+{
+   return CPGSAppPluginBase::LoadDocumentationMap();
+}
+
+eafTypes::HelpResult CPGSProjectImporterAppPluginBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+{
+   return CPGSAppPluginBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
 //////////////////////////

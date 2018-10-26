@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,24 +37,39 @@ END_MESSAGE_MAP()
 
 BOOL CTxDOTAppPlugin::Init(CEAFApp* pParent)
 {
-   ::GXInit();
-
    // use manage state because we need exe's state below
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
 
-   // TRICKY: Must lock temporary ole control maps in app module or the report browser window
-   //         will vanish after about 10 seconds. See http://support.microsoft.com/kb/161874
-   //         for a sketchy discription
-   AfxLockTempMaps();
+      // TRICKY: Must lock temporary ole control maps in app module or the report browser window
+      //         will vanish after about 10 seconds. See http://support.microsoft.com/kb/161874
+      //         for a sketchy discription
+      AfxLockTempMaps();
+   }
+
+   {
+      // Grid needs local dll module state
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      ::GXInit();
+      m_DocumentationImpl.Init(this);
+   }
 
    return TRUE;
 }
 
 void CTxDOTAppPlugin::Terminate()
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
-   // see tricky in Init
-   AfxUnlockTempMaps();
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      // see tricky in Init
+      AfxUnlockTempMaps();
+   }
+
+   {
+      // Grid needs local dll module state
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      ::GXTerminate();
+   }
 }
 
 void CTxDOTAppPlugin::IntegrateWithUI(BOOL bIntegrate)
@@ -89,6 +104,35 @@ HMENU CTxDOTAppPlugin::GetSharedMenuHandle()
 CString CTxDOTAppPlugin::GetName()
 {
    return CString("TOGA - TxDOT Optional Girder Analysis");
+}
+
+CString CTxDOTAppPlugin::GetDocumentationSetName()
+{
+   return _T("TOGA");
+}
+
+CString CTxDOTAppPlugin::GetDocumentationURL()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return m_DocumentationImpl.GetDocumentationURL();
+}
+
+CString CTxDOTAppPlugin::GetDocumentationMapFile()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return m_DocumentationImpl.GetDocumentationMapFile();
+}
+
+void CTxDOTAppPlugin::LoadDocumentationMap()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return m_DocumentationImpl.LoadDocumentationMap();
+}
+
+eafTypes::HelpResult CTxDOTAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
 CString CTxDOTAppPlugin::GetUsageMessage()

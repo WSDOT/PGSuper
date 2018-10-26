@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,11 +26,11 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ShearSteelPage2.h"
-#include "HtmlHelp\HelpTopics.hh"
 #include <IFace\Tools.h>
 #include <IFace\Project.h>
 
 #include <PsgLib\resource.h>
+#include <EAF\EAFDocument.h>
 
 // CBridgeDescRatingPage dialog
 
@@ -49,9 +49,7 @@ BOOL CShearSteelPage2::OnInitDialog()
 
 void CShearSteelPage2::OnHelp() 
 {
-   UINT helpID = IDH_GIRDERWIZ_SHEARDESC;
-
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_TRANSV_REBAR );
 }
 
 void CShearSteelPage2::DoRestoreDefaults() 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -265,11 +265,11 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    row++;
 
    (*pTable)(row,0) << _T("Deflection (Prestressing)");
-   (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi_orig,false) );
-   (*pTable)(row,2) << dispft.SetValue( pCamber->GetPrestressDeflection(poi_orig,false) );
+   (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi_orig,pgsTypes::pddRelease) );
+   (*pTable)(row,2) << dispft.SetValue( pCamber->GetPrestressDeflection(poi_orig,pgsTypes::pddRelease) );
 
-   (*pTable)(row,3) << disp.SetValue( pCamber->GetPrestressDeflection(poi_fabr,false) );
-   (*pTable)(row,4) << dispft.SetValue( pCamber->GetPrestressDeflection(poi_fabr,false) );
+   (*pTable)(row,3) << disp.SetValue( pCamber->GetPrestressDeflection(poi_fabr,pgsTypes::pddRelease) );
+   (*pTable)(row,4) << dispft.SetValue( pCamber->GetPrestressDeflection(poi_fabr,pgsTypes::pddRelease) );
 
    row++;
 

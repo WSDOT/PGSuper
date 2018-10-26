@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 #include "AlignmentDescriptionDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
-#include "htmlhelp\HelpTopics.hh"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -147,5 +147,5 @@ BOOL CProfilePage::OnInitDialog()
 
 void CProfilePage::OnHelp()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_ALIGNMENT_PROFILE );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_ALIGNMENT_PROFILE );
 }
