@@ -66,7 +66,9 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
    if ( pSGRptSpec )
    {
       pSGRptSpec->GetBroker(&pBroker);
-      span = pSGRptSpec->GetSpan();
+      //span = pSGRptSpec->GetSpan();
+      span = ALL_SPANS; // do all spans for this girder line so that
+                        // you get a complete picture of the loading
       gdr = pSGRptSpec->GetGirder();
    }
    else if ( pGdrRptSpec )

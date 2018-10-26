@@ -23,9 +23,14 @@
 #include "StdAfx.h"
 #include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
+#include <ReportManager\ReportManager.h>
+#include <Reporting\PGSuperChapterBuilder.h>
 
 #include "TexasGirderSummaryChapterBuilder.h"
 #include "TexasIBNSParagraphBuilder.h"
+
+#include <ReportManager\ReportManager.h>
+#include <Reporting\PGSuperChapterBuilder.h>
 
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderData.h>

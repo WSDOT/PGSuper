@@ -23,6 +23,9 @@
 #ifndef INCLUDED_TEXASShearCHAPTERBUILDER_H_
 #define INCLUDED_TEXASShearCHAPTERBUILDER_H_
 
+#include <ReportManager\ReportManager.h>
+#include <Reporting\PGSuperChapterBuilder.h>
+
 interface IEAFDisplayUnits;
 
 /*****************************************************************************

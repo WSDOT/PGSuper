@@ -44,6 +44,8 @@ static char THIS_FILE[] = __FILE__;
 // free functions
 static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType);
 static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads);
+static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads);
+static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads);
 
 /****************************************************************************
 CLASS
@@ -391,7 +393,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          } // end if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
 
          // overlay laod
-         if ( pBridge->HasOverlay() )
+         bool bReportOverlay = pBridge->HasOverlay();
+         if ( bRating && pBridge->IsFutureOverlay() ) // don't report future overlay load for ratings
+            bReportOverlay = false;
+
+         if ( bReportOverlay )
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
@@ -488,7 +494,33 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
             *pPara << "Construction" << rptNewLine;
+            pPara = new rptParagraph;
+            *pChapter << pPara;
+
+            std::vector<ConstructionLoad> construction_loads;
+            pProdLoads->GetConstructionLoad(spanIdx, gdrIdx, &construction_loads);
+
+            bool is_uniform = IsConstructionLoadUniform(construction_loads);
+
+            if (is_uniform)
+            {
+               *pPara<<"Construction load is uniform along entire girder length."<<rptNewLine;
+
+               p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+               *pPara << p_table << rptNewLine;
+               p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+               p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+               (*p_table)(0,0) << "Load Type";
+               (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               RowIndexType row = p_table->GetNumberOfHeaderRows();
          
+               const ConstructionLoad& cnst_load = *(construction_loads.begin());
+
+               (*p_table)(row,0) << "Construction Weight";
+               (*p_table)(row++,1) << fpl.SetValue(-cnst_load.StartLoad);
+            }
+            else
+            {
             p_table = pgsReportStyleHolder::CreateDefaultTable(6,"");
             *pPara << p_table;
 
@@ -501,8 +533,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             (*p_table)(0,4) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0,5) << COLHDR("End Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
-            std::vector<ConstructionLoad> construction_loads;
-            pProdLoads->GetConstructionLoad(spanIdx, gdrIdx, &construction_loads);
 
             RowIndexType row = 1;
             for (std::vector<ConstructionLoad>::iterator i = construction_loads.begin(); i != construction_loads.end(); i++)
@@ -525,6 +555,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                row++;
             }
          }
+      }
 
          // Shear key loads
          GET_IFACE2(pBroker,IGirder,pGirder);
@@ -543,47 +574,74 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             pPara = new rptParagraph;
             *pChapter << pPara;
 
-            *pPara << "Shear Key Load is approximated with Linear Load Segments applied along the length of the girder" << rptNewLine;
-
-            p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
-            *pPara << p_table;
-
-            (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,1) << COLHDR("Load Within"<<rptNewLine<<"Girder Envelope",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,2) << COLHDR("Load Within"<<rptNewLine<<"Joint",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,3) << COLHDR("Total Shear"<<rptNewLine<<"Key Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-
             std::vector<ShearKeyLoad> loads;
             pProdLoads->GetShearKeyLoad(spanIdx, gdrIdx, &loads);
 
-            RowIndexType row = 1;
-            for ( std::vector<ShearKeyLoad>::iterator i = loads.begin(); i != loads.end(); i++ )
+            bool is_uniform = IsShearKeyLoadUniform(loads);
+            if (is_uniform)
             {
-               ShearKeyLoad& sk_load = *i;
+               *pPara << "Shear Key Load is uniform along entire girder length" << rptNewLine;
 
-               if (row==1)
+               p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+               *pPara << p_table << rptNewLine;
+               p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+               p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+               (*p_table)(0,0) << "Load Type";
+               (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               RowIndexType row = p_table->GetNumberOfHeaderRows();
+
+               const ShearKeyLoad& load = *(loads.begin());
+
+               (*p_table)(row,0) << "Load Within Girder Envelope";
+               (*p_table)(row++,1) << fpl.SetValue(-load.UniformLoad);
+
+               (*p_table)(row,0) << "Load Within Joint";
+               (*p_table)(row++,1) << fpl.SetValue(-load.StartJointLoad);
+
+               (*p_table)(row,0) << "Total Shear Key Weight";
+               (*p_table)(row++,1) << fpl.SetValue(-load.StartJointLoad - load.UniformLoad);
+            }
+            else
+            {
+               *pPara << "Shear Key Load is approximated with Linear Load Segments applied along the length of the girder" << rptNewLine;
+
+               p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
+               *pPara << p_table;
+
+               (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,1) << COLHDR("Load Within"<<rptNewLine<<"Girder Envelope",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,2) << COLHDR("Load Within"<<rptNewLine<<"Joint",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,3) << COLHDR("Total Shear"<<rptNewLine<<"Key Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+               RowIndexType row = 1;
+               for ( std::vector<ShearKeyLoad>::iterator i = loads.begin(); i != loads.end(); i++ )
                {
-                  Float64 location  = sk_load.StartLoc - end_size;
+                 const ShearKeyLoad& sk_load = *i;
+
+                  if (row==1)
+                  {
+                     Float64 location  = sk_load.StartLoc - end_size;
+                     Float64 unif_load  = sk_load.UniformLoad;
+                     Float64 joint_load = sk_load.StartJointLoad;
+                     Float64 total_load = unif_load + joint_load;
+                     (*p_table)(row,0) << loc.SetValue(location);
+                     (*p_table)(row,1) << fpl.SetValue(-unif_load);
+                     (*p_table)(row,2) << fpl.SetValue(-joint_load);
+                     (*p_table)(row,3) << fpl.SetValue(-total_load);
+                     row++;
+                  }
+
+                  Float64 location  = sk_load.EndLoc - end_size;
                   Float64 unif_load  = sk_load.UniformLoad;
-                  Float64 joint_load = sk_load.StartJointLoad;
+                  Float64 joint_load = sk_load.EndJointLoad;
                   Float64 total_load = unif_load + joint_load;
                   (*p_table)(row,0) << loc.SetValue(location);
                   (*p_table)(row,1) << fpl.SetValue(-unif_load);
                   (*p_table)(row,2) << fpl.SetValue(-joint_load);
                   (*p_table)(row,3) << fpl.SetValue(-total_load);
+
                   row++;
                }
-
-               Float64 location  = sk_load.EndLoc - end_size;
-               Float64 unif_load  = sk_load.UniformLoad;
-               Float64 joint_load = sk_load.EndJointLoad;
-               Float64 total_load = unif_load + joint_load;
-               (*p_table)(row,0) << loc.SetValue(location);
-               (*p_table)(row,1) << fpl.SetValue(-unif_load);
-               (*p_table)(row,2) << fpl.SetValue(-joint_load);
-               (*p_table)(row,3) << fpl.SetValue(-total_load);
-
-               row++;
             }
          }
 
@@ -727,22 +785,27 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                }
             }
 
-            // User Defined Loads
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-            *pChapter << pPara;
-            *pPara<< "User Defined Loads"<<rptNewLine;
-            pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
-            *pChapter << pPara;
-            pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
-            *pChapter << pPara;
-            pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
-            *pChapter << pPara;
-         }
+               // User Defined Loads
+               pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               *pChapter << pPara;
+               *pPara<< "User Defined Loads"<<rptNewLine;
+               pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+               *pChapter << pPara;
+               pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+               *pChapter << pPara;
+               pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+               *pChapter << pPara;
+            }
       } // gdrIdx
    } // spanIdx
 
 
    // live loads
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+
+   if (!m_bSimplifiedVersion)
+   {
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< "Live Loads"<<rptNewLine;
@@ -750,8 +813,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
    if ( bDesign )
    {
       std::vector<std::string> designLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
@@ -923,8 +984,21 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          *pPara << rptNewLine;
       }
    }
+   }
+
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(2);
+   scalar.SetTolerance(1.0e-6);
 
    // LRFD Limit States
+   GET_IFACE2(pBroker,ILoadFactors,pLF);
+   const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+   RowIndexType row = 0;
+
+   if (!m_bSimplifiedVersion)
+   {
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< "Limit States"<<rptNewLine;
@@ -941,7 +1015,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    p_table->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    p_table->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   RowIndexType row = 0;
    (*p_table)(row,0) << "Stage";
    (*p_table)(row,1) << "Load Case";
    row++;
@@ -989,15 +1062,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,ILoadFactors,pLF);
-   const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
-
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(2);
-   scalar.SetTolerance(1.0e-6);
-
    p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
    p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
@@ -1008,7 +1072,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(0,1) << Sub2(symbol(gamma),"DC");
    (*p_table)(0,2) << Sub2(symbol(gamma),"DW");
    (*p_table)(0,3) << Sub2(symbol(gamma),"LL");
-   
    
    row = 1;
 
@@ -1317,10 +1380,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          *pPara << Super("*") << "Live Load Factor depends on the weight of the axles on the bridge" << rptNewLine;
       }
    }
+   }
 
 
-
-
+   if (!m_bSimplifiedVersion && !bRating)
+   {
    // Equivalent prestress loading for camber
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -1394,6 +1458,8 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          } // end if
       } // gdrIdx
    } // spanIdx
+   }
+
    return pChapter;
 }
 
@@ -1483,6 +1549,67 @@ static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
          return false;
    }
 
+
+   return true;
+}
+
+static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
+{
+   Float64 loadval, unifval;
+
+   bool first=true;
+   for ( std::vector<ShearKeyLoad>::const_iterator i = loads.begin(); i != loads.end(); i++ )
+   {
+      const ShearKeyLoad& load = *i;
+
+      if (first)
+      {
+         loadval = load.StartJointLoad;
+         unifval = load.UniformLoad;
+         first = false;
+      }
+      else
+      {
+         // only takes one difference to be nonuniform
+         if (!IsEqual(loadval, load.StartJointLoad))
+            return false;
+
+         if (!IsEqual(unifval, load.UniformLoad))
+            return false;
+      }
+
+      if (!IsEqual(loadval, load.EndJointLoad))
+         return false;
+   }
+
+   return true;
+}
+
+static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads)
+{
+   Float64 loadval;
+
+   bool first=true;
+   for ( std::vector<ConstructionLoad>::const_iterator i = loads.begin(); i != loads.end(); i++ )
+   {
+      const ConstructionLoad& load = *i;
+
+      if (first)
+      {
+         loadval = load.StartLoad;
+         first = false;
+      }
+      else
+      {
+         // only takes one difference to be nonuniform
+         if (!IsEqual(loadval, load.StartLoad))
+            return false;
+
+      }
+
+      if (!IsEqual(loadval, load.EndLoad))
+         return false;
+   }
 
    return true;
 }

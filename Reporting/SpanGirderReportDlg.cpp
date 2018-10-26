@@ -355,6 +355,11 @@ void CSpanGirderReportDlg::InitFromRptSpec()
       boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CGirderReportSpecification>(m_pInitRptSpec);
       m_Girder = pRptSpec->GetGirder();
    }
+   else if ( m_Mode == ChaptersOnly )
+   {
+      m_Span   = INVALID_INDEX;
+      m_Girder = INVALID_INDEX;
+   }
    else
    {
       ATLASSERT(false); // is there a new mode?

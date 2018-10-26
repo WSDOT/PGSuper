@@ -168,10 +168,7 @@ BOOL CTxDOTOptionalDesignView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowN
    }
    m_pCreateContext = NULL;
 
-
    return TRUE;
-	//return m_pPropSheet->SetWindowPos(NULL, 0, 0, 0, 0,
-	//		                            SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
 }
 
 void CTxDOTOptionalDesignView::OnSize(UINT nType, int cx, int cy)

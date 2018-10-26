@@ -112,6 +112,8 @@ public:
    void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
    void OnLiveLoads();
 
+   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const;
+   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
 
 // Implementation
 public:

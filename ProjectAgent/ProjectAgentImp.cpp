@@ -2974,26 +2974,29 @@ STDMETHODIMP CProjectAgentImp::Reset()
                                 m_pSpecEntry,
                                 *(m_pLibMgr->GetSpecLibrary()) );
 
+
+      // Rating Spec Library
+      release_library_entry( &m_LibObserver, 
+                             m_pRatingEntry,
+                             *(m_pLibMgr->GetRatingLibrary()) );
+
+
       // Live Load Library
       const LiveLoadLibrary& pLiveLoadLibrary = *(m_pLibMgr->GetLiveLoadLibrary());
-      LiveLoadSelectionIterator it;
-      for (it = m_SelectedLiveLoads[pgsTypes::lltDesign].begin(); it != m_SelectedLiveLoads[pgsTypes::lltDesign].end(); it++)
+      int nLLTypes = sizeof(m_SelectedLiveLoads)/sizeof(LiveLoadSelectionContainer);
+      ATLASSERT(nLLTypes == 8);
+      for ( int i = 0; i < nLLTypes; i++ )
       {
-         if ( it->pEntry )
+         pgsTypes::LiveLoadType llType = (pgsTypes::LiveLoadType)i;
+         LiveLoadSelectionIterator it;
+         for (it = m_SelectedLiveLoads[llType].begin(); it != m_SelectedLiveLoads[llType].end(); it++)
          {
-            release_library_entry( &m_LibObserver, 
-                                   it->pEntry,
-                                   pLiveLoadLibrary);
-         }
-      }
-
-      for (it = m_SelectedLiveLoads[pgsTypes::lltPermit].begin(); it != m_SelectedLiveLoads[pgsTypes::lltPermit].end(); it++)
-      {
-         if ( it->pEntry )
-         {
-            release_library_entry( &m_LibObserver, 
-                                   it->pEntry,
-                                   pLiveLoadLibrary);
+            if ( it->pEntry )
+            {
+               release_library_entry( &m_LibObserver, 
+                                      it->pEntry,
+                                      pLiveLoadLibrary);
+            }
          }
       }
    }

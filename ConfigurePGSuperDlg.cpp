@@ -114,7 +114,7 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
       // check if we changed publishers (don't care if Default)
       if ( !m_bUpdateCache && m_SharedResourceType != srtDefault)
       {
-         bool bchanged = false;
+         bool bchanged = m_bFirstRun!=FALSE;
          bchanged |= m_OriginalSharedResourceType != m_SharedResourceType;
 
          if ( m_SharedResourceType != srtLocal)
@@ -209,6 +209,7 @@ void CConfigurePGSuperDlg::HideOkAndCancelButtons()
 
 
 //   CWnd* pOK = GetDlgItem(IDOK);
+//   pOK->SetDlgCtrlID(IDC_UPDATENOW);
 //   pOK->ShowWindow(SW_HIDE);
 }
 

@@ -274,10 +274,10 @@ function ParseCommandFromFolderName(currCommand, folderName)
      s = s.toUpperCase();
 
      var s3 = s.substr(0,3); // take first three characters to check for Tx commands
-     var s4 = s.substr(0,4); // take first three characters to check for Tx commands
+     var s4 = s.substr(0,4); // take first four characters to check for Tx commands
      var cmd;
 
-     if (s3=="TXAT")
+     if (s4=="TXAT")
      {
         cmd = "TxAT";
      }

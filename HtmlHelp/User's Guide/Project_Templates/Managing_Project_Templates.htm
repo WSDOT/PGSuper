@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=844>
-<meta name=layout-width content=1352>
+<meta name=layout-height content=2213>
+<meta name=layout-width content=947>
 
 
 <!--(Links)=========================================================-->
@@ -46,40 +46,95 @@
 <h1>Managing Project Templates</h1>
 
 <p>In order for your templates to be available in PGSuper, they must be 
- stored in the User Templates Folder. Customizing the User Templates Folder 
- is discussed in <a HREF="..\Customizing_PGSuper\Chapter_10.htm">Chapter 
- 12</a>. In this section, you will learn how the User Templates Folder 
- relates to creating new PGSUper Projects and the New Project Dialog.</p>
+ stored in a libraries and templates package (LTPackage) and published 
+ on a PGSuper Catalog Server. The easiest type of LTPackage is a folder 
+ on your hard disk. In this section, you will learn how create a LTPackage, 
+ how it relates to the New Project Dialog, and how to configure PGSuper 
+ to use your LTPackage.</p>
+
+<h2>Master Library File</h2>
+
+<p>A LTPackage must have a master library file. This is a PGSuper Library 
+ File that will be referenced when projects are opened or created. You 
+ can create a Master Library project and build your own library if you 
+ like. For convenience, a default master library file is installed with 
+ PGSuper. This file is C:\Program Files\WSDOT\PGSuper\WSDOT.lbr. We'll 
+ use this file to build a LTPackage.</p>
 
 <h2>Organizing Your Templates</h2>
 
-<p>Your templates must be stored in the Templates Folder or in a folder 
- immediately below the Templates Folder. In the figure below, the user 
- templates folder is named &quot;My PGSuper Templates&quot; - you can name 
- your folder whatever you want. <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->By 
- creating sub-folders, you can organize your templates. The default templates 
- created for WSDOT and provided with PGSuper are organized by girder type. 
- Other organizations might include geographical region, span lengths, or 
- state standards.</p>
+<p>Your template files are stored in file system folders on your computer. 
+ Use can use the folder names and tree structure to provide organization 
+ to your templates. The tree structure is replicated in the New Project 
+ Dialog (See below).</p>
 
-<p>All of the templates in the User Template Folder are presented in the 
- General tab of the New Projects dialog. Each of the sub-folders corresponds 
- to a tab in the New Projects dialog. The templates in the sub-folders 
- are displayed on each of these tabs. The figure below illustrates the 
- mapping of the Template Folder and its sub-folders to tabs in the New 
- Project dialog.</p>
+<h2>PGSuper Catalog Servers</h2>
+
+<p>PGSuper Catalog Servers provide a listing of LTPackages. Catalog servers 
+ can be FTP or HTTP servers on the Internet or a Master Library File and 
+ Templates Folder on your local or network file system. For the sake of 
+ this example we'll use the local file system as a PGSuper Catalog Server.</p>
+
+<p>To create a catalog server for your LTPackage (which is nothing more 
+ than a Master Library File and a Templates Folder),</p>
+
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p>Select File | Configure PGSuper</p></li>
+	
+	<li class=kadov-p><p>Select the Use libraries and templates published 
+ on the local file system, network, or the Internet option.</p></li>
+	
+	<li class=kadov-p><p>Press the Add/Edit button to add a catalog server</p></li>
+	
+	<ol style="list-style: lower-alpha;"
+		type=a>
+		
+		<li class=kadov-p><p>In the PGSuper Catalogs Servers dialog, press 
+ the Add button to add a new catalog server</p></li>
+		
+		<li class=kadov-p><p>Define the catalog server<br>
+		<img src="CatalogServer.bmp"
+			x-maintain-ratio=TRUE
+			style="border: none;
+					width: 447px;
+					height: 367px;
+					float: none;"
+			width=447
+			height=367
+			border=0></p></li>
+		
+		<li class=kadov-p><p>Press OK to close the PGSuper Catalog Servers 
+ dialog</p></li>
+	</ol>
+	
+	<li class=kadov-p><p>Select the &quot;MyCatalogServer&quot; and the 
+ &quot;MyCatalogServer&quot; LTPackage<br>
+	<img src="ConfigurePGSuper.bmp"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				width: 708px;
+				height: 528px;
+				float: none;"
+		width=708
+		height=528
+		border=0></p></li>
+	
+	<li class=kadov-p><p>Press the Update Library and Templates Now button 
+ to configure PGSuper with your LTPackage</p></li>
+</ol>
+
+<p>When you create a new PGSuper Project, your templates will be listed 
+ under PGSuper Project Templates - Workgroup Templates.</p>
 
 <p><img src="templatemap.bmp"
-		style="width: 731px;
-				height: 480px;
-				margin-top: 0px;
-				margin-bottom: 0px;
-				margin-left: 0px;
-				margin-right: 0px;
+		style="border-style: none;
 				border-style: none;
-				border-style: none;"
-		width=731
-		height=480
+				width: 620px;
+				height: 445px;"
+		width=620
+		height=445
 		border=0></p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->

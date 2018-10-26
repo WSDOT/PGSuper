@@ -56,7 +56,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;ENABLE_LOGGING;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;ENABLE_LOGGING;x_HAS_ITERATOR_DEBUGGING=0;x_SECURE_SCL=0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

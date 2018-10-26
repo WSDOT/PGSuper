@@ -52,7 +52,7 @@
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
-				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;IGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;IGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;x_HAS_ITERATOR_DEBUGGING=0;x_SECURE_SCL=0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -570,50 +570,6 @@
 			</File>
 			<File
 				RelativePath=".\IBeamFamily.rgs"
-				>
-			</File>
-			<File
-				RelativePath="ico00001.ico"
-				>
-			</File>
-			<File
-				RelativePath="Res\ico00001.ico"
-				>
-			</File>
-			<File
-				RelativePath="ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath="Res\ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath="Res\ico00003.ico"
-				>
-			</File>
-			<File
-				RelativePath="Res\ico00004.ico"
-				>
-			</File>
-			<File
-				RelativePath="Res\icon1.ico"
-				>
-			</File>
-			<File
-				RelativePath="icon1.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\icon2.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\icon3.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\metafile.bin"
 				>
 			</File>
 			<File

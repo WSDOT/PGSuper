@@ -3,9 +3,12 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignBrokerRetreiver.h"
 
+#include "TogaSectionCutDrawStrategy.h"
+#include "resource.h"
+
 // CTxDOTOptionalDesignGirderViewPage dialog
 
-class CTxDOTOptionalDesignGirderViewPage : public CPropertyPage, public ITxDataObserver
+class CTxDOTOptionalDesignGirderViewPage : public CPropertyPage, public ITxDataObserver, public iCutLocation
 {
 	DECLARE_DYNAMIC(CTxDOTOptionalDesignGirderViewPage)
 
@@ -26,6 +29,12 @@ public:
 // listen to data change events
    virtual void OnTxDotDataChanged(int change);
 
+   SpanIndexType span;
+   GirderIndexType girder;
+
+   void GetSpanAndGirderSelection(SpanIndexType* pSpan,GirderIndexType* pGirder);
+
+
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -38,4 +47,33 @@ public:
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
    afx_msg void OnFilePrint();
    virtual void AssertValid() const;
+
+   // iCutLocation
+public:
+   enum CutLocation {LeftEnd,LeftHarp,Center,RightHarp,RightEnd,UserInput};
+
+   // Girder view
+   void InvalidateCutLocation() {m_bCutLocationInitialized = false;}
+   Float64 GetCurrentCutLocation() {return m_CurrentCutLocation;}
+   void CutAt(Float64 cut);
+   void ShowCutDlg();
+   void CutAtLocation();
+   void CutAtLeftEnd();
+   void CutAtLeftHp();
+   void CutAtCenter();
+   void CutAtRightHp(); 
+   void CutAtRightEnd(); 
+
+   void CutAtNext();
+   void CutAtPrev();
+
+   void UpdateCutLocation(CutLocation cutLoc,Float64 cut = 0.0);
+
+private:
+   bool m_bCutLocationInitialized;
+
+   Float64 m_CurrentCutLocation;
+   CutLocation m_CutLocation;
+   Float64 m_MaxCutLocation;
+
 };

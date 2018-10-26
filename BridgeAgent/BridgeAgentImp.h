@@ -150,6 +150,8 @@ public:
    virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve);
    virtual CollectionIndexType GetVertCurveCount();
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve);
+   virtual void GetCrownPoint(Float64 station,IDirection* dir,IPoint2d** ppPoint);
+   virtual void GetCrownPoint(Float64 station,IDirection* dir,IPoint3d** ppPoint);
 
 // IBridge
 public:

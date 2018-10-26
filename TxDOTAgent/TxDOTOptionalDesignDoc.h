@@ -35,6 +35,53 @@
 class CTxDOTOptionalDesignDocProxyAgent;
 class CBridgeDescription;
 
+// Hints for views
+// in the OnUpdate method.
+#define HINT_GIRDERVIEWSETTINGSCHANGED    1
+#define HINT_GIRDERVIEWSECTIONCUTCHANGED  3
+#define HINT_GIRDERSELECTIONCHANGED       5
+#include <EAF\EAFHints.h>
+
+// Girder Model Editor
+#define VS_GIRDER_ELEVATION   0
+#define VS_GIRDER_SECTION     1
+
+// ======================================
+// all possible settings for girder model editor;
+//       section view
+#define IDG_SV_SHOW_STRANDS     ((DWORD)0x00000001)
+#define IDG_SV_SHOW_PS_CG       ((DWORD)0x00000002)
+#define IDG_SV_SHOW_DIMENSIONS  ((DWORD)0x00000004)
+#define IDG_SV_DRAW_ISOTROPIC   ((DWORD)0x00000010)
+#define IDG_SV_DRAW_TO_SCALE    ((DWORD)0x00000020)
+#define IDG_SV_SHOW_LONG_REINF  ((DWORD)0x00000040)
+
+// elevation view
+#define IDG_EV_SHOW_STRANDS     ((DWORD)0x00000100)
+#define IDG_EV_SHOW_PS_CG       ((DWORD)0x00000200)
+#define IDG_EV_SHOW_DIMENSIONS  ((DWORD)0x00000400)
+#define IDG_EV_DRAW_ISOTROPIC   ((DWORD)0x00000800)
+#define IDG_EV_DRAW_TO_SCALE    ((DWORD)0x00001000)
+#define IDG_EV_SHOW_STIRRUPS    ((DWORD)0x00002000)
+#define IDG_EV_SHOW_LONG_REINF  ((DWORD)0x00004000)
+
+const UINT DEF_GV =  IDG_SV_SHOW_STRANDS     |
+                     IDG_SV_SHOW_STRANDS     |
+                     IDG_SV_SHOW_PS_CG       |
+                     IDG_SV_SHOW_DIMENSIONS  |
+                     IDG_SV_DRAW_ISOTROPIC   |
+                     IDG_SV_DRAW_TO_SCALE    |
+                     IDG_SV_SHOW_LONG_REINF  |
+                     IDG_EV_SHOW_STRANDS     |
+                     IDG_EV_SHOW_PS_CG       |
+                     IDG_EV_SHOW_DIMENSIONS  |
+                     IDG_EV_DRAW_ISOTROPIC   |
+                     IDG_EV_DRAW_TO_SCALE    |
+                     IDG_EV_SHOW_STIRRUPS    |
+                     IDG_EV_SHOW_LONG_REINF;
+
+
+
 /*--------------------------------------------------------------------*/
 class CTxDOTOptionalDesignDoc : public CEAFBrokerDocument, public ITxDataObserver, public ITxDOTBrokerRetriever
 {
@@ -60,6 +107,9 @@ public:
    virtual BOOL SaveTheDocument(LPCTSTR lpszPathName);
    virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave);
    virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad);
+
+   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const;
+   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
 
    // ITxDOTBrokerRetriever
    virtual IBroker* GetUpdatedBroker();
@@ -118,6 +168,9 @@ private:
    // Flag that's true if we are exporting to PGSuper
    bool m_InExportMode;
 
+   UINT m_GirderModelEditorSettings;
+
+
 private:
    // Implementation
    void InitializeLibraryManager();
@@ -142,6 +195,12 @@ public:
    afx_msg void OnFileSave();
    afx_msg void OnFileSaveas();
    afx_msg void OnFileExportPgsuperModel();
+
+   // set/get view settings for Girder model editor
+   UINT GetGirderEditorSettings() const;
+   void SetGirderEditorSettings(UINT settings);
+
+   void EditGirderViewSettings(int nPage);
 };
 
 /////////////////////////////////////////////////////////////////////////////

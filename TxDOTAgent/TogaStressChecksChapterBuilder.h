@@ -24,6 +24,8 @@
 #define INCLUDED_TogaStressChecksChapterBuilder_H_
 
 #include <Reporter\Chapter.h>
+#include <ReportManager\ReportManager.h>
+#include <Reporting\PGSuperChapterBuilder.h>
 
 interface IEAFDisplayUnits;
 class pgsGirderArtifact;

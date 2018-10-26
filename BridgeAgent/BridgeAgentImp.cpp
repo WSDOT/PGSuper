@@ -1584,7 +1584,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
    // get coordinate at the station the user wants to use as the reference station
    CComPtr<IPoint2d> objRefPoint1;
-   alignment->LocatePoint(CComVariant(alignment_data.RefStation),0.00,CComVariant(0.00),&objRefPoint1);
+   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.00,CComVariant(0.00),&objRefPoint1);
 
    // create a point where the reference station should pass through
    CComPtr<IPoint2d> objRefPoint2;
@@ -1602,7 +1602,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
 #if defined _DEBUG
    CComPtr<IPoint2d> objPnt;
-   alignment->LocatePoint(CComVariant(alignment_data.RefStation),0.0,CComVariant(0.0),&objPnt);
+   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.0,CComVariant(0.0),&objPnt);
    Float64 x1,y1,x2,y2;
    objPnt->Location(&x1,&y1);
    objRefPoint2->Location(&x2,&y2);
@@ -3760,7 +3760,11 @@ void CBridgeAgentImp::LayoutHandlingPoi(pgsTypes::Stage stage,
    pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stage,span,gdr,leftOverhang,attrib | supportAttribute) );
    pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stage,span,gdr,girder_length - rightOverhang,attrib | supportAttribute) );
 
-   // nth point POI
+   // add poi at ends of girder
+   pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stage,span,gdr,0,attrib) );
+   pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stage,span,gdr,girder_length,attrib) );
+
+   // nth point POI between overhang support points
    const Float64 toler = +1.0e-6;
    for ( Uint16 i = 0; i < nPnts+1; i++ )
    {
@@ -4062,6 +4066,22 @@ void CBridgeAgentImp::GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve)
    ATLASSERT(SUCCEEDED(hr));
 }
 
+void CBridgeAgentImp::GetCrownPoint(Float64 station,IDirection* dir,IPoint2d** ppPoint)
+{
+   VALIDATE( COGO_MODEL );
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+   alignment->LocateCrownPoint2D(CComVariant(station),CComVariant(dir),ppPoint);
+}
+
+void CBridgeAgentImp::GetCrownPoint(Float64 station,IDirection* dir,IPoint3d** ppPoint)
+{
+   VALIDATE( COGO_MODEL );
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+   alignment->LocateCrownPoint3D(CComVariant(station),CComVariant(dir),ppPoint);
+}
+
 void CBridgeAgentImp::GetPoint(Float64 station,Float64 offset,IDirection* pBearing,IPoint2d** ppPoint)
 
 {
@@ -4070,7 +4090,7 @@ void CBridgeAgentImp::GetPoint(Float64 station,Float64 offset,IDirection* pBeari
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
 
-   alignment->LocatePoint(CComVariant(station),offset,CComVariant(pBearing),ppPoint);
+   alignment->LocatePoint(CComVariant(station),omtAlongDirection, offset,CComVariant(pBearing),ppPoint);
 }
 
 void CBridgeAgentImp::GetStationAndOffset(IPoint2d* point,Float64* pStation,Float64* pOffset)

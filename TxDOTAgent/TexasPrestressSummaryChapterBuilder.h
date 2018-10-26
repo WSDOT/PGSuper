@@ -23,6 +23,9 @@
 #ifndef INCLUDED_TEXASPRESTRESSSUMMARYCHAPTERBUILDER_H_
 #define INCLUDED_TEXASPRESTRESSSUMMARYCHAPTERBUILDER_H_
 
+#include <ReportManager\ReportManager.h>
+#include <Reporting\PGSuperChapterBuilder.h>
+
 interface IEAFDisplayUnits;
 
 /*****************************************************************************
