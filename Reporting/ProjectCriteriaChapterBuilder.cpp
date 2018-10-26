@@ -978,6 +978,11 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
 
    *pPara << rptNewLine << rptNewLine;
 
+   Float64 Cfactor = pSpecEntry->GetCamberVariability();
+   *pPara << _T("Variability between upper and lower bound camber : ") << 100*Cfactor << rptNewLine;
+
+   *pPara << rptNewLine << rptNewLine;
+
    *pPara << _T("1 day of steam or radiant heat curing is equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing") << rptNewLine;
 }
 

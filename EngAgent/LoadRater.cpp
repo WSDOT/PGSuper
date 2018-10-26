@@ -578,18 +578,22 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
 
 void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
 {
-   ATLASSERT(vehicleIdx != INVALID_INDEX);
-
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
    if ( bPositiveMoment )
    {
       GET_IFACE(IProductLoads,pProductLoads);
-      pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType,vehicleIdx);
-      if ( applicability == pgsTypes::llaNegMomentAndInteriorPierReaction )
+      VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+      VehicleIndexType startVehicleIdx = (vehicleIdx == INVALID_INDEX ? 0 : vehicleIdx);
+      VehicleIndexType endVehicleIdx   = (vehicleIdx == INVALID_INDEX ? nVehicles-1: startVehicleIdx);
+      for ( VehicleIndexType vehIdx = startVehicleIdx; vehIdx <= endVehicleIdx; vehIdx++ )
       {
-         // we are processing positive moments and the live load vehicle is only applicable to negative moments
-         return;
+         pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType,vehIdx);
+         if ( applicability == pgsTypes::llaNegMomentAndInteriorPierReaction )
+         {
+            // we are processing positive moments and the live load vehicle is only applicable to negative moments
+            return;
+         }
       }
    }
 

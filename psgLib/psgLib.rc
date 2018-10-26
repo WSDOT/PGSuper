@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,8,1,0
- PRODUCTVERSION 2,8,1,0
+ FILEVERSION 2,8,2,0
+ PRODUCTVERSION 2,8,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.8.1.0"
+            VALUE "FileVersion", "2.8.2.0"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.8.1.0"
+            VALUE "ProductVersion", "2.8.2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -1124,7 +1124,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,228,209,50,14
 END
 
-IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 198
+IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 228
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Limits and Warnings"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1158,9 +1158,13 @@ BEGIN
     LTEXT           "Static",IDC_LWC_UNIT_WEIGHT_UNIT,203,102,29,8
     EDITTEXT        IDC_LWC_AGG_SIZE,160,118,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,120,19,8
-    GROUPBOX        "General Warnings",IDC_STATIC,7,149,310,42
-    CONTROL         "Issue a Spec Check warning if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
+    GROUPBOX        "General Warnings",IDC_STATIC,7,145,310,76
+    CONTROL         "Warn if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,167,291,10
+    CONTROL         "Warn if there is a potential for girders to sag under dead load effects",IDC_CHECK_GIRDER_SAG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,186,229,10
+    LTEXT           "Base sag detection on",IDC_STATIC,42,201,72,8
+    COMBOBOX        IDC_SAG_OPTIONS,116,199,170,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPEC_DESIGN DIALOGEX 0, 0, 292, 274
@@ -1822,7 +1826,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 317
         TOPMARGIN, 7
-        BOTTOMMARGIN, 191
+        BOTTOMMARGIN, 221
     END
 
     IDD_SPEC_DESIGN, DIALOG

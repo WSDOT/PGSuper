@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1796>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=1978>
+<meta name=layout-width content=801>
 
 
 <!--(Links)=========================================================-->
@@ -271,17 +271,18 @@
  upper and lower values as recommended in Reference 1 (cited below). PGSuper™ 
  makes two camber predictions: one for a normal (maximum timing) construction 
  scenario, and another for a fast (minimum timing) construction scenario. 
- However, the predicted cambers in both cases are upper bound values for 
- each given timing. That is; based on WSDOT experience and measurements 
- taken by local fabricators, most all measured cambers are at or below 
- these predicted values. This means that lower bound values, which can 
- cause girders to sag, should be addressed further .</p>
+ However, for each case there is variability in camber due to a number 
+ of factors including curing time (girders cured over a weekend camber 
+ less then those with a 24 hour turn around). PGSuper accommodates this 
+ natural variation in camber by predicting a lower bound value. In most 
+ cases the actual camber will be somewhere between the predicted upper 
+ and lower bounds. </p>
 
-<p>To accommodate a lower bound camber value, PGSuper reduces the minimum 
- timing camber using a Camber Variability (Cv) reduction factor that is 
- input on the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/Creep_Tab.htm">Project 
+<p>To computer the lower bound camber, PGSuper reduces the upper bound 
+ value using a Camber Variability (Cv) reduction factor that is input on 
+ the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/Creep_Tab.htm">Project 
  Criteria library – Creep tab.</a> This allows users to modify Camber variability 
- to compute a lower bound of excess camber as follows:</p>
+ to compute a lower bound camber as follows:</p>
 
 <p style="text-align: center;"
 	align=center><img src="CamberVariability.gif"
@@ -290,6 +291,7 @@
 								width: 328px;
 								height: 50px;
 								float: none;
+								border-style: none;
 								border-style: none;"
 						width=328
 						height=50

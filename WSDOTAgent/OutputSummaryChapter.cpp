@@ -378,23 +378,11 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    // Populate the table
    RowIndexType row = 0;
    if ( deckType == pgsTypes::sdtNone )
-      (*pTable)(row,0) << _T("Estimated camber immediately before superimposed dead loads at ")<< min_days<<_T(" days, D");
-   else
-      (*pTable)(row,0) << _T("Estimated camber immediately before slab casting at ")<< min_days<<_T(" days, D");
-
-   Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
-   if ( D < 0 )
-      (*pTable)(row,1) << color(Red) << camber.SetValue( D ) << color(Black);
-   else
-      (*pTable)(row,1) << camber.SetValue( D );
-   row++;
-
-   if ( deckType == pgsTypes::sdtNone )
       (*pTable)(row,0) << _T("Estimated camber immediately before superimposed dead loads at ")<< max_days<<_T(" days, D");
    else
       (*pTable)(row,0) << _T("Estimated camber immediately before slab casting  at ")<< max_days<<_T(" days, D");
 
-   D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
+   Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
    if ( D < 0 )
       (*pTable)(row,1) << color(Red) << camber.SetValue( D ) << color(Black);
    else

@@ -230,56 +230,70 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       *pPara << color(Red) << Bold(_T("WARNING: Stirrup zone lengths are not compatible with stirrup spacings. Refer to the Stirrup Layout Geometry Check for more information.")) << color(Black) << rptNewLine;
    }
 
-   // Negative camber is not technically a spec check, but a warning
-   GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr ,pgsTypes::BridgeSite1, POI_MIDSPAN);
-   ATLASSERT(pmid.size()==1);
-   pgsPointOfInterest poiMidSpan(pmid.front());
-
-
-   GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   Float64 C = 0;
-   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   if ( pSpecEntry->CheckGirderSag() )
    {
-      C = pCamber->GetScreedCamber( poiMidSpan ) ;
-   }
+      // Negative camber is not technically a spec check, but a warning
+      GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+      std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr ,pgsTypes::BridgeSite1, POI_MIDSPAN);
+      ATLASSERT(pmid.size()==1);
+      pgsPointOfInterest poiMidSpan(pmid.front());
 
-   Float64 D = 999;
-   if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
-   {
-      D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
-   }
-   else
-   {
+
+      GET_IFACE2(pBroker,ICamber,pCamber);
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+      Float64 C = 0;
+      if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+      {
+         C = pCamber->GetScreedCamber( poiMidSpan ) ;
+      }
+
+      Float64 D = 999;
+      std::_tstring camberType;
       Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
+      D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME); // upper bound camber
+      Float64 Dlower = D*Cfactor;
 
-      D = Cfactor * pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-   }
+      switch(pSpecEntry->GetSagCamberType())
+      {
+      case pgsTypes::LowerBoundCamber:
+         D = Dlower;
+         camberType = _T("lower bound");
+         break;
 
-   if ( D < C )
-   {
-      pPara = new rptParagraph;
-      *pChapter << pPara;
+      case pgsTypes::AverageCamber:
+         D *= (1+Cfactor)/2;
+         camberType = _T("average");
+         break;
 
-      *pPara << color(Red) << Bold(_T("WARNING: Screed Camber is greater than the camber at time of deck casting. The girder may end up with a sag.")) << color(Black) << rptNewLine;
-   }
-   else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
-   {
-      pPara = new rptParagraph;
-      *pChapter << pPara;
+      case pgsTypes::UpperBoundCamber:
+         camberType = _T("upper bound");
+         break;
+      }
 
-      *pPara << color(Red) << Bold(_T("WARNING: Screed Camber is nearly equal to the camber at time of deck casting. The girder may end up with a sag.")) << color(Black) << rptNewLine;
-   }
+      if ( D < C )
+      {
+         pPara = new rptParagraph;
+         *pChapter << pPara;
 
-   Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,CREEP_MAXTIME);
-   if ( excess_camber < 0.0 )
-   {
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << Bold(_T("WARNING:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.")) << color(Black) << rptNewLine;
+         *pPara << color(Red) << _T("WARNING: Screed Camber is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting. The girder may end up with a sag.") << color(Black) << rptNewLine;
+      }
+      else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+      {
+         pPara = new rptParagraph;
+         *pChapter << pPara;
+
+         *pPara << color(Red) << _T("WARNING: Screed Camber is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting. The girder may end up with a sag.") << color(Black) << rptNewLine;
+      }
+
+      Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,CREEP_MAXTIME);
+      if ( excess_camber < 0.0 )
+      {
+         rptParagraph* pPara = new rptParagraph;
+         *pChapter << pPara;
+         *pPara << color(Red) << Bold(_T("WARNING:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.")) << color(Black) << rptNewLine;
+      }
    }
 }
 

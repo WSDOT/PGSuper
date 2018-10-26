@@ -276,6 +276,8 @@ m_RelaxationLossMethod(RLM_REFINED)
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
 
    m_DoCheckStirrupSpacingCompatibility = true;
+   m_bCheckSag = true;
+   m_SagCamberType = pgsTypes::LowerBoundCamber;
 }
 
 SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
@@ -563,7 +565,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CreepDuration2Max"),m_CreepDuration2Max);
    pSave->Property(_T("XferTime"),m_XferTime);
    pSave->Property(_T("TotalCreepDuration"),m_TotalCreepDuration);
-   pSave->Property(_T("CamberVariability"),m_CamberVariability);
+   pSave->Property(_T("CamberVariability"),m_CamberVariability); // added in version 44
 
    pSave->Property(_T("LossMethod"),(Int16)m_LossMethod);
    pSave->Property(_T("FinalLosses"),m_FinalLosses);
@@ -651,8 +653,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit(); // Limits
 
    // Added in version 44
-   pSave->BeginUnit(_T("Warnings"),1.0);
+   pSave->BeginUnit(_T("Warnings"),2.0);
          pSave->Property(_T("DoCheckStirrupSpacingCompatibility"), m_DoCheckStirrupSpacingCompatibility);
+         pSave->Property(_T("CheckGirderSag"),m_bCheckSag); // added in version 2
+         pSave->Property(_T("SagCamberType"),m_SagCamberType); // added in version 2
    pSave->EndUnit(); // Warnings
 
    // Added in 14.0 removed in version 41
@@ -2012,8 +2016,23 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->BeginUnit(_T("Warnings")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property(_T("DoCheckStirrupSpacingCompatibility"),&m_DoCheckStirrupSpacingCompatibility) )
+         Float64 warningsVersion = pLoad->GetVersion();
+
+         if ( !pLoad->Property(_T("DoCheckStirrupSpacingCompatibility"),&m_DoCheckStirrupSpacingCompatibility) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+
+         if ( 2 <= warningsVersion )
+         {
+            if ( !pLoad->Property(_T("CheckGirderSag"),&m_bCheckSag) )
                THROW_LOAD(InvalidFileFormat,pLoad);
+
+            int value;
+            if ( !pLoad->Property(_T("SagCamberType"),&value) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            m_SagCamberType = (pgsTypes::SagCamberType)value;
+         }
 
          if ( !pLoad->EndUnit() ) // Warnings
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2467,6 +2486,12 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    }
 
    TEST (m_DoCheckStirrupSpacingCompatibility, rOther.m_DoCheckStirrupSpacingCompatibility);
+   TEST (m_bCheckSag, rOther.m_bCheckSag);
+   if ( m_bCheckSag )
+   {
+      TEST(m_SagCamberType,rOther.m_SagCamberType);
+   }
+
 
    TEST (m_EnableSlabOffsetCheck         , rOther.m_EnableSlabOffsetCheck            );
    TEST (m_EnableSlabOffsetDesign        , rOther.m_EnableSlabOffsetDesign );
@@ -3455,6 +3480,26 @@ Float64 SpecLibraryEntry::GetCamberVariability() const
    return m_CamberVariability;
 }
 
+void SpecLibraryEntry::CheckGirderSag(bool bCheck)
+{
+   m_bCheckSag = bCheck;
+}
+
+bool SpecLibraryEntry::CheckGirderSag() const
+{
+   return m_bCheckSag;
+}
+
+pgsTypes::SagCamberType SpecLibraryEntry::GetSagCamberType() const
+{
+   return m_SagCamberType;
+}
+
+void SpecLibraryEntry::SetSagCamberType(pgsTypes::SagCamberType type)
+{
+   m_SagCamberType = type;
+}
+
 int SpecLibraryEntry::GetLossMethod() const
 {
    return m_LossMethod;
@@ -4330,6 +4375,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    }
 
    m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
+   m_bCheckSag = rOther.m_bCheckSag;
+   m_SagCamberType = rOther.m_SagCamberType;
 
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;
