@@ -685,11 +685,11 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDoc* pDoc,IBr
       long tx0,ty0;
       long tx1,ty1;
       m_pCoordinateMap->WPtoTP(0,0,&tx0,&ty0);
-      m_pCoordinateMap->WPtoTP(_cpp_max(top_width,bottom_width)/2,0,&tx1,&ty1);
-      doDimLineCGPS->SetWitnessLength(tx1-tx0);
-      doDimLineHeight->SetWitnessLength(tx1-tx0+50);
+      m_pCoordinateMap->WPtoTP(bottom_width/2.0,0,&tx1,&ty1);
+      long dimwit = doDimLineHeight->GetWitnessLength();
+      doDimLineCGPS->SetWitnessLength(tx1-tx0+dimwit); 
+      doDimLineHeight->SetWitnessLength(dimwit*2);
    }
-
 
    // add the dimension line display objects to the display list
    pDL->AddDisplayObject(doDimLineTopFlangeWidth);
@@ -829,9 +829,21 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
 {
    if ( m_bUpdateError )
    {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
       CString msg;
       AfxFormatString1(msg,IDS_E_UPDATE,m_ErrorMsg.c_str());
+
+      CFont font;
+      CFont* pOldFont = NULL;
+      if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+         pOldFont = pDC->SelectObject(&font);
+
       MultiLineTextOut(pDC,0,0,msg);
+
+      if ( pOldFont )
+         pDC->SelectObject(pOldFont);
+
       return;
    }
 

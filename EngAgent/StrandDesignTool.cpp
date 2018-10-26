@@ -30,6 +30,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\BridgeDescription.h>
+#include <PgsExt\LoadFactors.h>
 
 #include "PsForceEng.h"
 #include "StrandDesignTool.h"
@@ -759,7 +760,11 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    LOSSDETAILS losses;
    ATLASSERT(m_Span == poi.GetSpan() && m_Girder == poi.GetGirder());
    psfeng.ComputeLosses(poi,guess,&losses);
-   Float64 loss = losses.pLosses->PermanentStrand_FinalWithLiveLoad();
+
+   GET_IFACE(ILoadFactors,pLoadFactors);
+   const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+   Float64 gLL = pLF->LLIMmax[pgsTypes::ServiceIII];
+   Float64 loss = losses.pLosses->PermanentStrand_FinalWithLiveLoad(gLL);
 
 #if defined _DEBUG
    GET_IFACE(ILosses,pILosses);

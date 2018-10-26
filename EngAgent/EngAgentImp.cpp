@@ -37,6 +37,7 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\LoadFactors.h>
 
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
@@ -1349,9 +1350,16 @@ Float64 CEngAgentImp::GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsType
 
    Float64 val;
    if ( strandType == pgsTypes::Temporary )
+   {
       val = pLossDetails->pLosses->TemporaryStrand_Final();
+   }
    else
-      val = pLossDetails->pLosses->PermanentStrand_FinalWithLiveLoad();
+   {
+      GET_IFACE(ILoadFactors,pLoadFactors);
+      const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+      Float64 gLL = pLF->LLIMmax[pgsTypes::ServiceIII];
+      val = pLossDetails->pLosses->PermanentStrand_FinalWithLiveLoad(gLL);
+   }
 
    return val;
 }
@@ -1523,9 +1531,16 @@ Float64 CEngAgentImp::GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsType
 
    Float64 loss;
    if ( strandType == pgsTypes::Temporary )
+   {
       loss = details.pLosses->TemporaryStrand_Final();
+   }
    else
-      loss = details.pLosses->PermanentStrand_FinalWithLiveLoad();
+   {
+      GET_IFACE(ILoadFactors,pLoadFactors);
+      const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+      Float64 gLL = pLF->LLIMmax[pgsTypes::ServiceIII];
+      loss = details.pLosses->PermanentStrand_FinalWithLiveLoad(gLL);
+   }
    
    return loss;
 }

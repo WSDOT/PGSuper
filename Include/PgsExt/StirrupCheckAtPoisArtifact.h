@@ -465,6 +465,11 @@ public:
    Float64 GetFy() const;
    void SetFy(Float64 fy);
    bool Is5_8_4_1_4Applicable() const;
+   
+   Float64 GetAvOverSMin_5_8_4_4_1() const;
+   void SetAvOverSMin_5_8_4_4_1(Float64 fmin);
+   Float64 GetAvOverSMin_5_8_4_1_3() const;
+   void SetAvOverSMin_5_8_4_1_3(Float64 fmin);
    Float64 GetAvOverSMin() const;
    void SetAvOverSMin(Float64 fmin);
    Float64 GetNumLegs() const;
@@ -561,6 +566,8 @@ private:
    Float64 m_Bv;
    Float64 m_Sall;
    Float64 m_Fy;
+   Float64 m_AvOverSMin_5_8_4_4_1;
+   Float64 m_AvOverSMin_5_8_4_1_3;
    Float64 m_AvOverSMin;
    Float64 m_NumLegs;
    Float64 m_NumLegsReqd;

@@ -674,6 +674,11 @@ Float64 CTaperedIBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType span
       prev_perimeter = perimeter;
    }
 
+   // add area of both ends of the girder
+   Float64 start_area = pSectProp2->GetAg(pgsTypes::CastingYard,vPOI.front());
+   Float64 end_area   = pSectProp2->GetAg(pgsTypes::CastingYard,vPOI.back());
+   S += (start_area + end_area);
+
    return S;
 }
 

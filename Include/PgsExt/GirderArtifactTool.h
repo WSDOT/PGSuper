@@ -65,7 +65,7 @@ inline const std::_tstring LimitStateName(pgsTypes::LimitState ls)
 typedef std::vector<std::_tstring> FailureList;
 typedef FailureList::iterator    FailureListIterator;
 
-inline bool flexure_stress_failures(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,const pgsGirderArtifact* pArtifact)
+inline bool flexure_stress_failures(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,const pgsGirderArtifact* pArtifact,bool bWithoutTensionRebar,bool bWithTensionRebar)
 {
    std::vector<pgsFlexuralStressArtifactKey> keys;
    keys = pArtifact->GetFlexuralStressArtifactKeys();
@@ -87,17 +87,20 @@ inline bool flexure_stress_failures(IBroker* pBroker,SpanIndexType span,GirderIn
 
       if ( stage == pgsTypes::BridgeSite3 && ls == pgsTypes::ServiceIII )
       {
-	      if ( !pFlexure->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) || !pFlexure->BottomPassed(pgsFlexuralStressArtifact::WithRebar))
+	      if ( (bWithoutTensionRebar && !pFlexure->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar)) || 
+              (bWithTensionRebar    && !pFlexure->BottomPassed(pgsFlexuralStressArtifact::WithRebar)) )
             return true;
       }
       else if ( stage == pgsTypes::BridgeSite3 && (ls == pgsTypes::ServiceIA || ls == pgsTypes::ServiceI || ls == pgsTypes::FatigueI )  )
       {
-	      if ( !pFlexure->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) || !pFlexure->TopPassed(pgsFlexuralStressArtifact::WithRebar) )
+	      if ( (bWithoutTensionRebar && !pFlexure->TopPassed(pgsFlexuralStressArtifact::WithoutRebar)) || 
+              (bWithTensionRebar    && !pFlexure->TopPassed(pgsFlexuralStressArtifact::WithRebar)) )
             return true;
       }
       else
       {
-	      if ( !pFlexure->Passed(pgsFlexuralStressArtifact::WithoutRebar) || !pFlexure->Passed(pgsFlexuralStressArtifact::WithRebar))
+	      if ( (bWithoutTensionRebar && !pFlexure->Passed(pgsFlexuralStressArtifact::WithoutRebar)) || 
+              (bWithTensionRebar    && !pFlexure->Passed(pgsFlexuralStressArtifact::WithRebar)) )
             return true;
       }
    }
@@ -134,65 +137,75 @@ inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,SpanIn
       rFailures.push_back(_T("Hold Down Force is excessive."));
    }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,true,true) )
    {
       rFailures.push_back(_T("Compressive stress check failed for Service I for the Casting Yard Stage (At Release)."));
    }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,true,false) )
    {
-      rFailures.push_back(_T("Tensile stress check failed for Service I for the Casting Yard Stage (At Release)."));
+      rFailures.push_back(_T("Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided)."));
+   }
+
+   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,false,true) )
+   {
+      rFailures.push_back(_T("Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit with required amount of mild reinforcement provided)."));
    }
 
    if ( 0 < NtMax && 0 < Nt )
    {
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,true,true) )
       {
          rFailures.push_back(_T("Compressive stress check failed for Service I for the Temporary Strand Removal Stage."));
       }
 
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,true,false) )
       {
-         rFailures.push_back(_T("Tensile stress check failed for Service I for the Temporary Strand Removal."));
+         rFailures.push_back(_T("Tensile stress check failed for Service I for the Temporary Strand Removal. (for allowable tension limit without mild reinforcement provided)."));
+      }
+
+      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,false,true) )
+      {
+         rFailures.push_back(_T("Tensile stress check failed for Service I for the Temporary Strand Removal. (for allowable tension limit with required amount of mild reinforcement provided)."));
       }
    }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,true,true) )
    {
       rFailures.push_back(_T("Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1)."));
    }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,true,true) )
    {
       rFailures.push_back(_T("Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1)."));
    }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,true,true) )
    {
       rFailures.push_back(_T("Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2)."));
    }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,true,true) )
    {
       rFailures.push_back(_T("Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3)."));
    }
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,pgsTypes::Compression,pArtifact) )
+      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,pgsTypes::Compression,pArtifact,true,true) )
       {
          rFailures.push_back(_T("Compressive stress check failed for Service IA for the Final with Live Load Stage (Bridge Site 3)."));
       }
    }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,pArtifact) )
+   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,pArtifact,true,true) )
    {
       rFailures.push_back(_T("Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3)."));
    }
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::FatigueI,pgsTypes::Compression,pArtifact) )
+      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::FatigueI,pgsTypes::Compression,pArtifact,true,true) )
       {
          rFailures.push_back(_T("Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3)."));
       }

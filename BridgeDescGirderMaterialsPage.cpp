@@ -727,7 +727,7 @@ void CGirderDescGeneralPage::UpdateGirderTypeHyperLink()
    }
    else
    {
-      m_GirderTypeHyperLink.SetWindowText(_T("This girder type is assigned to this girder line"));
+      m_GirderTypeHyperLink.SetWindowText(_T("This girder type is assigned to this girder"));
       m_GirderTypeHyperLink.SetURL(_T("Click to use this girder type for the entire bridge"));
    }
 }

@@ -664,41 +664,22 @@ void pgsShearDesignTool::ValidateVerticalAvsDemand()
    std::vector<pgsPointOfInterest>::const_iterator i( m_DesignPois.begin());
    while ( i != m_DesignPois.end())
    {
+      Float64 avs_val=0.0;
+
       const pgsPointOfInterest& poi = *i;
       Float64 location = poi.GetDistFromStart();
 
-      Float64 avs_val=0.0;
-
-      pgsStirrupCheckAtPoisArtifactKey keyI(pgsTypes::BridgeSite3, pgsTypes::StrengthI, location);
-
-      const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyI);
-      if(pStrI_artf!=NULL)
+      // We don't design for demands outside of the CSS's
+      if (location >= m_LeftCSS && location <= m_RightCSS)
       {
-         const pgsVerticalShearArtifact* pvertart = pStrI_artf->GetVerticalShearArtifact();
+         pgsStirrupCheckAtPoisArtifactKey keyI(pgsTypes::BridgeSite3, pgsTypes::StrengthI, location);
 
-         avs_val = pvertart->GetAvOverSReqd();
-
-         was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metStart);
-         was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metEnd);
-      }
-      else
-      {
-         ATLASSERT(0); // this should never happen
-         continue;
-      }
-      
-      if (m_bIsPermit)
-      {
-         // Envelope str I & II
-         Float64 avs_II;
-         pgsStirrupCheckAtPoisArtifactKey keyII(pgsTypes::BridgeSite3, pgsTypes::StrengthII, location);
-
-         const pgsStirrupCheckAtPoisArtifact* pStrII_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyII);
-         if(pStrII_artf!=NULL)
+         const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyI);
+         if(pStrI_artf!=NULL)
          {
-            const pgsVerticalShearArtifact* pvertart = pStrII_artf->GetVerticalShearArtifact();
+            const pgsVerticalShearArtifact* pvertart = pStrI_artf->GetVerticalShearArtifact();
 
-            avs_II = pvertart->GetAvOverSReqd();
+            avs_val = pvertart->GetAvOverSReqd();
 
             was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metStart);
             was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metEnd);
@@ -708,19 +689,42 @@ void pgsShearDesignTool::ValidateVerticalAvsDemand()
             ATLASSERT(0); // this should never happen
             continue;
          }
+         
+         if (m_bIsPermit)
+         {
+            // Envelope str I & II
+            Float64 avs_II;
+            pgsStirrupCheckAtPoisArtifactKey keyII(pgsTypes::BridgeSite3, pgsTypes::StrengthII, location);
 
-         LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
+            const pgsStirrupCheckAtPoisArtifact* pStrII_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyII);
+            if(pStrII_artf!=NULL)
+            {
+               const pgsVerticalShearArtifact* pvertart = pStrII_artf->GetVerticalShearArtifact();
 
-         avs_val = max( avs_val, avs_II );
+               avs_II = pvertart->GetAvOverSReqd();
+
+               was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metStart);
+               was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metEnd);
+            }
+            else
+            {
+               ATLASSERT(0); // this should never happen
+               continue;
+            }
+
+            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
+
+            avs_val = max( avs_val, avs_II );
+         }
+         else
+         {
+            // Str I is only load case
+            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val);
+         }
+
+         if (avs_val<SPACING_TOL) // weed out noise
+            avs_val = 0.0;
       }
-      else
-      {
-         // Str I is only load case
-         LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val);
-      }
-
-      if (avs_val<SPACING_TOL) // weed out noise
-         avs_val = 0.0;
 
       m_VertShearAvsDemandAtPois.push_back(avs_val);
 
@@ -937,52 +941,56 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand()
 
       Float64 avs_val=0.0;
 
-      pgsStirrupCheckAtPoisArtifactKey keyI(pgsTypes::BridgeSite3, pgsTypes::StrengthI, location);
-
-      const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyI);
-      if(pStrI_artf!=NULL)
+      // We don't design for demands outside of the CSS's
+      if (location >= m_LeftCSS && location <= m_RightCSS)
       {
-         const pgsHorizontalShearArtifact* phorizart = pStrI_artf->GetHorizontalShearArtifact();
+         pgsStirrupCheckAtPoisArtifactKey keyI(pgsTypes::BridgeSite3, pgsTypes::StrengthI, location);
 
-         avs_val = phorizart->GetAvOverSReqd();
-      }
-      else
-      {
-         ATLASSERT(0); // this should never happen
-         continue;
-      }
-      
-      if (m_bIsPermit)
-      {
-         // Envelope str I & II
-         Float64 avs_II;
-         pgsStirrupCheckAtPoisArtifactKey keyII(pgsTypes::BridgeSite3, pgsTypes::StrengthII, location);
-
-         const pgsStirrupCheckAtPoisArtifact* pStrII_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyII);
-         if(pStrII_artf!=NULL)
+         const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyI);
+         if(pStrI_artf!=NULL)
          {
-            const pgsHorizontalShearArtifact* phorizart = pStrII_artf->GetHorizontalShearArtifact();
+            const pgsHorizontalShearArtifact* phorizart = pStrI_artf->GetHorizontalShearArtifact();
 
-            avs_II = phorizart->GetAvOverSReqd();
+            avs_val = phorizart->GetAvOverSReqd();
          }
          else
          {
             ATLASSERT(0); // this should never happen
             continue;
          }
+         
+         if (m_bIsPermit)
+         {
+            // Envelope str I & II
+            Float64 avs_II;
+            pgsStirrupCheckAtPoisArtifactKey keyII(pgsTypes::BridgeSite3, pgsTypes::StrengthII, location);
 
-         LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
+            const pgsStirrupCheckAtPoisArtifact* pStrII_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyII);
+            if(pStrII_artf!=NULL)
+            {
+               const pgsHorizontalShearArtifact* phorizart = pStrII_artf->GetHorizontalShearArtifact();
 
-         avs_val = max( avs_val, avs_II );
+               avs_II = phorizart->GetAvOverSReqd();
+            }
+            else
+            {
+               ATLASSERT(0); // this should never happen
+               continue;
+            }
+
+            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
+
+            avs_val = max( avs_val, avs_II );
+         }
+         else
+         {
+            // Str I is only load case
+            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val);
+         }
+
+         if (avs_val<SPACING_TOL) // weed out noise
+            avs_val = 0.0;
       }
-      else
-      {
-         // Str I is only load case
-         LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val);
-      }
-
-      if (avs_val<SPACING_TOL) // weed out noise
-         avs_val = 0.0;
 
       m_HorizShearAvsDemandAtPois.push_back(avs_val);
 

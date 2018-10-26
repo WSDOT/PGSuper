@@ -13187,9 +13187,13 @@ void CAnalysisAgentImp::ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType 
    // For pedestrian loads - take average of loads from adjacent spans
    Float64 leftPedes(0.0), rightPedes(0.0);
    Int32 nls(0);
-   if(pierIdx>0)
+   if(0 < pierIdx)
    {
-      leftPedes = this->GetPedestrianLiveLoad(pierIdx-1,gdrIdx);
+      SpanIndexType prevSpanIdx = (SpanIndexType)(pierIdx-1);
+      GET_IFACE(IBridge,pBridge);
+      GirderIndexType nGirders = pBridge->GetGirderCount(prevSpanIdx);
+      GirderIndexType g = min(gdrIdx,nGirders-1);
+      leftPedes = this->GetPedestrianLiveLoad(prevSpanIdx,g);
       nls++;
    }
 

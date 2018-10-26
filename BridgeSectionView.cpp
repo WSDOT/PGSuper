@@ -881,7 +881,8 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    dispObj->SetGravityWellStrategy(gravity_well);
 
    CBridgeSectionViewSlabDisplayObjectEvents* pEvents = new CBridgeSectionViewSlabDisplayObjectEvents(pDoc,pBroker,m_pFrame,true);
-   IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
+   CComPtr<IUnknown> unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
+   pEvents->InternalRelease(); // remove the ref count created by "new" above
    CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
 
    dispObj->RegisterEventSink(events);

@@ -635,9 +635,12 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
    Float64 apsu = 0;
    if (pConfig!=NULL)
    {
+      // Use approximate method during design. The performance gain is around 30%. However, this does
+      // change results slightly in the end zones for some files. If this becomes problematic, check out the 
+      // factor in CBridgeAgentImp::GetApsTensionSide where the accurate method is used only in end zones.
       if ( pscd->bTensionBottom )
-         apsu = pStrandGeometry->GetApsBottomHalf(poi,*pConfig,dlaApproximate); // when using config, don't adjust for bond factor
-      else                                                             // designer doesn't need expensive accuracy
+         apsu = pStrandGeometry->GetApsBottomHalf(poi,*pConfig,dlaApproximate);
+      else                                                             
          apsu = pStrandGeometry->GetApsTopHalf(poi,*pConfig,dlaApproximate);
    }
    else

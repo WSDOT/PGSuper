@@ -27,6 +27,7 @@
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\GirderData.h>
+#include <PgsExt\LoadFactors.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -84,11 +85,24 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
    *pParagraph << _T("Effective Prestress") << rptNewLine;
 
+   GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
+   Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
+
+   std::_tostringstream os;
+   os << gLL;
+
+
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    if (  loss_method == LOSSES_AASHTO_REFINED || loss_method == LOSSES_WSDOT_REFINED  )
    {
-      *pParagraph << rptRcImage(strImagePath + _T("EffectivePrestress.png")) << rptNewLine;
+      *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
+                  << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
+                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << rptNewLine;
+      *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
+                  << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
+                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(" + ")
+                  << _T("(") << os.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL")) << rptNewLine;
    }
    else
    {

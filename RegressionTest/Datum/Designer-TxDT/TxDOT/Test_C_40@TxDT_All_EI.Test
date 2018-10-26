@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     C          10   1/2  270 15.09 13.09   2 12.0  4.000  5.000    0.932   -1.206   1434  0.776  0.814  0.05 -0.01 -0.00 -0.00 -0.01  17.10  53.26   0.00   0.00   0.00
+ 44.00   6  8.00  1     1     C          10   1/2  270 15.09 13.09   2 12.0  4.000  5.000    0.932   -1.206   1434  0.776  0.814  0.06 -0.01 -0.00 -0.00 -0.01  17.10  53.26   0.00   0.00   0.00
 
 
 The Specification Check was Successful
@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     C          10   1/2  270 15.09 13.09   2 12.0  4.000  5.000    0.967   -1.243   1432  0.776  0.814  0.05 -0.01 -0.00 -0.00 -0.01  17.10  52.86   0.00   0.00   0.00
+ 44.00   6  8.00  1     2     C          10   1/2  270 15.09 13.09   2 12.0  4.000  5.000    0.967   -1.243   1432  0.776  0.814  0.06 -0.01 -0.00 -0.00 -0.01  17.10  52.86   0.00   0.00   0.00
 
 
 The Specification Check was Successful
@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     C          10   1/2  270 15.09 13.09   2 12.0  4.000  5.000    0.967   -1.243   1432  0.776  0.814  0.05 -0.01 -0.00 -0.00 -0.01  17.10  52.86   0.00   0.00   0.00
+ 44.00   6  8.00  1     4     C          10   1/2  270 15.09 13.09   2 12.0  4.000  5.000    0.967   -1.243   1432  0.776  0.814  0.06 -0.01 -0.00 -0.00 -0.01  17.10  52.86   0.00   0.00   0.00
 
 
 The Specification Check was Successful

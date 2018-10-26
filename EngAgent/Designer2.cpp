@@ -1688,11 +1688,12 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
                                                 &Vn1, &Vn2, &Vn3);
    pArtifact->SetVn(Vn1, Vn2, Vn3);
 
-   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
+   pgsTypes::ConcreteType gdrConcType  = pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
+   pgsTypes::ConcreteType slabConcType = pMaterial->GetSlabConcreteType();
    GET_IFACE(IResistanceFactors,pResistanceFactors);
-   Float64 PhiRC,PhiPS,PhiC;
-   pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiC);
-   Float64 phi = min(PhiRC,PhiPS); // use min of PS and RC (see LRFD 5.8.4.1)
+   Float64 phiGirder = pResistanceFactors->GetShearResistanceFactor(gdrConcType);
+   Float64 phiSlab   = pResistanceFactors->GetShearResistanceFactor(slabConcType);
+   Float64 phi       = min(phiGirder,phiSlab); // use minimum (see LRFD 5.8.4.1)
    pArtifact->SetPhi(phi);
 
    // Minimum steel check 5.8.4.1-4
@@ -1706,8 +1707,10 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
 
    pArtifact->SetFy(fy);
 
-   Float64 avfmin = lrfdConcreteUtil::AvfOverSMin(bv,fy,Vuh,phi,c,u,Pc);
-   pArtifact->SetAvOverSMin(avfmin);
+   lrfdConcreteUtil::HsAvfOverSMinType avfmin = lrfdConcreteUtil::AvfOverSMin(bv,fy,Vuh,phi,c,u,Pc);
+   pArtifact->SetAvOverSMin_5_8_4_4_1(avfmin.res5_8_4_4_1);
+   pArtifact->SetAvOverSMin_5_8_4_1_3(avfmin.res5_8_4_1_3);
+   pArtifact->SetAvOverSMin(avfmin.AvfOverSMin);
 
    Uint16 min_num_legs = lrfdConcreteUtil::MinLegsForBv(bv);
    pArtifact->SetNumLegsReqd(min_num_legs);
@@ -1733,7 +1736,7 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    pArtifact->SetVsLimit(vs_limit);
 
    // Get Av/S required for design algorithm
-   Float64 avs_reqd = lrfdConcreteUtil::AvfRequiredForHoriz(Vuh, phi, avfmin, c, u, K1, K2,
+   Float64 avs_reqd = lrfdConcreteUtil::AvfRequiredForHoriz(Vuh, phi, avfmin.AvfOverSMin, c, u, K1, K2,
                                                             bv, Acv, pArtifact->GetAvOverS(), Pc, fc, fy);
    pArtifact->SetAvOverSReqd(avs_reqd);
 }

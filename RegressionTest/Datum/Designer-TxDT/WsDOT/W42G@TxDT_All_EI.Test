@@ -6,7 +6,8 @@
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit with required amount of mild reinforcement provided).
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -14,13 +15,14 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   6  5.00  1     2     W42G  *    18  0.60  270 16.00  5.00   6 38.0  4.000 14.600    4.404   -3.977   2828  0.510  0.596  0.34 -0.04 -0.00 -0.01 -0.05  99.20 210.76   1.75  13.00  13.00
+ 28.25   6  5.00  1     2     W42G  *    18  0.60  270 16.00  5.00   6 38.0  4.000 14.600    4.404   -3.977   2828  0.510  0.596  0.35 -0.04 -0.00 -0.01 -0.05  99.20 210.76   1.75  13.00  13.00
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit with required amount of mild reinforcement provided).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
@@ -35,7 +37,8 @@ Hauling checks failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit with required amount of mild reinforcement provided).
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed

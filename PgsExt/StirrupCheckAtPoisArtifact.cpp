@@ -588,6 +588,8 @@ m_Fc(0),
 m_Bv(0),
 m_Sall(0),
 m_Fy(0),
+m_AvOverSMin_5_8_4_4_1(0),
+m_AvOverSMin_5_8_4_1_3(0),
 m_AvOverSMin(0),
 m_NumLegs(0),
 m_NumLegsReqd(0),
@@ -818,6 +820,27 @@ bool pgsHorizontalShearArtifact::Is5_8_4_1_4Applicable() const
    return m_VsAvg >= m_VsLimit;
 }
 
+Float64 pgsHorizontalShearArtifact::GetAvOverSMin_5_8_4_4_1() const
+{
+   return m_AvOverSMin_5_8_4_4_1;
+}
+
+void pgsHorizontalShearArtifact::SetAvOverSMin_5_8_4_4_1(Float64 fmin)
+{
+   m_AvOverSMin_5_8_4_4_1 = fmin;
+}
+
+Float64 pgsHorizontalShearArtifact::GetAvOverSMin_5_8_4_1_3() const
+{
+   return m_AvOverSMin_5_8_4_1_3;
+}
+
+void pgsHorizontalShearArtifact::SetAvOverSMin_5_8_4_1_3(Float64 fmin)
+{
+   m_AvOverSMin_5_8_4_1_3 = fmin;
+}
+
+
 Float64 pgsHorizontalShearArtifact::GetAvOverSMin() const
 {
    return m_AvOverSMin;
@@ -1033,6 +1056,8 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
    m_SGirder      = rOther.m_SGirder;
    m_Sall         = rOther.m_Sall;
    m_Fy           = rOther.m_Fy;
+   m_AvOverSMin_5_8_4_4_1   = rOther.m_AvOverSMin_5_8_4_4_1;
+   m_AvOverSMin_5_8_4_1_3   = rOther.m_AvOverSMin_5_8_4_1_3;
    m_AvOverSMin   = rOther.m_AvOverSMin;
    m_NumLegs      = rOther.m_NumLegs;
    m_NumLegsReqd  = rOther.m_NumLegsReqd;

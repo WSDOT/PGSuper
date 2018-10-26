@@ -701,6 +701,11 @@ Float64 CUBeam2Factory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,Gi
       prev_area = area;
    }
 
+   // add area of both ends of the girder
+   Float64 start_area = pSectProp2->GetAg(pgsTypes::CastingYard,vPOI.front());
+   Float64 end_area   = pSectProp2->GetAg(pgsTypes::CastingYard,vPOI.back());
+   As += (start_area + end_area);
+
    return As;
 }
 

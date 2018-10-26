@@ -898,13 +898,21 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 
       GetStyleRowCol(nRow, LAST_EXTEND_COL, style);
       bool bExtendRight = style.GetValue() == _T("1") ? true : false;
-      
-      SetStyleRange(CGXRange(nRow,DEBOND_CHECK_COL), CGXStyle()
-            .SetControl(GX_IDS_CTRL_CHECKBOX3D)  //
-            .SetValue(_T("0"))
-            .SetReadOnly(bExtendLeft || bExtendRight ? TRUE  : FALSE)
-            .SetEnabled(bExtendLeft  || bExtendRight ? FALSE : TRUE)
-            );
+
+      GetStyleRowCol(nRow, SELECT_CHECK_COL, style);
+      ATLASSERT( style.GetValue() != _T("0") );
+
+      UserData* pUserData = (UserData*)style.GetItemDataPtr(); // user data we set at fill time
+
+      if ( pUserData->isDebondable ) // uncheck debond if debondable 
+      {
+         SetStyleRange(CGXRange(nRow,DEBOND_CHECK_COL), CGXStyle()
+               .SetControl(GX_IDS_CTRL_CHECKBOX3D)  //
+               .SetValue(_T("0"))
+               .SetReadOnly(bExtendLeft || bExtendRight ? TRUE  : FALSE)
+               .SetEnabled(bExtendLeft  || bExtendRight ? FALSE : TRUE)
+               );
+      }
 
       GetParam()->SetLockReadOnly(TRUE);
 

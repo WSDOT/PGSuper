@@ -179,6 +179,7 @@ BOOL CDesignGirderDlg::OnInitDialog()
    EnableToolTips(TRUE);
 
    OnBnClickedRadio();
+   OnBnClickedDesignShear();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -279,6 +280,11 @@ void CDesignGirderDlg::OnBnClickedRadio()
    GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(enab_mpl);
 
    UpdateADimCtrl();
+
+   if ( enab_mpl && m_GirderList.size() == 0 )
+   {
+      OnBnClickedSelectGirders();
+   }
 }
 
 void CDesignGirderDlg::UpdateADimCtrl()

@@ -100,7 +100,39 @@ void CPGSuperReportView::OnInitialUpdate()
       return;
    }
 
-   CEAFAutoCalcReportView::OnInitialUpdate();
+   // Need to know if AutoCalc is turned on and if this is a Multi-View report
+   CDocument* pDoc = GetDocument();
+   CEAFAutoCalcDocMixin* pAutoCalcDoc = dynamic_cast<CEAFAutoCalcDocMixin*>(pDoc);
+   ATLASSERT(pAutoCalcDoc); // your document must use the autocalc mix in
+
+   CDocTemplate* pDocTemplate = pDoc->GetDocTemplate();
+   ASSERT( pDocTemplate->IsKindOf(RUNTIME_CLASS(CEAFDocTemplate)) );
+
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)pDocTemplate;
+   CEAFReportViewCreationData* pCreateData = (CEAFReportViewCreationData*)pTemplate->GetViewCreationData();
+   ASSERT(pCreateData != NULL);
+   std::vector<std::_tstring> rptNames(pCreateData->m_pRptMgr->GetReportNames());
+   boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pCreateData->m_pRptMgr->GetReportSpecificationBuilder(rptNames[pCreateData->m_RptIdx]);
+   CMultiViewSpanGirderReportSpecificationBuilder* pMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderReportSpecificationBuilder*>(pRptSpecBuilder.get()));
+
+   // if autocalc is turned on, or this is not a multi-view report, just process this normally
+   // by calling the base class OnInitialUpdate method
+   if ( pAutoCalcDoc->IsAutoCalcEnabled() || pMultiViewRptSpecBuilder == NULL )
+   {
+      CEAFAutoCalcReportView::OnInitialUpdate();
+   }
+   else
+   {
+      // AutoCalc is off .... by-pass the base class OnInitialUpdate method as it will cause
+      // the reports to generate...
+
+      // The base class calls this method, and it is necessary so do it here since
+      // we are by-passing the base class
+      CEAFAutoCalcViewMixin::Initialize();
+
+      // Continue with initialization by skipping over the direct base of this class
+      CEAFReportView::OnInitialUpdate();
+   }
 }
 
 void CPGSuperReportView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
@@ -191,10 +223,28 @@ int CPGSuperReportView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptForSpec)
 {
+   // Everything in this version of CreateReport is done in support of multi-view report
+   // creation because the underlying framework doesn't support it directly.
+
+   CEAFDocument* pEAFDoc = (CEAFDocument*)GetDocument();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
+   CEAFAutoCalcDocMixin* pAutoCalcDoc = dynamic_cast<CEAFAutoCalcDocMixin*>(pDoc);
+   ATLASSERT(pAutoCalcDoc); // your document must use the autocalc mix in
+
    if ( !bPromptForSpec )
    {
-      // Not prompting for spec... this is a quick report, just handle it normaly
-      return CEAFAutoCalcReportView::CreateReport(rptIdx,bPromptForSpec);
+      // Not prompting for spec... this is a quick report, just handle it normally if AutoCalc is enabled
+      if ( pAutoCalcDoc->IsAutoCalcEnabled() )
+      {
+         return CEAFAutoCalcReportView::CreateReport(rptIdx,bPromptForSpec);
+      }
+      else
+      {
+         // AutoCalc is off so we have to mimic CreateReport with the exception that we don't actually
+         // create the report... Create the default report specification and then initialize the report view
+         CreateReportSpecification(rptIdx,bPromptForSpec);
+         return CEAFAutoCalcReportView::InitReport(m_pReportSpec,m_pRptSpecBuilder);
+      }
    }
 
    // If the requested report is a span/girder report we want to support creating multiple individual reports
@@ -227,9 +277,6 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
 
          GET_IFACE2(pBroker,IProgress,pProgress);
          CEAFAutoProgress ap(pProgress,0,PW_ALL | PW_NOGAUGE); // progress window has a cancel button
-
-         CEAFDocument* pEAFDoc = (CEAFDocument*)GetDocument();
-         CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
 
          std::_tstring reportName = pSGRptSpec->GetReportName();
 
@@ -264,7 +311,14 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
             if ( first )
             {
                // first report goes in this view
-               CEAFAutoCalcReportView::CreateReport(rptIdx,pRptSpec,pRptSpecBuilder);
+               if ( pAutoCalcDoc->IsAutoCalcEnabled() )
+               {
+                  CEAFAutoCalcReportView::CreateReport(rptIdx,pRptSpec,pRptSpecBuilder);
+               }
+               else
+               {
+                  InitReport(pRptSpec,pRptSpecBuilder);
+               }
                first = false;
             }
             else
@@ -275,10 +329,13 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
                data.m_pRptSpecificationBuilder = pRptSpecBuilder;
                data.m_pRptMgr = pRptMgr;
 
+               if ( !pAutoCalcDoc->IsAutoCalcEnabled() )
+               {
+                  data.m_bInitializeOnly = true;
+               }
+
                // create new views for all other reports
                CView* pView = pEAFDoc->CreateView(pDoc->GetReportViewKey(),LPVOID(&data));
-               CEAFReportView* pRptView = (CEAFReportView*)pView;
-               pRptView->CreateReport(rptIdx,pRptSpec,pRptSpecBuilder);
             }
          }
 
@@ -286,6 +343,9 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
       }
       else
       {
+         CEAFMainFrame* pFrame = EAFGetMainFrame();
+         pFrame->DisableFailCreateMessage();
+         pFrame->CreateCanceled();
          return false; // user probably cancelled dialog
       }
    }

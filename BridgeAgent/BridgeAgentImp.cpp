@@ -15852,10 +15852,15 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
    Float64 dist_from_start = poi.GetDistFromStart();
    Float64 gdr_length = GetGirderLength(span,gdr);
 
+   // Only use approximate bond method if poi is in mid-section of beam (within CSS's).
+   Float64 min_dist_from_ends = min(dist_from_start, gdr_length-dist_from_start);
+   bool use_approximate = devAdjust==dlaApproximate && min_dist_from_ends > cl*3.0; // Factor here is balance between performance
+                                                                                    // and accuracy.
+
    // For approximate development length adjustment, take development length information at mid span and use for entire girder
    // adjusted for distance to ends of strands
    STRANDDEVLENGTHDETAILS dla_det;
-   if(devAdjust==dlaApproximate)
+   if(use_approximate)
    {
       std::vector<pgsPointOfInterest> vPoi;
       vPoi = GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
@@ -15866,7 +15871,6 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
       else
          dla_det = pPSForce->GetDevLengthDetails(rpoi, false);
    }
-
 
    // Get straight strand locations
    CComPtr<IPoint2dCollection> strand_points;
@@ -15903,7 +15907,7 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
          {
             debond_factor = 1.0;
          }
-         else if(devAdjust==dlaApproximate)
+         else if(use_approximate)
          {
             // Use mid-span development length details to approximate debond factor
             // determine minimum bonded length from poi
@@ -15993,10 +15997,11 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
       if ( bIncludeBar )
       {
          Float64 debond_factor = 1.;
+         bool use_one = use_approximate || devAdjust==dlaNone;
          if ( bUseConfig )
-            debond_factor = (devAdjust==dlaAccurate ? pPSForce->GetStrandBondFactor(poi,config,strandIdx,pgsTypes::Harped) : 1.0);
+            debond_factor = use_one ? 1.0 : pPSForce->GetStrandBondFactor(poi,config,strandIdx,pgsTypes::Harped);
          else
-            debond_factor = (devAdjust==dlaAccurate ? pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Harped) : 1.0);
+            debond_factor = use_one ? 1.0 : pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Harped);
 
          Aps += debond_factor*aps;
       }

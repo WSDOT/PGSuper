@@ -325,7 +325,7 @@ void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
    // fill rows bottom up
    GridIndexType gridIdx = 0;
    StrandIndexType currnum = 0;
-   while( gridIdx != straightStrandFill.size()-1 && nStrands>0 )
+   while( gridIdx != straightStrandFill.size() && nStrands>0 )
    {
       StrandIndexType strandIdx1, strandIdx2;
       fillTool.GridIndexToStrandPositionIndex(gridIdx, &strandIdx1, &strandIdx2);

@@ -428,7 +428,7 @@ void CBridgeDescGeneralPage::OnSameGirderName()
    {
       // was was just unchecked
       m_CacheGirderNameIdx = pcbGirderName->GetCurSel();
-      strText = CString(_T("By unchecking this box, a different girder can be assigned to each girder line. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
+      strText = CString(_T("By unchecking this box, a different girder type can be assigned to each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
    }
 
    EnableGirderName(m_bSameGirderName);

@@ -290,6 +290,11 @@ void CMultiViewReportDlg::OnBnClickedRadio()
    GetDlgItem(IDC_GIRDER)->EnableWindow(enab_sgl);
 
    GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON)->EnableWindow(enab_mpl);
+
+   if ( enab_mpl && m_GirderList.size() == 0 )
+   {
+      OnBnClickedSelectMultipleButton();
+   }
 }
 
 void CMultiViewReportDlg::OnBnClickedSelectMultipleButton()

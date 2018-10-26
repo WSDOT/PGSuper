@@ -413,7 +413,8 @@ IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredL
 Float64 CBoxBeamFactory2::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bReduceForPoorlyVentilatedVoids)
 {
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   Float64 perimeter = pSectProp2->GetPerimeter(pgsPointOfInterest(spanIdx,gdrIdx,0.00));
+   pgsPointOfInterest poi(spanIdx,gdrIdx,0.00);
+   Float64 perimeter = pSectProp2->GetPerimeter(poi);
    
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -435,6 +436,11 @@ Float64 CBoxBeamFactory2::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,
       void_surface_area *= 0.50;
 
    Float64 surface_area = solid_box_surface_area + void_surface_area;
+
+   // add area of both ends of the girder
+   Float64 start_area = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
+   Float64 end_area   = start_area;
+   surface_area += (start_area + end_area);
 
    return surface_area;
 }

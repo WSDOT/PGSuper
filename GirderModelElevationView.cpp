@@ -2073,6 +2073,8 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
 {
    if ( m_bUpdateError )
    {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
       CString msg;
       AfxFormatString1(msg,IDS_E_UPDATE,m_ErrorMsg.c_str());
       CFont font;
