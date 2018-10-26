@@ -133,6 +133,7 @@ public:
 protected:
    void Init();
    StrandIndexType GetStraightStrandCount();
+   StrandIndexType GetHarpedStrandCount();
    void SetDebondTabName();
    ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 

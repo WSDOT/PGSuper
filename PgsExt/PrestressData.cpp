@@ -1133,22 +1133,26 @@ StrandIndexType DirectStrandFillCollection::GetFilledStrandCount() const
    return cnt;
 }
 
-bool DirectStrandFillCollection::IsStrandFilled(GridIndexType index) const
+bool DirectStrandFillCollection::IsStrandFilled(GridIndexType indexGrid) const
+{
+   return GetFillCountAtIndex(indexGrid) > 0;
+}
+
+StrandIndexType DirectStrandFillCollection::GetFillCountAtIndex(GridIndexType indexGrid) const
 {
    const_iterator it    = begin();
    const_iterator itend = end();
    while(it!=itend)
    {
-      if (it->permStrandGridIdx == index)
+      if (it->permStrandGridIdx == indexGrid)
       {
-         // no need to check fill count
-         return true;
+         return it->numFilled;
       }
 
       it++;
    }
 
-   return false;
+   return 0;
 }
 
 void DirectStrandFillCollection::RemoveFill(GridIndexType index) 

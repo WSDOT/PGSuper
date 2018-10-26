@@ -323,6 +323,9 @@ void CStrandFillGrid::FillGrid()
       StrandIndexType localIdx; // library grid index for the straight or harped strand grid
       m_pGdrEntry->GetGridPositionFromPermStrandGrid(gridIdx, &strandType, &localIdx);
 
+      // only straight strands can be extended
+      bool canExtend = strandType==GirderLibraryEntry::stStraight;
+
       StrandIndexType oneOrTwo;
       bool canDebond(false);
       if (strandType==GirderLibraryEntry::stStraight)
@@ -396,6 +399,41 @@ void CStrandFillGrid::FillGrid()
                .SetInterior(::GetSysColor(COLOR_BTNFACE))
                .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
                );
+
+         if (!canDebond)
+         {
+            // strand can't be debonded (it is not debondable)
+            // use a disabled static control instead of the check box for debonding
+            SetStyleRange(CGXRange(row,DEBOND_CHECK_COL), CGXStyle()
+			         .SetControl(GX_IDS_CTRL_STATIC)  //
+			         .SetValue(_T(""))
+                  .SetReadOnly(TRUE)
+                  .SetEnabled(FALSE)
+                  .SetInterior(::GetSysColor(COLOR_BTNFACE))
+                  .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+                  );
+         }
+
+         if (!canExtend)
+         {
+            SetStyleRange(CGXRange(row,FIRST_EXTEND_COL), CGXStyle()
+			         .SetControl(GX_IDS_CTRL_STATIC)  //
+			         .SetValue(_T(""))
+                  .SetReadOnly(TRUE)
+                  .SetEnabled(FALSE)
+                  .SetInterior(::GetSysColor(COLOR_BTNFACE))
+                  .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+                  );
+
+            SetStyleRange(CGXRange(row,LAST_EXTEND_COL), CGXStyle()
+			         .SetControl(GX_IDS_CTRL_STATIC)  //
+			         .SetValue(_T(""))
+                  .SetReadOnly(TRUE)
+                  .SetEnabled(FALSE)
+                  .SetInterior(::GetSysColor(COLOR_BTNFACE))
+                  .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+                  );
+         }
       }
       else if (canDebond)
       {
@@ -487,6 +525,8 @@ void CStrandFillGrid::FillGrid()
                .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
                );
 
+         if (canExtend)
+         {
          // Set the extended strand data
          SetStyleRange(CGXRange(row,FIRST_EXTEND_COL),CGXStyle()
             .SetValue(bIsExtendedLeft ? _T("1") : _T("0"))
@@ -499,6 +539,28 @@ void CStrandFillGrid::FillGrid()
             .SetEnabled(TRUE)
             .SetReadOnly(FALSE)
             );
+         }
+         else
+         {
+            // no controls needed if we can't extend
+            SetStyleRange(CGXRange(row,FIRST_EXTEND_COL), CGXStyle()
+			         .SetControl(GX_IDS_CTRL_STATIC)  //
+			         .SetValue(_T(""))
+                  .SetReadOnly(TRUE)
+                  .SetEnabled(FALSE)
+                  .SetInterior(::GetSysColor(COLOR_BTNFACE))
+                  .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+                  );
+
+            SetStyleRange(CGXRange(row,LAST_EXTEND_COL), CGXStyle()
+			         .SetControl(GX_IDS_CTRL_STATIC)  //
+			         .SetValue(_T(""))
+                  .SetReadOnly(TRUE)
+                  .SetEnabled(FALSE)
+                  .SetInterior(::GetSysColor(COLOR_BTNFACE))
+                  .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+                  );
+         }
       }
 
       gridIdx++;
@@ -582,7 +644,7 @@ void CStrandFillGrid::FillGrid()
 	GetParam()->EnableUndo(TRUE);
 }
 
-bool CStrandFillGrid::UpdateData()
+bool CStrandFillGrid::UpdateData(bool doCheckData)
 {
    // Strand fill information is kept up to date in OnClickedButtonRowCol
    // However, debonding and extended strand information must be taken care of here
@@ -618,7 +680,12 @@ bool CStrandFillGrid::UpdateData()
          if( !strval.IsEmpty())
          {
             bool st = sysTokenizer::ParseDouble(strval, &leftDebond);
-            ATLASSERT(st); // grid should be taking care of this
+            if(!st && doCheckData)
+            {
+               AfxMessageBox( _T("Debond length is not a number - must be a postive number"), MB_ICONEXCLAMATION);
+               this->SetCurrentCell(nRow,FIRST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+               return false;
+            }
          }
 
          if (m_pParent->m_bSymmetricDebond)
@@ -632,7 +699,26 @@ bool CStrandFillGrid::UpdateData()
             if( !strval.IsEmpty())
             {
                bool st = sysTokenizer::ParseDouble(strval, &rightDebond);
-               ATLASSERT(st); // grid should be taking care of this
+               if(!st && doCheckData)
+               {
+                  AfxMessageBox( _T("Debond length is not a number - must be a postive number"), MB_ICONEXCLAMATION);
+                  this->SetCurrentCell(nRow,LAST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+                  return false;
+               }
+            }
+         }
+
+         if (doCheckData)
+         {
+            if (leftDebond<=0.0 || rightDebond<=0.0)
+            {
+               AfxMessageBox( _T("Debond lengths must be greater than zero."), MB_ICONEXCLAMATION);
+               return false;
+            }
+            else if (leftDebond>m_pParent->m_MaxDebondLength || rightDebond>m_pParent->m_MaxDebondLength)
+            {
+               AfxMessageBox( _T("Debond lengths must less than half of girder length."), MB_ICONEXCLAMATION);
+               return false;
             }
          }
 
@@ -654,7 +740,7 @@ bool CStrandFillGrid::UpdateData()
          CGXStyle extendStyle;
          GetStyleRowCol(nRow, FIRST_EXTEND_COL, extendStyle);
          CString strCheck = extendStyle.GetValue();
-         if ( strCheck == _T("1") )
+         if ( strCheck == _T("1") ) 
          {
             ATLASSERT(pUserData->strandTypeGridIdx != INVALID_INDEX);
             ATLASSERT(pUserData->strandType == pgsTypes::Straight);
@@ -710,7 +796,7 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
          }
 
          // If strands are extendable, enable the check boxes
-         if ( pUserData->strandType != pgsTypes::Temporary && m_pParent->m_bCanExtendStrands )
+         if ( pUserData->strandType==pgsTypes::Straight && m_pParent->m_bCanExtendStrands )
          {
             SetStyleRange(CGXRange(nRow,FIRST_EXTEND_COL,nRow,LAST_EXTEND_COL),CGXStyle()
                .SetValue(_T("0")) 

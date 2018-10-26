@@ -8442,6 +8442,11 @@ void CBridgeAgentImp::GetStartConfinementBarInfo(SpanIndexType span,GirderIndexT
 
          primZonL = ezloc;
       }
+      else
+      {
+         // Can't have any zones with no confinement bars in required area - break with what we have so far
+         break;
+      }
 
       if (ezloc + TOL > requiredZoneLength)
       {
@@ -8492,6 +8497,11 @@ void CBridgeAgentImp::GetEndConfinementBarInfo(  SpanIndexType span,GirderIndexT
 
          primZonL = ezloc;
       }
+      else
+      {
+         // Can't have any zones with no confinement bars in required area - break with what we have so far
+         break;
+      }
 
       if (ezloc + TOL > requiredZoneLength)
       {
@@ -8504,7 +8514,7 @@ void CBridgeAgentImp::GetEndConfinementBarInfo(  SpanIndexType span,GirderIndexT
    matRebar::Size addlSize;
    GetAddConfinementBarInfo(span,gdr, &addlSize, &addlZonL, &addlSpc);
 
-   // Use either primary bars or additional bars. Choose by which has addequate zone length, smallest spacing, largest bars
+   // Use either primary bars or additional bars. Choose by which has adequate zone length, smallest spacing, largest bars
    ChooseConfinementBars(requiredZoneLength, primSpc, primZonL, primSize, addlSpc, addlZonL, addlSize,
                          pSize, pProvidedZoneLength, pSpacing);
 }
@@ -15260,6 +15270,101 @@ StrandIndexType CBridgeAgentImp::GetNextNumPermanentStrands(LPCTSTR strGirderNam
    strandFiller.GetNextNumberOfPermanentStrands(NULL,curNum,&nextNum);
 
    return nextNum;
+}
+
+bool CBridgeAgentImp::ComputePermanentStrandIndices(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strType, IIndexArray** permIndices)
+{
+   CComPtr<IIndexArray> permStrands;  // array index = permanent strand for each strand of type
+   permStrands.CoCreateInstance(CLSID_IndexArray);
+   ATLASSERT(permStrands);
+
+   GET_IFACE(ILibrary,pLib);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
+
+   const ConfigStrandFillVector& rStraightFillVec( rconfig.GetStrandFill(pgsTypes::Straight) );
+   const ConfigStrandFillVector& rHarpedFillVec(   rconfig.GetStrandFill(pgsTypes::Harped) );
+
+   GridIndexType maxStraightGrid = pGdrEntry->GetNumStraightStrandCoordinates();
+   GridIndexType maxHarpedGrid = pGdrEntry->GetNumHarpedStrandCoordinates();
+   ATLASSERT(maxStraightGrid == rStraightFillVec.size()); // this function won't play well without this
+   ATLASSERT(maxHarpedGrid == rHarpedFillVec.size());
+
+   GridIndexType maxPermGrid = pGdrEntry->GetPermanentStrandGridSize();
+   // Loop over all available permanent strands and add index for strType if it's filled
+   StrandIndexType permIdc = 0;
+   for (GridIndexType idxPermGrid=0; idxPermGrid<maxPermGrid; idxPermGrid++)
+   {
+      GridIndexType localGridIdx;
+      GirderLibraryEntry::psStrandType type;
+      pGdrEntry->GetGridPositionFromPermStrandGrid(idxPermGrid, &type, &localGridIdx);
+
+      if (type==pgsTypes::Straight)
+      {
+         // If filled, use count from fill vec, otherwise use x coordinate
+         StrandIndexType strCnt;
+         bool isFilled = rStraightFillVec[localGridIdx] > 0;
+         if (isFilled)
+         {
+            strCnt = rStraightFillVec[localGridIdx];
+         }
+         else
+         {
+            Float64 start_x, start_y, end_x, end_y;
+            bool can_debond;
+            pGdrEntry->GetStraightStrandCoordinates(localGridIdx, &start_x, &start_y, &end_x, &end_y, &can_debond);
+            strCnt = (start_x > 0.0 || end_x > 0.0) ? 2 : 1;
+         }
+
+         permIdc += strCnt;
+
+         // if strand is filled, add its permanent index to the collection
+         if (isFilled && strType==pgsTypes::Straight)
+         {
+            if (strCnt==1)
+            {
+               permStrands->Add(permIdc-1);
+            }
+            else
+            {
+               permStrands->Add(permIdc-2);
+               permStrands->Add(permIdc-1);
+            }
+         }
+      }
+      else
+      {
+         ATLASSERT(type==pgsTypes::Harped);
+         // If filled, use count from fill vec, otherwise use x coordinate
+         StrandIndexType strCnt;
+         bool isFilled = rHarpedFillVec[localGridIdx] > 0;
+         if (isFilled)
+         {
+            strCnt = rHarpedFillVec[localGridIdx];
+         }
+         else
+         {
+            Float64 startx, starty, hpx, hpy, endx, endy;
+            pGdrEntry->GetHarpedStrandCoordinates(localGridIdx, &startx, &starty, &hpx, &hpy, &endx, &endy);
+            strCnt = (startx > 0.0 || hpx > 0.0 || endx > 0.0) ? 2 : 1;
+         }
+
+         permIdc += strCnt;
+
+         // if strand is filled, add its permanent index to the collection
+         if (isFilled && strType==pgsTypes::Harped)
+         {
+            permStrands->Add(permIdc-1);
+
+            if (strCnt==2)
+            {
+               permStrands->Add(permIdc-2);
+            }
+         }
+      }
+   }
+
+   permStrands.CopyTo(permIndices);
+   return true;
 }
 
 bool CBridgeAgentImp::IsValidNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType curNum)

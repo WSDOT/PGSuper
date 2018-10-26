@@ -98,6 +98,7 @@ private:
    bool RunDesignTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
    bool RunCamberTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
    bool RunFabOptimizationTest(std::_tofstream& resultsFile,std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, GirderIndexType gdr);
 };
 
 #endif //__TESTAGENT_H_

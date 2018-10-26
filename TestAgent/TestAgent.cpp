@@ -42,6 +42,7 @@
 #include <System\ComCatMgr.h>
 
 #include <IFace\StatusCenter.h>
+#include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
 
 #ifdef _DEBUG

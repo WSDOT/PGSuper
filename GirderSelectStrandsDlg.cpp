@@ -200,8 +200,11 @@ void CGirderSelectStrandsDlg::DoDataExchange(CDataExchange* pDX)
    if (pDX->m_bSaveAndValidate)
    {
       // must call grid to exchange its data
-      if(!m_Grid.UpdateData())
+      if(!m_Grid.UpdateData(true))
+      {
+         HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_STRAND_GRID);
          pDX->Fail();
+      }
    }
 }
 
@@ -438,7 +441,7 @@ void CGirderSelectStrandsDlg::OnPaint()
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // Make sure we have up to date grid data
-   m_Grid.UpdateData();
+   m_Grid.UpdateData(false);
 
 	CPaintDC dc(this); // device context for painting
 	
@@ -671,7 +674,7 @@ void CGirderSelectStrandsDlg::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, IS
          bool is_filled = m_DirectFilledStraightStrands.IsStrandFilled(strand_idx);
 
          Float64 leftDebond,rightDebond;
-         bool bIsDebonded = m_Grid.GetDebondInfo(idx,&leftDebond,&rightDebond);
+         bool bIsDebonded = m_Grid.GetDebondInfo(strand_idx,&leftDebond,&rightDebond);
 
          bool bIsExtended = m_Grid.IsStrandExtended(strand_idx,pgsTypes::metStart) || m_Grid.IsStrandExtended(strand_idx,pgsTypes::metEnd) ? true : false;
 
@@ -895,13 +898,26 @@ void CGirderSelectStrandsDlg::OnNumStrandsChanged()
 
 void CGirderSelectStrandsDlg::UpdateStrandInfo()
 {
-   m_Grid.UpdateData();
+   m_Grid.UpdateData(false);
    StrandIndexType nStraight  = m_DirectFilledStraightStrands.GetFilledStrandCount();
    StrandIndexType nHarped    = m_DirectFilledHarpedStrands.GetFilledStrandCount();
    StrandIndexType nTemporary = m_DirectFilledTemporaryStrands.GetFilledStrandCount();
 
-   StrandIndexType nExtendedLeft  = m_ExtendedStrands[pgsTypes::metStart].size();
-   StrandIndexType nExtendedRight = m_ExtendedStrands[pgsTypes::metEnd].size();
+   StrandIndexType nExtendedLeft  = 0;
+   std::vector<StrandIndexType>::const_iterator its( m_ExtendedStrands[pgsTypes::metStart].begin() );
+   std::vector<StrandIndexType>::const_iterator its_end( m_ExtendedStrands[pgsTypes::metStart].end() );
+   for( ; its!=its_end; its++)
+   {
+      nExtendedLeft += m_DirectFilledStraightStrands.GetFillCountAtIndex( *its );
+   }
+
+   StrandIndexType nExtendedRight = 0;
+   std::vector<StrandIndexType>::const_iterator ite( m_ExtendedStrands[pgsTypes::metEnd].begin() );
+   std::vector<StrandIndexType>::const_iterator ite_end( m_ExtendedStrands[pgsTypes::metEnd].end() );
+   for( ; ite!=ite_end; ite++)
+   {
+      nExtendedRight += m_DirectFilledStraightStrands.GetFillCountAtIndex( *ite );
+   }
 
    StrandIndexType nDebonded = 0;
    std::vector<CDebondInfo>::iterator iter(m_StraightDebond.begin());
@@ -909,12 +925,14 @@ void CGirderSelectStrandsDlg::UpdateStrandInfo()
    for ( ; iter != end; iter++ )
    {
       CDebondInfo& debond_info = *iter;
+      nDebonded += m_DirectFilledStraightStrands.GetFillCountAtIndex(debond_info.strandTypeGridIdx);
 
+#ifdef _DEBUG
       Float64 xStart,yStart,xEnd,yEnd;
       bool can_debond;
       m_pGdrEntry->GetStraightStrandCoordinates(debond_info.strandTypeGridIdx, &xStart, &yStart, &xEnd, &yEnd, &can_debond);
-      ATLASSERT(m_DirectFilledStraightStrands.IsStrandFilled(debond_info.strandTypeGridIdx));
-      nDebonded += (0.0 < xStart ? 2 : 1);
+      ATLASSERT(can_debond && m_DirectFilledStraightStrands.IsStrandFilled(debond_info.strandTypeGridIdx));
+#endif 
    }
 
    Float64 percent = 0.0;

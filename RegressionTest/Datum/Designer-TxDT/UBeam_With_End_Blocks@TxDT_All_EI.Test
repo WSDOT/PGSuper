@@ -1,0 +1,54 @@
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  1     1   Block       74   1/2  270 18.50 24.66  26  2.17  27  20  0 12  4  2  2  0  0  0  0  0  5.100  6.400    4.281   -3.816   10083 0.655  0.936  0.54 -0.19 -0.01 -0.02 -0.21 208.35 556.06   1.00   1.00   1.00
+                                                                       4.14  27   6  6  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  1     2   Block       74   1/2  270 18.50 24.66  26  2.17  27  20  0 12  4  2  2  0  0  0  0  0  5.000  6.400    4.266   -3.752    9902 0.655  0.936  0.55 -0.19 -0.01 -0.01 -0.21 209.98 562.79   1.00   1.00   1.00
+                                                                       4.14  27   6  6  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  1     4   Block       70   1/2  270 18.63 24.81  24  2.17  27  20  2 10  4  2  2  0  0  0  0  0  4.700  6.400    4.229   -3.654    9623 0.655  0.936  0.53 -0.19 -0.01  0.00 -0.20 191.15 511.12   1.00   1.00   1.00
+                                                                       4.14  27   4  4  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  2     1   Block       74   1/2  270 18.50 24.66  26  2.17  27  20  0 12  4  2  2  0  0  0  0  0  5.100  6.400    4.281   -3.816   10083 0.655  0.936  0.54 -0.19 -0.01 -0.02 -0.21 208.35 556.06   1.00   1.00   1.00
+                                                                       4.14  27   6  6  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  2     2   Block       74   1/2  270 18.50 24.66  26  2.17  27  20  0 12  4  2  2  0  0  0  0  0  5.000  6.400    4.266   -3.752    9902 0.655  0.936  0.55 -0.19 -0.01 -0.01 -0.21 209.98 562.79   1.00   1.00   1.00
+                                                                       4.14  27   6  6  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  2     4   Block       70   1/2  270 18.63 24.81  24  2.17  27  20  2 10  4  2  2  0  0  0  0  0  4.700  6.400    4.229   -3.654    9623 0.655  0.936  0.53 -0.19 -0.01  0.00 -0.20 191.15 511.12   1.00   1.00   1.00
+                                                                       4.14  27   4  4  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+

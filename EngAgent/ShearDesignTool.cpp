@@ -328,6 +328,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
 
    m_BarLegCollection.clear();
 
+   // Precompute bar areas for all possible bar combinations
    IndexType nb = pGirderEntry->GetNumStirrupSizeBarCombos();
    for(IndexType ib=0; ib<nb; ib++)
    {
@@ -584,7 +585,7 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
 
    // Update our Vector to allow ordered access to design pois
    m_DesignPois.clear();
-   m_PoiMgr.GetPointsOfInterest(m_Span, m_Girder, pgsTypes::BridgeSite3, POI_SHEAR, POIMGR_OR, &m_DesignPois);
+   m_PoiMgr.GetPointsOfInterest(m_Span, m_Girder, pgsTypes::BridgeSite3, POI_SHEAR | POI_TABULAR, POIMGR_AND, &m_DesignPois);
 }
 
 void pgsShearDesignTool::Validate()
@@ -1623,25 +1624,49 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
             // Additional splitting reinforcement is required
             Float64 splitting_zone_len = max(m_StartSplittingZl, m_EndSplittingZl);
 
-            Float64 max_spacing = splitting_zone_len; // don't allow spacing to exceed zone length
+            // See if existing layout does the job. If so, keep it.
+            bool use_current(false);
+            if(!DoDesignFromScratch())
+            {
+               if (m_ShearData.SplittingBarSize!=matRebar::bsNone)
+               {
+                  Float64 szone_length = min(m_ShearData.SplittingZoneLength, splitting_zone_len);
 
-            matRebar::Size new_size;
-            Float64 new_nlegs;
-            Float64 new_av;
-            Float64 new_spacing;
-            if (GetBarSizeSpacingForAvs(avs_req, splitting_zone_len, &new_size, &new_nlegs, &new_av, &new_spacing) )
-            {
-               m_ShearData.SplittingZoneLength = CeilOff(splitting_zone_len-SPACING_TOL, new_spacing); // zone length is multiple of spacing
-               m_ShearData.SplittingBarSize    = new_size;
-               m_ShearData.SplittingBarSpacing = new_spacing;
-               m_ShearData.nSplittingBars      = new_nlegs;
+                  const matRebar* pRebar = pool->GetRebar(barType, barGrade, m_ShearData.SplittingBarSize);
+                  Float64 sarea = pRebar->GetNominalArea() * m_ShearData.nSplittingBars;
+
+                  if (m_ShearData.SplittingBarSpacing > 0.0)
+                  {
+                     Float64 cur_av = sarea / m_ShearData.SplittingBarSpacing;
+
+                     use_current = cur_av >= avs_req;
+                  }
+               }
             }
-            else
+
+            if (!use_current)
             {
-               // There is no bar/legs combination that can satisfy demand - we have failed.
-               ATLASSERT(0); // suspicious if we ever get here
-               m_pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqdForSplitting);
-               return false;
+               // Design new additional splitting bars
+               Float64 max_spacing = splitting_zone_len; // don't allow spacing to exceed zone length
+
+               matRebar::Size new_size;
+               Float64 new_nlegs;
+               Float64 new_av;
+               Float64 new_spacing;
+               if (GetBarSizeSpacingForAvs(avs_req, splitting_zone_len, &new_size, &new_nlegs, &new_av, &new_spacing) )
+               {
+                  m_ShearData.SplittingZoneLength = CeilOff(splitting_zone_len-SPACING_TOL, new_spacing); // zone length is multiple of spacing
+                  m_ShearData.SplittingBarSize    = new_size;
+                  m_ShearData.SplittingBarSpacing = new_spacing;
+                  m_ShearData.nSplittingBars      = new_nlegs;
+               }
+               else
+               {
+                  // There is no bar/legs combination that can satisfy demand - we have failed.
+                  ATLASSERT(0); // suspicious if we ever get here
+                  m_pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqdForSplitting);
+                  return false;
+               }
             }
          }
          else
@@ -1670,8 +1695,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
       {
          if (!GetBarsActAsConfinement() || !DoDesignFromScratch())
          {
-            // Confinement design may be provided by primary bars in from-scratch designs, and always
-            // for designs based on existing layout
+            // Confinement design may be provided based on existing layout
             GET_IFACE(IBridgeMaterial,pMaterial);
             matRebar::Grade barGrade;
             matRebar::Type barType;
@@ -1756,9 +1780,41 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
             if (need_additional)
             {
                Float64 zone_len = max(min_start_zl, rConfinementArtifact.GetEndRequiredZoneLength());
-               m_ShearData.ConfinementZoneLength = CeilOff(zone_len, max_spac); // make zone length a multiple of spacing
-               m_ShearData.ConfinementBarSize = pBar->GetSize();
-               m_ShearData.ConfinementBarSpacing = max_spac;
+
+               // See if there is existing, and if it does the job
+               bool use_current(false);
+               if (m_ShearData.ConfinementBarSize != matRebar::bsNone)
+               {
+                  const matRebar* pRebar = pool->GetRebar(barType,barGrade, m_ShearData.ConfinementBarSize );
+                  Float64 av = pRebar->GetNominalArea();
+                  if (av >= abar_reqd)
+                  {
+                     if(m_ShearData.ConfinementZoneLength >= zone_len)
+                     {
+                        if(m_ShearData.ConfinementBarSpacing <= max_spac)
+                        {
+                           use_current = true;
+                        }
+                     }
+                  }
+               }
+
+               if (!use_current)
+               {
+                  // Try to get smallest bar from available that will do the job. Otherwize use spec size
+                  matRebar::Size minSize; 
+                  if ( GetMinAvailableBarSize(pBar->GetSize(), barGrade, barType, pool, &minSize) )
+                  {
+                     m_ShearData.ConfinementBarSize = minSize;
+                  }
+                  else
+                  {
+                     m_ShearData.ConfinementBarSize = pBar->GetSize();
+                  }
+
+                  m_ShearData.ConfinementZoneLength = CeilOff(zone_len, max_spac); // make zone length a multiple of spacing
+                  m_ShearData.ConfinementBarSpacing = max_spac;
+               }
             }
          }
       }
@@ -1795,7 +1851,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
          const pgsPointOfInterest& poi = *i;
          Float64 location = poi.GetDistFromStart();
 
-         if ( (location>=startSl && location <=m_LeftCSS) || (location>=m_RightCSS && location <=endSl) )
+         if ( location>=startSl && location <=endSl )
          {
             SHEARCAPACITYDETAILS scd;
             pShearCapacity->GetShearCapacityDetails( limit_states[ils], pgsTypes::BridgeSite3, poi, config, &scd);
@@ -2018,6 +2074,53 @@ bool pgsShearDesignTool::GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxS
    }
 
    *pSize    = matRebar::bsNone;
+   return false;
+}
+
+bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize)
+{
+   // This should be made more efficient if it's called frequently
+   const matRebar* pRebar = pool->GetRebar(barType,barGrade, minSize);
+   Float64 minArea = pRebar->GetNominalArea();
+
+   // Need a sorted by area list of available bars
+   struct SizeArea
+   {
+      matRebar::Size Size;
+      Float64 Area;
+
+      const bool operator < (const SizeArea& rArea)
+      {
+         return Area < rArea.Area;
+      }
+   };
+
+   std::vector<SizeArea> availableSizes;
+   for(BarLegCollectionIterator it=m_BarLegCollection.begin(); it!=m_BarLegCollection.end(); it++)
+   {
+      SizeArea sa;
+      sa.Size = it->m_Size;
+
+      pRebar = pool->GetRebar(barType,barGrade, sa.Size);
+      sa.Area = pRebar->GetNominalArea();
+
+      availableSizes.push_back(sa);
+   }
+
+   std::sort(availableSizes.begin(), availableSizes.end());
+
+   // Have sorted list, now we can find a bar that fits our needs
+   for (std::vector<SizeArea>::iterator ita=availableSizes.begin(); ita!=availableSizes.end(); ita++)
+   {
+      if(ita->Area >= minArea)
+      {
+         *pSize = ita->Size;
+         return true;
+      }
+   }
+
+   // No Luck
+   *pSize = matRebar::bsNone;
    return false;
 }
 

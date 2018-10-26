@@ -346,6 +346,10 @@ public:
    Float64 GetSMax() const;
    void SetSMax(Float64 smax);
 
+   // Factor multiplied by d (1.5)
+   Float64 GetZoneLengthFactor() const;
+   void SetZoneLengthFactor(Float64 fac);
+
    Float64 GetStartProvidedZoneLength() const;
    void SetStartProvidedZoneLength(Float64 zl);
    Float64 GetStartRequiredZoneLength() const;
@@ -354,6 +358,9 @@ public:
    void SetStartBar(const matRebar* pRebar);
    Float64 GetStartS() const;
    void SetStartS(Float64 s);
+   Float64 GetStartd() const; // beam depth
+   void SetStartd(Float64 d);
+
    bool   StartPassed() const;
 
    Float64 GetEndProvidedZoneLength() const;
@@ -364,6 +371,8 @@ public:
    void SetEndBar(const matRebar* pRebar);
    Float64 GetEndS() const;
    void SetEndS(Float64 s);
+   Float64 GetEndd() const;
+   void SetEndd(Float64 d);
    bool   EndPassed() const;
 
    bool Passed() const;
@@ -403,15 +412,19 @@ private:
    const matRebar* m_pMinRebar;
    Float64 m_SMax;
 
+   Float64 m_ZoneLengthFactor;
+
    Float64 m_StartProvidedZoneLength;
    Float64 m_StartRequiredZoneLength;
    const matRebar* m_pStartRebar;
    Float64 m_StartS;
+   Float64 m_Startd;
 
    Float64 m_EndProvidedZoneLength;
    Float64 m_EndRequiredZoneLength;
    const matRebar* m_pEndRebar;
    Float64 m_EndS;
+   Float64 m_Endd;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

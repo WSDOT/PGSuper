@@ -291,6 +291,9 @@ private:
    // Get bar size - nlegs - spacing for av/s demand - For a particular bar size
    bool GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size Size, Float64 Av, Float64* pSpacing);
 
+   // Get next (or same) available bar size for a given min bar size
+   bool GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize);
+
    // Av/S demand at poi
    Float64 GetVerticalAvsDemand(IndexType PoiIdx);
 

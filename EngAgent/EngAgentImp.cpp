@@ -2652,7 +2652,7 @@ void CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const pgsPoint
        GET_IFACE(IBridge,pBridge);
        GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
 
-       if ( curr_config.IsFlexuralDataEqual(config) )
+       if ( poi.GetID()!=INVALID_INDEX && curr_config.IsFlexuralDataEqual(config) )
        {
           GetMomentCapacityDetails(stage,poi,bPositiveMoment,pmcd);
        }
@@ -2727,7 +2727,7 @@ void CEngAgentImp::GetCrackingMomentDetails(pgsTypes::Stage stage,const pgsPoint
    // If same, call GetMomentCapacityDetails w/o config.
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
-   if ( curr_config.IsFlexuralDataEqual(config) )
+   if ( poi.GetID()!=INVALID_INDEX && curr_config.IsFlexuralDataEqual(config) )
       GetCrackingMomentDetails(stage,poi,bPositiveMoment,pcmd);
    else
       m_MomentCapEngineer.ComputeCrackingMoment(stage,poi,config,bPositiveMoment,pcmd);
@@ -2767,7 +2767,7 @@ void CEngAgentImp::GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPo
    // If same, call GetMomentCapacityDetails w/o config.
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
-   if ( curr_config.IsFlexuralDataEqual(config) )
+   if ( poi.GetID()!=INVALID_INDEX && curr_config.IsFlexuralDataEqual(config) )
       GetMinMomentCapacityDetails(stage,poi,bPositiveMoment,pmmcd);
    else
       m_MomentCapEngineer.ComputeMinMomentCapacity(stage,poi,config,bPositiveMoment,pmmcd);

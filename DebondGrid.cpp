@@ -48,9 +48,10 @@ GRID_IMPLEMENT_REGISTER(CGirderDescDebondGrid, CS_DBLCLKS, 0, 0, 0);
 #define FIRST_EXTEND_COL 4
 #define LAST_EXTEND_COL  5
 
-struct UserData
+struct UserData 
 {
    GridIndexType gridIdx;
+   StrandIndexType strandIdx1, strandIdx2;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -286,16 +287,20 @@ void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
+
+   ConfigStrandFillVector  straightStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Straight);
+   ConfigStrandFillVector  harpedStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Harped);
+
+   PRESTRESSCONFIG config;
+   config.SetStrandFill(pgsTypes::Straight, straightStrandFill);
+   config.SetStrandFill(pgsTypes::Harped,   harpedStrandFill);
  
    // remove all but top row
    ROWCOL rows = GetRowCount();
    if (1 <= rows)
       RemoveRows(1, rows);
 
-
-
    ROWCOL row = 0;
-   ConfigStrandFillVector straightStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Straight);
    std::vector<StrandIndexType>::iterator iter(straightStrandFill.begin());
    std::vector<StrandIndexType>::iterator end(straightStrandFill.end());
    for ( ; iter != end; iter++ )
@@ -310,81 +315,96 @@ void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
    CComPtr<IIndexArray> debondables;
    pStrandGeom->ListDebondableStrands(pParent->m_strGirderName.c_str(), straightStrandFill,pgsTypes::Straight, &debondables); 
 
+   CComPtr<IIndexArray> strandids;
+   pStrandGeom->ComputePermanentStrandIndices(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,&strandids);
+
    StrandIndexType nStrands = girderData.PrestressData.GetNstrands(pgsTypes::Straight);
 
    ConfigStrandFillTool fillTool(straightStrandFill);
 
+   // fill rows bottom up
+   GridIndexType gridIdx = 0;
    StrandIndexType currnum = 0;
-   while( currnum < nStrands )
+   while( gridIdx != straightStrandFill.size()-1 && nStrands>0 )
    {
-      // put the strand number in the first column
-      StrandIndexType nextnum = pStrandGeom->GetNextNumStrands(pParent->m_strGirderName.c_str(), pgsTypes::Straight, currnum);
+      StrandIndexType strandIdx1, strandIdx2;
+      fillTool.GridIndexToStrandPositionIndex(gridIdx, &strandIdx1, &strandIdx2);
 
-      UserData* pUserData = new UserData;
-      GridIndexType gridIdx;
-      StrandIndexType otherStrandIdx;
-      fillTool.StrandPositionIndexToGridIndex(nextnum-1,&gridIdx,&otherStrandIdx);
-      ATLASSERT(otherStrandIdx == nextnum-2);
-      pUserData->gridIdx = gridIdx;
-
-      CString str;
-      if (nextnum-currnum == 1 )
+      if (strandIdx1 != INVALID_INDEX)
       {
-         str.Format(_T("%d"),nextnum);
-      }
-      else
-      {
-         str.Format(_T("%d-%d"),nextnum-1,nextnum);
-      }
+         // put the strand number in the first column
+         UserData* pUserData = new UserData;
+         pUserData->gridIdx = gridIdx;
+         pUserData->strandIdx1 = strandIdx1;
+         pUserData->strandIdx2 = strandIdx2;
 
+         StrandIndexType permIdx1;
+         strandids->get_Item(strandIdx1, &permIdx1); // Get permanent strand index from library
+         ATLASSERT(permIdx1 != INVALID_INDEX);
 
-      SetStyleRange(CGXRange(row,0),CGXStyle().SetValue(str).SetItemDataPtr((void*)pUserData));
-
-      // disable debond cells for rows where the strands cannot be debonded
-      StrandIndexType is_debondable = 0;
-      debondables->get_Item(nextnum-1,&is_debondable);
-      if ( is_debondable )
-      {
-         SetStyleRange(CGXRange(row,DEBOND_CHECK_COL),CGXStyle()
-            .SetControl(GX_IDS_CTRL_CHECKBOX3D)
-            .SetReadOnly(FALSE)
-            .SetEnabled(TRUE)
-            .SetInterior(::GetSysColor(COLOR_BTNFACE))
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            );
-
-         for (ROWCOL c = FIRST_DEBOND_COL; c <= LAST_DEBOND_COL; c++ )
+         CString str;
+         if (strandIdx2==INVALID_INDEX)
          {
-            SetStyleRange(CGXRange(row,c),CGXStyle()
+            str.Format(_T("%d"),permIdx1+1);
+         }
+         else
+         {
+            StrandIndexType permIdx2;
+            strandids->get_Item(strandIdx2, &permIdx2);
+            ATLASSERT(permIdx2 != INVALID_INDEX);
+
+            str.Format(_T("%d-%d"),permIdx1+1,permIdx2+1);
+         }
+
+         SetStyleRange(CGXRange(row,0),CGXStyle().SetValue(str).SetItemDataPtr((void*)pUserData));
+
+         // disable debond cells for rows where the strands cannot be debonded
+         StrandIndexType is_debondable = 0;
+         debondables->get_Item(strandIdx1,&is_debondable);
+         if ( is_debondable )
+         {
+            SetStyleRange(CGXRange(row,DEBOND_CHECK_COL),CGXStyle()
+               .SetControl(GX_IDS_CTRL_CHECKBOX3D)
+               .SetReadOnly(FALSE)
+               .SetEnabled(TRUE)
+               .SetInterior(::GetSysColor(COLOR_BTNFACE))
+               .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+               );
+
+            for (ROWCOL c = FIRST_DEBOND_COL; c <= LAST_DEBOND_COL; c++ )
+            {
+               SetStyleRange(CGXRange(row,c),CGXStyle()
+                  .SetReadOnly(TRUE)
+                  .SetEnabled(FALSE)
+                  .SetInterior(::GetSysColor(COLOR_BTNFACE))
+                  .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+                  );
+            }
+         }
+         else
+         {
+            SetStyleRange(CGXRange(row,DEBOND_CHECK_COL),CGXStyle()
+               .SetControl(GX_IDS_CTRL_STATIC)
+               .SetReadOnly(TRUE)
+               .SetEnabled(FALSE)
+               .SetValue(_T(""))
+               .SetInterior(::GetSysColor(COLOR_BTNFACE))
+               .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+               );
+
+            SetStyleRange(CGXRange(row,FIRST_DEBOND_COL,row,LAST_DEBOND_COL),CGXStyle()
+               .SetControl(GX_IDS_CTRL_STATIC)
                .SetReadOnly(TRUE)
                .SetEnabled(FALSE)
                .SetInterior(::GetSysColor(COLOR_BTNFACE))
                .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
                );
          }
-      }
-      else
-      {
-         SetStyleRange(CGXRange(row,DEBOND_CHECK_COL),CGXStyle()
-            .SetControl(GX_IDS_CTRL_STATIC)
-            .SetReadOnly(TRUE)
-            .SetEnabled(FALSE)
-            .SetValue(_T(""))
-            .SetInterior(::GetSysColor(COLOR_BTNFACE))
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            );
 
-         SetStyleRange(CGXRange(row,FIRST_DEBOND_COL,row,LAST_DEBOND_COL),CGXStyle()
-            .SetControl(GX_IDS_CTRL_STATIC)
-            .SetReadOnly(TRUE)
-            .SetEnabled(FALSE)
-            .SetInterior(::GetSysColor(COLOR_BTNFACE))
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            );
+         row--;
       }
 
-      currnum = nextnum;
-      row--;
+      gridIdx++;
    }
 
    std::vector<CDebondInfo>::const_iterator debond_iter;
@@ -655,15 +675,13 @@ StrandIndexType CGirderDescDebondGrid::GetNumDebondedStrands()
    {
       CGXStyle style;
       GetStyleRowCol(row+1,0,style);
-      Int32 hash = (Int32)style.GetItemDataPtr();
-      StrandIndexType strandIdx1 = (StrandIndexType)low_Int16(hash);
-      StrandIndexType strandIdx2 = (StrandIndexType)high_Int16(hash);
+      UserData* pUserData = (UserData*)style.GetItemDataPtr();
 
       CString strDebondCheck = GetCellValue(row+1, DEBOND_CHECK_COL);
-      if ( strandIdx1 != INVALID_INDEX && strDebondCheck == _T("1") )
+      if ( pUserData->strandIdx1 != INVALID_INDEX && strDebondCheck == _T("1") )
          nStrands++;
 
-      if ( strandIdx2 != INVALID_INDEX && strDebondCheck == _T("1") )
+      if ( pUserData->strandIdx2 != INVALID_INDEX && strDebondCheck == _T("1") )
          nStrands++;
    }
 
@@ -679,17 +697,32 @@ StrandIndexType CGirderDescDebondGrid::GetNumExtendedStrands(pgsTypes::MemberEnd
    {
       CGXStyle style;
       GetStyleRowCol(row+1,0,style);
-      Int32 hash = (Int32)style.GetItemDataPtr();
-      StrandIndexType strandIdx1 = (StrandIndexType)low_Int16(hash);
-      StrandIndexType strandIdx2 = (StrandIndexType)high_Int16(hash);
+      UserData* pUserData = (UserData*)style.GetItemDataPtr();
 
-      CString strExtend = GetCellValue(row+1, endType == pgsTypes::metStart ? FIRST_EXTEND_COL : LAST_EXTEND_COL);
-      CString strExtendRight = GetCellValue(row+1, LAST_EXTEND_COL);
-      if ( strandIdx1 != INVALID_INDEX && strExtendRight == _T("1") )
-         nStrands++;
+      if (endType==pgsTypes::metStart)
+      {
+         CString strExtendLeft  = GetCellValue(row+1, FIRST_EXTEND_COL);
+         if ( strExtendLeft == _T("1") )
+         {
+            if(pUserData->strandIdx1!=INVALID_INDEX)
+               nStrands++;
 
-      if ( strandIdx2 != INVALID_INDEX && strExtendRight == _T("1") )
-         nStrands++;
+            if(pUserData->strandIdx2!=INVALID_INDEX)
+               nStrands++;
+         }
+      }
+      else
+      {
+         CString strExtendRight = GetCellValue(row+1, LAST_EXTEND_COL);
+         if ( strExtendRight == _T("1") )
+         {
+            if(pUserData->strandIdx1!=INVALID_INDEX)
+               nStrands++;
+
+            if(pUserData->strandIdx2!=INVALID_INDEX)
+               nStrands++;
+         }
+      }
    }
 
    return nStrands;

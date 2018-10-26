@@ -75,7 +75,7 @@ public:
    void CustomInit(CGirderSelectStrandsDlg* pParent, const GirderLibraryEntry* pGdrEntry);
 
    // call this before getting data used by the grid
-   bool UpdateData();
+   bool UpdateData(bool doCheckData);
 
    // strand stuff for client
    void SymmetricDebond(BOOL bSymmetricDebond);

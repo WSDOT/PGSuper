@@ -408,7 +408,7 @@ inline void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
    // Design for confinement will either use additional bars or primary bars
    if (config.ConfinementBarSize != matRebar::bsNone)
    {
-      // Additional bars
+      // Additional bars are used
       *pStartRBsiz = config.ConfinementBarSize;
       *pStartZL    = config.ConfinementZoneLength;
       *pStartS     = config.ConfinementBarSpacing;
@@ -419,13 +419,16 @@ inline void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
    }
    else
    {
-      // Primary bars are used for confinement
+      // Primary bars are used for confinement - see if there are any
       *pStartRBsiz = matRebar::bsNone;
       *pEndRBsiz = matRebar::bsNone;
+      *pStartZL = 0.0;
+      *pStartS  = 0.0;
+      *pEndZL   = 0.0;
+      *pEndS    = 0.0;
 
       // first, left end
       Float64 endloc=0.0;
-      bool first=true;
       for(STIRRUPCONFIG::ShearZoneConstIterator itl = config.ShearZones.begin(); itl != config.ShearZones.end(); itl++)
       {
          if (endloc>=reqdStartZl)
@@ -435,23 +438,15 @@ inline void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
          else
          {
             const STIRRUPCONFIG::SHEARZONEDATA& zd = *itl;
-            if (first)
+            // Use bar size from first zone
+            if (zd.ConfinementBarSize==matRebar::bsNone)
             {
-               // Use bar size from first zone
-               if (zd.ConfinementBarSize==matRebar::bsNone)
-               {
-                  break; // no use looking further - we have no confinement bars
-               }
-
-               *pStartRBsiz = zd.ConfinementBarSize;
-               *pStartS = zd.BarSpacing;
-
-               first = false;
+               break; // no use looking further - we can't have zones with confinement bars
             }
-            else
-            {
-               *pStartS = max(*pStartS, zd.BarSpacing); // use max spacing of any zone
-            }
+
+            *pStartRBsiz = zd.ConfinementBarSize;
+
+            *pStartS = max(*pStartS, zd.BarSpacing); // use max spacing of any zone
 
             endloc += zd.ZoneLength;
          }
@@ -470,7 +465,6 @@ inline void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
       else
       {
          endloc=0.0;
-         first=true;
          for(STIRRUPCONFIG::ShearZoneConstReverseIterator itr = config.ShearZones.rbegin(); itr != config.ShearZones.rend(); itr++)
          {
             if (endloc>=reqdEndZl)
@@ -480,23 +474,14 @@ inline void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
             else
             {
                const STIRRUPCONFIG::SHEARZONEDATA& zd = *itr;
-               if (first)
+               if (zd.ConfinementBarSize==matRebar::bsNone)
                {
-                  // Use bar size from first zone
-                  if (zd.ConfinementBarSize==matRebar::bsNone)
-                  {
-                     break; // no use looking further - we have no confinement bars
-                  }
-
-                  *pEndRBsiz = zd.ConfinementBarSize;
-                  *pEndS     = zd.BarSpacing;
-
-                  first = false;
+                  break;
                }
-               else
-               {
-                  *pEndS = max(*pEndS, zd.BarSpacing); // use max spacing of any zone
-               }
+
+               *pEndRBsiz = zd.ConfinementBarSize;
+
+               *pEndS = max(*pEndS, zd.BarSpacing); 
 
                endloc += zd.ZoneLength;
             }

@@ -52,6 +52,8 @@ CGirderDescDebondPage::CGirderDescDebondPage()
 	//{{AFX_DATA_INIT(CGirderDescDebondPage)
 	//}}AFX_DATA_INIT
 
+   m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch) * 1.5;
+
 }
 
 void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
@@ -82,6 +84,14 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
          {
             HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
 	         AfxMessageBox( _T("Debond length cannot exceed one half of girder length."), MB_ICONEXCLAMATION);
+	         pDX->Fail();
+         }
+
+         if (debond_info.Length1 <= 0.0 || 
+            (!pParent->m_GirderData.PrestressData.bSymmetricDebond && debond_info.Length2 <= 0.0) )
+         {
+            HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
+	         AfxMessageBox( _T("Debond lengths must be greater than zero."), MB_ICONEXCLAMATION);
 	         pDX->Fail();
          }
       }
@@ -131,6 +141,14 @@ BOOL CGirderDescDebondPage::OnSetActive()
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    GetDlgItem(IDC_NUM_EXTENDED_LEFT)->ShowWindow(pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_NUM_EXTENDED_RIGHT)->ShowWindow(pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
+
+   CString note(_T("- Only filled straight strands are shown in this view"));
+   if (bCanDebond)
+   {
+      note += _T("\n- Strands shown in light grey cannot be debonded");
+   }
+
+   GetDlgItem(IDC_NOTE2)->SetWindowText(note);
 
    StrandIndexType nStrands = pParent->GetStraightStrandCount();
    ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
@@ -385,11 +403,18 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    StrandIndexType nStrands = GetNumStrands();
 
    ConfigStrandFillVector  straightStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Straight);
+   ConfigStrandFillVector  harpedStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Harped);
+
+   // Want unadjusted strand locations
    PRESTRESSCONFIG config;
    config.SetStrandFill(pgsTypes::Straight, straightStrandFill);
+   config.SetStrandFill(pgsTypes::Harped,   harpedStrandFill);
 
    CComPtr<IPoint2dCollection> points;
    pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,pgsTypes::metStart,&points);
+
+   CComPtr<IIndexArray> strandids;
+   pStrandGeometry->ComputePermanentStrandIndices(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,&strandids);
 
    CComPtr<IIndexArray> debondables;
    pStrandGeometry->ListDebondableStrands(pParent->m_strGirderName.c_str(), straightStrandFill,pgsTypes::Straight, &debondables); 
@@ -403,10 +428,15 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       StrandIndexType is_debondable = 0;
       debondables->get_Item(strIdx, &is_debondable);
 
-      LONG dx,dy;
-      mapper.WPtoDP(point,&dx,&dy);
+      Float64 x,y;
+      point->get_X(&x);
+      point->get_Y(&y);
 
-      CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
+      CRect rect;
+      mapper.WPtoDP(x-m_Radius,y-m_Radius,&rect.left,&rect.top); 
+      mapper.WPtoDP(x+m_Radius,y-m_Radius,&rect.right,&rect.top); 
+      mapper.WPtoDP(x-m_Radius,y+m_Radius,&rect.left,&rect.bottom); 
+      mapper.WPtoDP(x+m_Radius,y+m_Radius,&rect.right,&rect.bottom); 
 
       if (is_debondable)
       {
@@ -421,9 +451,18 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
 
       pDC->Ellipse(&rect);
 
+      StrandIndexType permIdx;
+      strandids->get_Item(strIdx, &permIdx);
+
+      long lx, ly;
+      mapper.WPtoDP(x, y, &lx, &ly);
+
+      // move down slightly
+      ly += 4;
+
       CString strLabel;
-      strLabel.Format(_T("%d"),strIdx+1);
-      pDC->TextOut(dx,dy,strLabel);
+      strLabel.Format(_T("%d"),permIdx+1);
+      pDC->TextOut(lx,ly,strLabel);
    }
 
    // Redraw the debonded strands
@@ -451,18 +490,20 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       bool candb;
       pGdrEntry->GetStraightStrandCoordinates( debond_info.strandTypeGridIdx, &xs, &ys, &xe, &ye, &candb);
 
-      long dx,dy;
-      mapper.WPtoDP(xs, ys, &dx,&dy);
-
-      CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
+      CRect rect;
+      mapper.WPtoDP(xs-m_Radius,ys-m_Radius,&rect.left,&rect.top); 
+      mapper.WPtoDP(xs+m_Radius,ys-m_Radius,&rect.right,&rect.top); 
+      mapper.WPtoDP(xs-m_Radius,ys+m_Radius,&rect.left,&rect.bottom); 
+      mapper.WPtoDP(xs+m_Radius,ys+m_Radius,&rect.right,&rect.bottom); 
 
       pDC->Ellipse(&rect);
 
       if ( xs > 0.0 )
       {
-         mapper.WPtoDP(-xs, ys, &dx,&dy);
-
-         CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
+         mapper.WPtoDP(-xs-m_Radius,ys-m_Radius,&rect.left,&rect.top); 
+         mapper.WPtoDP(-xs+m_Radius,ys-m_Radius,&rect.right,&rect.top); 
+         mapper.WPtoDP(-xs-m_Radius,ys+m_Radius,&rect.left,&rect.bottom); 
+         mapper.WPtoDP(-xs+m_Radius,ys+m_Radius,&rect.right,&rect.bottom);
 
          pDC->Ellipse(&rect);
       }
@@ -488,18 +529,20 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
          bool candb;
          pGdrEntry->GetStraightStrandCoordinates( gridIdx, &xs, &ys, &xe, &ye, &candb);
 
-         long dx,dy;
-         mapper.WPtoDP(xs, ys, &dx,&dy);
-
-         CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
+         CRect rect;
+         mapper.WPtoDP(xs-m_Radius,ys-m_Radius,&rect.left,&rect.top); 
+         mapper.WPtoDP(xs+m_Radius,ys-m_Radius,&rect.right,&rect.top); 
+         mapper.WPtoDP(xs-m_Radius,ys+m_Radius,&rect.left,&rect.bottom); 
+         mapper.WPtoDP(xs+m_Radius,ys+m_Radius,&rect.right,&rect.bottom); 
 
          pDC->Ellipse(&rect);
 
          if ( xs > 0.0 )
          {
-            mapper.WPtoDP(-xs, ys, &dx,&dy);
-
-            CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
+            mapper.WPtoDP(-xs-m_Radius,ys-m_Radius,&rect.left,&rect.top); 
+            mapper.WPtoDP(-xs+m_Radius,ys-m_Radius,&rect.right,&rect.top); 
+            mapper.WPtoDP(-xs-m_Radius,ys+m_Radius,&rect.left,&rect.bottom); 
+            mapper.WPtoDP(-xs+m_Radius,ys+m_Radius,&rect.right,&rect.bottom);
 
             pDC->Ellipse(&rect);
          }
@@ -517,6 +560,16 @@ StrandIndexType CGirderDescDebondPage::GetNumStrands()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    StrandIndexType nStrands =  pParent->GetStraightStrandCount();
+
+   return nStrands;
+}
+
+StrandIndexType CGirderDescDebondPage::GetNumPermanentStrands()
+{
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+   StrandIndexType nStrands =  pParent->GetStraightStrandCount();
+   nStrands += pParent->GetHarpedStrandCount();
 
    return nStrands;
 }
@@ -554,14 +607,14 @@ void CGirderDescDebondPage::OnHelp()
 
 void CGirderDescDebondPage::OnChange() 
 {
-   StrandIndexType ns = GetNumStrands(); 
+   StrandIndexType ns = GetNumPermanentStrands(); 
    StrandIndexType ndbs =  m_Grid.GetNumDebondedStrands();
    Float64 percent = 0.0;
    if (0 < ns && ns != INVALID_INDEX)
       percent = 100.0 * (Float64)ndbs/(Float64)ns;
 
    CString str;
-   str.Format(_T("Straight=%d"), ns);
+   str.Format(_T("Straight=%d  Harped=%d"), GetNumStrands(),ns-GetNumStrands());
    CWnd* pNs = GetDlgItem(IDC_NUMSTRAIGHT);
    pNs->SetWindowText(str);
 

@@ -551,6 +551,16 @@ void pgsConfinementArtifact::SetSMax(Float64 smax)
    m_SMax = smax;
 }
 
+Float64 pgsConfinementArtifact::GetZoneLengthFactor() const
+{
+   return m_ZoneLengthFactor;
+}
+
+void pgsConfinementArtifact::SetZoneLengthFactor(Float64 fac)
+{
+   m_ZoneLengthFactor = fac;
+}
+
 Float64 pgsConfinementArtifact::GetStartProvidedZoneLength() const 
 {
    return m_StartProvidedZoneLength;
@@ -591,6 +601,16 @@ void pgsConfinementArtifact::SetStartS(Float64 s)
    m_StartS = s;
 }
 
+Float64 pgsConfinementArtifact::GetStartd() const
+{
+   return m_Startd;
+}
+
+void pgsConfinementArtifact::SetStartd(Float64 d)
+{
+   m_Startd = d;
+}
+
 Float64 pgsConfinementArtifact::GetEndProvidedZoneLength() const 
 {
    return m_EndProvidedZoneLength;
@@ -629,6 +649,16 @@ Float64 pgsConfinementArtifact::GetEndS() const
 void pgsConfinementArtifact::SetEndS(Float64 s) 
 {
    m_EndS = s;
+}
+
+Float64 pgsConfinementArtifact::GetEndd() const
+{
+   return m_Endd;
+}
+
+void pgsConfinementArtifact::SetEndd(Float64 d)
+{
+   m_Endd = d;
 }
 
 bool pgsConfinementArtifact::StartPassed() const
@@ -719,15 +749,19 @@ void pgsConfinementArtifact::MakeCopy(const pgsConfinementArtifact& rOther)
    m_pMinRebar = rOther.m_pMinRebar;
    m_SMax = rOther.m_SMax;
 
+   m_ZoneLengthFactor = rOther.m_ZoneLengthFactor;
+
    m_pStartRebar = rOther.m_pStartRebar;
    m_StartProvidedZoneLength = rOther.m_StartProvidedZoneLength;
    m_StartRequiredZoneLength = rOther.m_StartRequiredZoneLength;
    m_StartS = rOther.m_StartS;
+   m_Startd = rOther.m_Startd;
 
    m_pEndRebar = rOther.m_pEndRebar;
    m_EndProvidedZoneLength = rOther.m_EndProvidedZoneLength;
    m_EndRequiredZoneLength = rOther.m_EndRequiredZoneLength;
    m_EndS = rOther.m_EndS;
+   m_Endd = rOther.m_Endd;
 }
 
 void pgsConfinementArtifact::MakeAssignment(const pgsConfinementArtifact& rOther)

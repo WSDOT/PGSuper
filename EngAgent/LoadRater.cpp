@@ -278,10 +278,10 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
    GET_IFACE(IProductForces2,pProductForces);
    if ( analysisType == pgsTypes::Envelope )
    {
-      vDCmin = pCombinedForces->GetShear(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,MinSimpleContinuousEnvelope);
-      vDCmax = pCombinedForces->GetShear(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,MaxSimpleContinuousEnvelope);
-      vDWmin = pCombinedForces->GetShear(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,MinSimpleContinuousEnvelope);
-      vDWmax = pCombinedForces->GetShear(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,MaxSimpleContinuousEnvelope);
+      vDCmin = pCombinedForces->GetShear(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,MinSimpleContinuousEnvelope);
+      vDCmax = pCombinedForces->GetShear(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,MaxSimpleContinuousEnvelope);
+      vDWmin = pCombinedForces->GetShear(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,MinSimpleContinuousEnvelope);
+      vDWmax = pCombinedForces->GetShear(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,MaxSimpleContinuousEnvelope);
 
       if ( vehicleIdx == INVALID_INDEX )
       {
@@ -296,9 +296,9 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
    }
    else
    {
-      vDCmax = pCombinedForces->GetShear(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+      vDCmax = pCombinedForces->GetShear(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
       vDCmin = vDCmax;
-      vDWmax = pCombinedForces->GetShear(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+      vDWmax = pCombinedForces->GetShear(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
       vDWmin = vDWmax;
 
       if ( vehicleIdx == INVALID_INDEX )
@@ -507,10 +507,10 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
    GET_IFACE(IProductForces2,pProductForces);
    if ( analysisType == pgsTypes::Envelope )
    {
-      pCombinedForces->GetStress(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,MinSimpleContinuousEnvelope,&vDCTopMin,&vDCBotMin);
-      pCombinedForces->GetStress(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,MaxSimpleContinuousEnvelope,&vDCTopMax,&vDCBotMax);
-      pCombinedForces->GetStress(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,MinSimpleContinuousEnvelope,&vDWTopMin,&vDWBotMin);
-      pCombinedForces->GetStress(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,MaxSimpleContinuousEnvelope,&vDWTopMax,&vDWBotMax);
+      pCombinedForces->GetStress(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,MinSimpleContinuousEnvelope,&vDCTopMin,&vDCBotMin);
+      pCombinedForces->GetStress(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,MaxSimpleContinuousEnvelope,&vDCTopMax,&vDCBotMax);
+      pCombinedForces->GetStress(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,MinSimpleContinuousEnvelope,&vDWTopMin,&vDWBotMin);
+      pCombinedForces->GetStress(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,MaxSimpleContinuousEnvelope,&vDWTopMax,&vDWBotMax);
 
       if ( vehicleIdx == INVALID_INDEX )
       {
@@ -525,11 +525,11 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
    }
    else
    {
-      pCombinedForces->GetStress(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&vDCTopMin,&vDCBotMin);
+      pCombinedForces->GetStress(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&vDCTopMin,&vDCBotMin);
       vDCTopMax = vDCTopMin;
       vDCBotMax = vDCBotMin;
 
-      pCombinedForces->GetStress(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&vDWTopMin,&vDWBotMin);
+      pCombinedForces->GetStress(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&vDWTopMin,&vDWBotMin);
       vDWTopMax = vDWTopMin;
       vDWBotMax = vDWBotMin;
 
@@ -977,16 +977,19 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
    std::vector<Float64> vUnused;
    std::vector<VehicleIndexType> vUnusedIndex;
 
+   GET_IFACE(IBridge,pBridge);
+   bool bFutureOverlay = pBridge->HasOverlay() && pBridge->IsFutureOverlay();
+
    GET_IFACE(ICombinedForces2,pCombinedForces);
    GET_IFACE(IProductForces2,pProductForces);
    if ( bPositiveMoment || (!bPositiveMoment && bIncludeNoncompositeMoments) )
    {
       if ( analysisType == pgsTypes::Envelope )
       {
-         vDCmin = pCombinedForces->GetMoment(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,MinSimpleContinuousEnvelope);
-         vDCmax = pCombinedForces->GetMoment(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,MaxSimpleContinuousEnvelope);
-         vDWmin = pCombinedForces->GetMoment(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,MinSimpleContinuousEnvelope);
-         vDWmax = pCombinedForces->GetMoment(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,MaxSimpleContinuousEnvelope);
+         vDCmin = pCombinedForces->GetMoment(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,MinSimpleContinuousEnvelope);
+         vDCmax = pCombinedForces->GetMoment(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,MaxSimpleContinuousEnvelope);
+         vDWmin = pCombinedForces->GetMoment(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,MinSimpleContinuousEnvelope);
+         vDWmax = pCombinedForces->GetMoment(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,MaxSimpleContinuousEnvelope);
 
          if ( vehicleIdx == INVALID_INDEX )
          {
@@ -1001,9 +1004,9 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
       }
       else
       {
-         vDCmax = pCombinedForces->GetMoment(lcDC,pgsTypes::BridgeSite3,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+         vDCmax = pCombinedForces->GetMoment(lcDC,pgsTypes::BridgeSite2,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
          vDCmin = vDCmax;
-         vDWmax = pCombinedForces->GetMoment(lcDW,pgsTypes::BridgeSite3,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+         vDWmax = pCombinedForces->GetMoment(lcDW,pgsTypes::BridgeSite2,vPOI,ctCummulative,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
          vDWmin = vDWmax;
 
          if ( vehicleIdx == INVALID_INDEX )
@@ -1019,17 +1022,6 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
       //// negative moment resisted by the deck.
       ////
       //// Special load processing is required
-      GET_IFACE(IBridge,pBridge);
-      //pgsTypes::Stage start,end,dummy;
-      //PierIndexType prevPierIdx = spanIdx;
-      //PierIndexType nextPierIdx = prevPierIdx + 1;
-
-      //pBridge->GetContinuityStage(prevPierIdx,&dummy,&start);
-      //pBridge->GetContinuityStage(nextPierIdx,&end,&dummy);
-
-      //bool bIncludeSlab = false;
-      //if ( start == pgsTypes::BridgeSite1 || end == pgsTypes::BridgeSite1 )
-      //   bIncludeSlab = true;
 
       std::vector<Float64> vConstructionMin, vConstructionMax;
       std::vector<Float64> vSlabMin, vSlabMax;
@@ -1043,8 +1035,6 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
       std::vector<Float64> vTrafficBarrierMin, vTrafficBarrierMax;
       std::vector<Float64> vSidewalkMin, vSidewalkMax;
       std::vector<Float64> vOverlayMin, vOverlayMax;
-
-      bool bFutureOverlay = pBridge->HasOverlay() && pBridge->IsFutureOverlay();
 
       GET_IFACE(IProductLoads,pProductLoads);
       pgsTypes::Stage girderLoadStage = pProductLoads->GetGirderDeadLoadStage(gdrLineIdx);

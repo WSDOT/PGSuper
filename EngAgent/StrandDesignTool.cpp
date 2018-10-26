@@ -1392,6 +1392,7 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IGirderData,pGirderData);
 
    m_pArtifact->SetNumStraightStrands(pStrandGeom->GetNumStrands(m_Span,m_Girder,pgsTypes::Straight));
    m_pArtifact->SetNumHarpedStrands(pStrandGeom->GetNumStrands(m_Span,m_Girder,pgsTypes::Harped));
@@ -1409,6 +1410,19 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    m_pArtifact->SetHarpStrandOffsetEnd(offsetEnd);
 
    m_pArtifact->SetReleaseStrength(pMaterial->GetFciGdr(m_Span,m_Girder));
+
+   // Set concrete strength 
+   const CGirderMaterial* pGirderMaterial = pGirderData->GetGirderMaterial(m_Span,m_Girder);
+   Float64 fc = pGirderMaterial->Fc;
+
+   matConcreteEx conc(_T("Design Concrete"), fc, pGirderMaterial->StrengthDensity, 
+                      pGirderMaterial->WeightDensity, lrfdConcreteUtil::ModE(fc,  pGirderMaterial->StrengthDensity, false ));
+   conc.SetMaxAggregateSize(pGirderMaterial->MaxAggregateSize);
+   conc.SetType((matConcrete::Type)pGirderMaterial->Type);
+   conc.HasAggSplittingStrength(pGirderMaterial->bHasFct);
+   conc.SetAggSplittingStrength(pGirderMaterial->Fct); 
+
+   m_pArtifact->SetConcrete(conc);
 
    m_pArtifact->SetSlabOffset(pgsTypes::metStart,pBridge->GetSlabOffset(m_Span,m_Girder,pgsTypes::metStart));
    m_pArtifact->SetSlabOffset(pgsTypes::metEnd,  pBridge->GetSlabOffset(m_Span,m_Girder,pgsTypes::metEnd)  );

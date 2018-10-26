@@ -4960,6 +4960,17 @@ bool CProjectAgentImp::SetGirderData(const CGirderData& data,SpanIndexType span,
    {
       lHint |= GCH_STRAND_MATERIAL;
    }
+
+   if ( change_type & CGirderData::ctShearData )
+   {
+      lHint |= GCH_STIRRUPS;
+   }
+
+   if ( change_type & CGirderData::ctLongRebar )
+   {
+      lHint |= GCH_LONGITUDINAL_REBAR;
+   }
+
    Fire_GirderChanged(span,gdr,lHint);
 
    return true;
@@ -5054,7 +5065,7 @@ void CProjectAgentImp::ConvertLegacyDebondData(CGirderData& gdrData, const Girde
          // debond data comes from old version where strand id's (of total straight strands) were used
          found = false;
          StrandIndexType strandIdx = (StrandIndexType)(it->strandTypeGridIdx);
-         ATLASSERT(strandIdx == INVALID_INDEX);
+         ATLASSERT(strandIdx != INVALID_INDEX);
          // Determine grid index from the strand index
          StrandIndexType nStrands = 0;
          GridIndexType nGridSize = pGdrEntry->GetNumStraightStrandCoordinates();

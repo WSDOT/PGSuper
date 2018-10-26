@@ -130,6 +130,7 @@ class PGSEXTCLASS DirectStrandFillCollection
 public:
    StrandIndexType GetFilledStrandCount() const; // total number of filled strands
    bool IsStrandFilled(GridIndexType indexGrid) const;
+   StrandIndexType GetFillCountAtIndex(GridIndexType indexGrid) const; // number of strands filled at index (0,1,2)
    void RemoveFill(GridIndexType indexGrid); // Remove a filled strand
    void AddFill(const CDirectStrandFillInfo& rInfo);
    const CDirectStrandFillInfo& GetFill(CollectionIndexType fillNo) const;

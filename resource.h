@@ -31,6 +31,8 @@
 #define IDS_E_CREATEWND                 1658
 #define IDC_WSDOT                       1666
 #define IDC_TXDOT                       1668
+#define IDC_TXDOT2                      1669
+#define IDC_KDOT                        1669
 #define IDC_BRIDGESIGHT                 1670
 #define IDS_COMPANY                     1699
 #define IDS_E_INVALIDVERSION            1750

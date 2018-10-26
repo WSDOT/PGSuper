@@ -524,11 +524,13 @@ interface IStrandGeometry : IUnknown
    // get ratio of harped/straight strands if total permanent strands is used for input. returns false if total doesn't fit
    virtual bool ComputeNumPermanentStrands(StrandIndexType totalPermanent,SpanIndexType span,GirderIndexType gdr, StrandIndexType* numStraight, StrandIndexType* numHarped) =0;
    virtual bool ComputeNumPermanentStrands(StrandIndexType totalPermanent,LPCTSTR strGirderName, StrandIndexType* numStraight, StrandIndexType* numHarped)=0;
-   // get next and previous number of strands - return -1 if at end
+   // get next and previous number of strands - return INVALID_INDEX if at end
    virtual StrandIndexType GetNextNumPermanentStrands(SpanIndexType span,GirderIndexType gdr,StrandIndexType curNum)=0;
    virtual StrandIndexType GetNextNumPermanentStrands(LPCTSTR strGirderName,StrandIndexType curNum)=0;
    virtual StrandIndexType GetPreviousNumPermanentStrands(SpanIndexType span,GirderIndexType gdr,StrandIndexType curNum)=0;
    virtual StrandIndexType GetPreviousNumPermanentStrands(LPCTSTR strGirderName,StrandIndexType curNum)=0;
+   // Compute strand Indices as in girder library for given filled strands
+   virtual bool ComputePermanentStrandIndices(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strType, IIndexArray** permIndices)=0;
 
    // Functions to compute ordered strand filling for straight/harped/temporary fill orders
    virtual bool IsValidNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType curNum) = 0;

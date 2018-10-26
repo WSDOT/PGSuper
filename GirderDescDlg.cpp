@@ -184,6 +184,11 @@ StrandIndexType CGirderDescDlg::GetStraightStrandCount()
    return  m_GirderData.PrestressData.GetNstrands(pgsTypes::Straight);
 }
 
+StrandIndexType CGirderDescDlg::GetHarpedStrandCount()
+{
+   return  m_GirderData.PrestressData.GetNstrands(pgsTypes::Harped);
+}
+
 ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandType type)
 {
    CComPtr<IBroker> pBroker;

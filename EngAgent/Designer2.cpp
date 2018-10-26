@@ -207,17 +207,19 @@ inline Float64 compute_required_eccentricity(Float64 P,Float64 A,Float64 S,Float
 //}
 
 static void GetConfinementZoneLengths(SpanIndexType span,GirderIndexType gdr, IGirder* pGdr, Float64 gdrLength, 
+                                      Float64* pZoneFactor, Float64* pStartd, Float64* pEndd,
                                       Float64* pStartLength, Float64* pEndLength)
 {
    // NOTE: This d is defined differently than in 5.10.10.2 of the 2nd 
    //       edition of the spec. We think what they really meant to say 
    //       was d = the overall depth of the precast member.
    // Get height at appropriate end of girder
-   Float64 d = pGdr->GetHeight( pgsPointOfInterest(span,gdr, 0.0) );
-   *pStartLength = 1.5*d;
+   *pZoneFactor = 1.5;
+   *pStartd = pGdr->GetHeight( pgsPointOfInterest(span,gdr, 0.0) );
+   *pStartLength = 1.5 * (*pStartd);
 
-   d = pGdr->GetHeight( pgsPointOfInterest(span,gdr, gdrLength) );
-   *pEndLength = 1.5*d;
+   *pEndd = pGdr->GetHeight( pgsPointOfInterest(span,gdr, gdrLength) );
+   *pEndLength = 1.5 * (*pEndd);
 }
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -629,8 +631,9 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
    // Use strand design tool to control proportioning of strands
    m_StrandDesignTool.Initialize(m_pBroker, m_StatusGroupID, &artifact);
 
+   Float64 zoneFactor, startd, endd;
    Float64 startConfinementZl, endConfinementZl;
-   GetConfinementZoneLengths(span, gdr, pGdr, gird_length, &startConfinementZl, &endConfinementZl);
+   GetConfinementZoneLengths(span, gdr, pGdr, gird_length, &zoneFactor, &startd, &endd, &startConfinementZl, &endConfinementZl);
 
    // Use shear design tool to control stirrup design
    m_ShearDesignTool.Initialize(m_pBroker, this, m_StatusGroupID, &artifact, startConfinementZl, endConfinementZl,
@@ -2242,11 +2245,17 @@ void pgsDesigner2::CheckConfinement(SpanIndexType span, GirderIndexType gdr, con
    pArtifact->SetSMax(smax);
 
    // Use utility function to get confinement zone lengths at girder ends
+   Float64 zoneFactor, startd, endd;
    Float64 reqdStartZl, reqdEndZl;
-   GetConfinementZoneLengths(span, gdr, pGdr, gird_length, &reqdStartZl, &reqdEndZl);
+   GetConfinementZoneLengths(span, gdr, pGdr, gird_length, &zoneFactor, &startd, &endd, &reqdStartZl, &reqdEndZl);
+
+   pArtifact->SetZoneLengthFactor(zoneFactor);
 
    pArtifact->SetStartRequiredZoneLength(reqdStartZl);
+   pArtifact->SetStartd(startd);
+
    pArtifact->SetEndRequiredZoneLength(reqdEndZl);
+   pArtifact->SetEndd(endd);
 
    // get and set provided stirrup configuration at start and ends
    GET_IFACE(IStirrupGeometry, pStirrupGeometry);

@@ -81,23 +81,6 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   // Additional Splitting Bars
-   matRebar::Size size;
-   Float64 zoneLength, nBars, spacing;
-   pStirrupGeometry->GetAddSplittingBarInfo(span, girder, &size, &zoneLength, &nBars, &spacing);
-
-   if (size != matRebar::bsNone)
-      *pPara <<_T("Additional Splitting stirrups are ")<<nBars<<_T("-")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" at ")<<dim_u.SetValue(spacing)<<_T(" spacing, for zone length = ")<<loc_u.SetValue(zoneLength)<<_T(" from girder ends.")<<rptNewLine;
-   else
-      *pPara <<_T("Additional Splitting stirrups not present")<<rptNewLine;
-
-   // bottom flange confinement steel
-   pStirrupGeometry->GetAddConfinementBarInfo(span, girder, &size, &zoneLength, &spacing);
-   if (size != matRebar::bsNone)
-      *pPara <<_T("Additional Bottom Flange Confinement stirrups are ")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" at ")<<dim_u.SetValue(spacing)<<_T(" spacing, for zone length =  ")<<loc_u.SetValue(zoneLength)<<_T(" from girder ends.")<<rptNewLine;
-   else
-      *pPara <<_T("Additional Bottom Flange Confinement stirrups not present")<<rptNewLine;
-
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T("Primary Bars"));
    *pPara << p_table;
 
@@ -203,6 +186,67 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       }
 
       row++;
+   }
+
+   // Additional Splitting Bars
+   matRebar::Size size;
+   Float64 zoneLength, nBars, spacing;
+   pStirrupGeometry->GetAddSplittingBarInfo(span, girder, &size, &zoneLength, &nBars, &spacing);
+
+   if (size != matRebar::bsNone)
+   {
+      p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Additional Splitting Stirrups"));
+      *pPara << p_table;
+
+      (*p_table)(0,0) << COLHDR(_T("Zone Length"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(1,0) << loc.SetValue(zoneLength);
+
+      (*p_table)(0,1) << _T("Bar Size");
+      (*p_table)(1,1) << lrfdRebarPool::GetBarSize(size).c_str();
+
+      (*p_table)(0,2) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,2) << dim.SetValue(spacing);
+
+      (*p_table)(0,3) << _T("# of")<< rptNewLine<<_T("Legs");
+      (*p_table)(1,3) << nBars;
+   }
+   else
+   {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << pPara;
+      *pPara <<_T("Additional Splitting Stirrups")<<rptNewLine;
+
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara <<_T("Additional splitting stirrups not present")<<rptNewLine;
+   }
+
+   // bottom flange confinement steel
+   pStirrupGeometry->GetAddConfinementBarInfo(span, girder, &size, &zoneLength, &spacing);
+
+   if (size != matRebar::bsNone)
+   {
+      p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Additional Bottom Flange Confinement Stirrups"));
+      *pPara << p_table;
+
+      (*p_table)(0,0) << COLHDR(_T("Zone Length"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(1,0) << loc.SetValue(zoneLength);
+
+      (*p_table)(0,1) << _T("Bar Size");
+      (*p_table)(1,1) << lrfdRebarPool::GetBarSize(size).c_str();
+
+      (*p_table)(0,2) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,2) << dim.SetValue(spacing);
+   }
+   else
+   {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << pPara;
+      *pPara <<_T("Additional Bottom Flange Confinement Stirrups")<<rptNewLine;
+
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara <<_T("Additional confinement stirrups not present")<<rptNewLine;
    }
 }
 

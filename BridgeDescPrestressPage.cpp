@@ -1788,7 +1788,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
                return;
             }
          }
-         else if  (m_CurrNumPermStrandsType==NPS_DIRECT_SELECTION)
+         else if  (num_perm>0 && m_CurrNumPermStrandsType==NPS_DIRECT_SELECTION)
          {
             CString str(_T("Strands from direct selection may not be in the same locations in the new fill mode. Is this Ok?"));
             int st = ::AfxMessageBox(str, MB_YESNO | MB_ICONINFORMATION );

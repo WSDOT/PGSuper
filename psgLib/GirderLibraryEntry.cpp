@@ -1946,6 +1946,11 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
 
    test &= m_StirrupSizeBarComboColl == rOther.m_StirrupSizeBarComboColl;
 
+   // Must first check that size of vectors match,
+   if (m_AvailableBarSpacings.size() != rOther.m_AvailableBarSpacings.size())
+      return false;
+
+   // then we can compare content
    if (!std::equal(m_AvailableBarSpacings.begin(), m_AvailableBarSpacings.end(), rOther.m_AvailableBarSpacings.begin(), EqualDoublePred))
       return false;
 

@@ -904,6 +904,7 @@
 #define IDC_NOTE                        1614
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_LABEL 1615
 #define IDC_START_SPAN_SPIN             1615
+#define IDC_NOTE2                       1615
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT 1616
 #define IDC_END_SPAN_EDIT               1616
 #define IDC_ALIGNMENT_OFFSET            1617

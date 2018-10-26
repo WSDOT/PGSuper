@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,0,1
- PRODUCTVERSION 2,7,0,1
+ FILEVERSION 2,7,0,2
+ PRODUCTVERSION 2,7,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.7.0.1"
+            VALUE "FileVersion", "2.7.0.2"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.0.1"
+            VALUE "ProductVersion", "2.7.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -357,7 +357,7 @@ BEGIN
     LTEXT           "unit",IDC_CONFINE_SPACING_UNIT,330,315,13,8
     EDITTEXT        IDC_CONFINE_ZL,166,310,46,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "unit",IDC_CONFINE_ZL_UNIT,215,315,12,8
-    GROUPBOX        "Additional Bars for Horizontal Interface Shear Capacity",IDC_STATIC,7,162,300,98,0,WS_EX_TRANSPARENT
+    GROUPBOX        "Additional Bars for Horizontal Interface Shear Capacity (Always Symmetical About Mid-Girder)",IDC_STATIC,7,162,306,98,0,WS_EX_TRANSPARENT
     CONTROL         "Custom1",IDC_HORIZ_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,174,218,79
     PUSHBUTTON      "Insert Row",IDC_INSERTHORIZROW,247,196,51,14
     PUSHBUTTON      "Delete Row",IDC_REMOVEHORIZROWS,247,217,51,14

@@ -281,10 +281,15 @@ const matConcreteEx& pgsDesignArtifact::GetConcrete() const
 
 void pgsDesignArtifact::SetConcreteStrength(Float64 fc)
 {
-   double density = m_Concrete.GetDensity();
-   double Ec = lrfdConcreteUtil::ModE(fc,density,false);
    m_Concrete.SetFc(fc);
-   m_Concrete.SetE(Ec);
+
+   // update Ec if not input by user
+   if (!m_IsUserEc)
+   {
+      double density = m_Concrete.GetDensity();
+      double Ec = lrfdConcreteUtil::ModE(fc,density,false);
+      m_Concrete.SetE(Ec);
+   }
 }
 
 Float64 pgsDesignArtifact::GetConcreteStrength() const
@@ -371,9 +376,24 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
 
    // allow moduli to be computed
    config.bUserEci = m_IsUserEci;
-   config.Eci      = m_UserEci;
+   if(m_IsUserEci)
+   {
+      config.Eci      = m_UserEci;
+   }
+   else
+   {
+      config.Eci = lrfdConcreteUtil::ModE( config.Fci, m_Concrete.GetDensity(), false);
+   }
+
    config.bUserEc  = m_IsUserEc;
-   config.Ec       = m_UserEc;
+   if(m_IsUserEc)
+   {
+      config.Ec       = m_UserEc;
+   }
+   else
+   {
+      config.Ec = lrfdConcreteUtil::ModE( config.Fc, m_Concrete.GetDensity(), false);
+   }
 
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
    config.SlabOffset[pgsTypes::metEnd]   = GetSlabOffset(pgsTypes::metEnd);

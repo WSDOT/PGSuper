@@ -568,11 +568,13 @@ void write_confinement_check(IBroker* pBroker,
    (*pPara) << _T("  Maximum Required Bar Spacing in Confinement Zone = ")<< dim.SetValue(rConfine.GetSMax()) << rptNewLine << rptNewLine;
 
    (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
-   (*pPara) << _T("  Required Confinement Zone Length = ") << length.SetValue(rConfine.GetStartRequiredZoneLength()) << rptNewLine;
-   (*pPara) << _T("  Provided Confinement Zone Length = ") << length.SetValue(rConfine.GetStartProvidedZoneLength()) << rptNewLine;
+   (*pPara) << _T("  Required Confinement Zone Length: ")<<rConfine.GetZoneLengthFactor()<<_T("d = ")
+            <<rConfine.GetZoneLengthFactor()<<_T(" *")<<length.SetValue(rConfine.GetStartd())<<_T(" = ")
+            << length.SetValue(rConfine.GetStartRequiredZoneLength()) << rptNewLine;
+   (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetStartProvidedZoneLength()) << rptNewLine;
    matRebar::Size size = rConfine.GetStartBar()==NULL ? matRebar::bsNone : rConfine.GetStartBar()->GetSize();
    (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
-   (*pPara) << _T("  Bar Spacing in Zone ")<< dim.SetValue(rConfine.GetStartS()) << rptNewLine;
+   (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetStartS()) << rptNewLine;
    (*pPara) << _T("  Status = ");
    if ( rConfine.StartPassed() )
       (*pPara) << RPT_PASS;
@@ -582,11 +584,13 @@ void write_confinement_check(IBroker* pBroker,
    (*pPara) <<rptNewLine<<rptNewLine;
 
    (*pPara) << Bold(_T("Right End of Girder:")) << rptNewLine;
-   (*pPara) << _T("  Required Confinement Zone Length = ") << length.SetValue(rConfine.GetEndRequiredZoneLength()) << rptNewLine;
-   (*pPara) << _T("  Provided Confinement Zone Length = ") << length.SetValue(rConfine.GetEndProvidedZoneLength()) << rptNewLine;
+   (*pPara) << _T("  Required Confinement Zone Length: ")<<rConfine.GetZoneLengthFactor()<<_T("d = ")
+            <<rConfine.GetZoneLengthFactor()<<_T(" *")<<length.SetValue(rConfine.GetEndd())<<_T(" = ")
+            << length.SetValue(rConfine.GetEndRequiredZoneLength()) << rptNewLine;
+   (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetEndProvidedZoneLength()) << rptNewLine;
    size = rConfine.GetEndBar()==NULL ? matRebar::bsNone : rConfine.GetEndBar()->GetSize();
    (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
-   (*pPara) << _T("  Bar Spacing in Zone ")<< dim.SetValue(rConfine.GetEndS()) << rptNewLine;
+   (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetEndS()) << rptNewLine;
    (*pPara) << _T("  Status = ");
    if ( rConfine.EndPassed() )
       (*pPara) << RPT_PASS;

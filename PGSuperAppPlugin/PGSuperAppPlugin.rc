@@ -1041,19 +1041,20 @@ BEGIN
     PUSHBUTTON      "Add New Moment Load...",IDC_ADD_MOMENTLOAD,365,110,100,14
 END
 
-IDD_GIRDERDESC_DEBOND DIALOGEX 0, 0, 427, 301
+IDD_GIRDERDESC_DEBOND DIALOGEX 0, 0, 427, 332
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Debonding"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom1",IDC_DEBOND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,7,144,273
-    LTEXT           "",IDC_PICTURE,158,7,262,249,WS_BORDER
+    LTEXT           "",IDC_PICTURE,158,7,262,274,WS_BORDER
     CONTROL         "Symmetrical Debonding",IDC_SYMMETRIC_DEBOND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,284,90,10
-    LTEXT           "Note: Straight strands shown in light grey cannot be debonded",IDC_NOTE,160,286,202,8
-    LTEXT           "Number of straight strands = %%",IDC_NUMSTRAIGHT,160,260,110,8
-    LTEXT           "Number of deboned strands = %%",IDC_NUM_DEBONDED,279,260,129,8
-    LTEXT           "Number of extended strands",IDC_NUM_EXTENDED_LEFT,160,274,106,8
-    LTEXT           "Number of extended strands",IDC_NUM_EXTENDED_RIGHT,279,274,129,8
+    LTEXT           "Notes:",IDC_NOTE,160,313,23,8
+    LTEXT           "Number of straight strands = %%",IDC_NUMSTRAIGHT,160,285,110,8
+    LTEXT           "Number of deboned strands = %%",IDC_NUM_DEBONDED,279,285,129,8
+    LTEXT           "Number of extended strands",IDC_NUM_EXTENDED_LEFT,160,299,106,8
+    LTEXT           "Number of extended strands",IDC_NUM_EXTENDED_RIGHT,279,299,129,8
+    LTEXT           "- Only filled straight strands are shown in this view\n- Strands shown in light grey cannot be debonded",IDC_NOTE2,185,313,202,19
 END
 
 IDD_ALIGNMENT_HORIZONTAL DIALOG  0, 0, 274, 198
@@ -1903,23 +1904,23 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Routine Commercial Vehicles",IDC_STATIC,15,16,91,8
     LISTBOX         IDC_ROUTINE_LIVELOAD,15,25,140,65,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,18,91,108,8
-    LTEXT           "Truck",IDC_STATIC,18,105,20,8
-    EDITTEXT        IDC_ROUTINE_TRUCK_IMPACT,41,103,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,63,105,8,8
-    LTEXT           "Lane",IDC_STATIC,85,105,17,8
-    EDITTEXT        IDC_ROUTINE_LANE_IMPACT,106,103,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,129,105,8,8
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,18,96,108,8
+    LTEXT           "Truck",IDC_STATIC,18,110,20,8
+    EDITTEXT        IDC_ROUTINE_TRUCK_IMPACT,41,108,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,63,110,8,8
+    LTEXT           "Lane",IDC_STATIC,85,110,17,8
+    EDITTEXT        IDC_ROUTINE_LANE_IMPACT,106,108,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,129,110,8,8
     LTEXT           "Specialized Hauling Vehicles",IDC_STATIC,162,15,88,8
     LISTBOX         IDC_SPECIAL_LIVELOAD,162,25,139,65,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,166,91,108,8
-    LTEXT           "Truck",IDC_STATIC,166,105,20,8
-    EDITTEXT        IDC_SPECIAL_TRUCK_IMPACT,189,103,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,211,105,8,8
-    LTEXT           "Lane",IDC_STATIC,233,105,17,8
-    EDITTEXT        IDC_SPECIAL_LANE_IMPACT,254,103,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,277,105,8,8
-    LTEXT           "MBE 6A.4.4.2.1 - If the ADTT is less than 500, the lane load my be excluded and the 0.75 truck factor changed to 1.0 if, in the Engineer's judgement, it is warrented.",IDC_STATIC,17,129,284,19
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,166,96,108,8
+    LTEXT           "Truck",IDC_STATIC,166,110,20,8
+    EDITTEXT        IDC_SPECIAL_TRUCK_IMPACT,189,108,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,211,110,8,8
+    LTEXT           "Lane",IDC_STATIC,233,110,17,8
+    EDITTEXT        IDC_SPECIAL_LANE_IMPACT,254,108,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,277,110,8,8
+    LTEXT           "MBE 6A.4.4.2.1 - If the ADTT is less than 500, the lane load may be excluded and the 0.75 truck factor changed to 1.0 if, in the Engineer's judgement, it is warrented.",IDC_STATIC,17,129,284,19
     CONTROL         "Exclude Lane Load and use 1.0 Truck Factor",IDC_EXCLUDE_LANELOAD,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,151,157,10
     LTEXT           "Strength I =",IDC_STATIC,16,185,41,8
@@ -2209,8 +2210,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,0,1
- PRODUCTVERSION 2,7,0,1
+ FILEVERSION 2,7,0,2
+ PRODUCTVERSION 2,7,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2227,12 +2228,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.7.0.1"
+            VALUE "FileVersion", "2.7.0.2"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.0.1"
+            VALUE "ProductVersion", "2.7.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2440,7 +2441,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 420
         TOPMARGIN, 7
-        BOTTOMMARGIN, 294
+        BOTTOMMARGIN, 325
     END
 
     IDD_ALIGNMENT_HORIZONTAL, DIALOG
