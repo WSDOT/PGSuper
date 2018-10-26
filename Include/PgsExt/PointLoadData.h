@@ -35,7 +35,7 @@ struct IStructuredLoad;
 
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 // namespace to contain user load enums
 struct PGSEXTCLASS UserLoads
@@ -164,7 +164,7 @@ public:
    EventIndexType        m_EventIndex;
    UserLoads::LoadCase   m_LoadCase;
 
-   CSpanKey m_spanKey;
+   CSpanKey m_SpanKey;
    Float64  m_Location;   // measured from CL bearing at start of span
    bool     m_Fractional;
    Float64  m_Magnitude;

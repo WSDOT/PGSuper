@@ -1091,9 +1091,9 @@ void CPGSuperDocProxyAgent::EditEffectiveFlangeWidth()
 
 ///////////////////////////////////////////////////////////////////////////////////
 // IDesign
-void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx)
+void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)
 {
-   ((CPGSuperDoc*)m_pMyDocument)->DesignGirder(bPrompt,bDesignSlabOffset,spanIdx,gdrIdx);
+   ((CPGSuperDoc*)m_pMyDocument)->DesignGirder(bPrompt,bDesignSlabOffset,girderKey);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

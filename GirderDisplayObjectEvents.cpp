@@ -63,7 +63,7 @@ DELEGATE_CUSTOM_INTERFACE(CBridgePlanViewGirderDisplayObjectEvents,Events);
 
 void CBridgePlanViewGirderDisplayObjectEvents::EditGirder(iDisplayObject* pDO)
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDERLINE,0);
+   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
 }
 
 void CBridgePlanViewGirderDisplayObjectEvents::SelectGirder(iDisplayObject* pDO)
@@ -234,7 +234,7 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
-      pPGSuperDoc->BuildReportMenu(pMenu,false);
+      pPGSuperDoc->BuildReportMenu(pMenu,true);
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
@@ -321,7 +321,7 @@ DELEGATE_CUSTOM_INTERFACE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
 
 void CBridgePlanViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject* pDO)
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
+   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_SEGMENT,0);
 }
 
 void CBridgePlanViewSegmentDisplayObjectEvents::SelectSegment(iDisplayObject* pDO)
@@ -532,7 +532,7 @@ STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnContex
          pMenu->LoadMenu(IDR_SELECTED_GIRDER_SEGMENT_CONTEXT,NULL);
       }
 
-      pPGSuperDoc->BuildReportMenu(pMenu,false);
+      pPGSuperDoc->BuildReportMenu(pMenu,true);
 
       std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
@@ -615,15 +615,7 @@ DELEGATE_CUSTOM_INTERFACE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
 
 void CBridgeSectionViewGirderDisplayObjectEvents::EditGirder(iDisplayObject* pDO)
 {
-   CEAFDocument* pDoc = EAFGetDocument();
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
-   }
-   else if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
-   {
-      m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDERLINE,0);
-   }
+   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
 }
 
 void CBridgeSectionViewGirderDisplayObjectEvents::SelectGirder(iDisplayObject* pDO)
@@ -761,7 +753,7 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
       {
          pMenu->LoadMenu(IDR_SELECTED_GIRDERLINE_CONTEXT,NULL);
 
-         CEAFMenu* pSegmentMenu = pMenu->CreatePopupMenu(0,_T("Edit Precast Segment"));
+         CEAFMenu* pSegmentMenu = pMenu->CreatePopupMenu(0,_T("Edit Segment"));
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -770,13 +762,16 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
          {
             CString strMenuItem;
             strMenuItem.Format(_T("Segment %d"),LABEL_SEGMENT(segIdx));
-            UINT uID = ID_EDIT_SEGMENT + (UINT)segIdx;
-            pSegmentMenu->AppendMenu(uID,strMenuItem,NULL);
+            UINT uID = ID_EDIT_SEGMENT_MIN + (UINT)segIdx;
+            if ( uID <= ID_EDIT_SEGMENT_MAX )
+            {
+               pSegmentMenu->AppendMenu(uID,strMenuItem,NULL);
+            }
          }
       }
 
       CPGSuperDocBase* pBaseDoc = (CPGSuperDocBase*)(pDoc);
-      pBaseDoc->BuildReportMenu(pMenu,false);
+      pBaseDoc->BuildReportMenu(pMenu,true);
 
       const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pBaseDoc->GetBridgeSectionViewCallbacks();
       std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());

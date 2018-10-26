@@ -240,6 +240,10 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << _T("RF");
 
+   const pgsMomentRatingArtifact* pControllingRating;
+   pRatingArtifact->GetMomentRatingFactorEx(bPositiveMoment,&pControllingRating);
+   pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
+
    pgsRatingArtifact::MomentRatings artifacts = pRatingArtifact->GetMomentRatings(bPositiveMoment);
 
    RowIndexType row = 1;
@@ -249,6 +253,11 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
+      if ( !poi.IsTenthPoint(POI_SPAN) && poi != controllingPoi )
+      {
+         continue;
+      }
+
       pgsMomentRatingArtifact& artifact = iter->second;
 
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -334,6 +343,11 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("LL+IM")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << _T("RF");
 
+   
+   const pgsShearRatingArtifact* pControllingRating;
+   pRatingArtifact->GetShearRatingFactorEx(&pControllingRating);
+   pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
+
    pgsRatingArtifact::ShearRatings artifacts = pRatingArtifact->GetShearRatings();
 
    RowIndexType row = 1;
@@ -343,6 +357,11 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
+      if ( !poi.IsTenthPoint(POI_SPAN) && poi != controllingPoi )
+      {
+         continue;
+      }
+
       pgsShearRatingArtifact& artifact = iter->second;
 
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -425,6 +444,10 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("LL+IM")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("RF");
 
+   const pgsStressRatingArtifact* pControllingRating;
+   pRatingArtifact->GetStressRatingFactorEx(&pControllingRating);
+   pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
+
    pgsRatingArtifact::StressRatings artifacts = pRatingArtifact->GetStressRatings();
 
    RowIndexType row = 1;
@@ -434,6 +457,11 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
+      if ( !poi.IsTenthPoint(POI_SPAN) && poi != controllingPoi )
+      {
+         continue;
+      }
+
       pgsStressRatingArtifact& artifact = iter->second;
 
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -524,6 +552,10 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("r")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("Stress") << rptNewLine << _T("Ratio") << rptNewLine << RPT_STRESS(_T("r")) << _T("/") << RPT_STRESS(_T("s"));
 
+   const pgsYieldStressRatioArtifact* pControllingRating;
+   pRatingArtifact->GetYieldStressRatioEx(bPositiveMoment,&pControllingRating);
+   pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
+
    pgsRatingArtifact::YieldStressRatios artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
 
    pPara = new rptParagraph;
@@ -546,6 +578,11 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
+      if ( !poi.IsTenthPoint(POI_SPAN) && poi != controllingPoi )
+      {
+         continue;
+      }
+
       pgsYieldStressRatioArtifact& artifact = iter->second;
 
       const CSegmentKey& segmentKey = poi.GetSegmentKey();

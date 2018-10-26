@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 CGirderKey::CGirderKey(GroupIndexType grpIdx,GirderIndexType gdrIdx) : groupIndex(grpIdx), girderIndex(gdrIdx)
 {
@@ -310,36 +310,73 @@ HRESULT CSpanKey::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    return S_OK;
 }
 
-
 CTendonKey::CTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx) :
-girderKey(girderKey),ductIdx(ductIdx)
+girderKey(girderKey),ductIdx(ductIdx),girderID(INVALID_ID)
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
    ATLASSERT(ductIdx != INVALID_INDEX);
 }
 
-CTendonKey::CTendonKey(const CTendonKey& other) :
-girderKey(other.girderKey),ductIdx(other.ductIdx)
+CTendonKey::CTendonKey(GirderIDType girderID,DuctIndexType ductIdx) :
+ductIdx(ductIdx),girderID(girderID)
 {
-   ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
+   ATLASSERT(girderID != INVALID_ID);
+   ATLASSERT(ductIdx != INVALID_INDEX);
+}
+
+CTendonKey::CTendonKey(const CTendonKey& other) :
+girderKey(other.girderKey),ductIdx(other.ductIdx),girderID(other.girderID)
+{
+#if defined _DEBUG
+   if ( girderID == INVALID_ID )
+   {
+      ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
+   }
+#endif
+
    ATLASSERT(ductIdx != INVALID_INDEX);
 }
 
 bool CTendonKey::operator==(const CTendonKey& other) const
 {
-   return (girderKey == other.girderKey && ductIdx == other.ductIdx) ? true : false;
+   if ( girderID == INVALID_ID )
+   {
+      return (girderKey == other.girderKey && ductIdx == other.ductIdx) ? true : false;
+   }
+   else
+   {
+      return (girderID == other.girderID && ductIdx == other.ductIdx) ? true : false;
+   }
 }
 
 bool CTendonKey::operator<(const CTendonKey& other) const
 {
-   if ( girderKey < other.girderKey )
+   if ( girderKey.groupIndex != INVALID_INDEX && girderKey.girderIndex != INVALID_INDEX )
    {
-      return true;
-   }
+      // do this based on girderKey if it is a valid girder key
+      // this is the prefered even if girderID is a valid ID
+      if ( girderKey < other.girderKey )
+      {
+         return true;
+      }
 
-   if ( girderKey == other.girderKey && ductIdx < other.ductIdx )
+      if ( girderKey.IsEqual(other.girderKey) && ductIdx < other.ductIdx )
+      {
+         return true;
+      }
+   }
+   else
    {
-      return true;
+      ATLASSERT(girderID != INVALID_ID);
+      if ( girderID < other.girderID )
+      {
+         return true;
+      }
+
+      if ( girderID == other.girderID && ductIdx < other.ductIdx )
+      {
+         return true;
+      }
    }
 
    return false;

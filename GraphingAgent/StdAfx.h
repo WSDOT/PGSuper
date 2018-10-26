@@ -51,7 +51,7 @@ extern CComModule _Module;
 
 #include <System\System.h>
 //#include <Grapher\Grapher.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <UnitMgt\UnitMgt.h>
 
 #include <GraphManager\GraphManager.h>

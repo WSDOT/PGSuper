@@ -337,15 +337,15 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
       for ( ; iter != end; iter++ )
       {
          CTendonKey& key = *iter;
-         CGirderKey girderKey = key.girderKey;
+         GirderIDType gdrID = key.girderID;
          DuctIndexType ductIdx = key.ductIdx;
          EventIndexType nEvents = GetEventCount();
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderKey,ductIdx) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetStressTendonActivity().IsTendonStressed(gdrID,ductIdx) )
             {
-               pOtherTimelineEvent->GetStressTendonActivity().RemoveTendon(girderKey,ductIdx);
+               pOtherTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx);
             }
          }
       }
@@ -730,13 +730,11 @@ bool CTimelineManager::AreAllSegmentsErected() const
    return true;
 }
 
-bool CTimelineManager::AreAllSegmentsErected(const CGirderKey& girderKey,EventIndexType eventIdx) const
+bool CTimelineManager::AreAllSegmentsErected(GirderIDType girderID,EventIndexType eventIdx) const
 {
-   ATLASSERT(girderKey.groupIndex != ALL_GROUPS);
-   ATLASSERT(girderKey.girderIndex != ALL_GIRDERS);
+   ATLASSERT(girderID != INVALID_ID);
 
-   const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+   const CSplicedGirderData* pGirder = m_pBridgeDesc->FindGirder(girderID);
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -789,7 +787,7 @@ bool CTimelineManager::AreAllTendonsStressed() const
          DuctIndexType nDucts = pPTData->GetDuctCount();
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
-            if ( !IsTendonStressed(pGirder->GetGirderKey(),ductIdx) )
+            if ( !IsTendonStressed(pGirder->GetID(),ductIdx) )
             {
                return false;
             }
@@ -1113,7 +1111,7 @@ bool CTimelineManager::IsClosureJointCast(EventIndexType eventIdx,ClosureIDType 
    return false;
 }
 
-bool CTimelineManager::IsTendonStressed(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+bool CTimelineManager::IsTendonStressed(GirderIDType girderID,DuctIndexType ductIdx) const
 {
    ASSERT_VALID;
 
@@ -1122,7 +1120,7 @@ bool CTimelineManager::IsTendonStressed(const CGirderKey& girderKey,DuctIndexTyp
    for ( ; iter != end; iter++ )
    {
       const CTimelineEvent* pTimelineEvent = *iter;
-      if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() && pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderKey,ductIdx) )
+      if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() && pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderID,ductIdx) )
       {
          return true;
       }
@@ -1521,7 +1519,7 @@ void CTimelineManager::SetCastClosureJointEventByID(ClosureIDType closureID,Even
    ASSERT_VALID;
 }
 
-EventIndexType CTimelineManager::GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+EventIndexType CTimelineManager::GetStressTendonEventIndex(GirderIDType girderID,DuctIndexType ductIdx) const
 {
    ASSERT_VALID;
 
@@ -1530,7 +1528,7 @@ EventIndexType CTimelineManager::GetStressTendonEventIndex(const CGirderKey& gir
    for ( ; iter != end; iter++ )
    {
       const CTimelineEvent* pTimelineEvent = *iter;
-      if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderKey,ductIdx) )
+      if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderID,ductIdx) )
       {
          return iter - m_TimelineEvents.begin();
       }
@@ -1539,7 +1537,7 @@ EventIndexType CTimelineManager::GetStressTendonEventIndex(const CGirderKey& gir
    return INVALID_INDEX;
 }
 
-EventIDType CTimelineManager::GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+EventIDType CTimelineManager::GetStressTendonEventID(GirderIDType girderID,DuctIndexType ductIdx) const
 {
    ASSERT_VALID;
 
@@ -1548,7 +1546,7 @@ EventIDType CTimelineManager::GetStressTendonEventID(const CGirderKey& girderKey
    for ( ; iter != end; iter++ )
    {
       const CTimelineEvent* pTimelineEvent = *iter;
-      if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderKey,ductIdx) )
+      if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderID,ductIdx) )
       {
          return pTimelineEvent->GetID();
       }
@@ -1557,16 +1555,16 @@ EventIDType CTimelineManager::GetStressTendonEventID(const CGirderKey& girderKey
    return INVALID_ID;
 }
 
-void CTimelineManager::SetStressTendonEventByIndex(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIndexType eventIdx)
+void CTimelineManager::SetStressTendonEventByIndex(GirderIDType girderID,DuctIndexType ductIdx,EventIndexType eventIdx)
 {
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
    {
       CTimelineEvent* pTimelineEvent = *iter;
-      if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderKey,ductIdx) )
+      if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderID,ductIdx) )
       {
-         pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderKey,ductIdx);
+         pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderID,ductIdx);
          break;
       }
    }
@@ -1574,13 +1572,13 @@ void CTimelineManager::SetStressTendonEventByIndex(const CGirderKey& girderKey,D
    if ( eventIdx != INVALID_INDEX )
    {
       m_TimelineEvents[eventIdx]->GetStressTendonActivity().Enable(true);
-      m_TimelineEvents[eventIdx]->GetStressTendonActivity().AddTendon(girderKey,ductIdx);
+      m_TimelineEvents[eventIdx]->GetStressTendonActivity().AddTendon(girderID,ductIdx);
    }
 
    ASSERT_VALID;
 }
 
-void CTimelineManager::SetStressTendonEventByID(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIDType ID)
+void CTimelineManager::SetStressTendonEventByID(GirderIDType girderID,DuctIndexType ductIdx,EventIDType ID)
 {
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
@@ -1590,7 +1588,7 @@ void CTimelineManager::SetStressTendonEventByID(const CGirderKey& girderKey,Duct
       if ( pTimelineEvent->GetID() == ID )
       {
          EventIndexType eventIdx = iter-m_TimelineEvents.begin();
-         SetStressTendonEventByIndex(girderKey,ductIdx,eventIdx);
+         SetStressTendonEventByIndex(girderID,ductIdx,eventIdx);
          break;
       }
    }
@@ -1982,7 +1980,7 @@ int CTimelineManager::Validate() const
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         CGirderKey girderKey(pGirder->GetGirderKey());
+         GirderIDType girderID = pGirder->GetID();
 
          // find out when the first tendon is stressed in this girder
          EventIndexType firstPTEventIdx = GetEventCount();
@@ -1991,12 +1989,12 @@ int CTimelineManager::Validate() const
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
             // tendon must be stressed
-            if ( !IsTendonStressed(girderKey,ductIdx) )
+            if ( !IsTendonStressed(girderID,ductIdx) )
             {
                return TLM_STRESS_TENDONS_ACTIVITY_REQUIRED;
             }
 
-            firstPTEventIdx = Min(firstPTEventIdx,GetStressTendonEventIndex(girderKey,ductIdx));
+            firstPTEventIdx = Min(firstPTEventIdx,GetStressTendonEventIndex(girderID,ductIdx));
          }
 
          SegmentIndexType nSegments = pGirder->GetSegmentCount();

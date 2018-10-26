@@ -574,11 +574,13 @@
 #define IDC_RELAXATION_TIME             1259
 #define IDC_ANCHORSET_PT                1259
 #define IDC_ADJUSTMENT                  1259
+#define IDC_START_CANTILEVER_LENGTH     1259
 #define IDC_CONDITION_FACTOR            1260
 #define IDC_LOCATION                    1260
 #define IDC_SERVICE_III_DC              1260
 #define IDC_LEFT_TAPERED_LENGTH         1260
 #define IDC_ANCHORSET_TTS               1260
+#define IDC_END_CANTILEVER_LENGTH       1260
 #define IDC_K1                          1261
 #define IDC_EC_K1                       1261
 #define IDC_RIGHT_TAPERED_LENGTH        1261
@@ -833,7 +835,9 @@
 #define IDC_USE_LUMPSUM                 1446
 #define IDC_BOTTOM_FLANGE_DEPTH         1446
 #define IDC_TIME_DEPENDENT_EFFECTS      1446
+#define IDC_START_CANTILEVER            1446
 #define IDC_SYMMETRIC_DEBOND            1447
+#define IDC_END_CANTILEVER              1447
 #define IDC_FUTURE_WS                   1448
 #define IDC_MOD_ECI                     1449
 #define IDC_CHECK_ADIM                  1450
@@ -1455,8 +1459,19 @@
 #define IDC_STRENGTH_II_PS_MIN_LABEL    1787
 #define IDC_EXTENSIONS                  1787
 #define IDC_END_SLAB_OFFSET_LABEL       1788
+#define IDC_CANTILEVER_GROUP            1788
 #define IDC_NWC_NOTE                    1789
+#define IDC_START_CANTILEVER_LABEL      1789
 #define IDC_HYPERLINK                   1790
+#define IDC_START_CANTILEVER_UNIT       1791
+#define IDC_END_CANTILEVER_LABEL        1792
+#define IDC_BACK_DIAPHRAGM_LABEL        1792
+#define IDC_END_CANTILEVER_UNIT         1793
+#define IDC_BACK_DIAPHRAGM_HEIGHT_LABEL 1793
+#define IDC_BACK_DIAPHRAGM_WIDTH_LABEL  1794
+#define IDC_AHEAD_DIAPHRAGM_LABEL       1795
+#define IDC_AHEAD_DIAPHRAGM_HEIGHT_LABEL 1796
+#define IDC_AHEAD_DIAPHRAGM_WIDTH_LABEL 1797
 #define IDC_STRENGTH_I_SH               1843
 #define IDC_STRENGTH_I_PS               1844
 #define IDC_SERVICE_I_CR                1859
@@ -1497,9 +1512,10 @@
 #define FIRST_DATA_IMPORTER_PLUGIN      33033
 #define LAST_DATA_IMPORTER_PLUGIN       33053
 #define FIRST_DATA_EXPORTER_PLUGIN      33054
-#define ID_EDIT_SEGMENT                 33055
-#define ID_EDIT_SEGMENT_MAX             33075
 #define LAST_DATA_EXPORTER_PLUGIN       33104
+#define ID_EDIT_SEGMENT                 36105
+#define ID_EDIT_SEGMENT_MIN             36106
+#define ID_EDIT_SEGMENT_MAX             36135
 #define IDM_ADD_ENTRY                   36864
 #define IDM_EDIT_ENTRY                  36865
 #define IDM_DELETE_ENTRY                36866
@@ -1510,7 +1526,6 @@
 #define IDM_ARRANGE_ICONS               36871
 #define IDM_RENAME_ENTRY                36872
 #define IDM_EXPORT_TEMPLATE             36873
-#define ID_EDIT_GIRDER                  36874
 #define IDM_COPY_GIRDER_PROPS           36875
 #define IDM_IMPORT_PROJECT_LIBRARY      36876
 #define IDM_HINGE                       36877
@@ -1603,7 +1618,7 @@
 #define ID_FILE_MANAGE                  36964
 #define IDC_ADD_TS                      36965
 #define IDC_REMOVE_TS                   36966
-#define ID_EDIT_GIRDERLINE              36967
+#define ID_EDIT_GIRDER                  36967
 #define ID_INSERT_TEMPORARY_SUPPORT     36968
 #define ID_EDIT_TEMPORARY_SUPPORT       36969
 #define ID_DELETE_TEMPORARY_SUPPORT     36970
@@ -1634,7 +1649,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        364
 #define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1788
+#define _APS_NEXT_CONTROL_VALUE         1798
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

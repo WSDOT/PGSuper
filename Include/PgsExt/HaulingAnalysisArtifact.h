@@ -33,7 +33,7 @@
 #endif
 
 #include <PgsExt\LiftHaulConstants.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #include <map>
 

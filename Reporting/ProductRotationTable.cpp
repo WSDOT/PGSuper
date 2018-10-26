@@ -92,15 +92,13 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(girderKey);
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   GroupIndexType startGroup, nGroups;
+   GroupIndexType startGroup, endGroup;
    IntervalIndexType continityIntervalIdx;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continityIntervalIdx,&startGroup,&nGroups);
-
-   GroupIndexType endGroup = startGroup + nGroups - 1;
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continityIntervalIdx,&startGroup,&endGroup);
 
    PierIndexType startPier = pBridge->GetGirderGroupStartPier(startGroup);
    PierIndexType endPier   = pBridge->GetGirderGroupEndPier(endGroup);

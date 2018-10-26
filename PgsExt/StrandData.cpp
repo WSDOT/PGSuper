@@ -1493,7 +1493,7 @@ void CStrandData::ClearDirectFillData()
 
 StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,const GirderLibraryEntry* pGirderLibEntry) const
 {
-   if (strandType==pgsTypes::Permanent)
+   if (strandType == pgsTypes::Permanent)
    {
       ATLASSERT(false); // should never be called
       return 0;
@@ -1507,7 +1507,7 @@ StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,cons
       for ( ; rowIter != rowIterEnd; rowIter++ )
       {
          const CStrandRow& row = *rowIter;
-         if ( row.m_bIsDebonded )
+         if ( row.m_bIsDebonded[pgsTypes::metStart] || row.m_bIsDebonded[pgsTypes::metEnd] )
          {
             nDebondedStrands += row.m_nStrands;
          }

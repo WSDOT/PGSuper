@@ -26,7 +26,7 @@
 
 #include "TxDOTOptionalDesignSummaryChapterBuilder.h"
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\BridgeDescription2.h>

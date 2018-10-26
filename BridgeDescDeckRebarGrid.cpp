@@ -119,17 +119,19 @@ void CBridgeDescDeckRebarGrid::AddRow()
    PierIndexType nPiers = pGrandParent->m_BridgeDesc.GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      if ( pGrandParent->m_BridgeDesc.GetPier(pierIdx)->IsContinuousConnection() )
+      const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
+      if ( pPier->HasCantilever() || pPier->IsContinuousConnection() )
       {
          rebarData.PierIdx = pierIdx;
          break;
       }
    }
-   rebarData.Mat = CDeckRebarData::TopMat;
-   rebarData.LumpSum = 0;
-   rebarData.RebarGrade = pParent->m_RebarData.TopRebarGrade;
-   rebarData.RebarType  = pParent->m_RebarData.TopRebarType;
-   rebarData.RebarSize  = matRebar::bs4;
+
+   rebarData.Mat         = CDeckRebarData::TopMat;
+   rebarData.LumpSum     = 0;
+   rebarData.RebarGrade  = pParent->m_RebarData.TopRebarGrade;
+   rebarData.RebarType   = pParent->m_RebarData.TopRebarType;
+   rebarData.RebarSize   = matRebar::bs4;
    rebarData.Spacing     = ::ConvertToSysUnits(18,unitMeasure::Inch);
    rebarData.LeftCutoff  = ::ConvertToSysUnits(10,unitMeasure::Feet);
    rebarData.RightCutoff = ::ConvertToSysUnits(10,unitMeasure::Feet);
@@ -281,9 +283,8 @@ void CBridgeDescDeckRebarGrid::UpdatePierList()
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
       const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
-      if ( pPier->IsContinuousConnection() )
+      if ( pPier->HasCantilever() || pPier->IsContinuousConnection() )
       {
-         // only include the pier in the drop down list if it is continuous
          if ( idx == 0 )
          {
             m_strPiers.Format(_T("%d"),LABEL_PIER(pierIdx));
@@ -458,13 +459,13 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
    ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(rebarData.PierIdx);
-   if ( !pPier->IsContinuousConnection() )
+   if ( pPier->HasCantilever() || pPier->IsContinuousConnection() )
    {
-      HideRows(nRow,nRow,TRUE);
+      HideRows(nRow,nRow,FALSE);
    }
    else
    {
-      HideRows(nRow,nRow,FALSE);
+      HideRows(nRow,nRow,TRUE);
    }
 
    // pier index
@@ -494,10 +495,11 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    Float64 cutoff = rebarData.LeftCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,6),cutoff);
-   if ( pPier->GetPierConnectionType() == pgsTypes::Hinge || 
+   if ( !pPier->HasCantilever() &&
+        (pPier->GetPierConnectionType() == pgsTypes::Hinge || 
         pPier->GetPierConnectionType() == pgsTypes::Roller ||
         pPier->GetPierConnectionType() == pgsTypes::IntegralAfterDeckHingeBack || 
-        pPier->GetPierConnectionType() == pgsTypes::IntegralBeforeDeckHingeBack 
+        pPier->GetPierConnectionType() == pgsTypes::IntegralBeforeDeckHingeBack )
       )
    {
       SetStyleRange(CGXRange(nRow,6), CGXStyle()
@@ -520,10 +522,11 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    cutoff = rebarData.RightCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,7),cutoff);
-   if ( pPier->GetPierConnectionType() == pgsTypes::Hinge || 
+   if ( !pPier->HasCantilever() &&
+        (pPier->GetPierConnectionType() == pgsTypes::Hinge || 
         pPier->GetPierConnectionType() == pgsTypes::Roller ||
         pPier->GetPierConnectionType() == pgsTypes::IntegralAfterDeckHingeAhead || 
-        pPier->GetPierConnectionType() == pgsTypes::IntegralBeforeDeckHingeAhead 
+        pPier->GetPierConnectionType() == pgsTypes::IntegralBeforeDeckHingeAhead) 
       )
    {
       SetStyleRange(CGXRange(nRow,7), CGXStyle()

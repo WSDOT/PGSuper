@@ -48,6 +48,12 @@ private:
    Float64 m_SpanLength;
    bool m_bCreateNewGroup;
    EventIndexType m_PierErectionEventIndex;
+
+   // access array with pgsTypes::PierFaceType enum
+   Float64 m_BrgOffset[2];
+   ConnectionLibraryEntry::BearingOffsetMeasurementType m_BrgOffsetMeasure[2];
+   Float64 m_EndDist[2];
+   ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistMeasure[2];
 };
 
 class txnDeleteSpan : public txnTransaction

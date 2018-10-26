@@ -41,9 +41,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma Reminder("UPDATE: merge common Title Page Builder code into a base class")
-// PGSuperTitlePageBuilder and PGSpliceTitlePageBuilder are nearly identicial
-
 // inline functions to determine whether to print status center items
 static bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
@@ -71,7 +68,9 @@ static bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndex
       CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 
       if (DoPrintStatusItem(pItem, girderKey, nSegments))
+      {
          return true;
+      }
    }
 
    return false;
@@ -155,10 +154,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
    else if ( pSpanRptSpec != NULL )
    {
-      GET_IFACE(IBridge,pBridge);
       SpanIndexType spanIdx = pSpanRptSpec->GetSpan();
-      girderKey.girderIndex = pBridge->GetGirderGroupIndex(spanIdx);
-
       if ( spanIdx != INVALID_INDEX )
       {
          *pPara << _T("For") << rptNewLine << rptNewLine;
@@ -186,7 +182,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    *pPara << rptRcDateTime() << rptNewLine;
 
    if (m_bFullVersion)
+   {
       *pPara << rptNewLine << rptNewLine;
+   }
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
@@ -217,7 +215,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
 
    if (m_bFullVersion)
+   {
       *pPara << rptNewLine << rptNewLine;
+   }
 
    GET_IFACE(IProjectProperties,pProps);
    GET_IFACE(IEAFDocument,pDocument);
@@ -233,7 +233,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    pTbl->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT ) );
 
    if (m_bFullVersion)
+   {
       *pPara3 << rptNewLine << rptNewLine << rptNewLine;
+   }
 
    *pPara3 << pTbl;
    (*pTbl)(0,0) << _T("Bridge Name");
@@ -257,14 +259,18 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
 
    // Throw in a page break
    if (m_bFullVersion)
+   {
       *p << rptNewPage;
+   }
 
    // report library usage information
    p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pTitlePage << p;
 
    if (m_bFullVersion)
+   {
       *p << rptNewLine << rptNewLine;
+   }
 
    *p << _T("Library Usage") << rptNewLine;
    p = CLibraryUsageParagraph().Build(m_pBroker);

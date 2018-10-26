@@ -26,7 +26,7 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 class pgsGirderArtifact;
 

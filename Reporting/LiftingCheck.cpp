@@ -30,7 +30,7 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Project.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>

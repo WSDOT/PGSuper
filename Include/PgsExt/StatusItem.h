@@ -26,7 +26,7 @@
 // SYSTEM INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <PgsExt\SpanGirderRelatedStatusItem.h>
 #include <PgsExt\SegmentRelatedStatusItem.h>
 

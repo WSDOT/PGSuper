@@ -82,8 +82,8 @@ protected:
    afx_msg void OnEditSegment(UINT nID);
    afx_msg void OnEditClosureJoint();
    afx_msg void OnUpdateEditClosureJoint(CCmdUI* pCmdUI);
+   afx_msg void OnEditSegment();
    afx_msg void OnEditGirder();
-   afx_msg void OnEditGirderline();
    afx_msg void OnEditTemporarySupport();
    afx_msg void OnUpdateEditTemporarySupport(CCmdUI* pCmdUI);
    afx_msg void OnInsertTemporarySupport();

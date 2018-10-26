@@ -70,6 +70,17 @@ bool txnInsertSpan::Execute()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+
+   // sometimes the connection information gets altered when adding a span... capture it here
+   // so it can be reset on Undo
+   const CPierData2* pPier = pIBridgeDesc->GetPier(m_RefPierIdx);
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
+      pPier->GetBearingOffset(face,&m_BrgOffset[face],&m_BrgOffsetMeasure[face]);
+      pPier->GetGirderEndDistance(face,&m_EndDist[face],&m_EndDistMeasure[face]);
+   }
+
    pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,NULL,NULL,m_bCreateNewGroup,m_PierErectionEventIndex);
 
    pEvents->FirePendingEvents();
@@ -87,9 +98,20 @@ void txnInsertSpan::Undo()
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   PierIndexType newPierIdx = m_RefPierIdx + (m_PierFace == pgsTypes::Ahead ? 1 : 0);
-   pgsTypes::PierFaceType newPierFace = (m_PierFace == pgsTypes::Ahead ? pgsTypes::Back : pgsTypes::Ahead);
-   pIBridgeDesc->DeletePier(newPierIdx,newPierFace);
+   PierIndexType pierIdx = m_RefPierIdx + (m_PierFace == pgsTypes::Ahead ? 1 : 0);
+   pgsTypes::PierFaceType pierFace = (m_PierFace == pgsTypes::Ahead ? pgsTypes::Back : pgsTypes::Ahead);
+   pIBridgeDesc->DeletePier(pierIdx,pierFace);
+
+   // restore the connection geometry
+   CBridgeDescription2 bridgeDesc = *(pIBridgeDesc->GetBridgeDescription());
+   CPierData2* pPier = bridgeDesc.GetPier(m_RefPierIdx);
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
+      pPier->SetBearingOffset(face,m_BrgOffset[face],m_BrgOffsetMeasure[face]);
+      pPier->SetGirderEndDistance(face,m_EndDist[face],m_EndDistMeasure[face]);
+   }
+   pIBridgeDesc->SetPierByIndex(m_RefPierIdx,*pPier);
 
    pEvents->FirePendingEvents();
 }

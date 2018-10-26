@@ -64,7 +64,7 @@ bool CMomentLoadData::operator == (const CMomentLoadData& rOther) const
       return false;
    }
 
-   if ( !m_spanKey.IsEqual(rOther.m_spanKey) )
+   if ( !m_SpanKey.IsEqual(rOther.m_SpanKey) )
    {
       return false;
    }
@@ -122,8 +122,8 @@ HRESULT CMomentLoadData::Save(IStructuredSave* pSave)
       return hr;
    }
 
-   SpanIndexType spanIdx = m_spanKey.spanIndex;
-   GirderIndexType gdrIdx = m_spanKey.girderIndex;
+   SpanIndexType spanIdx = m_SpanKey.spanIndex;
+   GirderIndexType gdrIdx = m_SpanKey.girderIndex;
 
 #pragma Reminder("REVIEW: consider updating the default value and converting the old value on input")
    // In pre Jan, 2011 versions, all spans and all girders were hardcoded to 10000, then we changed to the ALL_SPANS/ALL_GIRDERS value
@@ -293,8 +293,8 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
       gdrIdx = ALL_GIRDERS;
    }
 
-   m_spanKey.spanIndex   = spanIdx;
-   m_spanKey.girderIndex  = gdrIdx;
+   m_SpanKey.spanIndex   = spanIdx;
+   m_SpanKey.girderIndex  = gdrIdx;
    
    var.vt = VT_R8;
    hr = pLoad->get_Property(_T("Location"),&var);

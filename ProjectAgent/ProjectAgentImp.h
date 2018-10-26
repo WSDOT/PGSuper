@@ -37,7 +37,7 @@
 
 #include <EAF\EAFInterfaceCache.h>
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <PgsExt\PointLoadData.h>
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
@@ -223,6 +223,7 @@ public:
    virtual GroupIndexType GetGirderGroupCount();
    virtual const CGirderGroupData* GetGirderGroup(GroupIndexType grpIdx);
    virtual const CSplicedGirderData* GetGirder(const CGirderKey& girderKey);
+   virtual const CSplicedGirderData* FindGirder(GirderIDType gdrID);
    virtual void SetGirder(const CGirderKey& girderKey,const CSplicedGirderData& splicedGirder);
    virtual const CPTData* GetPostTensioning(const CGirderKey& girderKey);
    virtual void SetPostTensioning(const CGirderKey& girderKey,const CPTData& ptData);

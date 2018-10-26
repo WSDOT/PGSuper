@@ -34,7 +34,7 @@ CLASS
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderArtifactTool.h>
 

@@ -24,7 +24,7 @@
 #include <Reporting\PretensionStressTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\TimelineEvent.h>
 
 #include <IFace\Bridge.h>

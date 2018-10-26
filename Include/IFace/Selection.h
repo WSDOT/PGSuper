@@ -23,7 +23,7 @@
 #pragma once
 
 #include <WbflTypes.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <PgsExt\Selection.h>
 
 /*****************************************************************************

@@ -30,7 +30,7 @@
 #include <MathEx.h>
 #include <vector>
 
-#include <PgsExt\SegmentKey.h> // goes with GDRCONFIG
+#include <PgsExt\Keys.h> // goes with GDRCONFIG
 static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
 
 class dbgDumpContext;

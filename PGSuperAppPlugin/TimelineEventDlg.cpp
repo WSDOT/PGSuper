@@ -88,7 +88,7 @@ void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
       //}
 
 #pragma Reminder("UPDATE: event elapsed time validation")
-      // if this is a new event, then pTimelineEvent is null. we need a way to validate the duration of this event
+      // If this is a new event, then pTimelineEvent is NULL. We need a way to validate the duration of this event
       //if ( pTimelineEvent )
       //{
       //   EventIndexType eventIdx = m_pTimelineMgr->GetEventIndex(pTimelineEvent->GetID());
@@ -320,6 +320,6 @@ void CTimelineEventDlg::OnStressTendons()
 void CTimelineEventDlg::OnHelp()
 {
    // TODO: Add your control notification handler code here
-#pragma Reminder("IMPLEMENT")
+#pragma Reminder("IMPLEMENT CTimelineEventDlg::OnHelp")
    AfxMessageBox(_T("Implement"));
 }

@@ -1470,10 +1470,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GirderPointOfInterest.cpp"
-				>
-			</File>
-			<File
 				RelativePath="GirderSpacing.cpp"
 				>
 				<FileConfiguration
@@ -1773,6 +1769,10 @@
 			</File>
 			<File
 				RelativePath=".\KdotHaulingAnalysisArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Keys.cpp"
 				>
 			</File>
 			<File
@@ -2628,6 +2628,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ReportPointOfInterest.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ReportStyleHolder.cpp"
 				>
 			</File>
@@ -2641,10 +2645,6 @@
 			</File>
 			<File
 				RelativePath=".\SegmentDesignArtifact.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SegmentKey.cpp"
 				>
 			</File>
 			<File
@@ -3267,10 +3267,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\GirderPointOfInterest.h"
-				>
-			</File>
-			<File
 				RelativePath=".\GirderSpacing.h"
 				>
 			</File>
@@ -3300,6 +3296,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\KdotHaulingAnalysisArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\Keys.h"
 				>
 			</File>
 			<File
@@ -3411,6 +3411,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\ReportPointOfInterest.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\ReportStyleHolder.h"
 				>
 			</File>
@@ -3428,10 +3432,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\SegmentDesignArtifact.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\PgsExt\SegmentKey.h"
 				>
 			</File>
 			<File

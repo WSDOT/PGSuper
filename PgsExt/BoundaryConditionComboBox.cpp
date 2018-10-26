@@ -53,13 +53,35 @@ int CBoundaryConditionComboBox::AddBoundaryCondition(pgsTypes::PierConnectionTyp
 
 void CBoundaryConditionComboBox::Initialize(const std::vector<pgsTypes::PierConnectionType>& connections)
 {
+   int curSel = GetCurSel();
+   pgsTypes::PierConnectionType currentType;
+   if ( curSel != CB_ERR )
+   {
+      currentType = (pgsTypes::PierConnectionType)GetItemData(curSel);
+   }
+
+   ResetContent();
+
+   int currentTypeIdx = CB_ERR;
    std::vector<pgsTypes::PierConnectionType>::const_iterator iter;
    for ( iter = connections.begin(); iter != connections.end(); iter++ )
    {
-      AddBoundaryCondition(*iter);
+      pgsTypes::PierConnectionType type = *iter;
+      int idx = AddBoundaryCondition(type);
+      if ( curSel != CB_ERR && currentType == type )
+      {
+         currentTypeIdx = idx;
+      }
    }
 
-   SetCurSel(0);
+   if ( currentTypeIdx == CB_ERR )
+   {
+      SetCurSel(0);
+   }
+   else
+   {
+      SetCurSel(currentTypeIdx);
+   }
 }
 
 void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
@@ -193,11 +215,6 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
          ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
          xSrc = 4*bmWidth;
       }
-      //else if ( connectionType == pgsTypes::ContinuousSegment )
-      //{
-      //   ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
-      //   xSrc = 6*bmWidth;
-      //}
       else
       {
          ASSERT(0); // ??? should never get here
@@ -208,10 +225,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    int xDest = rcItem.left + 2;
    int yDest = rcItem.top  + 2;
 
-//   if ( connectionType != pgsTypes::ContinuousSegment )
-   {
-      dc.BitBlt(xDest,yDest,bmpInfo.bmHeight,bmpInfo.bmHeight,&dcMemory,xSrc,ySrc,dwRop);
-   }
+   dc.BitBlt(xDest,yDest,bmpInfo.bmHeight,bmpInfo.bmHeight,&dcMemory,xSrc,ySrc,dwRop);
 
    int xText = xDest + bmpInfo.bmHeight + 5;
    int yText = yDest;

@@ -87,12 +87,12 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(girderKey);
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   GroupIndexType startGroup, nGroups;
+   GroupIndexType startGroup, endGroup;
    IntervalIndexType continuityIntervalIdx;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&endGroup);
    
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,
                          tableType==PierReactionsTable ?_T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions") );

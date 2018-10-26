@@ -35,6 +35,21 @@ protected:
 
    virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
    void CreateBridgeGeometryReport();
+   void CreateDetailsReport();
+   void CreateLoadRatingReport();
+   void CreateBearingDesignReport();
+
+   void CreateBridgeAnalysisReport();
+   void CreateHaulingReport();
+   void CreateLiftingReport();
+   void CreateMultiGirderSpecCheckReport();
+   void CreateSpecChecReport();
+   void CreateDistributionFactorSummaryReport();
+
+#if defined _DEBUG || defined _BETA_VERSION
+   void CreateDistributionFactorsReport();
+#endif
+
    void CreateStageByStageDetailsReport();
    void CreatePointOfInterestReport();
 };

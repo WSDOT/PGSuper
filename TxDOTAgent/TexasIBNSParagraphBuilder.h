@@ -26,7 +26,7 @@
 #include <PgsExt\DebondUtil.h>
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 interface IEAFDisplayUnits;
 

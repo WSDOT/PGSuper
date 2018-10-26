@@ -103,8 +103,8 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
       ColumnIndexType colIdx = 0;
 
       CSegmentKey segmentKey(girderKey,segIdx);
-      matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-      matACI209Concrete* pACIConcrete = dynamic_cast<matACI209Concrete*>(pConcrete);
+      const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+      const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
 
       (*pTable)(rowIdx,colIdx++) << _T("Segment ") << LABEL_SEGMENT(segIdx);
       (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
@@ -118,8 +118,8 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
       if ( segIdx != nSegments-1 )
       {
          CClosureKey closureKey(segmentKey);
-         matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-         matACI209Concrete* pACIConcrete = dynamic_cast<matACI209Concrete*>(pConcrete);
+         const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+         const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
    
          colIdx = 0;
 
@@ -136,8 +136,8 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
 
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
-      matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-      matACI209Concrete* pACIConcrete = dynamic_cast<matACI209Concrete*>(pConcrete);
+      const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
+      const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
 
       ColumnIndexType colIdx = 0;
 

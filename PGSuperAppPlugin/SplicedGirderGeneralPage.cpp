@@ -145,7 +145,7 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
       DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
-         pTimelineMgr->SetStressTendonEventByIndex(pParent->m_GirderKey,ductIdx,m_TendonStressingEvent[ductIdx]);
+         pTimelineMgr->SetStressTendonEventByIndex(pParent->m_GirderID,ductIdx,m_TendonStressingEvent[ductIdx]);
       }
 
       SegmentIndexType nCP = pParent->m_pGirder->GetClosureJointCount();
@@ -236,7 +236,7 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pParent->m_GirderKey,ductIdx);
+      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pParent->m_GirderID,ductIdx);
       m_TendonStressingEvent.push_back(eventIdx);
    }
 

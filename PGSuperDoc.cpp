@@ -48,6 +48,7 @@
 #include "EditGirder.h"
 #include "DesignGirder.h"
 #include "EditAnalysisType.h"
+#include <PgsExt\MacroTxn.h>
 
 
 #ifdef _DEBUG
@@ -64,6 +65,7 @@ IMPLEMENT_DYNCREATE(CPGSuperDoc, CPGSuperDocBase)
 BEGIN_MESSAGE_MAP(CPGSuperDoc, CPGSuperDocBase)
 	//{{AFX_MSG_MAP(CPGSuperDoc)
 	ON_COMMAND(ID_PROJECT_BRIDGEDESC, OnEditBridgeDescription)
+	ON_COMMAND(ID_EDIT_SEGMENT, OnEditGirder)
 	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
 	ON_COMMAND(ID_PROJECT_DESIGNGIRDER, OnProjectDesignGirder)
 	ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDER, OnUpdateProjectDesignGirderDirect)
@@ -212,7 +214,17 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       newGirderData.m_Girder.SetConditionFactorType(dlg.GetConditionFactorType());
       newGirderData.m_Girder.SetConditionFactor(dlg.GetConditionFactor());
 
-      txnEditGirder* pTxn = new txnEditGirder(girderKey,newGirderData);
+      txnTransaction* pTxn = new txnEditGirder(girderKey,newGirderData);
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
@@ -231,7 +243,7 @@ bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,int 
    return true;
 }
 
-void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,GroupIndexType grpIdx,GirderIndexType gdrIdx)
+void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -242,8 +254,9 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,GroupIndexTyp
       return;
    }
 
-   grpIdx  = (grpIdx == INVALID_INDEX ? 0 : grpIdx);
-   gdrIdx  = (gdrIdx == INVALID_INDEX ? 0 : gdrIdx);
+   CGirderKey thisGirderKey = girderKey;
+   thisGirderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
+   thisGirderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
    // set up default design options
    GET_IFACE(ISpecification,pSpec);
@@ -258,8 +271,8 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,GroupIndexTyp
       // only show A design option if it's allowed in the library
       // Do not save this in registry because library selection should be default for new documents
 
-      CDesignGirderDlg dlg(grpIdx, 
-                           gdrIdx,
+      CDesignGirderDlg dlg(thisGirderKey.groupIndex, 
+                           thisGirderKey.girderIndex,
                            can_design_Adim, bDesignSlabOffset, m_pBroker);
 
       // Set initial dialog values based on last stored in registry. These may be changed
@@ -293,8 +306,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,GroupIndexTyp
    else
    {
       // only one girder - spec'd from command line
-      CGirderKey girderKey(grpIdx,gdrIdx);
-      girderKeys.push_back(girderKey);
+      girderKeys.push_back(thisGirderKey);
    }
 
    DoDesignGirder(girderKeys, bDesignSlabOffset);
@@ -302,7 +314,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,GroupIndexTyp
 
 void CPGSuperDoc::OnProjectDesignGirder() 
 {
-   DesignGirder(true,m_bDesignSlabOffset,m_Selection.GroupIdx,m_Selection.GirderIdx);
+   DesignGirder(true,m_bDesignSlabOffset,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
 void CPGSuperDoc::OnUpdateProjectDesignGirderDirect(CCmdUI* pCmdUI)
@@ -369,13 +381,13 @@ void CPGSuperDoc::OnProjectDesignGirderDirect()
    bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
    m_bDesignSlabOffset = bDesignSlabOffset; // retain setting in document
 
-   DesignGirder(false,bDesignSlabOffset,m_Selection.GroupIdx,m_Selection.GirderIdx);
+   DesignGirder(false,bDesignSlabOffset,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
 void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()
 {
    m_bDesignSlabOffset = false; // retain setting in document
-   DesignGirder(false,false,m_Selection.GroupIdx,m_Selection.GirderIdx);
+   DesignGirder(false,false,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
 void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool doDesignADim)

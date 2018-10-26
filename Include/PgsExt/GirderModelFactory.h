@@ -25,7 +25,7 @@
 #include <PgsExt\PgsExtExp.h>
 #include <WBFLFem2d.h>
 #include <WBFLCore.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include "PoiMap.h"
 
 // This utility class provides methods for creating a simple span FEM2d model for a precast segment, finding members in the segment

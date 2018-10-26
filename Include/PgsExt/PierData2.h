@@ -147,12 +147,18 @@ public:
    LPCTSTR GetOrientation() const;
    void SetOrientation(LPCTSTR strOrientation);
 
+   // Set/Get cantilever settings. Only used if IsAbutment returns true.
+   void HasCantilever(bool bHasCantilever);
+   bool HasCantilever() const;
+   void SetCantileverLength(Float64 Lc);
+   Float64 GetCantileverLength() const;
+
    // Set/Get the connection type at the pier (boundary condition)
-   // (this parameter is not used if the pier is located within a girder group)
+   // (this parameter is not used if the pier is located within a girder group, i.e. not used if IsInteriorPier() returns true)
    pgsTypes::PierConnectionType GetPierConnectionType() const;
    void SetPierConnectionType(pgsTypes::PierConnectionType type);
 
-   // Set/Get the segment connection type (not used if pier is a BoundaryPier)
+   // Set/Get the segment connection type (not used if pier is a BoundaryPier, i.e not used if IsBoundaryPier() returns true)
    // When setting the connection type to pgsTypes::psctContinuousSegment or pgsTypes::psctIntegralSegment 
    // the casting event for the closures that are created at this pier are set to castClosureJointEvent
    // otherwise this parameter is not used.
@@ -235,6 +241,9 @@ private:
    pgsTypes::PierConnectionType m_PierConnectionType; // defines connection when pier is at a boundary between girder groups
    pgsTypes::PierSegmentConnectionType m_SegmentConnectionType; // defines segment connection when pier is in the middle of a girder group
 
+   bool m_bHasCantilever;
+   Float64 m_CantileverLength;
+
    Float64 m_GirderEndDistance[2];
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType[2];
    Float64 m_GirderBearingOffset[2];
@@ -282,6 +291,8 @@ private:
    LLDF& GetLLDF(GirderIndexType gdrIdx) const;
 
    GirderIndexType GetLldfGirderCount() const;
+
+   void ValidatePierConnectionType();
 
    HRESULT LoadOldPierData(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress,const std::_tstring& strUnitName);
 

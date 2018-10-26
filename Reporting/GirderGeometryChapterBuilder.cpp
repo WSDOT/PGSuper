@@ -612,14 +612,14 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
    {
       *pPara << _T("C-C Pier = Abutment/Pier Line to Abutment/Pier Line length measured along the girder") << rptNewLine;
       *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the girder") << rptNewLine;
-      *pPara << _T("Girder Length, Horizontal = End to end length of the girder projected into a horizontal plane") << rptNewLine;
+      *pPara << _T("Girder Length, Plan = End to end length of the girder projected into a horizontal plane") << rptNewLine;
       *pPara << _T("Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = ") << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
    }
    else
    {
-      *pPara << _T("C-C Pier = Abutment/Pier Line to Abutment/Pier Line length measured along the segment") << rptNewLine;
+      *pPara << _T("C-C Pier = Abutment/Pier/Temp Support Line to Abutment/Pier/Temp Support Line length measured along the segment") << rptNewLine;
       *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the segment") << rptNewLine;
-      *pPara << _T("Segment Length, Horizontal = End to end length of the segment projected into a horizontal plane") << rptNewLine;
+      *pPara << _T("Segment Length, Plan = End to end length of the segment projected into a horizontal plane") << rptNewLine;
       *pPara << _T("Segment Length, Along Grade = End to end length of segment measured along grade of the segment (slope adjusted) = ") << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
    }
    *pPara << rptNewLine;
@@ -681,17 +681,17 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
 
       pTable->SetRowSpan(0,row0col,2);
       pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << COLHDR(_T("C-C Bearing") << rptNewLine << Sub2(_T("L"),_T("s")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(0,row0col++) << COLHDR(_T("C-C Bearing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetColumnSpan(0,row0col,2);
-      (*pTable)(0,row0col++) << strSegmentLabel << _T("Length");
+      (*pTable)(0,row0col++) << strSegmentLabel << _T(" Length");
       pTable->SetColumnSpan(0,row0col++,SKIP_CELL);
-      (*pTable)(1,row1col++) << COLHDR(_T("Horizontal") << rptNewLine << Sub2(_T("L"),_T("g")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTable)(1,row1col++) << COLHDR(_T("Along")    << rptNewLine << _T("Grade"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(1,row1col++) << COLHDR(_T("Plan"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(1,row1col++) << COLHDR(_T("Along") << rptNewLine << _T("Grade"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetRowSpan(0,row0col,2);
       pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << strSegmentLabel << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      (*pTable)(0,row0col++) << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
 
       pTable->SetRowSpan(0,row0col,2);
       pTable->SetRowSpan(1,row1col++,SKIP_CELL);

@@ -115,8 +115,8 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
          gdrIdx = ival;
 
 
-      m_Load.m_spanKey.spanIndex   = spanIdx;
-      m_Load.m_spanKey.girderIndex = gdrIdx;
+      m_Load.m_SpanKey.spanIndex   = spanIdx;
+      m_Load.m_SpanKey.girderIndex = gdrIdx;
 
       // location takes some effort
       Float64 locval;
@@ -215,46 +215,46 @@ BOOL CEditPointLoadDlg::OnInitDialog()
 
    m_SpanCB.AddString(_T("All Spans"));
 
-    if (m_Load.m_spanKey.spanIndex == ALL_SPANS)
+    if (m_Load.m_SpanKey.spanIndex == ALL_SPANS)
     {
        m_SpanCB.SetCurSel((int)nSpans);
     }
     else
     {
-      if ( 0 <= m_Load.m_spanKey.spanIndex && m_Load.m_spanKey.spanIndex < nSpans)
+      if ( 0 <= m_Load.m_SpanKey.spanIndex && m_Load.m_SpanKey.spanIndex < nSpans)
       {
-         m_SpanCB.SetCurSel((int)m_Load.m_spanKey.spanIndex);
+         m_SpanCB.SetCurSel((int)m_Load.m_SpanKey.spanIndex);
       }
       else
       {
          ::AfxMessageBox(_T("Warning - The span for this load is out of range. Resetting to Span 1"));
 
-         m_Load.m_spanKey.spanIndex = 0;
-         m_SpanCB.SetCurSel((int)m_Load.m_spanKey.spanIndex);
+         m_Load.m_SpanKey.spanIndex = 0;
+         m_SpanCB.SetCurSel((int)m_Load.m_SpanKey.spanIndex);
       }
     }
 
    UpdateGirderList();
 
-    if (m_Load.m_spanKey.girderIndex == ALL_GIRDERS)
+    if (m_Load.m_SpanKey.girderIndex == ALL_GIRDERS)
     {
        m_GirderCB.SetCurSel( m_GirderCB.GetCount()-1 );
     }
     else
     {
-      if (0 <= m_Load.m_spanKey.girderIndex && m_Load.m_spanKey.girderIndex < GirderIndexType(m_GirderCB.GetCount()-1) )
+      if (0 <= m_Load.m_SpanKey.girderIndex && m_Load.m_SpanKey.girderIndex < GirderIndexType(m_GirderCB.GetCount()-1) )
       {
-         m_GirderCB.SetCurSel((int)m_Load.m_spanKey.girderIndex);
+         m_GirderCB.SetCurSel((int)m_Load.m_SpanKey.girderIndex);
       }
       else
       {
-         m_Load.m_spanKey.girderIndex = 0;
+         m_Load.m_SpanKey.girderIndex = 0;
 
          CString strMsg;
-         strMsg.Format(_T("Warning - The Girder for this load is out of range. Resetting to Girder %s"),LABEL_GIRDER(m_Load.m_spanKey.girderIndex));
+         strMsg.Format(_T("Warning - The Girder for this load is out of range. Resetting to Girder %s"),LABEL_GIRDER(m_Load.m_SpanKey.girderIndex));
          ::AfxMessageBox(strMsg);
 
-         m_GirderCB.SetCurSel((int)m_Load.m_spanKey.girderIndex);
+         m_GirderCB.SetCurSel((int)m_Load.m_SpanKey.girderIndex);
       }
     }
 

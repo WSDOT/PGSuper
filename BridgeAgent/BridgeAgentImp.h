@@ -410,7 +410,7 @@ public:
    virtual Float64 GetSegmentCreepK2(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey);
-   virtual matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey);
+   virtual const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey);
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey);
    virtual bool DoesClosureJointConcreteHaveAggSplittingStrength(const CClosureKey& closureKey);
    virtual Float64 GetClosureJointConcreteAggSplittingStrength(const CClosureKey& closureKey);
@@ -422,7 +422,7 @@ public:
    virtual Float64 GetClosureJointCreepK2(const CClosureKey& closureKey);
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey);
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey);
-   virtual matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey);
+   virtual const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey);
    virtual pgsTypes::ConcreteType GetDeckConcreteType();
    virtual bool DoesDeckConcreteHaveAggSplittingStrength();
    virtual Float64 GetDeckConcreteAggSplittingStrength();
@@ -433,7 +433,7 @@ public:
    virtual Float64 GetDeckCreepK2();
    virtual Float64 GetDeckShrinkageK1();
    virtual Float64 GetDeckShrinkageK2();
-   virtual matConcreteBase* GetDeckConcrete();
+   virtual const matConcreteBase* GetDeckConcrete();
    virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
    virtual Float64 GetStrandRelaxation(const CSegmentKey& segmentKey,Float64 t1,Float64 t2,Float64 fpso,pgsTypes::StrandType strandType);
    virtual const matPsStrand* GetTendonMaterial(const CGirderKey& girderKey);
@@ -1022,10 +1022,7 @@ private:
    CComPtr<IEffectiveFlangeWidthTool> m_EffFlangeWidthTool;
    typedef struct SectProp
    {
-#pragma Reminder("REVIEW: big memory footprint here")
-      // This struct is pretty big. Why do we have to hang onto all four of these COM objects?
-      // Can't we just get the section properties and store the basic values (I,A,yt,yb,etc)
-      // and toss out the rest?
+
       CComPtr<ISection> Section;
       CComPtr<IElasticProperties> ElasticProps;
       CComPtr<IShapeProperties> ShapeProps;
@@ -1107,6 +1104,7 @@ private:
 
    // helper functions for building the bridge model
    bool LayoutGirders(const CBridgeDescription2* pBridgeDesc);
+   void GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64* pStartHaunch,Float64* pEndHaunch);
    bool LayoutDeck(const CBridgeDescription2* pBridgeDesc);
    bool LayoutNoDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
    bool LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
@@ -1186,6 +1184,7 @@ private:
    // Methods that return simple properties without data validation
    // Generally called during validation so as not to cause re-entry into the validation loop
    SpanIndexType GetSpanCount_Private();
+   PierIndexType GetPierCount_Private();
 
    StrandIndexType GetNextNumStraightStrands(const CSegmentKey& segmentKey,StrandIndexType curNum);
    StrandIndexType GetNextNumStraightStrands(LPCTSTR strGirderName,StrandIndexType curNum);

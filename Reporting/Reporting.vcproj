@@ -1123,6 +1123,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StrandEccentricities.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\StrandEccTable.cpp"
 				>
 			</File>
@@ -1736,6 +1740,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\StirrupTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\StrandEccentricities.h"
 				>
 			</File>
 			<File

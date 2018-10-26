@@ -2290,23 +2290,6 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pRightRailingSystem->Concrete           = pDeck->Concrete;
 
       pObj->m_BridgeDescription.CopyDown(true,true,true,true);
-
-#if defined _DEBUG
-#pragma Reminder("UPDATE: fix this debugging code")
-      //GirderIndexType nGirders = pObj->m_BridgeDescription.GetGirderCount();
-      //SpanIndexType nSpans = pObj->m_BridgeDescription.GetSpanCount();
-      //for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
-      //{
-      //   const CSpanData2* pSpan = pObj->m_BridgeDescription.GetSpan(spanIdx);
-      //   ATLASSERT( nGirders == pSpan->GetGirderCount() );
-      //   ATLASSERT( nGirders == pSpan->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1);
-      //   ATLASSERT( nGirders == pSpan->GetGirderSpacing(pgsTypes::Ahead)->Debug_GetGirderCount());
-      //   ATLASSERT( nGirders == pSpan->GetGirderSpacing(pgsTypes::Back)->GetSpacingCount()+1);
-      //   ATLASSERT( nGirders == pSpan->GetGirderSpacing(pgsTypes::Back)->Debug_GetGirderCount());
-      //   //ATLASSERT( nGirders == pSpan->GetGirderTypes()->Debug_GetNumGirderTypes());
-      //   ATLASSERT( nGirders == pSpan->GetGirderTypes()->GetGirderCount());
-      //}
-#endif
    }
 
    return S_OK;
@@ -5317,6 +5300,11 @@ const CSplicedGirderData* CProjectAgentImp::GetGirder(const CGirderKey& girderKe
    return pGroup->GetGirder(girderKey.girderIndex);
 }
 
+const CSplicedGirderData* CProjectAgentImp::FindGirder(GirderIDType gdrID)
+{
+   return m_BridgeDescription.FindGirder(gdrID);
+}
+
 void CProjectAgentImp::SetGirder(const CGirderKey& girderKey,const CSplicedGirderData& girder)
 {
    CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(girderKey.groupIndex);
@@ -5704,7 +5692,6 @@ EventIDType CProjectAgentImp::GetSegmentErectionEventID(const CSegmentKey& segme
 
 EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx)
 {
-#pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
    SegmentIDType segmentID = pSegment->GetID();
 
@@ -5713,7 +5700,6 @@ EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType gr
 
 EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx)
 {
-#pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
    SegmentIDType segmentID = pSegment->GetID();
 
@@ -5722,7 +5708,6 @@ EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,C
 
 void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx)
 {
-#pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
    SegmentIDType segmentID = pSegment->GetID();
 
@@ -5735,7 +5720,6 @@ void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,Col
 
 void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,IDType eventID)
 {
-#pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
    SegmentIDType segmentID = pSegment->GetID();
 
@@ -5748,28 +5732,36 @@ void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,Collec
 
 EventIndexType CProjectAgentImp::GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
-   return m_BridgeDescription.GetTimelineManager()->GetStressTendonEventIndex(girderKey,ductIdx);
+   ASSERT_GIRDER_KEY(girderKey);
+   GirderIDType girderID = m_BridgeDescription.GetGirderGroup(girderKey.groupIndex)->GetGirder(girderKey.girderIndex)->GetID();
+   return m_BridgeDescription.GetTimelineManager()->GetStressTendonEventIndex(girderID,ductIdx);
 }
 
 EventIDType CProjectAgentImp::GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
-   return m_BridgeDescription.GetTimelineManager()->GetStressTendonEventID(girderKey,ductIdx);
+   ASSERT_GIRDER_KEY(girderKey);
+   GirderIDType girderID = m_BridgeDescription.GetGirderGroup(girderKey.groupIndex)->GetGirder(girderKey.girderIndex)->GetID();
+   return m_BridgeDescription.GetTimelineManager()->GetStressTendonEventID(girderID,ductIdx);
 }
 
 void CProjectAgentImp::SetStressTendonEventByIndex(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIndexType eventIdx)
 {
-   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetStressTendonEventIndex(girderKey,ductIdx) )
+   ASSERT_GIRDER_KEY(girderKey);
+   GirderIDType girderID = m_BridgeDescription.GetGirderGroup(girderKey.groupIndex)->GetGirder(girderKey.girderIndex)->GetID();
+   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetStressTendonEventIndex(girderID,ductIdx) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetStressTendonEventByIndex(girderKey,ductIdx,eventIdx);
+      m_BridgeDescription.GetTimelineManager()->SetStressTendonEventByIndex(girderID,ductIdx,eventIdx);
       Fire_BridgeChanged();
    }
 }
 
 void CProjectAgentImp::SetStressTendonEventByID(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIDType eventID)
 {
-   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetStressTendonEventID(girderKey,ductIdx) )
+   ASSERT_GIRDER_KEY(girderKey);
+   GirderIDType girderID = m_BridgeDescription.GetGirderGroup(girderKey.groupIndex)->GetGirder(girderKey.girderIndex)->GetID();
+   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetStressTendonEventID(girderID,ductIdx) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetStressTendonEventByID(girderKey,ductIdx,eventID);
+      m_BridgeDescription.GetTimelineManager()->SetStressTendonEventByID(girderID,ductIdx,eventID);
       Fire_BridgeChanged();
    }
 }
@@ -6290,60 +6282,6 @@ void CProjectAgentImp::SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes:
       Fire_GirderChanged(segmentKey,GCH_STRAND_MATERIAL);
    }
 }
-
-#pragma Reminder("UPDATE: remove obsolete code")
-//CGirderData CProjectAgentImp::GetSegmentData(const CSegmentKey& segmentKey) const
-//{
-//   // spliced girders don't use CGirderData
-//   ATLASSERT(m_BridgeDescription.GetBridgeType() == pgsTypes::Girder );
-//
-//   SpanIndexType spanIdx = segmentKey.groupIndex;
-//   GirderIndexType gdrIdx = segmentKey.girderIndex;
-//
-//   if ( m_bUpdateJackingForce )
-//      UpdateJackingForce();
-//
-//   CGirderTypes girderTypes = *m_BridgeDescription.GetSpan(spanIdx)->GetGirderTypes();
-//   return girderTypes.GetGirderData(gdrIdx);
-//}
-//
-//bool CProjectAgentImp::SetSegmentData(const CSegmentKey& segmentKey,const CGirderData& data)
-//{
-//   // spliced girders don't use CGirderData
-//   ATLASSERT(m_BridgeDescription.GetBridgeType() == pgsTypes::Girder );
-//
-//   int change_type = DoSetGirderData(segmentKey,data);
-//
-//   Uint32 lHint = 0;
-//
-//   if (change_type & CGirderData::ctConcrete)
-//   {
-//      lHint |= GCH_CONCRETE;
-//   }
-//
-//   if ( change_type & CGirderData::ctPrestress )
-//   {
-//      lHint |= GCH_PRESTRESSING_CONFIGURATION;
-//   }
-//
-//   if ( change_type & CGirderData::ctStrand )
-//   {
-//      lHint |= GCH_STRAND_MATERIAL;
-//   }
-//
-//   if ( change_type & CGirderData::ctStirrups )
-//   {
-//      lHint |= GCH_STIRRUPS;
-//   }
-//
-//   if ( change_type & CGirderData::ctLongitRebar )
-//   {
-//      lHint |= GCH_LONGITUDINAL_REBAR;
-//   }
-//   Fire_SegmentChanged(segmentKey,lHint);
-//
-//   return true;
-//}
 
 const CGirderMaterial* CProjectAgentImp::GetSegmentMaterial(const CSegmentKey& segmentKey) const
 {
@@ -7057,10 +6995,10 @@ Float64 CProjectAgentImp::GetAllowableTension(pgsTypes::LoadRatingType ratingTyp
                      // not to do calculations
    // Remove include for Intervals.h from this file and ProjectAgent.cpp
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
-   Float64 fc = pMaterial->GetSegmentFc(segmentKey,liveLoadIntervalIdx);
+   Float64 fc = pMaterial->GetSegmentFc(segmentKey,loadRatingIntervalIdx);
 
    Float64 t = GetAllowableTensionCoefficient(ratingType);
 
@@ -7751,7 +7689,7 @@ CollectionIndexType CProjectAgentImp::AddPointLoad(const CPointLoadData& pld)
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
    pEvent->GetApplyLoadActivity().AddUserLoad(m_PointLoads.back().m_ID);
 
-   FireContinuityRelatedSpanChange(pld.m_spanKey,GCH_LOADING_ADDED);
+   FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
 
    return GetPointLoadCount()-1;
 }
@@ -7786,9 +7724,9 @@ void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, const CPointLoad
    if ( m_PointLoads[idx] != pld )
    {
       // must fire a delete event if load is moved to another girder
-      const CSpanKey& prevKey = m_PointLoads[idx].m_spanKey;
+      const CSpanKey& prevKey = m_PointLoads[idx].m_SpanKey;
 
-      if (prevKey != pld.m_spanKey)
+      if (prevKey != pld.m_SpanKey)
       {
          FireContinuityRelatedSpanChange(prevKey,GCH_LOADING_REMOVED);
       }
@@ -7802,7 +7740,7 @@ void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, const CPointLoad
       pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
       pEvent->GetApplyLoadActivity().AddUserLoad(m_PointLoads[idx].m_ID);
 
-      FireContinuityRelatedSpanChange(pld.m_spanKey,GCH_LOADING_CHANGED);
+      FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_CHANGED);
    }
 }
 
@@ -7817,7 +7755,7 @@ void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_PointLoads[idx].m_EventIndex);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_PointLoads[idx].m_ID);
 
-   CSpanKey& key( it->m_spanKey );
+   CSpanKey& key( it->m_SpanKey );
 
    m_PointLoads.erase(it);
 
@@ -7839,7 +7777,7 @@ CollectionIndexType CProjectAgentImp::AddDistributedLoad(const CDistributedLoadD
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
    pEvent->GetApplyLoadActivity().AddUserLoad(m_DistributedLoads.back().m_ID);
 
-   FireContinuityRelatedSpanChange(pld.m_spanKey,GCH_LOADING_ADDED);
+   FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
 
    return GetDistributedLoadCount()-1;
 }
@@ -7874,9 +7812,9 @@ void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, const CDis
    if ( m_DistributedLoads[idx] != pld )
    {
       // must fire a delete event if load is moved to another girder
-      const CSpanKey& prevKey = m_DistributedLoads[idx].m_spanKey;
+      const CSpanKey& prevKey = m_DistributedLoads[idx].m_SpanKey;
 
-      if (prevKey != pld.m_spanKey)
+      if (prevKey != pld.m_SpanKey)
       {
          FireContinuityRelatedSpanChange(prevKey,GCH_LOADING_REMOVED);
       }
@@ -7890,7 +7828,7 @@ void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, const CDis
       pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
       pEvent->GetApplyLoadActivity().AddUserLoad(m_DistributedLoads[idx].m_ID);
 
-      FireContinuityRelatedSpanChange(pld.m_spanKey,GCH_LOADING_CHANGED);
+      FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_CHANGED);
    }
 }
 
@@ -7902,7 +7840,7 @@ void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_DistributedLoads[idx].m_EventIndex);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_DistributedLoads[idx].m_ID);
 
-   CSpanKey& key( m_DistributedLoads[idx].m_spanKey );
+   CSpanKey& key( m_DistributedLoads[idx].m_SpanKey );
 
    DistributedLoadListIterator it( m_DistributedLoads.begin() );
    it += idx;
@@ -7925,7 +7863,7 @@ CollectionIndexType CProjectAgentImp::AddMomentLoad(const CMomentLoadData& pld)
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
    pEvent->GetApplyLoadActivity().AddUserLoad(m_MomentLoads.back().m_ID);
    
-   FireContinuityRelatedSpanChange(pld.m_spanKey,GCH_LOADING_ADDED);
+   FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
 
    return GetMomentLoadCount()-1;
 }
@@ -7960,9 +7898,9 @@ void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, const CMomentLo
    if ( m_MomentLoads[idx] != pld )
    {
       // must fire a delete event if load is moved to another girder
-      const CSpanKey& prevKey = m_MomentLoads[idx].m_spanKey;
+      const CSpanKey& prevKey = m_MomentLoads[idx].m_SpanKey;
 
-      if (prevKey != pld.m_spanKey)
+      if (prevKey != pld.m_SpanKey)
       {
          FireContinuityRelatedSpanChange(prevKey,GCH_LOADING_REMOVED);
       }
@@ -7973,7 +7911,7 @@ void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, const CMomentLo
 
       m_MomentLoads[idx] = pld;
 
-      FireContinuityRelatedSpanChange(pld.m_spanKey,GCH_LOADING_CHANGED);
+      FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_CHANGED);
    }
 }
 
@@ -7988,7 +7926,7 @@ void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_MomentLoads[idx].m_EventIndex);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_MomentLoads[idx].m_ID);
 
-   CSpanKey& key( it->m_spanKey );
+   CSpanKey& key( it->m_SpanKey );
 
    m_MomentLoads.erase(it);
 
@@ -9532,10 +9470,6 @@ const CPrecastSegmentData* CProjectAgentImp::GetSegment(const CSegmentKey& segme
 void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 {
    const SpecLibraryEntry* pSpecEntry = GetSpecEntry(m_Spec.c_str());
-
-   // put the PGSuper stages into the stage manager so stages
-   // can be treated the same
-#pragma Reminder("UPDATE: may need to define PGSuper stages better")
 
    CTimelineManager* pTimelineManager = m_BridgeDescription.GetTimelineManager();
 

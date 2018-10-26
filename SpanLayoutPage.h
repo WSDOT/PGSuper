@@ -86,6 +86,12 @@ protected:
    pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
    void UpdateSlabOffsetHyperLinkText();
    void UpdateSlabOffsetWindowState();
+
+   void ShowCantilevers(BOOL bShowStart,BOOL bShowEnd);
+
+public:
+   afx_msg void OnBnClickedStartCantilever();
+   afx_msg void OnBnClickedEndCantilever();
 };
 
 //{{AFX_INSERT_LOCATION}}

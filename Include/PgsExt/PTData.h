@@ -225,8 +225,8 @@ public:
    void Init();
 
    SpanIndexType GetSpanCount() const;
-   void InsertSpan(SpanIndexType newSpanIdx);
-   void RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx);
+   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
+   void RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx);
 
    void SetStartPoint(Float64 dist,Float64 offset,OffsetType offsetType);
    void GetStartPoint(Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const;
@@ -511,12 +511,12 @@ public:
    void Init(const CSplicedGirderData* pGirder);
    void SetGirder(const CSplicedGirderData* pGirder);
    const CSplicedGirderData* GetGirder() const;
-   void InsertSpan(SpanIndexType newSpanIndex);
+   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
 
    // removes a span from the duct data. spanIdx and pierIdx are
    // relative indicies measured from the start of the girder this
    // duct is a part of
-   void RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx);
+   void RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx);
 
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -574,8 +574,8 @@ public:
    StrandIndexType GetStrandCount() const;
    Float64 GetPjack(DuctIndexType ductIndex) const;
 
-   void InsertSpan(SpanIndexType newSpanIndex);
-   void RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx);
+   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
+   void RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType);
 
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);

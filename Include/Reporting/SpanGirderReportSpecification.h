@@ -26,7 +26,7 @@
 #include <ReportManager\ReportManager.h>
 #include <ReportManager\ReportHint.h>
 #include <WBFLCore.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 class REPORTINGCLASS CSpanReportHint : public CReportHint
 {

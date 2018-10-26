@@ -93,10 +93,12 @@ class PGSEXTCLASS CTendonKey
 {
 public:
    CTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   CTendonKey(GirderIDType girderID,DuctIndexType ductIdx);
    CTendonKey(const CTendonKey& other);
    bool operator==(const CTendonKey& other) const;
    bool operator<(const CTendonKey& other) const;
 
+   GirderIDType girderID;
    CGirderKey girderKey;
    DuctIndexType ductIdx;
 };

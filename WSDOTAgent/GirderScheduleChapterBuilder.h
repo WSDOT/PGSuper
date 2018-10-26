@@ -28,7 +28,7 @@
 
 // PROJECT INCLUDES
 //
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 // LOCAL INCLUDES
 //

@@ -26,7 +26,7 @@
 #include <psglib\librarymanager.h>
 #include <Lrfd\ILiveLoadDistributionFactor.h>
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 #include <Material\Material.h>
 
@@ -909,6 +909,7 @@ interface IBridgeDescription : IUnknown
    virtual const CGirderGroupData* GetGirderGroup(GroupIndexType grpIdx) = 0;
 
    virtual const CSplicedGirderData* GetGirder(const CGirderKey& girderKey) = 0;
+   virtual const CSplicedGirderData* FindGirder(GirderIDType gdrID) = 0;
    virtual void SetGirder(const CGirderKey& girderKey,const CSplicedGirderData& splicedGirder) = 0;
 
    virtual const CPTData* GetPostTensioning(const CGirderKey& girderKey) = 0;

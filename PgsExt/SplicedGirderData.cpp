@@ -876,38 +876,40 @@ CGirderKey CSplicedGirderData::GetGirderKey() const
    return girderKey;
 }
 
-void CSplicedGirderData::InsertSpan(SpanIndexType newSpanIdx)
+void CSplicedGirderData::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
 {
    ATLASSERT(m_pGirderGroup != NULL); // must be part of a group to insert a span
 
-   const CPierData2* pStartPier = m_pGirderGroup->GetPier(pgsTypes::metStart);
-   const CPierData2* pEndPier   = m_pGirderGroup->GetPier(pgsTypes::metEnd);
-   SpanIndexType startSpanIdx = pStartPier->GetNextSpan()->GetIndex();
-   SpanIndexType endSpanIdx   = pEndPier->GetPrevSpan()->GetIndex();
+   PierIndexType startPierIdx = m_Segments.front()->GetSpan(pgsTypes::metStart)->GetPier(pgsTypes::metStart)->GetIndex();
+   PierIndexType endPierIdx   = m_Segments.back()->GetSpan(pgsTypes::metEnd)->GetPier(pgsTypes::metEnd)->GetIndex();
 
-   if ( newSpanIdx <= startSpanIdx || endSpanIdx <= newSpanIdx )
+   ATLASSERT(startPierIdx <= refPierIdx && refPierIdx <= endPierIdx); // if this fires you are attempting to add a span that is outside of this group
+
+   if ( refPierIdx == startPierIdx )
    {
-      // the new span is added to one end of the group (start or end of group)
-      // The span reference for the start or end segment of this girder
-      // must be adjusted
-      const CSpanData2* pNewSpan = m_pGirderGroup->GetBridgeDescription()->GetSpan(newSpanIdx);
+      // Adding a span at the start of the group. 
+      // The span reference for the start segment for this girder must be adjusted.
+      SpanIndexType spanIdx = (SpanIndexType)refPierIdx;
+      if ( face == pgsTypes::Back && spanIdx != 0 )
+      {
+         spanIdx--;
+      }
 
-      if ( newSpanIdx <= startSpanIdx )
-      {
-         // new span is added before start of this spliced girder
-         m_Segments.front()->SetSpan(pgsTypes::metStart,pNewSpan);
-      }
-      else
-      {
-         // new span is added after end of this spliced girder
-         m_Segments.back()->SetSpan(pgsTypes::metEnd,pNewSpan);
-      }
+      const CSpanData2* pSpan = m_pGirderGroup->GetBridgeDescription()->GetSpan(spanIdx);
+      m_Segments.front()->SetSpan(pgsTypes::metStart,pSpan);
+   }
+
+   if ( refPierIdx == endPierIdx )
+   {
+      // Adding a span at the end of the group.
+      // The span refernece for the last segment for this girder must be updated.
+      SpanIndexType spanIdx = (SpanIndexType)refPierIdx;
+      const CSpanData2* pSpan = m_pGirderGroup->GetBridgeDescription()->GetSpan(spanIdx);
+      m_Segments.back()->SetSpan(pgsTypes::metEnd,pSpan);
    }
 
    // Update post-tensioning
-   m_PTData.InsertSpan(newSpanIdx);
-
-   ASSERT_VALID;
+   m_PTData.InsertSpan(refPierIdx,face);
 }
 
 void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
@@ -977,10 +979,7 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
    std::vector<CClosureJointData*>::iterator new_closure_end = std::remove(m_Closures.begin(),m_Closures.end(),(CClosureJointData*)NULL);
    m_Closures.erase(new_closure_end,m_Closures.end());
 
-   PierIndexType pierIdx = (rmPierType == pgsTypes::PrevPier ? spanIdx : spanIdx+1);
-   m_PTData.RemoveSpan(spanIdx,pierIdx);
-
-   ASSERT_VALID;
+   m_PTData.RemoveSpan(spanIdx,rmPierType);
 }
 
 void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)

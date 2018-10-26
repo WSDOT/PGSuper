@@ -48,6 +48,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
    // this method builds the analysis interval sequence for each girder as well as defines
    // the stage model for the generic bridge model. there is one analysis interval sequence
    // for each girder and only one stage sequence for the generic bridge model.
+   m_bTimeStepMethod = bTimeStepMethod;
 
    // reset everything
    m_CastDeckInterval.clear();
@@ -590,6 +591,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             StageIndexType compositeDeckStageIdx = stageIdx++;
 
             bool bCureDeckStageUsed = true; // if the deck curing stage is not used, we need to decrement stageIdx to compensate for the increment when assign a stage index above
+            bool bCompositeDeckStageUsed = true; // if the composite deck stage is not used, we need to decrement stageIdx to compensate for the increment when assign a stage index above
 
             GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
             for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -633,13 +635,14 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                   }
                   else
                   {
-                     vIntervals.push_back(compositeDeckInterval);
-                     IntervalIndexType compositeDeckIntervalIdx = vIntervals.size()-1;
+                     //vIntervals.push_back(compositeDeckInterval);
+                     //IntervalIndexType compositeDeckIntervalIdx = vIntervals.size()-1;
 
-                     // there is no curing duration so the composite deck state is the curing deck stage
-                     AddToStageMap(girderKey,compositeDeckIntervalIdx,cureDeckStageIdx);
-                     m_CompositeDeckInterval.insert(std::make_pair(girderKey,compositeDeckIntervalIdx));
+                     //// there is no curing duration so the composite deck state is the curing deck stage
+                     //AddToStageMap(girderKey,compositeDeckIntervalIdx,cureDeckStageIdx);
+                     //m_CompositeDeckInterval.insert(std::make_pair(girderKey,compositeDeckIntervalIdx));
                      bCureDeckStageUsed = false;
+                     bCompositeDeckStageUsed = false;
                   }
                }// next gdr
             } // next grp
@@ -647,6 +650,11 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             if ( bCureDeckStageUsed == false )
             {
                stageIdx--; // didn't use the cure deck stage so back up the stage index by one
+            }
+            
+            if ( bCompositeDeckStageUsed == false )
+            {
+               stageIdx--; // didn't use the composite deck stage so back up the stage index by one
             }
 
          } // end if cast deck activity
@@ -817,8 +825,11 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
          for ( ; tendonIter != tendonIterEnd; tendonIter++ )
          {
             const CTendonKey& tendonKey(*tendonIter);
-            CGirderKey girderKey(tendonKey.girderKey);
+            GirderIDType girderID = tendonKey.girderID;
             DuctIndexType ductIdx = tendonKey.ductIdx;
+
+            const CSplicedGirderData* pGirder = pBridgeDesc->FindGirder(girderID);
+            CGirderKey girderKey(pGirder->GetGirderKey());
 
             vGirderKeys.push_back(girderKey);
 
@@ -926,8 +937,11 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             for ( ; tendonIter != tendonIterEnd; tendonIter++ )
             {
                const CTendonKey& tendonKey(*tendonIter);
-               CGirderKey girderKey = tendonKey.girderKey;
+               GirderIDType girderID = tendonKey.girderID;
                DuctIndexType ductIdx = tendonKey.ductIdx;
+
+               const CSplicedGirderData* pGirder = pBridgeDesc->FindGirder(girderID);
+               CGirderKey girderKey(pGirder->GetGirderKey());
 
                CInterval stressTendonInterval;
 
@@ -1294,10 +1308,17 @@ IntervalIndexType CIntervalManager::GetCastDeckInterval(const CGirderKey& girder
 
 IntervalIndexType CIntervalManager::GetCompositeDeckInterval(const CGirderKey& girderKey) const
 {
-   ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
-   std::map<CGirderKey,IntervalIndexType>::const_iterator found(m_CompositeDeckInterval.find(girderKey));
-   ATLASSERT(found != m_CompositeDeckInterval.end());
-   return found->second;
+   if ( m_bTimeStepMethod )
+   {
+      ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
+      std::map<CGirderKey,IntervalIndexType>::const_iterator found(m_CompositeDeckInterval.find(girderKey));
+      ATLASSERT(found != m_CompositeDeckInterval.end());
+      return found->second;
+   }
+   else
+   {
+      return GetInstallRailingSystemInterval(girderKey);
+   }
 }
 
 IntervalIndexType CIntervalManager::GetFirstStressStrandInterval(const CGirderKey& girderKey) const
@@ -1610,18 +1631,25 @@ void CIntervalManager::AssertValid() const
    }
    ATLASSERT(stages.size() == 1);
 
-   stages.clear();
-   iter = m_CompositeDeckInterval.begin();
-   end  = m_CompositeDeckInterval.end();
-   for ( ; iter != end; iter++ )
+   if ( m_bTimeStepMethod )
    {
-      CGirderKey girderKey(iter->first);
-      IntervalIndexType intervalIdx = iter->second;
+      stages.clear();
+      iter = m_CompositeDeckInterval.begin();
+      end  = m_CompositeDeckInterval.end();
+      for ( ; iter != end; iter++ )
+      {
+         CGirderKey girderKey(iter->first);
+         IntervalIndexType intervalIdx = iter->second;
 
-      StageIndexType stageIdx = GetStage(girderKey,intervalIdx);
-      stages.insert(stageIdx);
+         StageIndexType stageIdx = GetStage(girderKey,intervalIdx);
+         stages.insert(stageIdx);
+      }
+      ATLASSERT(stages.size() == 1);
    }
-   ATLASSERT(stages.size() == 1);
+   else
+   {
+      ATLASSERT(m_CompositeDeckInterval.size() == 0);
+   }
 
    stages.clear();
    iter = m_LiveLoadInterval.begin();

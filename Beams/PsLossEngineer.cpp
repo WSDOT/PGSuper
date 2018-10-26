@@ -37,7 +37,7 @@
 #include <PsgLib\GirderLibraryEntry.h>
 
 #include <PgsExt\ReportStyleHolder.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <EAF\EAFAutoProgress.h>

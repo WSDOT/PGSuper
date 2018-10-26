@@ -2,7 +2,7 @@
 
 #include <GraphicsLib\PointMapper.h>
 #include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 // CDrawPrecastSegmentControl
 

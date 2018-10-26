@@ -23,7 +23,7 @@
 #ifndef INCLUDED_BRIDGEHELPERS_H_
 #define INCLUDED_BRIDGEHELPERS_H_
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 HRESULT GetSuperstructureMember(IGenericBridge* pBridge,const CGirderKey& girderKey,ISuperstructureMember* *ssmbr);
 HRESULT GetSegment(IGenericBridge* pBridge,const CSegmentKey& segmentKey,ISegment** segment);

@@ -58,7 +58,6 @@ public:
 	public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-   afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -82,8 +81,6 @@ protected:
    void FillDiaphragmLoadComboBox();
    void FillBoundaryConditionComboBox();
    CString GetImageName(pgsTypes::PierConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
-
-   bool IsAbutment();
 
    CPierData2* m_pPier;
 

@@ -341,23 +341,23 @@ void CApplyLoadsDlg::AddDistributedLoad(int rowIdx,LoadIDType loadID)
    m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
 
    CString strSpan;
-   if ( pLoadData->m_spanKey.spanIndex == ALL_SPANS )
+   if ( pLoadData->m_SpanKey.spanIndex == ALL_SPANS )
    {
       strSpan.Format(_T("%s"),_T("All Spans"));
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_spanKey.spanIndex));
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_SpanKey.spanIndex));
    }
 
    CString strGirder;
-   if ( pLoadData->m_spanKey.girderIndex == ALL_GIRDERS )
+   if ( pLoadData->m_SpanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_spanKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_SpanKey.girderIndex));
    }
 
    CString strLocation;
@@ -412,23 +412,23 @@ void CApplyLoadsDlg::AddPointLoad(int rowIdx,LoadIDType loadID)
    m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
 
    CString strSpan;
-   if ( pLoadData->m_spanKey.spanIndex == ALL_SPANS )
+   if ( pLoadData->m_SpanKey.spanIndex == ALL_SPANS )
    {
       strSpan.Format(_T("%s"),_T("All Spans"));
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_spanKey.spanIndex));
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_SpanKey.spanIndex));
    }
 
    CString strGirder;
-   if ( pLoadData->m_spanKey.girderIndex == ALL_GIRDERS )
+   if ( pLoadData->m_SpanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_spanKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_SpanKey.girderIndex));
    }
 
    CString strLocation;
@@ -469,23 +469,23 @@ void CApplyLoadsDlg::AddMomentLoad(int rowIdx,LoadIDType loadID)
    m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
 
    CString strSpan;
-   if ( pLoadData->m_spanKey.spanIndex == ALL_SPANS )
+   if ( pLoadData->m_SpanKey.spanIndex == ALL_SPANS )
    {
       strSpan.Format(_T("%s"),_T("All Spans"));
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_spanKey.spanIndex));
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_SpanKey.spanIndex));
    }
 
    CString strGirder;
-   if ( pLoadData->m_spanKey.girderIndex == ALL_GIRDERS )
+   if ( pLoadData->m_SpanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_spanKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_SpanKey.girderIndex));
    }
 
    CString strLocation;

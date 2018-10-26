@@ -28,7 +28,7 @@ interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
-   CStrandLocations
+   CStrandEccentricities
 
    Encapsulates the construction of the Strand Locations tables.
 
@@ -46,24 +46,24 @@ LOG
    rdp : 08.17.1999 : Created file
 *****************************************************************************/
 
-class REPORTINGCLASS CStrandLocations
+class REPORTINGCLASS CStrandEccentricities
 {
 public:
    //------------------------------------------------------------------------
    // Default constructor
-   CStrandLocations();
+   CStrandEccentricities();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   CStrandLocations(const CStrandLocations& rOther);
+   CStrandEccentricities(const CStrandEccentricities& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~CStrandLocations();
+   virtual ~CStrandEccentricities();
 
    //------------------------------------------------------------------------
    // Assignment operator
-   CStrandLocations& operator = (const CStrandLocations& rOther);
+   CStrandEccentricities& operator = (const CStrandEccentricities& rOther);
 
    //------------------------------------------------------------------------
    // Builds the stirrup table.
@@ -72,8 +72,8 @@ public:
 
 protected:
    //------------------------------------------------------------------------
-   void MakeCopy(const CStrandLocations& rOther);
+   void MakeCopy(const CStrandEccentricities& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CStrandLocations& rOther);
+   virtual void MakeAssignment(const CStrandEccentricities& rOther);
 };

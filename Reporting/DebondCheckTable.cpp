@@ -25,7 +25,7 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>

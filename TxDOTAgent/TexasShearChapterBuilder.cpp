@@ -33,7 +33,7 @@
 #include <Reporting\DebondCheckTable.h>
 #include "TexasShearChapterBuilder.h"
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>

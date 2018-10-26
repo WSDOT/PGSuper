@@ -24,6 +24,7 @@
 #include <Reporting\BridgeDescDetailsChapterBuilder.h>
 #include <Reporting\StirrupTable.h>
 #include <Reporting\StrandLocations.h>
+#include <Reporting\StrandEccentricities.h>
 #include <Reporting\LongRebarLocations.h>
 
 #include <IFace\Bridge.h>
@@ -53,7 +54,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
 void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
 void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
-void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
+void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey);
 void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
 void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
 void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
@@ -141,7 +142,6 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrand);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -179,8 +179,11 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
             if ( !m_bOmitStrandLocations )
             {
-               CStrandLocations strand_table;
-               strand_table.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
+               CStrandLocations strandLocations;
+               strandLocations.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
+
+               CStrandEccentricities strandEccentricities;
+               strandEccentricities.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
             }
 
             write_debonding(pChapter, pBroker, pDisplayUnits, segmentKey);
@@ -198,12 +201,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
             pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pHead;
             *pHead << _T("Materials") << rptNewLine;
-            write_strand_details( pBroker, pDisplayUnits, pChapter, level, segmentKey, pgsTypes::Permanent );
-
-            if ( 0 < pStrand->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
-            {
-               write_strand_details( pBroker, pDisplayUnits, pChapter, level, segmentKey, pgsTypes::Temporary );
-            }
+            write_strand_details( pBroker, pDisplayUnits, pChapter, level, segmentKey);
 
 	        write_rebar_details( pBroker, pDisplayUnits, pChapter, segmentKey, level);
          } // next segment
@@ -599,7 +597,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    }
 }
 
-void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
+void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -609,39 +607,62 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   if ( strandType == pgsTypes::Temporary )
-      *pPara << _T("Temporary Strand") << rptNewLine;
-   else
-      *pPara << _T("Permanent Strand") << rptNewLine;
-
    GET_IFACE2(pBroker, ISegmentData,pSegmentData);
-   const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
-   ATLASSERT(pstrand!=0);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrand);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,pstrand->GetName().c_str());
-   *pPara << pTable << rptNewLine;
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+   *pPara << pLayoutTable << rptNewLine;
 
-   Int16 row = 0;
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::StrandType strandType = (i == 0 ? pgsTypes::Permanent : pgsTypes::Temporary);
+      if ( strandType == pgsTypes::Temporary && pStrand->GetMaxStrands(segmentKey,pgsTypes::Temporary) == 0)
+      {
+         continue;
+      }
 
-   (*pTable)(row,0) << _T("Type");
-   (*pTable)(row,1) << (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
-   row++;
+      std::_tstring strTitle;
+      if ( strandType == pgsTypes::Temporary )
+      {
+         strTitle = _T("Temporary Strands");
+      }
+      else
+      {
+         strTitle = _T("Permanent Strands");
+      }
 
-   (*pTable)(row,0) << RPT_FPU;
-   (*pTable)(row,1) << stress.SetValue( pstrand->GetUltimateStrength() );
-   row++;
+      const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
+      ATLASSERT(pstrand!=0);
 
-   (*pTable)(row,0) << RPT_FPY;
-   (*pTable)(row,1) << stress.SetValue( pstrand->GetYieldStrength() );
-   row++;
+      rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,strTitle.c_str());
+      (*pLayoutTable)(0,i) << pTable;
 
-   (*pTable)(row,0) << RPT_EPS;
-   (*pTable)(row,1) << modE.SetValue( pstrand->GetE() );
-   row++;
+      RowIndexType row = 0;
 
-   (*pTable)(row,0) << RPT_APS;
-   (*pTable)(row,1) << area.SetValue( pstrand->GetNominalArea() );
-   row++;
+      (*pTable)(row,0) << _T("Name");
+      (*pTable)(row,1) << pstrand->GetName().c_str();
+      row++;
+
+      (*pTable)(row,0) << _T("Type");
+      (*pTable)(row,1) << (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+      row++;
+
+      (*pTable)(row,0) << RPT_FPU;
+      (*pTable)(row,1) << stress.SetValue( pstrand->GetUltimateStrength() );
+      row++;
+
+      (*pTable)(row,0) << RPT_FPY;
+      (*pTable)(row,1) << stress.SetValue( pstrand->GetYieldStrength() );
+      row++;
+
+      (*pTable)(row,0) << RPT_EPS;
+      (*pTable)(row,1) << modE.SetValue( pstrand->GetE() );
+      row++;
+
+      (*pTable)(row,0) << RPT_APS;
+      (*pTable)(row,1) << area.SetValue( pstrand->GetNominalArea() );
+      row++;
+   }
 }
 
 void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
@@ -661,7 +682,9 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
 
    const matRebar* pDeckRebar = NULL;
    if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   {
       pDeckRebar = pPool->GetRebar(pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarType,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarGrade,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarSize);
+   }
 
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -669,12 +692,16 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
    const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
 
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(pDeckRebar == NULL ? 2 : 3);
+   *pPara << pLayoutTable << rptNewLine;
+   ColumnIndexType layoutColumn = 0;
+
    if ( pDeckRebar )
    {
       rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Deck Reinforcing Material"));
-      *pPara << pTable << rptNewLine;
+      (*pLayoutTable)(0,layoutColumn++) << pTable;
 
-      Int16 row = 0;
+      RowIndexType row = 0;
 
       (*pTable)(row,0) << _T("Type");
       (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pDeckRebar->GetType(),pDeckRebar->GetGrade()).c_str();
@@ -691,9 +718,9 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    if ( pShearRebar )
    {
       rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Transverse Reinforcing Material (Stirrups, Confinement, and Horizontal Interface Shear Bars)"));
-      *pPara << pTable << rptNewLine;
+      (*pLayoutTable)(0,layoutColumn++) << pTable;
 
-      Int16 row = 0;
+      RowIndexType row = 0;
 
       (*pTable)(row,0) << _T("Type");
       (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pShearRebar->GetType(),pShearRebar->GetGrade()).c_str();
@@ -710,9 +737,9 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    if ( pLongRebar )
    {
       rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Longitudinal Girder Reinforcing Material"));
-      *pPara << pTable << rptNewLine;
+      (*pLayoutTable)(0,layoutColumn++) << pTable;
 
-      Int16 row = 0;
+      RowIndexType row = 0;
 
       (*pTable)(row,0) << _T("Type");
       (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pLongRebar->GetType(),pLongRebar->GetGrade()).c_str();

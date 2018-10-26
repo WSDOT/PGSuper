@@ -37,7 +37,7 @@
 #include <IFace\DrawBridgeSettings.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\BridgeDescription2.h>
 
 #include "PGSuperTypes.h"
@@ -753,8 +753,8 @@ void CGirderModelChildFrame::OnAddPointload()
 
    // set data to that of view
    CPointLoadData data;
-   data.m_spanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_spanKey.girderIndex = m_GirderKey.girderIndex;
+   data.m_SpanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
+   data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
    if ( m_EventIndex != liveLoadEventIdx)
@@ -787,8 +787,8 @@ void CGirderModelChildFrame::OnAddDistributedLoad()
 
    // set data to that of view
    CDistributedLoadData data;
-   data.m_spanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_spanKey.girderIndex = m_GirderKey.girderIndex;
+   data.m_SpanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
+   data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
    if ( m_EventIndex != liveLoadEventIdx)
@@ -819,8 +819,8 @@ void CGirderModelChildFrame::OnAddMoment()
 
    // set data to that of view
    CMomentLoadData data;
-   data.m_spanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_spanKey.girderIndex = m_GirderKey.girderIndex;
+   data.m_SpanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
+   data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
    if ( m_EventIndex != liveLoadEventIdx)

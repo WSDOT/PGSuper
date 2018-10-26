@@ -26,5 +26,5 @@ DEFINE_GUID(IID_IDesign,
 0x70c00171, 0x9f5b, 0x4ac4, 0xb7, 0x76, 0x2a, 0x2d, 0xf5, 0xb0, 0x88, 0x3);
 interface IDesign : IUnknown
 {
-   virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey) = 0;
 };

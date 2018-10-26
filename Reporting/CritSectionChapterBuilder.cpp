@@ -24,7 +24,7 @@
 #include <Reporting\CritSectionChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>

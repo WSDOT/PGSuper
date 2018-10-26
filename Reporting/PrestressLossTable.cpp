@@ -24,7 +24,7 @@
 #include <Reporting\PrestressLossTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\StrandData.h>
 
 #include <IFace\Project.h>

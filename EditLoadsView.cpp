@@ -375,23 +375,23 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(ptLoad.m_LoadCase).c_str());
 
    CString strSpan;
-   if ( ptLoad.m_spanKey.spanIndex == ALL_SPANS )
+   if ( ptLoad.m_SpanKey.spanIndex == ALL_SPANS )
    {
       strSpan.Format(_T("%s"),_T("All Spans"));
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(ptLoad.m_spanKey.spanIndex));
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
    }
 
    CString strGirder;
-   if ( ptLoad.m_spanKey.girderIndex == ALL_GIRDERS )
+   if ( ptLoad.m_SpanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(ptLoad.m_spanKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(ptLoad.m_SpanKey.girderIndex));
    }
 
    CString strLocation;
@@ -433,23 +433,23 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
 
    CString strSpan;
-   if ( load.m_spanKey.spanIndex == ALL_SPANS )
+   if ( load.m_SpanKey.spanIndex == ALL_SPANS )
    {
       strSpan.Format(_T("%s"),_T("All Spans"));
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_spanKey.spanIndex));
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_SpanKey.spanIndex));
    }
 
    CString strGirder;
-   if ( load.m_spanKey.girderIndex == ALL_GIRDERS )
+   if ( load.m_SpanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_spanKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_SpanKey.girderIndex));
    }
 
    CString strLocation;
@@ -496,23 +496,23 @@ void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& load)
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
 
    CString strSpan;
-   if ( load.m_spanKey.spanIndex == ALL_SPANS )
+   if ( load.m_SpanKey.spanIndex == ALL_SPANS )
    {
       strSpan.Format(_T("%s"),_T("All Spans"));
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_spanKey.spanIndex));
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_SpanKey.spanIndex));
    }
 
    CString strGirder;
-   if ( load.m_spanKey.girderIndex == ALL_GIRDERS )
+   if ( load.m_SpanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_spanKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_SpanKey.girderIndex));
    }
 
    CString strLocation;
@@ -825,17 +825,17 @@ SpanIndexType SortObject::GetSpan(LPARAM lParam)
    if ( load_type == W_POINT_LOAD )
    {
       const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
-      return pLoadData->m_spanKey.spanIndex;
+      return pLoadData->m_SpanKey.spanIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
       const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
-      return pLoadData->m_spanKey.spanIndex;
+      return pLoadData->m_SpanKey.spanIndex;
    }
    else
    {
       const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
-      return pLoadData->m_spanKey.spanIndex;
+      return pLoadData->m_SpanKey.spanIndex;
    }
 }
 
@@ -847,17 +847,17 @@ GirderIndexType SortObject::GetGirder(LPARAM lParam)
    if ( load_type == W_POINT_LOAD )
    {
       const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
-      return pLoadData->m_spanKey.girderIndex;
+      return pLoadData->m_SpanKey.girderIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
       const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
-      return pLoadData->m_spanKey.girderIndex;
+      return pLoadData->m_SpanKey.girderIndex;
    }
    else
    {
       const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
-      return pLoadData->m_spanKey.girderIndex;
+      return pLoadData->m_SpanKey.girderIndex;
    }
 }
 

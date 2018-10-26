@@ -24,7 +24,7 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\TimelineEvent.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 #define CREATE_TIMELINE_EVENT INVALID_INDEX-1
 
@@ -127,7 +127,7 @@ public:
    bool AreAllTemporarySupportsErected() const;
    bool AreAllTemporarySupportsRemoved() const;
    bool AreAllSegmentsErected() const;
-   bool AreAllSegmentsErected(const CGirderKey& girderKey,EventIndexType eventIdx) const;
+   bool AreAllSegmentsErected(GirderIDType girderID,EventIndexType eventIdx) const;
    bool AreAllClosureJointsCast() const;
    bool AreAllTendonsStressed() const;
 
@@ -156,7 +156,7 @@ public:
    // returns true if the specified closure joint is cast
    bool IsClosureJointCast(EventIndexType eventIdx,ClosureIDType closureID) const;
 
-   bool IsTendonStressed(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   bool IsTendonStressed(GirderIDType girderID,DuctIndexType ductIdx) const;
 
    void SetPierErectionEventByIndex(PierIDType pierID,EventIndexType eventIdx);
    void SetPierErectionEventByID(PierIDType pierID,IDType ID);
@@ -185,10 +185,10 @@ public:
    void SetCastClosureJointEventByID(ClosureIDType closureID,EventIDType ID);
 
    // Events when tendons are stressed.
-   EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
-   EventIDType GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
-   void SetStressTendonEventByIndex(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIndexType eventIdx);
-   void SetStressTendonEventByID(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIDType ID);
+   EventIndexType GetStressTendonEventIndex(GirderIDType girderID,DuctIndexType ductIdx) const;
+   EventIDType GetStressTendonEventID(GirderIDType girderID,DuctIndexType ductIdx) const;
+   void SetStressTendonEventByIndex(GirderIDType girderID,DuctIndexType ductIdx,EventIndexType eventIdx);
+   void SetStressTendonEventByID(GirderIDType girderID,DuctIndexType ductIdx,EventIDType ID);
 
    EventIndexType GetCastDeckEventIndex() const;
    EventIDType GetCastDeckEventID() const;

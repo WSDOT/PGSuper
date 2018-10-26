@@ -68,6 +68,8 @@ public:
    void Clear();
    void SetPier(pgsTypes::MemberEndType end,CPierData2* pPier);
    void SetPiers(CPierData2* pStartPier,CPierData2* pEndPier);
+   void AddSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
+   void RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType);
 
 
    // =================================================================================
@@ -214,6 +216,7 @@ private:
    void RemoveGirder(GirderIndexType gdrIdx);
 
    void UpdatePiers();
+   void UpdateSlabOffsets(PierIndexType newPierIdx);
 
 #if defined _DEBUG
    // Giving other classes access to our internal data members for debugging purposes only

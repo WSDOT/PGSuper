@@ -419,7 +419,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
    {
       options[nOptions] = pgsTypes::AdjustAdjacentSpans;
       strOptions[nOptions++].Format(_T("Adjust the length of Spans %d and %d"),
-                                    m_PierIdx,m_PierIdx+1);
+                                    LABEL_SPAN(m_PierIdx),LABEL_SPAN(m_PierIdx+1));
    }
 
    if ( m_PierIdx == 0 && toStation < m_NextPierStation )

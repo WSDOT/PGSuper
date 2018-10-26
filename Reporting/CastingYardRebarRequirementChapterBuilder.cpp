@@ -24,7 +24,7 @@
 #include <Reporting\CastingYardRebarRequirementChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
 #include <IFace\Artifact.h>
@@ -334,7 +334,6 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    SegmentIndexType firstSegIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
    SegmentIndexType lastSegIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegIdx );
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    for ( SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++ )
    {
@@ -393,6 +392,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
          {
             // report depth to neutral axis from top of girder... tension usually governs on the top
             // and top rebar is usually measured from the top downwards
+            GET_IFACE2(pBroker,ISectionProperties,pSectProp);
             Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,thisPoi);
             Float64 Y = Hg - Yna;
 

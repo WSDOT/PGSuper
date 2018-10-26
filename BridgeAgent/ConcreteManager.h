@@ -24,7 +24,7 @@
 
 #include <PgsExt\ConcreteMaterial.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <Material\Material.h>
 #include "StatusItems.h"
 #include <map>

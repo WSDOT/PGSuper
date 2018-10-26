@@ -30,14 +30,15 @@ void CStressTendonDlg::DoDataExchange(CDataExchange* pDX)
    {
       std::set<CTendonKey> tendons;
 
-      std::vector<std::pair<CGirderKey,DuctIndexType>>::const_iterator iter(m_TargetTendons.begin()); 
-      std::vector<std::pair<CGirderKey,DuctIndexType>>::const_iterator iterEnd(m_TargetTendons.end()); 
+      std::vector<CTendonKey>::const_iterator iter(m_TargetTendons.begin()); 
+      std::vector<CTendonKey>::const_iterator iterEnd(m_TargetTendons.end()); 
       for (; iter != iterEnd; iter++ )
       {
-         const CGirderKey& girderKey = iter->first;
-         DuctIndexType ductIdx = iter->second;
+         const CTendonKey& tendonKey(*iter);
+         GirderIDType gdrID = tendonKey.girderID;
+         DuctIndexType ductIdx = tendonKey.ductIdx;
 
-         tendons.insert( CTendonKey(girderKey,ductIdx) );
+         tendons.insert( CTendonKey(gdrID,ductIdx) );
       }
 
       m_StressTendonActivity.Clear();
@@ -83,15 +84,17 @@ void CStressTendonDlg::OnMoveRight()
    for ( int i = 0; i < nCount; i++ )
    {
       int sel = arrSelected.GetAt(i);
-      const CGirderKey& girderKey = m_SourceTendons[sel].first;
-      DuctIndexType ductIdx = m_SourceTendons[sel].second;
+
+      CTendonKey tendonKey = m_SourceTendons[sel];
+      const CGirderKey& girderKey = tendonKey.girderKey;
+      DuctIndexType ductIdx = tendonKey.ductIdx;
 
       CString label;
       label.Format(_T("Group %d, Girder %s, Duct %d"),LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex),LABEL_DUCT(ductIdx));
 
       int idx = pTargetList->AddString(label);
 
-      m_TargetTendons.push_back( std::make_pair(girderKey,ductIdx) );
+      m_TargetTendons.push_back( tendonKey );
       std::sort(m_TargetTendons.begin(),m_TargetTendons.end());
    }
 
@@ -119,14 +122,15 @@ void CStressTendonDlg::OnMoveLeft()
    for ( int i = 0; i < nCount; i++ )
    {
       int sel = arrSelected.GetAt(i);
-      const CGirderKey& girderKey = m_TargetTendons[sel].first;
-      DuctIndexType ductIdx = m_TargetTendons[sel].second;
+      CTendonKey& tendonKey = m_TargetTendons[sel];
+      const CGirderKey& girderKey = tendonKey.girderKey;
+      DuctIndexType ductIdx = tendonKey.ductIdx;
 
       CString label;
       label.Format(_T("Group %d, Girder %s, Duct %d"),LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex),LABEL_DUCT(ductIdx));
 
       pSourceList->AddString(label);
-      m_SourceTendons.push_back(std::make_pair(girderKey,ductIdx));
+      m_SourceTendons.push_back(tendonKey);
       std::sort(m_SourceTendons.begin(),m_SourceTendons.end());
    }
 
@@ -156,18 +160,19 @@ void CStressTendonDlg::FillSourceList()
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx); 
          const CPTData* pPTData = pGirder->GetPostTensioning();
 
+         GirderIDType girderID = pGirder->GetID();
          CGirderKey girderKey(pGirder->GetGirderKey());
 
          DuctIndexType nDucts = pPTData->GetDuctCount();
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
-            bool bIsTendonStressed = m_pTimelineMgr->IsTendonStressed(girderKey,ductIdx);
-            if ( bIsTendonStressed && m_pTimelineMgr->GetStressTendonEventIndex(girderKey,ductIdx) == m_EventIndex )
+            bool bIsTendonStressed = m_pTimelineMgr->IsTendonStressed(girderID,ductIdx);
+            if ( bIsTendonStressed && m_pTimelineMgr->GetStressTendonEventIndex(girderID,ductIdx) == m_EventIndex )
             {
                // if the tendon is marked as stress and if it is stressed during this event, make sure it is
                // marked as stressed in the activity. If it is not stressed in this activity
                // the it is not stressed (the global timeline manager hasn't been updated yet)
-               if ( !m_StressTendonActivity.IsTendonStressed(girderKey,ductIdx) )
+               if ( !m_StressTendonActivity.IsTendonStressed(girderID,ductIdx) )
                   bIsTendonStressed = false;
             }
             if ( !bIsTendonStressed )
@@ -176,7 +181,9 @@ void CStressTendonDlg::FillSourceList()
                label.Format(_T("Group %d, Girder %s, Duct %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_DUCT(ductIdx));
 
                int idx = pSourceList->AddString(label);
-               m_SourceTendons.push_back(std::make_pair(girderKey,ductIdx));
+               CTendonKey tendonKey(girderKey,ductIdx);
+               tendonKey.girderID = girderID; // make sure we set the girderID too... we are using all 3 parameters in this dialo
+               m_SourceTendons.push_back(tendonKey);
             }
          } // duct loop
       } // girder loop
@@ -201,14 +208,19 @@ void CStressTendonDlg::FillTargetList()
    for ( ; iter != iterEnd; iter++ )
    {
       const CTendonKey& key(*iter);
-      const CGirderKey& girderKey(key.girderKey);
+      GirderIDType girderID = key.girderID;
       DuctIndexType ductIdx = key.ductIdx;
+
+      const CSplicedGirderData* pGirder = pIBridgeDesc->FindGirder(girderID);
+      CGirderKey girderKey = pGirder->GetGirderKey();
 
       CString label;
       label.Format(_T("Group %d, Girder %s, Duct %d"),LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex),LABEL_DUCT(ductIdx));
 
       pTargetList->AddString(label);
-      m_TargetTendons.push_back(std::make_pair(girderKey,ductIdx));
+      CTendonKey tendonKey(girderKey,ductIdx);
+      tendonKey.girderID = girderID; // make sure we set the girderID too... we are using all 3 parameters in this dialo
+      m_TargetTendons.push_back(tendonKey);
    }
    std::sort(m_TargetTendons.begin(),m_TargetTendons.end());
 }

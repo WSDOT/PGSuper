@@ -107,7 +107,7 @@ public:
 
    // returns the index of the interval when the deck has finished curing
    // curing take place over the duration of an interval and cannot take load.
-   // this method returns the index of the next interval when the deck can take load
+   // this method returns the index of the first interval when the deck can take load
    IntervalIndexType GetCompositeDeckInterval(const CGirderKey& girderKey) const;
 
    // returns the index of the interval when live load is first
@@ -138,6 +138,8 @@ public:
    IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) const;
 
 protected:
+   bool m_bTimeStepMethod; // keeps track of the parameter used to create the intervals
+
    struct CInterval
    {
       CInterval():StartEventIdx(INVALID_INDEX),EndEventIdx(INVALID_INDEX){}

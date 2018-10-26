@@ -86,12 +86,6 @@ void txnEditBridge::Execute(int i)
       pEnvironment->SetRelHumidity( m_RelHumidity[i] );
    }
 
-   // Reconcile edit before commiting - not on undo
-   if (i==1)
-   {
-      m_pBridgeDesc[1]->ReconcileEdits( pBroker, m_pBridgeDesc[0] );
-   }
-
    pBridgeDesc->SetBridgeDescription( *m_pBridgeDesc[i] );
 
    pEvents->FirePendingEvents();

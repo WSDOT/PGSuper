@@ -25,7 +25,7 @@
 
 #include <DManip\DManip.h>
 #include "TogaSectionCutDrawStrategy.h" 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 class CTogaSectionCutDisplayImpl : public CCmdTarget
 {

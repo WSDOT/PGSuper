@@ -144,7 +144,7 @@ protected:
    virtual void MakeAssignment(const CSplicedGirderData& rOther);
 
    // called by CBridgeDescription
-   void InsertSpan(SpanIndexType newSpanIdx);
+   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
    void RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType);
    void JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx);
    void SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx);

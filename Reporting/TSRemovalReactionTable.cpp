@@ -27,7 +27,7 @@
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\BridgeDescription2.h>
 
 #include <IFace\Project.h>
@@ -137,15 +137,14 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          }
       }
 
-#pragma Reminder("UPDATE: can this be re-worked to use RDP's ReactionLocationIterator?")
-
       std::vector<IntervalIndexType>::iterator iter(tsrIntervals.begin());
       std::vector<IntervalIndexType>::iterator end(tsrIntervals.end());
       for ( ; iter != end; iter++ )
       {
          IntervalIndexType tsrIntervalIdx = *iter;
 
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
+         GroupIndexType startGroupIdx, endGroupIdx; // use these so we don't mess up the loop parameters
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroupIdx,&endGroupIdx);
          bPedLoading = false;
          bPermit     = false;
 

@@ -29,7 +29,7 @@ COPYRIGHT
    All Rights Reserved
 *****************************************************************************/
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 #define CAD_SUCCESS  0
 

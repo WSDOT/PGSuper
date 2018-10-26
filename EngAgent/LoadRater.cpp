@@ -248,6 +248,8 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
       thisGirderKey.groupIndex = 0;
    }
 
+   pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
+
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
 
@@ -304,8 +306,6 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
 
       pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, false, &vPLmin, &vPLmax );
    }
-
-   pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
 
    GET_IFACE(IShearCapacity,pShearCapacity);
    std::vector<SHEARCAPACITYDETAILS> vVn = pShearCapacity->GetShearCapacityDetails(ls,loadRatingIntervalIdx,vPoi);

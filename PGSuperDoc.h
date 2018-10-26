@@ -58,7 +58,7 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-   void DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey);
 
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage);
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);

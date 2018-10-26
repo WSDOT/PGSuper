@@ -64,9 +64,13 @@ LPCTSTR CSplittingZoneDetailsChapterBuilder::GetKey() const
 LPCTSTR CSplittingZoneDetailsChapterBuilder::GetName() const
 {
    if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   {
       return TEXT("Splitting Resistance Details");
+   }
    else
+   {
       return TEXT("Bursting Resistance Details");
+   }
 }
 
 rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -84,7 +88,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2_NOCHECK(pBroker, ILossParameters, pLossParams);
 
    bool bInitialRelaxation = ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 || 
                                pLossParams->GetLossMethod() == pgsTypes::WSDOT_REFINED                 ||
@@ -127,9 +131,13 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
 
       std::_tstring strName;
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+      {
          strName = _T("Splitting");
+      }
       else
+      {
          strName = _T("Bursting");
+      }
 
       if (!pArtifact->GetIsApplicable())
       {
@@ -147,9 +155,13 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
          if ( bInitialRelaxation )
          {
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
+            {
                (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
+            }
             else
+            {
                (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" - ");
+            }
          }
          
          (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES"))  << _T(") = ");
@@ -172,9 +184,13 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
          if ( bInitialRelaxation )
          {
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
+            {
                (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
+            }
             else
+            {
                (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" - ");
+            }
          }
          
          (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES"))  << _T(") = ");

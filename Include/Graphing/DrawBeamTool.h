@@ -34,6 +34,17 @@ public:
    CDrawBeamTool();
    virtual ~CDrawBeamTool();
 
+   // Draws the beam
+   // mapper is the point mapper used to draw the graph. 
+   // pUnitConverter is used to convert X-axis values into display units. Use the same unit converter as the graph
+   // intervalIdx is the interval for when the beam is to be drawn. The color of the girder segments is different for
+   // segments that have not yet been erected as it is for segments that have been erected
+   // girderKey is for the girder that is being drawn
+   // beamShift tells how must left or right to shift the beam so that it lines up with the Y axis
+   // To draw an individual span or segment, use the following code
+   // GET_IFACE(IPointOfInterest,pPoi);
+   // Float64 beamShift = -1*pPoi->ConvertPoiToGirderlineCoordinate(pgsPointOfInterest(segmentKey,0.0));
+
    void DrawBeam(IBroker* pBroker,CDC* pDC,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey,Float64 beamShift);
 
 protected:

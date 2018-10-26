@@ -23,7 +23,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\MomentRatingArtifact.h>
 #include <PgsExt\ShearRatingArtifact.h>
 #include <PgsExt\StressRatingArtifact.h>

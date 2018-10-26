@@ -35,4 +35,4 @@
 
 #include <afxwin.h>
 #include <PgsExt\GirderLabel.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>

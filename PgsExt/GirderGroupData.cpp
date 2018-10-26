@@ -261,6 +261,39 @@ void CGirderGroupData::SetPiers(CPierData2* pStartPier,CPierData2* pEndPier)
    SetPier(pgsTypes::metEnd,  pEndPier);
 }
 
+void CGirderGroupData::AddSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
+{
+   UpdateSlabOffsets(refPierIdx);
+
+   std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
+   std::vector<CSplicedGirderData*>::iterator end(m_Girders.end());
+   for ( ; iter != end; iter++ )
+   {
+      CSplicedGirderData* pGirder = *iter;
+      pGirder->InsertSpan(refPierIdx,face);
+   }
+}
+
+void CGirderGroupData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
+{
+   // Adjust the slab offsets
+   PierIndexType pierIdx = (PierIndexType)spanIdx + (rmPierType == pgsTypes::PrevPier ? 0 : 1);
+   PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
+   PierIndexType nPiersToRemove = pierIdx - startPierIdx;
+   m_SlabOffsets.erase(m_SlabOffsets.begin()+nPiersToRemove);
+
+   // Adjust the girders in the group for the span that is removed
+   // remove span references from the girders before the span is destroyed
+   // Segments have pointers to the spans they start and end in
+   std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
+   std::vector<CSplicedGirderData*>::iterator end(m_Girders.end());
+   for ( ; iter != end; iter++ )
+   {
+      CSplicedGirderData* pGirder = *iter;
+      pGirder->RemoveSpan(spanIdx,rmPierType);
+   }
+}
+
 CPierData2* CGirderGroupData::GetPier(pgsTypes::MemberEndType end)
 {
    return m_pPier[end];
@@ -498,10 +531,6 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
    const CSplicedGirderData* pRefGirder = m_Girders.back();
    GirderIDType refGdrID = pRefGirder->GetID();
 
-   GirderIndexType gdrIdx = (GirderIndexType)(m_Girders.size()-1);
-
-   CGirderKey girderKey(m_GroupIdx,gdrIdx);
-
    SegmentIndexType nSegments = pRefGirder->GetSegmentCount();
    std::vector<EventIndexType> constructionEvents(nSegments);
    std::vector<EventIndexType> erectionEvents(nSegments);
@@ -524,7 +553,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
    std::vector<EventIndexType> ptEvents(nDucts);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      ptEvents[ductIdx] = pTimelineManager->GetStressTendonEventIndex( girderKey, ductIdx);
+      ptEvents[ductIdx] = pTimelineManager->GetStressTendonEventIndex( refGdrID, ductIdx);
    }
 
    // create the new girders
@@ -564,7 +593,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
          ATLASSERT(m_GroupID != INVALID_ID);
-         pTimelineManager->SetStressTendonEventByIndex(newGirderKey,ductIdx,ptEvents[ductIdx]);
+         pTimelineManager->SetStressTendonEventByIndex(gdrID,ductIdx,ptEvents[ductIdx]);
       }
    }
 
@@ -1512,6 +1541,20 @@ void CGirderGroupData::UpdatePiers()
       m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
       m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
    }
+}
+
+void CGirderGroupData::UpdateSlabOffsets(PierIndexType newPierIdx)
+{
+   PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
+   PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
+   
+   ATLASSERT(startPierIdx <= newPierIdx && newPierIdx <= endPierIdx);
+
+   PierIndexType relPierIdx = newPierIdx - startPierIdx; // relative location in the m_SlabOffsets collection
+   // for the slab offsets we want to copy and insert into the collection
+
+   // use the reference pier's slab offsets
+   m_SlabOffsets.insert(m_SlabOffsets.begin() + relPierIdx + 1,m_SlabOffsets[relPierIdx]);
 }
 
 #if defined _DEBUG

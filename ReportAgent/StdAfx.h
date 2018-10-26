@@ -51,7 +51,7 @@ extern CComModule _Module;
 
 #include <System\System.h>
 #include <Reporter\Reporter.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <UnitMgt\UnitMgt.h>
 
 #include <ReportManager\ReportManager.h>

@@ -242,7 +242,7 @@ HRESULT CSpanReportSpecification::Validate() const
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if ( nSpans <= m_Span )
    {
-      return RPT_E_INVALIDSPAN;
+      return RPT_E_INVALID_SPAN;
    }
 
    return CBrokerReportSpecification::Validate();
@@ -322,7 +322,7 @@ HRESULT CGirderReportSpecification::Validate() const
 
    if ( nGirders <= m_GirderKey.girderIndex )
    {
-      return RPT_E_INVALIDGIRDER;
+      return RPT_E_INVALID_GIRDER;
    }
 
    return CBrokerReportSpecification::Validate();
@@ -418,24 +418,25 @@ bool CMultiGirderReportSpecification::IsMyGirder(const CGirderKey& girderKey) co
 
 HRESULT CMultiGirderReportSpecification::Validate() const
 {
-#pragma Reminder("UPDATE: skipping validation until spliced girder indexing is worked out")
-   //GET_IFACE(IBridge,pBridge);
-   //SpanIndexType nSpans = pBridge->GetSpanCount();
+   GET_IFACE(IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   std::vector<CGirderKey>::const_iterator iter(m_GirderKeys.begin());
+   std::vector<CGirderKey>::const_iterator end(m_GirderKeys.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CGirderKey& girderKey(*iter);
 
-   //for (std::vector<CSegmentKey>::const_iterator it=m_SegmentKeyList.begin(); it!=m_SegmentKeyList.end(); it++)
-   //{
-   //   SpanIndexType spanIdx;
-   //   GirderIndexType gdrIdx;
-   //   UnhashSpanGirder(*it,&spanIdx,&gdrIdx);
+      if ( nGroups <= girderKey.groupIndex )
+      {
+         return RPT_E_INVALID_GROUP;
+      }
 
-   //   if ( nSpans <= spanIdx )
-   //      return RPT_E_INVALIDSPAN;
-
-   //   GirderIndexType nGdrs = pBridge->GetGirderCount(spanIdx);
-
-   //   if ( nGdrs <= gdrIdx )
-   //      return RPT_E_INVALIDGIRDER;
-   //}
+      GirderIndexType nGirders = pBridge->GetGirderCount(girderKey.groupIndex);
+      if ( nGirders <= girderKey.girderIndex )
+      {
+         return RPT_E_INVALID_GIRDER;
+      }
+   }
 
    return CBrokerReportSpecification::Validate();
 }
@@ -494,14 +495,14 @@ HRESULT CMultiViewSpanGirderReportSpecification::Validate() const
 
       if ( nGroups <= girderKey.groupIndex )
       {
-         return RPT_E_INVALIDSPAN;
+         return RPT_E_INVALID_SPAN;
       }
 
       GirderIndexType nGdrs = pBridge->GetGirderCount(girderKey.groupIndex);
 
       if ( nGdrs <= girderKey.groupIndex )
       {
-         return RPT_E_INVALIDGIRDER;
+         return RPT_E_INVALID_GIRDER;
       }
    }
 

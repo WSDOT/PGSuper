@@ -25,7 +25,7 @@
 #include <Reporting\LongReinfShearCheckChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\RatingArtifact.h>
 

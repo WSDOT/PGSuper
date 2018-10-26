@@ -22,7 +22,7 @@
 
 #pragma once
 #include "resource.h"
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 // CSelectPOIDlg dialog
 

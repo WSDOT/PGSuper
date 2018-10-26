@@ -23,7 +23,7 @@
 #ifndef INCLUDED_POIKEY_H_
 #define INCLUDED_POIKEY_H_
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 template <class T>
 class TPoiKey

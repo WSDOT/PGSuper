@@ -163,10 +163,6 @@ public:
    // Returns the number of groups
    GroupIndexType GetGirderGroupCount() const;
 
-   // Removes a girder group and merges the spans and piers in this group with the 
-   // next group (or the previous group if this is the last group in the bridge)
-   void RemoveGirderGroup(GroupIndexType grpIdx);
-
    // Removes a girder group and all spans, piers, and girders within the group
    void RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::RemovePierType rmPierType);
 
@@ -337,11 +333,6 @@ public:
    void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset); 
                     // takes all the data defined at the bridge level and copies
                     // it down to the spans and girders (only for this parameters set to true)
-
-   // It's pretty much impossible to take care of all data in this tree from the editing dialog
-   // so the function below takes half-baked edits, compares what changed from the original
-   // version, and finishes them.
-   void ReconcileEdits(IBroker* pBroker, const CBridgeDescription2* pOriginalDesc);
 
    // Returns a vector of the valid connection types for a pier. 
    std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx) const;

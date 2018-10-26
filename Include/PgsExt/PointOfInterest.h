@@ -22,7 +22,7 @@
 
 #pragma once
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <Reporter\Reporter.h>
 
 class pgsPoiMgr;
@@ -201,6 +201,7 @@ public:
    //------------------------------------------------------------------------
    // Returns true if this poi is less than rOther, based on location
    bool operator==(const pgsPointOfInterest& rOther) const;
+   bool operator!=(const pgsPointOfInterest& rOther) const;
 
    //------------------------------------------------------------------------
    // A convient way to set the location of the POI.

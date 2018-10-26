@@ -697,14 +697,14 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
          details->EffectiveFlangeWidth(&(effFlangeWidth->effFlangeWidth));
 
          // exterior girders - must take half of interior and add 
-         GET_IFACE(IBridge,pBridge);
+         GET_IFACE_NOCHECK(IBridge,pBridge); // doesn't get used if bIsExteriorGirder is false
          if ( bIsExteriorGirder && 2 < pBridge->GetGirderCount(segmentKey.groupIndex))
          {
             GirderIDType adjGdrID = (locationType == ltLeftExteriorGirder ? rightGdrID : leftGdrID);
             CSegmentKey adjGirderKey = ::GetSegmentKey(adjGdrID);
             CSegmentKey leftGirderKey, rightGirderKey;
             ::GetAdjacentGirderKeys(adjGirderKey,&leftGirderKey,&rightGirderKey);
-            GirderIDType adjLeftGdrID = ::GetSuperstructureMemberID(leftGirderKey.groupIndex,leftGirderKey.girderIndex);
+            GirderIDType adjLeftGdrID  = ::GetSuperstructureMemberID(leftGirderKey.groupIndex, leftGirderKey.girderIndex);
             GirderIDType adjRightGdrID = ::GetSuperstructureMemberID(rightGirderKey.groupIndex,rightGirderKey.girderIndex);
 
             CComPtr<IEffectiveFlangeWidthDetails> intdetails;
@@ -1056,14 +1056,14 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    GET_IFACE2(pBroker,IGirder,pGirder);
-    if ( pGirder->IsPrismatic(liveLoadIntervalIdx,segmentKey) )
-    {
-       ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
-    }
-    else
-    {
-       ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
-    }
+   if ( pGirder->IsPrismatic(liveLoadIntervalIdx,segmentKey) )
+   {
+    ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+   }
+   else
+   {
+    ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+   }
 }
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -1493,28 +1493,28 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       (*pPara) << length.SetValue( 12*tSlab + Max(tWeb,0.5*wFlange) ) << rptNewLine;
 
       if ( bLeftGirder && flangeIdx == 0 )
-        {
-        // left exterior web 
-        (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(lSpacing) << _T(" + ");
-        (*pPara) << spanLength.SetValue(rSpacing*2) << _T("/2 = ");
-        (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-        (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
-        }
-     else if ( !bLeftGirder && flangeIdx == count-1 )
-        {
-        // right exterior web 
-        (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(lSpacing*2) << _T("/2 + ");
-        (*pPara) << spanLength.SetValue(rSpacing) << _T(" = ");
-        (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-        (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
-        }
-     else
-        {
-        (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = (") << spanLength.SetValue(lSpacing*2) << _T(" + ");
-        (*pPara) << spanLength.SetValue(rSpacing*2) << _T(")/2 = ");
-        (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-        (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
-        }
+      {
+         // left exterior web 
+         (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(lSpacing) << _T(" + ");
+         (*pPara) << spanLength.SetValue(rSpacing*2) << _T("/2 = ");
+         (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
+         (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+      }
+      else if ( !bLeftGirder && flangeIdx == count-1 )
+      {
+         // right exterior web 
+         (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(lSpacing*2) << _T("/2 + ");
+         (*pPara) << spanLength.SetValue(rSpacing) << _T(" = ");
+         (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
+         (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+      }
+      else
+      {
+         (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = (") << spanLength.SetValue(lSpacing*2) << _T(" + ");
+         (*pPara) << spanLength.SetValue(rSpacing*2) << _T(")/2 = ");
+         (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
+         (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+      }
    }
 
    Float64 effFlangeWidth;

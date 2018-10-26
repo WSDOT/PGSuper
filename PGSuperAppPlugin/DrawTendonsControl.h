@@ -24,7 +24,7 @@
 
 #include <GraphicsLib\PointMapper.h>
 #include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 // CDrawTendonsControl
 class CDrawTendonsControl : public CWnd

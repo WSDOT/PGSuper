@@ -44,7 +44,7 @@ CPointLoadData::CPointLoadData():
 m_ID(INVALID_ID),
 m_LoadCase(UserLoads::DC),
 m_EventIndex(INVALID_INDEX),
-m_spanKey(0,0),
+m_SpanKey(0,0),
 m_Magnitude(0.0),
 m_Location(0.5),
 m_Fractional(true),
@@ -70,7 +70,7 @@ bool CPointLoadData::operator == (const CPointLoadData& rOther) const
       return false;
    }
 
-   if (!m_spanKey.IsEqual(rOther.m_spanKey))
+   if (!m_SpanKey.IsEqual(rOther.m_SpanKey))
    {
       return false;
    }
@@ -130,8 +130,8 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
 
    // In pre Jan, 2011 versions, "all spans" and "all girders" were hardcoded to 10000, then we changed to the ALL_SPANS/ALL_GIRDERS value
    // Keep backward compatibility by saving the 10k value
-   SpanIndexType spanIdx  = (m_spanKey.spanIndex   == ALL_SPANS   ? 10000 : m_spanKey.spanIndex);
-   GirderIndexType gdrIdx = (m_spanKey.girderIndex == ALL_GIRDERS ? 10000 : m_spanKey.girderIndex);
+   SpanIndexType spanIdx  = (m_SpanKey.spanIndex   == ALL_SPANS   ? 10000 : m_SpanKey.spanIndex);
+   GirderIndexType gdrIdx = (m_SpanKey.girderIndex == ALL_GIRDERS ? 10000 : m_SpanKey.girderIndex);
 
    hr = pSave->put_Property(_T("Span"),CComVariant(spanIdx));
    if ( FAILED(hr) )
@@ -274,10 +274,10 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
    }
 
    // see note in Save method about span/girder == 10000
-   m_spanKey.spanIndex = VARIANT2INDEX(var);
-   if ( 10000 == m_spanKey.spanIndex)
+   m_SpanKey.spanIndex = VARIANT2INDEX(var);
+   if ( 10000 == m_SpanKey.spanIndex)
    {
-      m_spanKey.spanIndex = ALL_SPANS;
+      m_SpanKey.spanIndex = ALL_SPANS;
    }
 
    var.vt = VT_INDEX;
@@ -287,10 +287,10 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
       return hr;
    }
 
-   m_spanKey.girderIndex = VARIANT2INDEX(var);
-   if ( 10000 == m_spanKey.girderIndex )
+   m_SpanKey.girderIndex = VARIANT2INDEX(var);
+   if ( 10000 == m_SpanKey.girderIndex )
    {
-      m_spanKey.girderIndex = ALL_GIRDERS;
+      m_SpanKey.girderIndex = ALL_GIRDERS;
    }
    
    var.vt = VT_R8;

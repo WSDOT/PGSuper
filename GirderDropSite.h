@@ -58,7 +58,7 @@ private:
    CPGSuperDocBase* m_pDoc;
    CGirderModelChildFrame* m_pFrame;
    CComPtr<iDisplayObject> m_DispObj;
-   CSpanKey m_spanKey;
+   CSpanKey m_SpanKey;
 };
 
 #endif // !defined(AFX_GIRDERDROPSITE_H__1F8A97C9_F789_11D4_8B9B_006097C68A9C__INCLUDED_)

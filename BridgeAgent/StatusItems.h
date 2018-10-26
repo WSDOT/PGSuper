@@ -84,7 +84,7 @@ public:
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   CSpanKey m_spanKey;
+   CSpanKey m_SpanKey;
 };
 
 class pgsPointLoadStatusCallback : public iStatusCallback
@@ -107,7 +107,7 @@ public:
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   CSpanKey m_spanKey;
+   CSpanKey m_SpanKey;
 };
 
 ///////////////////////////
@@ -131,7 +131,7 @@ public:
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   CSpanKey m_spanKey;
+   CSpanKey m_SpanKey;
 };
 
 ///////////////////////////

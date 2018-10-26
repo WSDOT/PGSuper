@@ -45,9 +45,9 @@ void CPrestressTool::GetPretensionStress(IntervalIndexType intervalIdx,ResultsTy
    }
 
    GET_IFACE(IIntervals,         pIntervals);
-   GET_IFACE(IPretensionForce,   pPrestressForce);
-   GET_IFACE(IStrandGeometry,    pStrandGeom);
-   GET_IFACE(ISectionProperties, pSectProp);
+   GET_IFACE_NOCHECK(IPretensionForce,   pPrestressForce);
+   GET_IFACE_NOCHECK(IStrandGeometry,    pStrandGeom);
+   GET_IFACE_NOCHECK(ISectionProperties, pSectProp);
 
    std::vector<Float64> moments;
    std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());

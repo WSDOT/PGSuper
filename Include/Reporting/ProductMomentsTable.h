@@ -35,7 +35,7 @@ std::_tstring REPORTINGFUNC LiveLoadPrefix(pgsTypes::LiveLoadType llType);
 void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating);
 
 ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey& girderkKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
-                                                             bool* pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,IntervalIndexType* pContinuityInterval,GroupIndexType* pStartGroup,GroupIndexType* pNGroups);
+                                                             bool* pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,IntervalIndexType* pContinuityInterval,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup);
 
 /*****************************************************************************
 CLASS 

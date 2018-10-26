@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\MomentCapacityParagraphBuilder.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
 #include <PsgLib\SpecLibraryEntry.h>

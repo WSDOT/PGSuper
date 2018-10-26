@@ -258,6 +258,11 @@ bool pgsPointOfInterest::operator==(const pgsPointOfInterest& rOther) const
    }
 }
 
+bool pgsPointOfInterest::operator!=(const pgsPointOfInterest& rOther) const
+{
+   return !(*this == rOther);
+}
+
 void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi,Float64 Xsp,Float64 Xg,Float64 Xgp)
 {
    m_SegmentKey = segmentKey;

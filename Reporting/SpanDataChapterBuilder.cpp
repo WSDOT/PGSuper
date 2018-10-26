@@ -22,10 +22,8 @@
 
 #include "StdAfx.h"
 #include <Reporting\SpanDataChapterBuilder.h>
-#include <Reporting\StrandEccTable.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\Intervals.h>
 
 
 #ifdef _DEBUG
@@ -56,7 +54,7 @@ LPCTSTR CSpanDataChapterBuilder::GetName() const
    // The name of this chapter doesn't make sense... neither does the data
    // though it is important (eccentricities and component dimensions)
    // Find a better way to report this
-   return TEXT("Span Data");
+   return TEXT("Span Lengths");
 }
 
 rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -69,73 +67,150 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
-
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   USES_CONVERSION;
 
-   // Strand Eccentricity Table
-   rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   *pChapter << p;
-
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+
+   rptParagraph* pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
+   if ( nSpans == nGroups )
+   {
+      *pPara << _T("C-C Pier = Abutment/Pier Line to Abutment/Pier Line length measured along the girder") << rptNewLine;
+      *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the girder") << rptNewLine;
+      *pPara << _T("Girder Length, Plan = End to end length of the girder projected into a horizontal plane") << rptNewLine;
+      *pPara << _T("Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = ") << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("C-C Pier = Abutment/Pier/Temp Support Line to Abutment/Pier/Temp Support Line length measured along the segment") << rptNewLine;
+      *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the segment") << rptNewLine;
+      *pPara << _T("Segment Length, Plan = End to end length of the segment projected into a horizontal plane") << rptNewLine;
+      *pPara << _T("Segment Length, Along Grade = End to end length of segment measured along grade of the segment (slope adjusted) = ") << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
+   }
+   *pPara << rptNewLine;
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetSpanLengthUnit(), false );
+
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(7);
+   scalar.SetPrecision(4);
+   scalar.SetTolerance(1.0e-6);
+
+   CComPtr<IDirectionDisplayUnitFormatter> direction_formatter;
+   direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
+   direction_formatter->put_BearingFormat(VARIANT_TRUE);
+
+   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
+      ColumnIndexType nColumns;
+      std::_tstring strSegmentLabel;
+      if ( nGroups == nSpans )
+      {
+         strSegmentLabel = _T("Girder");
+         nColumns = 7;
+      }
+      else
+      {
+         strSegmentLabel = _T("Segment");
+         nColumns = 8;
+      }
+
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+      pTable->SetNumberOfHeaderRows(2);
+
+      (*pPara) << pTable << rptNewLine;
+
+      ColumnIndexType row0col = 0;
+      ColumnIndexType row1col = 0;
+
+      if ( nSpans != nGroups )
+      {
+         pTable->SetRowSpan(0,row0col,2);
+         pTable->SetRowSpan(1,row1col++,SKIP_CELL);
+         (*pTable)(0,row0col++) << strSegmentLabel;
+      }
+
+      pTable->SetRowSpan(0,row0col,2);
+      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
+      (*pTable)(0,row0col++) << COLHDR(_T("C-C Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+      pTable->SetRowSpan(0,row0col,2);
+      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
+      (*pTable)(0,row0col++) << COLHDR(_T("C-C Bearing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+      pTable->SetColumnSpan(0,row0col,2);
+      (*pTable)(0,row0col++) << strSegmentLabel << _T(" Length");
+      pTable->SetColumnSpan(0,row0col++,SKIP_CELL);
+      (*pTable)(1,row1col++) << COLHDR(_T("Plan"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(1,row1col++) << COLHDR(_T("Along") << rptNewLine << _T("Grade"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+      pTable->SetRowSpan(0,row0col,2);
+      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
+      (*pTable)(0,row0col++) << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+
+      pTable->SetColumnSpan(0,row0col,2);
+      (*pTable)(0,row0col++) << _T("End Distance");
+      pTable->SetColumnSpan(0,row0col++,SKIP_CELL);
+      (*pTable)(1,row1col++) << COLHDR(_T("Start"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(1,row1col++) << COLHDR(_T("End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+      RowIndexType row = pTable->GetNumberOfHeaderRows();
+
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
       GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
-      
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         CGirderKey girderKey(grpIdx,gdrIdx);
+
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
+            ColumnIndexType col = 0;
 
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+            CSegmentKey segmentKey(girderKey,segIdx);
 
-            if ( spMode == pgsTypes::spmGross )
+            if ( nSpans != nGroups )
             {
-               CStrandEccTable ecc_table;
-               *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
-            }
-            else
-            {
-               for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-               {
-                  CStrandEccTable ecc_table;
-                  *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
-               }
+               (*pTable)(row,col++) << LABEL_SEGMENT(segIdx);
             }
 
-            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-            *pChapter << p;
-            *p << _T("Eccentricities measured from neutral axis of non-composite section") << rptNewLine;
-            *p << _T("Positive values indicate strands are below the centroid") << rptNewLine;
-            *p << rptNewLine;
+            Float64 L = pBridge->GetSegmentLayoutLength(segmentKey);
+            (*pTable)(row,col++) << length.SetValue(L);
 
-            p = new rptParagraph;
-            *pChapter << p;
+            L = pBridge->GetSegmentSpanLength(segmentKey);
+            (*pTable)(row,col++) << length.SetValue(L);
 
-            *p << _T("Overall Length = ") << length.SetValue( pBridge->GetSegmentLength(thisSegmentKey) ) << rptNewLine;
-            *p << _T("Span Length = ") << length.SetValue( pBridge->GetSegmentSpanLength(thisSegmentKey) )<<_T(" (CL Bearing to CL Bearing)") << rptNewLine;
-            *p << _T("Left End Distance = ") << length.SetValue( pBridge->GetSegmentStartEndDistance(thisSegmentKey) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
-            *p << _T("Right End Distance = ") << length.SetValue( pBridge->GetSegmentEndEndDistance(thisSegmentKey) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
-            *p << rptNewLine;
-         }
-      }
-   }
+            L = pBridge->GetSegmentLength(segmentKey);
+            (*pTable)(row,col++) << length.SetValue(L);
+
+            L = pBridge->GetSegmentPlanLength(segmentKey);
+            (*pTable)(row,col++) << length.SetValue(L);
+
+            Float64 slope = pBridge->GetSegmentSlope(segmentKey);
+            (*pTable)(row,col++) << scalar.SetValue(slope);
+
+            Float64 endDist;
+            endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
+            (*pTable)(row,col++) << length.SetValue(endDist);
+
+            endDist = pBridge->GetSegmentEndEndDistance(segmentKey);
+            (*pTable)(row,col++) << length.SetValue(endDist);
+
+            row++;
+         } // next segment
+      } // next girder
+   } // next group
 
    return pChapter;
 }

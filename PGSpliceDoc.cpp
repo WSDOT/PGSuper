@@ -45,6 +45,7 @@
 #include "PGSuperAppPlugin\EditGirderline.h"
 #include "PGSuperAppPlugin\EditPrecastSegment.h"
 #include "PGSuperAppPlugin\EditTimeline.h"
+#include <PgsExt\MacroTxn.h>
 
 // Interfaces
 #include <EAF\EAFTransactions.h>
@@ -68,11 +69,11 @@ IMPLEMENT_DYNCREATE(CPGSpliceDoc, CPGSuperDocBase)
 BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSuperDocBase)
 	//{{AFX_MSG_MAP(CPGSpliceDoc)
 	ON_COMMAND(ID_PROJECT_BRIDGEDESC, OnEditBridgeDescription)
-   ON_COMMAND_RANGE(ID_EDIT_SEGMENT,ID_EDIT_SEGMENT_MAX,OnEditSegment)
-	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
+   ON_COMMAND_RANGE(ID_EDIT_SEGMENT_MIN,ID_EDIT_SEGMENT_MAX,OnEditSegment)
+	ON_COMMAND(ID_EDIT_SEGMENT, OnEditSegment)
 	ON_COMMAND(ID_EDIT_CLOSURE, OnEditClosureJoint)
    ON_UPDATE_COMMAND_UI(ID_EDIT_CLOSURE,OnUpdateEditClosureJoint)
-	ON_COMMAND(ID_EDIT_GIRDERLINE, OnEditGirderline)
+	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
    ON_COMMAND(ID_INSERT_TEMPORARY_SUPPORT,OnInsertTemporarySupport)
    ON_UPDATE_COMMAND_UI(ID_EDIT_TEMPORARY_SUPPORT,OnUpdateEditTemporarySupport)
    ON_COMMAND(ID_EDIT_TEMPORARY_SUPPORT,OnEditTemporarySupport)
@@ -130,7 +131,7 @@ BOOL CPGSpliceDoc::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINF
         AFX_NOTIFY * notify = reinterpret_cast<AFX_NOTIFY*>(pExtra) ;
         if ( notify->pNMHDR->code == TBN_DROPDOWN )
         {
-           if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_EDIT_GIRDER )
+           if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_EDIT_SEGMENT )
            {
               return OnEditGirderDropDown(notify->pNMHDR,notify->pResult); 
            }
@@ -151,7 +152,7 @@ void CPGSpliceDoc::DoIntegrateWithUI(BOOL bIntegrate)
 
       GET_IFACE(IEAFToolbars,pToolBars);
       CEAFToolBar* pToolBar = pToolBars->GetToolBar(nID);
-      pToolBar->CreateDropDownButton(ID_EDIT_GIRDER,NULL,BTNS_WHOLEDROPDOWN);
+      pToolBar->CreateDropDownButton(ID_EDIT_SEGMENT,NULL,BTNS_WHOLEDROPDOWN);
    }
 }
 
@@ -189,7 +190,7 @@ BOOL CPGSpliceDoc::OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr)
    // This method gets called when the down arrow toolbar button is used
    // It creates the drop down menu with the edit choices on it
    NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
-   if ( pnmtb->iItem != ID_EDIT_GIRDER )
+   if ( pnmtb->iItem != ID_EDIT_SEGMENT )
    {
       return FALSE; // not our button
    }
@@ -197,13 +198,12 @@ BOOL CPGSpliceDoc::OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr)
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_EDIT_GIRDER) );
    CMenu* pMenu = menu.GetSubMenu(0);
-   //pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
    CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
 
    GET_IFACE(IEAFToolbars,pToolBars);
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
-   int idx = pToolBar->CommandToIndex(ID_EDIT_GIRDER,NULL);
+   int idx = pToolBar->CommandToIndex(ID_EDIT_SEGMENT,NULL);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
@@ -220,14 +220,14 @@ void CPGSpliceDoc::OnEditSegment(UINT nID)
 
    GroupIndexType  grpIdx  = m_Selection.GroupIdx;
    GirderIndexType gdrIdx  = m_Selection.GirderIdx;
-   SegmentIndexType segIdx = SegmentIndexType(nID - ID_EDIT_SEGMENT);
+   SegmentIndexType segIdx = SegmentIndexType(nID - ID_EDIT_SEGMENT_MIN);
 
    CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
    EditGirderSegmentDescription(segmentKey,EGS_GENERAL);
 }
 
-void CPGSpliceDoc::OnEditGirder()
+void CPGSpliceDoc::OnEditSegment()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -347,7 +347,7 @@ void CPGSpliceDoc::OnEditClosureJoint()
    EditClosureJointDescription(pClosure,EGS_GENERAL);
 }
 
-void CPGSpliceDoc::OnEditGirderline()
+void CPGSpliceDoc::OnEditGirder()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -549,7 +549,16 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
          thisSegmentKey.girderIndex = ALL_GIRDERS;
       }
 
-      txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(thisSegmentKey,newData);
+      txnTransaction* pTxn = new txnEditPrecastSegment(thisSegmentKey,newData);
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
@@ -590,7 +599,17 @@ bool CPGSpliceDoc::EditClosureJointDescription(const CClosureJointData* pClosure
          closureKey.girderIndex = ALL_GIRDERS;
       }
 
-      txnEditClosureJoint* pTxn = new txnEditClosureJoint(closureKey,newData);
+      txnTransaction* pTxn = new txnEditClosureJoint(closureKey,newData);
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
+
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }

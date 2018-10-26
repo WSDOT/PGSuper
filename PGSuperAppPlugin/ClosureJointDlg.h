@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <PgsExt\ClosureJointData.h>
 #include "ClosureJointGeneralPage.h"
 #include "ClosureJointLongitudinalReinforcementPage.h"

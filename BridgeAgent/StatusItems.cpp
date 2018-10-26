@@ -145,7 +145,7 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 pgsPointLoadStatusItem::pgsPointLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey) :
 pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanKey), 
-m_LoadIndex(value), m_spanKey(spanKey)
+m_LoadIndex(value), m_SpanKey(spanKey)
 {
 }
 
@@ -157,7 +157,7 @@ bool pgsPointLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   return (other->m_LoadIndex == m_LoadIndex && other->m_spanKey == m_spanKey);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanKey == m_SpanKey);
 }
 
 ///////////////////////////////
@@ -215,7 +215,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey) :
 pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanKey), 
-m_LoadIndex(value), m_spanKey(spanKey)
+m_LoadIndex(value), m_SpanKey(spanKey)
 {
 }
 
@@ -227,7 +227,7 @@ bool pgsDistributedLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   return (other->m_LoadIndex == m_LoadIndex && other->m_spanKey == m_spanKey);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanKey == m_SpanKey);
 }
 
 //////////////////////////////////////////////////////////
@@ -285,7 +285,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey):
 pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanKey), 
-m_LoadIndex(value), m_spanKey(spanKey)
+m_LoadIndex(value), m_SpanKey(spanKey)
 {
 }
 
@@ -297,7 +297,7 @@ bool pgsMomentLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   return (other->m_LoadIndex == m_LoadIndex && other->m_spanKey == m_spanKey);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanKey == m_SpanKey);
 }
 ///////////////////////////
 

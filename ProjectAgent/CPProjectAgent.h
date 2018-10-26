@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 #define EVT_PROJECTPROPERTIES 0x0001
 //#define EVT_UNITS             0x0002
@@ -60,7 +60,7 @@ public:
       }
 
 		pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -96,7 +96,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -121,7 +121,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -160,7 +160,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -192,7 +192,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -230,7 +230,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -256,7 +256,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -282,7 +282,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -309,7 +309,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -346,7 +346,7 @@ public:
       }
 
 		pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -372,7 +372,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -410,7 +410,7 @@ public:
       }
 
 		pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -446,7 +446,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -482,7 +482,7 @@ public:
       }
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -512,7 +512,7 @@ public:
 		T* pT = (T*)this;
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -532,7 +532,7 @@ public:
 		T* pT = (T*)this;
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
@@ -552,7 +552,7 @@ public:
 		T* pT = (T*)this;
 
       pT->Lock();
-		HRESULT ret;
+		HRESULT ret = S_OK;
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{

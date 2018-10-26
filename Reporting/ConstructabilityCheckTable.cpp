@@ -159,9 +159,13 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
             pGdrHaunch->GetHaunchDetails(girderKey,&haunch_details);
 
             if ( 0 < haunch_details.HaunchDiff )
-               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            {
+               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the span exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            }
             else
-               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the ends of the girder exceeds the depth at the middle by ") << dim2.SetValue(-haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            {
+               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the ends of the span exceeds the depth at the middle by ") << dim2.SetValue(-haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            }
          }
          else
          {
@@ -184,94 +188,113 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
 
 void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const
 {
-#pragma Reminder("IMPLEMENT: this needs attention")
-   //GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   //std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, girder,pgsTypes::BridgeSite1, POI_MIDSPAN);
-   //ATLASSERT(pmid.size()==1);
-   //pgsPointOfInterest poiMidSpan(pmid.front());
+   GET_IFACE2(pBroker,ICamber,pCamber);
 
-   //GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   //const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ISpecification, pSpec );
+   std::_tstring spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
+   Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
 
-   //GET_IFACE2(pBroker,ICamber,pCamber);
+   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
+   *pTitle << _T("Camber");
 
-   //GET_IFACE2( pBroker, ILibrary, pLib );
-   //GET_IFACE2( pBroker, ISpecification, pSpec );
-   //std::_tstring spec_name = pSpec->GetSpecification();
-   //const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-   //Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
-   //Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   rptParagraph* pBody = new rptParagraph;
+   *pChapter << pBody;
 
-   //rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-   //*pChapter << pTitle;
-   //*pTitle << _T("Camber");
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
-   //rptParagraph* pBody = new rptParagraph;
-   //*pChapter << pBody;
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
 
-   //INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
+   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   //rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+   *pBody << pTable << rptNewLine;
 
-   //pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   //pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   (*pTable)(0,0) << _T("");
+   (*pTable)(0,1) << COLHDR(_T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
-   //*pBody << pTable << rptNewLine;
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   //(*pTable)(0,0) << _T("");
-   //(*pTable)(0,1) << COLHDR(_T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
 
-   //RowIndexType row = pTable->GetNumberOfHeaderRows();
-   //Float64 C = 0;
-   //if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-   //{
-   //   C = pCamber->GetScreedCamber( poiMidSpan ) ;
-   //   (*pTable)(row,  0) << _T("Screed Camber, C");
-   //   (*pTable)(row++,1) << dim.SetValue(C);
-   //}
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
-   //// get # of days for creep
-   //Float64 D = 999;
-   //if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
-   //{
-   //   D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
-   //   (*pTable)(row,0) << _T("D @ ") << max_days << _T(" days (") << Sub2(_T("D"),max_days) << _T(")");
-   //   if ( D < 0 )
-   //      (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);
-   //   else
-   //      (*pTable)(row++,1) << dim.SetValue(D);
-   //}
-   //else
-   //{
-   //   D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-   //   (*pTable)(row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
-   //   if ( D < 0 )
-   //      (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);
-   //   else
-   //      (*pTable)(row++,1) << dim.SetValue(D);
+   SpanIndexType startSpanIdx, endSpanIdx;
+   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
+   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   {
+      CSpanKey spanKey(spanIdx,girderKey.girderIndex);
+      std::vector<pgsPointOfInterest> vPoi = pPointOfInterest->GetPointsOfInterest(spanKey,POI_SPAN | POI_5L);
+      ATLASSERT(vPoi.size()==1);
+      pgsPointOfInterest poiMidSpan(vPoi.front());
 
-   //   (*pTable)(row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
-   //   Float64 D120 = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME) ;
-   //   if ( D120 < 0 )
-   //      (*pTable)(row++,1) << color(Red) << dim.SetValue(D120) << color(Black);
-   //   else
-   //      (*pTable)(row++,1) << dim.SetValue(D120);
-   //}
+      Float64 C = 0;
+      if ( deckType != pgsTypes::sdtNone )
+      {
+         C = pCamber->GetScreedCamber( poiMidSpan ) ;
+         (*pTable)(row,  0) << _T("Screed Camber, C");
+         (*pTable)(row++,1) << dim.SetValue(C);
+      }
 
-   //if ( D < C )
-   //{
-   //   rptParagraph* p = new rptParagraph;
-   //   *pChapter << p;
+      // get # of days for creep
+      Float64 D = 999;
+      if ( deckType == pgsTypes::sdtNone )
+      {
+         D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
+         (*pTable)(row,0) << _T("D @ ") << max_days << _T(" days (") << Sub2(_T("D"),max_days) << _T(")");
+         if ( D < 0 )
+         {
+            (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);
+         }
+         else
+         {
+            (*pTable)(row++,1) << dim.SetValue(D);
+         }
+      }
+      else
+      {
+         D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+         (*pTable)(row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
+         if ( D < 0 )
+         {
+            (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);
+         }
+         else
+         {
+            (*pTable)(row++,1) << dim.SetValue(D);
+         }
 
-   //   *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
-   //}
-   //else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
-   //{
-   //   rptParagraph* p = new rptParagraph;
-   //   *pChapter << p;
+         (*pTable)(row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
+         Float64 D120 = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME) ;
+         if ( D120 < 0 )
+         {
+            (*pTable)(row++,1) << color(Red) << dim.SetValue(D120) << color(Black);
+         }
+         else
+         {
+            (*pTable)(row++,1) << dim.SetValue(D120);
+         }
+      }
 
-   //   *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
-   //}
+      if ( D < C )
+      {
+         rptParagraph* p = new rptParagraph;
+         *pChapter << p;
+
+         *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+      }
+      else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+      {
+         rptParagraph* p = new rptParagraph;
+         *pChapter << p;
+
+         *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+      }
+   }
 }
 
 void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const

@@ -130,7 +130,9 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
    *pPara << rptRcDateTime() << rptNewLine;
 
    if (m_bFullVersion)
+   {
       *pPara << rptNewLine << rptNewLine;
+   }
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
@@ -161,7 +163,9 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
    }
 
    if (m_bFullVersion)
+   {
       *pPara << rptNewLine << rptNewLine;
+   }
 
    GET_IFACE(IProjectProperties,pProps);
    GET_IFACE(IEAFDocument,pDocument);
@@ -177,7 +181,9 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
    pTbl->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT ) );
 
    if (m_bFullVersion)
+   {
       *pPara3 << rptNewLine << rptNewLine << rptNewLine;
+   }
 
    *pPara3 << pTbl;
    (*pTbl)(0,0) << _T("Bridge Name");
@@ -201,14 +207,18 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
 
    // Throw in a page break
    if (m_bFullVersion)
+   {
       *p << rptNewPage;
+   }
 
    // report library usage information
    p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pTitlePage << p;
 
    if (m_bFullVersion)
+   {
       *p << rptNewLine << rptNewLine;
+   }
 
    *p << _T("Library Usage") << rptNewLine;
    p = CLibraryUsageParagraph().Build(m_pBroker);

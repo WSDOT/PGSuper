@@ -32,7 +32,7 @@
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\StrandData.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PierData2.h>

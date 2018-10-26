@@ -6719,6 +6719,9 @@ BoundaryConditionType CGirderModelManager::GetLBAMBoundaryConditions(bool bConti
 {
    if ( !bContinuous )
    {
+      // we are building a simple-span only model. always return a roller boundary condition
+      // the other LBAM building code will detect that all boundary conditions are rollers
+      // and will change one of them to a hinge so that equilibrium in the LBAM is maintained
       return bcRoller;
    }
 
@@ -6772,7 +6775,7 @@ BoundaryConditionType CGirderModelManager::GetLBAMBoundaryConditions(bool bConti
          break;
 
       default:
-         ATLASSERT(FALSE); // is there a new connection type?
+         ATLASSERT(FALSE); // is there a new connection type? // interior piers can only be hinge or roller
          bc = bcPinned;
       }
 
@@ -11079,10 +11082,28 @@ void CGirderModelManager::ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType
 
    Float64 span_end = span_start + span_length;
 
+   GET_IFACE(IPointOfInterest,pPoi);
+   pgsPointOfInterest startPoi = pPoi->ConvertSpanPointToPoi(spanIdx,gdrIdx,span_start);
+   pgsPointOfInterest endPoi   = pPoi->ConvertSpanPointToPoi(spanIdx,gdrIdx,span_end);
+   CSegmentKey startSegmentKey = startPoi.GetSegmentKey();
+   CSegmentKey endSegmentKey   = endPoi.GetSegmentKey();
+
+   bool bStartCantilever, bEndCantilever, bDummy;
+   pBridge->ModelCantilevers(startSegmentKey,&bStartCantilever,&bDummy);
+   pBridge->ModelCantilevers(endSegmentKey, &bDummy, &bEndCantilever);
+
    Float64 cf_points_in_span[2];
    IndexType num_cf_points_in_span = GetCfPointsInRange(cf_locs,span_start,span_end,cf_points_in_span);
-   ATLASSERT(num_cf_points_in_span == 0);
-   // there shouldn't be any contraflexure points in a pin-pin span
+   if ( bStartCantilever || bEndCantilever )
+   {
+      // there should be no more than 2 contraflexure points if cantilevers are modeled
+      ATLASSERT(num_cf_points_in_span <= 2);
+   }
+   else
+   {
+      // there shouldn't be any contraflexure points in a pin-pin span
+      ATLASSERT(num_cf_points_in_span == 0);
+   }
 #endif
 
    GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
@@ -11972,12 +11993,14 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
    // This is the worst case loading
    // Increased/Reduced pad depth due to Sag/Crest vertical curves is accounted for
    CollectionIndexType nPOI = vPoi.size();
-   for ( CollectionIndexType poiIdx = 0; poiIdx < nPOI; poiIdx++ )
+   std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
       Float64 wslab;
       Float64 wslab_panel;
 
-      const pgsPointOfInterest& poi = vPoi[poiIdx];
+      const pgsPointOfInterest& poi = *poiIter;
 
       Float64 top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi);
       Float64 slab_offset            = pBridge->GetSlabOffset(poi);
@@ -12483,16 +12506,14 @@ void CGirderModelManager::GetMainConstructionLoad(const CSegmentKey& segmentKey,
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
    ATLASSERT(vPoi.size()!=0);
 
+   std::vector<pgsPointOfInterest>::iterator prevPoiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator currPoiIter = prevPoiIter+1;
+   std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
 
-   // loop controllers are equivalent... the version that is used doesn't have to do
-   // the subtraction operation every time the loop control is evaluated
-   //int num_poi = vPoi.size();
-   //for ( int i = 0; i < num_poi-1; i++ )
-   IndexType num_poi = vPoi.size()-1;
-   for ( IndexType i = 0; i < num_poi; i++ )
+   for ( ; currPoiIter != poiIterEnd; prevPoiIter++, currPoiIter++ )
    {
-      const pgsPointOfInterest& prevPoi = vPoi[i];
-      const pgsPointOfInterest& currPoi = vPoi[i+1];
+      const pgsPointOfInterest& prevPoi = *prevPoiIter;
+      const pgsPointOfInterest& currPoi = *currPoiIter;
 
       // Width of loaded area, and load intensity
       Float64 startWidth, endWidth;

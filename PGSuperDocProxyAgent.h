@@ -265,7 +265,7 @@ public:
 
 // IDesign
 public:
-   virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey);
 
 // IViews
 public:

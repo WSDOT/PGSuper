@@ -22,7 +22,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 /*****************************************************************************
 CLASS 

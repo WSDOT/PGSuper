@@ -27,7 +27,7 @@
 #include <PgsExt\SplicedGirderData.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <IFace\Project.h>
 
 struct txnEditGirderData

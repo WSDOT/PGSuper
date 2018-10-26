@@ -28,7 +28,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\BridgeDescription2.h>
 
 

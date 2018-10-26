@@ -25,7 +25,7 @@
 #include <Reporting\ReportNotes.h>
 #include <Reporting\InterfaceShearDetails.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\BridgeDescription2.h>
 

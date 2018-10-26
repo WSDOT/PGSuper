@@ -812,6 +812,9 @@ void CBridgePlanView::UpdateSegmentTooltips()
       for ( GirderIndexType girderIdx = 0; girderIdx < nGirders; girderIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(girderIdx);
+#if defined _DEBUG
+         GirderIDType girderID = pGirder->GetID();
+#endif
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
@@ -899,7 +902,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
 #if defined _DEBUG
             CString strSegID;
-            strSegID.Format(_T("\r\n\r\nSegment ID: %d"),ID);
+            strSegID.Format(_T("\r\n\r\nGirder ID: %d\r\nSegment ID: %d"),girderID,ID);
 
             strMsg += strSegID;
 #endif // _DEBUG

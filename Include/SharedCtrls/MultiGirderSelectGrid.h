@@ -26,7 +26,7 @@
 //
 #include <PGSuperAll.h>
 #include <grid\gxall.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 // Container for spans and girders on/off settings
 typedef std::vector<bool> GirderOnVector;

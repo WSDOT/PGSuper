@@ -41,7 +41,7 @@ COPYRIGHT
 #endif
 
 #if !defined INCLUDED_PGSEXT_POINTOFINTEREST_H_
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #endif
 
 // PROJECT INCLUDES

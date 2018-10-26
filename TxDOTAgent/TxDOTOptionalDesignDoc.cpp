@@ -1274,11 +1274,11 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wncdc.m_Fractional = true;
    wncdc.m_StartLocation = 0.0;
    wncdc.m_EndLocation = -1.0;
-   wncdc.m_spanKey.spanIndex = 0;
-   wncdc.m_spanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
+   wncdc.m_SpanKey.spanIndex = 0;
+   wncdc.m_SpanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
    pUserDefinedLoadData->AddDistributedLoad(wncdc);
 
-   wncdc.m_spanKey.girderIndex = TOGA_FABR_GDR;
+   wncdc.m_SpanKey.girderIndex = TOGA_FABR_GDR;
    pUserDefinedLoadData->AddDistributedLoad(wncdc);
 
    // w comp, dc
@@ -1293,11 +1293,11 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wcdc.m_Fractional = true;
    wcdc.m_StartLocation = 0.0;
    wcdc.m_EndLocation = -1.0;
-   wcdc.m_spanKey.spanIndex = 0;
-   wcdc.m_spanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
+   wcdc.m_SpanKey.spanIndex = 0;
+   wcdc.m_SpanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
    pUserDefinedLoadData->AddDistributedLoad(wcdc);
 
-   wcdc.m_spanKey.girderIndex = TOGA_FABR_GDR;
+   wcdc.m_SpanKey.girderIndex = TOGA_FABR_GDR;
    pUserDefinedLoadData->AddDistributedLoad(wcdc);
 
    // w overlay 
@@ -1308,13 +1308,6 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    pDeck->WearingSurface = pgsTypes::wstFutureOverlay;
    pDeck->bInputAsDepthAndDensity = false;
    pDeck->OverlayWeight = wl;
-
-
-   // Tricky: Could write a lot of brittle logic here to make sure seed data is copied to girders and that 
-   //         all editing information is translated properly. However, bridge data already has something like
-   //         this. Just hand it a very different description (a default).
-   CBridgeDescription2 bogus_descr;
-   bridgeDesc.ReconcileEdits(m_pBroker, &bogus_descr);
 
 
    // Now we can deal with girder data for original and precaster optional designs

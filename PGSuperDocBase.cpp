@@ -3335,6 +3335,24 @@ void CPGSuperDocBase::OnInsert()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   PierIndexType nPiers = pBridgeDesc->GetPierCount();
+   IndexType n = 0; 
+   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   {
+      const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
+      if ( !pPier->HasCantilever() )
+      {
+         n++;
+      }
+   }
+   if ( n == 0 )
+   {
+      AfxMessageBox(_T("A span cannot be inserted into the bridge.\r\nRemove one of the cantilevers and try again."),MB_OK | MB_ICONINFORMATION);
+      return;
+   }
+
    CInsertSpanDlg dlg(pIBridgeDesc->GetBridgeDescription());
    if ( dlg.DoModal() == IDOK )
    {

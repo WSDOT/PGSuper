@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\PointOfInterestChapterBuilder.h>
 #include <IFace\PointOfInterest.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

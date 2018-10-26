@@ -1665,12 +1665,15 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
       CGirderKey thisGirderKey(girderKey);
       thisGirderKey.groupIndex = grpIdx;
 
+      const CSplicedGirderData* pThisGirder = pIBridgeDesc->GetGirder(thisGirderKey);
+      GirderIDType thisGirderID = pThisGirder->GetID();
+
 #pragma Reminder("UPDATE: draw portion of strand in a segment")
       // this next block of code is a cop-out. it would be better to 
       // draw the duct in the segment if it is erected.
       //
       // IF THIS GETS FIXED, RE-EVALUATE THE USE OF GET_IFACE2_NOCHECK above
-      if ( !pTimelineMgr->AreAllSegmentsErected(thisGirderKey,eventIdx) )
+      if ( !pTimelineMgr->AreAllSegmentsErected(thisGirderID,eventIdx) )
       {
          continue; // if all segments are not erected, there is nothing to draw
       }
@@ -1682,7 +1685,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
       {
          bool bIsTendonInstalled = true;
          IndexType index = ductIdx/nWebs;
-         EventIndexType ptEventIdx = pTimelineMgr->GetStressTendonEventIndex(thisGirderKey,index);
+         EventIndexType ptEventIdx = pTimelineMgr->GetStressTendonEventIndex(thisGirderID,index);
          if ( eventIdx < ptEventIdx || ptEventIdx == INVALID_INDEX )
          {
             bIsTendonInstalled = false;
@@ -1880,8 +1883,8 @@ template <class T> bool IsLoadApplicable(IBroker* pBroker,const T* pLoad,EventIn
    SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
    SpanIndexType endSpanIdx   = (SpanIndexType)(endPierIdx-1);
 
-   bool bMatchSpan = ((startSpanIdx <= pLoad->m_spanKey.spanIndex && pLoad->m_spanKey.spanIndex <= endSpanIdx) || pLoad->m_spanKey.spanIndex == ALL_SPANS) ? true : false;
-   bool bMatchGirder = (pLoad->m_spanKey.girderIndex == girderKey.girderIndex || pLoad->m_spanKey.girderIndex == ALL_GIRDERS) ? true : false;
+   bool bMatchSpan = ((startSpanIdx <= pLoad->m_SpanKey.spanIndex && pLoad->m_SpanKey.spanIndex <= endSpanIdx) || pLoad->m_SpanKey.spanIndex == ALL_SPANS) ? true : false;
+   bool bMatchGirder = (pLoad->m_SpanKey.girderIndex == girderKey.girderIndex || pLoad->m_SpanKey.girderIndex == ALL_GIRDERS) ? true : false;
 
    return bMatchSpan && bMatchGirder;
 }
@@ -1924,8 +1927,8 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
 
          COLORREF color = GetLoadGroupColor(pLoad->m_LoadCase);
 
-         SpanIndexType startSpanIdx = (pLoad->m_spanKey.spanIndex == ALL_SPANS ? 0 : pLoad->m_spanKey.spanIndex);
-         SpanIndexType endSpanIdx   = (pLoad->m_spanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
+         SpanIndexType startSpanIdx = (pLoad->m_SpanKey.spanIndex == ALL_SPANS ? 0 : pLoad->m_SpanKey.spanIndex);
+         SpanIndexType endSpanIdx   = (pLoad->m_SpanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
          for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
          {
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
@@ -2026,8 +2029,8 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
 
          COLORREF color = GetLoadGroupColor(pLoad->m_LoadCase);
 
-         SpanIndexType startSpanIdx = (pLoad->m_spanKey.spanIndex == ALL_SPANS ? 0 : pLoad->m_spanKey.spanIndex);
-         SpanIndexType endSpanIdx   = (pLoad->m_spanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
+         SpanIndexType startSpanIdx = (pLoad->m_SpanKey.spanIndex == ALL_SPANS ? 0 : pLoad->m_SpanKey.spanIndex);
+         SpanIndexType endSpanIdx   = (pLoad->m_SpanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
          for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
          {
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
@@ -2537,6 +2540,64 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
             BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
             dimLine->SetWitnessLength(-twip_offset/2);
          }
+
+         // Cantilevers         
+         bool bStartCantilever, bEndCantilever;
+         pBridge->ModelCantilevers(segmentKey,&bStartCantilever,&bEndCantilever);
+         if ( bStartCantilever )
+         {
+            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L,POIFIND_AND);
+            ATLASSERT(vPoi.size() == 1);
+            poiStart = vPoi.front();
+
+            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND);
+            ATLASSERT(vPoi.size() == 1);
+            poiEnd = vPoi.front();
+
+            Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+            Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+
+            from_point->put_X(group_offset + Xgs);
+            from_point->put_Y(-Hg);
+
+            to_point->put_X(group_offset + Xge);
+            to_point->put_Y(-Hg);
+
+            from_point->get_X(&x1);
+            to_point->get_X(&x2);
+
+            dimLine.Release();
+            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+            dimLine->SetWitnessLength(-twip_offset);
+         }
+
+         if ( bEndCantilever )
+         {
+            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND);
+            ATLASSERT(vPoi.size() == 1);
+            poiStart = vPoi.front();
+
+            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_10L,POIFIND_AND);
+            ATLASSERT(vPoi.size() == 1);
+            poiEnd = vPoi.front();
+
+            Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+            Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+
+            from_point->put_X(group_offset + Xgs);
+            from_point->put_Y(-Hg);
+
+            to_point->put_X(group_offset + Xge);
+            to_point->put_Y(-Hg);
+
+            from_point->get_X(&x1);
+            to_point->get_X(&x2);
+
+            dimLine.Release();
+            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+            dimLine->SetWitnessLength(-twip_offset);
+         }
+
       } // next segment
 
       if ( 1 < nSegments )

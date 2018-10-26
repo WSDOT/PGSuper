@@ -25,7 +25,7 @@
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -84,7 +84,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   GroupIndexType startGroup, nGroups;
+   GroupIndexType startGroup, endGroup;
    IntervalIndexType continuityIntervalIdx;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
@@ -98,7 +98,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    IntervalIndexType overlayIntervalIdx      = pIntervals->GetOverlayInterval(girderKey);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(girderKey);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&endGroup);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Deflections"));
 
@@ -117,7 +117,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    GET_IFACE2(pBroker,IProductForces2,pForces2);
 
 
-   for ( GroupIndexType grpIdx = startGroup; grpIdx < nGroups; grpIdx++ )
+   for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);

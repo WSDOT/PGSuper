@@ -223,7 +223,7 @@ interface IEditBridgeCallback
 };
 
 // Callback interface for copying girder properties. If you are extending the girder dialog with
-// additional girder-based data you may want to also have that data copied with the Copy Girder Properties
+// additional girder-based data you may want to also have that data copied when the Copy Girder Properties
 // command is executed. Implement this interface, and register it with the IExtendUI interface to
 // have your girder properties listed in the Copy Girder Properties dialog and for your code
 // to be notified when it is time to copy the data

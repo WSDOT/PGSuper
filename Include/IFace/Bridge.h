@@ -632,7 +632,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetSegmentCreepK2(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) = 0;
-   virtual matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) = 0;
+   virtual const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) = 0;
 
    // Closure Joint Concrete
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) = 0;
@@ -646,7 +646,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointCreepK2(const CClosureKey& closureKey) = 0;
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey) = 0;
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey) = 0;
-   virtual matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) = 0;
+   virtual const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) = 0;
 
    // Deck Concrete
    virtual pgsTypes::ConcreteType GetDeckConcreteType() = 0;
@@ -659,7 +659,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetDeckCreepK2() = 0;
    virtual Float64 GetDeckShrinkageK1() = 0;
    virtual Float64 GetDeckShrinkageK2() = 0;
-   virtual matConcreteBase* GetDeckConcrete() = 0;
+   virtual const matConcreteBase* GetDeckConcrete() = 0;
 
    // Prestressing Strand
    virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;

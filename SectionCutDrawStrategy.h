@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <PgsExt\PointOfInterest.h>
 
 interface iPointDisplayObject;

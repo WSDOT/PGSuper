@@ -24,7 +24,7 @@
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -187,7 +187,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& 
 }
 
 ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
-                                               bool *pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,IntervalIndexType* pContinuityInterval,GroupIndexType* pStartGroup,GroupIndexType* pNGroups)
+                                               bool *pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,IntervalIndexType* pContinuityInterval,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup)
 {
    ColumnIndexType nCols = 6; // location, girder, diaphragm, slab, slab pad, traffic barrier
    GET_IFACE2(pBroker,IProductLoads,pLoads);
@@ -201,7 +201,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    *pbPermit     = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    *pStartGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   *pNGroups    = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() : 1 );
+   *pEndGroup   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : *pStartGroup );
 
    CGirderKey key(*pStartGroup,girderKey.girderIndex);
    *pbPedLoading = pLoads->HasPedestrianLoad(key);
@@ -217,7 +217,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    // determine continuity stage
    EventIndexType continuityEventIdx = MAX_INDEX;
    PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(*pStartGroup);
-   PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(*pStartGroup + *pNGroups - 1);
+   PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(*pEndGroup);
    for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
       if ( pBridge->IsBoundaryPier(pierIdx) )
@@ -388,7 +388,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   GroupIndexType startGroup, nGroups;
+   GroupIndexType startGroup, endGroup;
    IntervalIndexType continuity_interval;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
@@ -398,7 +398,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    IntervalIndexType overlayIntervalIdx      = pIntervals->GetOverlayInterval(girderKey);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(girderKey);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_interval,&startGroup,&nGroups);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_interval,&startGroup,&endGroup);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Moments"));
 
@@ -421,7 +421,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   for ( GroupIndexType grpIdx = startGroup; grpIdx < nGroups; grpIdx++ )
+   for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);

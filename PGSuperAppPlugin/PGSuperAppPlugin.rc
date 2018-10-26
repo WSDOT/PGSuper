@@ -202,7 +202,7 @@ BEGIN
     SEPARATOR
     BUTTON      ID_PROJECT_ALIGNMENT
     BUTTON      ID_PROJECT_BRIDGEDESC
-    BUTTON      ID_EDIT_GIRDER
+    BUTTON      ID_EDIT_SEGMENT
     BUTTON      ID_EDIT_TIMELINE
     BUTTON      ID_EDIT_USERLOADS
     BUTTON      ID_LIVE_LOADS
@@ -292,8 +292,8 @@ BEGIN
         MENUITEM "&Span...",                    ID_PROJECT_SPANDESC
         MENUITEM "&Temporary Support...",       ID_EDIT_TEMPORARY_SUPPORT
         MENUITEM "&Closure Joint...",           ID_EDIT_CLOSURE
-        MENUITEM "&Girder Segment...",          ID_EDIT_GIRDER
-        MENUITEM "&Spliced Girder...",          ID_EDIT_GIRDERLINE
+        MENUITEM "&Segment...",                 ID_EDIT_SEGMENT
+        MENUITEM "&Girder...",                  ID_EDIT_GIRDER
         MENUITEM SEPARATOR
         MENUITEM "&Insert Span\tIns",           ID_INSERT
         MENUITEM "Insert &Temporary Support\tShift+Ins", ID_INSERT_TEMPORARY_SUPPORT
@@ -558,7 +558,7 @@ END
 
 IDR_BRIDGE_PLAN_CTX MENU 
 BEGIN
-    POPUP "Bridge Model Plan View Context Menu"
+    POPUP ""
     BEGIN
         MENUITEM "Edit &Alignment...",          ID_EDIT_ROADWAY
         MENUITEM "Edit &Bridge...",             ID_EDIT_BRIDGE
@@ -569,7 +569,7 @@ END
 
 IDR_BRIDGE_XSECTION_CTX MENU 
 BEGIN
-    POPUP "Bridge Model XSection Context Menu"
+    POPUP ""
     BEGIN
         MENUITEM "Edit &Bridge...",             ID_EDIT_BRIDGE
         MENUITEM "Edit &Deck...",               ID_EDIT_DECK
@@ -580,9 +580,9 @@ END
 
 IDR_GIRDER_CTX MENU 
 BEGIN
-    POPUP "Girder View Context Menu"
+    POPUP ""
     BEGIN
-        MENUITEM "Edit &Girder...",             ID_EDIT_GIRDERLINE
+        MENUITEM "Edit &Girder...",             ID_EDIT_GIRDER
         MENUITEM "Edit &Prestressing...",       ID_EDIT_PRESTRESSING
         MENUITEM "Edit Sti&rrups...",           ID_EDIT_STIRRUPS
         MENUITEM SEPARATOR
@@ -611,7 +611,7 @@ END
 
 IDR_LOADS_CTX MENU 
 BEGIN
-    POPUP "Load Editing Context for Girder Elevation View"
+    POPUP ""
     BEGIN
         MENUITEM "&Edit Load",                  ID_EDIT_LOAD
         MENUITEM "&Delete Load",                ID_DELETE_LOAD
@@ -620,7 +620,7 @@ END
 
 IDR_SELECTED_GIRDER_CONTEXT MENU 
 BEGIN
-    POPUP "Selected Girder Context Menu"
+    POPUP ""
     BEGIN
         MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
         MENUITEM SEPARATOR
@@ -636,10 +636,10 @@ END
 
 IDR_SELECTED_GIRDER_SEGMENT_CONTEXT MENU 
 BEGIN
-    POPUP "Selected Girder Segment Context Menu"
+    POPUP ""
     BEGIN
-        MENUITEM "Edit Segment...",             ID_EDIT_GIRDER
-        MENUITEM "Edit Girder...",              ID_EDIT_GIRDERLINE
+        MENUITEM "Edit Segment...",             ID_EDIT_SEGMENT
+        MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
         MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
@@ -650,9 +650,9 @@ END
 
 IDR_SELECTED_GIRDERLINE_CONTEXT MENU 
 BEGIN
-    POPUP "Selected Spliced Girder Context Menu"
+    POPUP ""
     BEGIN
-        MENUITEM "Edit Girder...",              ID_EDIT_GIRDERLINE
+        MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
         MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
@@ -663,7 +663,7 @@ END
 
 IDR_SELECTED_DECK_CONTEXT MENU 
 BEGIN
-    POPUP "Selected Deck Context Menu"
+    POPUP ""
     BEGIN
         MENUITEM "Edit &Bridge...",             ID_EDIT_BRIDGE
         MENUITEM "Edit &Deck...",               ID_EDIT_DECK
@@ -674,7 +674,7 @@ END
 
 IDR_SELECTED_PIER_CONTEXT MENU 
 BEGIN
-    POPUP "Selected Pier Context Menu"
+    POPUP ""
     BEGIN
         MENUITEM "&Edit",                       ID_EDIT_PIER
         MENUITEM "&Insert",                     ID_INSERT_PIER
@@ -684,7 +684,7 @@ END
 
 IDR_SELECTED_SPAN_CONTEXT MENU 
 BEGIN
-    POPUP "SelectedSpanContextMenu"
+    POPUP ""
     BEGIN
         MENUITEM "&Edit",                       ID_EDIT_SPAN
         MENUITEM "&Insert",                     ID_INSERT_SPAN
@@ -751,7 +751,7 @@ END
 
 IDR_SELECTED_TEMPORARY_SUPPORT_CONTEXT MENU 
 BEGIN
-    POPUP "Selected Temporary Support Context"
+    POPUP ""
     BEGIN
         MENUITEM "Edit",                        ID_EDIT_TEMPORARY_SUPPORT
         MENUITEM "Insert",                      ID_INSERT_TEMPORARY_SUPPORT
@@ -778,8 +778,8 @@ IDR_EDIT_GIRDER MENU
 BEGIN
     POPUP "EditGirderBtnMenu"
     BEGIN
-        MENUITEM "Edit Segment",                ID_EDIT_GIRDER
-        MENUITEM "Edit Girder",                 ID_EDIT_GIRDERLINE
+        MENUITEM "Edit Segment",                ID_EDIT_SEGMENT
+        MENUITEM "Edit Girder",                 ID_EDIT_GIRDER
     END
 END
 
@@ -1817,7 +1817,7 @@ BEGIN
     PUSHBUTTON      "Copy to Start of Span",IDC_COPY_TO_START,290,264,101,14
 END
 
-IDD_SPANLAYOUT DIALOGEX 0, 0, 334, 186
+IDD_SPANLAYOUT DIALOGEX 0, 0, 334, 246
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1829,7 +1829,7 @@ BEGIN
     EDITTEXT        IDC_SPAN_LENGTH,61,54,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_SPAN_LENGTH_UNIT,104,57,19,8
     LTEXT           "Static",IDC_SPAN_LENGTH_NOTE,14,73,301,31
-    GROUPBOX        "Slab Offset (""A"" Dimension)",IDC_STATIC,7,118,320,61
+    GROUPBOX        "Slab Offset (""A"" Dimension)",IDC_STATIC,7,118,320,56
     LTEXT           "Static",IDC_HYPERLINK,14,135,102,8
     LTEXT           "Start",IDC_STATIC,14,156,16,8
     EDITTEXT        IDC_START_SLAB_OFFSET,37,153,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1837,6 +1837,15 @@ BEGIN
     LTEXT           "End",IDC_STATIC,113,157,14,8
     EDITTEXT        IDC_END_SLAB_OFFSET,137,154,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_END_SLAB_OFFSET_UNIT,181,157,19,8
+    GROUPBOX        "Cantilevers",IDC_CANTILEVER_GROUP,7,181,320,57
+    CONTROL         "Start of Span",IDC_START_CANTILEVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,200,57,10
+    LTEXT           "Length",IDC_START_CANTILEVER_LABEL,81,200,23,8
+    EDITTEXT        IDC_START_CANTILEVER_LENGTH,111,198,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_START_CANTILEVER_UNIT,155,200,19,8
+    CONTROL         "End of Span",IDC_END_CANTILEVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,216,55,10
+    LTEXT           "Length",IDC_END_CANTILEVER_LABEL,81,216,23,8
+    EDITTEXT        IDC_END_CANTILEVER_LENGTH,111,214,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_END_CANTILEVER_UNIT,155,216,19,8
 END
 
 IDD_PIERLAYOUT DIALOGEX 0, 0, 344, 222
@@ -1897,23 +1906,23 @@ BEGIN
     EDITTEXT        IDC_RIGHT_SUPPORT_WIDTH,145,180,37,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_RIGHT_SUPPORT_WIDTH_T,184,183,14,8
     GROUPBOX        "Diaphragm",IDC_STATIC,19,211,451,127,0,WS_EX_TRANSPARENT
-    LTEXT           "Back",IDC_STATIC,117,223,18,8
-    LTEXT           "Diaphragm Height",IDC_STATIC,27,241,64,8
+    LTEXT           "Back",IDC_BACK_DIAPHRAGM_LABEL,117,223,18,8
+    LTEXT           "Diaphragm Height",IDC_BACK_DIAPHRAGM_HEIGHT_LABEL,27,241,64,8
     EDITTEXT        IDC_BACK_DIAPHRAGM_HEIGHT,92,238,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_BACK_DIAPHRAGM_HEIGHT_T,162,241,35,8
-    LTEXT           "Diaphragm Width",IDC_STATIC,27,261,62,8
+    LTEXT           "Diaphragm Width",IDC_BACK_DIAPHRAGM_WIDTH_LABEL,27,261,62,8
     EDITTEXT        IDC_BACK_DIAPHRAGM_WIDTH,92,258,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_BACK_DIAPHRAGM_WIDTH_T,162,261,35,8
     COMBOBOX        IDC_BACK_DIAPHRAGM_LOAD,27,276,199,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Distance From C.L. Pier to C.G. of Diaphragm",IDC_BACK_DIAPHRAGM_OFFSET_LABEL,31,292,196,8
     EDITTEXT        IDC_BACK_DIAPHRAGM_OFFSET,31,303,85,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BACK_DIAPHRAGM_OFFSET_UNITS,119,305,48,8
-    LTEXT           "Ahead",IDC_STATIC,351,222,22,8
-    LTEXT           "Diaphragm Height",IDC_STATIC,265,241,64,8
+    LTEXT           "Ahead",IDC_AHEAD_DIAPHRAGM_LABEL,351,222,22,8
+    LTEXT           "Diaphragm Height",IDC_AHEAD_DIAPHRAGM_HEIGHT_LABEL,265,241,64,8
     EDITTEXT        IDC_AHEAD_DIAPHRAGM_HEIGHT,329,238,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     CONTROL         "",IDC_CONNECTION_MF,"Static",SS_ENHMETAFILE | WS_BORDER,273,91,197,109
     LTEXT           "Static",IDC_AHEAD_DIAPHRAGM_HEIGHT_T,399,241,35,8
-    LTEXT           "Diaphragm Width",IDC_STATIC,265,261,62,8
+    LTEXT           "Diaphragm Width",IDC_AHEAD_DIAPHRAGM_WIDTH_LABEL,265,261,62,8
     EDITTEXT        IDC_AHEAD_DIAPHRAGM_WIDTH,329,258,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_AHEAD_DIAPHRAGM_WIDTH_T,399,261,35,8
     LTEXT           "Distance From C.L. Pier to C.G. of Diaphragm",IDC_AHEAD_DIAPHRAGM_OFFSET_LABEL,269,292,196,8
@@ -3293,8 +3302,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,12
- PRODUCTVERSION 3,0,0,12
+ FILEVERSION 3,0,0,13
+ PRODUCTVERSION 3,0,0,13
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3311,12 +3320,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.12"
+            VALUE "FileVersion", "3.0.0.13"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.12"
+            VALUE "ProductVersion", "3.0.0.13"
         END
     END
     BLOCK "VarFileInfo"
@@ -3691,7 +3700,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 327
         TOPMARGIN, 7
-        BOTTOMMARGIN, 179
+        BOTTOMMARGIN, 239
     END
 
     IDD_PIERLAYOUT, DIALOG
@@ -4525,7 +4534,7 @@ BEGIN
     ID_MANAGE_PLUGINS       "Manage PGSuper Plug-ins and Extensions\nManage Plug-ins and Extensions"
     ID_PROJECT_ANALYSIS     "Set the structural analysis method\nStructural Analysis Method"
     ID_CONSTRUCTION_LOADS   "Add permanent construction loads for stay-in-place forms or other construction materials\nConstruction Loads"
-    ID_EDIT_GIRDERLINE      "Edit spliced girder\nEdit spliced girder"
+    ID_EDIT_GIRDER          "Edit girder\nEdit girder"
     ID_INSERT_TEMPORARY_SUPPORT 
                             "Insert a Temporary Support\nInsert a Temporary Support"
     ID_EDIT_TEMPORARY_SUPPORT 
@@ -4558,10 +4567,14 @@ BEGIN
     IDM_LIST_ICONS          "View library entries in a list\nList"
     IDM_RENAME_ENTRY        "Rename the selected entry\nRename the selected entry"
     IDM_EXPORT_TEMPLATE     "Save the current project as a PGSuper template file\nSave as template file"
-    ID_EDIT_GIRDER          "Edit a Girder\nEdit a Girder"
     IDM_COPY_GIRDER_PROPS   "Copy Properties From One Girder to Another\nCopy Girder Properties"
     IDM_IMPORT_PROJECT_LIBRARY 
                             "Get Library Entries From Another Project\nGet Library Entries From Another Project"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_SEGMENT         "Edit a spliced girder segment\nEdit a spliced girder segment"
 END
 
 STRINGTABLE 

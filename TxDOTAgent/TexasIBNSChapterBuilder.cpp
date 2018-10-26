@@ -35,7 +35,7 @@
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
 #include <psgLib\SpecLibraryEntry.h>

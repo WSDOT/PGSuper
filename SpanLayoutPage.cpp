@@ -34,6 +34,8 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "HtmlHelp\HelpTopics.hh"
 
+#include <MFCTools\CustomDDX.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -85,7 +87,29 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX,IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT,slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit());
    DDX_UnitValueAndTag(pDX,IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,  slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit());
-   
+
+   bool bHasCantilever[2];
+   Float64 cantileverLength[2];
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+      bHasCantilever[end] = pParent->m_pSpanData->GetPier(end)->HasCantilever();
+      cantileverLength[end] = pParent->m_pSpanData->GetPier(end)->GetCantileverLength();
+   }
+
+   DDX_Check_Bool(pDX,IDC_START_CANTILEVER,bHasCantilever[pgsTypes::metStart]);
+   DDX_UnitValueAndTag(pDX,IDC_START_CANTILEVER_LENGTH,IDC_START_CANTILEVER_UNIT,cantileverLength[pgsTypes::metStart],pDisplayUnits->GetSpanLengthUnit());
+   if ( bHasCantilever[pgsTypes::metStart] )
+   {
+      DDV_UnitValueGreaterThanZero(pDX,IDC_START_CANTILEVER_LENGTH,cantileverLength[pgsTypes::metStart],pDisplayUnits->GetSpanLengthUnit());
+   }
+
+   DDX_Check_Bool(pDX,IDC_END_CANTILEVER,bHasCantilever[pgsTypes::metEnd]);
+   DDX_UnitValueAndTag(pDX,IDC_END_CANTILEVER_LENGTH,IDC_END_CANTILEVER_UNIT,cantileverLength[pgsTypes::metEnd],pDisplayUnits->GetSpanLengthUnit());
+   if ( bHasCantilever[pgsTypes::metEnd] )
+   {
+      DDV_UnitValueGreaterThanZero(pDX,IDC_END_CANTILEVER_LENGTH,cantileverLength[pgsTypes::metEnd],pDisplayUnits->GetSpanLengthUnit());
+   }
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -118,6 +142,13 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
             }
          }
       }
+
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+         pParent->m_pSpanData->GetPier(end)->HasCantilever(bHasCantilever[end]);
+         pParent->m_pSpanData->GetPier(end)->SetCantileverLength(cantileverLength[end]);
+      }
    }
 }
 
@@ -128,6 +159,8 @@ BEGIN_MESSAGE_MAP(CSpanLayoutPage, CPropertyPage)
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffset,OnChangeSlabOffset)
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(IDC_START_CANTILEVER, &CSpanLayoutPage::OnBnClickedStartCantilever)
+   ON_BN_CLICKED(IDC_END_CANTILEVER, &CSpanLayoutPage::OnBnClickedEndCantilever)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -155,6 +188,17 @@ BOOL CSpanLayoutPage::OnInitDialog()
       m_ctrlStartSlabOffset.ShowDefaultWhenDisabled(TRUE);
       m_ctrlEndSlabOffset.ShowDefaultWhenDisabled(TRUE);
    }
+
+   CEAFDocument* pDoc = EAFGetDocument();
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      ShowCantilevers(pParent->m_pSpanData->GetPrevPier()->GetPrevSpan() == NULL ? TRUE : FALSE,
+                      pParent->m_pSpanData->GetNextPier()->GetNextSpan() == NULL ? TRUE : FALSE);
+   }
+   else
+   {
+      ShowCantilevers(FALSE,FALSE);
+   }
    
    CPropertyPage::OnInitDialog();
 
@@ -177,6 +221,9 @@ BOOL CSpanLayoutPage::OnInitDialog()
    GetDlgItem(IDC_SPAN_LENGTH_NOTE)->SetWindowText(strSpanLengthNote);
 
    UpdateSlabOffsetWindowState();
+
+   OnBnClickedStartCantilever();
+   OnBnClickedEndCantilever();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -217,9 +264,13 @@ LRESULT CSpanLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
       // if slab offset was bridge or pier when the dialog was created, toggle between
       // bridge and pier mode
       if ( slabOffsetType == pgsTypes::sotPier )
+      {
          pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotBridge);
+      }
       else
+      {
          pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotPier);
+      }
    }
    else
    {
@@ -271,9 +322,13 @@ LRESULT CSpanLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
          if ( dlg.DoModal() == IDOK )
          {
             if ( dlg.m_ItemIdx == 0 )
+            {
                slab_offset = slabOffset[pgsTypes::metStart];
+            }
             else
+            {
                slab_offset = slabOffset[pgsTypes::metEnd];
+            }
          }
          else
          {
@@ -313,9 +368,13 @@ void CSpanLayoutPage::UpdateSlabOffsetHyperLinkText()
       m_SlabOffsetHyperLink.SetWindowText(_T("Slab offset is defined span by span"));
 
       if ( m_InitialSlabOffsetType == pgsTypes::sotBridge )
+      {
          m_SlabOffsetHyperLink.SetURL(_T("Click to use this slab offset for the entire bridge"));
+      }
       else if ( m_InitialSlabOffsetType == pgsTypes::sotGirder )
+      {
          m_SlabOffsetHyperLink.SetURL(_T("Click to use this slab offset for every girder in this span"));
+      }
    }
 }
 
@@ -334,4 +393,40 @@ void CSpanLayoutPage::UpdateSlabOffsetWindowState()
 
    m_ctrlStartSlabOffset.EnableWindow(bEnable);
    m_ctrlEndSlabOffset.EnableWindow(bEnable);
+}
+
+void CSpanLayoutPage::ShowCantilevers(BOOL bShowStart,BOOL bShowEnd)
+{
+   GetDlgItem(IDC_START_CANTILEVER)       ->ShowWindow(bShowStart == TRUE ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_START_CANTILEVER_LABEL) ->ShowWindow(bShowStart == TRUE ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_START_CANTILEVER_LENGTH)->ShowWindow(bShowStart == TRUE ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_START_CANTILEVER_UNIT)  ->ShowWindow(bShowStart == TRUE ? SW_SHOW : SW_HIDE);
+
+   GetDlgItem(IDC_END_CANTILEVER)       ->ShowWindow(bShowEnd == TRUE ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_END_CANTILEVER_LABEL) ->ShowWindow(bShowEnd == TRUE ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_END_CANTILEVER_LENGTH)->ShowWindow(bShowEnd == TRUE ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_END_CANTILEVER_UNIT)  ->ShowWindow(bShowEnd == TRUE ? SW_SHOW : SW_HIDE);
+
+   if ( bShowStart == FALSE && bShowEnd == FALSE )
+   {
+      GetDlgItem(IDC_CANTILEVER_GROUP)->ShowWindow(SW_HIDE);
+   }
+}
+
+void CSpanLayoutPage::OnBnClickedStartCantilever()
+{
+   // TODO: Add your control notification handler code here
+   BOOL bEnable = ( IsDlgButtonChecked(IDC_START_CANTILEVER) == BST_CHECKED ? TRUE : FALSE);
+   GetDlgItem(IDC_START_CANTILEVER_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_START_CANTILEVER_LENGTH)->EnableWindow(bEnable);
+   GetDlgItem(IDC_START_CANTILEVER_UNIT)->EnableWindow(bEnable);
+}
+
+void CSpanLayoutPage::OnBnClickedEndCantilever()
+{
+   // TODO: Add your control notification handler code here
+   BOOL bEnable = ( IsDlgButtonChecked(IDC_END_CANTILEVER) == BST_CHECKED ? TRUE : FALSE);
+   GetDlgItem(IDC_END_CANTILEVER_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_END_CANTILEVER_LENGTH)->EnableWindow(bEnable);
+   GetDlgItem(IDC_END_CANTILEVER_UNIT)->EnableWindow(bEnable);
 }

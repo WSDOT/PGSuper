@@ -26,7 +26,7 @@
 #include <Reporting\ProductDisplacementsTable.h>
 #include <Reporting\ProductMomentsTable.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\BridgeDescription2.h>
 
 #include <IFace\Project.h>
@@ -135,7 +135,8 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
       {
          IntervalIndexType tsrIntervalIdx = *iter;
 
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
+         GroupIndexType startGroupIdx, endGroupIdx; // use these so we don't mess up the loop parameters
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroupIdx,&endGroupIdx);
          bPedLoading = false;
          bPermit     = false;
 

@@ -56,7 +56,7 @@ public:
    UserLoads::LoadCase            m_LoadCase;
    UserLoads::DistributedLoadType m_Type;
 
-   CSpanKey m_spanKey;
+   CSpanKey m_SpanKey;
    Float64  m_StartLocation; 
    Float64  m_EndLocation;  
    Float64  m_WStart;    // if load type is uniform, then locations are ignored and this is only 

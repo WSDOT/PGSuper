@@ -25,7 +25,7 @@
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -110,6 +110,11 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    
    bool bSlabShrinkage = ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() && 
                          (loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED) ? true : false);
+   if ( !bGirderStresses )
+   {
+      // assume deck shrinkage does not cause shrinkage stresses in the deck itself
+      bSlabShrinkage = false;
+   }
 
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
    bool bConstruction = !IsZero(pUserLoads->GetConstructionLoad());
@@ -494,9 +499,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
 
       if ( bSlabShrinkage )
       {
-#pragma Reminder("UPDATE: deck shrinkage stresses incorrect for deck")
-         // this method only returns the stress in the girder. they get reported as if they
-         // are the stressses in the deck.
+         ATLASSERT(bGirderStresses); // slab shrinkage stresses only applicable to girder stresses
          Float64 ft_ss, fb_ss;
          pForces->GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
 

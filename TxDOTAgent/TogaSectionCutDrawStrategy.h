@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
 #define INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
 
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 interface iPointDisplayObject;
 

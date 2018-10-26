@@ -37,7 +37,7 @@
 #include <EAF\EAFInterfaceCache.h>
 
 #include <PgsExt\PoiKey.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <map>
 
 /////////////////////////////////////////////////////////////////////////////

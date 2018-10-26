@@ -107,17 +107,23 @@ BOOL CInsertSpanDlg::OnInitDialog()
    EAFGetBroker(&pBroker);
 
    PierIndexType nPiers = m_pBridgeDesc->GetPierCount();
-
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      CString strItem;
-      strItem.Format(_T("Before Pier %d\n"),LABEL_PIER(pierIdx));
-      m_Keys.push_back( std::make_pair(pierIdx,pgsTypes::Back) );
-      pcbPiers->AddString(strItem);
+      const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
 
-      strItem.Format(_T("After Pier %d\n"),LABEL_PIER(pierIdx));
-      m_Keys.push_back( std::make_pair(pierIdx,pgsTypes::Ahead) );
-      pcbPiers->AddString(strItem);
+      if ( !pPier->HasCantilever() )
+      {
+         CString strType(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+
+         CString strItem;
+         strItem.Format(_T("Before %s %d\n"),strType,LABEL_PIER(pierIdx));
+         m_Keys.push_back( std::make_pair(pierIdx,pgsTypes::Back) );
+         pcbPiers->AddString(strItem);
+
+         strItem.Format(_T("After %s %d\n"),strType,LABEL_PIER(pierIdx));
+         m_Keys.push_back( std::make_pair(pierIdx,pgsTypes::Ahead) );
+         pcbPiers->AddString(strItem);
+      }
    }
 
    // Use the current selection to guide the defaults
@@ -139,9 +145,13 @@ BOOL CInsertSpanDlg::OnInitDialog()
    }
 
    if ( m_RefPierIdx == INVALID_INDEX )
+   {
       m_LocationIdx = pcbPiers->GetCount()-1;
+   }
    else
+   {
       m_LocationIdx = (int)(2*m_RefPierIdx+1);
+   }
 
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
@@ -172,7 +182,9 @@ BOOL CInsertSpanDlg::OnInitDialog()
       {
          pSpan = m_pBridgeDesc->GetSpan(m_RefPierIdx-1);
          if ( pSpan == NULL )
+         {
             pSpan = m_pBridgeDesc->GetSpan(m_RefPierIdx);
+         }
       }
    }
    m_SpanLength = pSpan->GetSpanLength();

@@ -24,7 +24,7 @@
 #include <Reporting\ShearCheckTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
 #include <IFace\Bridge.h>

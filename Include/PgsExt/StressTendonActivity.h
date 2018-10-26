@@ -22,7 +22,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 /*****************************************************************************
 CLASS 
@@ -49,20 +49,20 @@ public:
    void Clear();
 
    // Add a tendon to the list of tendons that are stressed during this event
-   void AddTendon(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   void AddTendon(GirderIDType gdrID,DuctIndexType ductIdx);
    void AddTendon(const CTendonKey& tendonKey);
 
    // Add multiple tendons to the list of tendons that are stressed during this event
    void AddTendons(const std::set<CTendonKey>& tendons);
 
    // Removes a tendon from the stressing list
-   void RemoveTendon(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   void RemoveTendon(GirderIDType gdrID,DuctIndexType ductIdx);
 
    // Removes all tendons for the specified girder from the stressing list
-   void RemoveTendons(const CGirderKey& girderKey);
+   void RemoveTendons(GirderIDType gdrID);
 
    // Returns true if a specific tendon is stressed
-   bool IsTendonStressed(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   bool IsTendonStressed(GirderIDType gdrID,DuctIndexType ductIdx) const;
 
    // Returns true if any tendons are stressed
    bool IsTendonStressed() const;
@@ -82,5 +82,6 @@ protected:
    virtual void MakeAssignment(const CStressTendonActivity& rOther);
    bool m_bEnabled;
 
+   // tendon keys must use the gdrID parameter!
    std::set<CTendonKey> m_Tendons;
 };

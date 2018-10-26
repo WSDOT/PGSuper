@@ -22,8 +22,8 @@ protected:
    void FillSourceList();
    void FillTargetList();
 
-   std::vector<std::pair<CGirderKey,DuctIndexType>> m_SourceTendons; // all unstressed tendons
-   std::vector<std::pair<CGirderKey,DuctIndexType>> m_TargetTendons; // all tendons stress during this activity
+   std::vector<CTendonKey> m_SourceTendons; // all unstressed tendons
+   std::vector<CTendonKey> m_TargetTendons; // all tendons stress during this activity
 
    const CTimelineManager* m_pTimelineMgr;
    EventIndexType m_EventIndex;

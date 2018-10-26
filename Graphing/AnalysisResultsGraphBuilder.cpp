@@ -1306,6 +1306,7 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
       ATLASSERT(false); // is there a new action type?
    }
 }
+
 void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear)
 {
    ProductForceType pfType(graphDef.m_LoadType.ProductLoadType);

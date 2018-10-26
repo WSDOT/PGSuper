@@ -871,6 +871,12 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
    CPierData2* pRefPier = m_Piers[refPierIdx];
 
+   if ( pRefPier->HasCantilever() )
+   {
+      ATLASSERT(false); // can't add a span at a cantilever
+      return;
+   }
+
    // Negative span length means that we take stationing from piers - better have pier data
    if ( newSpanLength <= 0 )
    {
@@ -895,7 +901,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
    // Copy properties from the span on the side of the pier in question (if it exists)
    SpanIndexType refSpanIdx;
-   if (refPierIdx <= 0)
+   if (refPierIdx == 0)
    {
       // appending span at start of bridge
       refSpanIdx = 0;
@@ -907,16 +913,19 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    }
    else if (pierFace == pgsTypes::Back)
    {
-      refSpanIdx = refPierIdx-1;
+      // inserting span somewhere in the middle of the bridge
+      // on the back side of the reference pier so the span is the
+      // span that is previous to this pier
+      refSpanIdx = (SpanIndexType)(refPierIdx-1);
    }
    else
    {
       ASSERT(pierFace == pgsTypes::Ahead);
-      refSpanIdx = refPierIdx;
+      refSpanIdx = (SpanIndexType)refPierIdx;
    }
 
    // If creating a new group, make sure the new span is at the boundary of a group
-   // and not inside of a group
+   // and not inside of a group. Can't add a group within a group
    GroupIndexType newGroupIdx = INVALID_INDEX;
    GroupIndexType refGroupIdx = INVALID_INDEX;
    if ( bCreateNewGroup )
@@ -969,10 +978,13 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    }
    else
    {
+      pNewPier = new CPierData2(*pRefPier); // this pier is created at the location of the reference pier
+
       // if the reference pier is at the start or end of the bridge (no next or previous span)
       // then the spacing, connection geometry, and diaphragm information on one side of the 
       // pier is not defined... the reference pier is going to become an intermediate pier so 
       // copy the spacing from one side to another
+
       if ( pierFace == pgsTypes::Ahead && m_Piers[refPierIdx]->GetNextSpan() == NULL )
       {
          pRefPier->SetGirderSpacing(pgsTypes::Ahead,*(pRefPier->GetGirderSpacing(pgsTypes::Back)));
@@ -980,12 +992,31 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
          Float64 endDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
          pRefPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasure);
-         pRefPier->SetGirderEndDistance(pgsTypes::Ahead,endDist,endDistMeasure);
 
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
          pRefPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
-         pRefPier->SetBearingOffset(pgsTypes::Ahead,brgOffset,brgOffsetMeasure);
+
+         if ( brgOffset < endDist )
+         {
+            // the ends of the girders are going to overlap... adjust the end
+            // distance on both sides of the pier
+
+            // NOTE: this isn't exactly the perfect way to do it. The measurement type
+            // of brgOffset and endDist are not taking into account. The goal is to
+            // ensure that the ends of girders at a common pier don't occupy the same space
+            endDist = brgOffset;
+            pRefPier->SetGirderEndDistance(pgsTypes::Back,endDist,endDistMeasure);
+            pRefPier->SetBearingOffset(pgsTypes::Back,brgOffset,brgOffsetMeasure);
+
+            pRefPier->SetGirderEndDistance(pgsTypes::Ahead,endDist,endDistMeasure);
+            pRefPier->SetBearingOffset(pgsTypes::Ahead,brgOffset,brgOffsetMeasure);
+         }
+         else
+         {
+            pRefPier->SetGirderEndDistance(pgsTypes::Ahead,endDist,endDistMeasure);
+            pRefPier->SetBearingOffset(pgsTypes::Ahead,brgOffset,brgOffsetMeasure);
+         }
 
          pRefPier->SetSupportWidth(pgsTypes::Ahead,pRefPier->GetSupportWidth(pgsTypes::Back));
 
@@ -1002,12 +1033,30 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
          Float64 endDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
          pRefPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasure);
-         pRefPier->SetGirderEndDistance(pgsTypes::Back,endDist,endDistMeasure);
 
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
          pRefPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
-         pRefPier->SetBearingOffset(pgsTypes::Back,brgOffset,brgOffsetMeasure);
+
+         if ( brgOffset < endDist )
+         {
+            // the ends of the girders are going to overlap... adjust the end
+            // distance on both sides of the pier
+
+            // NOTE: this isn't exactly the perfect way to do it. The measurement type
+            // of brgOffset and endDist are not taking into account. The goal is to
+            // ensure that the ends of girders at a common pier don't occupy the same space
+            endDist = brgOffset;
+            pRefPier->SetGirderEndDistance(pgsTypes::Ahead,endDist,endDistMeasure);
+            pRefPier->SetBearingOffset(pgsTypes::Ahead,brgOffset,brgOffsetMeasure);
+            pRefPier->SetGirderEndDistance(pgsTypes::Back,endDist,endDistMeasure);
+            pRefPier->SetBearingOffset(pgsTypes::Back,brgOffset,brgOffsetMeasure);
+         }
+         else
+         {
+            pRefPier->SetGirderEndDistance(pgsTypes::Back,endDist,endDistMeasure);
+            pRefPier->SetBearingOffset(pgsTypes::Back,brgOffset,brgOffsetMeasure);
+         }
 
          pRefPier->SetSupportWidth(pgsTypes::Back,pRefPier->GetSupportWidth(pgsTypes::Ahead));
 
@@ -1017,8 +1066,31 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
          pRefPier->SetDiaphragmLoadType(pgsTypes::Back,pRefPier->GetDiaphragmLoadType(pgsTypes::Ahead));
          pRefPier->SetDiaphragmLoadLocation(pgsTypes::Back,pRefPier->GetDiaphragmLoadLocation(pgsTypes::Ahead));
       }
+      else
+      {
+         // the new pier is an interior pier so make sure the connection geometry is ok
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
+            Float64 endDist;
+            ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
+            pNewPier->GetGirderEndDistance(face,&endDist,&endDistMeasure);
 
-      pNewPier = new CPierData2(*pRefPier);
+            Float64 brgOffset;
+            ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
+            pNewPier->GetBearingOffset(face,&brgOffset,&brgOffsetMeasure);
+
+            // NOTE: this isn't exactly the perfect way to do it. The measurement type
+            // of brgOffset and endDist are not taking into account. The goal is to
+            // ensure that the ends of girders at a common pier don't occupy the same space
+
+            if ( brgOffset < endDist )
+            { 
+               endDist = brgOffset;
+               pNewPier->SetGirderEndDistance(face,endDist,endDistMeasure);
+            }
+         }
+      }
    }
 
    pNewPier->SetID( GetNextPierID() );
@@ -1027,8 +1099,21 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    pNewSpan->SetBridgeDescription(this);
    pNewPier->SetBridgeDescription(this);
 
+   // Update the girder group pier references if needed and renumber spans and piers
+   // If we are creating a new group, modify the reference group otherwise get the group
+   // associated with the reference span. Capture the index of the start and end piers before
+   // updating the span/pier collections and numbering
+   CGirderGroupData* pGroup = (bCreateNewGroup ? m_GirderGroups[refGroupIdx] : GetGirderGroup(m_Spans[refSpanIdx]));
+   PierIndexType startPierIdx = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
+   PierIndexType endPierIdx   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
+
+   // Put the new span in the spans collection
    m_Spans.insert(m_Spans.begin()+newSpanIdx,pNewSpan); 
 
+   // Put the new pier in the piers collection. While doing this, capture
+   // the iterator that points to the first pier that needs to be moved
+   // to account for the length of the new span (remember that above we set the
+   // location of the new pier equal to that of the reference pier)
    std::vector<CPierData2*>::iterator movePierIter; // iterator to the first pier that needs to be moved in order to maintain span lengths
    if ( pierFace == pgsTypes::Back )
    {
@@ -1045,44 +1130,27 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       // the new pier, and all that follow get moved
    }
 
-   // renumbers spans and sets the pier<-->span<-->pier pointers
-   RenumberSpans();
+   RenumberSpans(); // updates indicies as well as Pier<-->Span<-->Pier pointers
 
-   // Update the reference group pier references if needed
-   if ( bCreateNewGroup )
+   // now, update the group pier referneces
+   // notice that the comparison to refPierIdx is based on the pier indices prior to renumbering
+   // so that is why we had to capture the start/end pier indicies before renumbering.
+   // Updating the piers must be done after renumbering otherwise it messes up the girder objects
+   // stored within the group objects
+   bool bUpdateStartPier = (startPierIdx == refPierIdx && (bCreateNewGroup ? (pierFace == pgsTypes::Ahead) : (pierFace == pgsTypes::Back)));
+   bool bUpdateEndPier   = (endPierIdx   == refPierIdx && (bCreateNewGroup ? (pierFace == pgsTypes::Back)  : (pierFace == pgsTypes::Ahead)));
+   if ( bUpdateStartPier )
    {
-      ASSERT(refGroupIdx != INVALID_INDEX);
-      CGirderGroupData* pRefGroup = m_GirderGroups[refGroupIdx];
-
-      if ( pRefGroup->GetPier(pgsTypes::metStart)->GetIndex() == refPierIdx && pierFace == pgsTypes::Ahead )
-      {
-         // the new group is going on the ahead side of its start pier... the reference group will now
-         // start at the new pier
-         pRefGroup->SetPier(pgsTypes::metStart,pNewPier);
-      }
-
-      if ( pRefGroup->GetPier(pgsTypes::metEnd)->GetIndex() == refPierIdx && pierFace == pgsTypes::Back )
-      {
-         // the new group is going on the back side of its end pier... the reference group will now
-         // end at the new pier
-         pRefGroup->SetPier(pgsTypes::metEnd,pNewPier);
-      }
+      // the new group is being inserted at the start of the group. this group will start at the new pier
+      pGroup->SetPier(pgsTypes::metStart,pNewPier);
    }
-   else
+
+   if ( bUpdateEndPier )
    {
-      CGirderGroupData* pGroup = GetGirderGroup(m_Spans[refSpanIdx]);
-      if ( pGroup->GetPier(pgsTypes::metStart)->GetIndex() == refPierIdx && pierFace == pgsTypes::Back )
-      {
-         // the new span is being inserted at the start of the group. this group will start at the new pier
-         pGroup->SetPier(pgsTypes::metStart,pNewPier);
-      }
-
-      if ( pGroup->GetPier(pgsTypes::metEnd)->GetIndex() == refPierIdx && pierFace == pgsTypes::Ahead )
-      {
-         // the new span is being inserted at the end of the group. this group will end at the new pier
-         pGroup->SetPier(pgsTypes::metEnd,pNewPier);
-      }
+      // the new group is being inserted at the end of the group. this group will end at the new pier
+      pGroup->SetPier(pgsTypes::metEnd,pNewPier);
    }
+
 
    // Adjust location of down-station piers
    if ( refPierIdx == 0 && refSpanIdx == 0 && pierFace == pgsTypes::Back )
@@ -1145,7 +1213,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       
       // Make the new group have the same number of girders as the reference group
       GirderIndexType nGirders = pRefGroup->GetGirderCount();
-      pNewGroup->Initialize(nGirders);
+      pNewGroup->Initialize(nGirders); // creates girders and initializes the slab offsets
 
       // Make the staging match the reference group
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -1181,13 +1249,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       // A new group was not created... therefore the new span was insert into an existing
       // group. The girders in that group must be adjusted for the new span
       CGirderGroupData* pGroup = GetGirderGroup(pNewSpan);
-
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-      {
-         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         pGirder->InsertSpan(newSpanIdx);
-      }
+      pGroup->AddSpan(refPierIdx,pierFace); // updates the slab offsets and the girders in the group
 
       // Adjust the connection type at the new pier.
       if ( refPierIdx == 0 && pierFace == pgsTypes::Back )
@@ -1243,6 +1305,9 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    CPierData2* pPrevPier = pSpan->GetPrevPier();
    CPierData2* pNextPier = pSpan->GetNextPier();
 
+   bool bDeletePrevPier = false;
+   bool bDeleteNextPier = false;
+
    Float64 span_length = pSpan->GetSpanLength();
 
    PierIndexType removePierIdx = (rmPierType == pgsTypes::PrevPier ? pPrevPier->GetIndex() : pNextPier->GetIndex());
@@ -1280,42 +1345,32 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
 
    // Adjust the girder group
    CGirderGroupData* pGroup = GetGirderGroup(pSpan);
+   bool bDeleteGroup = false;
    if ( pGroup->GetPier(pgsTypes::metStart) == pPrevPier && pGroup->GetPier(pgsTypes::metEnd) == pNextPier )
    {
       // pSpan is the only span in pGroup... when pSpan goes away, so does the group
-      RemoveGirderGroup(pGroup->GetIndex(),rmPierType);
-      pGroup = NULL; // this group has been removed so null out the pointer so it doesn't get used
-      ASSERT_VALID;
-      return; // the span, girders, group, and pier have been removed when the group was removed
+      bDeleteGroup = true; // delete the group at the end
+      m_GirderGroups.erase(m_GirderGroups.begin()+pGroup->GetIndex());
    }
 
-   // If the pier that is being removed is at the boundary of a group, updated the group boundary piers
+   // remove the span from the group
+   pGroup->RemoveSpan(spanIdx,rmPierType); // this will update the slab offsets and remove the span from the girders in this group
+
+   // If the pier that is being removed is at the boundary of a group, capture the 
+   // adjacent groups so they can be updated below
+   // (this update needs to happen after RenumberSpans is called)
    CPierData2* pRemovePier = m_Piers[removePierIdx];
+   CPierData2* pCommonPier = NULL;
+   CGirderGroupData* pPrevGroup = NULL;
+   CGirderGroupData* pNextGroup = NULL;
    if ( pRemovePier->IsBoundaryPier() )
    {
-      CPierData2* pCommonPier = (rmPierType == pgsTypes::PrevPier ? m_Piers[removePierIdx+1] : m_Piers[removePierIdx-1]);
-      if ( pRemovePier->GetPrevGirderGroup() )
-      {
-         pRemovePier->GetPrevGirderGroup()->SetPier(pgsTypes::metEnd,pCommonPier);
-      }
-
-      if ( pRemovePier->GetNextGirderGroup() )
-      {
-         pRemovePier->GetNextGirderGroup()->SetPier(pgsTypes::metStart,pCommonPier);
-      }
+      pCommonPier = (rmPierType == pgsTypes::PrevPier ? m_Piers[removePierIdx+1] : m_Piers[removePierIdx-1]);
+      pPrevGroup = pRemovePier->GetPrevGirderGroup();
+      pNextGroup = pRemovePier->GetNextGirderGroup();
    }
 
-   // Adjust the girders in the group for the span that is removed
-   // remove span references from the girders before the span is destroyed
-   // Segments have pointers to the spans they start and end in
-   GirderIndexType nGirders = pGroup->GetGirderCount();
-   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-   {
-      CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-      pGirder->RemoveSpan(spanIdx,rmPierType);
-   }
-
-   // Remove span and pier
+   // Remove span and pier from the bridge
    Float64 removedPierStation;
    if ( rmPierType == pgsTypes::PrevPier )
    {
@@ -1323,8 +1378,7 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
 
       removedPierStation = m_Piers[removePierIdx]->GetStation();
 
-      delete pPrevPier;
-      delete pSpan;
+      bDeletePrevPier = true;
 
       m_Piers.erase(m_Piers.begin()+removePierIdx);
    }
@@ -1334,8 +1388,7 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
 
       removedPierStation = m_Piers[removePierIdx]->GetStation();
 
-      delete pSpan;
-      delete pNextPier;
+      bDeleteNextPier = true;
 
       m_Piers.erase(m_Piers.begin()+removePierIdx);
    }
@@ -1362,6 +1415,20 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
 
    // Fix up the span/pier pointer and update the span/pier index values
    RenumberSpans();
+
+   // if there is a common pier, update the groups at the common pier
+   if ( pCommonPier )
+   {
+      if ( pPrevGroup )
+      {
+         pPrevGroup->SetPier(pgsTypes::metEnd,pCommonPier);
+      }
+
+      if ( pNextGroup )
+      {
+         pNextGroup->SetPier(pgsTypes::metStart,pCommonPier);
+      }
+   }
 
    if ( removePierIdx == 0 && spanIdx == 0 )
    {
@@ -1391,6 +1458,25 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
             pTS->SetStation(pTS->GetStation() - span_length);
          }
       }
+   }
+
+
+   if ( bDeletePrevPier )
+   {
+      delete pPrevPier;
+   }
+
+   delete pSpan;
+
+   if ( bDeleteNextPier )
+   {
+      delete pNextPier;
+   }
+
+   if ( bDeleteGroup )
+   {
+      delete pGroup;
+      RenumberGroups();
    }
 
    ASSERT_VALID;
@@ -1551,60 +1637,6 @@ GroupIndexType CBridgeDescription2::GetGirderGroupCount() const
    return m_GirderGroups.size();
 }
 
-void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx)
-{
-   // removes a group and merges all the spans and piers into the next group
-
-   if ( m_GirderGroups.size() == 1 )
-   {
-      ATLASSERT(false);
-      return; // there must always be one group
-   }
-
-   ATLASSERT(grpIdx != INVALID_INDEX);
-   CGirderGroupData* pGroup = m_GirderGroups[grpIdx];
-
-   // This is going to remove the piers in the group, so remove the deck rebar
-   // at those piers
-   const CPierData2* pStartPier = pGroup->GetPier(pgsTypes::metStart);
-   const CPierData2* pEndPier   = pGroup->GetPier(pgsTypes::metEnd);
-   const CPierData2* pPier = pStartPier;
-   while ( pPier != pEndPier )
-   {
-      std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
-      std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
-      std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(pPier->GetIndex()));
-      m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
-
-      pPier = pPier->GetNextSpan()->GetNextPier();
-   }
-
-   // removes a girder group. spans are piers are moved into the next group
-   // if the last group is removed, then the spans and piers are moved into the previous group
-
-   if ( grpIdx == m_GirderGroups.size()-1 )
-   {
-      // removing last group
-      // put spans/piers into the previous group
-      m_GirderGroups[grpIdx-1]->SetPier(pgsTypes::metEnd,pGroup->GetPier(pgsTypes::metEnd));
-   }
-   else
-   {
-      m_GirderGroups[grpIdx+1]->SetPier(pgsTypes::metStart,pGroup->GetPier(pgsTypes::metStart));
-   }
-
-   m_GirderGroups.erase(m_GirderGroups.begin()+grpIdx);
-   delete pGroup;
-   RenumberGroups();
-
-#pragma Reminder("UPDATE: need to deal with changes to girders")
-   // The segments of the girders in this group need to be appended to the girders in the adjacent group
-
-   ATLASSERT(false); // just an assert to get my attention... this method is not finished yet
-   // girder start/end piers
-   // intermediate pier boundary conditions (an end pier could have become intermediate if girder stretched)
-}
-
 void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::RemovePierType rmPierType)
 {
    ATLASSERT(grpIdx != INVALID_INDEX);
@@ -1691,11 +1723,21 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
 
    // move all piers that occur after the last pier in the group to the left
    // by an amount equal to the length of the group
-   PierIndexType nPiers = GetPierCount();
-   for ( PierIndexType pierIdx = endPierIdx+1; pierIdx < nPiers; pierIdx++ )
+   if ( grpIdx == 0 && rmPierType == pgsTypes::PrevPier )
    {
-      CPierData2* pPier = m_Piers[pierIdx];
-      pPier->SetStation(pPier->GetStation() - group_length);
+      // if we are removing the first group along with its start pier, don't 
+      // move the bridge.
+
+      // DO NOTHING HERE
+   }
+   else
+   {
+      PierIndexType nPiers = GetPierCount();
+      for ( PierIndexType pierIdx = endPierIdx+1; pierIdx < nPiers; pierIdx++ )
+      {
+         CPierData2* pPier = m_Piers[pierIdx];
+         pPier->SetStation(pPier->GetStation() - group_length);
+      }
    }
 
    // remove deleted slots from the pier vector
@@ -2817,8 +2859,6 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
 
 void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset)
 {
-   // NOTE: If you are adding data to be copied in this function, you will want to also make changes
-   //       to ReconcileEdits
    std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
@@ -2928,145 +2968,48 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
    ASSERT_VALID;
 }
 
-void CBridgeDescription2::ReconcileEdits(IBroker* pBroker, const CBridgeDescription2* pOriginal)
-{
-#pragma Reminder("UPDATE: implement ReconcileEdits")
-   // Is this method really needed????
-
-   //// Note: that *this is the data that has been edited and pOriginal represents
-   ////       *this before editing.
-
-   //// First step is to check if data has been changed at the bridge level. If so,
-   //// copy down to the individual span/girder level
-
-   //bool copyGirderCount = false;
-   //if (this->m_bSameNumberOfGirders)
-   //{
-   //  if(!pOriginal->m_bSameNumberOfGirders ||
-   //     this->m_nGirders != pOriginal->m_nGirders)
-   //  {
-   //     copyGirderCount = true;
-   //  }
-   //}
-
-   //bool copyGirderType = false;
-   //if ( m_bSameGirderName )
-   //{
-   //   if (!pOriginal->m_bSameGirderName ||
-   //       this->m_strGirderName != pOriginal->m_strGirderName)
-   //   {
-   //      copyGirderType = true;
-   //   }
-   //}
-   //
-   //bool copySpacing = false;
-   //if (IsBridgeSpacing(this->m_GirderSpacingType))
-   //{
-   //   if (!IsBridgeSpacing(pOriginal->m_GirderSpacingType) ||
-   //       this->m_GirderSpacing != pOriginal->m_GirderSpacing)
-   //   {
-   //      copySpacing = true;
-   //   }
-   //}
-
-   //bool copySlabOffset = false;
-   //if (this->m_SlabOffsetType==pgsTypes::sotBridge)
-   //{
-   //   if (pOriginal->m_SlabOffsetType!=pgsTypes::sotBridge ||
-   //       this->m_SlabOffset != pOriginal->m_SlabOffset)
-   //   {
-   //      copySlabOffset = true;
-   //   }
-   //}
-
-   //// Copy bridge data down to spans if needed
-   //CopyDown(copyGirderCount ,copyGirderType, copySpacing, copySlabOffset);
-
-   //// Next step is to refill seed data for girder stirrups or long rebar
-   //// for any girders that have changed types
-   //// get shear information from library
-   //GET_IFACE2( pBroker, ILibrary, pLib );
-
-   //// NOTE: The logic here isn't, and probably can't be perfect. If spans or girder groups are added and 
-   ////       shuffled, it's impossible to compare with the original configuration. The default here
-   ////       is, if in doubt, use seed data
-   //std::vector<CSpanData*>::const_iterator origSpanIter( pOriginal->m_Spans.begin() );
-   //std::vector<CSpanData*>::iterator thisSpanIter( m_Spans.begin() );
-   //std::vector<CSpanData*>::iterator thisSpanIterEnd( m_Spans.end() );
-   //for(; thisSpanIter != thisSpanIterEnd; thisSpanIter++)
-   //{
-   //   if(origSpanIter != pOriginal->m_Spans.end())
-   //      origSpanIter++;
-
-   //   CSpanData* pthisSpan = *thisSpanIter;
-   //   CSpanData* pOrigSpan = (origSpanIter==pOriginal->m_Spans.end() ? NULL : *origSpanIter);
-
-   //   GroupIndexType thisNGroups = pthisSpan->GetGirderTypes()->GetGirderGroupCount();
-   //   GroupIndexType origNGroups = (pOrigSpan!=NULL ? pOrigSpan->GetGirderTypes()->GetGirderGroupCount() : 0);
-
-   //   for(GroupIndexType iGroup = 0; iGroup< thisNGroups; iGroup++)
-   //   {
-   //      std::_tstring thisGirderName;
-   //      GirderIndexType nthisGstart, nthisGend;
-   //      pthisSpan->GetGirderTypes()->GetGirderGroup(iGroup, &nthisGstart, &nthisGend, thisGirderName);
-
-   //      std::_tstring origGirderName = thisGirderName;
-   //      if (iGroup < origNGroups)
-   //      {
-   //         GirderIndexType norigGstart, norigGend;
-   //         pOrigSpan->GetGirderTypes()->GetGirderGroup(iGroup, &norigGstart, &norigGend, origGirderName);
-   //      }
-
-   //      if (thisGirderName != origGirderName)
-   //      {
-   //         // Enough evidence here that the girder type was changed - refill with seed data
-   //         const GirderLibraryEntry* pGird = pLib->GetGirderEntry( thisGirderName.c_str());
-   //         ASSERT(pGird!=0);
-
-   //         for (GirderIndexType igdr=nthisGstart; igdr<=nthisGend; igdr++)
-   //         {
-   //            CGirderData& thisGdrData = pthisSpan->GetGirderTypes()->GetGirderData(igdr);
-
-   //            thisGdrData.ShearData.CopyGirderEntryData( *pGird );
-
-   //            thisGdrData.LongitudinalRebarData.CopyGirderEntryData( *pGird );
-   //         }
-   //      }
-   //   }
-   //}
-}
-
 std::vector<pgsTypes::PierConnectionType> CBridgeDescription2::GetPierConnectionTypes(PierIndexType pierIdx) const
 {
    std::vector<pgsTypes::PierConnectionType> connectionTypes;
 
    const CPierData2* pPier = GetPier(pierIdx);
 
-   if ( pPier->IsBoundaryPier() )
+   if ( pPier->IsInteriorPier() )
    {
-      // This pier is on a group boundary (two groups frame into this pier).
-      // All connection types are valid
       connectionTypes.push_back(pgsTypes::Hinge);
       connectionTypes.push_back(pgsTypes::Roller);
-      connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
-      connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
-
-      if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
-      {
-         // all these connection types require that there is a span on 
-         // both sides of this pier
-         connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
-         connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
-         connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
-         connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
-         connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
-         connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
-      }
    }
    else
    {
-      connectionTypes.push_back(pgsTypes::Hinge);
-      connectionTypes.push_back(pgsTypes::Roller);
+      ATLASSERT(pPier->IsBoundaryPier());
+
+      if ( pPier->HasCantilever() )
+      {
+         connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
+         connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
+         connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
+      }
+      else
+      {
+         // This pier is on a group boundary (two groups frame into this pier).
+         // All connection types are valid
+         connectionTypes.push_back(pgsTypes::Hinge);
+         connectionTypes.push_back(pgsTypes::Roller);
+         connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
+         connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
+
+         if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
+         {
+            // all these connection types require that there is a span on 
+            // both sides of this pier
+            connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
+            connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
+            connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
+            connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
+            connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
+            connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
+         }
+      }
    }
 
    return connectionTypes;

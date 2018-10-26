@@ -40,7 +40,7 @@ COPYRIGHT
 //
 #include <Reporter\Reporter.h>
 #include <PGSuperTypes.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 // FORWARD DECLARATIONS
 //

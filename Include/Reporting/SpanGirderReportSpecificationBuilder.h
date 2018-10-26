@@ -25,7 +25,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\BrokerReportSpecificationBuilder.h>
 #include <ReportManager\ReportManager.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <WBFLCore.h>
 
 class REPORTINGCLASS CSpanReportSpecificationBuilder :

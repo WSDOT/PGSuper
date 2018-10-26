@@ -25,7 +25,7 @@
 
 #include <PGSuperTypes.h>
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <Lrfd\Lrfd.h>
 #include <WBFLRCCapacity.h>
 

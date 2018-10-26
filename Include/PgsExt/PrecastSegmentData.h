@@ -32,7 +32,7 @@
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\HandlingData.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 
 #include <boost\shared_ptr.hpp>
 

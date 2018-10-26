@@ -26,7 +26,7 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>

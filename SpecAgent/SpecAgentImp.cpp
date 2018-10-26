@@ -660,7 +660,6 @@ Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStressFactor()
 
 Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(const CSegmentKey& segmentKey)
 {
-#pragma Reminder("UPDATE: considate with other allowable stress method")
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
@@ -681,7 +680,6 @@ Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactor()
 
 Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey)
 {
-#pragma Reminder("UPDATE: considate with other allowable stress method")
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
@@ -864,9 +862,6 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPoi
    bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
 
    ATLASSERT(compositeDeckIntervalIdx <= intervalIdx); // why are you asking for allowable deck stresses before the deck can take load?
-
-#pragma Reminder("REVIEW: consider having a separate set of allowable stress coefficients in the spec library for deck")
-   // this is where those coefficients would be used
 
    if ( bIsTendonStressingInterval )
    {
@@ -1094,9 +1089,6 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
    ATLASSERT(pIntervals->GetCompositeDeckInterval(segmentKey) <= intervalIdx);
 
    bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
-
-#pragma Reminder("REVIEW: consider having a separate set of allowable stress coefficients in the spec library for deck")
-   // this is where those coefficients would be used
 
    if ( bIsTendonStressingInterval )
    {

@@ -35,7 +35,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PoiArtifactKey.h>
 #include <PgsExt\PoiMgr.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\HandlingData.h>
 #include <PgsExt\StrandSlopeArtifact.h>
 #include <PgsExt\StrandStressArtifact.h>

@@ -771,10 +771,6 @@ StrandIndexType CGirderDescDebondGrid::GetNumExtendedStrands(pgsTypes::MemberEnd
 
 void CGirderDescDebondGrid::CanDebond(bool bCanDebond,bool bSymmetricDebond)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    m_bSymmetricDebond = bSymmetricDebond;
 
    VERIFY(HideCols(DEBOND_CHECK_COL,LAST_DEBOND_COL,bCanDebond ? FALSE : TRUE));
@@ -787,6 +783,10 @@ void CGirderDescDebondGrid::CanDebond(bool bCanDebond,bool bSymmetricDebond)
    {
       return;
    }
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strColHeading = CString(_T("Debond\nLength\n(")) + 
                            CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());

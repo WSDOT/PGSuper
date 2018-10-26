@@ -61,6 +61,9 @@ CPierData2::CPierData2()
    Orientation = Normal;
    Angle       = 0.0;
 
+   m_bHasCantilever = false;
+   m_CantileverLength = 0.0;
+
    m_PierConnectionType = pgsTypes::Hinge;
    m_SegmentConnectionType = pgsTypes::psctContinuousSegment;
 
@@ -176,28 +179,45 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       }
    }
 
+   if ( IsAbutment() )
+   {
+      if ( m_bHasCantilever != rOther.m_bHasCantilever )
+      {
+         return false;
+      }
+
+      if ( m_bHasCantilever && !IsEqual(m_CantileverLength,rOther.m_CantileverLength) )
+      {
+         return false;
+      }
+   }
+
    for ( int i = 0; i < 2; i++ )
    {
       pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
 
-      if ( !IsEqual(m_GirderEndDistance[face], rOther.m_GirderEndDistance[face]) )
+      if ( !m_bHasCantilever )
       {
-         return false;
-      }
+         // not used if pier has a cantilever
+         if ( !IsEqual(m_GirderEndDistance[face], rOther.m_GirderEndDistance[face]) )
+         {
+            return false;
+         }
 
-      if ( m_EndDistanceMeasurementType[face] != rOther.m_EndDistanceMeasurementType[face] )
-      {
-         return false;
-      }
+         if ( m_EndDistanceMeasurementType[face] != rOther.m_EndDistanceMeasurementType[face] )
+         {
+            return false;
+         }
 
-      if ( !IsEqual(m_GirderBearingOffset[face], rOther.m_GirderBearingOffset[face]) )
-      {
-         return false;
-      }
+         if ( !IsEqual(m_GirderBearingOffset[face], rOther.m_GirderBearingOffset[face]) )
+         {
+            return false;
+         }
 
-      if ( m_BearingOffsetMeasurementType[face] != rOther.m_BearingOffsetMeasurementType[face] )
-      {
-         return false;
+         if ( m_BearingOffsetMeasurementType[face] != rOther.m_BearingOffsetMeasurementType[face] )
+         {
+            return false;
+         }
       }
 
       if ( !IsEqual(m_SupportWidth[face], rOther.m_SupportWidth[face]) )
@@ -277,7 +297,7 @@ LPCTSTR CPierData2::AsString(pgsTypes::PierConnectionType type)
    switch(type)
    { 
    case pgsTypes::Hinge:
-      return _T("Hinged");
+      return _T("Hinge");
 
    case pgsTypes::Roller:
       return _T("Roller");
@@ -425,6 +445,17 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("SegmentConnectionType"),&var);
          m_SegmentConnectionType = (pgsTypes::PierSegmentConnectionType)var.lVal;
+      }
+
+      if ( 12 < version )
+      {
+         // added in version 13
+         var.vt = VT_R8;
+         if ( SUCCEEDED(pStrLoad->get_Property(_T("CantileverLength"),&var)) )
+         {
+            m_bHasCantilever = true;
+            m_CantileverLength = var.dblVal;
+         }
       }
       
       hr = pStrLoad->BeginUnit(_T("Back"));
@@ -775,7 +806,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierDataDetails"),12.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),13.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -787,6 +818,12 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    if ( IsInteriorPier() )
    {
       pStrSave->put_Property(_T("SegmentConnectionType"),  CComVariant( m_SegmentConnectionType ) );
+   }
+
+   // added in version 13
+   if ( m_bHasCantilever )
+   {
+      pStrSave->put_Property(_T("CantileverLength"),CComVariant(m_CantileverLength));
    }
 
    pStrSave->BeginUnit(_T("Back"),2.0);
@@ -908,6 +945,9 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    Orientation             = rOther.Orientation;
    Angle                   = rOther.Angle;
 
+   m_bHasCantilever = rOther.m_bHasCantilever;
+   m_CantileverLength = rOther.m_CantileverLength;
+
    for ( int i = 0; i < 2; i++ )
    {
       m_GirderEndDistance[i]            = rOther.m_GirderEndDistance[i];
@@ -1003,6 +1043,8 @@ void CPierData2::SetSpan(pgsTypes::PierFaceType face,CSpanData2* pSpan)
    {
       m_pNextSpan = pSpan;
    }
+
+   ValidatePierConnectionType();
 }
 
 void CPierData2::SetSpans(CSpanData2* pPrevSpan,CSpanData2* pNextSpan)
@@ -1089,6 +1131,27 @@ LPCTSTR CPierData2::GetOrientation() const
 void CPierData2::SetOrientation(LPCTSTR strOrientation)
 {
    m_strOrientation = strOrientation;
+}
+
+void CPierData2::HasCantilever(bool bHasCantilever)
+{
+   m_bHasCantilever = bHasCantilever;
+   ValidatePierConnectionType();
+}
+
+bool CPierData2::HasCantilever() const
+{
+   return m_bHasCantilever;
+}
+
+void CPierData2::SetCantileverLength(Float64 Lc)
+{
+   m_CantileverLength = Lc;
+}
+
+Float64 CPierData2::GetCantileverLength() const
+{
+   return m_CantileverLength;
 }
 
 pgsTypes::PierConnectionType CPierData2::GetPierConnectionType() const
@@ -1180,8 +1243,16 @@ void CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDis
 
 void CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const
 {
-   *pEndDist = m_GirderEndDistance[face];
-   *pMeasure = m_EndDistanceMeasurementType[face];
+   if ( m_bHasCantilever )
+   {
+      *pEndDist = m_CantileverLength;
+      *pMeasure = ConnectionLibraryEntry::FromBearingAlongGirder;
+   }
+   else
+   {
+      *pEndDist = m_GirderEndDistance[face];
+      *pMeasure = m_EndDistanceMeasurementType[face];
+   }
 }
 
 void CPierData2::SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure)
@@ -1192,7 +1263,14 @@ void CPierData2::SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,Con
 
 void CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const
 {
-   *pOffset = m_GirderBearingOffset[face];
+   if ( m_bHasCantilever )
+   {
+      *pOffset = 0.0;
+   }
+   else
+   {
+      *pOffset = m_GirderBearingOffset[face];
+   }
    *pMeasure = m_BearingOffsetMeasurementType[face];
 }
 
@@ -1483,7 +1561,6 @@ bool CPierData2::IsInteriorPier() const
    // is interior to the group.
    ATLASSERT(m_pBridgeDesc != NULL); // pier data must be part of a bridge model
    return (GetPrevGirderGroup() == GetNextGirderGroup() ? true : false);
-
 }
 
 bool CPierData2::IsBoundaryPier() const
@@ -1679,6 +1756,18 @@ void CPierData2::SetPierData(CPierData* pPier)
    }
 
    m_bDistributionFactorsFromOlderVersion = true;
+}
+
+void CPierData2::ValidatePierConnectionType()
+{
+   // make sure the connection type is valid
+   std::vector<pgsTypes::PierConnectionType> vConnectionTypes = m_pBridgeDesc->GetPierConnectionTypes(m_PierIdx);
+   std::vector<pgsTypes::PierConnectionType>::iterator found = std::find(vConnectionTypes.begin(),vConnectionTypes.end(),m_PierConnectionType);
+   if ( found == vConnectionTypes.end() )
+   {
+      // the current connection type isn't valid... updated it
+      m_PierConnectionType = vConnectionTypes.front();
+   }
 }
 
 #if defined _DEBUG

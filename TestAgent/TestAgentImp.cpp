@@ -2205,7 +2205,6 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    resultsFile<<bridgeId<<", "<<pid<<", 124012s, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetSlabOffset(pgsTypes::metStart), unitMeasure::Millimeter)) <<   ", 102, "<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<", "<<pid<<", 124012e, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetSlabOffset(pgsTypes::metEnd), unitMeasure::Millimeter)) <<   ", 102, "<<gdrIdx<<std::endl;
 
-#pragma Reminder("UPDATE: Designing for symmetrical lift and haul points")
    resultsFile<<bridgeId<<", "<<pid<<", 124013, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetLeftLiftingLocation(), unitMeasure::Millimeter)) <<   ", 102, "<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<", "<<pid<<", 124014, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetLeadingOverhang(), unitMeasure::Millimeter)) <<   ", 102, "<<gdrIdx<<std::endl;
 

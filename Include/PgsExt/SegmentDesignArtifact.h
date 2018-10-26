@@ -25,7 +25,7 @@
 #include <PgsExt\PgsExtExp.h>
 #include <map>
 #include <PsgLib\ShearZoneData.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <PgsExt\GirderData.h>
 
 #include <Material\ConcreteEx.h>

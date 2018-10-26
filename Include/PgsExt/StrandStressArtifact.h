@@ -32,7 +32,7 @@
 #include <PgsExt\PgsExtExp.h>
 #endif
 
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 
 // LOCAL INCLUDES
 //

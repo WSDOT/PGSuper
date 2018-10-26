@@ -1244,7 +1244,6 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
          if ( pModelData->Loads.find(lcid) == pModelData->Loads.end() && (lcid == g_lcidStraight || lcid == g_lcidHarped || lcid == g_lcidTemporary) )
          {
-            const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
             ApplyPretensionLoad(pModelData,segmentKey);
          }
       }

@@ -25,7 +25,7 @@
 // SYSTEM INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\SegmentKey.h>
+#include <PgsExt\Keys.h>
 #include <EAF\EAFStatusItem.h>
 
 // Special CEAFStatusItem that is directly related to a given span(s)/girders(s)

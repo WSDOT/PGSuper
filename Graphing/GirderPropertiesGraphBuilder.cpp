@@ -466,35 +466,34 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
 void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
 {
    ATLASSERT(propertyType == TendonEccentricity || propertyType == TendonProfile);
-#pragma Reminder("UPDATE: this is a kludgy way to handle colors")
-   // Need a color generation algorithm so that we don't repeat colors
-   // Should be generated and made part of the graphing sub-system
-
-   COLORREF colors[4] = {RED,ORANGE,PINK,BLUE};
-   int colorIdx = 0;
-   int nColors = 4;
 
    GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
-
+   DuctIndexType nMaxDucts = 0;
    GET_IFACE(ITendonGeometry,pTendonGeom);
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
       DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++,colorIdx++ )
+      nMaxDucts = Max(nMaxDucts,nDucts);
+   }
+   
+   CGraphColor graphColor(nMaxDucts);
+
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   {
+      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
+      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
-         if (nColors <= colorIdx )
-         {
-            colorIdx = 0;
-         }
+         COLORREF color = graphColor.GetColor(ductIdx);
 
          CString strLabel;
          strLabel.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
-         IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,GRAPH_PEN_WEIGHT,colors[colorIdx]);
+         IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,GRAPH_PEN_WEIGHT,color);
 
          std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
          std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());

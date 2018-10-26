@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG

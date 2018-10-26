@@ -508,15 +508,21 @@ SpanIndexType CParabolicDuctGeometry::GetSpanCount() const
    return (SpanIndexType)LowPoints.size();
 }
 
-void CParabolicDuctGeometry::InsertSpan(SpanIndexType newSpanIdx)
+void CParabolicDuctGeometry::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
 {
+   SpanIndexType spanIdx = (SpanIndexType)refPierIdx;
+   if ( face == pgsTypes::Back && spanIdx != 0 )
+   {
+      spanIdx--;
+   }
+
    HighPoint highPoint;
    if ( 0 < HighPoints.size() )
    {
-      if ( newSpanIdx < (SpanIndexType)HighPoints.size() )
+      if ( spanIdx < (SpanIndexType)HighPoints.size() )
       {
-         highPoint = HighPoints[newSpanIdx];
-         HighPoints.insert(HighPoints.begin()+newSpanIdx,highPoint);
+         highPoint = HighPoints[spanIdx];
+         HighPoints.insert(HighPoints.begin()+spanIdx,highPoint);
       }
       else
       {
@@ -531,10 +537,10 @@ void CParabolicDuctGeometry::InsertSpan(SpanIndexType newSpanIdx)
 
    Point lowPoint;
    ATLASSERT(0 < LowPoints.size()); // there is always 1 low point
-   if ( newSpanIdx < (SpanIndexType)LowPoints.size() )
+   if ( spanIdx < (SpanIndexType)LowPoints.size() )
    {
-      lowPoint = LowPoints[newSpanIdx];
-      LowPoints.insert(LowPoints.begin()+newSpanIdx,lowPoint);
+      lowPoint = LowPoints[spanIdx];
+      LowPoints.insert(LowPoints.begin()+spanIdx,lowPoint);
    }
    else
    {
@@ -544,18 +550,18 @@ void CParabolicDuctGeometry::InsertSpan(SpanIndexType newSpanIdx)
    ASSERT_VALID;
 }
 
-void CParabolicDuctGeometry::RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx)
+void CParabolicDuctGeometry::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx)
 {
    SpanIndexType nSpans = (SpanIndexType)LowPoints.size();
 
-   LowPoints.erase(LowPoints.begin()+spanIdx);
+   LowPoints.erase(LowPoints.begin()+relSpanIdx);
 
-   if ( nSpans == pierIdx )
+   if ( nSpans == relPierIdx )
    {
       // end abutment is being removed... just pop off the last high point
       HighPoints.pop_back();
    }
-   else if ( pierIdx == 0 )
+   else if ( relPierIdx == 0 )
    {
       // start abutment is being removed, erase the first high point
       HighPoints.erase(HighPoints.begin());
@@ -563,7 +569,7 @@ void CParabolicDuctGeometry::RemoveSpan(SpanIndexType spanIdx,PierIndexType pier
    else
    {
       // an intermedate pier is being removed... remember that the container index is one less than the pier index
-      HighPoints.erase(HighPoints.begin()+pierIdx-1);
+      HighPoints.erase(HighPoints.begin()+relPierIdx-1);
    }
 
    ASSERT_VALID;
@@ -1023,19 +1029,19 @@ bool CDuctData::operator==(const CDuctData& rOther) const
    return true;
 }
 
-void CDuctData::InsertSpan(SpanIndexType newSpanIndex)
+void CDuctData::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
 {
    if ( DuctGeometryType == CDuctGeometry::Parabolic )
    {
-      ParabolicDuctGeometry.InsertSpan(newSpanIndex);
+      ParabolicDuctGeometry.InsertSpan(refPierIdx,face);
    }
 }
 
-void CDuctData::RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx)
+void CDuctData::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx)
 {
    if ( DuctGeometryType == CDuctGeometry::Parabolic )
    {
-      ParabolicDuctGeometry.RemoveSpan(spanIdx,pierIdx);
+      ParabolicDuctGeometry.RemoveSpan(relSpanIdx,relPierIdx);
    }
 }
 
@@ -1343,21 +1349,26 @@ Float64 CPTData::GetPjack(DuctIndexType ductIndex) const
    }
 }
 
-void CPTData::InsertSpan(SpanIndexType newSpanIndex)
+void CPTData::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
 {
    std::vector<CDuctData>::iterator iter(m_Ducts.begin());
    std::vector<CDuctData>::iterator end(m_Ducts.end());
    for ( ; iter != end; iter++ )
    {
       CDuctData& duct = *iter;
-      duct.InsertSpan(newSpanIndex);
+      duct.InsertSpan(refPierIdx,face);
    }
 }
 
-void CPTData::RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx)
+void CPTData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
    PierIndexType startPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
    SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
+
+   PierIndexType pierIdx = (rmPierType == pgsTypes::PrevPier ? spanIdx : spanIdx+1);
+
+   ATLASSERT(startSpanIdx <= spanIdx);
+   ATLASSERT(startPierIdx <= pierIdx);
 
    std::vector<CDuctData>::iterator iter(m_Ducts.begin());
    std::vector<CDuctData>::iterator end(m_Ducts.end());
@@ -1503,13 +1514,13 @@ void CPTData::RemoveFromTimeline()
    CTimelineManager* pTimelineMgr = GetTimelineManager();
    if ( m_pGirder && pTimelineMgr )
    {
-      CGirderKey girderKey(m_pGirder->GetGirderKey());
+      GirderIDType gdrID = m_pGirder->GetID();
       DuctIndexType nDucts = GetDuctCount();
       for ( DuctIndexType ductIdx = nDucts-1; 0 <= ductIdx && ductIdx != INVALID_INDEX; ductIdx-- )
       {
-         EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(girderKey,ductIdx);
+         EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(gdrID,ductIdx);
          CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-         pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderKey,ductIdx);
+         pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx);
       }
    }
 }
@@ -1519,10 +1530,10 @@ void CPTData::RemoveFromTimeline(DuctIndexType ductIdx)
    CTimelineManager* pTimelineMgr = GetTimelineManager();
    if ( m_pGirder && pTimelineMgr )
    {
-      CGirderKey girderKey(m_pGirder->GetGirderKey());
-      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(girderKey,ductIdx);
+      GirderIDType gdrID = m_pGirder->GetID();
+      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(gdrID,ductIdx);
       CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-      pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderKey,ductIdx);
+      pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx);
    }
 }
 
@@ -1531,9 +1542,9 @@ void CPTData::AddToTimeline(DuctIndexType ductIdx,EventIndexType stressTendonEve
    CTimelineManager* pTimelineMgr = GetTimelineManager();
    if ( m_pGirder && pTimelineMgr )
    {
-      CGirderKey girderKey(m_pGirder->GetGirderKey());
+      GirderIDType gdrID = m_pGirder->GetID();
       CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(stressTendonEventIdx);
-      pTimelineEvent->GetStressTendonActivity().AddTendon(girderKey,ductIdx);
+      pTimelineEvent->GetStressTendonActivity().AddTendon(gdrID,ductIdx);
    }
 }
 
@@ -1543,8 +1554,8 @@ void CPTData::UpdateTimeline(const CDuctData& otherDuct,DuctIndexType ductIdx)
    if ( pTimelineMgr )
    {
       const CSplicedGirderData* pOtherGirder = otherDuct.GetGirder();
-      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pOtherGirder->GetGirderKey(),ductIdx);
+      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pOtherGirder->GetID(),ductIdx);
       CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-      pTimelineEvent->GetStressTendonActivity().AddTendon(m_pGirder->GetGirderKey(),ductIdx);
+      pTimelineEvent->GetStressTendonActivity().AddTendon(m_pGirder->GetID(),ductIdx);
    }
 }

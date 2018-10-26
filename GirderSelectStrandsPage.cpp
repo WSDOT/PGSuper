@@ -239,10 +239,6 @@ void CGirderSelectStrandsPage::InitializeData(const CSegmentKey& segmentKey, CSt
                     HarpedStrandOffsetType endMeasureType, HarpedStrandOffsetType hpMeasureType,
                     Float64 hpOffsetAtEnd, Float64 hpOffsetAtHp, Float64 maxDebondLength)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-
    m_pGdrEntry  = pGdrEntry;
    m_SegmentKey = segmentKey;
    m_pStrands   = pStrands;
@@ -267,7 +263,6 @@ void CGirderSelectStrandsPage::InitializeData(const CSegmentKey& segmentKey, CSt
    m_bSymmetricDebond  = m_pStrands->IsSymmetricDebond();
 
    m_MaxDebondLength = maxDebondLength;
-
 }
 
 void CGirderSelectStrandsPage::OnBnClickedCheckSymm()
