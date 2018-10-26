@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  1      1     WF74G    *    33   0.6  270  32.63  16.14                                               9  68.0  4.0  4.000  5.000   3.073    -3.195     9345   0.759  0.831   3.685 -1.222  0.000 -0.129 -1.351 132.30  292.29    3.00    6.17    6.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    1     1    WF74G    *     33  0.6  270  32.63  16.14  12.63  12.63                                               9  68.0  4.0  4.000  5.000   3.073    -3.195     9345   0.759  0.831   3.685 -1.222  0.000 -0.129 -1.351 132.30  292.29    3.00    6.17    6.17 
 
 
 Girder design was Not Successful
@@ -10,9 +10,9 @@ Ultimate moment capacity (negative moment) check failed for Strength I Limit Sta
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  1      2     WF74G    *    34   0.6  270  32.60  17.77                                               8  70.0  4.0  4.200  5.300   3.151    -3.268     9721   0.716  0.831   3.761 -1.321  0.000 -0.127 -1.447 137.30  291.82    3.00    6.17    6.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    1     2    WF74G    *     34  0.6  270  32.60  17.77  12.25  12.25                                               8  70.0  4.0  4.200  5.300   3.151    -3.268     9721   0.716  0.831   3.761 -1.321  0.000 -0.127 -1.447 137.30  291.82    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
@@ -20,9 +20,9 @@ Ultimate moment capacity (negative moment) check failed for Strength I Limit Sta
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  1      3     WF74G    *    34   0.6  270  32.60  14.36                                              10  70.0  4.0  4.100  5.100   3.188    -3.317     9719   0.713  0.831   4.064 -1.397  0.000 -0.134 -1.531 139.07  281.91    3.00    6.17    6.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    1     3    WF74G    *     34  0.6  270  32.60  14.36  11.75  11.75                                              10  70.0  4.0  4.100  5.100   3.188    -3.317     9719   0.713  0.831   4.064 -1.397  0.000 -0.134 -1.531 139.07  281.91    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
@@ -30,9 +30,9 @@ Ultimate moment capacity (negative moment) check failed for Strength I Limit Sta
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  2      1     WF74G    *    56   0.6  270  31.76  16.87                                              14  70.0  7.0  6.700  8.200   5.197    -5.501    15949   0.930  0.930   6.138 -2.903  0.000 -0.257 -3.160 277.43  431.36    3.00    7.67    7.67 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    2     1    WF74G    *     56  0.6  270  31.76  16.87  11.50  11.50                                              14  70.0  7.0  6.700  8.200   5.197    -5.501    15949   0.930  0.930   6.138 -2.903  0.000 -0.257 -3.160 277.43  431.36    3.00    7.67    7.67 
 
 
 The Specification Check was Not Successful
@@ -40,43 +40,43 @@ Compressive stress check failed for Service I for the Final with Live Load Stage
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  2      2     WF74G    *    49   0.6  270  32.09  16.11                                              13  70.0  7.0  5.700  7.000   4.702    -4.837    13409   0.683  0.832   5.591 -2.754  0.000 -0.283 -3.037 225.42  369.15    3.00    8.67    8.67 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    2     2    WF74G    *     49  0.6  270  32.09  16.11  11.00  11.00                                              13  70.0  7.0  5.700  7.000   4.702    -4.837    13409   0.683  0.832   5.591 -2.754  0.000 -0.283 -3.037 225.42  369.15    3.00    8.67    8.67 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  2      3     WF74G    *    49   0.6  270  32.09  16.11                                              13  70.0  7.0  5.700  7.000   4.705    -4.841    13421   0.683  0.832   5.591 -2.756  0.000 -0.285 -3.040 225.26  368.90    3.00    8.67    8.67 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    2     3    WF74G    *     49  0.6  270  32.09  16.11  10.75  10.75                                              13  70.0  7.0  5.700  7.000   4.705    -4.841    13421   0.683  0.832   5.591 -2.756  0.000 -0.285 -3.040 225.26  368.90    3.00    8.67    8.67 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  3      1     WF74G    *     8   0.6  270  32.66  26.91                                               2  27.0  4.0  4.000  5.000   0.742    -0.673     2879   1.471  1.031   0.170 -0.015  0.000 -0.001 -0.016  12.63   51.69    3.00    6.17    6.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    3     1    WF74G    *      8  0.6  270  32.66  26.91   9.75   9.75                                               2  27.0  4.0  4.000  5.000   0.742    -0.673     2879   1.471  1.031   0.170 -0.015  0.000 -0.001 -0.016  12.63   51.69    3.00    6.17    6.17 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  3      2     WF74G    *     7   0.6  270  32.23  22.23                                               3  28.0  4.0  4.000  5.000   0.740    -0.637     2567   1.158  0.988   0.148 -0.017  0.000 -0.001 -0.018   9.73   42.17    3.00    6.17    6.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    3     2    WF74G    *      7  0.6  270  32.23  22.23   9.75   9.75                                               3  28.0  4.0  4.000  5.000   0.740    -0.637     2567   1.158  0.988   0.148 -0.017  0.000 -0.001 -0.018   9.73   42.17    3.00    6.17    6.17 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP  3      3     WF74G    *     8   0.6  270  32.66  26.41                                               2  29.0  4.0  4.000  5.000   0.771    -0.676     2732   1.150  0.994   0.195 -0.020  0.000 -0.002 -0.022  12.40   50.59    3.00    6.17    6.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.97    5   8.25 I-5 & I-205 SCIP    3     3    WF74G    *      8  0.6  270  32.66  26.41   9.75   9.75                                               2  29.0  4.0  4.000  5.000   0.771    -0.676     2732   1.150  0.994   0.195 -0.020  0.000 -0.002 -0.022  12.40   50.59    3.00    6.17    6.17 
 
 
 The Specification Check was Successful

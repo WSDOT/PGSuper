@@ -1,71 +1,71 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (  1      1      IV      *    48   0.6  270  25.18  14.76                                              10  56.0  6.0  7.300  9.100   4.698    -5.290    10018   0.660  1.000   5.144 -1.597 -0.125 -0.202 -1.924 210.86  322.70    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9  10.50 KAPOLEI BRIDGE (    1     1     IV      *     48  0.6  270  25.18  14.76   9.50   9.50                                              10  56.0  6.0  7.300  9.100   4.698    -5.290    10018   0.660  1.000   5.144 -1.597 -0.125 -0.202 -1.924 210.86  322.70    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (  1      2      IV      *    45   0.6  270  25.43  15.34                                               9  56.0  6.0  6.800  8.800   4.329    -4.987     9505   0.585  1.000   5.108 -1.488 -0.134 -0.218 -1.840 189.26  306.74    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9  10.50 KAPOLEI BRIDGE (    1     2     IV      *     45  0.6  270  25.43  15.34   9.75   9.75                                               9  56.0  6.0  6.800  8.800   4.329    -4.987     9505   0.585  1.000   5.108 -1.488 -0.134 -0.218 -1.840 189.26  306.74    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (  1      5      IV      *    46   0.6  270  25.40  14.53                                              10  56.0  6.0  6.800  8.600   4.493    -5.061     9526   0.585  1.000   5.389 -1.777 -0.165  0.000 -1.942 192.54  318.69    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9  10.50 KAPOLEI BRIDGE (    1     5     IV      *     46  0.6  270  25.40  14.53  12.00  12.00                                              10  56.0  6.0  6.800  8.600   4.493    -5.061     9526   0.585  1.000   5.389 -1.777 -0.165  0.000 -1.942 192.54  318.69    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  2      1      IV      *    46   0.6  270  25.22  16.35                                               8  56.0  5.0  7.200  9.200   4.453    -5.146     9674   0.660  1.000   5.102 -1.455 -0.136 -0.221 -1.812 191.11  306.39    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9   7.92 KAPOLEI BRIDGE (    2     1     IV      *     46  0.6  270  25.22  16.35  11.50  11.50                                               8  56.0  5.0  7.200  9.200   4.453    -5.146     9674   0.660  1.000   5.102 -1.455 -0.136 -0.221 -1.812 191.11  306.39    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  2      2      IV      *    45   0.6  270  25.43  15.34                                               9  56.0  6.0  6.800  8.900   4.322    -4.969     9497   0.585  1.000   5.125 -1.452 -0.136 -0.221 -1.809 188.33  307.72    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9   7.92 KAPOLEI BRIDGE (    2     2     IV      *     45  0.6  270  25.43  15.34  11.25  11.25                                               9  56.0  6.0  6.800  8.900   4.322    -4.969     9497   0.585  1.000   5.125 -1.452 -0.136 -0.221 -1.809 188.33  307.72    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  2      5      IV      *    42   0.6  270  25.70  13.80                                              10  56.0  6.0  6.200  8.000   4.147    -4.662     8836   0.585  1.000   4.905 -1.531 -0.142  0.000 -1.673 170.31  299.97    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9   7.92 KAPOLEI BRIDGE (    2     5     IV      *     42  0.6  270  25.70  13.80  11.25  11.25                                              10  56.0  6.0  6.200  8.000   4.147    -4.662     8836   0.585  1.000   4.905 -1.531 -0.142  0.000 -1.673 170.31  299.97    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  3      1      IV      *    43   0.6  270  25.58  15.02                                               9  56.0  6.0  6.600  8.500   4.142    -4.784     9127   0.660  1.000   4.752 -1.290 -0.119 -0.194 -1.603 178.45  301.33    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9   7.92 KAPOLEI BRIDGE (    3     1     IV      *     43  0.6  270  25.58  15.02  11.25  11.25                                               9  56.0  6.0  6.600  8.500   4.142    -4.784     9127   0.660  1.000   4.752 -1.290 -0.119 -0.194 -1.603 178.45  301.33    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  3      2      IV      *    42   0.6  270  25.61  15.90                                               8  56.0  5.0  6.500  8.400   4.049    -4.651     8981   0.600  1.000   4.712 -1.274 -0.119 -0.192 -1.585 170.86  291.28    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9   7.92 KAPOLEI BRIDGE (    3     2     IV      *     42  0.6  270  25.61  15.90  11.25  11.25                                               8  56.0  5.0  6.500  8.400   4.049    -4.651     8981   0.600  1.000   4.712 -1.274 -0.119 -0.192 -1.585 170.86  291.28    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  3      5      IV      *    39   0.6  270  25.92  14.28                                               9  56.0  6.0  5.900  7.500   3.867    -4.348     8325   0.600  1.000   4.502 -1.330 -0.123  0.000 -1.454 153.35  282.91    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 66.67    9   7.92 KAPOLEI BRIDGE (    3     5     IV      *     39  0.6  270  25.92  14.28  11.00  11.00                                               9  56.0  6.0  5.900  7.500   3.867    -4.348     8325   0.600  1.000   4.502 -1.330 -0.123  0.000 -1.454 153.35  282.91    1.75    5.00    5.00 
 
 
 The Specification Check was Successful

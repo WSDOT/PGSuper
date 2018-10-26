@@ -317,7 +317,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
          {
             //  ratio of span length to girder spacing is out of range
             std::_tostringstream os;
-            os << "The ratio of span length to girder spacing (L/S) is less that 2. The effective flange width cannot be computed (LRFD 4.6.2.6.1)" << std::endl;
+            os << "The ratio of span length to girder spacing (L/S) is less than 2. The effective flange width cannot be computed (LRFD 4.6.2.6.1)" << std::endl;
 
             pgsEffectiveFlangeWidthStatusItem* pStatusItem = 
                new pgsEffectiveFlangeWidthStatusItem(m_StatusGroupID,m_scidEffectiveFlangeWidthWarning,os.str().c_str());

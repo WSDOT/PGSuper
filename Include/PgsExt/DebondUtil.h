@@ -238,6 +238,27 @@ inline void TxDOTDebondTool::Compute()
       }
    }
 
+   // Next add any adjustable strands at same row elevations to running total
+   CComPtr<IPoint2dCollection> hcoords;
+   m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Harped, &hcoords);
+   hcoords->get_Count(&size);
+   for (CollectionIndexType idx = 0; idx < size; idx++)
+   {
+      CComPtr<IPoint2d> point;
+      hcoords->get_Item(idx,&point);
+      Float64 curr_y;
+      point->get_Y(&curr_y);
+   
+      // Find any rows with current strand elevation and add to total
+      RowData bogus_row;
+      bogus_row.m_Elevation = curr_y;
+      RowListIter curr_row_it = m_Rows.find( bogus_row );
+      if (curr_row_it != m_Rows.end())
+      {
+         curr_row_it->m_NumTotalStrands++; // add our strand to row
+      }
+   }
+
    // now we have our data structures set up. See if our increment is 3'
    if (m_NumDebonded>0)
    {

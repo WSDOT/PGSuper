@@ -40,10 +40,10 @@ public:
    afx_msg void OnHelp();
 
    // Registery helper functions
-   HKEY GetAppLocalMachineRegistryKey();
+   HKEY GetAppLocalMachineRegistryKey(REGSAM samDesired);
    HKEY GetUninstallRegistryKey();
-   HKEY GetLocalMachineSectionKey(LPCTSTR lpszSection);
-   HKEY GetLocalMachineSectionKey(HKEY hAppKey,LPCTSTR lpszSection);
+   HKEY GetLocalMachineSectionKey(LPCTSTR lpszSection,REGSAM samDesired);
+   HKEY GetLocalMachineSectionKey(HKEY hAppKey,LPCTSTR lpszSection,REGSAM samDesired);
    UINT GetLocalMachineInt(HKEY hAppKey,LPCTSTR lpszSection, LPCTSTR lpszEntry,int nDefault);
    UINT GetLocalMachineInt(LPCTSTR lpszSection, LPCTSTR lpszEntry,int nDefault);
    CString GetLocalMachineString(HKEY hAppKey,LPCTSTR lpszSection, LPCTSTR lpszEntry,LPCTSTR lpszDefault);

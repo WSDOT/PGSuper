@@ -23,10 +23,10 @@
 #pragma once
 
 #ifndef _PGSUPER_VERSION
-#define _PGSUPER_VERSION 291 // version 2.9.1
+#define _PGSUPER_VERSION 292 // version 2.9.2
 #endif
 
-//#define _BETA_VERSION          // When defined, building beta versions
+#define _BETA_VERSION          // When defined, building beta versions
 
 // includes WBFL Version macro and
 // macros that define the minimum version of Windows and IE

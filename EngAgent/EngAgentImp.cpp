@@ -1980,12 +1980,12 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       std::_tostringstream os;
-      os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
-      os << _T("Per 4.6.2.2.1, the girders in this span do not have approximately the same stiffness.") << std::endl;
+      os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
+      os << _T("The girders in Span ") << LABEL_SPAN(span) << _T(" do not have approximately the same stiffness as required by LRFD 4.6.2.2.1.") << std::endl;
       os << _T("Minimum I = ") << (LPCTSTR)FormatDimension(Imin,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
       os << _T("Maximum I = ") << (LPCTSTR)FormatDimension(Imax,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
       os << _T("Stiffness Ratio (I min / I max) = ") << (LPCTSTR)FormatScalar(ratio,pDisplayUnits->GetScalarFormat()) << std::endl;
-      os << _T("Minimum stiffness ratio permitted by ") << pSpecEntry->GetName() << _T(" = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
+      os << _T("Minimum stiffness ratio permitted by the Project Criteria = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
       os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
       pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
@@ -2044,10 +2044,11 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       std::_tostringstream os;
-      os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
-      os << _T("Per 4.6.2.2.1, the girders in this span are not parallel.") << std::endl;
-      os << _T("Greatest angular difference between girders in this span = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-      os << _T("Maximum angular difference permitted by ") << pSpecEntry->GetName() << _T(" = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+      os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
+      os << _T("The girders in this span are not parallel as required by LRFD 4.6.2.2.1.") << std::endl;
+
+      os << _T("Greatest angular difference between girders in Span ") << LABEL_SPAN(span) << _T(" = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+      os << _T("Maximum angular difference permitted by the Project Criteria = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
       os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
       pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());

@@ -119,7 +119,7 @@ CString CPGSuperAppPluginApp::GetVersion(bool bIncludeBuildNumber) const
 // returns key for HKEY_LOCAL_MACHINE\Software\Washington State Department of Transportation\PGSuper"
 // responsibility of the caller to call RegCloseKey() on the returned HKEY
 // key is not created if missing (
-HKEY CPGSuperAppPluginApp::GetAppLocalMachineRegistryKey()
+HKEY CPGSuperAppPluginApp::GetAppLocalMachineRegistryKey(REGSAM samDesired)
 {
 	ASSERT(m_pszRegistryKey != NULL);
 	ASSERT(m_pszProfileName != NULL);
@@ -130,15 +130,15 @@ HKEY CPGSuperAppPluginApp::GetAppLocalMachineRegistryKey()
 
 
    // open the "software" key
-   LONG result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("software"), 0, KEY_WRITE|KEY_READ, &hSoftKey);
+   LONG result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("software"), 0, samDesired, &hSoftKey);
 	if ( result == ERROR_SUCCESS)
 	{
       // open the "Washington State Department of Transportation" key
-      result = RegOpenKeyEx(hSoftKey, m_pszRegistryKey, 0, KEY_WRITE|KEY_READ, &hCompanyKey);
+      result = RegOpenKeyEx(hSoftKey, m_pszRegistryKey, 0, samDesired, &hCompanyKey);
 		if (result == ERROR_SUCCESS)
 		{
          // Open the "PGSuper" key
-			result = RegOpenKeyEx(hCompanyKey, m_pszProfileName, 0, KEY_WRITE|KEY_READ, &hAppKey);
+			result = RegOpenKeyEx(hCompanyKey, m_pszProfileName, 0, samDesired, &hAppKey);
 		}
 	}
 
@@ -154,29 +154,29 @@ HKEY CPGSuperAppPluginApp::GetAppLocalMachineRegistryKey()
 // returns key for:
 //      HKEY_LOCAL_MACHINE\"Software"\Washington State Deparment of Transportation\PGSuper\lpszSection
 // responsibility of the caller to call RegCloseKey() on the returned HKEY
-HKEY CPGSuperAppPluginApp::GetLocalMachineSectionKey(LPCTSTR lpszSection)
+HKEY CPGSuperAppPluginApp::GetLocalMachineSectionKey(LPCTSTR lpszSection,REGSAM samDesired)
 {
-	HKEY hAppKey = GetAppLocalMachineRegistryKey();
+	HKEY hAppKey = GetAppLocalMachineRegistryKey(samDesired);
 	if (hAppKey == NULL)
 		return NULL;
 
-   return GetLocalMachineSectionKey(hAppKey,lpszSection);
+   return GetLocalMachineSectionKey(hAppKey,lpszSection,samDesired);
 }
 
-HKEY CPGSuperAppPluginApp::GetLocalMachineSectionKey(HKEY hAppKey,LPCTSTR lpszSection)
+HKEY CPGSuperAppPluginApp::GetLocalMachineSectionKey(HKEY hAppKey,LPCTSTR lpszSection,REGSAM samDesired)
 {
 	ASSERT(lpszSection != NULL);
 
 	HKEY hSectionKey = NULL;
 
-	LONG result = RegOpenKeyEx(hAppKey, lpszSection, 0, KEY_WRITE|KEY_READ, &hSectionKey);
+	LONG result = RegOpenKeyEx(hAppKey, lpszSection, 0, samDesired, &hSectionKey);
 	RegCloseKey(hAppKey);
 	return hSectionKey;
 }
 
 UINT CPGSuperAppPluginApp::GetLocalMachineInt(LPCTSTR lpszSection, LPCTSTR lpszEntry,int nDefault)
 {
-	HKEY hAppKey = GetAppLocalMachineRegistryKey();
+	HKEY hAppKey = GetAppLocalMachineRegistryKey(KEY_READ);
 	if (hAppKey == NULL)
 		return nDefault;
 
@@ -189,7 +189,7 @@ UINT CPGSuperAppPluginApp::GetLocalMachineInt(HKEY hAppKey,LPCTSTR lpszSection, 
 	ASSERT(lpszEntry != NULL);
 	ASSERT(m_pszRegistryKey != NULL);
 
-	HKEY hSecKey = GetLocalMachineSectionKey(hAppKey,lpszSection);
+	HKEY hSecKey = GetLocalMachineSectionKey(hAppKey,lpszSection,KEY_READ);
 	if (hSecKey == NULL)
 		return nDefault;
 	DWORD dwValue;
@@ -209,7 +209,7 @@ UINT CPGSuperAppPluginApp::GetLocalMachineInt(HKEY hAppKey,LPCTSTR lpszSection, 
 
 CString CPGSuperAppPluginApp::GetLocalMachineString(LPCTSTR lpszSection, LPCTSTR lpszEntry,LPCTSTR lpszDefault)
 {
-	HKEY hAppKey = GetAppLocalMachineRegistryKey();
+	HKEY hAppKey = GetAppLocalMachineRegistryKey(KEY_READ);
 	if (hAppKey == NULL)
 		return lpszDefault;
 
@@ -221,7 +221,7 @@ CString CPGSuperAppPluginApp::GetLocalMachineString(HKEY hAppKey,LPCTSTR lpszSec
 	ASSERT(lpszSection != NULL);
 	ASSERT(lpszEntry != NULL);
 	ASSERT(m_pszRegistryKey != NULL);
-	HKEY hSecKey = GetLocalMachineSectionKey(hAppKey,lpszSection);
+	HKEY hSecKey = GetLocalMachineSectionKey(hAppKey,lpszSection,KEY_READ);
 	if (hSecKey == NULL)
 		return lpszDefault;
 	CString strValue;

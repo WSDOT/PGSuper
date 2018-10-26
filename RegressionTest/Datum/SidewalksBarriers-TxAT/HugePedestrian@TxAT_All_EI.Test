@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    1      1      K4+3         26   0.6  270  25.18  18.26                                               6  36.0  6.0  5.000  6.000  26.331    -94.78    -1912   0.867  0.867   3.869 -0.645 -41.65 -0.051 -42.34 120.00  -2797.    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      1     1     K4+3          26  0.6  270  25.18  18.26  13.50  13.50                                               6  36.0  6.0  5.000  6.000  26.331    -94.78    -1912   0.867  0.867   3.869 -0.645 -41.65 -0.051 -42.34 120.00  -2797.    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -25,9 +25,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    1      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      1     2     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -51,9 +51,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    1      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      1     4     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -77,9 +77,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    2      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.446 -0.707 -44.45 -0.055 -45.21   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      2     1     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.446 -0.707 -44.45 -0.055 -45.21   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -103,9 +103,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    2      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      2     2     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -129,9 +129,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    2      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      2     4     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -155,9 +155,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    3      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.446 -0.707 -44.45 -0.055 -45.21   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      3     1     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.446 -0.707 -44.45 -0.055 -45.21   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -181,9 +181,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    3      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      3     2     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -207,9 +207,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    3      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      3     4     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -233,9 +233,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    4      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.446 -0.707 -44.45 -0.055 -45.21   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      4     1     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.446 -0.707 -44.45 -0.055 -45.21   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -259,9 +259,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    4      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      4     2     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
@@ -285,9 +285,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    4      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 50.00    6   9.00    K4 Template      4     4     K4+3           0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful

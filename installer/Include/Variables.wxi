@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-   <?define PGSuperVersion    = 2.9.1.3?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
-   <?define BEToolboxVersion  = 2.2.1.2?>
-   <?define WBFLVersion       = 3.8.1.3?>
+   <?define PGSuperProductVersion = 2.9.2?>
+  <!-- This defines the version number of the product release (must only use x.y.z to get removal of previous versions) -->
+   <?define PGSuperVersion    = 2.9.2.0?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
+   <?define BEToolboxVersion  = 2.2.2.0?>
+   <?define WBFLVersion       = 3.8.2.0?>
 
    <?if $(var.Platform) = "x64"?>
       <?define ProgramFilesDirectory = ProgramFiles64Folder?>
@@ -19,6 +21,20 @@
    <?endif?>
 
    <?define ProductName=PGSuper?>
+  
+  <?ifdef _TXDOT?>
+     <?define StartMenuFolderName=Texas Department of Transportation?>
+     <?define StartMenuProductFolderName=Prestressed Girder Superstructure Design & Analysis (PGSuper)?>
+     <?define WSDOTFeatureLevel=101?>
+     <?define TxDOTFeatureLevel=1?>
+     <?define KDOTFeatureLevel=101?>
+  <?else?>
+    <?define StartMenuFolderName=Engineering Applications?>
+    <?define StartMenuProductFolderName=PGSuper?>
+    <?define WSDOTFeatureLevel=1?>
+    <?define TxDOTFeatureLevel=1?>
+    <?define KDOTFeatureLevel=1?>
+  <?endif?>
    
    <?define BridgeLinkAppPluginCATID={7118F295-997E-4874-9BDC-4900265FA273}?>
    <?define BridgeLinkComponentInfoCATID={FA0DB81D-8760-4a60-B76C-8768D34FF01D}?>

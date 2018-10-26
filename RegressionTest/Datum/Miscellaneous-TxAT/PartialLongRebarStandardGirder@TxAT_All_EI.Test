@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 25.45    5   6.00                   1      1      W42G    *    14   1/2  270  15.66   1.94                                               6  38.0  4.0  4.100  8.700   2.510    -2.238     1884   0.623  0.671   1.260 -0.141  0.000 -0.020 -0.161  33.17   93.31    1.75    3.50    3.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.45    5   6.00                     1     1     W42G    *     14  1/2  270  15.66   1.94   9.75   9.75                                               6  38.0  4.0  4.100  8.700   2.510    -2.238     1884   0.623  0.671   1.260 -0.141  0.000 -0.020 -0.161  33.17   93.31    1.75    3.50    3.50 
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Splitting zone check failed.
 Lifting checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 25.45    5   6.00                   1      2      W42G    *    15   1/2  270  15.61   0.94                                               7  38.0  4.0  4.100  9.800   2.753    -2.452     2017   0.623  0.671   1.369 -0.183  0.000 -0.019 -0.202  37.65  102.23    1.75    3.50    3.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.45    5   6.00                     1     2     W42G    *     15  1/2  270  15.61   0.94   9.75   9.75                                               7  38.0  4.0  4.100  9.800   2.753    -2.452     2017   0.623  0.671   1.369 -0.183  0.000 -0.019 -0.202  37.65  102.23    1.75    3.50    3.50 
 
 
 The Specification Check was Not Successful
@@ -19,9 +19,9 @@ Splitting zone check failed.
 Lifting checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 25.45    5   6.00                   1      3      W42G    *    13   1/2  270  14.64   8.33                                               3  38.0 10.0  5.000  7.000   2.594    -2.425     1778   0.611  0.671   1.076 -0.231  0.000 -0.022 -0.254  25.20   65.84    3.00    3.00    3.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.45    5   6.00                     1     3     W42G    *     13  1/2  270  14.64   8.33   9.75   9.75                                               3  38.0 10.0  5.000  7.000   2.594    -2.425     1778   0.611  0.671   1.076 -0.231  0.000 -0.022 -0.254  25.20   65.84    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful

@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                   1      1      III          22   0.6  270  18.81  10.62                                               6  36.0  6.0  5.000  6.400   3.276    -3.912     4259   0.674  0.674   3.195 -0.591  0.000 -0.213 -0.804  77.50  152.77    1.00    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.29    8   6.00                     1     1     III           22  0.6  270  18.81  10.62  11.38  11.38                                               6  36.0  6.0  5.000  6.400   3.276    -3.912     4259   0.674  0.674   3.195 -0.591  0.000 -0.213 -0.804  77.50  152.77    1.00    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -11,9 +11,9 @@ Confinement zone check failed.
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                   1      2      III          18   0.6  270  19.19  10.52                                               4  43.0  4.0  4.400  5.300   2.830    -3.476     3786   0.554  0.671   2.814 -0.540  0.000 -0.228 -0.767  53.54  114.01    1.00    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.29    8   6.00                     1     2     III           18  0.6  270  19.19  10.52  11.12  11.12                                               4  43.0  4.0  4.400  5.300   2.830    -3.476     3786   0.554  0.671   2.814 -0.540  0.000 -0.228 -0.767  53.54  114.01    1.00    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -24,9 +24,9 @@ Confinement zone check failed.
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                   1      5      III          16   0.6  270  19.33   9.58                                               4  43.0  4.0  4.000  5.000   2.627    -2.931     3111   0.552  0.671   2.588 -0.553 -0.045 -0.068 -0.666  42.83  104.27    1.00    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.29    8   6.00                     1     5     III           16  0.6  270  19.33   9.58  11.00  11.00                                               4  43.0  4.0  4.000  5.000   2.627    -2.931     3111   0.552  0.671   2.588 -0.553 -0.045 -0.068 -0.666  42.83  104.27    1.00    5.00    5.00 
 
 
 The Specification Check was Not Successful

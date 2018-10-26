@@ -1,23 +1,23 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                   1      1      Tx54         60   1/2  270  17.61  11.94                                              10  44.5 10.5  5.500  6.400   4.210    -4.108     8106   0.625  0.814   3.626 -2.405  0.000 -0.177 -2.582 168.66  452.37    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     1     1     Tx54          60  1/2  270  17.61  11.94   8.00   8.00                                              10  44.5 10.5  5.500  6.400   4.210    -4.108     8106   0.625  0.814   3.626 -2.405  0.000 -0.177 -2.582 168.66  452.37    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                   1      2      Tx54         64   1/2  270  17.26  10.13                                              12  50.5 12.5  5.500  6.900   4.368    -4.267     8342   0.625  0.814   3.715 -2.749  0.000 -0.169 -2.918 193.55  508.47    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     1     2     Tx54          64  1/2  270  17.26  10.13   8.00   8.00                                              12  50.5 12.5  5.500  6.900   4.368    -4.267     8342   0.625  0.814   3.715 -2.749  0.000 -0.169 -2.918 193.55  508.47    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                   1      4      Tx54         64   1/2  270  17.26  10.13                                              12  50.5 12.5  5.500  6.900   4.368    -4.267     8342   0.625  0.814   3.715 -2.749  0.000 -0.169 -2.918 193.55  508.47    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     1     4     Tx54          64  1/2  270  17.26  10.13   8.00   8.00                                              12  50.5 12.5  5.500  6.900   4.368    -4.267     8342   0.625  0.814   3.715 -2.749  0.000 -0.169 -2.918 193.55  508.47    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

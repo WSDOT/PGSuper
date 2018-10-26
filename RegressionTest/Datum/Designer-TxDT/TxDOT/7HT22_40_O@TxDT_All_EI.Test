@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 25.98    4   0.02    4-7HT22, 40    1      1     7HT22         20   1/2  270  10.54   6.94   0   2.00    4     0    0   0   0   0   0   4.000  5.000   1.783    -2.792     1087   0.643  0.643   1.786  0.000 -0.041 -0.052 -0.093  47.63  139.57    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.98    4   0.02    4-7HT22, 40      1     1    7HT22          20  1/2  270  10.54   6.94   0.00   0.00                                              4.000  5.000   1.783    -2.792     1087   0.643  0.643   1.786  0.000 -0.041 -0.052 -0.093  47.63  139.57    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -9,9 +9,9 @@ Bursting zone check failed.
 Confinement zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 25.98    4   0.02    4-7HT22, 40    1      2     7HT22         20   1/2  270  10.52   6.92   0   2.00    4     0    0   0   0   0   0   4.000  5.000   1.793    -2.794     1086   0.643  0.643   1.789  0.000 -0.041 -0.052 -0.093  47.70  139.71    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.98    4   0.02    4-7HT22, 40      1     2    7HT22          20  1/2  270  10.52   6.92   0.00   0.00                                              4.000  5.000   1.793    -2.794     1086   0.643  0.643   1.789  0.000 -0.041 -0.052 -0.093  47.70  139.71    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

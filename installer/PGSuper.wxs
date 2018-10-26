@@ -7,7 +7,7 @@
    <Product Id="*" 
             Name="$(var.ProductName) ($(var.Platform))" 
             Language="1033" 
-            Version="$(var.PGSuperVersion)" 
+            Version="$(var.PGSuperProductVersion)" 
             Manufacturer="WSDOT" 
             UpgradeCode="$(var.UpgradeCode)">
 		<Package Id="*" 
@@ -25,7 +25,7 @@
          Schedule="afterInstallValidate"/> 
 
       <Upgrade Id="$(var.UpgradeCode)">
-         <UpgradeVersion OnlyDetect="no" Property='PREVIOUSFOUND' Minimum="0.0.0.0" IncludeMinimum="yes" Maximum="$(var.PGSuperVersion)" IncludeMaximum="no"/>
+         <UpgradeVersion OnlyDetect="no" Property='PREVIOUSFOUND' Minimum="0.0.0.0" IncludeMinimum="yes" Maximum="$(var.PGSuperProductVersion)" IncludeMaximum="no"/>
       </Upgrade>
 
       <Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
@@ -41,10 +41,13 @@
             </Directory>
          </Directory>
          <Directory Id="ProgramMenuFolder">
-            <Directory Id="EngineeringApplicationsStartMenuFolder" Name="Engineering Applications">
-               <Directory Id="BridgeLinkStartMenuFolder" Name="$(var.ProductName)"/>
+           <Directory Id="EngineeringApplicationsStartMenuFolder" Name="$(var.StartMenuFolderName)">
+               <Directory Id="BridgeLinkStartMenuFolder" Name="$(var.StartMenuProductFolderName)"/>
             </Directory>
          </Directory>
+        <?ifdef _TXDOT?>
+        <Directory Id="DesktopFolder" Name="DesktopFolder"/>
+        <?endif?>
       </Directory>
 
 
@@ -89,8 +92,13 @@
       <!-- Add and Remove Programs Entries -->
       <Property Id='ARPCOMMENTS'>PGSuper is a member of the Alternate Route Project.</Property>
       <Property Id='ARPCONTACT'>Post your questions to the suport forums at http://www.pgsuper.com</Property>
+      <?ifdef _TXDOT?>
+      <Property Id='ARPHELPLINK'>http://www.txdot.gov/inside-txdot/division/information-technology/engineering-software.html</Property>
+      <Property Id='ARPURLINFOABOUT'>http://www.txdot.gov/inside-txdot/division/information-technology/engineering-software.html</Property>
+      <?else?>
       <Property Id='ARPHELPLINK'>http://www.wsdot.wa.gov/eesc/bridge/software</Property>
       <Property Id='ARPURLINFOABOUT'>http://www.wsdot.wa.gov/eesc/bridge/software</Property>
+      <?endif?>
       <!--<Property Id='ARPURLUPDATINFO'>URL for product updates</Property>-->
       <!--<Property Id='ARPHELPTELEPHONE'>???-???-????</Property>-->
       <!--<Property Id='ARPREADME'>path to readme file</Property>-->

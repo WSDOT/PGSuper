@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    4   8.00                   1      1     U54G5         68   0.6  270  16.72   7.75   0   2.00   24     0    0   0   0   0   0   7.000 15.000   7.453    -4.740    13317   1.016  1.016   5.024 -1.608 -0.099 -0.117 -1.824 296.97  523.06    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 34.25    4   8.00                     1     1    U54G5          68  0.6  270  16.72   7.75  12.50  12.50                                              7.000 15.000   7.453    -4.740    13317   1.016  1.016   5.024 -1.608 -0.099 -0.117 -1.824 296.97  523.06    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -8,9 +8,9 @@ The Specification Check was Not Successful
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    4   8.00                   1      2     U54G5         54   0.6  270  16.92   6.92   0   2.00   24     0    0   0   0   0   0   5.000  8.100   6.035    -3.756    10270   0.557  0.773   4.215 -1.685 -0.130 -0.153 -1.969 210.14  411.44    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 34.25    4   8.00                     1     2    U54G5          54  0.6  270  16.92   6.92  11.75  11.75                                              5.000  8.100   6.035    -3.756    10270   0.557  0.773   4.215 -1.685 -0.130 -0.153 -1.969 210.14  411.44    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful

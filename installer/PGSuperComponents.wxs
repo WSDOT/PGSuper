@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension">
 
    <!-- Include project wide variables -->
    <?include Variables.wxi?>
@@ -10,8 +11,10 @@
          <Component Id ="BridgeLinkComponents"
                     Guid="{9F639678-37CE-48a2-8EDD-ED5F699EDC0D}"
                     Win64="$(var.IsWin64)">
-            
-            <File Id="PGSuper.exe"    Name="PGSuper.exe" KeyPath ="yes"/>
+
+           <File Id="PGSuper.exe"    Name="PGSuper.exe" KeyPath ="yes">
+             <fire:FirewallException Id="FWX1" Name="PGSuper" Scope="any" IgnoreFailure="yes"/>
+           </File>
             
             <!-- define component categories for the main executable
             Categories are: BridgeLink Application Plugins (such as PGSuper, Library Editor, TOGA, BEToolbox)

@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      1     WF74G          0   0.6  270   0.00   0.00                                               0   0.0  0.0  5.000  6.000   4.227    -4.306    11776   0.550  0.671  -7.259 -2.165 -0.216 -0.308 -2.689   0.00    0.00    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     1     1    WF74G           0  0.6  270   0.00   0.00  10.75  10.75                                               0   0.0  0.0  5.000  6.000   4.227    -4.306    11776   0.550  0.671  -7.259 -2.165 -0.216 -0.308 -2.689   0.00    0.00    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -19,9 +19,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      2     WF74G          0   0.6  270   0.00   0.00                                               0   0.0  0.0  5.000  6.000   4.245    -4.321    11801   0.548  0.671  -7.681 -2.195 -0.216 -0.308 -2.718   0.00    0.00    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     1     2    WF74G           0  0.6  270   0.00   0.00  10.75  10.75                                               0   0.0  0.0  5.000  6.000   4.245    -4.321    11801   0.548  0.671  -7.681 -2.195 -0.216 -0.308 -2.718   0.00    0.00    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -40,9 +40,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      3     WF74G    *    43   0.6  270  32.36  14.12                                              13  70.0  6.0  4.800  6.000   4.245    -4.321    11801   0.548  0.671   4.869 -2.195 -0.216 -0.308 -2.718 182.42  330.50    3.25    9.17    9.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     1     3    WF74G    *     43  0.6  270  32.36  14.12  10.75  10.75                                              13  70.0  6.0  4.800  6.000   4.245    -4.321    11801   0.548  0.671   4.869 -2.195 -0.216 -0.308 -2.718 182.42  330.50    3.25    9.17    9.17 
 
 
 The Specification Check was Not Successful

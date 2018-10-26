@@ -1,23 +1,23 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    7   6.67                   1      1     5SB12         44   1/2  270   2.77   2.66   6   2.50   28     6    2   4   0   0   0   5.000  5.100   2.928    -3.872     1252   0.558  0.657   2.376 -1.195  0.000 -0.046 -1.241 102.21  303.32    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    7   6.67                     1     1    5SB12          44  1/2  270   2.77   2.66   8.00   8.00   6    2.5   28     6    2   4   0   0   0   5.000  5.100   2.928    -3.872     1252   0.558  0.657   2.376 -1.195  0.000 -0.046 -1.241 102.21  303.32    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    7   6.67                   1      2     5SB12         44   1/2  270   2.77   2.66   6   2.50   28     6    2   4   0   0   0   5.000  5.000   2.967    -3.885     1231   0.537  0.657   2.376 -1.258  0.000 -0.045 -1.303 102.21  302.12    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    7   6.67                     1     2    5SB12          44  1/2  270   2.77   2.66   8.00   8.00   6    2.5   28     6    2   4   0   0   0   5.000  5.000   2.967    -3.885     1231   0.537  0.657   2.376 -1.258  0.000 -0.045 -1.303 102.21  302.12    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    7   6.67                   1      4     5SB12         42   1/2  270   2.83   2.72   6   2.50   28     6    4   2   0   0   0   4.900  5.100   2.957    -3.800     1193   0.537  0.657   2.318 -1.258  0.000  0.000 -1.258  94.39  286.43    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    7   6.67                     1     4    5SB12          42  1/2  270   2.83   2.72   8.00   8.00   6    2.5   28     6    4   2   0   0   0   4.900  5.100   2.957    -3.800     1193   0.537  0.657   2.318 -1.258  0.000  0.000 -1.258  94.39  286.43    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

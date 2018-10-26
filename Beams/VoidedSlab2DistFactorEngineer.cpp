@@ -1061,7 +1061,8 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
             if (gV1.ControllingMethod & MOMENT_OVERRIDE)
             {
                (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
+               (*pPara) << _T("e = ") << gV1.EqnData.e << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("(e)(mg") << Super(_T("MI")) << Sub(_T("1")) << _T(") = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
             }
             else
             {
@@ -1112,7 +1113,8 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
                if (gV2.ControllingMethod & MOMENT_OVERRIDE)
                {
                   (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
-                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
+                  (*pPara) << _T("e = ") << gV2.EqnData.e << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("(e)(mg") << Super(_T("ME")) << Sub(_T("2")) << _T(") = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
                }
                else
                {

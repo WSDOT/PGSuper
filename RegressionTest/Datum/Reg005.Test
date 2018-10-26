@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 37.25    5   7.75                   1      1      W74G    *    34   0.6  270  34.59  22.95                                               8  55.5  3.0  7.000  7.000   2.424    -3.239     8703   0.788  0.797   3.150 -0.785  0.000 -0.067 -0.852 162.31  403.92    5.00    3.00    3.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 37.25    5   7.75                     1     1     W74G    *     34  0.6  270  34.59  22.95  12.75  12.75                                               8  55.5  3.0  7.000  7.000   2.424    -3.239     8703   0.788  0.797   3.150 -0.785  0.000 -0.067 -0.852 162.31  403.92    5.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
@@ -12,9 +12,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Confinement zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 37.25    5   7.75                   1      2      W74G    *    23   0.6  270  35.21  24.58                                               5  53.5  3.0  5.000  7.000   2.363    -3.113     6626   0.708  0.797   2.737 -0.771  0.000 -0.068 -0.838  88.14  248.72    3.00    3.00    3.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 37.25    5   7.75                     1     2     W74G    *     23  0.6  270  35.21  24.58  12.75  12.75                                               5  53.5  3.0  5.000  7.000   2.363    -3.113     6626   0.708  0.797   2.737 -0.771  0.000 -0.068 -0.838  88.14  248.72    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful

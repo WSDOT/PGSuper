@@ -396,8 +396,8 @@ BEGIN
         MENUITEM "Edit &Prestressing...",       ID_EDIT_PRESTRESSING
         MENUITEM "Edit Sti&rrups...",           ID_EDIT_STIRRUPS
         MENUITEM SEPARATOR
-        MENUITEM "Design Girder",               ID_PROJECT_DESIGNGIRDERDIRECT
-        MENUITEM "Design Girder (don't change Slab Offset)", ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET
+        MENUITEM "Design Girder",               ID_GIRDERVIEW_DESIGNGIRDERDIRECT
+        MENUITEM "Design Girder (don't change Slab Offset)", ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET
         MENUITEM "View Analysis Results",       ID_VIEW_ANALYSISRESULTS
         MENUITEM SEPARATOR
         MENUITEM "Add Poi&nt Load...",          ID_ADD_POINT_LOAD
@@ -2225,8 +2225,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,1,3
- PRODUCTVERSION 2,9,1,3
+ FILEVERSION 2,9,2,0
+ PRODUCTVERSION 2,9,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2243,12 +2243,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.9.1.3"
+            VALUE "FileVersion", "2.9.2.0"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.1.3"
+            VALUE "ProductVersion", "2.9.2.0"
         END
     END
     BLOCK "VarFileInfo"

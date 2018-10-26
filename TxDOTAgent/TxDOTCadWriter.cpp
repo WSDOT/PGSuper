@@ -65,7 +65,7 @@ Float64		value 			   /*  => Value to convert                   */
     if (mod16 > 1.0e-05)
     {
         // Not a 16th - Print decimal value
-        _stprintf_s(stringP, size, _T("%4.2f"),value);
+        _stprintf_s(stringP, size, _T(" %3.1f"),value);
     }
     else
     {
@@ -81,9 +81,19 @@ Float64		value 			   /*  => Value to convert                   */
         Int32 num = (Int32)Round(numerator);
         Int32 den = (Int32)Round(denominator);
 
-        _stprintf_s(stringP, size, _T("%d/%-d"), num, den);
+        // Want to right justify in four characters
+        ATLASSERT(num < 9);  // we can't handle something like 11/16 (five chars)
+        int nd = den < 9 ? 1 : 2; // number of decimals in denom 
 
-        int a = 0;
+        int nc;
+        if (nd>1)
+        {
+            nc = _stprintf_s(stringP, size, _T("%d/%-d"), num, den);
+        }
+        else
+        {
+            nc = _stprintf_s(stringP, size, _T(" %d/%-d"), num, den); // leading space
+        }
     }
 
 	return CAD_SUCCESS;
@@ -137,6 +147,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    std::_tstring girderFamily = pGirderEntry->GetGirderFamilyName();
 
    bool isIBeam = girderFamily == _T("I-Beam");
+   bool isUBeam = girderFamily == _T("U-Beam");
 
    // Determine type of output and number of strands
    bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(span,gdr) &&
@@ -154,6 +165,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    bool do_write_ns_data = isHarpedDesign && 
                            (pgirderData->PrestressData.GetNumPermStrandsType() != NPS_TOTAL_NUMBER) && 
                            (harpedCount+straightCount > 0);
+
+   // Determine if a straight-raised design
+   bool isRaisedStraightDesign = pStrandGeometry->GetAreHarpedStrandsForcedStraight(span,gdr) &&
+                                 0 < pStrandGeometry->GetNumStrands(span, gdr, pgsTypes::Harped) &&
+                                 pgirderData->PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION && 
+                                 isIBeam;
 
    std::_tstring bridgeName = pProjectProperties->GetBridgeName();
    // Max length of name is 16 chars
@@ -316,17 +333,23 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    }
 
 	//----- COL 1 ----- 
-   workerB.WriteString(spanNumber,_T("Span"),7,3,_T("%-3s"));
+   int ls = lstrlen(spanNumber);
+   int lp = 7-ls-2;
+   ATLASSERT(lp>0);
+   workerB.WriteStringEx(spanNumber,_T("Span"),lp,ls,2,_T("%s"));
 	//----- COL 2 ----- 
-   workerB.WriteString(beamNumber,_T(" Gdr"),7,4,_T("%-4s"));
+   ls = lstrlen(beamNumber);
+   lp = 7-ls-3;
+   ATLASSERT(lp>0);
+   workerB.WriteStringEx(beamNumber,_T(" Gdr"),lp,ls,3,_T("%s"));
 	//----- COL 3 ----- 
    workerB.WriteString(beamType,_T("Type "),7,5,_T("%-5s"));
 	//----- COL 4 ----- 
    workerB.WriteString(strandPat,_T("N"),6,1,_T("%1s"));
 	//----- COL 5 ----- 
-   workerB.WriteInt16((Int16)strandNum,_T("Ns"),6,2,_T("%2d"));
+   workerB.WriteInt16((Int16)strandNum,_T("Ns"),6,3,_T("%3d"));
 	//----- COL 6 ----- 
-   workerB.WriteString(strandSize,_T("Size"),5,3,_T("%3s"));
+   workerB.WriteStringEx(strandSize,_T("Size"),0,4,1,_T("%4s"));
 	//----- COL 7 ----- 
    workerB.WriteInt16(strandStrength,_T("Strn"),5,3,_T("%3d"));
 	//----- COL 8 ----- 
@@ -334,10 +357,25 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 	//----- COL 9 ----- 
    workerB.WriteFloat64(strandEccEnd,_T("EccEn"),7,5,_T("%5.2f"));
 
+   Int16 extraSpacesForSlabOffset = 0; // Pad in debond additional lines for output of A
+   if (isExtendedVersion && pBridge->GetDeckType()!=pgsTypes::sdtNone)
+   {
+      Float64 astart = pBridge->GetSlabOffset(span, gdr, pgsTypes::metStart);
+      Float64 aend   = pBridge->GetSlabOffset(span, gdr, pgsTypes::metEnd);
+
+      astart = ::ConvertFromSysUnits( astart, unitMeasure::Inch );
+      aend = ::ConvertFromSysUnits( aend, unitMeasure::Inch );
+
+      workerB.WriteFloat64(astart,_T("Astart"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(aend,_T("Aend"),7,5,_T("%5.2f"));
+
+      extraSpacesForSlabOffset = 14; // width of two data fields above = 7+7
+   }
+
    Float64 girder_length = pBridge->GetGirderLength(span, gdr);
 
    // create debond writer in case we need it
-   TxDOTCadWriter writer(span, gdr, girder_length, pStrandGeometry);
+   TxDOTCadWriter writer(span, gdr, girder_length, isUBeam, pStrandGeometry);
 
    if (isHarpedDesign)
    {
@@ -398,10 +436,32 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
       // debond or straight design
       writer.WriteInitialData(workerB);
 
-      if (isIBeam)
+      if (isIBeam && !isRaisedStraightDesign)
       {
          // Empty spaces in IGND
          workerB.WriteBlankSpaces(isExtendedVersion ? 14:15);
+      }
+      else if (isRaisedStraightDesign)
+      {
+         // Raised strand design data. accuracy is very weak here
+         Int16 numRaised(0);
+         Float64 dstrandToEnd(0);
+         Float64 dstrandToCL(0);
+
+         RowIndexType nrs = pStrandGeometry->GetNumRowsWithStrand(pmid[0],pgsTypes::Harped);
+         std::vector<StrandIndexType> strs = pStrandGeometry->GetStrandsInRow(pmid[0], nrs-1, pgsTypes::Harped);
+         numRaised = (Int16)strs.size();
+
+         pStrandGeometry->GetHighestHarpedStrandLocationEnds(span, gdr, &value);
+         dstrandToEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+
+         pStrandGeometry->GetHighestHarpedStrandLocationCL(span, gdr, &value);
+         dstrandToCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+
+         // output
+         workerB.WriteInt16(numRaised,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
+         workerB.WriteFloat64(dstrandToEnd,_T("ToEnd"),5,4,_T("%4.1f"));
+         workerB.WriteFloat64(dstrandToCL,_T("ToCL"),5,4,_T("%4.1f"));
       }
    }
 
@@ -529,7 +589,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    // final debond data
    if (!isHarpedDesign)
    {
-      writer.WriteFinalData(fp, isExtendedVersion, isIBeam);
+      writer.WriteFinalData(fp, isExtendedVersion, isIBeam, extraSpacesForSlabOffset);
    }
 
    // Write spec check results data for Test version
@@ -585,6 +645,27 @@ void CadWriterWorkerBee::WriteString(LPCTSTR val, LPCTSTR title, Int16 colWidth,
    m_DataLineCursor += nchars;
 
    WriteBlankSpacesNoTitle(right);
+
+   if (m_DoWriteTitles)
+   {
+      // Write title lines
+      WriteTitle(title, colWidth);
+   }
+}
+
+void CadWriterWorkerBee::WriteStringEx(LPCTSTR val, LPCTSTR title, Int16 lftPad, Int16 nchars, Int16 rgtPad, LPCTSTR format)
+{
+   int colWidth = lftPad + nchars + rgtPad;
+   ATLASSERT(std::_tstring(title).size()<=colWidth);
+
+   WriteBlankSpacesNoTitle(lftPad);
+
+   int nr = _stprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
+   ATLASSERT(nr==nchars);
+
+   m_DataLineCursor += nchars;
+
+   WriteBlankSpacesNoTitle(rgtPad);
 
    if (m_DoWriteTitles)
    {
@@ -689,48 +770,57 @@ void CadWriterWorkerBee::WriteTitle(LPCTSTR title, Int16 colWidth)
 
 void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
 {
+   const Int16 NDBSPCS=43; // width of this debond pattern region
    // first build our data structure
    Compute();
 
-   // next write out data
-   workerB.WriteInt16((Int16)m_NumDebonded,_T("Ndb"),4,2,_T("%2d"));
-
-   if (m_Rows.empty() || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
+   if (m_NumDebonded > 0)
    {
-      // row height, srands in row, and debonds in row are zero
-	   workerB.WriteFloat64(0.0,_T("Debnd"),7,5,_T("%5.2f"));
-      workerB.WriteInt16(0,_T("   "),6,2,_T("%2d"));
-      workerB.WriteInt16(0,_T("   "),6,2,_T("%2d"));
+      // write out debonding data for bottom row
+      workerB.WriteInt16((Int16)m_NumDebonded,_T("Ndb"),4,2,_T("%2d"));
 
-      if (m_Rows.empty())
+      if (m_Rows.empty() || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
       {
-         // no use searching for nothing
-         for (int i=0; i<5; i++)
+         // row height, srands in row, and debonds in row are zero
+	      workerB.WriteFloat64(0.0,_T("Debnd"),7,5,_T("%5.2f"));
+         workerB.WriteInt16(0,_T("   "),6,2,_T("%2d"));
+         workerB.WriteInt16(0,_T("   "),6,2,_T("%2d"));
+
+         if (m_Rows.empty())
          {
-            workerB.WriteInt16(0,_T("  "),4,2,_T("%2d"));
+            // no use searching for nothing
+            for (int i=0; i<5; i++)
+            {
+               workerB.WriteInt16(0,_T("  "),4,2,_T("%2d"));
+            }
+         }
+         else
+         {
+            // this is an error condition, just right out blanks to fill space
+	         //----- COL 11-23 ---- 
+            workerB.WriteBlankSpaces(NDBSPCS);
          }
       }
       else
       {
-         // this is an error condition, just right out blanks to fill space
-	      //----- COL 11-23 ---- 
-         workerB.WriteBlankSpaces(20);
+         // A little checking
+         pgsPointOfInterest poi(m_Span,m_Girder,m_GirderLength/2);
+         RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
+         ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
+
+         // Where the rubber hits the road - Write first row
+         const RowData& row = *(m_Rows.begin());
+         WriteRowData(workerB, row);
       }
    }
    else
    {
-      // A little checking
-      pgsPointOfInterest poi(m_Span,m_Girder,m_GirderLength/2);
-      RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
-      ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
-
-      // Where the rubber hits the road - Write first row
-      const RowData& row = *(m_Rows.begin());
-      WriteRowData(workerB, row);
+      // No debonding. Just write blanks
+      workerB.WriteBlankSpaces(NDBSPCS);
    }
 }
 
-void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam)
+void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int16 extraSpacesForSlabOffset)
 {
    // fist write out remaining rows 
    if(!m_Rows.empty())
@@ -744,6 +834,8 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam)
       {
          nLeadingSpaces= isExtended ? 96 : 61; // more leading spaces for extended output
       }
+
+      nLeadingSpaces += extraSpacesForSlabOffset;
 
       Int16 nrow = 1;
       RowListIter riter = m_Rows.begin();
@@ -791,7 +883,14 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
    // elevation of row
    Float64 row_elev = ::ConvertFromSysUnits( row.m_Elevation, unitMeasure::Inch );
 
-   workerB.WriteFloat64(row_elev,_T("Elev "),7,5,_T("%5.2f"));
+   if (m_isUBeam)
+   {
+      workerB.WriteFloat64(row_elev,_T("Elev "),7,5,_T("%5.2f")); // ubeam needs two digits
+   }
+   else
+   {
+      workerB.WriteFloat64(row_elev,_T("Elev "),7,5,_T("%5.1f"));
+   }
 
    // total strands in row
    workerB.WriteInt16((Int16)row.m_NumTotalStrands,_T("Nsr"),6,2,_T("%2d"));

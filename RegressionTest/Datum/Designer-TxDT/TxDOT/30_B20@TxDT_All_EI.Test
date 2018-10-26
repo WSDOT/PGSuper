@@ -1,6 +1,22 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                   1      1      5B20         10   1/2  270   7.38   7.38   0   2.50   10     0    0   0   0   0   0   4.000  5.000   1.043    -0.881      522   0.434  0.434   0.393  0.000 -0.008 -0.010 -0.019  11.09   41.85    1.00    1.00    1.00 
+ 30.33    7   0.14                     1     1     5B20          10  1/2  270   7.38   7.38                                              4.000  5.000   1.043    -0.881      522   0.434  0.434   0.393  0.000 -0.008 -0.010 -0.019  11.09   41.85    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 30.33    7   0.14                     1     2     5B20          10  1/2  270   7.38   7.38                                              4.000  5.000   1.033    -0.872      522   0.428  0.428   0.393  0.000 -0.008 -0.010 -0.019  11.09   41.85    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 30.33    7   0.14                     1     4     4B20           8  1/2  270   7.31   7.31                                              4.000  5.000   1.055    -0.872      414   0.361  0.361   0.384  0.000 -0.010  0.000 -0.010   8.64   33.16    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -8,23 +24,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                   1      2      5B20         10   1/2  270   7.38   7.38   0   2.50   10     0    0   0   0   0   0   4.000  5.000   1.033    -0.872      522   0.428  0.428   0.393  0.000 -0.008 -0.010 -0.019  11.09   41.85    1.00    1.00    1.00 
-
-
-The Specification Check was Successful
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                   1      4      4B20          8   1/2  270   7.31   7.31   0   2.50    8     0    0   0   0   0   0   4.000  5.000   1.055    -0.872      414   0.361  0.361   0.384  0.000 -0.010  0.000 -0.010   8.64   33.16    1.00    1.00    1.00 
-
-
-The Specification Check was Successful
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                   2      1      5B20         28   1/2  270   7.38   7.38   6   2.50   28     6    4   2   0   0   0   4.000  5.500   3.115    -2.711     1384   0.376  0.376   3.137  0.000 -0.148 -0.186 -0.335  60.11  179.50    1.00    1.00    1.00 
+ 30.33    7   0.14                     2     1     5B20          28  1/2  270   7.38   7.38   6    2.5   28     6    4   2   0   0   0   4.000  5.500   3.115    -2.711     1384   0.376  0.376   3.137  0.000 -0.148 -0.186 -0.335  60.11  179.50    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -34,7 +34,7 @@ Live Load Deflection check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                   2      2      5B20         28   1/2  270   7.38   7.38   6   2.50   28     6    4   2   0   0   0   4.000  5.400   3.090    -2.692     1372   0.371  0.371   3.137  0.000 -0.148 -0.186 -0.335  60.11  179.50    1.00    1.00    1.00 
+ 30.33    7   0.14                     2     2     5B20          28  1/2  270   7.38   7.38   6    2.5   28     6    4   2   0   0   0   4.000  5.400   3.090    -2.692     1372   0.371  0.371   3.137  0.000 -0.148 -0.186 -0.335  60.11  179.50    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -44,7 +44,7 @@ Live Load Deflection check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                   2      4      4B20         22   1/2  270   7.31   7.31   6   2.50   22     6    4   2   0   0   0   4.000  5.500   3.099    -2.641     1103   0.313  0.313   2.878  0.000 -0.186  0.000 -0.186  44.46  137.01    1.00    1.00    1.00 
+ 30.33    7   0.14                     2     4     4B20          22  1/2  270   7.31   7.31   6    2.5   22     6    4   2   0   0   0   4.000  5.500   3.099    -2.641     1103   0.313  0.313   2.878  0.000 -0.186  0.000 -0.186  44.46  137.01    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
