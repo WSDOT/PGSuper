@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 68.00  10  7.00     1     1    IV       18   1/2  270 22.08 18.97   4 18.0  4.000  5.000    1.695   -1.910   3498  0.678  0.10 -0.03  0.00 -0.00 -0.03  28.70  87.65   0.00   0.00   0.00
+ 68.00  10  7.00     1     1    IV       18   1/2  270 22.08 18.97   4 18.0  4.000  5.000    1.695   -1.910   3499  0.678  0.10 -0.03  0.00 -0.00 -0.03  28.70  87.65   0.00   0.00   0.00
 
 
 The Specification Check was Successful
@@ -24,7 +24,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 68.00  10  7.00     2     1    IV       64   1/2  270 18.00  9.69  14 52.0  6.600  6.700    3.820   -4.440   8458  1.000  0.41 -0.13  0.00 -0.01 -0.14 222.10 648.28   0.00   0.00   0.00
+ 68.00  10  7.00     2     1    IV       64   1/2  270 18.00  9.69  14 52.0  6.600  6.700    3.820   -4.440   8459  1.000  0.41 -0.13  0.00 -0.01 -0.14 222.10 648.28   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -34,7 +34,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 68.00  10  7.00     2     2    IV       66   1/2  270 17.72  8.99  16 52.0  6.600  6.700    3.860   -4.506   8550  1.000  0.41 -0.14  0.00 -0.01 -0.15 233.54 677.76   0.00   0.00   0.00
+ 68.00  10  7.00     2     2    IV       66   1/2  270 17.72  8.99  16 52.0  6.600  6.700    3.860   -4.506   8551  1.000  0.41 -0.14  0.00 -0.01 -0.15 233.54 677.76   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -54,7 +54,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 68.00  10  7.00     3     1    IV       24   1/2  270 21.75 17.42   4 30.0  4.000  5.000    1.853   -2.253   4525  1.000  0.15 -0.03  0.00 -0.00 -0.03  52.06 149.09   0.00   0.00   0.00
+ 68.00  10  7.00     3     1    IV       24   1/2  270 21.75 17.42   4 30.0  4.000  5.000    1.853   -2.253   4526  1.000  0.15 -0.03  0.00 -0.00 -0.03  52.06 149.09   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -81,7 +81,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 68.00  10  7.00     4     1    IV       24   1/2  270 21.75 17.42   4 30.0  4.000  5.000    1.853   -2.253   4525  1.000  0.15 -0.03  0.00 -0.00 -0.03  52.06 149.09   0.00   0.00   0.00
+ 68.00  10  7.00     4     1    IV       24   1/2  270 21.75 17.42   4 30.0  4.000  5.000    1.853   -2.253   4526  1.000  0.15 -0.03  0.00 -0.00 -0.03  52.06 149.09   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful

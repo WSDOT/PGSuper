@@ -10,7 +10,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02     1     2  6T36       20   1/2  270 18.13 11.73  16 18.0  4.000  5.000    1.279   -3.046   2008  0.527  0.19 -0.02  0.00 -0.01 -0.02  45.13 128.22   1.00   1.00   1.00
+ 21.98   4  0.02     1     2  6T36       20   1/2  270 18.13 11.73  16 18.0  4.000  5.000    1.279   -3.046   2009  0.527  0.19 -0.02  0.00 -0.01 -0.02  45.13 128.22   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

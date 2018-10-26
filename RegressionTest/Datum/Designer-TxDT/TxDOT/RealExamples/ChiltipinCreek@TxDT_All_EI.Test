@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     1     1  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.207   3273  0.610  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
+ 48.00   7  7.33     1     1  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.207   3274  0.610  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -10,7 +10,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     1     2  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.709   -3.285   3328  0.610  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
+ 48.00   7  7.33     1     2  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.709   -3.285   3329  0.610  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -20,7 +20,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     1     4  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.687   -3.194   3238  0.610  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
+ 48.00   7  7.33     1     4  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.687   -3.194   3239  0.610  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -30,7 +30,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     2     1  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.207   3273  0.610  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
+ 48.00   7  7.33     2     1  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.207   3274  0.610  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -40,7 +40,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     2     2  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.709   -3.285   3328  0.610  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
+ 48.00   7  7.33     2     2  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.709   -3.285   3329  0.610  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -50,7 +50,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     2     4  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.687   -3.194   3238  0.610  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
+ 48.00   7  7.33     2     4  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.687   -3.194   3239  0.610  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -60,7 +60,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     3     1  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.207   3273  0.610  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
+ 48.00   7  7.33     3     1  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.207   3274  0.610  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -70,7 +70,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     3     2  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.709   -3.285   3328  0.610  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
+ 48.00   7  7.33     3     2  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.709   -3.285   3329  0.610  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -80,7 +80,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     3     4  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.687   -3.194   3238  0.610  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
+ 48.00   7  7.33     3     4  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.687   -3.194   3239  0.610  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -90,7 +90,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     4     1  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.207   3273  0.610  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
+ 48.00   7  7.33     4     1  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.207   3274  0.610  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -100,7 +100,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     4     2  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.709   -3.285   3328  0.610  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
+ 48.00   7  7.33     4     2  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.709   -3.285   3329  0.610  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -110,7 +110,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33     4     4  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.687   -3.194   3238  0.610  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
+ 48.00   7  7.33     4     4  Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.687   -3.194   3239  0.610  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

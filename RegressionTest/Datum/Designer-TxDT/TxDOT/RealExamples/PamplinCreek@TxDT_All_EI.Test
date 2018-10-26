@@ -20,7 +20,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00     1     4    IV       32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.563   -2.924   5184  0.675  0.24 -0.07 -0.01 -0.00 -0.08  82.13 217.41   0.00   0.00   0.00
+ 44.00   6  8.00     1     4    IV       32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.563   -2.924   5185  0.675  0.24 -0.07 -0.01 -0.00 -0.08  82.13 217.41   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
