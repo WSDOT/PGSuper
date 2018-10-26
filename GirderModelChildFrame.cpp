@@ -48,7 +48,7 @@
 #include "EditMomentLoadDlg.h"
 #include "htmlhelp\HelpTopics.hh"
 
-#include "InsertDeleteLoad.h"
+#include <PgsExt\InsertDeleteLoad.h>
 
 #include <WBFLDManip.h>
 

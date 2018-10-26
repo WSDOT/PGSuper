@@ -158,7 +158,7 @@
 #include "EditLiveLoad.h"
 #include "EditAnalysisType.h"
 #include "EditConstructionLoad.h"
-#include "InsertDeleteLoad.h"
+#include <PgsExt\InsertDeleteLoad.h>
 #include "EditEffectiveFlangeWidth.h"
 
 // Logging
@@ -537,8 +537,8 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    else
       spanIdx = nspans-1;
 
-   GirderIndexType ngrds = pBridge->GetGirderCount(m_Selection.SpanIdx == ALL_SPANS ? 0 : m_Selection.SpanIdx);
-   if ( m_Selection.GirderIdx < ngrds)
+   GirderIndexType ngrds = pBridge->GetGirderCount(m_Selection.SpanIdx == INVALID_INDEX ? 0 : m_Selection.SpanIdx);
+   if ( m_Selection.GirderIdx < ngrds || m_Selection.GirderIdx == INVALID_INDEX)
       gdrIdx = girder;
    else
       gdrIdx = ngrds-1;

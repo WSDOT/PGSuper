@@ -60,6 +60,7 @@ private:
    StatusCallbackIDType m_scidGirderDescriptionError;
    StatusCallbackIDType m_scidGirderDescriptionWarning;
    StatusCallbackIDType m_scidLRFDVersionError;
+   StatusCallbackIDType m_scidConcreteTypeError;
 
    LOSSDETAILS ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config);
 

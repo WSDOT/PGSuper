@@ -2,16 +2,16 @@ echo off
 IF "%1"=="/n" goto nopt1
 IF "%1"=="/N" goto nopt1
 
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\PGSuperAnalysisAgent.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\PGSuperBeams.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\PGSuperBridgeAgent.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\PGSuperEngAgent.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\PGSuperProjectAgent.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\PGSuperReportAgent.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\PGSuperSpecAgent.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\PGSuperTestAgent.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\WSDOTAgent.dll
-regsvr32 /s \ARP\PGSuper\RegFreeCOM\Win32\Release\TxDOTAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\PGSuperAnalysisAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\PGSuperBeams.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\PGSuperBridgeAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\PGSuperEngAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\PGSuperProjectAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\PGSuperReportAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\PGSuperSpecAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\PGSuperTestAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\WSDOTAgent.dll
+regsvr32 /s \ARP\PGSuper\RegFreeCOM\x64\Release\TxDOTAgent.dll
 
 :nopt1
 

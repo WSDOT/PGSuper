@@ -22,6 +22,7 @@
 
 #ifndef INCLUDED_INSERTDELETELOAD_H_
 #define INCLUDED_INSERTDELETELOAD_H_
+#include <PgsExt\PgsExtExp.h>
 
 #include <System\Transaction.h>
 #include <IFace\Project.h>
@@ -29,7 +30,7 @@
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
 
-class txnInsertPointLoad : public txnTransaction
+class PGSEXTCLASS txnInsertPointLoad : public txnTransaction
 {
 public:
    txnInsertPointLoad(const CPointLoadData& loadData);
@@ -45,7 +46,7 @@ private:
    CPointLoadData m_LoadData;
 };
 
-class txnDeletePointLoad : public txnTransaction
+class PGSEXTCLASS txnDeletePointLoad : public txnTransaction
 {
 public:
    txnDeletePointLoad(CollectionIndexType loadIdx);
@@ -61,7 +62,7 @@ private:
    CPointLoadData m_LoadData;
 };
 
-class txnEditPointLoad : public txnTransaction
+class PGSEXTCLASS txnEditPointLoad : public txnTransaction
 {
 public:
    txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData);
@@ -78,7 +79,7 @@ private:
    CPointLoadData m_LoadData[2];
 };
 
-class txnInsertDistributedLoad : public txnTransaction
+class PGSEXTCLASS txnInsertDistributedLoad : public txnTransaction
 {
 public:
    txnInsertDistributedLoad(const CDistributedLoadData& loadData);
@@ -94,7 +95,7 @@ private:
    CDistributedLoadData m_LoadData;
 };
 
-class txnDeleteDistributedLoad : public txnTransaction
+class PGSEXTCLASS txnDeleteDistributedLoad : public txnTransaction
 {
 public:
    txnDeleteDistributedLoad(CollectionIndexType loadIdx);
@@ -110,7 +111,7 @@ private:
    CDistributedLoadData m_LoadData;
 };
 
-class txnEditDistributedLoad : public txnTransaction
+class PGSEXTCLASS txnEditDistributedLoad : public txnTransaction
 {
 public:
    txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData);
@@ -127,7 +128,7 @@ private:
    CDistributedLoadData m_LoadData[2];
 };
 
-class txnInsertMomentLoad : public txnTransaction
+class PGSEXTCLASS txnInsertMomentLoad : public txnTransaction
 {
 public:
    txnInsertMomentLoad(const CMomentLoadData& loadData);
@@ -143,7 +144,7 @@ private:
    CMomentLoadData m_LoadData;
 };
 
-class txnDeleteMomentLoad : public txnTransaction
+class PGSEXTCLASS txnDeleteMomentLoad : public txnTransaction
 {
 public:
    txnDeleteMomentLoad(CollectionIndexType loadIdx);
@@ -159,7 +160,7 @@ private:
    CMomentLoadData m_LoadData;
 };
 
-class txnEditMomentLoad : public txnTransaction
+class PGSEXTCLASS txnEditMomentLoad : public txnTransaction
 {
 public:
    txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData);

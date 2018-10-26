@@ -44,6 +44,7 @@
 
 #include "BridgeAgentImp.h"
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFTransactions.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\StatusCenter.h>

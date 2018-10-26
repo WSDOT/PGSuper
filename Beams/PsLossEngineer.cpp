@@ -102,6 +102,7 @@ void CPsLossEngineer::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
    m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
    m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning) );
    m_scidLRFDVersionError = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusError) );
+   m_scidConcreteTypeError = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusError) );
 }
 
 LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi)
@@ -637,6 +638,21 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    lrfdLosses::TempStrandUsage usage;
 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
+
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
+   pgsTypes::ConcreteType girderConcreteType = pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
+   pgsTypes::ConcreteType slabConcreteType   = pMaterial->GetSlabConcreteType();
+
+   if ( girderConcreteType != pgsTypes::Normal || slabConcreteType != pgsTypes::Normal )
+   {
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      std::_tstring msg(_T("The approximate estimate of time-dependent losses given in LRFD 5.9.5.3 is for members made from normal-weight concrete"));
+      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidConcreteTypeError,msg.c_str());
+      pStatusCenter->Add(pStatusItem);
+
+      msg += std::_tstring(_T("\nSee Status Center for Details"));
+      THROW_UNWIND(msg.c_str(),XREASON_LRFD_VERSION);
+   }
 
    GetLossParameters(poi,config,
                      &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Ad, &ed,

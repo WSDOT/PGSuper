@@ -26,7 +26,7 @@
 #include "mfcdual.h"
 #include <IFace\Project.h> 
 #include "EditDistributedLoadDlg.h"
-#include "InsertDeleteLoad.h"
+#include <PgsExt\InsertDeleteLoad.h>
 
 #include <MathEx.h>
 

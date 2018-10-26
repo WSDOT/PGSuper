@@ -1834,6 +1834,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\InsertDeleteLoad.cpp"
+				>
+			</File>
+			<File
 				RelativePath="LiftingAnalysisArtifact.cpp"
 				>
 				<FileConfiguration
@@ -3376,6 +3380,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\HoldDownForceArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\InsertDeleteLoad.h"
 				>
 			</File>
 			<File
