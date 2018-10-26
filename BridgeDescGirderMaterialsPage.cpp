@@ -25,10 +25,10 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperDoc.h"
 #include "PGSuperColors.h"
 #include "PGSuperUnits.h"
-#include "resource.h"
 #include "BridgeDescGirderMaterialsPage.h"
 
 #include <IFace\Project.h>
@@ -175,6 +175,11 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    {
       m_ctrlEci.GetWindowText(m_strUserEci);
    }
+
+   if ( !pDX->m_bSaveAndValidate )
+   {
+      GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str() );
+   }
 }
 
 
@@ -197,14 +202,23 @@ void CGirderDescGeneralPage::OnCopyMaterial()
       if (entry!=NULL)
       {
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+         pParent->m_GirderData.Material.Type = entry->GetType();
          pParent->m_GirderData.Material.Fc = entry->GetFc();
          pParent->m_GirderData.Material.WeightDensity = entry->GetWeightDensity();
          pParent->m_GirderData.Material.StrengthDensity = entry->GetStrengthDensity();
          pParent->m_GirderData.Material.MaxAggregateSize = entry->GetAggregateSize();
-         pParent->m_GirderData.Material.K1 = entry->GetK1();
+         pParent->m_GirderData.Material.EcK1 = entry->GetModEK1();
+         pParent->m_GirderData.Material.EcK2 = entry->GetModEK2();
+         pParent->m_GirderData.Material.CreepK1 = entry->GetCreepK1();
+         pParent->m_GirderData.Material.CreepK2 = entry->GetCreepK2();
+         pParent->m_GirderData.Material.ShrinkageK1 = entry->GetShrinkageK1();
+         pParent->m_GirderData.Material.ShrinkageK2 = entry->GetShrinkageK2();
 
          pParent->m_GirderData.Material.bUserEc = entry->UserEc();
          pParent->m_GirderData.Material.Ec = entry->GetEc();
+
+         pParent->m_GirderData.Material.bHasFct = entry->HasAggSplittingStrength();
+         pParent->m_GirderData.Material.Fct     = entry->GetAggSplittingStrength();
 
          CDataExchange dx(this,FALSE);
          ExchangeConcreteData(&dx);
@@ -359,7 +373,7 @@ void CGirderDescGeneralPage::UpdateEci()
    if (m_ctrlEciCheck.GetCheck() == 0)
    {
       // need to manually parse strength and density values
-      CString strFci, strDensity, strK1;
+      CString strFci, strDensity, strK1, strK2;
       m_ctrlFci.GetWindowText(strFci);
 
       CComPtr<IBroker> pBroker;
@@ -369,9 +383,10 @@ void CGirderDescGeneralPage::UpdateEci()
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
       strDensity.Format("%s",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format("%f",pParent->m_GirderData.Material.K1);
+      strK1.Format("%f",pParent->m_GirderData.Material.EcK1);
+      strK2.Format("%f",pParent->m_GirderData.Material.EcK2);
 
-      CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1);
+      CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1,strK2);
       m_ctrlEci.SetWindowText(strEci);
    }
 }
@@ -382,7 +397,7 @@ void CGirderDescGeneralPage::UpdateEc()
    if (m_ctrlEcCheck.GetCheck() == 0)
    {
       // need to manually parse strength and density values
-      CString strFc, strDensity, strK1;
+      CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
       CComPtr<IBroker> pBroker;
@@ -392,9 +407,10 @@ void CGirderDescGeneralPage::UpdateEc()
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
       strDensity.Format("%s",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format("%f",pParent->m_GirderData.Material.K1);
+      strK1.Format("%f",pParent->m_GirderData.Material.EcK1);
+      strK2.Format("%f",pParent->m_GirderData.Material.EcK2);
 
-      CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1);
+      CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }
@@ -411,25 +427,41 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
+   dlg.m_Type    = pParent->m_GirderData.Material.Type;
    dlg.m_Fc      = pParent->m_GirderData.Material.Fc;
    dlg.m_AggSize = pParent->m_GirderData.Material.MaxAggregateSize;
    dlg.m_bUserEc = pParent->m_GirderData.Material.bUserEc;
    dlg.m_Ds      = pParent->m_GirderData.Material.StrengthDensity;
    dlg.m_Dw      = pParent->m_GirderData.Material.WeightDensity;
    dlg.m_Ec      = pParent->m_GirderData.Material.Ec;
-   dlg.m_K1      = pParent->m_GirderData.Material.K1;
+   dlg.m_EccK1       = pParent->m_GirderData.Material.EcK1;
+   dlg.m_EccK2       = pParent->m_GirderData.Material.EcK2;
+   dlg.m_CreepK1     = pParent->m_GirderData.Material.CreepK1;
+   dlg.m_CreepK2     = pParent->m_GirderData.Material.CreepK2;
+   dlg.m_ShrinkageK1 = pParent->m_GirderData.Material.ShrinkageK1;
+   dlg.m_ShrinkageK2 = pParent->m_GirderData.Material.ShrinkageK2;
+   dlg.m_bHasFct     = pParent->m_GirderData.Material.bHasFct;
+   dlg.m_Fct         = pParent->m_GirderData.Material.Fct;
 
    dlg.m_strUserEc  = m_strUserEc;
 
    if ( dlg.DoModal() == IDOK )
    {
+      pParent->m_GirderData.Material.Type             = dlg.m_Type;
       pParent->m_GirderData.Material.Fc               = dlg.m_Fc;
       pParent->m_GirderData.Material.MaxAggregateSize = dlg.m_AggSize;
       pParent->m_GirderData.Material.bUserEc          = dlg.m_bUserEc;
       pParent->m_GirderData.Material.StrengthDensity  = dlg.m_Ds;
       pParent->m_GirderData.Material.WeightDensity    = dlg.m_Dw;
       pParent->m_GirderData.Material.Ec               = dlg.m_Ec;
-      pParent->m_GirderData.Material.K1               = dlg.m_K1;
+      pParent->m_GirderData.Material.EcK1             = dlg.m_EccK1;
+      pParent->m_GirderData.Material.EcK2             = dlg.m_EccK2;
+      pParent->m_GirderData.Material.CreepK1          = dlg.m_CreepK1;
+      pParent->m_GirderData.Material.CreepK2          = dlg.m_CreepK2;
+      pParent->m_GirderData.Material.ShrinkageK1      = dlg.m_ShrinkageK1;
+      pParent->m_GirderData.Material.ShrinkageK2      = dlg.m_ShrinkageK2;
+      pParent->m_GirderData.Material.bHasFct          = dlg.m_bHasFct;
+      pParent->m_GirderData.Material.Fct              = dlg.m_Fct;
 
       m_strUserEc  = dlg.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
@@ -491,24 +523,35 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 
    const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
    const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
 
 
    CString strTip;
-   strTip.Format("%-20s %s\r\n%-20s %s\r\n%-20s %s",
-      "Density for Strength",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,density),
-      "Density for Weight",  FormatDimension(pParent->m_GirderData.Material.WeightDensity,density),
+   strTip.Format("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s",
+      "Type", matConcrete::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str(),
+      "Unit Weight",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,density),
+      "Unit Weight (w/ reinforcement)",  FormatDimension(pParent->m_GirderData.Material.WeightDensity,density),
       "Max Aggregate Size",  FormatDimension(pParent->m_GirderData.Material.MaxAggregateSize,aggsize)
       );
 
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-   {
-      // add K1 parameter
-      CString strK1;
-      strK1.Format("\r\n%-20s %s",
-         "K1",FormatScalar(pParent->m_GirderData.Material.K1,scalar));
+   //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   //{
+   //   // add K1 parameter
+   //   CString strK1;
+   //   strK1.Format("\r\n%-20s %s",
+   //      "K1",FormatScalar(pParent->m_GirderData.Material.K1,scalar));
 
-      strTip += strK1;
+   //   strTip += strK1;
+   //}
+
+   if ( pParent->m_GirderData.Material.Type != pgsTypes::Normal && pParent->m_GirderData.Material.bHasFct )
+   {
+      CString strLWC;
+      strLWC.Format("\r\n%-20s %s",
+         "fct",FormatDimension(pParent->m_GirderData.Material.Fct,stress));
+
+      strTip += strLWC;
    }
 
    CString strPress("\r\n\r\nPress button to edit");

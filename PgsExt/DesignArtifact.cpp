@@ -339,6 +339,9 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
 
    config.Fci       = GetReleaseStrength();
    config.Fc        = GetConcreteStrength();
+   config.ConcType  = (pgsTypes::ConcreteType)m_Concrete.GetType();
+   config.bHasFct   = m_Concrete.HasAggSplittingStrength();
+   config.Fct       = m_Concrete.GetAggSplittingStrength();
 
    config.TempStrandUsage = GetTemporaryStrandUsage();
 

@@ -47,6 +47,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\ResistanceFactors.h>
 
 #include <WBFLCore_i.c>
 #include <WBFLGeometry_i.c>

@@ -101,24 +101,24 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
       if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
       {
          if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_PT.gif") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_PT.png") << rptNewLine;
          else
-            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007_PT.gif") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007_PT.png") << rptNewLine;
       }
       else
       {
          if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_PS.gif") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_PS.png") << rptNewLine;
          else
-            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007_PS.gif") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007_PS.png") << rptNewLine;
       }
    }
    else
    {
       if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-         *pParagraph << rptRcImage(strImagePath + "Delta_FpCD.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "Delta_FpCD.png") << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007.png") << rptNewLine;
    }
 
    // DELTA Fcd Table

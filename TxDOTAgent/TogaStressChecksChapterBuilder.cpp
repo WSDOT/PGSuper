@@ -132,10 +132,10 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
       *pChapter << p;
 
       Float64 stress_val, stress_fac, stress_loc;
-      pGetTogaResults-> GetControllingCompressiveStress(&stress_val, &stress_fac, &stress_loc);
+      pGetTogaResults->GetControllingTensileStress(&stress_val, &stress_fac, &stress_loc);
       *p<<"Ratio applied to Top Stresses = "<< stress_fac << rptNewLine;
 
-      pGetTogaResults->GetControllingTensileStress(&stress_val, &stress_fac, &stress_loc);
+      pGetTogaResults->GetControllingCompressiveStress(&stress_val, &stress_fac, &stress_loc);
       *p<<"Ratio applied to Bottom Stresses = "<< stress_fac << rptNewLine;
    }
 

@@ -97,13 +97,21 @@ public:
                          // for horizontal shear capacity)
 
    // Slab Concrete Material
+   pgsTypes::ConcreteType SlabConcreteType;
    Float64 SlabFc;
    Float64 SlabWeightDensity;
    Float64 SlabStrengthDensity;
    Float64 SlabMaxAggregateSize;
-   Float64 SlabK1;
+   Float64 SlabEcK1;
+   Float64 SlabEcK2;
+   Float64 SlabShrinkageK1;
+   Float64 SlabShrinkageK2;
+   Float64 SlabCreepK1;
+   Float64 SlabCreepK2;
    Float64 SlabEc;
    bool    SlabUserEc;
+   bool    SlabHasFct;
+   Float64 SlabFct;
 
    // Wearing Sutface
    pgsTypes::WearingSurfaceType WearingSurface;

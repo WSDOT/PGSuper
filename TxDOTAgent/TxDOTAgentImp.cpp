@@ -444,7 +444,12 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          {
             // Design the girder
             pArtifact = pIArtifact->CreateDesignArtifact( span,girder, des_options);
-         
+            if ( pArtifact == NULL )
+            {
+               err_file <<"Design was cancelled"<<std::endl;
+               return false;
+            }
+
             if (pArtifact->GetOutcome() != pgsDesignArtifact::Success)
             {
                err_file <<"Design was unsuccessful"<<std::endl;

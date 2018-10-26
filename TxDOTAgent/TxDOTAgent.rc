@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,1,0
- PRODUCTVERSION 2,3,1,0
+ FILEVERSION 2,4,0,1
+ PRODUCTVERSION 2,4,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "2.3.1.0"
+            VALUE "FileVersion", "2.4.0.1"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.1.0"
+            VALUE "ProductVersion", "2.4.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -240,11 +240,11 @@ BEGIN
     COMBOBOX        ID_SELECTED_GIRDER,60,7,141,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Section Cut Location",IDC_SECTION_CUT,236,7,125,12,BS_LEFT
     LTEXT           "Select Girder:",IDC_STATIC,10,9,44,8
-    LTEXT           "Error:",IDC_ERROR_MSG,47,64,231,37
 END
 
 IDD_REPORT_PAGE DIALOGEX 0, 0, 395, 271
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Analysis Report"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
@@ -358,9 +358,9 @@ BEGIN
     BEGIN
         MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As",                    ID_FILE_SAVEAS
+        MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "&Print",                      ID_FILE_PRINT
         MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
@@ -373,17 +373,13 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "Section Cut &Location...",    ID_VIEW_SECTIONCUTLOCATION
-        MENUITEM SEPARATOR
-        MENUITEM "&Girder View Settings...",    ID_VIEW_GIRDERVIEWSETTINGS
         MENUITEM "&Toolbars...",                ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END
     POPUP "&Help"
     BEGIN
         MENUITEM "&Help Topics",                ID_HELP_FINDER
-        MENUITEM SEPARATOR
         MENUITEM "&License Agreement",          ID_LICENSE_AGREEMENT
-        MENUITEM "&About PGSuper...",           ID_APP_ABOUT
     END
 END
 
@@ -570,8 +566,6 @@ STRINGTABLE
 BEGIN
     IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
-    IDS_GDR_ERROR           "The girder: ""%s"" does not exist in the master library.\nAnalyis cannot continue.\nIs PGSuper configured to use the TxDOT libraries and templates package?\nClose this project and go to the Configure PGSuper menu to fix problem."
-    IDS_CONN_ERROR          "The connection: ""%s"" does not exist in the master library.\nAnalyis cannot continue.\nIs PGSuper configured to use the TxDOT libraries and templates package?\nClose project and go to the Configure PGSuper menu to fix problem."
 END
 
 STRINGTABLE 
@@ -601,26 +595,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_FILE_SAVEAS          "Save current document to a new file"
-    ID_FILE_EXPORTPGSUPERMODEL 
-                            "Export current TOGA data to a PGSuper file for further evaulation"
     ID_LICENSE_AGREEMENT    "Read license agreement"
-END
-
-STRINGTABLE 
-BEGIN
-    ID_VIEW_SECTIONCUTLOCATION "Move section cut location in Girder View"
-    ID_VIEW_GIRDERVIEWSETTINGS "Change display settings in Girder View"
-END
-
-STRINGTABLE 
-BEGIN
-    ID_VIEW_TOOLBAR         "Show or hide toolbars"
-END
-
-STRINGTABLE 
-BEGIN
-    ID_HELP_FINDER          "Open help"
 END
 
 #endif    // English (U.S.) resources

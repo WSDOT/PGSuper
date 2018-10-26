@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=823>
-<meta name=layout-width content=921>
+<meta name=layout-height content=1396>
+<meta name=layout-width content=947>
 
 
 <!--(Links)=========================================================-->
@@ -46,52 +46,94 @@
 <h1>Concrete Material Dialog</h1>
 
 <p>The Concrete Material Dialog allows you to edit the properties of concrete 
- materials stored in the library. PGSuper considers all concrete to be 
- Normal Weight Concrete in accordance with LRFD 5.2. Concrete definitions 
- that do not conform to LRFD 5.2 are treated as if they were normal weight 
- concrete. The properties that may be specified for a concrete entry are 
- as follows:</p>
+ materials stored in the library. The properties that may be specified 
+ for a concrete entry are as follows:</p>
 
 <h2><span><span style="font-weight: normal;">Entry Name</span></span></h2>
 
 <p>Each concrete material entry must have a unique name. The name may contain 
  any characters and can be up to 32 characters in length.</p>
 
-<h2><span><span style="font-weight: normal;">Crushing Strength - f’c</span></span></h2>
+<h2><span style="font-weight: normal;">Type</span></h2>
 
-<p>This is the crushing strength for the material as defined by most common 
- specifications. This strength is normally defined as the stress value 
- at a strain of 0.003 at 28 days.</p>
+<p>Specifies the type of concrete. Concrete can be Normal weight, All Lightweight, 
+ or Sand Lightweight.</p>
 
-<h2 style="font-weight: normal;">Modulus of Elasticity, Ec</h2>
+<h2 style="font-weight: normal;">Strength, f’c</h2>
 
-<p><span style="font-weight: normal;">Select the check box if you want 
- to override the computation of modulus of elasticity and enter your own 
- value. If the check box is unchecked, PGSuper will compute Ec based on 
- f'c and the density for strength values.</span></p>
+<p>This is the strength for the material as defined by most common specifications. 
+ This strength is normally defined as the stress value at a strain of 0.003 
+ at 28 days.</p>
 
-<h2 style="font-weight: normal;">Density for Strength</h2>
+<h2 style="font-weight: normal;"><span style="font-weight: normal;">Unit 
+ Weight</span></h2>
 
-<p>This is the density which is used along with f’c to calculate the modulus 
- of elasticity. If the number in this input field turns red, the density 
- is below the minimum value for Normal Weight Concrete.</p>
+<p>This is the unit weight of the material which is used along with f’c 
+ to calculate the modulus of elasticity. If the number in this input field 
+ turns red, the value does not conform to the unit weight limits defined 
+ for the concrete type in LRFD 5.2.</p>
 
-<h2><span><span style="font-weight: normal;">Density Used for Weight</span></span></h2>
+<h2><span style="font-weight: normal;">Unit Weight with Reinforcement</span></h2>
 
-<p>This is the density used to determine the self-weight of a girder. The 
- density should include the expected average effects of all reinforcement 
- and prestressing in the structure. If the number in this input field turns 
- red, the density is below the minimum value for Normal Weight Concrete.</p>
+<p>This is the effective unit weight of the material and includes an allowance 
+ for reinforcement. This unit weight is used to compute self-weight.</p>
+
+<h2 style="font-weight: normal;">Mod. Elasticity, Ec</h2>
+
+<p>Select the check box if you want to override the computation of modulus 
+ of elasticity and enter your own value. If the check box is unchecked, 
+ PGSuper will compute Ec based on f'c and the Unit Weight of the material 
+ using LRFD equation 5.4.2.4-1.</p>
+
+<h6>Averaging Factor, K1</h6>
+
+<p>Correction factor for aggregate type in predicting average value. See 
+ <a HREF="../../Theoretical Manual/Concrete_Material_Properties.htm">Concrete 
+ Material Properties</a> in the Theoretic Manual for additional information.</p>
+
+<h6>Bounding Factor, K2</h6>
+
+<p><span style="font-weight: normal;">C</span>orrection factor for aggregate 
+ type in predicting upper and lower bounds. See <a href="../../Theoretical Manual/Concrete_Material_Properties.htm">Concrete 
+ Material Properties</a> in the Theoretic Manual for additional information.</p>
+
+<h2 style="font-weight: normal;">Creep</h2>
+
+<h6>Averaging Factor, K1</h6>
+
+<p>Correction factor for aggregate type in predicting average value. See 
+ <a href="../../Theoretical Manual/Concrete_Material_Properties.htm">Concrete 
+ Material Properties</a> in the Theoretic Manual for additional information.</p>
+
+<h6>Bounding Factor, K2</h6>
+
+<p><span style="font-weight: normal;">C</span>orrection factor for aggregate 
+ type in predicting upper and lower bounds. See <a href="../../Theoretical Manual/Concrete_Material_Properties.htm">Concrete 
+ Material Properties</a> in the Theoretic Manual for additional information.</p>
+
+<h2><span style="font-weight: normal;">Shrinkage</span></h2>
+
+<h6>Averaging Factor, K1</h6>
+
+<p>Correction factor for aggregate type in predicting average value. See 
+ <a href="../../Theoretical Manual/Concrete_Material_Properties.htm">Concrete 
+ Material Properties</a> in the Theoretic Manual for additional information.</p>
+
+<h6>Bounding Factor, K2</h6>
+
+<p><span style="font-weight: normal;">C</span>orrection factor for aggregate 
+ type in predicting upper and lower bounds. See <a href="../../Theoretical Manual/Concrete_Material_Properties.htm">Concrete 
+ Material Properties</a> in the Theoretic Manual for additional information.</p>
 
 <h2><span><span style="font-weight: normal;">Max. Aggregate Size</span></span></h2>
 
 <p>Enter the maximum dimension of the concrete aggregate. This value is 
  used to check minimum reinforcement spacing requirements per LRFD 5.10.3.1.2.</p>
 
-<h2><span style="font-weight: normal;">K1</span></h2>
+<h2><span style="font-weight: normal;">Agg. Splitting Strength, fct</span></h2>
 
-<p>Enter the aggregate correction factor per LRFD 5.4.2.4.<span style="margin-bottom: 0;">&nbsp; 
- </span></p>
+<p>If the aggregate splitting strength of a lightweight concrete is known, 
+ check the box and input the value.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

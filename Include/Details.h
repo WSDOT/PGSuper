@@ -187,6 +187,10 @@ struct SHEARCAPACITYDETAILS
 
    Float64 VsReqd;
    Float64 AvOverS_Reqd;
+
+   pgsTypes::ConcreteType ConcreteType;
+   bool bHasFct;
+   Float64 fct;
 };
 
 // fpc - strand stress for shear capacity calculation
@@ -254,6 +258,8 @@ struct CREEPCOEFFICIENTDETAILS
    Float64 khc;
    //Float64 kf; // using the kf above
    Float64 ktd;
+
+   Float64 K1, K2; // 2005 and later, from NCHRP Report 496
 };
 
 struct LOSSDETAILS

@@ -49,14 +49,23 @@ public:
    Float64 m_Ds;
    Float64 m_Dw;
    Float64 m_AggSize;
-   Float64 m_K1;
+   Float64 m_EccK1;
+   Float64 m_EccK2;
+   Float64 m_CreepK1;
+   Float64 m_CreepK2;
+   Float64 m_ShrinkageK1;
+   Float64 m_ShrinkageK2;
+   pgsTypes::ConcreteType m_Type;
+   bool m_bHasFct;
+   Float64 m_Fct;
+
    bool m_AllowEditing;
 
    CString m_InitialEc;
+   CString m_strFct;
 
    Float64 m_MinNWCDensity;
-   bool m_bIsStrengthNWC;
-   bool m_bIsDensityNWC;
+   Float64 m_MaxLWCDensity;
    bool m_bErrorInDDX;
 
 // Overrides
@@ -70,17 +79,19 @@ public:
 
 // Implementation
 protected:
+   bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
+   pgsTypes::ConcreteType GetConreteType();
 
 	// Generated message map functions
 	//{{AFX_MSG(CConcreteEntryDlg)
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	virtual BOOL OnInitDialog();
    afx_msg void OnModE();
+   afx_msg void OnAggSplittingStrengthClicked();
+   afx_msg void OnConcreteType();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:
-   afx_msg void OnChangeDs();
-   afx_msg void OnChangeDw();
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 protected:
    virtual void OnOK();

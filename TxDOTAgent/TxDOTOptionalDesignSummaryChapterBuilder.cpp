@@ -301,36 +301,33 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
 
    (*p_table)(row++,1) << pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Permanent) << note;
 
-   if( pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Permanent) > 0) // no use reporting strand data if there are none
+   if (pGirderData->GetStandardStrandFill())
    {
-      if (pGirderData->GetStandardStrandFill())
+      (*p_table)(row,0) << "Yb of Topmost Depressed Strand(s) @ End";
+      (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
+   }
+
+   Float64 span2 = pBridge->GetSpanLength(TOGA_SPAN,gdr)/2.0;
+   pgsPointOfInterest midpoi(TOGA_SPAN,gdr,span2);
+
+   (*p_table)(row,0) << "e"<<Sub("CL");
+   Float64 neff;
+   (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(midpoi,false,&neff) );
+
+   pgsPointOfInterest zeropoi(TOGA_SPAN,gdr,0.0);
+   (*p_table)(row,0) << "e"<<Sub("girder ends");
+   (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(zeropoi,false,&neff) );
+
+   // non standard fill row tables
+   if (!pGirderData->GetStandardStrandFill())
+   {
+      non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Centerline",
+                         pGirderData->GetStrandsAtCL());
+
+      if (pGirderData->GetUseDepressedStrands())
       {
-         (*p_table)(row,0) << "Yb of Topmost Depressed Strand(s) @ End";
-         (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
-      }
-
-      Float64 span2 = pBridge->GetSpanLength(TOGA_SPAN,gdr)/2.0;
-      pgsPointOfInterest midpoi(TOGA_SPAN,gdr,span2);
-
-      (*p_table)(row,0) << "e"<<Sub("CL");
-      Float64 neff;
-      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(midpoi,false,&neff) );
-
-      pgsPointOfInterest zeropoi(TOGA_SPAN,gdr,0.0);
-      (*p_table)(row,0) << "e"<<Sub("girder ends");
-      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(zeropoi,false,&neff) );
-
-      // non standard fill row tables
-      if (!pGirderData->GetStandardStrandFill())
-      {
-         non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Centerline",
-                            pGirderData->GetStrandsAtCL());
-
-         if (pGirderData->GetUseDepressedStrands())
-         {
-            non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Ends",
-                               pGirderData->GetStrandsAtEnds());
-         }
+         non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Ends",
+                            pGirderData->GetStrandsAtEnds());
       }
    }
 }

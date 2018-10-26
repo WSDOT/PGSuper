@@ -356,6 +356,12 @@ struct pgsTypes
       gllmRoundUp      // round up the ADTT value to match a control value
    };
 
+   typedef enum ConcreteType
+   {
+      Normal,
+      AllLightweight,
+      SandLightweight
+   } ConcreteType;
 };
 
 
@@ -400,6 +406,9 @@ struct GDRCONFIG
    pgsTypes::TTSUsage TempStrandUsage;
    Float64 Fc;        // 28 day concrete strength
    Float64 Fci;       // Concrete release strength
+   pgsTypes::ConcreteType ConcType;
+   bool bHasFct;
+   Float64 Fct;
 
    bool bUserEci;
    bool bUserEc;

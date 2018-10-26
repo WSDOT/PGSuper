@@ -50,7 +50,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".\;..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB;__PRECONDTION;_UNITTEST"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"

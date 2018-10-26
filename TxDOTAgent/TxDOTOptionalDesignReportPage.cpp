@@ -48,7 +48,7 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignReportPage, CPropertyPage)
    ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
    ON_CBN_SELCHANGE(IDC_REPORT_COMBO, &CTxDOTOptionalDesignReportPage::OnCbnSelchangeReportCombo)
    ON_WM_CTLCOLOR()
-   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignReportPage::OnHelpFinder)
+   ON_WM_HELPINFO()
    ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignReportPage::OnHelpFinder)
 END_MESSAGE_MAP()
 
@@ -351,10 +351,16 @@ void CTxDOTOptionalDesignReportPage::AssertValid() const
    __super::AssertValid();
 }
 
+BOOL CTxDOTOptionalDesignReportPage::OnHelpInfo(HELPINFO* pHelpInfo)
+{
+   CWinApp* papp = AfxGetApp();
+   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_REPORT_TAB );
+
+   return TRUE;
+}
 
 void CTxDOTOptionalDesignReportPage::OnHelpFinder()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_REPORT_TAB );
+   CWinApp* papp = AfxGetApp();
+   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_REPORT_TAB );
 }

@@ -361,7 +361,7 @@ void write_moment_data_table(IBroker* pBroker,
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfter2005 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEditionWith2006Interims ? true : false );
    if ( pSpec->GetMomentCapacityMethod() == WSDOT_METHOD || bAfter2005 )
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "CapacityReductionEquation.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GeneralizedFlexureResistanceFactor.png") << rptNewLine;
 
 }
 
@@ -393,9 +393,9 @@ void write_crack_moment_data_table(IBroker* pBroker,
 
    *pParagraph << rptNewLine;
    if ( bAfter2002 )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Cracking Moment Equation 2005.gif") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mcr_2005.png") << rptNewLine;
    else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Cracking Moment Equation.gif") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mcr.png") << rptNewLine;
    
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str());
 
@@ -465,11 +465,11 @@ void write_crack_moment_data_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   *pParagraph << Sub2("f","r") << " = " << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient()) << symbol(ROOT) << RPT_FC << rptNewLine;
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+   *pParagraph << Sub2("f","r") << " = " << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
 
    *pParagraph << Sub2("f","cpe") << " = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads." << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fcpe.gif") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fcpe.png") << rptNewLine;
    *pParagraph << Sub2("S","nc") << " = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads" << rptNewLine;
    *pParagraph << Sub2("S","c") << " = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads" << rptNewLine;
    *pParagraph << Sub2("M","dnc") << " = total unfactored dead load moment acting on the monolithic or noncomposite section" << rptNewLine;

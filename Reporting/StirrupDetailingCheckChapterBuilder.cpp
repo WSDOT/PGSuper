@@ -99,16 +99,40 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
 {
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph();
+
   // Av/S check 5.8.2.5
    // picture depends on units
-   if ( IS_SI_UNITS(pDisplayUnits) )
+   std::string strImage;
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,girder);
+   bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,girder);
+   switch( concType )
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Min Transverse Reinforcement SI.jpg") << rptNewLine;
+   case pgsTypes::Normal:
+      strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_NWC_US.png" : "AvOverSMin_NWC_SI.png");
+      break;
+
+   case pgsTypes::AllLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_LWC_US.png" : "AvOverSMin_LWC_SI.png");
+      else
+         strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_ALWC_US.png" : "AvOverSMin_ALWC_SI.png");
+      break;
+
+   case pgsTypes::SandLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_LWC_US.png" : "AvOverSMin_LWC_SI.png");
+      else
+         strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_SLWC_US.png" : "AvOverSMin_SLWC_SI.png");
+      break;
+
+   default:
+      ATLASSERT(false);
    }
-   else
-   {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Min Transverse Reinforcement US.jpg") << rptNewLine;
-   }
+
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
+
+
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),  false );
@@ -121,8 +145,13 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
    CHECK(pstirrup_artifact);
 
-   *pParagraph << RPT_FC << " for the girder is "<<stress.SetValue(pstirrup_artifact->GetFc())<<" "<< stress.GetUnitTag()<<rptNewLine;
-   *pParagraph << RPT_FY << " for the girder is "<<stress.SetValue(pstirrup_artifact->GetFy())<<" "<< stress.GetUnitTag()<<rptNewLine;
+   *pParagraph << RPT_FC << " = "<<stress.SetValue(pstirrup_artifact->GetFc())<<" "<< stress.GetUnitTag()<<rptNewLine;
+   *pParagraph << RPT_FY << " = "<<stress.SetValue(pstirrup_artifact->GetFy())<<" "<< stress.GetUnitTag()<<rptNewLine;
+
+   if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
+   {
+      *pParagraph << Sub2("f","ct") << " = "<<stress.SetValue(pMaterial->GetGdrConcreteAggSplittingStrength(span,girder))<<" "<< stress.GetUnitTag()<<rptNewLine;
+   }
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3,"");
 

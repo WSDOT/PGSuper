@@ -502,7 +502,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pBridgeMaterial);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -538,8 +538,9 @@ void CBridgeSectionView::UpdateGirderTooltips()
       fci = pBridgeMaterial->GetFciGdr(spanIdx,gdrIdx);
 
       CString strMsg2;
-      strMsg2.Format("\r\n\r\nGirder: %s\r\nf'ci: %s\r\nf'c: %s",
+      strMsg2.Format("\r\n\r\nGirder: %s\r\n%s\r\nf'ci: %s\r\nf'c: %s",
                      pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx),
+                     matConcrete::GetTypeName((matConcrete::Type)pBridgeMaterial->GetGdrConcreteType(spanIdx,gdrIdx),true).c_str(),
                      FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                      FormatDimension(fc, pDisplayUnits->GetStressUnit())
                     );
@@ -885,18 +886,20 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
       pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
       if ( slabOffsetType == pgsTypes::sotBridge )
       {
-         strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: %s\r\nf'c: %s",
+         strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: %s\r\n%s\r\nf'c: %s",
                         m_pFrame->GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                         FormatDimension(pBridgeDesc->GetSlabOffset(),pDisplayUnits->GetComponentDimUnit()),
+                        matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
                         FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
                         );
       }
       else
       {
-         strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\nf'c: %s",
+         strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\n%s\r\nf'c: %s",
                         m_pFrame->GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
+                        matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
                         FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
                         );
       }

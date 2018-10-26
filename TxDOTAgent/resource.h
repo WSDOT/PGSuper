@@ -102,7 +102,6 @@
 #define IDC_END_NO_STRANDS              261
 #define IDC_ORIG_USE_DEPRESSED          261
 #define IDC_ENDS_GROUP                  262
-#define IDC_ERROR_MSG                   263
 #define IDC_VALUE                       1018
 #define IDC_VALUE_UNITS                 1026
 #define ID_SELECTED_GIRDER              1086
@@ -129,16 +128,12 @@
 #define IDS_E_FORMAT                    1646
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
-#define IDS_GDR_ERROR                   1754
-#define IDS_GDR_ERROR2                  1755
-#define IDS_CONN_ERROR                  1755
 #define ID_LEFTEND                      33174
 #define ID_RIGHTEND                     33175
 #define ID_LEFT_HP                      33176
 #define ID_CENTER                       33177
 #define ID_RIGHT_HP                     33178
 #define ID_USER_CUT                     33179
-#define ID_HELP_JOINARPLIST             33188
 #define ID_FILE_SAVEAS                  33300
 #define ID_FILE_EXPORTPGSUPERMODEL      33301
 #define ID_FILE_CLOSE33302              33302
@@ -148,20 +143,14 @@
 #define ID_VIEWSETTINGS                 33306
 #define ID_HELP_INFO                    33307
 #define ID_LICENSE_AGREEMENT            33308
-#define ID_HELP_ABOUTPGSUPER            33309
-#define ID_HELP_A                       33310
-#define ID_VIEW_SECTIONCUTLOCATION      33312
-#define ID_VIEW_GIRDERVIEWSETTINGS      33313
-#define ID_VIEW_STATUSCENTER            33314
-#define ID_STATUSCENTER_VIEW            33315
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        216
-#define _APS_NEXT_COMMAND_VALUE         33316
-#define _APS_NEXT_CONTROL_VALUE         264
+#define _APS_NEXT_COMMAND_VALUE         33309
+#define _APS_NEXT_CONTROL_VALUE         263
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
 #endif

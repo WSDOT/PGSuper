@@ -63,7 +63,7 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + "Delta Fcdp Equation.jpg") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_Fcdp.png") << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 

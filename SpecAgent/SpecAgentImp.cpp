@@ -67,8 +67,11 @@ STDMETHODIMP CSpecAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_ITransverseReinforcementSpec, this );
    pBrokerInit->RegInterface( IID_IPrecastIGirderDetailsSpec, this );
    pBrokerInit->RegInterface( IID_IGirderLiftingSpecCriteria, this );
+   pBrokerInit->RegInterface( IID_IGirderLiftingSpecCriteriaEx, this );
    pBrokerInit->RegInterface( IID_IGirderHaulingSpecCriteria, this );
+   pBrokerInit->RegInterface( IID_IGirderHaulingSpecCriteriaEx, this );
    pBrokerInit->RegInterface( IID_IDebondLimits, this );
+   pBrokerInit->RegInterface( IID_IResistanceFactors, this );
 
     return S_OK;
 }
@@ -391,21 +394,24 @@ Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStress(SpanIndexType span
 
 Float64 CSpecAgentImp::GetHaulingModulusOfRuptureCoefficient()
 {
+   ATLASSERT(false); // obsolete
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingModulusOfRuptureCoefficient();
+   return pSpec->GetHaulingModulusOfRuptureCoefficient(pgsTypes::Normal);
 }
 
 Float64 CSpecAgentImp::GetHaulingModulusOfRupture(SpanIndexType span,GirderIndexType gdr)
 {
-   GET_IFACE(IBridgeMaterial,pMat);
+   GET_IFACE(IBridgeMaterialEx,pMat);
 
    Float64 fc = pMat->GetFcGdr(span,gdr);
+   pgsTypes::ConcreteType type = pMat->GetGdrConcreteType(span,gdr);
 
-   return GetHaulingModulusOfRupture(fc);
+   return GetHaulingModulusOfRupture(fc,type);
 }
 
 Float64 CSpecAgentImp::GetHaulingModulusOfRupture(Float64 fc)
 {
+   ATLASSERT(false); // obsolete
    double x = GetHaulingModulusOfRuptureCoefficient();
    return x*sqrt(fc);
 }
@@ -654,6 +660,8 @@ Float64 CSpecAgentImp::GetMinConfinmentAvS()
 
 Float64 CSpecAgentImp::GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy)
 {
+   ATLASSERT(false); // this method is obsolete and should not be used
+   // Lightweight concrete makes this method obsolete
    return lrfdRebar::GetAvOverSMin(fc,bv,fy);
 }
 
@@ -730,6 +738,7 @@ Float64 CSpecAgentImp::GetMinBottomFlangeThickness() const
    return dim;
 }
 
+/////////////////////////////////////////////////////////////////////
 //  IGirderLiftingSpecCriteria
 bool CSpecAgentImp::IsLiftingCheckEnabled() const
 {
@@ -871,21 +880,24 @@ Float64 CSpecAgentImp::GetLiftingSweepTolerance()const
 
 Float64 CSpecAgentImp::GetLiftingModulusOfRuptureCoefficient()
 {
+   ATLASSERT(false); // obsolete...
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingModulusOfRuptureCoefficient();
+   return pSpec->GetLiftingModulusOfRuptureCoefficient(pgsTypes::Normal);
 }
 
 Float64 CSpecAgentImp::GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr)
 {
-   GET_IFACE(IBridgeMaterial,pMat);
+   GET_IFACE(IBridgeMaterialEx,pMat);
 
    Float64 fci = pMat->GetFciGdr(span,gdr);
+   pgsTypes::ConcreteType type = pMat->GetGdrConcreteType(span,gdr);
 
-   return GetLiftingModulusOfRupture(fci);
+   return GetLiftingModulusOfRupture(fci,type);
 }
 
 Float64 CSpecAgentImp::GetLiftingModulusOfRupture(Float64 fci)
 {
+   ATLASSERT(false); // obsolete...
    double x = GetLiftingModulusOfRuptureCoefficient();
    return x*sqrt(fci);
 }
@@ -917,6 +929,19 @@ Float64 CSpecAgentImp::GetLiftingPointLocationAccuracy() const
    return pSpec->GetLiftingPointLocationAccuracy();
 }
 
+/////////////////////////////////////////////////////////////////////
+//  IGirderLiftingSpecCriteriaEx
+Float64 CSpecAgentImp::GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType)
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetLiftingModulusOfRuptureCoefficient(concType);
+}
+
+Float64 CSpecAgentImp::GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType)
+{
+   double x = GetLiftingModulusOfRuptureCoefficient(concType);
+   return x*sqrt(fci);
+}
 
 // IGirderHaulingSpecCriteria
 bool CSpecAgentImp::IsHaulingCheckEnabled() const
@@ -1142,6 +1167,21 @@ Float64 CSpecAgentImp::GetHaulingSupportLocationAccuracy() const
    return pSpec->GetTruckSupportLocationAccuracy();
 }
 
+/////////////////////////////////////////////////////////////////////
+//  IGirderLiftingSpecCriteriaEx
+Float64 CSpecAgentImp::GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType)
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetHaulingModulusOfRuptureCoefficient(concType);
+}
+
+Float64 CSpecAgentImp::GetHaulingModulusOfRupture(Float64 fc,pgsTypes::ConcreteType concType)
+{
+   double x = GetHaulingModulusOfRuptureCoefficient(concType);
+   return x*sqrt(fc);
+}
+
+/////////////////////////////////////////////////////////////////////
 // IDebondLimits
 Float64 CSpecAgentImp::GetMaxDebondedStrands(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
@@ -1221,4 +1261,18 @@ Float64 CSpecAgentImp::GetMinDebondSectionDistance(SpanIndexType spanIdx,GirderI
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(spanIdx,gdrIdx);
    return pGirderEntry->GetMinDebondSectionLength();
+}
+
+/////////////////////////////////////////////////////////////////////
+// IResistanceFactors
+void CSpecAgentImp::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression)
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   pSpec->GetFlexureResistanceFactors(type,phiTensionPS,phiTensionRC,phiCompression);
+}
+
+Float64 CSpecAgentImp::GetShearResistanceFactor(pgsTypes::ConcreteType type)
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetShearResistanceFactor(type);
 }

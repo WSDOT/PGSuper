@@ -124,7 +124,6 @@ public:
    virtual IBroker* GetUpdatedBroker();
    virtual IBroker* GetClassicBroker();
    virtual GirderLibrary* GetGirderLibrary();
-   virtual ConnectionLibrary* GetConnectionLibrary();
 
 // Operations
    // listen to data events
@@ -206,8 +205,6 @@ public:
    void SetGirderEditorSettings(UINT settings);
 
    void EditGirderViewSettings(int nPage);
-   afx_msg void OnViewGirderviewsettings();
-   afx_msg void OnStatuscenterView();
 };
 
 /////////////////////////////////////////////////////////////////////////////

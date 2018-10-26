@@ -703,32 +703,62 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, IBridgeMaterial, pMaterial);
+   GET_IFACE2(pBroker, IBridgeMaterialEx, pMaterial);
    GET_IFACE2(pBroker, IGirderData, pGirderData);
 
 
    bool bK1 = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion());
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(bK1 ? 9 : 8,"Concrete Properties");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(bK1 ? 16 : 10,"Concrete Properties");
    pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    *pPara << pTable << rptNewLine;
 
+   ColumnIndexType col = 0;
    RowIndexType row = 0;
-   (*pTable)(row,0) << "Element";
-   (*pTable)(row,1) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,2) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,3) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,4) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,5) << COLHDR(Sub2(symbol(gamma),"w"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
-   (*pTable)(row,6) << COLHDR(Sub2(symbol(gamma),"s"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
-   (*pTable)(row,7) << COLHDR(Sub2("D","agg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(row,col++) << "Element";
+   (*pTable)(row,col++) << "Type";
+   (*pTable)(row,col++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,col++) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,col++) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),"w"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),"s"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row,col++) << COLHDR(Sub2("D","agg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(row,col++) << COLHDR(Sub2("f","ct"),  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( bK1 )
    {
-      (*pTable)(row,8) << Sub2("K","1");
+      pTable->SetNumberOfHeaderRows(2);
+      for ( int i = 0; i < 10; i++ )
+      {
+         pTable->SetRowSpan(0,i,2); 
+         pTable->SetRowSpan(1,i,-1);
+      }
+
+      pTable->SetColumnSpan(0,10,2);
+      pTable->SetColumnSpan(0,11,-1);
+      (*pTable)(0,10) << Sub2("E","c");
+      (*pTable)(1,10) << Sub2("K","1");
+      (*pTable)(1,11) << Sub2("K","2");
+
+      pTable->SetColumnSpan(0,12,2);
+      pTable->SetColumnSpan(0,13,-1);
+      (*pTable)(0,12) << "Creep";
+      (*pTable)(1,12) << Sub2("K","1");
+      (*pTable)(1,13) << Sub2("K","2");
+
+      pTable->SetColumnSpan(0,14,2);
+      pTable->SetColumnSpan(0,15,-1);
+      (*pTable)(0,14) << "Shrinkage";
+      (*pTable)(1,14) << Sub2("K","1");
+      (*pTable)(1,15) << Sub2("K","2");
    }
-   row++;
+
+
+   row = pTable->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -743,28 +773,42 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
       {
-         (*pTable)(row,0) << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
-         (*pTable)(row,1) << stress.SetValue( pMaterial->GetFciGdr(spanIdx,gdrIdx) );
-         (*pTable)(row,2) << modE.SetValue( pMaterial->GetEciGdr(spanIdx,gdrIdx) );
-         (*pTable)(row,3) << stress.SetValue( pMaterial->GetFcGdr(spanIdx,gdrIdx) );
-         (*pTable)(row,4) << modE.SetValue( pMaterial->GetEcGdr(spanIdx,gdrIdx) );
-         (*pTable)(row,5) << density.SetValue( pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx) );
+         col = 0;
+         (*pTable)(row,col++) << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+         (*pTable)(row,col++) << matConcrete::GetTypeName( (matConcrete::Type)pMaterial->GetGdrConcreteType(spanIdx,gdrIdx), true );
+         (*pTable)(row,col++) << stress.SetValue( pMaterial->GetFciGdr(spanIdx,gdrIdx) );
+         (*pTable)(row,col++) << modE.SetValue( pMaterial->GetEciGdr(spanIdx,gdrIdx) );
+         (*pTable)(row,col++) << stress.SetValue( pMaterial->GetFcGdr(spanIdx,gdrIdx) );
+         (*pTable)(row,col++) << modE.SetValue( pMaterial->GetEcGdr(spanIdx,gdrIdx) );
+         (*pTable)(row,col++) << density.SetValue( pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx) );
 
          CGirderData girderData = pGirderData->GetGirderData(spanIdx, gdrIdx);
 
          if (girderData.Material.bUserEc )
          {
-            (*pTable)(row,6) << "n/a";
+            (*pTable)(row,col++) << "n/a";
          }
          else
          {
-            (*pTable)(row,6) << density.SetValue( pMaterial->GetStrDensityGdr(spanIdx,gdrIdx) );
+            (*pTable)(row,col++) << density.SetValue( pMaterial->GetStrDensityGdr(spanIdx,gdrIdx) );
          }
 
-         (*pTable)(row,7) << cmpdim.SetValue( pMaterial->GetMaxAggrSizeGdr(spanIdx,gdrIdx) );
+         (*pTable)(row,col++) << cmpdim.SetValue( pMaterial->GetMaxAggrSizeGdr(spanIdx,gdrIdx) );
+
+         if ( pMaterial->DoesGdrConcreteHaveAggSplittingStrength(spanIdx,gdrIdx) )
+            (*pTable)(row,col++) << stress.SetValue( pMaterial->GetGdrConcreteAggSplittingStrength(spanIdx,gdrIdx) );
+         else
+            (*pTable)(row,col++) << "n/a";
+
+
          if (bK1)
          {
-            (*pTable)(row,8) << pMaterial->GetK1Gdr(spanIdx,gdrIdx);
+            (*pTable)(row,col++) << pMaterial->GetEccK1Gdr(spanIdx,gdrIdx);
+            (*pTable)(row,col++) << pMaterial->GetEccK2Gdr(spanIdx,gdrIdx);
+            (*pTable)(row,col++) << pMaterial->GetCreepK1Gdr(spanIdx,gdrIdx);
+            (*pTable)(row,col++) << pMaterial->GetCreepK2Gdr(spanIdx,gdrIdx);
+            (*pTable)(row,col++) << pMaterial->GetShrinkageK1Gdr(spanIdx,gdrIdx);
+            (*pTable)(row,col++) << pMaterial->GetShrinkageK2Gdr(spanIdx,gdrIdx);
          }
          row++;
       } // gdrIdx
@@ -775,35 +819,50 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
 
    if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
    {
-      (*pTable)(row,0) << "Slab";
-      (*pTable)(row,1) << "-";
-      (*pTable)(row,2) << "-";
-      (*pTable)(row,3) << stress.SetValue( pMaterial->GetFcSlab() );
-      (*pTable)(row,4) << modE.SetValue( pMaterial->GetEcSlab() );
-      (*pTable)(row,5) << density.SetValue( pMaterial->GetWgtDensitySlab() );
+      col = 0;
+      (*pTable)(row,col++) << "Slab";
+      (*pTable)(row,col++) << matConcrete::GetTypeName( (matConcrete::Type)pMaterial->GetSlabConcreteType(), true );
+      (*pTable)(row,col++) << "-";
+      (*pTable)(row,col++) << "-";
+      (*pTable)(row,col++) << stress.SetValue( pMaterial->GetFcSlab() );
+      (*pTable)(row,col++) << modE.SetValue( pMaterial->GetEcSlab() );
+      (*pTable)(row,col++) << density.SetValue( pMaterial->GetWgtDensitySlab() );
 
       if (pBridgeDesc->GetDeckDescription()->SlabUserEc)
       {
-         (*pTable)(row,6) << "n/a";
+         (*pTable)(row,col++) << "n/a";
       }
       else
       {
-         (*pTable)(row,6) << density.SetValue( pMaterial->GetStrDensitySlab() );
+         (*pTable)(row,col++) << density.SetValue( pMaterial->GetStrDensitySlab() );
       }
 
-      (*pTable)(row,7) << cmpdim.SetValue( pMaterial->GetMaxAggrSizeSlab() );
+      (*pTable)(row,col++) << cmpdim.SetValue( pMaterial->GetMaxAggrSizeSlab() );
+
+      if ( pMaterial->DoesSlabConcreteHaveAggSplittingStrength() )
+         (*pTable)(row,col++) << stress.SetValue( pMaterial->GetSlabConcreteAggSplittingStrength() );
+      else
+         (*pTable)(row,col++) << "n/a";
+
       if (bK1)
       {
-         (*pTable)(row,8) << pMaterial->GetK1Slab();
+         (*pTable)(row,col++) << pMaterial->GetEccK1Slab();
+         (*pTable)(row,col++) << pMaterial->GetEccK2Slab();
+         (*pTable)(row,col++) << pMaterial->GetCreepK1Slab();
+         (*pTable)(row,col++) << pMaterial->GetCreepK2Slab();
+         (*pTable)(row,col++) << pMaterial->GetShrinkageK1Slab();
+         (*pTable)(row,col++) << pMaterial->GetShrinkageK2Slab();
       }
    }
 
-   (*pPara) << Sub2(symbol(gamma),"w") << " =  Density for Weight Calcuations" << rptNewLine;
-   (*pPara) << Sub2(symbol(gamma),"s") << " =  Density for Strength (Used to compute " << Sub2("E","c") << ")" << rptNewLine;
-   (*pPara) << Sub2("D","agg") << " =  Maximum Aggregate Size" << rptNewLine;
+   (*pPara) << Sub2(symbol(gamma),"w") << " =  Unit weight including reinforcement (used for dead load calculations)" << rptNewLine;
+   (*pPara) << Sub2(symbol(gamma),"s") << " =  Unit weight (used to compute " << Sub2("E","c") << ")" << rptNewLine;
+   (*pPara) << Sub2("D","agg") << " =  Maximum aggregate size" << rptNewLine;
+   (*pPara) << Sub2("f","ct") << " =  Average splitting tensile strength of lightweight aggregate concrete" << rptNewLine;
    if ( bK1 )
    {
-      (*pPara) << Sub2("K","1") << " = correction factor for source of aggregate" << rptNewLine;
+      (*pPara) << Sub2("K","1") << " = Correction factor for aggregate type in predicting average value" << rptNewLine;
+      (*pPara) << Sub2("K","2") << " = Correction factor for aggregate type in predicting upper and lower bounds" << rptNewLine;
    }
 }
 

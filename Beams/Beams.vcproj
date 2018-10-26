@@ -52,7 +52,7 @@
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
-				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
+				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;IGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -155,7 +155,7 @@
 				AdditionalOptions="/Zm600 "
 				Optimization="2"
 				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;IGNORE_2007_CHANGES"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -376,11 +376,11 @@
 				>
 			</File>
 			<File
-				RelativePath="PsLossEngineer.h"
+				RelativePath="..\Include\Iface\PsLossEngineer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Iface\PsLossEngineer.h"
+				RelativePath="PsLossEngineer.h"
 				>
 			</File>
 			<File

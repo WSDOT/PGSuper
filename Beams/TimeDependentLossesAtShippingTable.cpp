@@ -190,16 +190,16 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
       if ( bIgnoreInitialRelaxation )
-         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHaulingWithPT_LRFD.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHaulingWithPT_LRFD.png") << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHaulingWithPT_WSDOT.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHaulingWithPT_WSDOT.png") << rptNewLine;
    }
    else
    {
       if ( bIgnoreInitialRelaxation )
-         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHauling_LRFD.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHauling_LRFD.png") << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHauling_WSDOT.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHauling_WSDOT.png") << rptNewLine;
    }
 
 

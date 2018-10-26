@@ -29,7 +29,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "initguid.h"
+#include <initguid.h>
 #include "SpecAgent.h"
 
 #include "SpecAgent_i.h"
@@ -45,6 +45,8 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\ResistanceFactors.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

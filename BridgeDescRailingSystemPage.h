@@ -58,6 +58,8 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
+   void SetConcreteTypeLabel(UINT nID,pgsTypes::ConcreteType type);
+
    CRailingSystem m_LeftRailingSystem;
    CRailingSystem m_RightRailingSystem;
 
@@ -88,6 +90,8 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   void OnMoreProperties(CRailingSystem* pRailingSystem);
+
    void FillTrafficBarrierComboBoxes();
    void EnableSidewalkDimensions(BOOL bEnable,BOOL bLeft);
    void EnableInteriorBarrier(BOOL bEnable,int nID);
@@ -106,11 +110,15 @@ protected:
 
    void UpdateLeftConcreteParametersToolTip();
    void UpdateRightConcreteParametersToolTip();
+   CString UpdateConcreteParametersToolTip(CRailingSystem* pRailingSystem);
    CString m_strToolTip[2];
 
-   Float64 m_MinNWCDensity;
    CComPtr<IBroker> m_pBroker;
-   bool m_bIsNWC;
+   Float64 m_MinNWCDensity;
+   Float64 m_MaxLWCDensity;
+
+   bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
+
 public:
    virtual BOOL OnKillActive();
 };

@@ -89,6 +89,7 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public IUserDefinedLoadData,
    public IEvents,
    public ILimits,
+   public ILimits2,
    public ILoadFactors,
    public ILiveLoads
 {  
@@ -121,6 +122,7 @@ BEGIN_COM_MAP(CProjectAgentImp)
    COM_INTERFACE_ENTRY(IUserDefinedLoadData)
    COM_INTERFACE_ENTRY(IEvents)
    COM_INTERFACE_ENTRY(ILimits)
+   COM_INTERFACE_ENTRY(ILimits2)
    COM_INTERFACE_ENTRY(ILoadFactors)
    COM_INTERFACE_ENTRY(ILiveLoads)
 END_COM_MAP()
@@ -435,13 +437,21 @@ public:
    virtual void HoldEvents();
    virtual void FirePendingEvents();
 
-// Limits
+// ILimits
 public:
    virtual double GetMaxSlabFc();
    virtual double GetMaxGirderFci();
    virtual double GetMaxGirderFc();
    virtual double GetMaxConcreteUnitWeight();
    virtual double GetMaxConcreteAggSize();
+
+// ILimits2
+public:
+   virtual double GetMaxSlabFc(pgsTypes::ConcreteType concType);
+   virtual double GetMaxGirderFci(pgsTypes::ConcreteType concType);
+   virtual double GetMaxGirderFc(pgsTypes::ConcreteType concType);
+   virtual double GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType);
+   virtual double GetMaxConcreteAggSize(pgsTypes::ConcreteType concType);
 
 // ILoadFactors
 public:

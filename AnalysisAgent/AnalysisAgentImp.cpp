@@ -1385,7 +1385,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPointOfInterest,pIPoi);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
    GET_IFACE(ISectProp2,pSectProp2);
 
    Float64 E;
@@ -1394,7 +1394,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
       if ( config.bUserEci )
          E = config.Eci;
       else
-         E = pMaterial->GetEconc(config.Fci,pMaterial->GetStrDensityGdr(spanIdx,gdrIdx),pMaterial->GetK1Gdr(spanIdx,gdrIdx));
+         E = pMaterial->GetEconc(config.Fci,pMaterial->GetStrDensityGdr(spanIdx,gdrIdx),pMaterial->GetEccK1Gdr(spanIdx,gdrIdx),pMaterial->GetEccK2Gdr(spanIdx,gdrIdx));
    }
    else
    {
@@ -1703,7 +1703,7 @@ void CAnalysisAgentImp::BuildTempCamberModel(SpanIndexType spanIdx,GirderIndexTy
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPointOfInterest,pIPoi);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
    GET_IFACE(ISectProp2,pSectProp2);
 
    // Build models
@@ -1717,12 +1717,12 @@ void CAnalysisAgentImp::BuildTempCamberModel(SpanIndexType spanIdx,GirderIndexTy
       if ( config.bUserEci )
          Eci = config.Eci;
       else
-         Eci = pMaterial->GetEconc(config.Fci,pMaterial->GetStrDensityGdr(spanIdx,gdrIdx),pMaterial->GetK1Gdr(spanIdx,gdrIdx));
+         Eci = pMaterial->GetEconc(config.Fci,pMaterial->GetStrDensityGdr(spanIdx,gdrIdx),pMaterial->GetEccK1Gdr(spanIdx,gdrIdx),pMaterial->GetEccK2Gdr(spanIdx,gdrIdx));
 
       if ( config.bUserEc )
          Ec = config.Ec;
       else
-         Ec = pMaterial->GetEconc(config.Fc,pMaterial->GetStrDensityGdr(spanIdx,gdrIdx),pMaterial->GetK1Gdr(spanIdx,gdrIdx));
+         Ec = pMaterial->GetEconc(config.Fc,pMaterial->GetStrDensityGdr(spanIdx,gdrIdx),pMaterial->GetEccK1Gdr(spanIdx,gdrIdx),pMaterial->GetEccK2Gdr(spanIdx,gdrIdx));
    }
    else
    {
@@ -5214,7 +5214,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    Float64 delta    = GetDisplacement(girderLoadStage,pftGirder,poi,SimpleSpan);
    Float64 rotation = GetRotation(girderLoadStage,pftGirder,poi,SimpleSpan);
 
-   GET_IFACE(IBridgeMaterial,pMat);
+   GET_IFACE(IBridgeMaterialEx,pMat);
 
    Float64 Ec = pMat->GetEcGdr(span,gdr); // this Ec used to comptue delta
 
@@ -5222,7 +5222,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    if ( config.bUserEci )
       Eci = config.Eci;
    else
-      Eci = pMat->GetEconc(config.Fci,pMat->GetStrDensityGdr(span,gdr),pMat->GetK1Gdr(span,gdr));
+      Eci = pMat->GetEconc(config.Fci,pMat->GetStrDensityGdr(span,gdr),pMat->GetEccK1Gdr(span,gdr),pMat->GetEccK2Gdr(span,gdr));
 
    delta    *= (Ec/Eci);
    rotation *= (Ec/Eci);
@@ -6058,7 +6058,7 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabPadModel(double fcgdr,double
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IBridgeMaterial,pMat);
+   GET_IFACE(IBridgeMaterialEx,pMat);
    GET_IFACE(IGirder,pGdr);
    GET_IFACE(ISectProp2,pSectProp2);
 
@@ -6071,7 +6071,7 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabPadModel(double fcgdr,double
 
    Float64 Ig = pSectProp2->GetIx( pgsTypes::BridgeSite1,poi );
    
-   Float64 E = pMat->GetEconc(fcgdr,pMat->GetStrDensityGdr(span,gdr), pMat->GetK1Gdr(span,gdr) );
+   Float64 E = pMat->GetEconc(fcgdr,pMat->GetStrDensityGdr(span,gdr), pMat->GetEccK1Gdr(span,gdr), pMat->GetEccK2Gdr(span,gdr) );
 
    Float64 L = pBridge->GetSpanLength( span, gdr );
 
@@ -9622,6 +9622,10 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
 
          cc.SetCuringMethodTimeAdjustmentFactor(pSpecEntry->GetCuringMethodTimeAdjustmentFactor());
 
+         GET_IFACE(IBridgeMaterialEx,pMaterial);
+         cc.SetK1( pMaterial->GetCreepK1Gdr(span,gdr) );
+         cc.SetK2( pMaterial->GetCreepK2Gdr(span,gdr) );
+
 
          switch( creepPeriod )
          {
@@ -9675,6 +9679,8 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
          details.ktd          = cc.GetKtd();
          details.VSratio      = cc.GetVolume() / cc.GetSurfaceArea();
          details.CuringMethod = cc.GetCuringMethod();
+         details.K1           = cc.GetK1();
+         details.K2           = cc.GetK2();
 
          details.Ct           = cc.GetCreepCoefficient();
       }
@@ -12219,9 +12225,9 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
    Float64 Ix          = pSectProp2->GetIx(stage,poi);
    Float64 Ix_adjusted = pSectProp2->GetIx(stage,poi,fc);
 
-   GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
    Float64 Ec = pMaterial->GetEcGdr(span,gdr);
-   Float64 Ec_adjusted = (config.bUserEc ? config.Ec : pMaterial->GetEconc(fc,pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetK1Gdr(span,gdr)));
+   Float64 Ec_adjusted = (config.bUserEc ? config.Ec : pMaterial->GetEconc(fc,pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetEccK1Gdr(span,gdr),pMaterial->GetEccK2Gdr(span,gdr)));
 
    Float64 EI = Ec*Ix;
    Float64 EI_adjusted = Ec_adjusted * Ix_adjusted;
@@ -12496,7 +12502,7 @@ DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsT
       break;
 
    case pgsTypes::lltPermit:
-      dfType = dftEnvelope;
+      dfType = dftFatigue;
       break;
 
    case pgsTypes::lltLegalRating_Routine:
@@ -12512,7 +12518,7 @@ DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsT
      break;
 
    case pgsTypes::lltPermitRating_Special:
-     dfType = dftFatigue; // single lane with muliple presense divided out
+     dfType = dftFatigue;
      break;
 
    default:

@@ -25,7 +25,6 @@
 
 #include "stdafx.h"
 #include "TogaGirderEditorElevationSettingsPage.h"
-#include "HtmlHelp\TogaHelp.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -79,5 +78,5 @@ END_MESSAGE_MAP()
 
 void CTogaGirderEditorElevationSettingsPage::OnHelp() 
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_VIEW_SETTINGS );
+//   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDERVIEW_ELEV );
 }

@@ -73,9 +73,9 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    *pParagraph << "[5.9.5.4.2b] Creep of Girder Concrete : " << symbol(DELTA) << Sub2("f","pCR") << rptNewLine;
 
    if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpCR_PT.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpCR_PT.png") << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpCR.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpCR.png") << rptNewLine;
 
    // creep loss   
    *pParagraph << table << rptNewLine;

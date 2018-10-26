@@ -90,13 +90,21 @@ public:
    bool bSidewalkStructurallyContinuous;
 
    // material properties
+   pgsTypes::ConcreteType ConcreteType;
    Float64 fc;
    Float64 Ec;
    bool bUserEc;
    Float64 StrengthDensity;
    Float64 WeightDensity;
-   Float64 K1;
+   Float64 EcK1;
+   Float64 EcK2;
+   Float64 CreepK1;
+   Float64 CreepK2;
+   Float64 ShrinkageK1;
+   Float64 ShrinkageK2;
    Float64 MaxAggSize;
+   bool bHasFct;
+   Float64 Fct;
 
 protected:
    void MakeCopy(const CRailingSystem& rOther);

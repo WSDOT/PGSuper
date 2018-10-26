@@ -434,7 +434,7 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
    *pPara << "C-C Pier = Centerline pier to centerline pier length measured along the girder" << rptNewLine;
    *pPara << "C-C Bearing = Centerline bearing to centerline bearing length measured along the girder" << rptNewLine;
    *pPara << "Girder Length, Horizontal = End to end length of the girder projected into a horizontal plane" << rptNewLine;
-   *pPara << "Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = " << rptRcImage(pgsReportStyleHolder::GetImagePath() + "SlopeAdjustedGirderLength.gif",rptRcImage::Middle) << rptNewLine;
+   *pPara << "Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = " << rptRcImage(pgsReportStyleHolder::GetImagePath() + "SlopeAdjustedGirderLength.png",rptRcImage::Middle) << rptNewLine;
    *pPara << rptNewLine;
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetSpanLengthUnit(), false );

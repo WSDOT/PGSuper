@@ -166,9 +166,9 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation 2005.gif")<<rptNewLine;
+      *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear2005.png")<<rptNewLine;
    else
-      *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation.gif")<<rptNewLine;
+      *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear.png")<<rptNewLine;
 
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
@@ -293,9 +293,9 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
       *pChapter << pParagraph;
       *pParagraph << "5.8.3.5" << rptNewLine;
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-         *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation 2005.gif")<<rptNewLine;
+         *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear2005.png")<<rptNewLine;
       else
-         *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation.gif")<<rptNewLine;
+         *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear.png")<<rptNewLine;
 
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;

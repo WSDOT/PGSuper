@@ -5,6 +5,7 @@
 #define ID_INDICATOR_ANALYSIS           3
 #define ID_INDICATOR_AUTOCALC_ON        4
 #define ID_INDICATOR_AUTOCALC_OFF       5
+#define IDS_LWC_MESSAGE                 6
 #define IDS_GIRDER_SHEAR                7
 #define IDS_LIVE_LOAD_FACTOR_TOOLTIP    8
 #define IDS_E_ONLINERESOURCES           9
@@ -368,9 +369,13 @@
 #define IDC_FWD_TANGENT                 1209
 #define IDC_BK_TANGENT                  1210
 #define IDC_RADIUS                      1211
+#define IDC_CREEP_K1                    1212
 #define IDC_GRADE                       1213
+#define IDC_CREEP_K2                    1213
 #define IDC_G1                          1214
+#define IDC_SHRINKAGE_K1                1214
 #define IDC_GRADE_TAG                   1215
+#define IDC_SHRINKAGE_K2                1215
 #define IDC_G1_TAG                      1216
 #define IDC_G2                          1217
 #define IDC_PVI_STATION                 1218
@@ -420,7 +425,9 @@
 #define IDC_LOCATION                    1260
 #define IDC_SERVICE_III_DC              1260
 #define IDC_K1                          1261
+#define IDC_EC_K1                       1261
 #define IDC_TOP_COVER                   1262
+#define IDC_EC_K2                       1262
 #define IDC_EDIT                        1263
 #define IDC_SUPERSTRUCTURE_DESCRIPTION  1264
 #define IDC_NAME                        1265
@@ -562,6 +569,7 @@
 #define IDC_RATING_CRITERIA             1407
 #define IDC_PERMIT_TYPE                 1407
 #define IDC_CONDITION_FACTOR_TYPE       1407
+#define IDC_CONCRETE_TYPE               1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_PIER                        1409
 #define IDC_HP_COMBO_END                1410
@@ -596,10 +604,13 @@
 #define IDC_PREV_PIER_SPACING_MEASUREMENT_TYPE 1438
 #define IDC_NEXT_PIER_SPACING_MEASUREMENT_TYPE 1439
 #define IDC_K1_LABEL                    1440
+#define IDC_EC_K1_LABEL                 1440
 #define IDC_DEBOND_HARPED               1441
+#define IDC_EC_K2_LABEL                 1441
 #define IDC_DEBOND_STRAIGHT             1442
 #define IDC_DEBOND_GRID                 1443
 #define IDC_DELETE                      1444
+#define IDC_HAS_AGG_STRENGTH            1444
 #define IDC_PICTURE                     1445
 #define IDC_CHECK1                      1446
 #define IDC_RATE_FOR_SHEAR              1446
@@ -650,7 +661,9 @@
 #define IDC_STATIC_LLE                  1491
 #define IDC_STATIC_SL                   1492
 #define IDC_STATIC_TLSO                 1493
+#define IDC_AGG_STRENGTH                1493
 #define IDC_STATIC_SLLO                 1494
+#define IDC_AGG_STRENGTH_T              1494
 #define IDC_STATICSLGL                  1495
 #define IDC_CHECK_LIFTING               1496
 #define IDC_CHECK_HAULING               1497
@@ -669,9 +682,13 @@
 #define IDC_OVERHANG_DEPTH              1510
 #define IDC_OVERHANG_DEPTH_UNIT         1511
 #define IDC_OVERHANG_DEPTH_LABEL        1513
+#define IDC_CREEP_K1_LABEL              1513
 #define IDC_ADD_MOMENTLOAD              1514
+#define IDC_CREEP_K2_LABEL              1514
 #define IDC_ALLOWABLE_SPACING           1515
+#define IDC_SHRINKAGE_K1_LABEL          1515
 #define IDC_GIRDER_CONNECTIVITY_S       1516
+#define IDC_SHRINKAGE_K2_LABEL          1516
 #define IDC_GIRDER_CONNECTIVITY         1517
 #define IDC_URL                         1518
 #define IDC_UPDATENOW                   1519
@@ -814,6 +831,7 @@
 #define IDC_HELPME                      1601
 #define IDC_LEFT_INTERIOR_BARRIER       1602
 #define IDC_LEFT_SIDEWALK_WIDTH_LABEL   1603
+#define IDC_CONCRETE_TYPE_LABEL         1603
 #define IDC_REF_GIRDER_LABEL            1603
 #define IDC_LEFT_SIDEWALK_LEFT_DEPTH_LABEL 1604
 #define IDC_REF_GIRDER_OFFSET_TYPE_LABEL 1604
@@ -821,8 +839,10 @@
 #define IDC_LEFT_SIDEWALK_RIGHT_DEPTH_LABEL 1606
 #define IDC_RIGHT_SIDEWALK_WIDTH        1607
 #define IDC_GIRDERNAME_NOTE             1608
+#define IDC_LEFT_CONCRETE_TYPE_LABEL    1608
 #define IDC_RIGHT_SIDEWALK_WIDTH_UNIT   1609
 #define IDC_COPY_GIRDER                 1610
+#define IDC_RIGHT_CONCRETE_TYPE_LABEL   1610
 #define IDC_RIGHT_SIDEWALK_WIDTH_LABEL  1611
 #define IDC_LABEL                       1612
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_LABEL 1613

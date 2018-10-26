@@ -920,6 +920,13 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          }
       }
    }
+
+   if ( stage == pgsTypes::BridgeSite3 )
+   {
+      p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      *pChapter << p;
+      (*p) << "* Deck moment is from superimposed dead load and live load only." << rptNewLine;
+   }
 }
 
 //======================== ACCESS     =======================================

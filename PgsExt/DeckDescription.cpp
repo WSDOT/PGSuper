@@ -51,13 +51,21 @@ CDeckDescription::CDeckDescription()
    GrossDepth       = ::ConvertToSysUnits(  8.5, unitMeasure::Inch );
    Fillet           = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
 
+   SlabConcreteType     = pgsTypes::Normal;
    SlabFc               = ::ConvertToSysUnits(4.,unitMeasure::KSI);
    SlabStrengthDensity  = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
    SlabWeightDensity    = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
    SlabMaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
-   SlabK1               = 1.0;
+   SlabEcK1             = 1.0;
+   SlabEcK2             = 1.0;
+   SlabCreepK1          = 1.0;
+   SlabCreepK2          = 1.0;
+   SlabShrinkageK1      = 1.0;
+   SlabShrinkageK2      = 1.0;
    SlabUserEc           = false;
    SlabEc               = ::ConvertToSysUnits(4200.,unitMeasure::KSI);
+   SlabHasFct           = false;
+   SlabFct              = 0.0;
 
    WearingSurface = pgsTypes::wstSacrificialDepth;
    bInputAsDepthAndDensity = false;
@@ -130,7 +138,22 @@ bool CDeckDescription::operator == (const CDeckDescription& rOther) const
    if ( SlabMaxAggregateSize != rOther.SlabMaxAggregateSize )
       return false;
 
-   if ( SlabK1 != rOther.SlabK1 )
+   if ( SlabEcK1 != rOther.SlabEcK1 )
+      return false;
+
+   if ( SlabEcK2 != rOther.SlabEcK2 )
+      return false;
+
+   if ( SlabCreepK1 != rOther.SlabCreepK1 )
+      return false;
+
+   if ( SlabCreepK2 != rOther.SlabCreepK2 )
+      return false;
+
+   if ( SlabShrinkageK1 != rOther.SlabShrinkageK1 )
+      return false;
+
+   if ( SlabShrinkageK2 != rOther.SlabShrinkageK2 )
       return false;
 
    if ( SlabUserEc != rOther.SlabUserEc )
@@ -348,40 +371,133 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       if ( GrossDepth <= SacrificialDepth )
          SacrificialDepth = GrossDepth/2;
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabFc", &var );
-      SlabFc = var.dblVal;
+      if ( version < 6 )
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("SlabFc", &var );
+         SlabFc = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabWeightDensity", &var );
-      SlabWeightDensity = var.dblVal;
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("SlabWeightDensity", &var );
+         SlabWeightDensity = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabStrengthDensity", &var );
-      SlabStrengthDensity = var.dblVal;
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("SlabStrengthDensity", &var );
+         SlabStrengthDensity = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabMaxAggregateSize", &var );
-      SlabMaxAggregateSize = var.dblVal;
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("SlabMaxAggregateSize", &var );
+         SlabMaxAggregateSize = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabK1", &var );
-      SlabK1 = var.dblVal;
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("SlabK1", &var );
+         SlabEcK1 = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_BOOL;
-      hr = pStrLoad->get_Property("SlabUserEc",&var);
-      SlabUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
+         var.Clear();
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property("SlabUserEc",&var);
+         SlabUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabEc", &var );
-      SlabEc = var.dblVal;
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("SlabEc", &var );
+         SlabEc = var.dblVal;
+      }
+      else
+      {
+         hr = pStrLoad->BeginUnit("SlabConcrete");
+
+         var.Clear();
+         var.vt = VT_BSTR;
+         hr = pStrLoad->get_Property("Type",&var);
+         SlabConcreteType = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2A(var.bstrVal));
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("Fc", &var );
+         SlabFc = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("WeightDensity", &var );
+         SlabWeightDensity = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("StrengthDensity", &var );
+         SlabStrengthDensity = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("MaxAggregateSize", &var );
+         SlabMaxAggregateSize = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("EcK1", &var );
+         SlabEcK1 = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("EcK2", &var );
+         SlabEcK2 = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("CreepK1", &var );
+         SlabCreepK1 = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("CreepK2", &var );
+         SlabCreepK2 = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("ShrinkageK1", &var );
+         SlabShrinkageK1 = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property("ShrinkageK2", &var );
+         SlabShrinkageK2 = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property("UserEc",&var);
+         SlabUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
+
+         if ( SlabUserEc )
+         {
+            var.Clear();
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property("SlabEc", &var );
+            SlabEc = var.dblVal;
+         }
+
+         if ( SlabConcreteType != pgsTypes::Normal )
+         {
+            var.Clear();
+            var.vt = VT_BOOL;
+            hr = pStrLoad->get_Property("HasFct",&var);
+            SlabHasFct = (var.boolVal == VARIANT_TRUE ? true : false);
+
+            if ( SlabHasFct )
+            {
+               var.Clear();
+               var.vt = VT_R8;
+               hr = pStrLoad->get_Property("Fct", &var );
+               SlabFct = var.dblVal;
+            }
+         }
+
+         pStrLoad->EndUnit(); // SlabConcrete
+      } 
 
       if ( 4 < version )
       {
@@ -418,7 +534,7 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("Deck",5.0);
+   pStrSave->BeginUnit("Deck",6.0);
 
    pStrSave->put_Property("SlabType",         CComVariant(DeckType));
    pStrSave->put_Property("TransverseConnectivity", CComVariant(TransverseConnectivity)); // added for version 14.0
@@ -459,13 +575,35 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property("SacrificialDepth", CComVariant(SacrificialDepth));
 
-   pStrSave->put_Property("SlabFc",               CComVariant(SlabFc));
-   pStrSave->put_Property("SlabWeightDensity",    CComVariant(SlabWeightDensity));
-   pStrSave->put_Property("SlabStrengthDensity",  CComVariant(SlabStrengthDensity));
-   pStrSave->put_Property("SlabMaxAggregateSize", CComVariant(SlabMaxAggregateSize));
-   pStrSave->put_Property("SlabK1",               CComVariant(SlabK1));
-   pStrSave->put_Property("SlabUserEc", CComVariant(SlabUserEc));
-   pStrSave->put_Property("SlabEc",     CComVariant(SlabEc));
+   // Added in version 6
+   // new parameters are Unit, SlabConcreteType, SlabHasFct, and SlabFct
+   pStrSave->BeginUnit("SlabConcrete",1.0);
+
+      pStrSave->put_Property("Type",CComVariant( matConcrete::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
+      pStrSave->put_Property("Fc",               CComVariant(SlabFc));
+      pStrSave->put_Property("WeightDensity",    CComVariant(SlabWeightDensity));
+      pStrSave->put_Property("StrengthDensity",  CComVariant(SlabStrengthDensity));
+      pStrSave->put_Property("MaxAggregateSize", CComVariant(SlabMaxAggregateSize));
+      pStrSave->put_Property("EcK1",             CComVariant(SlabEcK1));
+      pStrSave->put_Property("EcK2",             CComVariant(SlabEcK2));
+      pStrSave->put_Property("CreepK1",          CComVariant(SlabCreepK1)); 
+      pStrSave->put_Property("CreepK2",          CComVariant(SlabCreepK2));
+      pStrSave->put_Property("ShrinkageK1",      CComVariant(SlabShrinkageK1)); 
+      pStrSave->put_Property("ShrinkageK2",      CComVariant(SlabShrinkageK2));
+      pStrSave->put_Property("UserEc", CComVariant(SlabUserEc));
+
+      if ( SlabUserEc )
+         pStrSave->put_Property("Ec",     CComVariant(SlabEc));
+
+      if ( SlabConcreteType != pgsTypes::Normal )
+      {
+         pStrSave->put_Property("HasFct",CComVariant(SlabHasFct));
+         
+         if ( SlabHasFct )
+            pStrSave->put_Property("Fct",CComVariant(SlabFct));
+      }
+
+   pStrSave->EndUnit();
 
    // Added in version 5
    pStrSave->BeginUnit("Condition",1.0);
@@ -516,13 +654,21 @@ void CDeckDescription::MakeCopy(const CDeckDescription& rOther)
 	SacrificialDepth = rOther.SacrificialDepth;
    WearingSurface   = rOther.WearingSurface;
 
+   SlabConcreteType      = rOther.SlabConcreteType;
    SlabFc                = rOther.SlabFc;
    SlabWeightDensity     = rOther.SlabWeightDensity;
    SlabStrengthDensity   = rOther.SlabStrengthDensity;
    SlabMaxAggregateSize  = rOther.SlabMaxAggregateSize;
-   SlabK1                = rOther.SlabK1;
+   SlabEcK1              = rOther.SlabEcK1;
+   SlabEcK2              = rOther.SlabEcK2;
+   SlabCreepK1           = rOther.SlabCreepK1;
+   SlabCreepK2           = rOther.SlabCreepK2;
+   SlabShrinkageK1       = rOther.SlabShrinkageK1;
+   SlabShrinkageK2       = rOther.SlabShrinkageK2;
    SlabUserEc            = rOther.SlabUserEc;
    SlabEc                = rOther.SlabEc;
+   SlabHasFct            = rOther.SlabHasFct;
+   SlabFct               = rOther.SlabFct;
 
    PanelDepth       = rOther.PanelDepth;
    PanelSupport     = rOther.PanelSupport;

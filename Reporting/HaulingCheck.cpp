@@ -151,8 +151,9 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    else
        *p << " if bonded reinforcement sufficient to resist the tensile force in the concrete is provided." << rptNewLine;
 
-   t = pSpecEntry->GetHaulingModulusOfRuptureCoefficient();
-   *p <<"Maximum allowable concrete tensile stress, inclined girder without impact = " << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+   t = pSpecEntry->GetHaulingModulusOfRuptureCoefficient(pMaterial->GetGdrConcreteType(span,girder));
+   *p <<"Maximum allowable concrete tensile stress, inclined girder without impact = " << Sub2("f","r") << " = " << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
    *p << " = " << stress.SetValue(pHaulArtifact->GetModRupture())<< " " <<
       stress.GetUnitTag()<< rptNewLine;
 

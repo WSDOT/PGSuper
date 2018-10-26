@@ -81,9 +81,9 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    *pChapter << pParagraph;
 
    if ( tempStrandUsage == pgsTypes::ttsPTBeforeShipping )
-      *pParagraph << rptRcImage(strImagePath + "Delta_Fpt_BeforeShipping.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_Fpt_BeforeShipping.png") << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + "Delta_Fpt.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_Fpt.png") << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
    table->area.ShowUnitTag(true);

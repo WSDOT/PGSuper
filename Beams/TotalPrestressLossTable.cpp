@@ -125,22 +125,22 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
       {
          if ( bIgnoreInitialRelaxation )
          {
-            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPS_LRFD" + strYear + ".gif") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPS_LRFD" + strYear + ".png") << rptNewLine;
          }
          else
          {
-            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPS_WSDOT" + strYear + ".gif") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPS_WSDOT" + strYear + ".png") << rptNewLine;
          }
       }
       else
       {
          if ( bIgnoreInitialRelaxation )
          {
-            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPT_LRFD" + strYear + ".gif") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPT_LRFD" + strYear + ".png") << rptNewLine;
          }
          else
          {
-            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPT_WSDOT" + strYear + ".gif") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPT_WSDOT" + strYear + ".png") << rptNewLine;
          }
       }
    }
@@ -148,11 +148,11 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    {
       if ( bIgnoreInitialRelaxation )
       {
-         *pParagraph << rptRcImage(strImagePath + "TotalPrestressLoss_LRFD" + strYear + ".gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "TotalPrestressLoss_LRFD" + strYear + ".png") << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + "TotalPrestressLoss_WSDOT" + strYear + ".gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "TotalPrestressLoss_WSDOT" + strYear + ".png") << rptNewLine;
       }
    }
 

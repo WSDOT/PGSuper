@@ -69,7 +69,12 @@ CXSectionData::CXSectionData()
    SlabStrengthDensity  = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
    SlabWeightDensity    = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
    SlabMaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
-   SlabK1               = 1.0;
+   SlabEcK1             = 1.0;
+   SlabEcK2             = 1.0;
+   SlabCreepK1          = 1.0;
+   SlabCreepK2          = 1.0;
+   SlabShrinkageK1      = 1.0;
+   SlabShrinkageK2      = 1.0;
    SlabUserEc           = false;
    SlabEc               = ::ConvertToSysUnits(4200.,unitMeasure::KSI);
 
@@ -164,7 +169,22 @@ bool CXSectionData::operator == (const CXSectionData& rOther) const
    if ( SlabMaxAggregateSize != rOther.SlabMaxAggregateSize )
       return false;
 
-   if ( SlabK1 != rOther.SlabK1 )
+   if ( SlabEcK1 != rOther.SlabEcK1 )
+      return false;
+
+   if ( SlabEcK2 != rOther.SlabEcK2 )
+      return false;
+
+   if ( SlabCreepK1 != rOther.SlabCreepK1 )
+      return false;
+
+   if ( SlabCreepK2 != rOther.SlabCreepK2 )
+      return false;
+
+   if ( SlabShrinkageK1 != rOther.SlabShrinkageK1 )
+      return false;
+
+   if ( SlabShrinkageK2 != rOther.SlabShrinkageK2 )
       return false;
 
    if ( SlabUserEc != rOther.SlabUserEc )
@@ -462,11 +482,11 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
          var.Clear();
          var.vt = VT_R8;
          hr = pStrLoad->get_Property("SlabK1", &var );
-         SlabK1 = var.dblVal;
+         SlabEcK1 = var.dblVal;
       }
       else
       {
-         SlabK1 = 1.0;
+         SlabEcK1 = 1.0;
       }
 
       if ( 8.0 <= version )
@@ -596,7 +616,12 @@ void CXSectionData::MakeCopy(const CXSectionData& rOther)
    SlabWeightDensity     = rOther.SlabWeightDensity;
    SlabStrengthDensity   = rOther.SlabStrengthDensity;
    SlabMaxAggregateSize  = rOther.SlabMaxAggregateSize;
-   SlabK1                = rOther.SlabK1;
+   SlabEcK1              = rOther.SlabEcK1;
+   SlabEcK2              = rOther.SlabEcK2;
+   SlabCreepK1           = rOther.SlabCreepK1;
+   SlabCreepK2           = rOther.SlabCreepK2;
+   SlabShrinkageK1       = rOther.SlabShrinkageK1;
+   SlabShrinkageK2       = rOther.SlabShrinkageK2;
    SlabUserEc            = rOther.SlabUserEc;
    SlabEc                = rOther.SlabEc;
 

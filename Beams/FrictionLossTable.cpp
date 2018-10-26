@@ -65,8 +65,8 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    *pParagraph << rptRcImage(strImagePath + "FrictionAndAnchorSetLosses.gif") << rptNewLine << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpF.gif") << rptNewLine << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpA.gif") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_FpF.png") << rptNewLine << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_FpA.png") << rptNewLine;
 
    *pParagraph << "Wobble Friction: K = " << table->wobble.SetValue(details.pLosses->GetWobbleFrictionCoefficient()) << rptNewLine;
 

@@ -415,7 +415,12 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          m_LeftRailingSystem.Ec              = m_Deck.SlabEc;
          m_LeftRailingSystem.StrengthDensity = m_Deck.SlabStrengthDensity;
          m_LeftRailingSystem.WeightDensity   = m_Deck.SlabWeightDensity;
-         m_LeftRailingSystem.K1              = m_Deck.SlabK1;
+         m_LeftRailingSystem.EcK1            = m_Deck.SlabEcK1;
+         m_LeftRailingSystem.EcK2            = m_Deck.SlabEcK2;
+         m_LeftRailingSystem.CreepK1         = m_Deck.SlabCreepK1;
+         m_LeftRailingSystem.CreepK2         = m_Deck.SlabCreepK2;
+         m_LeftRailingSystem.ShrinkageK1     = m_Deck.SlabShrinkageK1;
+         m_LeftRailingSystem.ShrinkageK2     = m_Deck.SlabShrinkageK2;
       }
 
       hr = pStrLoad->EndUnit();
@@ -433,7 +438,12 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          m_RightRailingSystem.Ec              = m_Deck.SlabEc;
          m_RightRailingSystem.StrengthDensity = m_Deck.SlabStrengthDensity;
          m_RightRailingSystem.WeightDensity   = m_Deck.SlabWeightDensity;
-         m_RightRailingSystem.K1              = m_Deck.SlabK1;
+         m_RightRailingSystem.EcK1            = m_Deck.SlabEcK1;
+         m_RightRailingSystem.EcK2            = m_Deck.SlabEcK2;
+         m_RightRailingSystem.CreepK1         = m_Deck.SlabCreepK1;
+         m_RightRailingSystem.CreepK2         = m_Deck.SlabCreepK2;
+         m_RightRailingSystem.ShrinkageK1     = m_Deck.SlabShrinkageK1;
+         m_RightRailingSystem.ShrinkageK2     = m_Deck.SlabShrinkageK2;
       }
       hr = pStrLoad->EndUnit();
 

@@ -141,6 +141,10 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, long statusGroupID, pgsDe
    matConcreteEx conc("Design Concrete", ifc, pGirderMaterial->StrengthDensity, 
                       pGirderMaterial->WeightDensity, lrfdConcreteUtil::ModE(ifc,  pGirderMaterial->StrengthDensity, false ));
    conc.SetMaxAggregateSize(pGirderMaterial->MaxAggregateSize);
+   conc.SetType((matConcrete::Type)pGirderMaterial->Type);
+   conc.HasAggSplittingStrength(pGirderMaterial->bHasFct);
+   conc.SetAggSplittingStrength(pGirderMaterial->Fct);
+
    m_pArtifact->SetConcrete(conc);
 
    if (pGirderMaterial->bUserEc)

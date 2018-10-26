@@ -539,9 +539,11 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       pParagraph = new rptParagraph();
 
-      GET_IFACE2(pBroker,ILimits,pLimits);
-      double max_girder_fci = pLimits->GetMaxGirderFci();
-      double max_girder_fc = pLimits->GetMaxGirderFc();
+      GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+      GET_IFACE2(pBroker,ILimits2,pLimits);
+      pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+      Float64 max_girder_fci = pLimits->GetMaxGirderFci(concType);
+      Float64 max_girder_fc = pLimits->GetMaxGirderFc(concType);
       if (pArtifact->GetReleaseStrength() > max_girder_fci)
       {
          *pParagraph <<color(Red)<< "Warning: The designed girder release strength exceeds the normal value of "<<stress.SetValue(max_girder_fci)<<color(Black)<< rptNewLine;

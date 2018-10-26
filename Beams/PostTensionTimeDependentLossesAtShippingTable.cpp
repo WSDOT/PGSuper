@@ -85,7 +85,7 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
       (*table)(0,5) << COLHDR(symbol(DELTA) << Sub2("f","pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,6) << COLHDR(symbol(DELTA) << Sub2("f","ptH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      *pParagraph << rptRcImage(strImagePath + "PTLossAtHauling.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "PTLossAtHauling.png") << rptNewLine;
    }
 
    return table;

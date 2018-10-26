@@ -317,6 +317,9 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    Float64 PjS, PjH, PjT;
    StrandIndexType Ns, Nh, Nt;
 
+   Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
+   Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
+
    Float64 fci,fc,fcSlab;
    Float64 Eci,Ec,EcSlab;
 
@@ -333,6 +336,8 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
                      &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
+                     &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
+                     &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
                      &Eci,&Ec,&EcSlab,
                      &girder_length,&span_length,&end_size,
@@ -463,6 +468,9 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    Float64 PjS, PjH, PjT;
    StrandIndexType Ns, Nh, Nt;
 
+   Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
+   Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
+
    Float64 fci,fc,fcSlab;
    Float64 Eci,Ec,EcSlab;
 
@@ -479,6 +487,8 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                      &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
+                     &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
+                     &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
                      &Eci,&Ec,&EcSlab,
                      &girder_length,&span_length,&end_size,
@@ -517,6 +527,8 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                                 wobble,
                                 coeffFriction,
                                 angleChange,
+                                GdrCreepK1,  GdrCreepK2,  GdrShrinkageK1,  GdrShrinkageK2,
+                                DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2,
                                 fc,
                                 fci,
                                 fcSlab,
@@ -622,6 +634,9 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    Float64 PjS, PjH, PjT;
    StrandIndexType Ns, Nh, Nt;
 
+   Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
+   Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
+
    Float64 fci,fc,fcSlab;
    Float64 Eci,Ec,EcSlab;
 
@@ -638,6 +653,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
                      &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
+                     &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
+                     &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
                      &Eci,&Ec,&EcSlab,
                      &girder_length,&span_length,&end_size,
@@ -693,6 +710,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
                             coeffFriction,
                             angleChange,
 
+                            (lrfdConcreteUtil::DensityType)config.ConcType,
                             fc,
                             fci,
                             fcSlab,
@@ -847,6 +865,9 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    Float64 PjS, PjH, PjT;
    StrandIndexType Ns, Nh, Nt;
 
+   Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
+   Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
+
    Float64 fci,fc,fcSlab;
    Float64 Eci,Ec,EcSlab;
 
@@ -863,6 +884,8 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
                      &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
+                     &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
+                     &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
                      &Eci,&Ec,&EcSlab,
                      &girder_length,&span_length,&end_size,
@@ -1632,9 +1655,9 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    *pParagraph << "Prestress loss due to relaxation before transfer" << rptNewLine;
 
    if ( pLosses->GetStrandType() == matPsStrand::LowRelaxation )
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpR0_LR.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpR0_LR.png") << rptNewLine;
    else 
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpR0_SR.gif") <<rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpR0_SR.png") <<rptNewLine;
 
    rptRcTable* table;
 
@@ -1736,9 +1759,9 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    {
       // Approximate methods, 2005
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph<< rptRcImage(strImagePath + "LumpSumLossEquation2005_SI_Shipping.gif") << rptNewLine;
+         *pParagraph<< rptRcImage(strImagePath + "LumpSumLoss_Shipping_2005_SI.png") << rptNewLine;
       else
-         *pParagraph<< rptRcImage(strImagePath + "LumpSumLossEquation2005_US_Shipping.gif") << rptNewLine;
+         *pParagraph<< rptRcImage(strImagePath + "LumpSumLoss_Shipping_2005_US.png") << rptNewLine;
 
       rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,"");
 
@@ -1788,49 +1811,49 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       // dim 1... 0 = I Beam, 1 = U Beam, 2 = SolidSlab, 3 = Box Beams, 4 = Single T
       // dim 2... 0 = Low Relax, 1 = Stress Rel
       // dim 2... 0 = SI, 1 = US
-      strLossEqnImage[0][lrfdApproximateLosses::IBeam][0][0]     = "ApproxLoss_LRFD_IBeam_LowRelax_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::IBeam][1][0]     = "ApproxLoss_LRFD_IBeam_StressRel_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::UBeam][0][0]     = "ApproxLoss_LRFD_UBeam_LowRelax_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::UBeam][1][0]     = "ApproxLoss_LRFD_UBeam_StressRel_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][0][0] = "ApproxLoss_LRFD_SolidSlab_LowRelax_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][1][0] = "ApproxLoss_LRFD_SolidSlab_StressRel_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][0][0]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][1][0]   = "ApproxLoss_LRFD_BoxGirder_StressRel_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::SingleT][0][0]   = "ApproxLoss_LRFD_SingleT_LowRelax_SI.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::SingleT][1][0]   = "ApproxLoss_LRFD_SingleT_StressRel_SI.gif";
+      strLossEqnImage[0][lrfdApproximateLosses::IBeam][0][0]     = "ApproxLoss_LRFD_IBeam_LowRelax_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::IBeam][1][0]     = "ApproxLoss_LRFD_IBeam_StressRel_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::UBeam][0][0]     = "ApproxLoss_LRFD_UBeam_LowRelax_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::UBeam][1][0]     = "ApproxLoss_LRFD_UBeam_StressRel_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][0][0] = "ApproxLoss_LRFD_SolidSlab_LowRelax_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][1][0] = "ApproxLoss_LRFD_SolidSlab_StressRel_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][0][0]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][1][0]   = "ApproxLoss_LRFD_BoxGirder_StressRel_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::SingleT][0][0]   = "ApproxLoss_LRFD_SingleT_LowRelax_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::SingleT][1][0]   = "ApproxLoss_LRFD_SingleT_StressRel_SI.png";
 
-      strLossEqnImage[1][lrfdApproximateLosses::IBeam][0][0]     = "ApproxLoss_WSDOT_IBeam_LowRelax_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::IBeam][1][0]     = "ApproxLoss_WSDOT_IBeam_StressRel_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::UBeam][0][0]     = "ApproxLoss_WSDOT_UBeam_LowRelax_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::UBeam][1][0]     = "ApproxLoss_WSDOT_UBeam_StressRel_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][0][0] = "ApproxLoss_LRFD_SolidSlab_LowRelax_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][1][0] = "ApproxLoss_LRFD_SolidSlab_StressRel_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][0][0]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][1][0]   = "ApproxLoss_LRFD_BoxGirder_StressRel_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][0]   = "ApproxLoss_LRFD_SingleT_LowRelax_SI.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][0]   = "ApproxLoss_LRFD_SingleT_StressRel_SI.gif";
+      strLossEqnImage[1][lrfdApproximateLosses::IBeam][0][0]     = "ApproxLoss_WSDOT_IBeam_LowRelax_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::IBeam][1][0]     = "ApproxLoss_WSDOT_IBeam_StressRel_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::UBeam][0][0]     = "ApproxLoss_WSDOT_UBeam_LowRelax_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::UBeam][1][0]     = "ApproxLoss_WSDOT_UBeam_StressRel_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][0][0] = "ApproxLoss_LRFD_SolidSlab_LowRelax_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][1][0] = "ApproxLoss_LRFD_SolidSlab_StressRel_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][0][0]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][1][0]   = "ApproxLoss_LRFD_BoxGirder_StressRel_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][0]   = "ApproxLoss_LRFD_SingleT_LowRelax_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][0]   = "ApproxLoss_LRFD_SingleT_StressRel_SI.png";
 
-      strLossEqnImage[0][lrfdApproximateLosses::IBeam][0][1]     = "ApproxLoss_LRFD_IBeam_LowRelax_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::IBeam][1][1]     = "ApproxLoss_LRFD_IBeam_StressRel_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::UBeam][0][1]     = "ApproxLoss_LRFD_UBeam_LowRelax_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::UBeam][1][1]     = "ApproxLoss_LRFD_UBeam_StressRel_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][0][1] = "ApproxLoss_LRFD_SolidSlab_LowRelax_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][1][1] = "ApproxLoss_LRFD_SolidSlab_StressRel_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][0][1]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][1][1]   = "ApproxLoss_LRFD_BoxGirder_StressRel_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::SingleT][0][1]   = "ApproxLoss_LRFD_SingleT_LowRelax_US.gif";
-      strLossEqnImage[0][lrfdApproximateLosses::SingleT][1][1]   = "ApproxLoss_LRFD_SingleT_StressRel_US.gif";
+      strLossEqnImage[0][lrfdApproximateLosses::IBeam][0][1]     = "ApproxLoss_LRFD_IBeam_LowRelax_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::IBeam][1][1]     = "ApproxLoss_LRFD_IBeam_StressRel_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::UBeam][0][1]     = "ApproxLoss_LRFD_UBeam_LowRelax_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::UBeam][1][1]     = "ApproxLoss_LRFD_UBeam_StressRel_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][0][1] = "ApproxLoss_LRFD_SolidSlab_LowRelax_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][1][1] = "ApproxLoss_LRFD_SolidSlab_StressRel_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][0][1]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][1][1]   = "ApproxLoss_LRFD_BoxGirder_StressRel_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::SingleT][0][1]   = "ApproxLoss_LRFD_SingleT_LowRelax_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::SingleT][1][1]   = "ApproxLoss_LRFD_SingleT_StressRel_US.png";
 
-      strLossEqnImage[1][lrfdApproximateLosses::IBeam][0][1]     = "ApproxLoss_WSDOT_IBeam_LowRelax_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::IBeam][1][1]     = "ApproxLoss_WSDOT_IBeam_StressRel_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::UBeam][0][1]     = "ApproxLoss_WSDOT_UBeam_LowRelax_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::UBeam][1][1]     = "ApproxLoss_WSDOT_UBeam_StressRel_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][0][1] = "ApproxLoss_LRFD_SolidSlab_LowRelax_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][1][1] = "ApproxLoss_LRFD_SolidSlab_StressRel_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][0][1]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][1][1]   = "ApproxLoss_LRFD_BoxGirder_StressRel_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][1]   = "ApproxLoss_LRFD_SingleT_LowRelax_US.gif";
-      strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][1]   = "ApproxLoss_LRFD_SingleT_StressRel_US.gif";
+      strLossEqnImage[1][lrfdApproximateLosses::IBeam][0][1]     = "ApproxLoss_WSDOT_IBeam_LowRelax_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::IBeam][1][1]     = "ApproxLoss_WSDOT_IBeam_StressRel_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::UBeam][0][1]     = "ApproxLoss_WSDOT_UBeam_LowRelax_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::UBeam][1][1]     = "ApproxLoss_WSDOT_UBeam_StressRel_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][0][1] = "ApproxLoss_LRFD_SolidSlab_LowRelax_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][1][1] = "ApproxLoss_LRFD_SolidSlab_StressRel_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][0][1]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][1][1]   = "ApproxLoss_LRFD_BoxGirder_StressRel_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][1]   = "ApproxLoss_LRFD_SingleT_LowRelax_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][1]   = "ApproxLoss_LRFD_SingleT_StressRel_US.png";
 
 
       int method = (details.Method == LOSSES_WSDOT_LUMPSUM) ? 1 : 0;
@@ -1851,9 +1874,9 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph<< rptRcImage(strImagePath + "LumpSumLossEquation2005_SI.gif") << rptNewLine;
+         *pParagraph<< rptRcImage(strImagePath + "LumpSumLoss_2005_SI.png") << rptNewLine;
       else
-         *pParagraph<< rptRcImage(strImagePath + "LumpSumLossEquation2005_US.gif") << rptNewLine;
+         *pParagraph<< rptRcImage(strImagePath + "LumpSumLoss_2005_US.png") << rptNewLine;
 
       rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,"");
 
@@ -1921,6 +1944,14 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    StrandIndexType* pNs,
    StrandIndexType* pNh,
    StrandIndexType* pNt,
+   Float64* pGdrCreepK1,
+   Float64* pGdrCreepK2,
+   Float64* pGdrShrinkageK1,
+   Float64* pGdrShrinkageK2,
+   Float64* pDeckCreepK1,
+   Float64* pDeckCreepK2,
+   Float64* pDeckShrinkageK1,
+   Float64* pDeckShrinkageK2,
    Float64* pFci,
    Float64* pFc,
    Float64* pFcSlab,
@@ -1946,7 +1977,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    GET_IFACE( IProductForces,   pProdForces );
    GET_IFACE( IEnvironment,     pEnv );
    GET_IFACE( IPointOfInterest, pIPOI );
-   GET_IFACE( IBridgeMaterial,  pMaterial );
+   GET_IFACE( IBridgeMaterialEx,pMaterial );
    GET_IFACE( ISpecification,   pSpec);
    GET_IFACE( IBridgeDescription,pIBridgeDesc);
 
@@ -2010,6 +2041,16 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *pApsPerm = (*pNs+*pNh)*(*paps);
    *pApsTTS  = (*pNt)*(*paps);
 
+   *pGdrCreepK1 = pMaterial->GetCreepK1Gdr(span,gdr);
+   *pGdrCreepK2 = pMaterial->GetCreepK2Gdr(span,gdr);
+   *pGdrShrinkageK1 = pMaterial->GetShrinkageK1Gdr(span,gdr);
+   *pGdrShrinkageK2 = pMaterial->GetShrinkageK2Gdr(span,gdr);
+   *pDeckCreepK1 = pMaterial->GetCreepK1Slab();
+   *pDeckCreepK2 = pMaterial->GetCreepK2Slab();
+   *pDeckShrinkageK1 = pMaterial->GetShrinkageK1Slab();
+   *pDeckShrinkageK2 = pMaterial->GetShrinkageK2Slab();
+
+
    *pFci    = config.Fci;
    *pFc     = config.Fc;
    *pFcSlab = pMaterial->GetFcSlab();
@@ -2017,12 +2058,12 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    if ( config.bUserEci )
       *pEci = config.Eci;
    else
-      *pEci = pMaterial->GetEconc(config.Fci,pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetK1Gdr(span,gdr));
+      *pEci = pMaterial->GetEconc(config.Fci,pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetEccK1Gdr(span,gdr),pMaterial->GetEccK2Gdr(span,gdr));
 
    if( config.bUserEc )
       *pEc = config.Ec;
    else
-      *pEc  = pMaterial->GetEconc(config.Fc, pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetK1Gdr(span,gdr));
+      *pEc  = pMaterial->GetEconc(config.Fc, pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetEccK1Gdr(span,gdr),pMaterial->GetEccK2Gdr(span,gdr));
 
    if (pDeck->SlabUserEc)
       *pEcSlab = pDeck->SlabEc;

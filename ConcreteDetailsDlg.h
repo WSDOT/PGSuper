@@ -39,7 +39,7 @@ public:
 	CConcreteDetailsDlg(CWnd* pParent = NULL);   // standard constructor
 
    // text strings to in in display units... Ec comes out in display units
-   static CString UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1);
+   static CString UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2);
 
 // Dialog Data
 	//{{AFX_DATA(CConcreteDetailsDlg)
@@ -56,6 +56,7 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 	CEdit	m_ctrlK1;
+	CEdit	m_ctrlK2;
 	CEdit	m_ctrlEc;
 	CButton m_ctrlEcCheck;
 	CEdit	m_ctrlFc;
@@ -63,20 +64,28 @@ public:
 
    CComPtr<IBroker> m_pBroker;
    Float64 m_MinNWCDensity;
-   bool m_bIsStrengthNWC;
-   bool m_bIsDensityNWC;
+   Float64 m_MaxLWCDensity;
    bool m_bErrorInDDX;
+
+   CString m_strFct;
 
 public:
    Float64 m_Fc;
+   CString m_strUserEc;
    bool m_bUserEc;
    Float64 m_Ec;
    Float64 m_Ds;
    Float64 m_Dw;
    Float64 m_AggSize;
-   Float64 m_K1;
-
-   CString m_strUserEc;
+   Float64 m_EccK1;
+   Float64 m_EccK2;
+   Float64 m_CreepK1;
+   Float64 m_CreepK2;
+   Float64 m_ShrinkageK1;
+   Float64 m_ShrinkageK2;
+   bool m_bHasFct;
+   Float64 m_Fct;
+   pgsTypes::ConcreteType m_Type;
 
    // Implementation
 protected:
@@ -90,15 +99,19 @@ protected:
    afx_msg void OnUserEc();
 	afx_msg void OnChangeFc();
 	afx_msg void OnChangeDs();
-	afx_msg void OnChangeDw();
 	afx_msg void OnChangeK1();
 	afx_msg void OnCopyMaterial();
+   afx_msg void OnAggSplittingStrengthClicked();
+   afx_msg void OnConcreteType();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+
 protected:
    virtual void OnOK();
+   pgsTypes::ConcreteType GetConreteType();
+   bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
 };
 
 //{{AFX_INSERT_LOCATION}}

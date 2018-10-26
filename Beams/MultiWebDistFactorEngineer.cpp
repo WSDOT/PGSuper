@@ -156,7 +156,7 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
       if(span_lldf.Method == LLDF_TXDOT)
       {
         (*pPara) << "For TxDOT Method, for all distribution factor types, always use AASHTO Type (j) connected only enough to prevent relative vertical displacement, regardless of input. Use 4.6.2.2.2b-1, with TxDOT modifications (K="<< GetTxDOTKfactor() <<", g not to exceed S/10). Effects of skew will be ignored." << rptNewLine;
-        (*pPara) << rptRcImage(strImagePath + "LLDF Type HIJ TxDOT.gif") << rptNewLine;
+        (*pPara) << rptRcImage(strImagePath + "LLDF_Type_HIJ_TxDOT.png") << rptNewLine;
       }
       else if (span_lldf.connectedAsUnit)
       {
@@ -175,7 +175,7 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
             (*pPara) << "Slab Thickness (since there is no CIP deck, use top flange thickness): t" << Sub("s") << " = " << xdim2.SetValue(span_lldf.ts) << rptNewLine;
             (*pPara) << "Distance between CG of slab and girder: e" << Sub("g") <<" = " << xdim2.SetValue(span_lldf.eg) << rptNewLine;
          }
-         (*pPara) << "Stiffness Parameter: " << rptRcImage(strImagePath + "Kg Equation.jpg") << rptTab
+         (*pPara) << "Stiffness Parameter: " << rptRcImage(strImagePath + "Kg.png") << rptTab
                   << "K" << Sub("g") << " = " << inertia.SetValue(span_lldf.Kg) << rptNewLine;
       }
       else
@@ -697,8 +697,8 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                (*pPara) << Bold("2+ Loaded Lanes: Spec Equation") << rptNewLine;
 
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 ME Type K SI.gif" : "mg 2 ME Type K US.gif")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type K SI.gif" : "mg 2 MI Type K US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_K_SI.png" : "mg_2_ME_Type_K_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.png" : "mg_2_MI_Type_K_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
                (*pPara) << "e = " << scalar.SetValue(gM2.EqnData.e) << rptNewLine;
 
@@ -738,7 +738,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             (*pPara) << Bold("Skew Correction") << rptNewLine;
             Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Moment SI.gif" : "Skew Correction for Moment US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Moment_SI.png" : "SkewCorrection_Moment_US.png")) << rptNewLine;
 
             (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
@@ -800,7 +800,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             if (gM1.EqnData.bWasUsed )
             {
                (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 MI Type K SI.gif" : "mg 1 MI Type K US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_K_SI.png" : "mg_1_MI_Type_K_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
             }
 
@@ -830,7 +830,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
                if (gM2.EqnData.bWasUsed )
                {
                   (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type K SI.gif" : "mg 2 MI Type K US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.png" : "mg_2_MI_Type_K_US.png")) << rptNewLine;
                   (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
                }
 
@@ -868,11 +868,11 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                (*pPara) << Bold("St. Venant torsional inertia constant") << rptNewLine;
                (*pPara) << "Polar Moment of Inertia: I" << Sub("p") << " = " << inertia.SetValue(lldf.Ip) << rptNewLine;
-               (*pPara) << "Torsional Constant: " << rptRcImage(strImagePath + "J Equation.gif") << rptTab
+               (*pPara) << "Torsional Constant: " << rptRcImage(strImagePath + "J.png") << rptTab
                         << "J" << " = " << inertia.SetValue(lldf.J) << rptNewLine;
 
                (*pPara) << Bold("Regardless of the Number of Loaded Lanes:") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "LLDF Type HIJ SI.gif" : "LLDF Type HIJ US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "LLDF_Type_HIJ_SI.png" : "LLDF_Type_HIJ_US.png")) << rptNewLine;
 
                if (gM1.ControllingMethod & S_OVER_D_METHOD)
                {
@@ -908,7 +908,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             (*pPara) << Bold("Skew Correction") << rptNewLine;
             Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Moment SI.gif" : "Skew Correction for Moment US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Moment_SI.png" : "SkewCorrection_Moment_US.png")) << rptNewLine;
 
             (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
@@ -1001,8 +1001,8 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
             if ( gV2.EqnData.bWasUsed )
             {
                (*pPara) << Bold("2+ Loaded Lanes: Spec Equation") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VE Type K SI.gif" : "mg 2 VE Type K US.gif")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type K SI.gif" : "mg 2 VI Type K US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_K_SI.png" : "mg_2_VE_Type_K_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_K_SI.png" : "mg_2_VI_Type_K_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
                (*pPara) << "e = " << scalar.SetValue(gV2.EqnData.e) << rptNewLine;
 
@@ -1034,7 +1034,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          if (lldf.connectedAsUnit)
          {
             (*pPara) << Bold("Skew Correction") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Shear SI.gif" : "Skew Correction for Shear US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Shear_SI.png" : "SkewCorrection_Shear_US.png")) << rptNewLine;
             (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
             (*pPara) << "Skew Corrected Factor: mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
@@ -1085,7 +1085,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          if ( gV1.EqnData.bWasUsed )
          {
             (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 VI Type K SI.gif" : "mg 1 VI Type K US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_K_SI.png" : "mg_1_VI_Type_K_US.png")) << rptNewLine;
             (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
          }
 
@@ -1109,7 +1109,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
             if ( gV2.EqnData.bWasUsed )
             {
                (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type K SI.gif" : "mg 2 VI Type K US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_K_SI.png" : "mg_2_VI_Type_K_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
             }
 
@@ -1131,7 +1131,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
          if (lldf.connectedAsUnit)
          {
-            (*pPara) << Bold("Skew Correction") << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Shear SI.gif" : "Skew Correction for Shear US.gif")) << rptNewLine;
+            (*pPara) << Bold("Skew Correction") << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Shear_SI.png" : "SkewCorrection_Shear_US.png")) << rptNewLine;
             (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
             (*pPara) << "Skew Corrected Factor: mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.mg);

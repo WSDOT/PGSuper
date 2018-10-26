@@ -973,10 +973,6 @@
       <param name="Local" value="Theoretical Manual\CapacityToDemand_Ratios.htm">
     </object>
     <li><object type="text/sitemap">
-      <param name="Name" value="Defining Girder Spacing">
-      <param name="Local" value="Theoretical Manual\Defining_Girder_Spacing.htm">
-    </object>
-    <li><object type="text/sitemap">
       <param name="Name" value="Computing the Required Slab Offset (&quot;A&quot; Dimension)">
       <param name="Local" value="Theoretical Manual\ADimension.htm">
     </object>
@@ -989,20 +985,40 @@
       <param name="Local" value="Theoretical Manual\Composite_Section_Properties.htm">
     </object>
     <li><object type="text/sitemap">
+      <param name="Name" value="Concrete Material Properties">
+      <param name="Local" value="Theoretical Manual\Concrete_Material_Properties.htm">
+    </object>
+    <li><object type="text/sitemap">
       <param name="Name" value="Critical Section For Shear">
       <param name="Local" value="Theoretical Manual\CriticalSection.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Defining Girder Spacing">
+      <param name="Local" value="Theoretical Manual\Defining_Girder_Spacing.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Deflections Due To Creep">
       <param name="Local" value="Theoretical Manual\CreepDeflection.htm">
     </object>
     <li><object type="text/sitemap">
+      <param name="Name" value="Fabrication Optimization">
+      <param name="Local" value="Theoretical Manual\Fabrication_Optimization.htm">
+    </object>
+    <li><object type="text/sitemap">
       <param name="Name" value="Fatigue">
       <param name="Local" value="Theoretical Manual\Fatigue.htm">
     </object>
     <li><object type="text/sitemap">
+      <param name="Name" value="Generalized Resistance Factor for Flexure">
+      <param name="Local" value="Theoretical Manual\Generalized_Resistance_Factor_for_Flexure.htm">
+    </object>
+    <li><object type="text/sitemap">
       <param name="Name" value="Interface Shear Transfer">
       <param name="Local" value="Theoretical Manual\Interface_Shear_Transfer.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Lightweight Concrete">
+      <param name="Local" value="Theoretical Manual\Light_Weight_Concrete.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Live Load Distribution Factors">
@@ -1037,16 +1053,20 @@
       <param name="Local" value="Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm">
     </object>
     <li><object type="text/sitemap">
+      <param name="Name" value="Maximum Allowable Jacking Force">
+      <param name="Local" value="Theoretical Manual\MaximumAllowableJackingForce.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Prestress Losses">
+      <param name="Local" value="Theoretical Manual\Prestress_Losses.htm">
+    </object>
+    <li><object type="text/sitemap">
       <param name="Name" value="Shear Design (Determination of Beta and Theta)">
       <param name="Local" value="Theoretical Manual\Shear_Design_(Determination_of_Beta_and_Theta).htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Splitting Zone Checks">
       <param name="Local" value="Theoretical Manual\Bursting_Zone_Checks.htm">
-    </object>
-    <li><object type="text/sitemap">
-      <param name="Name" value="Maximum Allowable Jacking Force">
-      <param name="Local" value="Theoretical Manual\MaximumAllowableJackingForce.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Structural Analysis Models">
@@ -1057,20 +1077,8 @@
       <param name="Local" value="Theoretical Manual\Ultimate_Moment_Capacity_Analysis.htm">
     </object>
     <li><object type="text/sitemap">
-      <param name="Name" value="Fabrication Optimization">
-      <param name="Local" value="Theoretical Manual\Fabrication_Optimization.htm">
-    </object>
-    <li><object type="text/sitemap">
-      <param name="Name" value="Prestress Losses">
-      <param name="Local" value="Theoretical Manual\Prestress_Losses.htm">
-    </object>
-    <li><object type="text/sitemap">
       <param name="Name" value="Vehicular Live Loads">
       <param name="Local" value="Theoretical Manual\User-Defined_Live_Loads.htm">
-    </object>
-    <li><object type="text/sitemap">
-      <param name="Name" value="Light Weight Concrete">
-      <param name="Local" value="Theoretical Manual\Light_Weight_Concrete.htm">
     </object>
     </ul>
   <li><object type="text/sitemap">

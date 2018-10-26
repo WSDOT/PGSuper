@@ -69,8 +69,8 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + "DeltaFcd.gif") << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + "ElasticGain.gif") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "DeltaFcd.png") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "ElasticGain.png") << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
    *pParagraph << Sub2("E","p") << " = " << table->mod_e.SetValue( Ep ) << rptNewLine;

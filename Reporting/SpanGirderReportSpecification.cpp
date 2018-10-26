@@ -51,17 +51,17 @@ SpanIndexType CSpanReportHint::GetSpan()
    return m_SpanIdx;
 }
 
-int CSpanReportHint::IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec)
+bool CSpanReportHint::IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
    CSpanReportSpecification* pSpanRptSpec = dynamic_cast<CSpanReportSpecification*>(pRptSpec);
    if ( pSpanRptSpec == NULL )
-      return -1;
+      return false;
 
    CSpanReportHint* pSpanRptHint = dynamic_cast<CSpanReportHint*>(pHint);
    if ( pSpanRptHint == NULL )
-      return -1;
+      return false;
 
-   return (pSpanRptHint->m_SpanIdx == pSpanRptSpec->GetSpan() ? 1 : 0);
+   return (pSpanRptHint->m_SpanIdx == pSpanRptSpec->GetSpan() ? true : false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,17 +85,17 @@ GirderIndexType CGirderReportHint::GetGirder()
    return m_GdrIdx;
 }
 
-int CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
+bool CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    if ( pGdrRptSpec == NULL )
-      return -1;
+      return false;
 
    CGirderReportHint* pGirderRptHint = dynamic_cast<CGirderReportHint*>(pHint);
    if ( pGirderRptHint == NULL )
-      return -1;
+      return false;
 
-   return (pGirderRptHint->m_GdrIdx == pGdrRptSpec->GetGirder() ? 1 : 0);
+   return (pGirderRptHint->m_GdrIdx == pGdrRptSpec->GetGirder() ? true : false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,17 +134,17 @@ void CSpanGirderReportHint::GetGirder(SpanIndexType& spanIdx,GirderIndexType& gd
    gdrIdx  = m_GdrIdx;
 }
 
-int CSpanGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
+bool CSpanGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
    if ( pSGRptSpec == NULL )
-      return -1;
+      return false;
 
    CSpanGirderReportHint* pSGRptHint = dynamic_cast<CSpanGirderReportHint*>(pHint);
    if ( pSGRptHint == NULL )
-      return -1;
+      return false;
 
-   return (pSGRptHint->m_SpanIdx == pSGRptSpec->GetSpan() && pSGRptHint->m_GdrIdx == pSGRptSpec->GetGirder() ? 1 : false);
+   return (pSGRptHint->m_SpanIdx == pSGRptSpec->GetSpan() && pSGRptHint->m_GdrIdx == pSGRptSpec->GetGirder() ? true : false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

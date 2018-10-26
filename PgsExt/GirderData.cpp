@@ -301,7 +301,27 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
    {
       ct |= ctConcrete;
    }
-   else if ( !IsEqual(Material.K1,rOther.Material.K1) )
+   else if ( !IsEqual(Material.EcK1,rOther.Material.EcK1) )
+   {
+      ct |= ctConcrete;
+   }
+   else if ( !IsEqual(Material.EcK2,rOther.Material.EcK2) )
+   {
+      ct |= ctConcrete;
+   }
+   else if ( !IsEqual(Material.CreepK1,rOther.Material.CreepK1) )
+   {
+      ct |= ctConcrete;
+   }
+   else if ( !IsEqual(Material.CreepK2,rOther.Material.CreepK2) )
+   {
+      ct |= ctConcrete;
+   }
+    else if ( !IsEqual(Material.ShrinkageK1,rOther.Material.ShrinkageK1) )
+   {
+      ct |= ctConcrete;
+   }
+   else if ( !IsEqual(Material.ShrinkageK2,rOther.Material.ShrinkageK2) )
    {
       ct |= ctConcrete;
    }
@@ -357,6 +377,9 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
    USES_CONVERSION;
 
    HRESULT hr = S_OK;
+
+   double parentVersion;
+   pStrLoad->get_ParentVersion(&parentVersion);
 
    pStrLoad->BeginUnit("PrestressData");  // named this for historical reasons
    double version;
@@ -618,82 +641,85 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
       ATLASSERT(Material.pStrandMaterial != 0);
    }
 
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property("Fci", &var );
-   Material.Fci = var.dblVal;
-
-   if (3.0 <= version)
+   if ( parentVersion < 3 )
    {
+      // stored here for parentVersion == 1 or 2
       var.Clear();
       var.vt = VT_R8;
-      pStrLoad->get_Property("Fc", &var );
-      Material.Fc = var.dblVal;
+      pStrLoad->get_Property("Fci", &var );
+      Material.Fci = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_R8;
-      pStrLoad->get_Property("WeightDensity", &var );
-      Material.WeightDensity = var.dblVal;
+      if (3.0 <= version)
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         pStrLoad->get_Property("Fc", &var );
+         Material.Fc = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_R8;
-      pStrLoad->get_Property("StrengthDensity", &var );
-      Material.StrengthDensity = var.dblVal;
+         var.Clear();
+         var.vt = VT_R8;
+         pStrLoad->get_Property("WeightDensity", &var );
+         Material.WeightDensity = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_R8;
-      pStrLoad->get_Property("MaxAggregateSize", &var );
-      Material.MaxAggregateSize = var.dblVal;
+         var.Clear();
+         var.vt = VT_R8;
+         pStrLoad->get_Property("StrengthDensity", &var );
+         Material.StrengthDensity = var.dblVal;
 
+         var.Clear();
+         var.vt = VT_R8;
+         pStrLoad->get_Property("MaxAggregateSize", &var );
+         Material.MaxAggregateSize = var.dblVal;
+
+      }
+      else
+      {
+         Material.Fc               = fc;
+         Material.WeightDensity    = weightDensity;
+         Material.StrengthDensity  = strengthDensity;
+         Material.MaxAggregateSize = maxAggSize;
+      }
+
+      if ( 4 <= version )
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         pStrLoad->get_Property("K1", &var );
+         Material.EcK1 = var.dblVal;
+      }
+
+      if ( 7 <= version )
+      {
+         var.Clear();
+         var.vt = VT_BOOL;
+         pStrLoad->get_Property("UserEci", &var );
+         Material.bUserEci = (var.boolVal == VARIANT_TRUE ? true : false);
+
+         var.Clear();
+         var.vt = VT_R8;
+         pStrLoad->get_Property("Eci", &var);
+         Material.Eci = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_BOOL;
+         pStrLoad->get_Property("UserEc", &var );
+         Material.bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
+
+         var.Clear();
+         var.vt = VT_R8;
+         pStrLoad->get_Property("Ec", &var);
+         Material.Ec = var.dblVal;
+      }
    }
-   else
+
+   pStrLoad->EndUnit(); // end PrestressData
+
+   if ( 2.0 < parentVersion )
    {
-      Material.Fc               = fc;
-      Material.WeightDensity    = weightDensity;
-      Material.StrengthDensity  = strengthDensity;
-      Material.MaxAggregateSize = maxAggSize;
+      Material.Load(pStrLoad,pProgress);
    }
 
-   if ( 4 <= version )
-   {
-      var.Clear();
-      var.vt = VT_R8;
-      pStrLoad->get_Property("K1", &var );
-      Material.K1 = var.dblVal;
-   }
-   else
-   {
-      Material.K1 = 1.0;
-   }
-
-   if ( 7 <= version )
-   {
-      var.Clear();
-      var.vt = VT_BOOL;
-      pStrLoad->get_Property("UserEci", &var );
-      Material.bUserEci = (var.boolVal == VARIANT_TRUE ? true : false);
-
-      var.Clear();
-      var.vt = VT_R8;
-      pStrLoad->get_Property("Eci", &var);
-      Material.Eci = var.dblVal;
-
-      var.Clear();
-      var.vt = VT_BOOL;
-      pStrLoad->get_Property("UserEc", &var );
-      Material.bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
-
-      var.Clear();
-      var.vt = VT_R8;
-      pStrLoad->get_Property("Ec", &var);
-      Material.Ec = var.dblVal;
-   }
-
-   pStrLoad->EndUnit();
-
-   double parentVersion;
-   pStrLoad->get_ParentVersion(&parentVersion);
-   if ( 1.0 < parentVersion ) // if parent version greater than 2, then load shear and long rebar data
+   if ( 1.0 < parentVersion ) // if parent version greater than 1, then load shear and long rebar data
    {
       ShearData.Load(pStrLoad,pProgress);
       LongitudinalRebarData.Load(pStrLoad,pProgress);
@@ -720,7 +746,7 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("PrestressData",9.0);
+   pStrSave->BeginUnit("PrestressData",10.0);
 
    pStrSave->put_Property("HsoEndMeasurement", CComVariant(HsoEndMeasurement));
    pStrSave->put_Property("HpOffsetAtEnd", CComVariant(HpOffsetAtEnd));
@@ -787,18 +813,22 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    Int32 key = pPool->GetStrandKey(Material.pStrandMaterial);
    pStrSave->put_Property("StrandMaterialKey",CComVariant(key));
 
-   pStrSave->put_Property("Fci", CComVariant(Material.Fci ));
-   pStrSave->put_Property("Fc",               CComVariant(Material.Fc));
-   pStrSave->put_Property("WeightDensity",    CComVariant(Material.WeightDensity));
-   pStrSave->put_Property("StrengthDensity",  CComVariant(Material.StrengthDensity));
-   pStrSave->put_Property("MaxAggregateSize", CComVariant(Material.MaxAggregateSize));
-   pStrSave->put_Property("K1",               CComVariant(Material.K1));
-   pStrSave->put_Property("UserEci",          CComVariant(Material.bUserEci));
-   pStrSave->put_Property("Eci",              CComVariant(Material.Eci));
-   pStrSave->put_Property("UserEc",           CComVariant(Material.bUserEc));
-   pStrSave->put_Property("Ec",               CComVariant(Material.Ec));
+   // moved out of this data block in version 10 for this data block and version 3 of parent
+   //pStrSave->put_Property("Fci", CComVariant(Material.Fci ));
+   //pStrSave->put_Property("Fc",               CComVariant(Material.Fc));
+   //pStrSave->put_Property("WeightDensity",    CComVariant(Material.WeightDensity));
+   //pStrSave->put_Property("StrengthDensity",  CComVariant(Material.StrengthDensity));
+   //pStrSave->put_Property("MaxAggregateSize", CComVariant(Material.MaxAggregateSize));
+   //pStrSave->put_Property("K1",               CComVariant(Material.K1));
+   //pStrSave->put_Property("UserEci",          CComVariant(Material.bUserEci));
+   //pStrSave->put_Property("Eci",              CComVariant(Material.Eci));
+   //pStrSave->put_Property("UserEc",           CComVariant(Material.bUserEc));
+   //pStrSave->put_Property("Ec",               CComVariant(Material.Ec));
 
    pStrSave->EndUnit(); // PrestressData
+
+   // Moved here with version 3 of parent data block
+   Material.Save(pStrSave,pProgress);
 
    ShearData.Save(pStrSave,pProgress);
    LongitudinalRebarData.Save(pStrSave,pProgress);
@@ -894,16 +924,24 @@ void CGirderData::CopyPrestressingFrom(const CGirderData& rOther)
 
 void CGirderData::CopyMaterialFrom(const CGirderData& rOther)
 {
+   Material.Type              = rOther.Material.Type;
    Material.Fci               = rOther.Material.Fci;
    Material.Fc                = rOther.Material.Fc;
    Material.WeightDensity     = rOther.Material.WeightDensity;
    Material.StrengthDensity   = rOther.Material.StrengthDensity;
    Material.MaxAggregateSize  = rOther.Material.MaxAggregateSize;
-   Material.K1                = rOther.Material.K1;
+   Material.EcK1              = rOther.Material.EcK1;
+   Material.EcK2              = rOther.Material.EcK2;
+   Material.CreepK1           = rOther.Material.CreepK1;
+   Material.CreepK2           = rOther.Material.CreepK2;
+   Material.ShrinkageK1       = rOther.Material.ShrinkageK1;
+   Material.ShrinkageK2       = rOther.Material.ShrinkageK2;
    Material.bUserEci          = rOther.Material.bUserEci;
    Material.Eci               = rOther.Material.Eci;
    Material.bUserEc           = rOther.Material.bUserEc;
    Material.Ec                = rOther.Material.Ec;
+   Material.bHasFct           = rOther.Material.bHasFct;
+   Material.Fct               = rOther.Material.Fct;
 }
 
 

@@ -103,11 +103,20 @@ interface IGirderLiftingSpecCriteria : IUnknown
    virtual Float64 GetLiftingSweepTolerance()const=0;
 
    virtual Float64 GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr)=0;
-   virtual Float64 GetLiftingModulusOfRupture(Float64 fci)=0;
-   virtual Float64 GetLiftingModulusOfRuptureCoefficient()=0;
+   virtual Float64 GetLiftingModulusOfRupture(Float64 fci)=0; // obsolete (only valid for NWC)
+   virtual Float64 GetLiftingModulusOfRuptureCoefficient()=0; // obsolete (only valid for NWC)
 
    virtual Float64 GetMinimumLiftingPointLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const = 0;
    virtual Float64 GetLiftingPointLocationAccuracy() const = 0;
+};
+
+// {B0296081-AB1C-4587-A3EC-410645D0BCD2}
+DEFINE_GUID(IID_IGirderLiftingSpecCriteriaEx, 
+0xb0296081, 0xab1c, 0x4587, 0xa3, 0xec, 0x41, 0x6, 0x45, 0xd0, 0xbc, 0xd2);
+interface IGirderLiftingSpecCriteriaEx : IGirderLiftingSpecCriteria
+{
+   virtual Float64 GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType) = 0;
 };
 
 /*****************************************************************************
@@ -148,8 +157,8 @@ interface IGirderHaulingSpecCriteria : IUnknown
    virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc)=0;
 
    virtual Float64 GetHaulingModulusOfRupture(SpanIndexType span,GirderIndexType gdr)=0;
-   virtual Float64 GetHaulingModulusOfRupture(Float64 fc)=0;
-   virtual Float64 GetHaulingModulusOfRuptureCoefficient()=0;
+   virtual Float64 GetHaulingModulusOfRupture(Float64 fc)=0; // obsolete (only valid for NWC)
+   virtual Float64 GetHaulingModulusOfRuptureCoefficient()=0; // obsolete (only valud for NWC)
 
    // Truck parameters
    virtual RollStiffnessMethod GetRollStiffnessMethod() const = 0;
@@ -182,6 +191,15 @@ interface IGirderHaulingSpecCriteria : IUnknown
 
    virtual Float64 GetMinimumHaulingSupportLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const = 0;
    virtual Float64 GetHaulingSupportLocationAccuracy() const = 0;
+};
+
+// {6CA4EE87-969A-4c9f-BA2F-A64F3FFEF124}
+DEFINE_GUID(IID_IGirderHaulingSpecCriteriaEx, 
+0x6ca4ee87, 0x969a, 0x4c9f, 0xba, 0x2f, 0xa6, 0x4f, 0x3f, 0xfe, 0xf1, 0x24);
+interface IGirderHaulingSpecCriteriaEx : IGirderHaulingSpecCriteria
+{
+   virtual Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetHaulingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType) = 0;
 };
 
 #endif // INCLUDED_IFACE_GIRDERHANDLINGSPECCRITERIA_H_

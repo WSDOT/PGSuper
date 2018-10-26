@@ -421,7 +421,7 @@ public:
    void SetHaulingSupportDistance(Float64 d);
 
    Float64 GetMaxHaulingOverhang() const;
-   void SetMaxHaulingOverhang(double oh);
+   void SetMaxHaulingOverhang(Float64 oh);
 
    //------------------------------------------------------------------------
    // Get the max lateral tolerance for hauling support placement
@@ -495,11 +495,11 @@ public:
    int GetTruckRollStiffnessMethod() const;
    void SetTruckRollStiffnessMethod(int method);
    Float64 GetAxleWeightLimit() const;
-   void SetAxleWeightLimit(double limit);
+   void SetAxleWeightLimit(Float64 limit);
    Float64 GetAxleStiffness() const;
-   void SetAxleStiffness(double stiffness);
+   void SetAxleStiffness(Float64 stiffness);
    Float64 GetMinRollStiffness() const;
-   void SetMinRollStiffness(double stiffness);
+   void SetMinRollStiffness(Float64 stiffness);
 
    //------------------------------------------------------------------------
    // Get truck roll stiffness
@@ -557,11 +557,11 @@ public:
    // Set minimum factor of safety against failure for erection
    void SetErectionFailFs(Float64 fs);
 
-   void SetHaulingModulusOfRuptureCoefficient(double fr);
-   double GetHaulingModulusOfRuptureCoefficient() const;
+   void SetHaulingModulusOfRuptureCoefficient(Float64 fr,pgsTypes::ConcreteType type);
+   Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
 
-   void SetLiftingModulusOfRuptureCoefficient(double fr);
-   double GetLiftingModulusOfRuptureCoefficient() const;
+   void SetLiftingModulusOfRuptureCoefficient(Float64 fr,pgsTypes::ConcreteType type);
+   Float64 GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
 
    void SetMaxGirderWeight(Float64 wgt);
    Float64 GetMaxGirderWeight() const;
@@ -750,7 +750,7 @@ public:
    int GetCreepMethod() const;
 
    //------------------------------------------------------------------------
-   void SetXferTime(double time);
+   void SetXferTime(Float64 time);
 
    //------------------------------------------------------------------------
    Float64 GetXferTime() const;
@@ -795,56 +795,56 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the losses before prestress xfer for a lump sum method
-   double GetBeforeXferLosses() const;
-   void SetBeforeXferLosses(double loss);
+   Float64 GetBeforeXferLosses() const;
+   void SetBeforeXferLosses(Float64 loss);
 
    //------------------------------------------------------------------------
    // Returns the losses after prestress xfer for a lump sum method
-   double GetAfterXferLosses() const;
-   void SetAfterXferLosses(double loss);
+   Float64 GetAfterXferLosses() const;
+   void SetAfterXferLosses(Float64 loss);
 
-   double GetLiftingLosses() const;
-   void SetLiftingLosses(double loss);
+   Float64 GetLiftingLosses() const;
+   void SetLiftingLosses(Float64 loss);
 
    //------------------------------------------------------------------------
    // Returns the shipping losses for a lump sum method or for a method
    // that does not support computing losses at shipping.
-   double GetShippingLosses() const;
-   void SetShippingLosses(double loss);
+   Float64 GetShippingLosses() const;
+   void SetShippingLosses(Float64 loss);
 
    //------------------------------------------------------------------------
    // Set/get the time when shipping occurs. Used when shipping losses are 
    // computed by the LRFD refined method after LRFD 2005
-   void SetShippingTime(double time);
-   double GetShippingTime() const;
+   void SetShippingTime(Float64 time);
+   Float64 GetShippingTime() const;
 
    //------------------------------------------------------------------------
-   double GetBeforeTempStrandRemovalLosses() const;
-   void SetBeforeTempStrandRemovalLosses(double loss);
+   Float64 GetBeforeTempStrandRemovalLosses() const;
+   void SetBeforeTempStrandRemovalLosses(Float64 loss);
 
    //------------------------------------------------------------------------
-   double GetAfterTempStrandRemovalLosses() const;
-   void SetAfterTempStrandRemovalLosses(double loss);
+   Float64 GetAfterTempStrandRemovalLosses() const;
+   void SetAfterTempStrandRemovalLosses(Float64 loss);
 
    //------------------------------------------------------------------------
-   double GetAfterDeckPlacementLosses() const;
-   void SetAfterDeckPlacementLosses(double loss);
+   Float64 GetAfterDeckPlacementLosses() const;
+   void SetAfterDeckPlacementLosses(Float64 loss);
 
    //------------------------------------------------------------------------
    // Returns the final losses for a lump sum method
-   double GetFinalLosses() const;
-   void SetFinalLosses(double loss);
+   Float64 GetFinalLosses() const;
+   void SetFinalLosses(Float64 loss);
 
    //------------------------------------------------------------------------
    // Returns the anchor set
-   double GetAnchorSet() const;
-   void SetAnchorSet(double dset);
+   Float64 GetAnchorSet() const;
+   void SetAnchorSet(Float64 dset);
 
-   double GetWobbleFrictionCoefficient() const;
-   void SetWobbleFrictionCoefficient(double K);
+   Float64 GetWobbleFrictionCoefficient() const;
+   void SetWobbleFrictionCoefficient(Float64 K);
 
-   double GetFrictionCoefficient() const;
-   void SetFrictionCoefficient(double u);
+   Float64 GetFrictionCoefficient() const;
+   void SetFrictionCoefficient(Float64 u);
 
 
    //------------------------------------------------------------------------
@@ -873,8 +873,8 @@ public:
 
    void CheckStrandStress(UINT stage,bool bCheck);
    bool CheckStrandStress(UINT stage) const;
-   void SetStrandStressCoefficient(UINT stage,UINT strandType, double coeff);
-   double GetStrandStressCoefficient(UINT stage,UINT strandType) const;
+   void SetStrandStressCoefficient(UINT stage,UINT strandType, Float64 coeff);
+   Float64 GetStrandStressCoefficient(UINT stage,UINT strandType) const;
 
    //------------------------------------------------------------------------
    // Determine if we want to evaluate deflection due to live load ala LRFD 2.5.2.5.2
@@ -883,8 +883,8 @@ public:
 
    //------------------------------------------------------------------------
    // Set/Get span deflection limit criteria. Limit is Span / value.
-   double GetLLDeflectionLimit() const;
-   void SetLLDeflectionLimit(double limit);
+   Float64 GetLLDeflectionLimit() const;
+   void SetLLDeflectionLimit(Float64 limit);
 
 //  All debonding criteria was moved to the girder library for version 27
 // 
@@ -892,8 +892,8 @@ public:
 //   Float64 GetMaxDebondStrands() const;
 //   void SetMaxDebondStrandsPerRow(Float64 max);
 //   Float64 GetMaxDebondStrandsPerRow() const;
-//   void SetMaxDebondStrandsPerSection(long nMax,double fMax);
-//   void GetMaxDebondStrandsPerSection(long* nMax,double* fMax) const;
+//   void SetMaxDebondStrandsPerSection(long nMax,Float64 fMax);
+//   void GetMaxDebondStrandsPerSection(long* nMax,Float64* fMax) const;
 //   void SetDefaultDebondLength(Float64 l);
 //   Float64 GetDefaultDebondLength() const;
 
@@ -905,30 +905,30 @@ public:
 
    pgsTypes::AnalysisType GetAnalysisType() const;
 
-   void SetFlexureModulusOfRuptureCoefficient(double fr);
-   double GetFlexureModulusOfRuptureCoefficient() const;
+   void SetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
+   Float64 GetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
    
-   void SetShearModulusOfRuptureCoefficient(double fr);
-   double GetShearModulusOfRuptureCoefficient() const;
-
-   void SetMaxSlabFc(double fc);
-   double GetMaxSlabFc() const;
-   void SetMaxGirderFc(double fc);
-   double GetMaxGirderFc() const;
-   void SetMaxGirderFci(double fci);
-   double GetMaxGirderFci() const;
-   void SetMaxConcreteUnitWeight(double wc);
-   double GetMaxConcreteUnitWeight() const;
-   void SetMaxConcreteAggSize(double agg);
-   double GetMaxConcreteAggSize() const;
-
-   void GetDCLoadFactors(pgsTypes::LimitState ls,double* pDCmin,double* pDCmax) const;
-   void GetDWLoadFactors(pgsTypes::LimitState ls,double* pDWmin,double* pDWmax) const;
-   void GetLLIMLoadFactors(pgsTypes::LimitState ls,double* pLLIMmin,double* pLLIMmax) const;
+   void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
+   Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
    
-   void SetDCLoadFactors(pgsTypes::LimitState ls,double DCmin,double DCmax);
-   void SetDWLoadFactors(pgsTypes::LimitState ls,double DWmin,double DWmax);
-   void SetLLIMLoadFactors(pgsTypes::LimitState ls,double LLIMmin,double LLIMmax);
+   void SetMaxSlabFc(pgsTypes::ConcreteType type,Float64 fc);
+   Float64 GetMaxSlabFc(pgsTypes::ConcreteType type) const;
+   void SetMaxGirderFc(pgsTypes::ConcreteType type,Float64 fc);
+   Float64 GetMaxGirderFc(pgsTypes::ConcreteType type) const;
+   void SetMaxGirderFci(pgsTypes::ConcreteType type,Float64 fci);
+   Float64 GetMaxGirderFci(pgsTypes::ConcreteType type) const;
+   void SetMaxConcreteUnitWeight(pgsTypes::ConcreteType type,Float64 wc);
+   Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType type) const;
+   void SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64 agg);
+   Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const;
+
+   void GetDCLoadFactors(pgsTypes::LimitState ls,Float64* pDCmin,Float64* pDCmax) const;
+   void GetDWLoadFactors(pgsTypes::LimitState ls,Float64* pDWmin,Float64* pDWmax) const;
+   void GetLLIMLoadFactors(pgsTypes::LimitState ls,Float64* pLLIMmin,Float64* pLLIMmax) const;
+   
+   void SetDCLoadFactors(pgsTypes::LimitState ls,Float64 DCmin,Float64 DCmax);
+   void SetDWLoadFactors(pgsTypes::LimitState ls,Float64 DWmin,Float64 DWmax);
+   void SetLLIMLoadFactors(pgsTypes::LimitState ls,Float64 LLIMmin,Float64 LLIMmax);
 
    //------------------------------------------------------------------------
    // Enable check and design for "A" dimension (Slab Offset
@@ -950,30 +950,30 @@ public:
    void SetShearCapacityMethod(ShearCapacityMethod method);
    ShearCapacityMethod GetShearCapacityMethod() const;
 
-   void SetCuringMethodTimeAdjustmentFactor(double f);
-   double GetCuringMethodTimeAdjustmentFactor() const;
+   void SetCuringMethodTimeAdjustmentFactor(Float64 f);
+   Float64 GetCuringMethodTimeAdjustmentFactor() const;
 
-   void SetMininumTruckSupportLocation(double x); // < 0 means use Hg
-   double GetMininumTruckSupportLocation() const;
-   void SetTruckSupportLocationAccuracy(double x);
-   double GetTruckSupportLocationAccuracy() const;
+   void SetMininumTruckSupportLocation(Float64 x); // < 0 means use Hg
+   Float64 GetMininumTruckSupportLocation() const;
+   void SetTruckSupportLocationAccuracy(Float64 x);
+   Float64 GetTruckSupportLocationAccuracy() const;
 
-   void SetMininumLiftingPointLocation(double x); // < 0 means use Hg
-   double GetMininumLiftingPointLocation() const;
-   void SetLiftingPointLocationAccuracy(double x);
-   double GetLiftingPointLocationAccuracy() const;
+   void SetMininumLiftingPointLocation(Float64 x); // < 0 means use Hg
+   Float64 GetMininumLiftingPointLocation() const;
+   void SetLiftingPointLocationAccuracy(Float64 x);
+   Float64 GetLiftingPointLocationAccuracy() const;
 
-   void SetPedestrianLiveLoad(double w);
-   double GetPedestrianLiveLoad() const;
-   void SetMinSidewalkWidth(double Wmin);
-   double GetMinSidewalkWidth() const;
+   void SetPedestrianLiveLoad(Float64 w);
+   Float64 GetPedestrianLiveLoad() const;
+   void SetMinSidewalkWidth(Float64 Wmin);
+   Float64 GetMinSidewalkWidth() const;
 
-   void SetMaxAngularDeviationBetweenGirders(double angle);
-   double GetMaxAngularDeviationBetweenGirders() const;
-   void SetMinGirderStiffnessRatio(double r);
-   double GetMinGirderStiffnessRatio() const;
-   void SetLLDFGirderSpacingLocation(double fra);
-   double GetLLDFGirderSpacingLocation() const;
+   void SetMaxAngularDeviationBetweenGirders(Float64 angle);
+   Float64 GetMaxAngularDeviationBetweenGirders() const;
+   void SetMinGirderStiffnessRatio(Float64 r);
+   Float64 GetMinGirderStiffnessRatio() const;
+   void SetLLDFGirderSpacingLocation(Float64 fra);
+   Float64 GetLLDFGirderSpacingLocation() const;
 
    // impose a lower limit on distribution factors?
    void LimitDistributionFactorsToLanesBeams(bool bInclude);
@@ -982,6 +982,11 @@ public:
    // method for computing transfer length
    pgsTypes::PrestressTransferComputationType GetPrestressTransferComputationType() const;
    void SetPrestressTransferComputationType(pgsTypes::PrestressTransferComputationType type);
+
+   void SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiCompression);
+   void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression) const;
+   void SetShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi);
+   Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type) const;
 
    // GROUP: INQUIRY
 
@@ -1083,13 +1088,13 @@ private:
    Float64 m_MaxHaulingOverhang;
    Float64 m_MaxGirderWgt;
 
-   double  m_HaulingModulusOfRuptureCoefficient;
-   double  m_LiftingModulusOfRuptureCoefficient;
+   Float64  m_HaulingModulusOfRuptureCoefficient[3];
+   Float64  m_LiftingModulusOfRuptureCoefficient[3];
 
-   double m_MinLiftPoint;
-   double m_LiftPointAccuracy;
-   double m_MinHaulPoint;
-   double m_HaulPointAccuracy;
+   Float64 m_MinLiftPoint;
+   Float64 m_LiftPointAccuracy;
+   Float64 m_MinHaulPoint;
+   Float64 m_HaulPointAccuracy;
 
 
    // temporary strand removal
@@ -1123,8 +1128,8 @@ private:
    bool    m_Bs3IgnoreRangeOfApplicability;  // this will only be found in library entries older than version 29
    int     m_Bs3LRFDOverReinforcedMomentCapacity;
    bool    m_bIncludeRebar_Moment;
-   double  m_FlexureModulusOfRuptureCoefficient;
-   double  m_ShearModulusOfRuptureCoefficient;
+   Float64  m_FlexureModulusOfRuptureCoefficient[3]; // index is pgsTypes::ConcreteType enum
+   Float64  m_ShearModulusOfRuptureCoefficient[3];   // index is pgsTypes::ConcreteType enum
 
    // Creep
    int     m_CreepMethod;
@@ -1138,19 +1143,19 @@ private:
 
    // Losses
    int    m_LossMethod;
-   double m_FinalLosses;
-   double m_LiftingLosses;
-   double m_ShippingLosses;  // if between -1.0 and 0, shipping loss is fraction of final loss. Fraction is abs(m_ShippingLoss)
-   double m_BeforeXferLosses;
-   double m_AfterXferLosses;
-   double m_ShippingTime;
-   double m_BeforeTempStrandRemovalLosses;
-   double m_AfterTempStrandRemovalLosses;
-   double m_AfterDeckPlacementLosses;
+   Float64 m_FinalLosses;
+   Float64 m_LiftingLosses;
+   Float64 m_ShippingLosses;  // if between -1.0 and 0, shipping loss is fraction of final loss. Fraction is abs(m_ShippingLoss)
+   Float64 m_BeforeXferLosses;
+   Float64 m_AfterXferLosses;
+   Float64 m_ShippingTime;
+   Float64 m_BeforeTempStrandRemovalLosses;
+   Float64 m_AfterTempStrandRemovalLosses;
+   Float64 m_AfterDeckPlacementLosses;
 
-   double m_Dset; // anchor set
-   double m_WobbleFriction; // wobble friction, K
-   double m_FrictionCoefficient; // mu
+   Float64 m_Dset; // anchor set
+   Float64 m_WobbleFriction; // wobble friction, K
+   Float64 m_FrictionCoefficient; // mu
 
    // Live Load Distribution Factors
    int m_LldfMethod;
@@ -1161,26 +1166,26 @@ private:
 
    // Strand stress coefficients
    bool m_bCheckStrandStress[4];
-   double m_StrandStressCoeff[4][2];
+   Float64 m_StrandStressCoeff[4][2];
 
    // live load deflection
    bool m_bDoEvaluateDeflection;
-   double m_DeflectionLimit;
+   Float64 m_DeflectionLimit;
 
    pgsTypes::AnalysisType m_AnalysisType; // this data will be in old library entries (version < 28)
 
-   double m_MaxSlabFc;
-   double m_MaxGirderFci;
-   double m_MaxGirderFc;
-   double m_MaxConcreteUnitWeight;
-   double m_MaxConcreteAggSize;
+   Float64 m_MaxSlabFc[3];
+   Float64 m_MaxGirderFci[3];
+   Float64 m_MaxGirderFc[3];
+   Float64 m_MaxConcreteUnitWeight[3];
+   Float64 m_MaxConcreteAggSize[3];
 
-   double m_DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
-   double m_DWmin[6];
-   double m_LLIMmin[6];
-   double m_DCmax[6];
-   double m_DWmax[6];
-   double m_LLIMmax[6];
+   Float64 m_DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
+   Float64 m_DWmin[6];
+   Float64 m_LLIMmin[6];
+   Float64 m_DCmax[6];
+   Float64 m_DWmax[6];
+   Float64 m_LLIMmax[6];
    
    bool m_EnableSlabOffsetCheck;
    bool m_EnableSlabOffsetDesign;
@@ -1192,20 +1197,26 @@ private:
 
    ShearCapacityMethod m_ShearCapacityMethod;
 
-   double m_CuringMethodTimeAdjustmentFactor;
+   Float64 m_CuringMethodTimeAdjustmentFactor;
 
-   double m_MinSidewalkWidth; // sidewalk must be greater that this width for ped load to apply
-   double m_PedestrianLoad; // magnitude of pedestrian load (F/L^2)
+   Float64 m_MinSidewalkWidth; // sidewalk must be greater that this width for ped load to apply
+   Float64 m_PedestrianLoad; // magnitude of pedestrian load (F/L^2)
    
    // "fudge" factors for computing live load distribution factors
-   double m_MaxAngularDeviationBetweenGirders; // maximum angle between girders in order to consider them "parallel"
-   double m_MinGirderStiffnessRatio; // minimum allowable value for EImin/EImax in order to consider girders to have "approximately the same stiffness"
-   double m_LLDFGirderSpacingLocation; // fractional location in the girder span where the girder spacing is measured
+   Float64 m_MaxAngularDeviationBetweenGirders; // maximum angle between girders in order to consider them "parallel"
+   Float64 m_MinGirderStiffnessRatio; // minimum allowable value for EImin/EImax in order to consider girders to have "approximately the same stiffness"
+   Float64 m_LLDFGirderSpacingLocation; // fractional location in the girder span where the girder spacing is measured
                                        // for purposes of computing live load distribution factors
 
    bool m_LimitDistributionFactorsToLanesBeams; 
 
    pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
+
+   Float64 m_PhiFlexureTensionPS[3]; // tension controlled, prestressed
+   Float64 m_PhiFlexureTensionRC[3]; // tension controlled, reinforced
+   Float64 m_PhiFlexureCompression[3];
+   Float64 m_PhiShear[3];
+
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

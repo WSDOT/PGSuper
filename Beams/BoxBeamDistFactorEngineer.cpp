@@ -158,7 +158,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
 
       (*pPara) << "St. Venant torsional inertia constant: J = " << inertia.SetValue(span_lldf.J) << rptNewLine;
 
-      (*pPara) << rptRcImage(strImagePath + "J_Equation_closed_thin_walled.gif") << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + "J_closed_thin_wall.png") << rptNewLine;
       (*pPara) << rptRcImage(strImagePath + "BoxBeam_TorsionalConstant.gif") << rptNewLine;
       (*pPara) << "Area enclosed by centerlines of elements: " << Sub2("A","o") << " = " << area.SetValue(span_lldf.Jvoid.Ao) << rptNewLine;
 
@@ -430,15 +430,15 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       if( gM1.EqnData.bWasUsed )
       {
          (*pPara) << Bold("1 Loaded Lane - Equation") << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_ME_Type_G_SI.gif" : "mg_1_ME_Type_G_US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_ME_Type_G_SI.png" : "mg_1_ME_Type_G_US.png")) << rptNewLine;
  
          if ( lldf.connectedAsUnit )
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.gif" : "mg_1_MI_Type_F_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.png" : "mg_1_MI_Type_F_US.png")) << rptNewLine;
          }
          else
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.gif" : "mg_1_MI_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
             ATLASSERT(gM1.ControllingMethod&S_OVER_D_METHOD);
             (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
             (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
@@ -478,15 +478,15 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
          if( gM2.EqnData.bWasUsed )
          {
             (*pPara) << Bold("2+ Loaded Lane: Equation") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_G_SI.gif" : "mg_2_ME_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_G_SI.png" : "mg_2_ME_Type_G_US.png")) << rptNewLine;
 
             if ( lldf.connectedAsUnit )
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.gif" : "mg_2_MI_Type_F_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.png" : "mg_2_MI_Type_F_US.png")) << rptNewLine;
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.gif" : "mg_2_MI_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.png" : "mg_2_MI_Type_G_US.png")) << rptNewLine;
                ATLASSERT(gM2.ControllingMethod&S_OVER_D_METHOD);
                (*pPara)<< "K = "<< gM2.EqnData.K << rptNewLine;
                (*pPara)<< "C = "<< gM2.EqnData.C << rptNewLine;
@@ -536,7 +536,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       {
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + "SkewCorrection_Moment_TypeC.png") << rptNewLine;
       }
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
@@ -556,11 +556,11 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
          (*pPara) << Bold("1 Loaded Lane: Equations") << rptNewLine;
          if ( lldf.connectedAsUnit )
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.gif" : "mg_1_MI_Type_F_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.png" : "mg_1_MI_Type_F_US.png")) << rptNewLine;
          }
          else
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.gif" : "mg_1_MI_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
             ATLASSERT(gM1.ControllingMethod&S_OVER_D_METHOD);
             (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
             (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
@@ -594,11 +594,11 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
             (*pPara) << Bold("2+ Loaded Lanes: Equation") << rptNewLine;
             if ( lldf.connectedAsUnit )
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.gif" : "mg_2_MI_Type_F_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.png" : "mg_2_MI_Type_F_US.png")) << rptNewLine;
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.gif" : "mg_2_MI_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.png" : "mg_2_MI_Type_G_US.png")) << rptNewLine;
                ATLASSERT(gM2.ControllingMethod&S_OVER_D_METHOD);
                (*pPara)<< "K = "<< gM2.EqnData.K << rptNewLine;
                (*pPara)<< "C = "<< gM2.EqnData.C << rptNewLine;
@@ -634,7 +634,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       {
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + "SkewCorrection_Moment_TypeC.png") << rptNewLine;
       }
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
@@ -679,7 +679,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
          (*pPara) << Bold("1 Loaded Lane: Equation") << rptNewLine;
          if (!(gV1.ControllingMethod & MOMENT_OVERRIDE))
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VE_Type_G_SI.gif" : "mg_1_VE_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VE_Type_G_SI.png" : "mg_1_VE_Type_G_US.png")) << rptNewLine;
             (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
             (*pPara) << "e = " << scalar.SetValue(gV1.EqnData.e) << rptNewLine;
             (*pPara) << "mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
@@ -720,7 +720,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
             if (!(gV2.ControllingMethod & MOMENT_OVERRIDE))
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_G_SI.gif" : "mg_2_VE_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_G_SI.png" : "mg_2_VE_Type_G_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
 
                // have to play games here with oddball 48/b value
@@ -758,7 +758,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
       (*pPara) << rptNewLine;
 
       (*pPara) << Bold("Skew Correction") << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.gif" : "Skew_Correction_for_Shear_Type_F_US.gif")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.png" : "Skew_Correction_for_Shear_Type_F_US.png")) << rptNewLine;
 
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
@@ -800,7 +800,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
          if ( gV1.EqnData.bWasUsed )
          {
             (*pPara) << Bold("1 Loaded Lane: Equation") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_G_SI.gif" : "mg_1_VI_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_G_SI.png" : "mg_1_VI_Type_G_US.png")) << rptNewLine;
             (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
          }
 
@@ -818,7 +818,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
             if ( gV2.EqnData.bWasUsed )
             {
                (*pPara) << Bold("2+ Loaded Lanes: Equation") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_G_SI.gif" : "mg_2_VI_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_G_SI.png" : "mg_2_VI_Type_G_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
             }
 
@@ -834,7 +834,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
       (*pPara) << rptNewLine;
 
       (*pPara) << Bold("Skew Correction") << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.gif" : "Skew_Correction_for_Shear_Type_F_US.gif")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.png" : "Skew_Correction_for_Shear_Type_F_US.png")) << rptNewLine;
 
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;

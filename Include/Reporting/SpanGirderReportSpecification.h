@@ -36,7 +36,7 @@ public:
    void SetSpan(SpanIndexType spanIdx);
    SpanIndexType GetSpan();
 
-   static int IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec);
+   static bool IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec);
 
 protected:
    SpanIndexType m_SpanIdx;
@@ -51,7 +51,7 @@ public:
    void SetGirder(GirderIndexType gdrIdx);
    GirderIndexType GetGirder();
 
-   static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
+   static bool IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
 
 protected:
    GirderIndexType m_GdrIdx;
@@ -69,7 +69,7 @@ public:
    void SetGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    void GetGirder(SpanIndexType& spanIdx,GirderIndexType& gdrIdx);
 
-   static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
+   static bool IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
 
 protected:
    SpanIndexType m_SpanIdx;

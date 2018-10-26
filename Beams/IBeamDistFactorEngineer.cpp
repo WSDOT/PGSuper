@@ -136,9 +136,9 @@ void CIBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gd
       (*pPara) << "Area: A" << Sub("g") << " = " << area.SetValue(span_lldf.A) << rptNewLine;
       (*pPara) << "Top centroidal distance: Y" << Sub("tg") << " = " << xdim2.SetValue(span_lldf.Yt) << rptNewLine;
       (*pPara) << "Slab Thickness: t" << Sub("s") << " = " << xdim2.SetValue(span_lldf.ts) << rptNewLine;
-      (*pPara) << "Distance between CG of slab and girder: " << rptRcImage(strImagePath + "eg Equation.gif") << rptTab << rptRcImage(strImagePath + "eg Pic.jpg") << rptTab
+      (*pPara) << "Distance between CG of slab and girder: " << rptRcImage(strImagePath + "eg.png") << rptTab << rptRcImage(strImagePath + "eg Pic.jpg") << rptTab
                << "e" << Sub("g") << " = " << xdim2.SetValue(span_lldf.eg) << rptNewLine;
-      (*pPara) << "Stiffness Parameter: " << rptRcImage(strImagePath + "Kg Equation.jpg") << rptTab
+      (*pPara) << "Stiffness Parameter: " << rptRcImage(strImagePath + "Kg.png") << rptTab
                << "K" << Sub("g") << " = " << inertia.SetValue(span_lldf.Kg) << rptNewLine;
    }
 
@@ -388,7 +388,7 @@ void CIBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gd
 
 lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,IBEAM_LLDFDETAILS* plldf)
 {
-   GET_IFACE(IBridgeMaterial,   pMaterial);
+   GET_IFACE(IBridgeMaterialEx, pMaterial);
    GET_IFACE(ISectProp2,        pSectProp2);
    GET_IFACE(IGirder,           pGdr);
    GET_IFACE(ILibrary,          pLib);
@@ -441,7 +441,9 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    {
       Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
                                           pMaterial->GetStrDensityGdr(span,gdr),
-                                          pMaterial->GetK1Gdr(span,gdr));
+                                          pMaterial->GetEccK1Gdr(span,gdr),
+                                          pMaterial->GetEccK2Gdr(span,gdr)
+                                          );
 
       plldf->n     = Ecgdr / pMaterial->GetEcSlab();
    }
@@ -548,7 +550,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          else if ( df_method == LLDF_TXDOT )
             (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
 
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 MI Type K SI.gif" : "mg 1 MI Type K US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_K_SI.png" : "mg_1_MI_Type_K_US.png")) << rptNewLine;
          (*pPara) << "mg" << Super("ME") << Sub("1") << " = " << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
       }
 
@@ -593,7 +595,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
                else if ( df_method == LLDF_TXDOT )
                   (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
 
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type K SI.gif" : "mg 2 MI Type K US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.png" : "mg_2_MI_Type_K_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("ME") << Sub("2+") << " = " << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
             }
             else
@@ -604,8 +606,8 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
                else if ( df_method == LLDF_TXDOT )
                   (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
 
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 ME Type K SI.gif" : "mg 2 ME Type K US.gif")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type K SI.gif" : "mg 2 MI Type K US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_K_SI.gif" : "mg_2_ME_Type_K_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.gif" : "mg_2_MI_Type_K_US.gif")) << rptNewLine;
                (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
 
                (*pPara) << "e = " << scalar.SetValue(gM2.EqnData.e) << rptNewLine;
@@ -648,7 +650,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
       (*pPara) << Bold("Skew Correction") << rptNewLine;
       Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
       if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Moment SI.gif" : "Skew Correction for Moment US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Moment_SI.png" : "SkewCorrection_Moment_US.png")) << rptNewLine;
 
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
@@ -665,7 +667,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
       if (gM1.EqnData.bWasUsed)
       {
          (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 MI Type K SI.gif" : "mg 1 MI Type K US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_K_SI.png" : "mg_1_MI_Type_K_US.png")) << rptNewLine;
          (*pPara) << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
       }
 
@@ -695,7 +697,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          if (gM2.EqnData.bWasUsed )
          {
             (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type K SI.gif" : "mg 2 MI Type K US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.png" : "mg_2_MI_Type_K_US.png")) << rptNewLine;
             (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
          }
 
@@ -718,7 +720,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
       (*pPara) << Bold("Skew Correction") << rptNewLine;
       Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
       if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Moment SI.gif" : "Skew Correction for Moment US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Moment_SI.png" : "SkewCorrection_Moment_US.png")) << rptNewLine;
 
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
@@ -757,7 +759,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          ATLASSERT(df_method==LLDF_WSDOT || df_method == LLDF_TXDOT);
 
          (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 VI Type K SI.gif" : "mg 1 VI Type K US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_K_SI.png" : "mg_1_VI_Type_K_US.png")) << rptNewLine;
          (*pPara) << "mg" << Super("VE") << Sub("1") << " = " << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
       }
 
@@ -801,8 +803,8 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
                   else if ( df_method == LLDF_TXDOT )
                (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
 
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VE Type K SI.gif" : "mg 2 VE Type K US.gif")) << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type K SI.gif" : "mg 2 VI Type K US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_K_SI.png" : "mg_2_VE_Type_K_US.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_K_SI.png" : "mg_2_VI_Type_K_US.png")) << rptNewLine;
             (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
 
             (*pPara) << "e = " << scalar.SetValue(gV2.EqnData.e) << rptNewLine;
@@ -820,7 +822,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
                   else if ( df_method == LLDF_TXDOT )
                   (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
 
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type K SI.gif" : "mg 2 VI Type K US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_K_SI.png" : "mg_2_VI_Type_K_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
             }
 
@@ -857,7 +859,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
 
       (*pPara) << rptNewLine;
       (*pPara) << Bold("Skew Correction") << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Shear SI.gif" : "Skew Correction for Shear US.gif")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Shear_SI.png" : "SkewCorrection_Shear_US.png")) << rptNewLine;
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
       (*pPara) << "Skew Corrected Factor: mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
@@ -875,7 +877,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
       if ( gV1.EqnData.bWasUsed )
       {
          (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 VI Type K SI.gif" : "mg 1 VI Type K US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_K_SI.png" : "mg_1_VI_Type_K_US.png")) << rptNewLine;
          (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
       }
 
@@ -899,7 +901,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          if ( gV2.EqnData.bWasUsed )
          {
             (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type K SI.gif" : "mg 2 VI Type K US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_K_SI.png" : "mg_2_VI_Type_K_US.png")) << rptNewLine;
             (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
          }
 
@@ -919,7 +921,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          (*pPara) << rptNewLine;
       }
 
-      (*pPara) << Bold("Skew Correction") << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Shear SI.gif" : "Skew Correction for Shear US.gif")) << rptNewLine;
+      (*pPara) << Bold("Skew Correction") << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Shear_SI.png" : "SkewCorrection_Shear_US.png")) << rptNewLine;
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
       (*pPara) << "Skew Corrected Factor: mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.mg);

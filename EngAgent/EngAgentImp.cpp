@@ -3349,7 +3349,18 @@ const pgsDesignArtifact* CEngAgentImp::CreateDesignArtifact(SpanIndexType span,G
 
    std::pair<std::map<SpanGirderHashType,pgsDesignArtifact>::iterator,bool> retval;
 
-   pgsDesignArtifact artifact = m_Designer.Design(span,gdr,options);
+   pgsDesignArtifact artifact(span,gdr);
+   try 
+   {
+      artifact = m_Designer.Design(span,gdr,options);
+   }
+   catch (pgsDesignArtifact::Outcome outcome)
+   {
+      if ( outcome == pgsDesignArtifact::DesignCancelled )
+         return NULL;
+      else 
+         artifact.SetOutcome(outcome);
+   }
 
    retval = m_DesignArtifacts.insert(std::make_pair(key,artifact));
    return &((*retval.first).second);

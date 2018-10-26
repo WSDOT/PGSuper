@@ -28,6 +28,7 @@
 #include "resource.h"       // main symbols
 
 #include <EAF\EAFInterfaceCache.h>
+#include <IFace\ResistanceFactors.h>
 
 class GirderLibraryEntry;
 class SpecLibraryEntry;
@@ -43,9 +44,10 @@ class ATL_NO_VTABLE CSpecAgentImp :
    public IAllowableConcreteStress,
    public ITransverseReinforcementSpec,
    public IPrecastIGirderDetailsSpec,
-   public IGirderHaulingSpecCriteria,
-   public IGirderLiftingSpecCriteria,
-   public IDebondLimits
+   public IGirderHaulingSpecCriteriaEx,
+   public IGirderLiftingSpecCriteriaEx,
+   public IDebondLimits,
+   public IResistanceFactors
 {
 public:
 	CSpecAgentImp()
@@ -63,8 +65,11 @@ BEGIN_COM_MAP(CSpecAgentImp)
    COM_INTERFACE_ENTRY(ITransverseReinforcementSpec)
    COM_INTERFACE_ENTRY(IPrecastIGirderDetailsSpec)
    COM_INTERFACE_ENTRY(IGirderLiftingSpecCriteria)
+   COM_INTERFACE_ENTRY(IGirderLiftingSpecCriteriaEx)
    COM_INTERFACE_ENTRY(IGirderHaulingSpecCriteria)
+   COM_INTERFACE_ENTRY(IGirderHaulingSpecCriteriaEx)
    COM_INTERFACE_ENTRY(IDebondLimits)
+   COM_INTERFACE_ENTRY(IResistanceFactors)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -117,7 +122,7 @@ public:
    virtual BarSizeType GetMinConfinmentBarSize();
    virtual Float64 GetMaxConfinmentBarSpacing();
    virtual Float64 GetMinConfinmentAvS();
-   virtual Float64 GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy);
+   virtual Float64 GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy); // obsolete
    virtual void GetMaxStirrupSpacing(Float64* sUnderLimit, Float64* sOverLimit);
    virtual Float64 GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter);
 
@@ -151,6 +156,11 @@ public:
    virtual Float64 GetLiftingModulusOfRuptureCoefficient();
    virtual Float64 GetMinimumLiftingPointLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const;
    virtual Float64 GetLiftingPointLocationAccuracy() const;
+
+// IGirderLiftingSpecCriteriaEx
+public:
+   virtual Float64 GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType);
+   virtual Float64 GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType);
 
 // IGirderHaulingSpecCriteria
 public:
@@ -188,6 +198,11 @@ public:
    virtual Float64 GetMinimumHaulingSupportLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const;
    virtual Float64 GetHaulingSupportLocationAccuracy() const;
 
+// IGirderHaulingSpecCriteriaEx
+public:
+   virtual Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType);
+   virtual Float64 GetHaulingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType);
+
 // IDebondLimits
 public:
    virtual Float64 GetMaxDebondedStrands(SpanIndexType spanIdx,GirderIndexType gdrIdx);
@@ -196,6 +211,11 @@ public:
    virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual void GetMaxDebondLength(SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pLen, pgsTypes::DebondLengthControl* pControl); 
    virtual Float64 GetMinDebondSectionDistance(SpanIndexType spanIdx,GirderIndexType gdrIdx); 
+
+// IResistanceFactors
+public:
+   virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression);
+   virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type);
 
 
 private:

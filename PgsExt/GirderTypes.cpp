@@ -334,7 +334,7 @@ HRESULT CGirderTypes::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    GirderIndexType nGirders = m_pSpan->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      pStrSave->BeginUnit("GirderData",2.0);
+      pStrSave->BeginUnit("GirderData",3.0);
 
       CGirderData& girderData = m_GirderData[gdrIdx];
       girderData.Save(pStrSave,pProgress);
@@ -896,7 +896,7 @@ void CGirderTypes::AssertValid() const
    ATLASSERT(m_GirderData.size() == m_GirderNames.size());
    ATLASSERT(m_SlabOffset[0].size() == m_SlabOffset[1].size());
    ATLASSERT(m_GirderLibraryEntries.size() == m_GirderNames.size());
-   ATLASSERT(m_GirderData.size() == m_GirderGroups.back().second+1);
+   ATLASSERT(m_GirderData.size() != 0 ? m_GirderData.size() == m_GirderGroups.back().second+1 : true);
    ATLASSERT(m_GirderGroups.size() <= m_GirderData.size());
 
    // last index must less than or equal to the current index
