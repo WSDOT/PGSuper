@@ -170,6 +170,7 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
    Float64 conditionFactor;
    pgsTypes::ConditionFactorType conditionFactorType;
    pgsTypes::DuctType ductType;
+   pgsTypes::StrandInstallationType installationType;
    if ( pDX->m_bSaveAndValidate )
    {
       // data coming out of dialog
@@ -182,6 +183,9 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 
       DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
       pParent->m_pGirder->GetPostTensioning()->DuctType = ductType;
+
+      DDX_CBEnum(pDX, IDC_INSTALLATION_TYPE, installationType );
+      pParent->m_pGirder->GetPostTensioning()->InstallationType = installationType;
    }
    else
    {
@@ -193,6 +197,9 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 
       ductType = pParent->m_pGirder->GetPostTensioning()->DuctType;
       DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
+
+      installationType = pParent->m_pGirder->GetPostTensioning()->InstallationType;
+      DDX_CBEnum(pDX, IDC_INSTALLATION_TYPE, installationType);
    }
 }
 
@@ -201,6 +208,7 @@ BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_ADD, &CSplicedGirderGeneralPage::OnAddDuct)
    ON_BN_CLICKED(IDC_DELETE, &CSplicedGirderGeneralPage::OnDeleteDuct)
    ON_CBN_SELCHANGE(IDC_STRAND, &CSplicedGirderGeneralPage::OnStrandChanged)
+   ON_CBN_SELCHANGE(IDC_INSTALLATION_TYPE, &CSplicedGirderGeneralPage::OnInstallationTypeChanged)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
    ON_BN_CLICKED(IDHELP, &CSplicedGirderGeneralPage::OnHelp)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
@@ -255,6 +263,7 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    FillGirderComboBox();
 
    FillDuctType();
+   FillInstallationType();
 
    // Initialize the condition factor combo box
    CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
@@ -467,6 +476,14 @@ const matPsStrand* CSplicedGirderGeneralPage::GetStrand()
    return pPool->GetStrand(key);
 }
 
+pgsTypes::StrandInstallationType CSplicedGirderGeneralPage::GetInstallationType()
+{
+   CComboBox* pList = (CComboBox*)GetDlgItem(IDC_INSTALLATION_TYPE);
+   int idx = pList->GetCurSel();
+   pgsTypes::StrandInstallationType installationType = (pgsTypes::StrandInstallationType)(pList->GetItemData(idx));
+   return installationType;
+}
+
 void CSplicedGirderGeneralPage::FillDuctType()
 {
 #pragma Reminder("FINISH: get the exact terminology from LRFD 5.6.4")
@@ -476,9 +493,23 @@ void CSplicedGirderGeneralPage::FillDuctType()
    pcbDuctType->AddString(_T("Formed in concrete with removable cores"));
 }
 
+void CSplicedGirderGeneralPage::FillInstallationType()
+{
+   CComboBox* pcbInstallType = (CComboBox*)GetDlgItem(IDC_INSTALLATION_TYPE);
+   int idx = pcbInstallType->AddString(_T("Push"));
+   pcbInstallType->SetItemData(idx,(DWORD_PTR)pgsTypes::sitPush);
+   idx = pcbInstallType->AddString(_T("Pull"));
+   pcbInstallType->SetItemData(idx,(DWORD_PTR)pgsTypes::sitPull);
+}
+
 void CSplicedGirderGeneralPage::OnStrandChanged()
 {
    m_DuctGrid.OnStrandChanged();
+}
+
+void CSplicedGirderGeneralPage::OnInstallationTypeChanged()
+{
+   m_DuctGrid.OnInstallationTypeChanged();
 }
 
 void CSplicedGirderGeneralPage::OnDuctChanged()

@@ -64,16 +64,17 @@ STDMETHODIMP CSpecAgentImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   pBrokerInit->RegInterface( IID_IAllowableStrandStress,       this );
-   pBrokerInit->RegInterface( IID_IAllowableTendonStress,       this );
-   pBrokerInit->RegInterface( IID_IAllowableConcreteStress,     this );
-   pBrokerInit->RegInterface( IID_ITransverseReinforcementSpec, this );
-   pBrokerInit->RegInterface( IID_IPrecastIGirderDetailsSpec,   this );
-   pBrokerInit->RegInterface( IID_ISegmentLiftingSpecCriteria,   this );
-   pBrokerInit->RegInterface( IID_ISegmentHaulingSpecCriteria,   this );
+   pBrokerInit->RegInterface( IID_IAllowableStrandStress,         this );
+   pBrokerInit->RegInterface( IID_IAllowableTendonStress,         this );
+   pBrokerInit->RegInterface( IID_IAllowableConcreteStress,       this );
+   pBrokerInit->RegInterface( IID_ITransverseReinforcementSpec,   this );
+   pBrokerInit->RegInterface( IID_IPrecastIGirderDetailsSpec,     this );
+   pBrokerInit->RegInterface( IID_ISegmentLiftingSpecCriteria,    this );
+   pBrokerInit->RegInterface( IID_ISegmentHaulingSpecCriteria,    this );
    pBrokerInit->RegInterface( IID_IKdotGirderHaulingSpecCriteria, this );
-   pBrokerInit->RegInterface( IID_IDebondLimits,                this );
-   pBrokerInit->RegInterface( IID_IResistanceFactors,           this );
+   pBrokerInit->RegInterface( IID_IDebondLimits,                  this );
+   pBrokerInit->RegInterface( IID_IResistanceFactors,             this );
+   pBrokerInit->RegInterface( IID_IDuctLimits,                    this );
 
    return S_OK;
 }
@@ -2062,6 +2063,30 @@ Float64 CSpecAgentImp::GetClosureJointShearResistanceFactor(pgsTypes::ConcreteTy
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetClosureJointShearResistanceFactor(type);
+}
+
+////////////////////
+// IDuctLimits
+Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(const CGirderKey& girderKey)
+{
+   // LRFD 5.4.6.1
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPTData* pPTData = pIBridgeDesc->GetPostTensioning(girderKey);
+   return ::ConvertToSysUnits(pPTData->DuctType == pgsTypes::dtPlastic ? 30.0 : 20.0,unitMeasure::Feet);
+}
+
+Float64 CSpecAgentImp::GetTendonAreaLimit(const CGirderKey& girderKey)
+{
+   // LRFD 5.4.6.2
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPTData* pPTData = pIBridgeDesc->GetPostTensioning(girderKey);
+   return (pPTData->InstallationType == pgsTypes::sitPush ? 2.0 : 2.5);
+}
+
+Float64 CSpecAgentImp::GetDuctSizeLimit(const CGirderKey& girderKey)
+{
+   // LRFD 5.4.6.2
+   return 0.4;
 }
 
 ////////////////////

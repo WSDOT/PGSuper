@@ -84,6 +84,8 @@ public:
                                Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                                Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
                                Float64* gR,  Float64* gR1,  Float64* gR2 );  // reaction
+   virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls);
+   virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls);
 
    enum DFParam { dfPierLeft, dfPierRight, dfSpan, dfReaction };
 
@@ -114,11 +116,13 @@ protected:
       lrfdILiveLoadDistributionFactor::DFResult gV1;
       lrfdILiveLoadDistributionFactor::DFResult gV2;
       Float64 gV;
+      Float64 gVSkewCorrection;
 
       // Distribution factors for positive and negative moment in the span
       lrfdILiveLoadDistributionFactor::DFResult gM1;
       lrfdILiveLoadDistributionFactor::DFResult gM2;
       Float64 gM;
+      Float64 gMSkewCorrection;
    };
 
    void GetIndicies(IndexType spanOrPierIdx,DFParam dfType,SpanIndexType& span,PierIndexType& pier,SpanIndexType& prev_span,SpanIndexType& next_span,PierIndexType& prev_pier,PierIndexType& next_pier);
@@ -580,6 +584,11 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
          plldf->gM = plldf->gM1.mg;
          plldf->gV = plldf->gV1.mg;
       }
+
+      // skew corrections
+
+      plldf->gMSkewCorrection = pLLDF->MomentSkewCorrectionFactor();
+      plldf->gVSkewCorrection = pLLDF->ShearSkewCorrectionFactor();
 
    }
    catch( const lrfdXRangeOfApplicability& e)
@@ -1075,6 +1084,21 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes
    }
 
    return true;
+}
+template <class T>
+Float64 CDistFactorEngineerImpl<T>::GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls)
+{
+   SPANDETAILS lldf;
+   GetSpanDF(spanKey,ls,-1,&lldf);
+   return lldf.gMSkewCorrection;
+}
+
+template <class T>
+Float64 CDistFactorEngineerImpl<T>::GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls)
+{
+   SPANDETAILS lldf;
+   GetSpanDF(spanKey,ls,-1,&lldf);
+   return lldf.gVSkewCorrection;
 }
 
 #endif // INCLUDED_DISTFACTORENGINEERIMPL_H_

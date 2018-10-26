@@ -651,5 +651,25 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
          }
       }
    }
+
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      const pgsDuctSizeArtifact* pDuctSizeArtifact = pGirderArtifact->GetDuctSizeArtifact(ductIdx);
+      if ( !pDuctSizeArtifact->PassedRadiusOfCurvature() )
+      {
+         CString strMsg;
+         strMsg.Format(_T("Radius of Curvature of duct failed for Duct %d."),LABEL_DUCT(ductIdx));
+         rFailures.push_back(strMsg.GetBuffer());
+      }
+
+      if ( !pDuctSizeArtifact->PassedDuctArea() || !pDuctSizeArtifact->PassedDuctSize() )
+      {
+         CString strMsg;
+         strMsg.Format(_T("Duct Size check failed for Duct %d."),LABEL_DUCT(ductIdx));
+         rFailures.push_back(strMsg.GetBuffer());
+      }
+   }
 }
 

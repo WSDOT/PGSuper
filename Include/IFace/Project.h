@@ -535,6 +535,7 @@ interface ILibraryNames : IUnknown
    virtual void EnumTrafficBarrierNames( std::vector<std::_tstring>* pNames ) const = 0;
    virtual void EnumSpecNames( std::vector<std::_tstring>* pNames) const = 0;
    virtual void EnumLiveLoadNames( std::vector<std::_tstring>* pNames) const = 0;
+   virtual void EnumDuctNames( std::vector<std::_tstring>* pNames) const = 0;
 
    virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames ) = 0;
    virtual void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory) = 0;
@@ -565,6 +566,7 @@ interface ILibrary : IUnknown
    virtual const TrafficBarrierEntry* GetTrafficBarrierEntry( LPCTSTR lpszName ) const = 0;
    virtual const SpecLibraryEntry* GetSpecEntry( LPCTSTR lpszName ) const = 0;
    virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( LPCTSTR lpszName ) const = 0;
+   virtual const DuctLibraryEntry* GetDuctEntry( LPCTSTR lpszName ) const = 0;
    virtual ConcreteLibrary&        GetConcreteLibrary() = 0;
    virtual ConnectionLibrary&      GetConnectionLibrary() = 0;
    virtual GirderLibrary&          GetGirderLibrary() = 0;
@@ -572,6 +574,7 @@ interface ILibrary : IUnknown
    virtual TrafficBarrierLibrary&  GetTrafficBarrierLibrary() = 0;
    virtual SpecLibrary*            GetSpecLibrary() = 0;
    virtual LiveLoadLibrary*        GetLiveLoadLibrary() = 0;
+   virtual DuctLibrary*            GetDuctLibrary() = 0;
 
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const = 0;
    virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const = 0;

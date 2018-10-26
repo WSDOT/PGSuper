@@ -39,7 +39,7 @@ CLASS
 ****************************************************************************/
 
 // free functions
-inline GirderIndexType GetPierGirderCount(PierIndexType pierIdx, IBridge* pBridge)
+GirderIndexType GetPierGirderCount(PierIndexType pierIdx, IBridge* pBridge)
 {
    PierIndexType nPiers = pBridge->GetPierCount();
 
@@ -119,15 +119,9 @@ CChapterBuilder* CDistributionFactorSummaryChapterBuilder::Clone() const
 
 void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,IEAFDisplayUnits* pDisplayUnits)
 {
-   rptRcScalar df;
-   df.SetFormat(sysNumericFormatTool::Fixed);
-   df.SetWidth(8);
-   df.SetPrecision(3); // should match format in details reports
-
-   rptRcSectionScalar dfM;
-   dfM.SetFormat(sysNumericFormatTool::Fixed);
-   dfM.SetWidth(8);
-   dfM.SetPrecision(3); // should match format in details reports
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, df, pDisplayUnits->GetScalarFormat());
+   INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
+   INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -202,14 +196,16 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
 
       (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(gdrIdx);
 
-      Float64 pM, V;
+      Float64 pM, VStart, VEnd;
       Float64 nm;
       sysSectionValue nM;
-      pDistFact->GetDistributionFactors(poi_start, pgsTypes::StrengthI, &pM, &nm, &V);
+      pDistFact->GetDistributionFactors(poi_start, pgsTypes::StrengthI, &pM, &nm, &VStart);
       nM.Left() = nm;
 
-      pDistFact->GetDistributionFactors(poi_end, pgsTypes::StrengthI, &pM, &nm, &V);
+      pDistFact->GetDistributionFactors(poi_end, pgsTypes::StrengthI, &pM, &nm, &VEnd);
       nM.Right() = nm;
+
+      sysSectionValue V(VStart,VEnd);
 
       (*pTable)(row,1) << df.SetValue(pM);
 
@@ -222,16 +218,19 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
          (*pTable)(row,2) << _T("------");
       }
 
-      (*pTable)(row,3) << df.SetValue(V);
+      (*pTable)(row,3) << dfV.SetValue(V);
 
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         pDistFact->GetDistributionFactors(poi_start,pgsTypes::FatigueI,&pM,&nm,&V);
+         pDistFact->GetDistributionFactors(poi_start,pgsTypes::FatigueI,&pM,&nm,&VStart);
          nM.Left() = nm;
 
-         pDistFact->GetDistributionFactors(poi_end,pgsTypes::FatigueI,&pM,&nm,&V);
+         pDistFact->GetDistributionFactors(poi_end,pgsTypes::FatigueI,&pM,&nm,&VEnd);
          nM.Right() = nm;
+
+         V.Left() = VStart;
+         V.Right() = VEnd;
 
          (*pTable)(row,4) << df.SetValue(pM);
 
@@ -244,7 +243,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
             (*pTable)(row,5) << _T("------");
          }
 
-         (*pTable)(row,6) << df.SetValue(V);
+         (*pTable)(row,6) << dfV.SetValue(V);
       }
 
       row++;
@@ -253,15 +252,8 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
 
 void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,IEAFDisplayUnits* pDisplayUnits)
 {
-   rptRcSectionScalar dfM;
-   dfM.SetFormat(sysNumericFormatTool::Fixed);
-   dfM.SetWidth(8);
-   dfM.SetPrecision(3); // should match format in details reports
-
-   rptRcScalar dfV;
-   dfV.SetFormat(sysNumericFormatTool::Fixed);
-   dfV.SetWidth(8);
-   dfV.SetPrecision(3); // should match format in details reports
+   INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
+   INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);

@@ -302,6 +302,11 @@ interface IBridge : IUnknown
    // Returns true if the girder is in the right exterior girder
    virtual bool IsRightExteriorGirder(const CGirderKey& girderKey) = 0;
 
+   // Returns true if the girder is in an obtuse corner of the bridge, in plan view.
+   // Determination of obtuse corner is for computing the shear correction factor for skew.
+   // Only the exterior and first interior girders can be in an obtuse corner.
+   virtual bool IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEndType endType) = 0;
+
    // Returns true if the girder segment has a roughened surface
    virtual bool AreGirderTopFlangesRoughened(const CSegmentKey& segmentKey) = 0;
 
@@ -1432,7 +1437,10 @@ interface ITendonGeometry : public IUnknown
    virtual void GetDuctPoint(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IPoint2d** ppPoint) = 0;
 
    // returns the diameter of the duct
-   virtual Float64 GetDuctDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+   virtual Float64 GetOutsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+   virtual Float64 GetInsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+
+   virtual Float64 GetInsideDuctArea(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 
    // returns number of strands in a duct
    virtual StrandIndexType GetTendonStrandCount(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
@@ -1448,6 +1456,9 @@ interface ITendonGeometry : public IUnknown
 
    // get the slope of a tendon
    virtual void GetTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope) = 0;
+
+   // returns the minimum radius of curvature of the tendon
+   virtual Float64 GetMinimumRadiusOfCurvature(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 
    // returns the jacking force
    virtual Float64 GetPjack(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;

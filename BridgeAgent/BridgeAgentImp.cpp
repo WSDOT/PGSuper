@@ -6596,6 +6596,212 @@ bool CBridgeAgentImp::IsRightExteriorGirder(const CGirderKey& girderKey)
 
    return location == ltRightExteriorGirder ? true : false;
 }
+bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEndType endType)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
+   GirderIndexType nGirders = pSpan->GetGirderCount();
+   if ( 2 <= spanKey.girderIndex && spanKey.girderIndex <= nGirders-3 )
+   {
+      // obtuse corner is for computing the skew correction factor for shear
+      // it only applies to the exterior and first interior girder
+      // since this girder isn't one of those, we'll say it is not in an obtuse corner
+      return false;
+   }
+   else
+   {
+      PierIndexType startPierIdx = pSpan->GetPrevPier()->GetIndex();
+      PierIndexType endPierIdx   = pSpan->GetNextPier()->GetIndex();
+
+      CComPtr<IAngle> objStartSkewAngle;
+      GetPierSkew(startPierIdx,&objStartSkewAngle);
+      Float64 startSkewAngle;
+      objStartSkewAngle->get_Value(&startSkewAngle);
+
+      CComPtr<IAngle> objEndSkewAngle;
+      GetPierSkew(endPierIdx,&objEndSkewAngle);
+      Float64 endSkewAngle;
+      objEndSkewAngle->get_Value(&endSkewAngle);
+
+      if ( IsZero(startSkewAngle) && IsZero(endSkewAngle) )
+      {
+         return false;
+      }
+
+      if ( ::Sign(startSkewAngle) == ::Sign(endSkewAngle) )
+      {
+         // Both ends are skewed the same direction
+         if ( startSkewAngle < 0 )
+         {
+            // Both ends are skewed to the right
+
+            //              --------------------------------------
+            //             / -***------ gdrIdx = 0 ------------- /
+            //            / -***------ gdrIdx = 1 ------------- /
+            //           /                                     /
+            //          /                                     /
+            //         / ------ gdrIdx = nGirders-2-----***- /
+            //        / ------ gdrIdx = nGirders-1 ----***- /
+            //        --------------------------------------
+            //
+            // *** = Obtuse corner
+            //
+            if ( (endType == pgsTypes::metStart && spanKey.girderIndex < 2) ||
+                 (endType == pgsTypes::metEnd   && nGirders-2 <= spanKey.girderIndex )
+               )
+            {
+               return true;
+            }
+         }
+         else
+         {
+            // both ends are skewed to the left
+            ATLASSERT(0 < startSkewAngle);
+            ATLASSERT(0 < endSkewAngle);
+
+            //   --------------------------------------
+            //   \ ---------- gdrIdx = 0 ---------***- \
+            //    \ ---------- gdrIdx = 1 ---------***- \
+            //     \                                     \
+            //      \                                     \
+            //       \ -***-- gdrIdx = nGirders-2--------- \
+            //        \ -***-- gdrIdx = nGirders-1 -------- \
+            //         --------------------------------------
+            //
+            // *** = Obtuse corner
+            //
+            if ( (endType == pgsTypes::metStart && nGirders-2 <= spanKey.girderIndex) ||
+                 (endType == pgsTypes::metEnd   && spanKey.girderIndex < 2)
+               )
+            {
+               return true;
+            }
+         }
+      }
+      else
+      {
+         // Ends are skewed in opposite directions
+         //
+         // Obtuse corners are the diagonally opposite corners that are closest together
+         // (i.e. shortest distance)
+
+         //   --------------------------------------------------
+         //   \ ---------- gdrIdx = 0 ------------------------ /
+         //    \ ---------- gdrIdx = 1 ---------------------- /
+         //     \                                            /
+         //      \                                          /
+         //       \ ------ gdrIdx = nGirders-2------------ /
+         //        \ ------ gdrIdx = nGirders-1 --------- /
+         //         --------------------------------------
+
+         if ( IsZero(startSkewAngle) )
+         {
+            // start of span is normal to alignment
+            if ( endType == pgsTypes::metStart )
+            {
+               // can't have an obtuse corner for no skew
+               return false;
+            }
+
+            ATLASSERT( !IsZero(endSkewAngle) );
+            if ( (0 < endSkewAngle && spanKey.girderIndex < 2) ||
+                 (endSkewAngle < 0 && nGirders-2 <= spanKey.girderIndex) )
+            {
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+
+         if ( IsZero(endSkewAngle) )
+         {
+            // end of span is normal to alignment
+            if ( endType == pgsTypes::metEnd )
+            {
+               // can't have an obtuse corner for no skew
+               return false;
+            }
+
+            ATLASSERT( !IsZero(startSkewAngle) );
+            if ( (0 < startSkewAngle && nGirders-2 <= spanKey.girderIndex) ||
+                 (startSkewAngle < 0 && spanKey.girderIndex < 2) )
+            {
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+
+         GroupIndexType grpIdx = GetGirderCountBySpan(spanKey.spanIndex);
+         pgsPointOfInterest poiStartLeft  = GetPointOfInterest(CGirderKey(grpIdx,0),startPierIdx);
+         pgsPointOfInterest poiEndLeft    = GetPointOfInterest(CGirderKey(grpIdx,0),endPierIdx);
+         pgsPointOfInterest poiStartRight = GetPointOfInterest(CGirderKey(grpIdx,nGirders-1),startPierIdx);
+         pgsPointOfInterest poiEndRight   = GetPointOfInterest(CGirderKey(grpIdx,nGirders-1),endPierIdx);
+
+         CComPtr<IPoint2d> pntStartLeft, pntEndLeft, pntStartRight, pntEndRight;
+         GetPoint(poiStartLeft, &pntStartLeft);
+         GetPoint(poiEndLeft,   &pntEndLeft);
+         GetPoint(poiStartRight,&pntStartRight);
+         GetPoint(poiEndRight,  &pntEndRight);
+
+         Float64 d1,d2;
+         pntStartLeft->DistanceEx(pntEndRight,&d1);
+         pntStartRight->DistanceEx(pntEndLeft,&d2);
+
+         if ( IsEqual(d1,d2) )
+         {
+            // if the diagonals are the same length... both corners on one side are obtuse
+            if ( startSkewAngle < 0 )
+            {
+               // obtuse corners are on the left side
+               ATLASSERT( 0 <= endSkewAngle );
+               if ( spanKey.girderIndex < 2 )
+               {
+                  return true;
+               }
+            }
+            else
+            {
+               // obtuse corners are on the right side
+               ATLASSERT( 0 <= startSkewAngle);
+               ATLASSERT( endSkewAngle < 0 );
+               if ( nGirders-2 <= spanKey.girderIndex )
+               {
+                  return true;
+               }
+            }
+         }
+         else if ( d1 < d2 )
+         {
+            // shortest distance is from start,left to end,right so obtuse corners are
+            // at the start,right and end,left
+            if ( (endType == pgsTypes::metStart && spanKey.girderIndex < 2) ||
+                 (endType == pgsTypes::metEnd && nGirders-2 <= spanKey.girderIndex) )
+            {
+               return true;
+            }
+         }
+         else
+         {
+            ATLASSERT(d2 < d1);
+            // shortest distance is from the start,right to end,left so the obtuse corners are
+            // at the start,left and end,right
+            if ( (endType == pgsTypes::metStart && nGirders-2 <= spanKey.girderIndex) ||
+                 (endType == pgsTypes::metEnd && spanKey.girderIndex < 2) )
+            {
+               return true;
+            }
+         }
+      }
+   }
+
+   return false;
+}
 
 void CBridgeAgentImp::GetBackSideEndDiaphragmSize(PierIndexType pierIdx,Float64* pW,Float64* pH)
 {
@@ -18615,7 +18821,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi)
             }
          }
 
-         Float64 dia = GetDuctDiameter(girderKey,ductIdx);
+         Float64 dia = GetOutsideDiameter(girderKey,ductIdx);
          duct_deduction = Max(duct_deduction,deduct_factor*dia);
       }
    }
@@ -20113,7 +20319,7 @@ void CBridgeAgentImp::GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIn
    pnt.CopyTo(ppPoint);
 }
 
-Float64 CBridgeAgentImp::GetDuctDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx)
+Float64 CBridgeAgentImp::GetOutsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
    CComPtr<ISuperstructureMember> ssMbr;
    GetSuperstructureMember(girderKey,&ssMbr);
@@ -20128,9 +20334,49 @@ Float64 CBridgeAgentImp::GetDuctDiameter(const CGirderKey& girderKey,DuctIndexTy
    tendons->get_Item(ductIdx,&tendon);
 
    Float64 dia;
-   tendon->get_DuctDiameter(&dia);
+   tendon->get_OutsideDiameter(&dia);
 
    return dia;
+}
+
+Float64 CBridgeAgentImp::GetInsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx)
+{
+   CComPtr<ISuperstructureMember> ssMbr;
+   GetSuperstructureMember(girderKey,&ssMbr);
+
+   CComQIPtr<IItemData> itemData(ssMbr);
+
+   CComPtr<IUnknown> unk;
+   itemData->GetItemData(CComBSTR(_T("Tendons")),&unk);
+
+   CComQIPtr<ITendonCollection> tendons(unk);
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx,&tendon);
+
+   Float64 dia;
+   tendon->get_InsideDiameter(&dia);
+
+   return dia;
+}
+
+Float64 CBridgeAgentImp::GetInsideDuctArea(const CGirderKey& girderKey,DuctIndexType ductIdx)
+{
+   CComPtr<ISuperstructureMember> ssMbr;
+   GetSuperstructureMember(girderKey,&ssMbr);
+
+   CComQIPtr<IItemData> itemData(ssMbr);
+
+   CComPtr<IUnknown> unk;
+   itemData->GetItemData(CComBSTR(_T("Tendons")),&unk);
+
+   CComQIPtr<ITendonCollection> tendons(unk);
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx,&tendon);
+
+   Float64 Aduct;
+   tendon->get_InsideDuctArea(&Aduct);
+
+   return Aduct;
 }
 
 StrandIndexType CBridgeAgentImp::GetTendonStrandCount(const CGirderKey& girderKey,DuctIndexType ductIdx)
@@ -20306,6 +20552,25 @@ void CBridgeAgentImp::GetTendonSlope(const CGirderKey& girderKey,Float64 Xg,Duct
    CComPtr<ITendon> tendon;
    tendons->get_Item(ductIdx,&tendon);
    tendon->get_Slope(Xg,tmTendon,ppSlope);
+}
+
+Float64 CBridgeAgentImp::GetMinimumRadiusOfCurvature(const CGirderKey& girderKey,DuctIndexType ductIdx)
+{
+   CComPtr<ISuperstructureMember> ssMbr;
+   GetSuperstructureMember(girderKey,&ssMbr);
+
+   CComQIPtr<IItemData> itemData(ssMbr);
+
+   CComPtr<IUnknown> unk;
+   itemData->GetItemData(CComBSTR(_T("Tendons")),&unk);
+
+   CComQIPtr<ITendonCollection> tendons(unk);
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx,&tendon);
+
+   Float64 radiusOfCurvature;
+   tendon->get_MinimumRadiusOfCurvature(&radiusOfCurvature);
+   return radiusOfCurvature;
 }
 
 Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
@@ -22089,10 +22354,115 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
       {
          const CLongitudinalRebarData::RebarRow& info = rebar_rows[idx];
 
-         Float64 startLayout(0), endLayout(0);
+         Float64 start(0), end(0);
 
-         if (info.GetRebarStartEnd(segment_length, &startLayout, &endLayout))
+         if ( !info.GetRebarStartEnd(segment_length, &start, &end) )
          {
+            continue; // this bar doesn't go on this segment
+         }
+
+         std::vector<std::pair<Float64,Float64>> vBarSegments;
+         if ( pSegment->GetVariationType() == pgsTypes::svtLinear && info.Face == pgsTypes::BottomFace )
+         {
+            // if the segment has a linear variation and the bar is referenced from the bottom
+            // of the girder, make it follow the bottom of the girder.
+            Float64 L1 = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
+            Float64 L3 = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
+            Float64 L2 = segment_length - L1 - L3;
+
+            Float64 s1 = (start < L1 ? start : -1);
+            Float64 e1 = (end   < L1 ? end   : -1);
+
+            Float64 s2 = (start < L1 ? L1 : (start < (L1+L2) ? start : -1));
+            Float64 e2 = (end   < L1 ? -1 : (end   < (L1+L2) ? end   : L1+L2));
+
+            Float64 s3 = (start < (L1+L2) ? L1+L2 : start);
+            Float64 e3 = (end   < (L1+L2) ? -1    : end);
+
+            if ( 0 <= s1 && 0 <= e1 && !IsEqual(s1,e1)  )
+            {
+               vBarSegments.push_back(std::make_pair(s1,e1));
+            }
+
+            if ( 0 <= s2 && 0 <= e2 && !IsEqual(s2,e2) )
+            {
+               vBarSegments.push_back(std::make_pair(s2,e2));
+            }
+
+            if ( 0 <= s3 && 0 <= e3 && !IsEqual(s3,e3)  )
+            {
+               vBarSegments.push_back(std::make_pair(s3,e3));
+            }
+         }
+         else if ( pSegment->GetVariationType() == pgsTypes::svtDoubleLinear && info.Face == pgsTypes::BottomFace )
+         {
+            // if the segment has a double linear variation and the bar is referenced from the bottom
+            // of the girder, make it follow the bottom of the girder.
+            Float64 L1 = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
+            Float64 L2 = pSegment->GetVariationLength(pgsTypes::sztLeftTapered);
+            Float64 L4 = pSegment->GetVariationLength(pgsTypes::sztRightTapered);
+            Float64 L5 = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
+            Float64 L3 = segment_length - L1 - L2 - L4 - L5;
+
+            Float64 s1 = (start < L1 ? start : -1);
+            Float64 e1 = (end   < L1 ? end   : -1);
+
+            Float64 s2 = (start < L1 ? L1 : (start < (L1+L2) ? start : -1));
+            Float64 e2 = (end   < L1 ? -1 : (end   < (L1+L2) ? end   : L1+L2));
+
+            Float64 s3 = (start < (L1+L2) ? L1+L2 : start);
+            Float64 e3 = (end   < (L1+L2) ? -1    : (L1+L2+L3));
+
+            Float64 s4 = (start < (L1+L2+L3) ? (L1+L2+L3) : (start < (L1+L2+L3+L4) ? start : -1));
+            Float64 e4 = (end   < (L1+L2+L3) ? -1         : (end   < (L1+L2+L3+L4) ? end   : (L1+L2+L3+L4)));
+
+            Float64 s5 = (start < (L1+L2+L3+L4) ? (L1+L2+L3+L4) : start);
+            Float64 e5 = (end   < (L1+L2+L3+L4) ? -1            : end);
+
+            if ( 0 <= s1 && 0 <= e1 && !IsEqual(s1,e1)  )
+            {
+               vBarSegments.push_back(std::make_pair(s1,e1));
+            }
+
+            if ( 0 <= s2 && 0 <= e2 && !IsEqual(s2,e2)  )
+            {
+               vBarSegments.push_back(std::make_pair(s2,e2));
+            }
+
+            if ( 0 <= s3 && 0 <= e3 && !IsEqual(s3,e3)  )
+            {
+               vBarSegments.push_back(std::make_pair(s3,e3));
+            }
+
+            if ( 0 <= s4 && 0 <= e4 && !IsEqual(s4,e4)  )
+            {
+               vBarSegments.push_back(std::make_pair(s4,e4));
+            }
+
+            if ( 0 <= s5 && 0 <= e5 && !IsEqual(s5,e5)  )
+            {
+               vBarSegments.push_back(std::make_pair(s5,e5));
+            }
+         }
+         else
+         {
+#pragma Reminder("UPDATE: bars are straight for parabolic and double parabolic segments")
+            // if the segment is parabolic or double parabolic and the bar is measured
+            // from the bottom, we get into this else block and the resultant bar is straight.
+            // Need to have a way to model the bars as parabolic and following the bottom of the
+            // segment. Bars should be flexible enough to take on a curved shape
+
+            // the bar is straight from start to end
+            vBarSegments.push_back(std::make_pair(start,end));
+         }
+
+         std::vector<std::pair<Float64,Float64>>::iterator barSegmentIter(vBarSegments.begin());
+         std::vector<std::pair<Float64,Float64>>::iterator barSegmentIterEnd(vBarSegments.end());
+         for ( ; barSegmentIter != barSegmentIterEnd; barSegmentIter++ )
+         {
+            Float64 startLayout = barSegmentIter->first;
+            Float64 endLayout = barSegmentIter->second;
+
             CComPtr<IFixedLengthRebarLayoutItem> fixedlength_layout_item;
             hr = fixedlength_layout_item.CoCreateInstance(CLSID_FixedLengthRebarLayoutItem);
 
@@ -23942,7 +24312,8 @@ void CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
          CComPtr<ITendon> tendon;
          webTendons->get_Item(tendonIdx,&tendon);
 
-         tendon->put_DuctDiameter( CDuctSize::DuctSizes[pDuctData->Size].Diameter );
+         tendon->put_OutsideDiameter( pDuctData->pDuctLibEntry->GetOD() );
+         tendon->put_InsideDiameter( pDuctData->pDuctLibEntry->GetID() );
          tendon->put_StrandCount(pDuctData->nStrands);
          tendon->putref_Material(tendonMaterial);
 
@@ -24308,6 +24679,8 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
 
       CLinearDuctGeometry::MeasurementType measurementType = ductGeometry.GetMeasurementType();
 
+      CComPtr<ILinearTendonSegment> prevSegment;
+
       CollectionIndexType nPoints = ductGeometry.GetPointCount();
       ATLASSERT( 2 <= nPoints );
       for ( CollectionIndexType pointIdx = 1; pointIdx < nPoints; pointIdx++ )
@@ -24351,10 +24724,18 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
          CComQIPtr<ITendonSegment> tendonSegment(linearTendonSegment);
          tendon->AddSegment(tendonSegment);
 
+         linearTendonSegment->putref_PrevTendonSegment(prevSegment);
+         if ( prevSegment )
+         {
+            prevSegment->putref_NextTendonSegment(tendonSegment);
+         }
+
          // start of next segment is end of this segment
          xStart = xEnd;
          yStart = yEnd;
          zStart = zEnd;
+
+         prevSegment = tendonSegment;
       }
    }
 

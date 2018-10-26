@@ -1710,7 +1710,16 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
    // zone spacing and size jump rules here
    Float64 zone_max = m_ShearData.bAreZonesSymmetrical ? m_SegmentLength/2.0 : m_SegmentLength;
 
-   Float64 max_spacing = lrfdConcreteUtil::MaxStirrupSpacingForHoriz();
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   GET_IFACE(ISectionProperties,pSectProps);
+   pgsPointOfInterest poiStart(m_SegmentKey,0.0);
+   pgsPointOfInterest poiEnd(m_SegmentKey,m_SegmentLength);
+   Float64 HgStart = pSectProps->GetHg(liveLoadIntervalIdx,poiStart);
+   Float64 HgEnd   = pSectProps->GetHg(liveLoadIntervalIdx,poiEnd);
+   Float64 Hg = min(HgStart,HgEnd);
+   Float64 max_spacing = lrfdConcreteUtil::MaxStirrupSpacingForHoriz(Hg);
+
 
    Float64 zone_start(0.0);
    bool bdone(false);

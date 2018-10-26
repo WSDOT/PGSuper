@@ -41,6 +41,7 @@ CLoadFactors::CLoadFactors()
    DWmin[pgsTypes::ServiceI]   = 1.0;       DWmax[pgsTypes::ServiceI]   = 1.0;
    CRmin[pgsTypes::ServiceI]   = 1.0;       CRmax[pgsTypes::ServiceI]   = 1.0;
    SHmin[pgsTypes::ServiceI]   = 1.0;       SHmax[pgsTypes::ServiceI]   = 1.0;
+   REmin[pgsTypes::ServiceI]   = 1.0;       REmax[pgsTypes::ServiceI]   = 1.0;
    PSmin[pgsTypes::ServiceI]   = 1.0;       PSmax[pgsTypes::ServiceI]   = 1.0;
    LLIMmin[pgsTypes::ServiceI] = 1.0;       LLIMmax[pgsTypes::ServiceI] = 1.0;
 
@@ -48,6 +49,7 @@ CLoadFactors::CLoadFactors()
    DWmin[pgsTypes::ServiceIA]   = 0.5;      DWmax[pgsTypes::ServiceIA]   = 0.5;
    CRmin[pgsTypes::ServiceIA]   = 0.0;      CRmax[pgsTypes::ServiceIA]   = 0.0;
    SHmin[pgsTypes::ServiceIA]   = 0.0;      SHmax[pgsTypes::ServiceIA]   = 0.0;
+   REmin[pgsTypes::ServiceIA]   = 0.0;      REmax[pgsTypes::ServiceIA]   = 0.0;
    PSmin[pgsTypes::ServiceIA]   = 0.0;      PSmax[pgsTypes::ServiceIA]   = 0.0;
    LLIMmin[pgsTypes::ServiceIA] = 1.0;      LLIMmax[pgsTypes::ServiceIA] = 1.0;
 
@@ -55,6 +57,7 @@ CLoadFactors::CLoadFactors()
    DWmin[pgsTypes::ServiceIII]   = 1.0;     DWmax[pgsTypes::ServiceIII]   = 1.0;
    CRmin[pgsTypes::ServiceIII]   = 1.0;     CRmax[pgsTypes::ServiceIII]   = 1.0;
    SHmin[pgsTypes::ServiceIII]   = 1.0;     SHmax[pgsTypes::ServiceIII]   = 1.0;
+   REmin[pgsTypes::ServiceIII]   = 1.0;     REmax[pgsTypes::ServiceIII]   = 1.0;
    PSmin[pgsTypes::ServiceIII]   = 1.0;     PSmax[pgsTypes::ServiceIII]   = 1.0;
    LLIMmin[pgsTypes::ServiceIII] = 0.8;     LLIMmax[pgsTypes::ServiceIII] = 0.8;
 
@@ -62,6 +65,7 @@ CLoadFactors::CLoadFactors()
    DWmin[pgsTypes::StrengthI]   = 0.65;     DWmax[pgsTypes::StrengthI]   = 1.50;
    CRmin[pgsTypes::StrengthI]   = 1.00;     CRmax[pgsTypes::StrengthI]   = 1.00;
    SHmin[pgsTypes::StrengthI]   = 1.00;     SHmax[pgsTypes::StrengthI]   = 1.00;
+   REmin[pgsTypes::StrengthI]   = 1.00;     REmax[pgsTypes::StrengthI]   = 1.00;
    PSmin[pgsTypes::StrengthI]   = 1.00;     PSmax[pgsTypes::StrengthI]   = 1.00;
    LLIMmin[pgsTypes::StrengthI] = 1.75;     LLIMmax[pgsTypes::StrengthI] = 1.75;
 
@@ -69,6 +73,7 @@ CLoadFactors::CLoadFactors()
    DWmin[pgsTypes::StrengthII]   = 0.65;    DWmax[pgsTypes::StrengthII]   = 1.50;
    CRmin[pgsTypes::StrengthII]   = 1.00;    CRmax[pgsTypes::StrengthII]   = 1.00;
    SHmin[pgsTypes::StrengthII]   = 1.00;    SHmax[pgsTypes::StrengthII]   = 1.00;
+   REmin[pgsTypes::StrengthII]   = 1.00;    REmax[pgsTypes::StrengthII]   = 1.00;
    PSmin[pgsTypes::StrengthII]   = 1.00;    PSmax[pgsTypes::StrengthII]   = 1.00;
    LLIMmin[pgsTypes::StrengthII] = 1.35;    LLIMmax[pgsTypes::StrengthII] = 1.35;
 
@@ -76,6 +81,7 @@ CLoadFactors::CLoadFactors()
    DWmin[pgsTypes::FatigueI]   = 0.5;      DWmax[pgsTypes::FatigueI]   = 0.5;
    CRmin[pgsTypes::FatigueI]   = 0.0;      CRmax[pgsTypes::FatigueI]   = 0.0;
    SHmin[pgsTypes::FatigueI]   = 0.0;      SHmax[pgsTypes::FatigueI]   = 0.0;
+   REmin[pgsTypes::FatigueI]   = 0.0;      REmax[pgsTypes::FatigueI]   = 0.0;
    PSmin[pgsTypes::FatigueI]   = 0.0;      PSmax[pgsTypes::FatigueI]   = 0.0;
    LLIMmin[pgsTypes::FatigueI] = 1.5;      LLIMmax[pgsTypes::FatigueI] = 1.5;
 }
@@ -115,6 +121,11 @@ bool CLoadFactors::operator==(const CLoadFactors& rOther) const
          return false;
       }
 
+      if ( REmin[i] != rOther.REmin[i] )
+      {
+         return false;
+      }
+
       if ( PSmin[i] != rOther.PSmin[i] )
       {
          return false;
@@ -141,6 +152,11 @@ bool CLoadFactors::operator==(const CLoadFactors& rOther) const
       }
 
       if ( SHmax[i] != rOther.SHmax[i] )
+      {
+         return false;
+      }
+
+      if ( REmax[i] != rOther.REmax[i] )
       {
          return false;
       }
@@ -172,12 +188,14 @@ void CLoadFactors::MakeCopy(const CLoadFactors& rOther)
       DWmin[i] = rOther.DWmin[i];
       CRmin[i] = rOther.CRmin[i];
       SHmin[i] = rOther.SHmin[i];
+      REmin[i] = rOther.REmin[i];
       PSmin[i] = rOther.PSmin[i];
       LLIMmin[i] = rOther.LLIMmin[i];
       DCmax[i] = rOther.DCmax[i];
       DWmax[i] = rOther.DWmax[i];
       CRmax[i] = rOther.CRmax[i];
       SHmax[i] = rOther.SHmax[i];
+      REmax[i] = rOther.REmax[i];
       PSmax[i] = rOther.PSmax[i];
       LLIMmax[i] = rOther.LLIMmax[i];
    }
@@ -192,7 +210,7 @@ HRESULT CLoadFactors::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
 
-   pStrSave->BeginUnit(_T("LoadFactors"),2.0);
+   pStrSave->BeginUnit(_T("LoadFactors"),3.0);
    int nLimitStates = sizeof(strLimitState)/sizeof(std::_tstring);
    for ( int i = 0; i < nLimitStates; i++ )
    {
@@ -206,6 +224,8 @@ HRESULT CLoadFactors::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("CRmax"),  CComVariant(CRmax[i]));
       pStrSave->put_Property(_T("SHmin"),  CComVariant(SHmin[i]));
       pStrSave->put_Property(_T("SHmax"),  CComVariant(SHmax[i]));
+      pStrSave->put_Property(_T("REmin"),  CComVariant(REmin[i]));
+      pStrSave->put_Property(_T("REmax"),  CComVariant(REmax[i]));
       pStrSave->put_Property(_T("PSmin"),  CComVariant(PSmin[i]));
       pStrSave->put_Property(_T("PSmax"),  CComVariant(PSmax[i]));
       pStrSave->put_Property(_T("LLIMmin"),CComVariant(LLIMmin[i]));
@@ -259,6 +279,15 @@ HRESULT CLoadFactors::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          pStrLoad->get_Property(_T("SHmax"),  &var);
          SHmax[i]   = var.dblVal;
+
+         if ( 2 < version )
+         {
+            pStrLoad->get_Property(_T("REmin"),  &var);
+            REmin[i]   = var.dblVal;
+
+            pStrLoad->get_Property(_T("REmax"),  &var);
+            REmax[i]   = var.dblVal;
+         }
  
          pStrLoad->get_Property(_T("PSmin"),  &var);
          PSmin[i]   = var.dblVal;

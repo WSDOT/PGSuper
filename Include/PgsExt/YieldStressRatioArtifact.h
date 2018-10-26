@@ -84,6 +84,30 @@ public:
    void SetWearingSurfaceMoment(Float64 Mdw);
    Float64 GetWearingSurfaceMoment() const;
 
+   void SetCreepFactor(Float64 gCR);
+   Float64 GetCreepFactor() const;
+
+   void SetCreepMoment(Float64 Mcr);
+   Float64 GetCreepMoment() const;
+
+   void SetShrinkageFactor(Float64 gSH);
+   Float64 GetShrinkageFactor() const;
+
+   void SetShrinkageMoment(Float64 Msh);
+   Float64 GetShrinkageMoment() const;
+
+   void SetRelaxationFactor(Float64 gRE);
+   Float64 GetRelaxationFactor() const;
+
+   void SetRelaxationMoment(Float64 Mre);
+   Float64 GetRelaxationMoment() const;
+
+   void SetSecondaryEffectsFactor(Float64 gPS);
+   Float64 GetSecondaryEffectsFactor() const;
+
+   void SetSecondaryEffectsMoment(Float64 Mps);
+   Float64 GetSecondaryEffectsMoment() const;
+
    void SetLiveLoadFactor(Float64 gLL);
    Float64 GetLiveLoadFactor() const;
 
@@ -137,14 +161,22 @@ protected:
    Float64 m_fpe;
    Float64 m_Mdc;
    Float64 m_Mdw;
-   Float64 m_Mllim;
    Float64 m_Mcr;
-   Float64 m_Icr;
+   Float64 m_Msh;
+   Float64 m_Mre;
+   Float64 m_Mps;
+   Float64 m_Mllim;
+   Float64 m_Mcrack;
+   Float64 m_Icrack;
    Float64 m_c;
    Float64 m_dps;
    Float64 m_Es;
    Float64 m_Eg;
    Float64 m_gDC;
    Float64 m_gDW;
+   Float64 m_gCR;
+   Float64 m_gSH;
+   Float64 m_gRE;
+   Float64 m_gPS;
    Float64 m_gLL;
 };

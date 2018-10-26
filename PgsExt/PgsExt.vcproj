@@ -1152,6 +1152,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\DuctSizeArtifact.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\EditBridge.cpp"
 				>
 			</File>
@@ -3216,6 +3220,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\DistributedLoadData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\DuctSizeArtifact.h"
 				>
 			</File>
 			<File

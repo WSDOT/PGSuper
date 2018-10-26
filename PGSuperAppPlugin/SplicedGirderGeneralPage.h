@@ -52,6 +52,7 @@ public:
    int GetDuctCount();
 
    const matPsStrand* GetStrand();
+   pgsTypes::StrandInstallationType GetInstallationType();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -62,6 +63,7 @@ protected:
    void SetStrand();
 
    void FillDuctType();
+   void FillInstallationType();
 
    CSlabOffsetHyperLink m_ctrlSlabOffsetHyperLink;
    void UpdateSlabOffsetHyperLink();
@@ -78,6 +80,7 @@ public:
    afx_msg void OnAddDuct();
    afx_msg void OnDeleteDuct();
    afx_msg void OnStrandChanged();
+   afx_msg void OnInstallationTypeChanged();
    afx_msg void OnConditionFactorTypeChanged();
    afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);
 

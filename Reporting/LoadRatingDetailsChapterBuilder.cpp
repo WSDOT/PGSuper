@@ -79,12 +79,27 @@ rptChapter* CLoadRatingDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrDesign_Inventory);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrDesign_Operating);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrLegal_Routine);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrLegal_Special);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrPermit_Routine);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrPermit_Special);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
+   GroupIndexType lastGroupIdx  = girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx;
+   DuctIndexType nDucts = 0;
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = min(girderKey.girderIndex,nGirders-1);
+      nDucts += pTendonGeom->GetDuctCount(CGirderKey(grpIdx,gdrIdx));
+   }
+   bool bSplicedGirder = (0 < nDucts ? true : false);
+
+
+   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrDesign_Inventory,bSplicedGirder);
+   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrDesign_Operating,bSplicedGirder);
+   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrLegal_Routine,bSplicedGirder);
+   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrLegal_Special,bSplicedGirder);
+   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrPermit_Routine,bSplicedGirder);
+   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrPermit_Special,bSplicedGirder);
 
    return pChapter;
 }
@@ -94,7 +109,7 @@ CChapterBuilder* CLoadRatingDetailsChapterBuilder::Clone() const
    return new CLoadRatingDetailsChapterBuilder;
 }
 
-void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const
+void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const
 {
    USES_CONVERSION;
 
@@ -145,30 +160,30 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
          *pChapter << pPara;
          *pPara << strVehicleName << rptNewLine;
 
-         MomentRatingDetails(pChapter,pBroker,girderKey,true,pRatingArtifact);
+         MomentRatingDetails(pChapter,pBroker,girderKey,true,pRatingArtifact,bSplicedGirder);
          if ( bNegMoments )
          {
-            MomentRatingDetails(pChapter,pBroker,girderKey,false,pRatingArtifact);
+            MomentRatingDetails(pChapter,pBroker,girderKey,false,pRatingArtifact,bSplicedGirder);
          }
          
          if ( pRatingSpec->RateForShear(ratingType) )
          {
-            ShearRatingDetails(pChapter,pBroker,girderKey,pRatingArtifact);
+            ShearRatingDetails(pChapter,pBroker,girderKey,pRatingArtifact,bSplicedGirder);
          }
 
          if ( pRatingSpec->RateForStress(ratingType) )
          {
             if ( ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special )
             {
-               ReinforcementYieldingDetails(pChapter,pBroker,girderKey,true,pRatingArtifact);
+               ReinforcementYieldingDetails(pChapter,pBroker,girderKey,true,pRatingArtifact,bSplicedGirder);
                if ( bNegMoments )
                {
-                  ReinforcementYieldingDetails(pChapter,pBroker,girderKey,false,pRatingArtifact);
+                  ReinforcementYieldingDetails(pChapter,pBroker,girderKey,false,pRatingArtifact,bSplicedGirder);
                }
             }
             else
             {
-               StressRatingDetails(pChapter,pBroker,girderKey,pRatingArtifact);
+               StressRatingDetails(pChapter,pBroker,girderKey,pRatingArtifact,bSplicedGirder);
             }
          }
 
@@ -182,7 +197,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -195,9 +210,22 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       *pPara << _T("Rating for Negative Moment") << rptNewLine;
    }
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("MomentRatingEquation.png") ) << rptNewLine;
+   if ( bSplicedGirder )
+   {
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("MomentRatingEquationPT.png") ) << rptNewLine;
+   }
+   else
+   {
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("MomentRatingEquation.png") ) << rptNewLine;
+   }
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("MomentRatingParameters.png") ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(14,_T(""));
+   ColumnIndexType nColumns = 14;
+   if ( bSplicedGirder )
+   {
+      nColumns += 8;
+   }
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
 
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -216,10 +244,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
 
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptCapacityToDemand rating_factor;
 
@@ -236,6 +261,17 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DC")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DW")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   if ( bSplicedGirder )
+   {
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("CR"));
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("CR")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("SR"));
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("SR")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("RE"));
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("RE")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("PS"));
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("PS")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   }
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gM");
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
@@ -279,29 +315,56 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       (*table)(row,col++) << moment.SetValue(artifact.GetDeadLoadMoment());
       (*table)(row,col++) << scalar.SetValue(artifact.GetWearingSurfaceFactor());
       (*table)(row,col++) << moment.SetValue(artifact.GetWearingSurfaceMoment());
+      if ( bSplicedGirder )
+      {
+         (*table)(row,col++) << scalar.SetValue(artifact.GetCreepFactor());
+         (*table)(row,col++) << moment.SetValue(artifact.GetCreepMoment());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetShrinkageFactor());
+         (*table)(row,col++) << moment.SetValue(artifact.GetShrinkageMoment());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetRelaxationFactor());
+         (*table)(row,col++) << moment.SetValue(artifact.GetRelaxationMoment());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetSecondaryEffectsFactor());
+         (*table)(row,col++) << moment.SetValue(artifact.GetSecondaryEffectsMoment());
+      }
       (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadFactor());
       (*table)(row,col++) << scalar.SetValue(bPositiveMoment ? pM : nM);
       (*table)(row,col++) << moment.SetValue(artifact.GetLiveLoadMoment());
 
       Float64 RF = artifact.GetRatingFactor();
       if ( RF < 1 )
+      {
          (*table)(row,col++) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*table)(row,col++) << RF_PASS(rating_factor,RF);
+      }
 
       row++;
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Rating for Shear") << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ShearRatingEquation.png") ) << rptNewLine;
+   if ( bSplicedGirder )
+   {
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ShearRatingEquationPT.png") ) << rptNewLine;
+   }
+   else
+   {
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ShearRatingEquation.png") ) << rptNewLine;
+   }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(13,_T(""));
+   ColumnIndexType nColumns = 13;
+   if ( bSplicedGirder )
+   {
+      nColumns += 8;
+   }
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -319,10 +382,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
 
    INIT_UV_PROTOTYPE( rptForceUnitValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptCapacityToDemand rating_factor;
 
@@ -339,6 +399,17 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("DC")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
    (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("DW")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   if ( bSplicedGirder )
+   {
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("CR"));
+      (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("CR")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("SH"));
+      (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("SH")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("RE"));
+      (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("RE")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("PS"));
+      (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("PS")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   }
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gV");
    (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("LL+IM")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
@@ -382,29 +453,56 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
       (*table)(row,col++) << shear.SetValue(artifact.GetDeadLoadShear());
       (*table)(row,col++) << scalar.SetValue(artifact.GetWearingSurfaceFactor());
       (*table)(row,col++) << shear.SetValue(artifact.GetWearingSurfaceShear());
+      if ( bSplicedGirder )
+      {
+         (*table)(row,col++) << scalar.SetValue(artifact.GetCreepFactor());
+         (*table)(row,col++) << shear.SetValue(artifact.GetCreepShear());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetShrinkageFactor());
+         (*table)(row,col++) << shear.SetValue(artifact.GetShrinkageShear());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetRelaxationFactor());
+         (*table)(row,col++) << shear.SetValue(artifact.GetRelaxationShear());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetSecondaryEffectsFactor());
+         (*table)(row,col++) << shear.SetValue(artifact.GetSecondaryEffectsShear());
+      }
       (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadFactor());
       (*table)(row,col++) << scalar.SetValue(V);
       (*table)(row,col++) << shear.SetValue(artifact.GetLiveLoadShear());
 
       Float64 RF = artifact.GetRatingFactor();
       if ( RF < 1 )
+      {
          (*table)(row,col++) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*table)(row,col++) << RF_PASS(rating_factor,RF);
+      }
 
       row++;
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Rating for Stress") << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StressRatingEquation.png") ) << rptNewLine;
+   if ( bSplicedGirder )
+   {
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StressRatingEquationPT.png") ) << rptNewLine;
+   }
+   else
+   {
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StressRatingEquation.png") ) << rptNewLine;
+   }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
+   ColumnIndexType nColumns = 12;
+   if (bSplicedGirder)
+   {
+      nColumns += 9;
+   }
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -422,24 +520,37 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,    pDisplayUnits->GetStressUnit(),        false );
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptCapacityToDemand rating_factor;
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,col++) << RPT_STRESS(_T("allow"));
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   if (bSplicedGirder)
+   {
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
    (*table)(0,col++) << RPT_STRESS(_T("r"));
    (*table)(0,col++) << Sub2(symbol(gamma),_T("DC"));
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("DC")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("PS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("DW")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   if(bSplicedGirder)
+   {
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("CR"));
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("CR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("SH"));
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("SH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("RE"));
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("RE")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << Sub2(symbol(gamma),_T("PS"));
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("PS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gM");
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("LL+IM")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -450,6 +561,8 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
 
    pgsRatingArtifact::StressRatings artifacts = pRatingArtifact->GetStressRatings();
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    RowIndexType row = 1;
    pgsRatingArtifact::StressRatings::iterator iter(artifacts.begin());
@@ -475,26 +588,46 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
       (*table)(row,col++) << location.SetValue( POI_SPAN,  poi, end_size );
       (*table)(row,col++) << stress.SetValue(artifact.GetAllowableStress());
+      (*table)(row,col++) << stress.SetValue(artifact.GetPrestressStress());
+      if (bSplicedGirder)
+      {
+         (*table)(row,col++) << stress.SetValue(artifact.GetPostTensionStress());
+      }
+      (*table)(row,col++) << stress.SetValue(artifact.GetResistance());
       (*table)(row,col++) << scalar.SetValue(artifact.GetDeadLoadFactor());
       (*table)(row,col++) << stress.SetValue(artifact.GetDeadLoadStress());
-      (*table)(row,col++) << stress.SetValue(artifact.GetPrestressStress());
       (*table)(row,col++) << scalar.SetValue(artifact.GetWearingSurfaceFactor());
       (*table)(row,col++) << stress.SetValue(artifact.GetWearingSurfaceStress());
+      if (bSplicedGirder)
+      {
+         (*table)(row,col++) << scalar.SetValue(artifact.GetCreepFactor());
+         (*table)(row,col++) << stress.SetValue(artifact.GetCreepStress());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetShrinkageFactor());
+         (*table)(row,col++) << stress.SetValue(artifact.GetShrinkageStress());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetRelaxationFactor());
+         (*table)(row,col++) << stress.SetValue(artifact.GetRelaxationStress());
+         (*table)(row,col++) << scalar.SetValue(artifact.GetSecondaryEffectsFactor());
+         (*table)(row,col++) << stress.SetValue(artifact.GetSecondaryEffectsStress());
+      }
       (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadFactor());
       (*table)(row,col++) << scalar.SetValue(pM);
       (*table)(row,col++) << stress.SetValue(artifact.GetLiveLoadStress());
 
       Float64 RF = artifact.GetRatingFactor();
       if ( RF < 1 )
+      {
          (*table)(row,col++) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*table)(row,col++) << RF_PASS(rating_factor,RF);
+      }
 
       row++;
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const
 {
    pgsRatingArtifact::YieldStressRatios artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
    if ( artifacts.size() == 0 )
@@ -505,13 +638,31 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    if ( bPositiveMoment )
+   {
       *pPara << _T("Check Reinforcement Yielding for Positive Moment") << rptNewLine;
+   }
    else
+   {
       *pPara << _T("Check Reinforcement Yielding for Negative Moment") << rptNewLine;
+   }
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingEquation.png") ) << rptNewLine;
+   if ( bSplicedGirder )
+   {
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingEquationPT.png") ) << rptNewLine;
+   }
+   else
+   {
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingEquation.png") ) << rptNewLine;
+   }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(17,_T(""));
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingParameters.png") ) << rptNewLine;
+
+   ColumnIndexType nColumns = 17;
+   if ( bSplicedGirder )
+   {
+      nColumns += 4;
+   }
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -530,10 +681,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_i,    pDisplayUnits->GetMomentOfInertiaUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  mod_e,    pDisplayUnits->GetModEUnit(),            false );
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptCapacityToDemand rating_factor;
 
@@ -544,6 +692,13 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DC")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DW")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   if ( bSplicedGirder )
+   {
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("CR")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("SH")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("RE")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("PS")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   }
    (*table)(0,col++) << _T("gM");
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
@@ -568,6 +723,13 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
    *pPara << Sub2(symbol(gamma),_T("DC")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetDeadLoadFactor()) << rptNewLine;
    *pPara << Sub2(symbol(gamma),_T("DW")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetWearingSurfaceFactor()) << rptNewLine;
+   if ( bSplicedGirder )
+   {
+      *pPara << Sub2(symbol(gamma),_T("CR")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetCreepFactor()) << rptNewLine;
+      *pPara << Sub2(symbol(gamma),_T("SH")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetShrinkageFactor()) << rptNewLine;
+      *pPara << Sub2(symbol(gamma),_T("RE")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetRelaxationFactor()) << rptNewLine;
+      *pPara << Sub2(symbol(gamma),_T("PS")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetSecondaryEffectsFactor()) << rptNewLine;
+   }
    *pPara << Sub2(symbol(gamma),_T("LL")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetLiveLoadFactor()) << rptNewLine;
 
    // Add table here
@@ -601,6 +763,13 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       (*table)(row,col++) << location.SetValue( POI_SPAN,  poi, end_size );
       (*table)(row,col++) << moment.SetValue(artifact.GetDeadLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetWearingSurfaceMoment());
+      if ( bSplicedGirder )
+      {
+         (*table)(row,col++) << moment.SetValue(artifact.GetCreepMoment());
+         (*table)(row,col++) << moment.SetValue(artifact.GetShrinkageMoment());
+         (*table)(row,col++) << moment.SetValue(artifact.GetRelaxationMoment());
+         (*table)(row,col++) << moment.SetValue(artifact.GetSecondaryEffectsMoment());
+      }
       (*table)(row,col++) << scalar.SetValue(bPositiveMoment ? pM : nM);
       (*table)(row,col++) << moment.SetValue(artifact.GetLiveLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetCrackingMoment());
@@ -617,9 +786,13 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
       Float64 stress_ratio = artifact.GetStressRatio();
       if ( stress_ratio < 1 )
+      {
          (*table)(row,col++) << RF_FAIL(rating_factor,stress_ratio);
+      }
       else
+      {
          (*table)(row,col++) << RF_PASS(rating_factor,stress_ratio);
+      }
 
       row++;
    }
@@ -664,13 +837,21 @@ void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,I
    (*table)(row,col++) << tonnage.SetValue(W);
 
    if ( RF < 1 )
+   {
       (*table)(row,col++) << RF_FAIL(rating_factor,RF);
+   }
    else
+   {
       (*table)(row,col++) << RF_PASS(rating_factor,RF);
+   }
 
    (*table)(row,col++) << tonnage.SetValue(::FloorOff(W*RF,0.01));
    if ( RF < 1 )
+   {
       (*table)(row,col++) << tonnage.SetValue(posting_load);
+   }
    else
+   {
       (*table)(row,col++) << _T("-");
+   }
 }

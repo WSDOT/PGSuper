@@ -1686,10 +1686,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       pTable->SetStripeRowColumnStyle(3, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
       // Setup up some unit value prototypes
-      rptRcScalar scalar;
-      scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-      scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-      scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+      INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
       INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
       INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true );
 
@@ -1816,10 +1813,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
    pTable->SetStripeRowColumnStyle(3, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    // Setup up some unit value prototypes
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),  true );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true );

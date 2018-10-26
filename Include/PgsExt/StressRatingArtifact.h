@@ -70,23 +70,52 @@ public:
    void SetVehicleName(LPCTSTR str);
    std::_tstring GetVehicleName() const;
 
+   Float64 GetResistance() const;
+
    void SetAllowableStress(Float64 fr);
    Float64 GetAllowableStress() const;
 
    void SetDeadLoadFactor(Float64 gDC);
    Float64 GetDeadLoadFactor() const;
 
-   void SetDeadLoadStress(Float64 fdc);
+   void SetDeadLoadStress(Float64 fDC);
    Float64 GetDeadLoadStress() const;
 
    void SetPrestressStress(Float64 fps);
    Float64 GetPrestressStress() const;
 
+   void SetPostTensionStress(Float64 fpt);
+   Float64 GetPostTensionStress() const;
+
    void SetWearingSurfaceFactor(Float64 gDW);
    Float64 GetWearingSurfaceFactor() const;
 
-   void SetWearingSurfaceStress(Float64 fdw);
+   void SetWearingSurfaceStress(Float64 fDW);
    Float64 GetWearingSurfaceStress() const;
+
+   void SetCreepFactor(Float64 gCR);
+   Float64 GetCreepFactor() const;
+
+   void SetCreepStress(Float64 fCR);
+   Float64 GetCreepStress() const;
+
+   void SetShrinkageFactor(Float64 gSH);
+   Float64 GetShrinkageFactor() const;
+
+   void SetShrinkageStress(Float64 fSH);
+   Float64 GetShrinkageStress() const;
+
+   void SetRelaxationFactor(Float64 gRE);
+   Float64 GetRelaxationFactor() const;
+
+   void SetRelaxationStress(Float64 fRE);
+   Float64 GetRelaxationStress() const;
+
+   void SetSecondaryEffectsFactor(Float64 gPS);
+   Float64 GetSecondaryEffectsFactor() const;
+
+   void SetSecondaryEffectsStress(Float64 fPS);
+   Float64 GetSecondaryEffectsStress() const;
 
    void SetLiveLoadFactor(Float64 gLL);
    Float64 GetLiveLoadFactor() const;
@@ -114,9 +143,18 @@ protected:
    Float64 m_fr;
    Float64 m_gDC;
    Float64 m_gDW;
+   Float64 m_gCR;
+   Float64 m_gSH;
+   Float64 m_gRE;
+   Float64 m_gPS; // secondary effects
    Float64 m_gLL;
-   Float64 m_fdc;
-   Float64 m_fps;
-   Float64 m_fdw;
-   Float64 m_fllim;
+   Float64 m_fDC;
+   Float64 m_fDW;
+   Float64 m_fCR;
+   Float64 m_fSH;
+   Float64 m_fRE;
+   Float64 m_fPS; // secondary effects
+   Float64 m_fLLIM;
+   Float64 m_fps; // direct prestress
+   Float64 m_fpt; // direct post-tensoin
 };

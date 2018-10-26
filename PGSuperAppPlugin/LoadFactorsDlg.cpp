@@ -127,6 +127,18 @@ void CLoadFactorsDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_SERVICE_IA_SH,m_LoadFactors.SHmax[pgsTypes::ServiceIA]);
    DDX_Text(pDX,IDC_SERVICE_IA_PS,m_LoadFactors.PSmin[pgsTypes::ServiceIA]);
    DDX_Text(pDX,IDC_SERVICE_IA_PS,m_LoadFactors.PSmax[pgsTypes::ServiceIA]);
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      // since LRFD doesn't have a load case for relaxation, and relaxation is most closely related to creep
+      // copy the creep factor
+      int n = sizeof(m_LoadFactors.CRmax)/sizeof(m_LoadFactors.CRmax[0]);
+      for ( int i = 0; i < n; i++ )
+      {
+         m_LoadFactors.REmax[i] = m_LoadFactors.CRmax[i];
+         m_LoadFactors.REmin[i] = m_LoadFactors.CRmin[i];
+      }
+   }
 }
 
 
@@ -190,7 +202,7 @@ BOOL CLoadFactorsDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
    {
       GetDlgItem(IDC_SERVICE_I_PLUS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_SERVICE_I_CR)->ShowWindow(SW_HIDE);

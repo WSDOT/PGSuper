@@ -38,7 +38,7 @@
 
 BEGIN_MESSAGE_MAP(CPGSpliceAppCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
-   ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates) // need to map this into an accelerator table
+   ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates)
 	ON_COMMAND(ID_CONFIGURE_PGSUPER, OnProgramSettings)
 END_MESSAGE_MAP()
 

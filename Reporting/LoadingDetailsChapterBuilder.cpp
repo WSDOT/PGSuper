@@ -1698,7 +1698,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
             }
             row++;
          }
@@ -1723,7 +1723,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
          }
 
          row++;
@@ -1753,7 +1753,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
             }
 
             row++;
@@ -1779,7 +1779,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
          }
 
          row++;
@@ -1809,7 +1809,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
             }
 
             row++;
@@ -1835,7 +1835,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
          }
 
          row++;
@@ -1866,7 +1866,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
             }
 
             row++;
@@ -1892,7 +1892,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
          }
 
          row++;
@@ -1922,7 +1922,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
             }
 
             row++;
@@ -1948,7 +1948,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
          }
 
          row++;
@@ -1978,7 +1978,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
             }
 
             row++;
@@ -2004,7 +2004,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
-            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
          }
 
          row++;

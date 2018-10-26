@@ -60,9 +60,9 @@ typedef enum ProductForceType
    pftShearKey,
 
    // pseudo externally applied loads (really internal loads)
-   pftSecondaryEffects,
-   pftPrimaryPostTensioning,
    pftPretension,
+   pftPrimaryPostTensioning,
+   pftSecondaryEffects,
 
    // time-depending effects
    pftCreep,
@@ -70,7 +70,8 @@ typedef enum ProductForceType
    pftRelaxation,
 
    // special cases
-   pftTotalPostTensioning,
+   pftEquivPostTensioning, // load case for equivalent PT forces
+   pftTotalPostTensioning, // Primary PT + Secondary Effects
    pftOverlayRating,
 
    pftProductForceTypeCount

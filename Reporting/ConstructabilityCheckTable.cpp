@@ -239,61 +239,159 @@ void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker*
          (*pTable)(row,  0) << _T("Screed Camber, C");
          (*pTable)(row++,1) << dim.SetValue(C);
       }
-
+   
       // get # of days for creep
-      Float64 D = 999;
-      if ( deckType == pgsTypes::sdtNone )
+      Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
+      Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
+      Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
+      Dmin_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+      Dmax_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
+      
+      Dmin_LowerBound = Cfactor*Dmin_UpperBound;
+      Dmin_Average    = (1+Cfactor)/2*Dmin_UpperBound;
+      
+      Dmax_LowerBound = Cfactor*Dmax_UpperBound;
+      Dmax_Average    = (1+Cfactor)/2*Dmax_UpperBound;
+   
+   
+      if ( IsEqual(min_days,max_days) )
       {
-         D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
-         (*pTable)(row,0) << _T("D @ ") << max_days << _T(" days (") << Sub2(_T("D"),max_days) << _T(")");
-         if ( D < 0 )
+         // Min/Max timing cambers will be the same, only report them once
+         ATLASSERT(IsEqual(Dmin_UpperBound,Dmax_UpperBound));
+         ATLASSERT(IsEqual(Dmin_Average,   Dmax_Average));
+         ATLASSERT(IsEqual(Dmin_LowerBound,Dmax_LowerBound));
+         if ( IsZero(1-Cfactor) )
          {
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);
+            // Upper,average, and lower bound cambers will all be the same... report them once
+            ATLASSERT(IsEqual(Dmin_UpperBound,Dmin_LowerBound));
+            ATLASSERT(IsEqual(Dmin_UpperBound,Dmin_Average));
+   
+            (*pTable)(row,0) << _T("Camber at ") << min_days << _T(" days, D") << Sub(min_days);
+            if ( Dmin_UpperBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_UpperBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmin_UpperBound);
          }
          else
          {
-            (*pTable)(row++,1) << dim.SetValue(D);
+            (*pTable)(row,0) << _T("Lower Bound Camber at ") << min_days << _T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
+            if ( Dmin_LowerBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_LowerBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmin_LowerBound);
+   
+            (*pTable)(row,0) << _T("Average Camber at ") << min_days << _T(" days, ")<<(1+Cfactor)/2*100<<_T("% of D") <<Sub(min_days);
+            if ( Dmin_Average < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_Average) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmin_Average);
+   
+            (*pTable)(row,0) << _T("Upper Bound Camber at ") << min_days << _T(" days, D") << Sub(min_days);
+            if ( Dmin_UpperBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_UpperBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmin_UpperBound);
          }
       }
       else
       {
-         Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-         D = Cfactor*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-         (*pTable)(row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
-         if ( D < 0 )
+         if ( IsZero(1-Cfactor) )
          {
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);
+            (*pTable)(row,0) << _T("Camber at ") << min_days << _T(" days, D") << Sub(min_days);
+            if ( Dmin_UpperBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_UpperBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmin_UpperBound);
+   
+            (*pTable)(row,0) << _T("Camber at ") << max_days << _T(" days, D") << Sub(max_days);
+            if ( Dmax_UpperBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmax_UpperBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmax_UpperBound);
          }
          else
          {
-            (*pTable)(row++,1) << dim.SetValue(D);
-         }
-
-         (*pTable)(row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
-         Float64 D120 = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME) ;
-         if ( D120 < 0 )
-         {
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(D120) << color(Black);
-         }
-         else
-         {
-            (*pTable)(row++,1) << dim.SetValue(D120);
+            (*pTable)(row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
+            if ( Dmin_LowerBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_LowerBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmin_LowerBound);
+   
+            (*pTable)(row,0) << _T("Average camber at ")<< min_days<<_T(" days, ")<<(1+Cfactor)/2*100<<_T("% of D") <<Sub(min_days);
+            if ( Dmin_Average < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_Average) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmin_Average);
+   
+            (*pTable)(row,0) << _T("Upper bound camber at ")<< min_days<<_T(" days, D") << Sub(min_days);
+            if ( Dmin_UpperBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_UpperBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmin_UpperBound);
+   
+            (*pTable)(row,0) << _T("Lower bound camber at ")<< max_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(max_days);
+            if ( Dmax_LowerBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmax_LowerBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmax_LowerBound);
+   
+            (*pTable)(row,0) << _T("Average camber at ")<< max_days<<_T(" days, ")<<(1+Cfactor)/2*100<<_T("% of D") <<Sub(max_days);
+            if ( Dmax_Average < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmax_Average) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmax_Average);
+   
+            (*pTable)(row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
+            if ( Dmax_UpperBound < 0 )
+               (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmax_UpperBound) << color(Black);
+            else
+               (*pTable)(row++,1) << dim.SetValue(Dmax_UpperBound);
          }
       }
-
-      if ( D < C )
+   
+      if ( pSpecEntry->CheckGirderSag() && deckType != pgsTypes::sdtNone )
       {
-         rptParagraph* p = new rptParagraph;
-         *pChapter << p;
-
-         *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
-      }
-      else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
-      {
-         rptParagraph* p = new rptParagraph;
-         *pChapter << p;
-
-         *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+         std::_tstring camberType;
+         Float64 D = 0;
+   
+         switch(pSpecEntry->GetSagCamberType())
+         {
+         case pgsTypes::LowerBoundCamber:
+            D = Dmin_LowerBound;
+            camberType = _T("lower bound");
+            break;
+         case pgsTypes::AverageCamber:
+            D = Dmin_Average;
+            camberType = _T("average");
+            break;
+         case pgsTypes::UpperBoundCamber:
+            D = Dmin_UpperBound;
+            camberType = _T("upper bound");
+            break;
+         }
+   
+         if ( D < C )
+         {
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
+   
+            *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+         }
+         else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+         {
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
+   
+            *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+         }
+   
+         if ( Dmin_LowerBound < C && pSpecEntry->GetSagCamberType() != pgsTypes::LowerBoundCamber )
+         {
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
+   
+            *p << _T("Screed Camber (C) is greater than the lower bound camber at time of deck casting (") << Cfactor*100 << _T("% of D") << Sub(min_days) << _T("). The girder may end up with a sag if the deck is placed at day ") << min_days << _T(" and the actual camber is a lower bound value.") << rptNewLine;
+         }
       }
    }
 }

@@ -232,6 +232,23 @@ pgsTendonStressArtifact* pgsGirderArtifact::GetTendonStressArtifact(DuctIndexTyp
    return &m_TendonStressArtifacts[ductIdx];
 }
 
+void pgsGirderArtifact::SetDuctSizeArtifact(DuctIndexType ductIdx,const pgsDuctSizeArtifact& artifact)
+{
+   m_DuctSizeArtifacts.insert(std::make_pair(ductIdx,artifact));
+}
+
+const pgsDuctSizeArtifact* pgsGirderArtifact::GetDuctSizeArtifact(DuctIndexType ductIdx) const
+{
+   std::map<DuctIndexType,pgsDuctSizeArtifact>::const_iterator found(m_DuctSizeArtifacts.find(ductIdx));
+   ATLASSERT(found != m_DuctSizeArtifacts.end());
+   return &(found->second);
+}
+
+pgsDuctSizeArtifact* pgsGirderArtifact::GetDuctSizeArtifact(DuctIndexType ductIdx)
+{
+   return &m_DuctSizeArtifacts[ductIdx];
+}
+
 void pgsGirderArtifact::AddDeflectionCheckArtifact(const pgsDeflectionCheckArtifact& artifact)
 {
    ATLASSERT(artifact.GetSpan() != INVALID_INDEX);
@@ -415,11 +432,22 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
 
 bool pgsGirderArtifact::Passed() const
 {
-   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator iter(m_TendonStressArtifacts.begin());
-   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator end(m_TendonStressArtifacts.end());
-   for ( ; iter != end; iter++ )
+   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator tendonStressIter(m_TendonStressArtifacts.begin());
+   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator tendonStressIterEnd(m_TendonStressArtifacts.end());
+   for ( ; tendonStressIter != tendonStressIterEnd; tendonStressIter++ )
    {
-      const pgsTendonStressArtifact& artifact = iter->second;
+      const pgsTendonStressArtifact& artifact = tendonStressIter->second;
+      if ( !artifact.Passed() )
+      {
+         return false;
+      }
+   }
+
+   std::map<DuctIndexType,pgsDuctSizeArtifact>::const_iterator ductSizeIter(m_DuctSizeArtifacts.begin());
+   std::map<DuctIndexType,pgsDuctSizeArtifact>::const_iterator ductSizeIterEnd(m_DuctSizeArtifacts.end());
+   for ( ; ductSizeIter != ductSizeIter; ductSizeIterEnd++ )
+   {
+      const pgsDuctSizeArtifact& artifact = ductSizeIter->second;
       if ( !artifact.Passed() )
       {
          return false;
@@ -487,6 +515,7 @@ void pgsGirderArtifact::MakeCopy(const pgsGirderArtifact& rOther)
 {
    m_GirderKey                 = rOther.m_GirderKey;
    m_TendonStressArtifacts     = rOther.m_TendonStressArtifacts;
+   m_DuctSizeArtifacts         = rOther.m_DuctSizeArtifacts;
 
    for ( IndexType lsIdx = 0; lsIdx < (IndexType)(pgsTypes::LimitStateCount); lsIdx++ )
    {

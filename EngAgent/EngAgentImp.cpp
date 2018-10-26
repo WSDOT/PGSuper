@@ -2442,6 +2442,48 @@ Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pierIdx,GirderIndexTyp
    }
 }
 
+Float64 CEngAgentImp::GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+   GroupIndexType grpIdx = pGroup->GetIndex();
+   CGirderKey girderKey(grpIdx,spanKey.girderIndex);
+
+   ValidateLiveLoadDistributionFactors(girderKey);
+
+   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
+   {
+      return 1.0;
+   }
+   else
+   {
+      return m_pDistFactorEngineer->GetSkewCorrectionFactorForMoment(spanKey,ls);
+   }
+}
+
+Float64 CEngAgentImp::GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+   GroupIndexType grpIdx = pGroup->GetIndex();
+   CGirderKey girderKey(grpIdx,spanKey.girderIndex);
+
+   ValidateLiveLoadDistributionFactors(girderKey);
+
+   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
+   {
+      return 1.0;
+   }
+   else
+   {
+      return m_pDistFactorEngineer->GetSkewCorrectionFactorForShear(spanKey,ls);
+   }
+}
+
 void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64* pM,Float64* nM,Float64* V)
 {
    GET_IFACE(IBridge,pBridge);

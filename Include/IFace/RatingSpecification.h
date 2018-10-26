@@ -80,8 +80,11 @@ interface IRatingSpecification : IUnknown
    virtual void SetShrinkageFactor(pgsTypes::LimitState ls,Float64 gSH) = 0;
    virtual Float64 GetShrinkageFactor(pgsTypes::LimitState ls) = 0;
 
-   virtual void SetPrestressFactor(pgsTypes::LimitState ls,Float64 gPS) = 0;
-   virtual Float64 GetPrestressFactor(pgsTypes::LimitState ls) = 0;
+   virtual void SetRelaxationFactor(pgsTypes::LimitState ls,Float64 gRE) = 0;
+   virtual Float64 GetRelaxationFactor(pgsTypes::LimitState ls) = 0;
+
+   virtual void SetSecondaryEffectsFactor(pgsTypes::LimitState ls,Float64 gPS) = 0;
+   virtual Float64 GetSecondaryEffectsFactor(pgsTypes::LimitState ls) = 0;
 
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL) = 0;
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) = 0;

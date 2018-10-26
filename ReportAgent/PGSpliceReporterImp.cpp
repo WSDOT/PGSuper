@@ -29,6 +29,9 @@
 #include <Reporting\IntervalChapterBuilder.h>
 #include <Reporting\TendonGeometryChapterBuilder.h>
 
+#include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
+#include <Reporting\EquilibriumCheckChapterBuilder.h>
+
 // Interfaces
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -68,6 +71,15 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    boost::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
    VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder),TEXT("Bridge Description")));
    VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder),TEXT("Section Properties")));
+
+
+   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(new CEquilibriumCheckReportSpecificationBuilder(m_pBroker));
+
+   CReportBuilder* pMyRptBuilder = new CReportBuilder(_T("Equilibrium Check"));
+   pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pMyRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
+   pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEquilibriumCheckChapterBuilder) );
+   pRptMgr->AddReportBuilder( pMyRptBuilder );
 
    return S_OK;
 }

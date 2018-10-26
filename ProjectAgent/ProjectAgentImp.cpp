@@ -244,6 +244,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.50;
    m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = -1;
 
@@ -251,6 +252,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.50;
    m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = -1;
 
@@ -258,6 +260,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
    m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = -1;
 
@@ -265,6 +268,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
    m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = -1;
 
@@ -272,6 +276,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.50;
    m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = -1;
 
@@ -279,6 +284,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
    m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
 
@@ -286,6 +292,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.50;
    m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = -1;
 
@@ -293,6 +300,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = -1;
 
@@ -300,6 +308,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.50;
    m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = -1;
 
@@ -307,6 +316,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
    m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = -1;
 
@@ -314,6 +324,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.50;
    m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = -1;
 
@@ -321,6 +332,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gDW[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
    m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
    m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
+   m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = -1;
 
@@ -540,54 +552,60 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("ADTT"),CComVariant(pObj->m_ADTT));
       pSave->put_Property(_T("IncludePedestrianLiveLoad"),CComVariant(pObj->m_bIncludePedestrianLiveLoad));
 
-      pSave->BeginUnit(_T("DesignInventoryRating"),3.0);
+      pSave->BeginUnit(_T("DesignInventoryRating"),4.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrDesign_Inventory]));
       pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]));
       pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]));
       pSave->put_Property(_T("CR_StrengthI"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]));
       pSave->put_Property(_T("SH_StrengthI"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]));
+      pSave->put_Property(_T("RE_StrengthI"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]));
       pSave->put_Property(_T("PS_StrengthI"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]));
       pSave->put_Property(_T("LL_StrengthI"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]));
       pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)]));
       pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)]));
       pSave->put_Property(_T("CR_ServiceIII"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)]));
       pSave->put_Property(_T("SH_ServiceIII"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)]));
+      pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)]));
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)]));
       pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory]));
       pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrDesign_Inventory]));
       pSave->EndUnit(); // DesignInventoryRating
 
-      pSave->BeginUnit(_T("DesignOperatingRating"),3.0);
+      pSave->BeginUnit(_T("DesignOperatingRating"),4.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrDesign_Operating]));
       pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthI_Operating)]));
       pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthI_Operating)]));
       pSave->put_Property(_T("CR_StrengthI"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Operating)]));
       pSave->put_Property(_T("SH_StrengthI"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Operating)]));
+      pSave->put_Property(_T("RE_StrengthI"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Operating)]));
       pSave->put_Property(_T("PS_StrengthI"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Operating)]));
       pSave->put_Property(_T("LL_StrengthI"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Operating)]));
       pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_Operating)]));
       pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_Operating)]));
       pSave->put_Property(_T("CR_ServiceIII"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_Operating)]));
       pSave->put_Property(_T("SH_ServiceIII"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Operating)]));
+      pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Operating)]));
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Operating)]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Operating)]));
       pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating]));
       pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrDesign_Operating]));
       pSave->EndUnit(); // DesignOperatingRating
 
-      pSave->BeginUnit(_T("LegalRoutineRating"),3.0);
+      pSave->BeginUnit(_T("LegalRoutineRating"),4.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Routine]));
       pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]));
       pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]));
       pSave->put_Property(_T("CR_StrengthI"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]));
       pSave->put_Property(_T("SH_StrengthI"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]));
+      pSave->put_Property(_T("RE_StrengthI"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]));
       pSave->put_Property(_T("PS_StrengthI"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]));
       pSave->put_Property(_T("LL_StrengthI"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]));
       pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)]));
       pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)]));
       pSave->put_Property(_T("CR_ServiceIII"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)]));
       pSave->put_Property(_T("SH_ServiceIII"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)]));
+      pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)]));
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)]));
       pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Routine]));
@@ -596,18 +614,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("ExcludeLegalLoadLaneLoading"),CComVariant(pObj->m_bExcludeLegalLoadLaneLoading));
       pSave->EndUnit(); // LegalRoutineRating
 
-      pSave->BeginUnit(_T("LegalSpecialRating"),3.0);
+      pSave->BeginUnit(_T("LegalSpecialRating"),4.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Special]));
       pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]));
       pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]));
       pSave->put_Property(_T("CR_StrengthI"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]));
       pSave->put_Property(_T("SH_StrengthI"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]));
+      pSave->put_Property(_T("RE_StrengthI"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]));
       pSave->put_Property(_T("PS_StrengthI"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]));
       pSave->put_Property(_T("LL_StrengthI"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]));
       pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)]));
       pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)]));
       pSave->put_Property(_T("CR_ServiceIII"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)]));
       pSave->put_Property(_T("SH_ServiceIII"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)]));
+      pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)]));
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)]));
       pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Special]));
@@ -615,18 +635,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Special]));
       pSave->EndUnit(); // LegalSpecialRating
 
-      pSave->BeginUnit(_T("PermitRoutineRating"),3.0);
+      pSave->BeginUnit(_T("PermitRoutineRating"),4.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Routine]));
       pSave->put_Property(_T("DC_StrengthII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
       pSave->put_Property(_T("DW_StrengthII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
       pSave->put_Property(_T("CR_StrengthII"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
       pSave->put_Property(_T("SH_StrengthII"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
+      pSave->put_Property(_T("RE_StrengthII"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
       pSave->put_Property(_T("PS_StrengthII"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
       pSave->put_Property(_T("LL_StrengthII"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]));
       pSave->put_Property(_T("DC_ServiceI"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
       pSave->put_Property(_T("DW_ServiceI"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
       pSave->put_Property(_T("CR_ServiceI"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
       pSave->put_Property(_T("SH_ServiceI"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
+      pSave->put_Property(_T("RE_ServiceI"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
       pSave->put_Property(_T("PS_ServiceI"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
       pSave->put_Property(_T("LL_ServiceI"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]));
       pSave->put_Property(_T("AllowableYieldStressCoefficient"),CComVariant(pObj->m_AllowableYieldStressCoefficient));
@@ -634,18 +656,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrPermit_Routine]));
       pSave->EndUnit(); // PermitRoutineRating
 
-      pSave->BeginUnit(_T("PermitSpecialRating"),3.0);
+      pSave->BeginUnit(_T("PermitSpecialRating"),4.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Special]));
       pSave->put_Property(_T("DC_StrengthII"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
       pSave->put_Property(_T("DW_StrengthII"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
       pSave->put_Property(_T("CR_StrengthII"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
       pSave->put_Property(_T("SH_StrengthII"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
+      pSave->put_Property(_T("RE_StrengthII"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
       pSave->put_Property(_T("PS_StrengthII"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
       pSave->put_Property(_T("LL_StrengthII"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]));
       pSave->put_Property(_T("DC_ServiceI"),CComVariant(pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
       pSave->put_Property(_T("DW_ServiceI"),CComVariant(pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
       pSave->put_Property(_T("CR_ServiceI"),CComVariant(pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
       pSave->put_Property(_T("SH_ServiceI"),CComVariant(pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
+      pSave->put_Property(_T("RE_ServiceI"),CComVariant(pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
       pSave->put_Property(_T("PS_ServiceI"),CComVariant(pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
       pSave->put_Property(_T("LL_ServiceI"),CComVariant(pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]));
       pSave->put_Property(_T("SpecialPermitType"),CComVariant(pObj->m_SpecialPermitType));
@@ -752,6 +776,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
             pLoad->get_Property(_T("SH_StrengthI"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Inventory)+indexOffset] = var.dblVal;
 
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_StrengthI"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Inventory)+indexOffset] = var.dblVal;
+            }
+
             pLoad->get_Property(_T("PS_StrengthI"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Inventory)+indexOffset] = var.dblVal;
          }
@@ -772,6 +802,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)+indexOffset] = var.dblVal;
+
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_ServiceIII"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)+indexOffset] = var.dblVal;
+            }
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)+indexOffset] = var.dblVal;
@@ -821,6 +857,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
             pLoad->get_Property(_T("SH_StrengthI"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Operating)+indexOffset] = var.dblVal;
 
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_StrengthI"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Operating)+indexOffset] = var.dblVal;
+            }
+
             pLoad->get_Property(_T("PS_StrengthI"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Operating)+indexOffset] = var.dblVal;
          }
@@ -841,6 +883,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Operating)+indexOffset] = var.dblVal;
+
+            if ( 3 < version ) 
+            {
+               pLoad->get_Property(_T("RE_ServiceIII"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Operating)+indexOffset] = var.dblVal;
+            }
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Operating)+indexOffset] = var.dblVal;
@@ -891,6 +939,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
             pLoad->get_Property(_T("SH_StrengthI"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)+indexOffset] = var.dblVal;
 
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_StrengthI"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)+indexOffset] = var.dblVal;
+            }
+
             pLoad->get_Property(_T("PS_StrengthI"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)+indexOffset] = var.dblVal;
          }
@@ -911,6 +965,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)+indexOffset] = var.dblVal;
+
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_ServiceIII"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)+indexOffset] = var.dblVal;
+            }
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)+indexOffset] = var.dblVal;
@@ -967,6 +1027,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
             pLoad->get_Property(_T("SH_StrengthI"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)+indexOffset] = var.dblVal;
 
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_StrengthI"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)+indexOffset] = var.dblVal;
+            }
+
             pLoad->get_Property(_T("PS_StrengthI"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)+indexOffset] = var.dblVal;
          }
@@ -987,6 +1053,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)+indexOffset] = var.dblVal;
+
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_ServiceIII"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)+indexOffset] = var.dblVal;
+            }
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)+indexOffset] = var.dblVal;
@@ -1040,6 +1112,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
             pLoad->get_Property(_T("SH_StrengthII"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)+indexOffset] = var.dblVal;
 
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_StrengthII"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)+indexOffset] = var.dblVal;
+            }
+
             pLoad->get_Property(_T("PS_StrengthII"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)+indexOffset] = var.dblVal;
          }
@@ -1060,6 +1138,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
             pLoad->get_Property(_T("SH_ServiceI"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)+indexOffset] = var.dblVal;
+
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_ServiceI"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)+indexOffset] = var.dblVal;
+            }
 
             pLoad->get_Property(_T("PS_ServiceI"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)+indexOffset] = var.dblVal;
@@ -1113,6 +1197,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
             pLoad->get_Property(_T("SH_StrengthII"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)+indexOffset] = var.dblVal;
 
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_StrengthII"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)+indexOffset] = var.dblVal;
+            }
+
             pLoad->get_Property(_T("PS_StrengthII"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)+indexOffset] = var.dblVal;
          }
@@ -1133,6 +1223,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
             pLoad->get_Property(_T("SH_ServiceI"),&var);
             pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)+indexOffset] = var.dblVal;
+
+            if ( 3 < version )
+            {
+               pLoad->get_Property(_T("RE_ServiceI"),&var);
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)+indexOffset] = var.dblVal;
+            }
 
             pLoad->get_Property(_T("PS_ServiceI"),&var);
             pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)+indexOffset] = var.dblVal;
@@ -4131,6 +4227,8 @@ void CProjectAgentImp::UseBridgeLibraryEntries()
 
 void CProjectAgentImp::UseGirderLibraryEntries()
 {
+   UseDuctLibraryEntries();
+
    if ( m_pLibMgr )
    {
       // Girders
@@ -4194,6 +4292,38 @@ void CProjectAgentImp::UseGirderLibraryEntries()
    }
 }
 
+void CProjectAgentImp::UseDuctLibraryEntries()
+{
+   if ( m_pLibMgr )
+   {
+      // Ducts
+      const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
+      const DuctLibraryEntry* pEntry;
+
+      GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      {
+         CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            CPTData* pPTData = pGirder->GetPostTensioning();
+            DuctIndexType nDucts = pPTData->GetDuctCount();
+            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+            {
+               CDuctData* pDuct = pPTData->GetDuct(ductIdx);
+               use_library_entry(&m_LibObserver,
+                                 pDuct->Name,
+                                 &pEntry,
+                                 *pDuctLibrary);
+               pDuct->pDuctLibEntry = pEntry;
+            } // duct loop
+         }// girder loop
+      }// group loop
+   }
+}
+
 void CProjectAgentImp::ReleaseBridgeLibraryEntries()
 {
    if ( m_pLibMgr )
@@ -4238,6 +4368,8 @@ void CProjectAgentImp::ReleaseGirderLibraryEntries()
 {
    if ( m_pLibMgr )
    {
+      ReleaseDuctLibraryEntries();
+
       // girder entry
       const GirderLibrary& girderLibrary = m_pLibMgr->GetGirderLibrary();
       if (m_BridgeDescription.GetGirderLibraryEntry() != 0)
@@ -4264,6 +4396,34 @@ void CProjectAgentImp::ReleaseGirderLibraryEntries()
       // this must be done dead last because the Girder could be referencing the
       // bridge's girder library entry
       m_BridgeDescription.SetGirderLibraryEntry(NULL);
+   }
+}
+
+void CProjectAgentImp::ReleaseDuctLibraryEntries()
+{
+   if ( m_pLibMgr )
+   {
+      // duct entry
+      const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
+
+      GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      {
+         CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            CPTData* pPTData = pGirder->GetPostTensioning();
+            DuctIndexType nDucts = pPTData->GetDuctCount();
+            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+            {
+               CDuctData* pDuctData = pPTData->GetDuct(ductIdx);
+               release_library_entry(&m_LibObserver,pDuctData->pDuctLibEntry,*pDuctLibrary);
+               pDuctData->pDuctLibEntry = NULL;
+            }
+         }
+      }
    }
 }
 
@@ -6873,7 +7033,22 @@ Float64 CProjectAgentImp::GetShrinkageFactor(pgsTypes::LimitState ls)
    return m_gSH[IndexFromLimitState(ls)];
 }
 
-void CProjectAgentImp::SetPrestressFactor(pgsTypes::LimitState ls,Float64 gPS)
+
+void CProjectAgentImp::SetRelaxationFactor(pgsTypes::LimitState ls,Float64 gRE)
+{
+   if ( !IsEqual(m_gRE[IndexFromLimitState(ls)],gRE) )
+   {
+      m_gRE[IndexFromLimitState(ls)] = gRE;
+      RatingSpecificationChanged(true);
+   }
+}
+
+Float64 CProjectAgentImp::GetRelaxationFactor(pgsTypes::LimitState ls)
+{
+   return m_gRE[IndexFromLimitState(ls)];
+}
+
+void CProjectAgentImp::SetSecondaryEffectsFactor(pgsTypes::LimitState ls,Float64 gPS)
 {
    if ( !IsEqual(m_gPS[IndexFromLimitState(ls)],gPS) )
    {
@@ -6882,7 +7057,7 @@ void CProjectAgentImp::SetPrestressFactor(pgsTypes::LimitState ls,Float64 gPS)
    }
 }
 
-Float64 CProjectAgentImp::GetPrestressFactor(pgsTypes::LimitState ls)
+Float64 CProjectAgentImp::GetSecondaryEffectsFactor(pgsTypes::LimitState ls)
 {
    return m_gPS[IndexFromLimitState(ls)];
 }
@@ -7140,7 +7315,7 @@ arDesignOptions CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey)
 
    // determine flexural design from girder attributes
    StrandIndexType nHarped = pGirderEntry->GetNumHarpedStrandCoordinates();
-   if ( 0 < nHarped )
+   if ( 0 < nHarped && !pGirderEntry->IsForceHarpedStrandsStraight())
    {
       options.doDesignForFlexure = dtDesignForHarping;
    }
@@ -7269,6 +7444,12 @@ void CProjectAgentImp::EnumLiveLoadNames( std::vector<std::_tstring>* pNames) co
    {
       pNames->insert(pNames->begin(),*iter);
    }
+}
+
+void CProjectAgentImp::EnumDuctNames( std::vector<std::_tstring>* pNames ) const
+{
+   const DuctLibrary& prj_lib = *(m_pLibMgr->GetDuctLibrary());
+   psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
 void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::_tstring>* pNames )
@@ -7469,6 +7650,11 @@ SpecLibrary* CProjectAgentImp::GetSpecLibrary()
    return m_pLibMgr->GetSpecLibrary();
 }
 
+DuctLibrary* CProjectAgentImp::GetDuctLibrary()
+{
+   return m_pLibMgr->GetDuctLibrary();
+}
+
 RatingLibrary* CProjectAgentImp::GetRatingLibrary()
 {
    return m_pLibMgr->GetRatingLibrary();
@@ -7508,6 +7694,20 @@ const RatingLibraryEntry* CProjectAgentImp::GetRatingEntry( LPCTSTR lpszName ) c
 {
    const RatingLibraryEntry* pEntry;
    const RatingLibrary* prj_lib = m_pLibMgr->GetRatingLibrary();
+   pEntry = prj_lib->LookupEntry( lpszName );
+
+   if (pEntry!=0)
+   {
+      pEntry->Release();
+   }
+
+   return pEntry;
+}
+
+const DuctLibraryEntry* CProjectAgentImp::GetDuctEntry( LPCTSTR lpszName ) const
+{
+   const DuctLibraryEntry* pEntry;
+   const DuctLibrary* prj_lib = m_pLibMgr->GetDuctLibrary();
    pEntry = prj_lib->LookupEntry( lpszName );
 
    if (pEntry!=0)

@@ -72,6 +72,8 @@ public:
                                Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                                Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
                                Float64* gR,  Float64* gR1,  Float64* gR2 ); // reaction
+   virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls);
+   virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls);
 
 private:
 

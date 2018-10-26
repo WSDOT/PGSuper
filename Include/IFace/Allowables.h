@@ -202,3 +202,23 @@ interface IDebondLimits : IUnknown
    virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) = 0; 
 };
 
+
+/*****************************************************************************
+INTERFACE
+   IDuctLimits
+
+   Interface to access duct limits criteria
+
+DESCRIPTION
+   Interface to access debond limits criteria
+*****************************************************************************/
+// {C99249A5-87C6-4fdf-AC1A-502E50FAEABC}
+DEFINE_GUID(IID_IDuctLimits, 
+0xc99249a5, 0x87c6, 0x4fdf, 0xac, 0x1a, 0x50, 0x2e, 0x50, 0xfa, 0xea, 0xbc);
+interface IDuctLimits : IUnknown
+{
+   virtual Float64 GetRadiusOfCurvatureLimit(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetTendonAreaLimit(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetDuctSizeLimit(const CGirderKey& girderKey) = 0;
+};
+

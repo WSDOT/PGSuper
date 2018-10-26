@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include "ShearCapacityEngineer.h"
 #include <ReinforcedConcrete\ReinforcedConcrete.h>
-#include <units\sysUnits.h>
+#include <Units\SysUnits.h>
 #include "..\PGSuperException.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -35,9 +35,9 @@
 #include <IFace\ResistanceFactors.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
-#include <lrfd\Rebar.h>
-#include <psglib\SpecLibraryEntry.h>
-#include <pgsext\statusitem.h>
+#include <Lrfd\Rebar.h>
+#include <PsgLib\SpecLibraryEntry.h>
+#include <PgsExt\statusitem.h>
 #include <PgsExt\DesignConfigUtil.h>
 
 #ifdef _DEBUG
@@ -597,6 +597,14 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    else
    {
       pMaterial->GetSegmentTransverseRebarProperties(segmentKey,&Es,&fy,&fu);
+   }
+
+   // added with LRFD 7th Edition 2014
+   // fy <= 100 ksi
+   // See LRFD 5.8.2.5
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      fy = min(fy,::ConvertToSysUnits(100.0,unitMeasure::KSI));
    }
 
    Float64 s;

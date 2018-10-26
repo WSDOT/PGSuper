@@ -294,7 +294,7 @@ BOOL CPermitRatingPage::OnSetActive()
    }
 
    GET_IFACE2(broker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
    {
       GetDlgItem(IDC_STRENGTH_II_PLUS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_STRENGTH_II_CR)->ShowWindow(SW_HIDE);

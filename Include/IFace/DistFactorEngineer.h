@@ -109,6 +109,9 @@ interface IDistFactorEngineer : IUnknown
                                Float64* gnM, Float64* gnM1, Float64* gnM2,     // neg moment
                                Float64* gV,  Float64* gV1,  Float64* gV2,      // shear
                                Float64* gR,  Float64* gR1,  Float64* gR2 ) = 0;// reaction
+
+   virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
 };
 
 #endif // INCLUDED_IFACE_DISTFACTORENGINEER_H_

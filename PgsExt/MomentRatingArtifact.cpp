@@ -33,10 +33,36 @@ static char THIS_FILE[] = __FILE__;
 CLASS
    pgsMomentRatingArtifact
 ****************************************************************************/
-pgsMomentRatingArtifact::pgsMomentRatingArtifact()
+pgsMomentRatingArtifact::pgsMomentRatingArtifact() :
+m_strVehicleName(_T("Unknown"))
 {
    m_bRFComputed = false;
    m_RF = 0;
+
+   m_RatingType = pgsTypes::lrDesign_Inventory;
+
+   m_VehicleIndex = INVALID_INDEX;
+   m_VehicleWeight = -999999;
+
+   m_SystemFactor = 1.0;
+   m_ConditionFactor = 1.0;
+   m_MinimumReinforcementFactor = 1.0;
+   m_CapacityRedutionFactor = 1.0;
+   m_Mn = 0;
+   m_gDC = 1;
+   m_gDW = 1;
+   m_gCR = 1;
+   m_gSH = 1;
+   m_gRE = 1;
+   m_gPS = 1;
+   m_gLL = 1;
+   m_Mdc = 0;
+   m_Mdw = 0;
+   m_Mcr = 0;
+   m_Msh = 0;
+   m_Mre = 0;
+   m_Mps = 0;
+   m_Mllim = 0;
 }
 
 pgsMomentRatingArtifact::pgsMomentRatingArtifact(const pgsMomentRatingArtifact& rOther)
@@ -207,6 +233,94 @@ Float64 pgsMomentRatingArtifact::GetWearingSurfaceMoment() const
    return m_Mdw;
 }
 
+void pgsMomentRatingArtifact::SetCreepFactor(Float64 gCR)
+{
+   m_gCR = gCR;
+   m_bRFComputed = false;
+}
+
+Float64 pgsMomentRatingArtifact::GetCreepFactor() const
+{
+   return m_gCR;
+}
+
+void pgsMomentRatingArtifact::SetCreepMoment(Float64 Mcr)
+{
+   m_Mcr = Mcr;
+   m_bRFComputed = false;
+}
+
+Float64 pgsMomentRatingArtifact::GetCreepMoment() const
+{
+   return m_Mcr;
+}
+
+void pgsMomentRatingArtifact::SetShrinkageFactor(Float64 gSH)
+{
+   m_gSH = gSH;
+   m_bRFComputed = false;
+}
+
+Float64 pgsMomentRatingArtifact::GetShrinkageFactor() const
+{
+   return m_gSH;
+}
+
+void pgsMomentRatingArtifact::SetShrinkageMoment(Float64 Msh)
+{
+   m_Msh = Msh;
+   m_bRFComputed = false;
+}
+
+Float64 pgsMomentRatingArtifact::GetShrinkageMoment() const
+{
+   return m_Msh;
+}
+
+void pgsMomentRatingArtifact::SetRelaxationFactor(Float64 gRE)
+{
+   m_gRE = gRE;
+   m_bRFComputed = false;
+}
+
+Float64 pgsMomentRatingArtifact::GetRelaxationFactor() const
+{
+   return m_gRE;
+}
+
+void pgsMomentRatingArtifact::SetRelaxationMoment(Float64 Mre)
+{
+   m_Mre = Mre;
+   m_bRFComputed = false;
+}
+
+Float64 pgsMomentRatingArtifact::GetRelaxationMoment() const
+{
+   return m_Mre;
+}
+
+void pgsMomentRatingArtifact::SetSecondaryEffectsFactor(Float64 gPS)
+{
+   m_gPS = gPS;
+   m_bRFComputed = false;
+}
+
+Float64 pgsMomentRatingArtifact::GetSecondaryEffectsFactor() const
+{
+   return m_gPS;
+}
+
+void pgsMomentRatingArtifact::SetSecondaryEffectsMoment(Float64 Mps)
+{
+   m_Mps = Mps;
+   m_bRFComputed = false;
+}
+
+Float64 pgsMomentRatingArtifact::GetSecondaryEffectsMoment() const
+{
+   return m_Mps;
+}
+
 void pgsMomentRatingArtifact::SetLiveLoadFactor(Float64 gLL)
 {
    m_gLL = gLL;
@@ -250,7 +364,7 @@ Float64 pgsMomentRatingArtifact::GetRatingFactor() const
       }
 
       Float64 C = p * m_CapacityRedutionFactor * m_MinimumReinforcementFactor * m_Mn;
-      Float64 RF = (C - m_gDC*m_Mdc - m_gDW*m_Mdw)/(m_gLL*m_Mllim);
+      Float64 RF = (C - m_gDC*m_Mdc - m_gDW*m_Mdw - m_gCR*m_Mcr - m_gSH*m_Msh - m_gRE*m_Mre - m_gPS*m_Mps)/(m_gLL*m_Mllim);
 
       if ( RF < 0 )
       {
@@ -280,9 +394,17 @@ void pgsMomentRatingArtifact::MakeCopy(const pgsMomentRatingArtifact& rOther)
    m_Mn                         = rOther.m_Mn;
    m_gDC                        = rOther.m_gDC;
    m_gDW                        = rOther.m_gDW;
+   m_gCR                        = rOther.m_gCR;
+   m_gSH                        = rOther.m_gSH;
+   m_gRE                        = rOther.m_gRE;
+   m_gPS                        = rOther.m_gPS;
    m_gLL                        = rOther.m_gLL;
    m_Mdc                        = rOther.m_Mdc;
    m_Mdw                        = rOther.m_Mdw;
+   m_Mcr                        = rOther.m_Mcr;
+   m_Msh                        = rOther.m_Msh;
+   m_Mre                        = rOther.m_Mre;
+   m_Mps                        = rOther.m_Mps;
    m_Mllim                      = rOther.m_Mllim;
 }
 

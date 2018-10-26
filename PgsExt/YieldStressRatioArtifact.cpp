@@ -37,6 +37,39 @@ pgsYieldStressRatioArtifact::pgsYieldStressRatioArtifact()
 {
    //m_bRFComputed = false;
    //m_RF = 0;
+   m_bRFComputed = false;
+   m_RF = 0;
+   m_fcr = 0;
+   m_fs = 0;
+
+   m_RatingType = pgsTypes::lrDesign_Inventory;
+
+   m_VehicleIndex = INVALID_INDEX;
+   m_VehicleWeight = -9999999;
+   m_strVehicleName = _T("Unknown");
+
+   m_fr = 0;
+   m_fpe = 0;
+   m_Mdc = 0;
+   m_Mdw = 0;
+   m_Mcr = 0;
+   m_Msh = 0;
+   m_Mre = 0;
+   m_Mps = 0;
+   m_Mllim = 0;
+   m_Mcrack = 0;
+   m_Icrack = 0;
+   m_c = 0;
+   m_dps = 0;
+   m_Es = 0;
+   m_Eg = 0;
+   m_gDC = 1.0;
+   m_gDW = 1.0;
+   m_gCR = 1.0;
+   m_gSH = 1.0;
+   m_gRE = 1.0;
+   m_gPS = 1.0;
+   m_gLL = 1.0;
 }
 
 pgsYieldStressRatioArtifact::pgsYieldStressRatioArtifact(const pgsYieldStressRatioArtifact& rOther)
@@ -163,6 +196,94 @@ Float64 pgsYieldStressRatioArtifact::GetWearingSurfaceMoment() const
    return m_Mdw;
 }
 
+void pgsYieldStressRatioArtifact::SetCreepFactor(Float64 gCR)
+{
+   m_gCR = gCR;
+   m_bRFComputed = false;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetCreepFactor() const
+{
+   return m_gCR;
+}
+
+void pgsYieldStressRatioArtifact::SetCreepMoment(Float64 Mcr)
+{
+   m_Mcr = Mcr;
+   m_bRFComputed = false;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetCreepMoment() const
+{
+   return m_Mcr;
+}
+
+void pgsYieldStressRatioArtifact::SetShrinkageFactor(Float64 gSH)
+{
+   m_gSH = gSH;
+   m_bRFComputed = false;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetShrinkageFactor() const
+{
+   return m_gSH;
+}
+
+void pgsYieldStressRatioArtifact::SetShrinkageMoment(Float64 Msh)
+{
+   m_Msh = Msh;
+   m_bRFComputed = false;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetShrinkageMoment() const
+{
+   return m_Msh;
+}
+
+void pgsYieldStressRatioArtifact::SetRelaxationFactor(Float64 gRE)
+{
+   m_gRE = gRE;
+   m_bRFComputed = false;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetRelaxationFactor() const
+{
+   return m_gRE;
+}
+
+void pgsYieldStressRatioArtifact::SetRelaxationMoment(Float64 Mre)
+{
+   m_Mre = Mre;
+   m_bRFComputed = false;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetRelaxationMoment() const
+{
+   return m_Mre;
+}
+
+void pgsYieldStressRatioArtifact::SetSecondaryEffectsFactor(Float64 gPS)
+{
+   m_gPS = gPS;
+   m_bRFComputed = false;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetSecondaryEffectsFactor() const
+{
+   return m_gPS;
+}
+
+void pgsYieldStressRatioArtifact::SetSecondaryEffectsMoment(Float64 Mps)
+{
+   m_Mps = Mps;
+   m_bRFComputed = false;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetSecondaryEffectsMoment() const
+{
+   return m_Mps;
+}
+
 void pgsYieldStressRatioArtifact::SetLiveLoadFactor(Float64 gLL)
 {
    m_gLL = gLL;
@@ -187,24 +308,24 @@ Float64 pgsYieldStressRatioArtifact::GetLiveLoadMoment() const
 
 void pgsYieldStressRatioArtifact::SetCrackingMoment(Float64 Mcr)
 {
-   m_Mcr = Mcr;
+   m_Mcrack = Mcr;
    m_bRFComputed = false;
 }
 
 Float64 pgsYieldStressRatioArtifact::GetCrackingMoment() const
 {
-   return m_Mcr;
+   return m_Mcrack;
 }
 
 void pgsYieldStressRatioArtifact::SetIcr(Float64 Icr)
 {
-   m_Icr = Icr;
+   m_Icrack = Icr;
    m_bRFComputed = false;
 }
 
 Float64 pgsYieldStressRatioArtifact::GetIcr() const
 {
-   return m_Icr;
+   return m_Icrack;
 }
 
 void pgsYieldStressRatioArtifact::SetCrackDepth(Float64 c)
@@ -270,29 +391,29 @@ Float64 pgsYieldStressRatioArtifact::GetEg() const
 
 Float64 pgsYieldStressRatioArtifact::GetExcessMoment() const
 {
-   Float64 M = m_gDC*m_Mdc + m_gDW*m_Mdw + m_gLL*m_Mllim;
-   if ( m_Mcr < 0 )
+   Float64 M = m_gDC*m_Mdc + m_gDW*m_Mdw + m_gCR*m_Mcr + m_gSH*m_Msh + m_gRE*m_Mre + m_gPS*m_Mps + m_gLL*m_Mllim;
+   if ( m_Mcrack < 0 )
    {
       // negative moment
-      if ( m_Mcr < M )
+      if ( m_Mcrack < M )
       {
          return 0; // section isn't cracked
       }
       else
       {
-         return M - m_Mcr;
+         return M - m_Mcrack;
       }
    }
    else
    {
       // positive moment
-      if ( M < m_Mcr )
+      if ( M < m_Mcrack )
       {
          return 0; // section isn't cracked
       }
       else
       {
-         return M - m_Mcr;
+         return M - m_Mcrack;
       }
    }
 }
@@ -312,7 +433,7 @@ Float64 pgsYieldStressRatioArtifact::GetStressRatio() const
 
    // moment in excess of cracking
    Float64 M = GetExcessMoment();
-   m_fcr = (m_Es/m_Eg)*fabs(M)*(m_dps-m_c)/m_Icr; // stress added to strand at instance of cracking
+   m_fcr = (m_Es/m_Eg)*fabs(M)*(m_dps-m_c)/m_Icrack; // stress added to strand at instance of cracking
    m_fs = m_fpe + m_fcr; // total stress in strand just after cracking
    if ( IsZero(m_fs) )
    {
@@ -347,15 +468,23 @@ void pgsYieldStressRatioArtifact::MakeCopy(const pgsYieldStressRatioArtifact& rO
    m_fpe          = rOther.m_fpe;
    m_Mdc          = rOther.m_Mdc;
    m_Mdw          = rOther.m_Mdw;
-   m_Mllim        = rOther.m_Mllim;
    m_Mcr          = rOther.m_Mcr;
-   m_Icr          = rOther.m_Icr;
+   m_Msh          = rOther.m_Msh;
+   m_Mre          = rOther.m_Mre;
+   m_Mps          = rOther.m_Mps;
+   m_Mllim        = rOther.m_Mllim;
+   m_Mcrack       = rOther.m_Mcrack;
+   m_Icrack       = rOther.m_Icrack;
    m_c            = rOther.m_c;
    m_dps          = rOther.m_dps;
    m_Es           = rOther.m_Es;
    m_Eg           = rOther.m_Eg;
    m_gDC          = rOther.m_gDC;
    m_gDW          = rOther.m_gDW;
+   m_gCR          = rOther.m_gCR;
+   m_gSH          = rOther.m_gSH;
+   m_gRE          = rOther.m_gRE;
+   m_gPS          = rOther.m_gPS;
    m_gLL          = rOther.m_gLL;
 }
 

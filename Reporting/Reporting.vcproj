@@ -710,7 +710,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DuctGeometryCheckTable.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DuctSizeCheckTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\EffFlangeWidthDetailsChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\EquilibriumCheckChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\EquilibriumCheckDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\EquilibriumCheckReportSpecification.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\EquilibriumCheckReportSpecificationBuilder.cpp"
 				>
 			</File>
 			<File
@@ -1423,7 +1447,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\DuctGeometryCheckTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\DuctSizeCheckTable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\EffFlangeWidthDetailsChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\EquilibriumCheckChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\EquilibriumCheckDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\EquilibriumCheckReportSpecification.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\EquilibriumCheckReportSpecificationBuilder.h"
 				>
 			</File>
 			<File

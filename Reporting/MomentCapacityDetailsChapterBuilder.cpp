@@ -397,10 +397,7 @@ void write_moment_data_table(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptRcScalar strain;
    strain.SetFormat( sysNumericFormatTool::Fixed );
@@ -887,10 +884,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));

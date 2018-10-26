@@ -95,6 +95,30 @@ public:
    void SetWearingSurfaceShear(Float64 Vdw);
    Float64 GetWearingSurfaceShear() const;
 
+   void SetCreepFactor(Float64 gCR);
+   Float64 GetCreepFactor() const;
+
+   void SetCreepShear(Float64 Mcr);
+   Float64 GetCreepShear() const;
+
+   void SetShrinkageFactor(Float64 gSH);
+   Float64 GetShrinkageFactor() const;
+
+   void SetShrinkageShear(Float64 Msh);
+   Float64 GetShrinkageShear() const;
+
+   void SetRelaxationFactor(Float64 gRE);
+   Float64 GetRelaxationFactor() const;
+
+   void SetRelaxationShear(Float64 Mre);
+   Float64 GetRelaxationShear() const;
+
+   void SetSecondaryEffectsFactor(Float64 gPS);
+   Float64 GetSecondaryEffectsFactor() const;
+
+   void SetSecondaryEffectsShear(Float64 Mps);
+   Float64 GetSecondaryEffectsShear() const;
+
    void SetLiveLoadFactor(Float64 gLL);
    Float64 GetLiveLoadFactor() const;
 
@@ -127,9 +151,17 @@ protected:
    Float64 m_Vn;
    Float64 m_gDC;
    Float64 m_gDW;
+   Float64 m_gCR;
+   Float64 m_gSH;
+   Float64 m_gRE;
+   Float64 m_gPS; // secondary effects
    Float64 m_gLL;
    Float64 m_Vdc;
    Float64 m_Vdw;
+   Float64 m_Vcr;
+   Float64 m_Vsh;
+   Float64 m_Vre;
+   Float64 m_Vps;
    Float64 m_Vllim;
    pgsLongReinfShearArtifact m_LongReinfShearArtifact;
 };

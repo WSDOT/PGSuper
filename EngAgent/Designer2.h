@@ -202,6 +202,7 @@ private:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
 
+   void CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact);
    void CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact);
    void CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandStressArtifact* pArtifact);
    void CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsSegmentArtifact* pSegmentArtifact);

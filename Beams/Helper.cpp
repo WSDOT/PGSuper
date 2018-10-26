@@ -35,12 +35,7 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
    if (lrd.Nb>1)
    {
       INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
-
-      rptRcScalar scalar;
-      scalar.SetFormat( sysNumericFormatTool::Fixed );
-      scalar.SetWidth(6);
-      scalar.SetPrecision(3);
-      scalar.SetTolerance(1.0e-6);
+      INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
       std::vector<Float64>::iterator iter;
       std::_tstring strImageName(lrd.bWasExterior ? _T("LeverRuleExterior.gif") : _T("LeverRuleInterior.gif"));
@@ -170,11 +165,7 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
 
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(3);
-   scalar.SetTolerance(1.0e-6);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    (*pPara) << rptRcImage(std::_tstring(pgsReportStyleHolder::GetImagePath()) + _T("RigidMethod.gif")) << rptNewLine;
    (*pPara) << _T("Multiple Presence Factor: m = ") << rd.m << rptNewLine;
@@ -204,11 +195,7 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
 
 void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
 {
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(3);
-   scalar.SetTolerance(1.0e-6);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    (*pPara) << _T("Multiple Presence Factor: m = ") << rd.m << rptNewLine;
    (*pPara) << _T("g = ") << _T("(") << rd.m <<_T(")(")<< rd.Nl << _T("/") << rd.Nb << _T(") = ") << scalar.SetValue(rd.mg) << rptNewLine;

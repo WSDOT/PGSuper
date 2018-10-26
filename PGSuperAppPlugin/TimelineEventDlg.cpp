@@ -45,6 +45,7 @@ CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager* pTimelineMgr,BOOL b
    m_pTimelineMgr(pTimelineMgr)
 {
    m_bEdit = bEditEvent;
+   m_EventIndex = INVALID_INDEX;
 }
 
 CTimelineEventDlg::~CTimelineEventDlg()
@@ -129,6 +130,13 @@ END_MESSAGE_MAP()
 
 BOOL CTimelineEventDlg::OnInitDialog()
 {
+   if ( m_EventIndex != INVALID_INDEX )
+   {
+      CString strTitle;
+      strTitle.Format(_T("Event %d"),LABEL_EVENT(m_EventIndex));
+      SetWindowText(strTitle);
+   }
+
    m_Grid.SubclassDlgItem(IDC_ACTIVITY_GRID, this);
    m_Grid.CustomInit();
 

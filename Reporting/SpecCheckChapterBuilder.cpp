@@ -40,6 +40,8 @@
 #include <Reporting\OptionalDeflectionCheck.h>
 #include <Reporting\DebondCheckTable.h>
 #include <Reporting\ContinuityCheck.h>
+#include <Reporting\DuctSizeCheckTable.h>
+#include <Reporting\DuctGeometryCheckTable.h>
 
 #include <Reporting\RatingSummaryTable.h>
 
@@ -380,7 +382,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       CInterfaceShearTable().Build(pBroker,pChapter,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::StrengthI);
 
       if ( bPermit )
+      {
          CInterfaceShearTable().Build(pBroker,pChapter,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::StrengthII);
+      }
    }
 
    if (pSpecEntry->IsSplittingCheckEnabled())
@@ -445,6 +449,10 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Hold Down Force
    CHoldDownForceCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+
+   // Duct size
+   CDuctGeometryCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+   CDuctSizeCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // "A" Dimension check
    std::vector<CGirderKey> girderList;

@@ -95,7 +95,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
       break;
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8);
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));

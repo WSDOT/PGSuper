@@ -972,6 +972,7 @@
 #define IDC_ADTT                        1546
 #define IDC_REMOVAL_EVENT               1546
 #define IDC_OVERLAY_EVENT               1546
+#define IDC_INSTALLATION_TYPE           1546
 #define IDC_NUMGDR_SPIN_BACK            1547
 #define IDC_STRENGTH_I_LL_ROUTINE       1547
 #define IDC_NUMGDR_SPIN_PREV_SPAN       1548

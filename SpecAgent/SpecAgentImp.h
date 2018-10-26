@@ -49,7 +49,8 @@ class ATL_NO_VTABLE CSpecAgentImp :
    public IKdotGirderHaulingSpecCriteria,
    public ISegmentLiftingSpecCriteria,
    public IDebondLimits,
-   public IResistanceFactors
+   public IResistanceFactors,
+   public IDuctLimits
 {
 public:
 	CSpecAgentImp()
@@ -72,6 +73,7 @@ BEGIN_COM_MAP(CSpecAgentImp)
    COM_INTERFACE_ENTRY(IKdotGirderHaulingSpecCriteria)
    COM_INTERFACE_ENTRY(IDebondLimits)
    COM_INTERFACE_ENTRY(IResistanceFactors)
+   COM_INTERFACE_ENTRY(IDuctLimits)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -264,6 +266,11 @@ public:
    virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type);
    virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type);
 
+// IDuctLimits
+public:
+   virtual Float64 GetRadiusOfCurvatureLimit(const CGirderKey& girderKey);
+   virtual Float64 GetTendonAreaLimit(const CGirderKey& girderKey);
+   virtual Float64 GetDuctSizeLimit(const CGirderKey& girderKey);
 
 private:
    DECLARE_EAF_AGENT_DATA;

@@ -154,10 +154,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptCapacityToDemand cdRatio;
 

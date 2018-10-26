@@ -103,6 +103,8 @@
 #define IDD_SPEC_CLOSURE                216
 #define IDD_LIVE_LOAD_FACTORS1          306
 #define IDD_LIVE_LOAD_FACTORS2          307
+#define IDI_DUCT_ENTRY                  308
+#define IDD_DUCT_ENTRY                  309
 #define IDC_D1                          1001
 #define IDC_W1                          1002
 #define IDC_D2                          1003
@@ -208,6 +210,7 @@
 #define IDC_REMOVEHORIZROWS             1017
 #define IDC_MAX_SPACING_CHG             1017
 #define IDC_BETA                        1017
+#define IDC_OD                          1017
 #define IDC_WEIGHT                      1018
 #define IDC_DEL_HARPED_STRAND           1018
 #define IDC_LONG_GRID                   1018
@@ -842,6 +845,7 @@
 #define IDC_WEB_STRAND_TYPE_COMBO       1441
 #define IDC_CURE_METHOD                 1441
 #define IDC_HAULING_METHOD              1441
+#define IDC_SAG_OPTIONS                 1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
@@ -1036,11 +1040,14 @@
 #define IDC_ALPHA_LABEL                 1555
 #define IDC_SUPPORT_LESS_THAN_UNIT      1556
 #define IDC_ALPHA                       1556
+#define IDC_CHECK2                      1557
+#define IDC_CHECK_GIRDER_SAG            1557
 #define IDC_FCPG_STATIC                 1557
 #define IDC_BETA_LABEL                  1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
 #define IDC_ALPHA_UNIT                  1558
+#define IDC_ELASTIC_GAINS_GROUP         1559
 #define IDC_RADIO1                      1559
 #define IDC_GROSS                       1559
 #define IDC_CHECK_PT_AT_JACKING         1559
@@ -1078,11 +1085,18 @@
 #define IDC_SERVICE_TENSION_WITH_REBAR_UNIT 1577
 #define IDC_RANGE_LABEL                 1577
 #define IDC_LF_LOWER2_LABEL             1578
+#define IDC_OD_UNIT                     1578
 #define IDC_LF_LOWER2                   1579
+#define IDC_ID                          1579
 #define IDC_LF_UPPER2_LABEL             1580
+#define IDC_ID_UNIT                     1580
 #define IDC_LF_UPPER2                   1581
+#define IDC_EDIT4                       1581
+#define IDC_Z                           1581
 #define IDC_ADTT3_LABEL                 1582
+#define IDC_Z_UNIT                      1582
 #define IDC_ADTT3                       1583
+#define IDC_ZDIM                        1583
 #define IDC_LF_LOWER3_LABEL             1584
 #define IDC_LF_LOWER3                   1585
 #define IDC_LF_UPPER3_LABEL             1586
@@ -1136,9 +1150,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        217
+#define _APS_NEXT_RESOURCE_VALUE        310
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1578
+#define _APS_NEXT_CONTROL_VALUE         1584
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -857,6 +857,12 @@ public:
    void SetCamberVariability(Float64 var);
    Float64 GetCamberVariability() const;
 
+   void CheckGirderSag(bool bCheck);
+   bool CheckGirderSag() const;
+
+   pgsTypes::SagCamberType GetSagCamberType() const;
+   void SetSagCamberType(pgsTypes::SagCamberType type);
+
    // Set/Get the curing method time adjustment factor
    // Form LRFD, 1 day of steam curing = 7 days of moist curing
    void SetCuringMethodTimeAdjustmentFactor(Float64 f);
@@ -1188,6 +1194,8 @@ private:
    Float64 m_TotalCreepDuration;
 
    Float64 m_CamberVariability; // Variability between upper and lower bound camber, stored in decimal percent
+   bool m_bCheckSag; // evaluate girder camber and dead load deflections and check for sag potential
+   pgsTypes::SagCamberType m_SagCamberType; // indicates the camber used to detect girder sag potential
 
    // Losses
    int     m_LossMethod;

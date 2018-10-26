@@ -266,7 +266,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    Float64 RF_ys_nM = GetYieldStressRatioEx(false,ppYieldStressNegativeMoment);
 
    Float64 RF = DBL_MAX;
-   int i;
+   int i = -1; // initialize to an invalid value so that we know if a rating factor wasn't found
    if ( RF_pM < RF )
    {
       RF = RF_pM;
@@ -361,8 +361,11 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    else
    {
       // ??? rating wasn't done?
-      // all rating factors equally control
-      ATLASSERT(false);
+      // this can happen if we are rating with a negative moment only truck
+      // but the bridge is simple span... we run the truck because we want
+      // reactions, but the reating factors are DBL_MAX...
+      // since all types of ratings control equally, use positive moment as controlling factor
+      ATLASSERT(i == -1);
       //(*ppPositiveMoment)            = NULL;
       (*ppNegativeMoment)            = NULL;
       (*ppShear)                     = NULL;

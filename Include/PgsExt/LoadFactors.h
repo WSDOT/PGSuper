@@ -49,12 +49,14 @@ public:
    Float64 DWmin[6];
    Float64 CRmin[6];
    Float64 SHmin[6];
+   Float64 REmin[6];
    Float64 PSmin[6];
    Float64 LLIMmin[6];
    Float64 DCmax[6];
    Float64 DWmax[6];
    Float64 CRmax[6];
    Float64 SHmax[6];
+   Float64 REmax[6];
    Float64 PSmax[6];
    Float64 LLIMmax[6];
 

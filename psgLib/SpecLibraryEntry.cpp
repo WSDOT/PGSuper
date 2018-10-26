@@ -59,8 +59,8 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 SpecLibraryEntry::SpecLibraryEntry() :
-m_SpecificationType(lrfdVersionMgr::FirstEditionWith1997Interims),
-m_SpecificationUnits(lrfdVersionMgr::SI),
+m_SpecificationType(lrfdVersionMgr::SeventhEdition2014),
+m_SpecificationUnits(lrfdVersionMgr::US),
 m_SectionPropertyMode(pgsTypes::spmGross),
 m_DoCheckStrandSlope(true),
 m_DoDesignStrandSlope(true),
@@ -204,7 +204,7 @@ m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
 m_bIncludeForNegMoment(true),
 m_bAllowStraightStrandExtensions(false),
 m_RelaxationLossMethod(RLM_REFINED),
-m_FcgpComputationMethod(FCGP_HYBRID),
+m_FcgpComputationMethod(FCGP_07FPU),
 m_ClosureCompStressAtStressing(0.60),
 m_ClosureTensStressPTZAtStressing(0.0),
 m_ClosureTensStressPTZWithRebarAtStressing(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
@@ -315,6 +315,8 @@ m_ClosureCompStressFatigue(0.40)
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
 
    m_DoCheckStirrupSpacingCompatibility = true;
+   m_bCheckSag = true;
+   m_SagCamberType = pgsTypes::LowerBoundCamber;
 }
 
 SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
@@ -442,6 +444,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    else if (m_SpecificationType==lrfdVersionMgr::SixthEditionWith2013Interims)
    {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2013"));
+   }
+   else if (m_SpecificationType==lrfdVersionMgr::SeventhEdition2014)
+   {
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2014"));
    }
    else
    {
@@ -780,8 +786,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit(); // Limits
 
    // Added in version 44
-   pSave->BeginUnit(_T("Warnings"),1.0);
+   pSave->BeginUnit(_T("Warnings"),2.0);
          pSave->Property(_T("DoCheckStirrupSpacingCompatibility"), m_DoCheckStirrupSpacingCompatibility);
+         pSave->Property(_T("CheckGirderSag"),m_bCheckSag); // added in version 2
+         pSave->Property(_T("SagCamberType"),m_SagCamberType); // added in version 2
    pSave->EndUnit(); // Warnings
 
    // Added in 14.0 removed in version 41
@@ -910,7 +918,11 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       std::_tstring tmp;
       if(pLoad->Property(_T("SpecificationType"),&tmp))
       {
-         if(tmp==_T("AashtoLrfd2013"))
+         if(tmp==_T("AashtoLrfd2014"))
+         {
+            m_SpecificationType = lrfdVersionMgr::SeventhEdition2014;
+         }
+         else if(tmp==_T("AashtoLrfd2013"))
          {
             m_SpecificationType = lrfdVersionMgr::SixthEditionWith2013Interims;
          }
@@ -3082,6 +3094,19 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
+            Float64 warningsVersion = pLoad->GetVersion();
+            if ( 2 <= warningsVersion )
+            {
+               if ( !pLoad->Property(_T("CheckGirderSag"),&m_bCheckSag) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+   
+               int value;
+               if ( !pLoad->Property(_T("SagCamberType"),&value) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+   
+               m_SagCamberType = (pgsTypes::SagCamberType)value;
+            }
+
             if ( !pLoad->EndUnit() ) // Warnings
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -3525,6 +3550,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 #define TEST(a,b) if ( a != b ) return false
 #define TESTD(a,b) if ( !::IsEqual(a,b) ) return false
 
+//#define TEST(a,b) if ( a != b ) { CString strMsg; strMsg.Format(_T("%s != %s"),_T(#a),_T(#b)); AfxMessageBox(strMsg); return false; }
+//#define TESTD(a,b) if ( !::IsEqual(a,b) ) { CString strMsg; strMsg.Format(_T("!::IsEqual(%s,%s)"),_T(#a),_T(#b)); AfxMessageBox(strMsg); return false; }
+
 bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName) const
 {
    TEST (m_SpecificationType          , rOther.m_SpecificationType          );
@@ -3707,6 +3735,12 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    }
 
    TEST (m_DoCheckStirrupSpacingCompatibility, rOther.m_DoCheckStirrupSpacingCompatibility);
+   TEST (m_bCheckSag, rOther.m_bCheckSag);
+   if ( m_bCheckSag )
+   {
+      TEST(m_SagCamberType,rOther.m_SagCamberType);
+   }
+
 
    TEST (m_EnableSlabOffsetCheck         , rOther.m_EnableSlabOffsetCheck            );
    TEST (m_EnableSlabOffsetDesign        , rOther.m_EnableSlabOffsetDesign );
@@ -4749,6 +4783,26 @@ Float64 SpecLibraryEntry::GetCamberVariability() const
    return m_CamberVariability;
 }
 
+void SpecLibraryEntry::CheckGirderSag(bool bCheck)
+{
+   m_bCheckSag = bCheck;
+}
+
+bool SpecLibraryEntry::CheckGirderSag() const
+{
+   return m_bCheckSag;
+}
+
+pgsTypes::SagCamberType SpecLibraryEntry::GetSagCamberType() const
+{
+   return m_SagCamberType;
+}
+
+void SpecLibraryEntry::SetSagCamberType(pgsTypes::SagCamberType type)
+{
+   m_SagCamberType = type;
+}
+
 int SpecLibraryEntry::GetLossMethod() const
 {
    return m_LossMethod;
@@ -5703,6 +5757,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    }
 
    m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
+   m_bCheckSag = rOther.m_bCheckSag;
+   m_SagCamberType = rOther.m_SagCamberType;
 
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;

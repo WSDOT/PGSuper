@@ -46,6 +46,9 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
+public:
+   afx_msg void OnBnClickedCheckGirderSag();
+   virtual BOOL OnInitDialog();
 };
 
 //{{AFX_INSERT_LOCATION}}

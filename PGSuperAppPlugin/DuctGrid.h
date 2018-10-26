@@ -57,6 +57,7 @@ public:
 	virtual ~CDuctGrid();
 
    void OnStrandChanged(); // called by parent when strand type changes
+   void OnInstallationTypeChanged();
 
 	// Generated message map functions
 protected:

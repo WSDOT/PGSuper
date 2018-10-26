@@ -903,6 +903,8 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
 
    DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_DoCheckStirrupSpacingCompatibility);
+   DDX_Check_Bool(pDX, IDC_CHECK_GIRDER_SAG, m_Entry.m_bCheckSag);
+   DDX_CBEnum(pDX, IDC_SAG_OPTIONS, m_Entry.m_SagCamberType);
 }
 
 void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)

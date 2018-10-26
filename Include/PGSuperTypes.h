@@ -91,29 +91,29 @@ class dbgDumpContext;
 // need to have a reasonable upper limit of skew angle... use 88 degrees
 #define MAX_SKEW_ANGLE ::ToRadians(88.0)
 
-struct pgsTypes
+typedef struct pgsTypes
 {
-   enum SectionCoordinateType
+   typedef enum SectionCoordinateType
    {
       scBridge, // Bridge Section Coordinates
       scGirder  // Girder Section Coordinates
-   };
+   } SectionCoordinateType;
 
    // Defines the section property mode that is being used for analysis
-   enum SectionPropertyMode
+   typedef enum SectionPropertyMode
    {
       spmGross,        // Based on concrete outline only
       spmTransformed   // Strand, rebar, tendons are transformed
-   };
+   } SectionPropertyMode;
 
    // Defines a type of section property
-   enum SectionPropertyType
+   typedef enum SectionPropertyType
    {
       sptGross,        // Based on concrete outline only
       sptTransformed,  // Strand, rebar, tendons are transformed
       sptNetGirder,    // Girder concrete only with holes for strands/rebar/ducts
       sptNetDeck       // Deck concrete only with holes for rebar
-   };
+   } SectionPropertyType;
 
    // describes how a precast segment varies along its length
    typedef enum SegmentVariationType
@@ -493,6 +493,13 @@ struct pgsTypes
    // Hauling analysis
    typedef enum HaulingAnalysisMethod {hmWSDOT, hmKDOT } HaulingAnalysisMethod;
 
+   typedef enum SagCamberType
+   {
+      UpperBoundCamber,
+      AverageCamber,
+      LowerBoundCamber
+   } SagCamberType;
+
    typedef enum CureMethod
    {
       Moist,
@@ -544,7 +551,15 @@ struct pgsTypes
       dtPlastic, // polyethylene
       dtFormed   // formed in concrete with removable cores
    } DuctType;
-};
+
+   typedef enum StrandInstallationType
+   {
+      // Defines strand installation type for post-tensioning tendons
+      // See LRFD 5.6.4.2
+      sitPush,
+      sitPull
+   } StrandInstallationType;
+} pgsTypes;
 
 
 //-----------------------------------------------------------------------------

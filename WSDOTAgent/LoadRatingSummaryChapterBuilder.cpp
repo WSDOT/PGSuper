@@ -381,10 +381,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptCapacityToDemand rating_factor;
 
@@ -545,10 +542,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptCapacityToDemand rating_factor;
 

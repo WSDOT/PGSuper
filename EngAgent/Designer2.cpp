@@ -813,7 +813,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
 
    CheckConstructability(girderKey,pGdrArtifact->GetConstructabilityArtifact());
 
-   // Check ultimate moment capacity
+   // Check ultimate capacity
    CheckMomentCapacity(lastIntervalIdx,pgsTypes::StrengthI,pGdrArtifact.get());
    CheckShear(lastIntervalIdx,pgsTypes::StrengthI,pGdrArtifact.get());
 
@@ -824,11 +824,12 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
       CheckShear(lastIntervalIdx,pgsTypes::StrengthII,pGdrArtifact.get());
    }
 
-   // live load deflection needs to be checked on a span by span basis. checking by segment is fine for PGSuper, but not for PGSplice
+   // check live load deflection
    CheckLiveLoadDeflection(girderKey,pGdrArtifact.get());
 
    // check tendon stresses
    CheckTendonStresses(girderKey,pGdrArtifact.get());
+   CheckTendonDetailing(girderKey,pGdrArtifact.get());
 
    // add the artfict to the cache
    m_CheckArtifacts.insert( std::make_pair(girderKey,pGdrArtifact) );
@@ -1382,6 +1383,61 @@ void pgsDesigner2::MakeAssignment(const pgsDesigner2& rOther)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
+
+void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact)
+{
+   // Check LRFD 5.4.6.2 - Size of Ducts
+
+   ASSERT_GIRDER_KEY(girderKey);
+
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IGirder,pGirder);
+
+   // Determine maximum duct size
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS), POI_ERECTED_SEGMENT | POI_5L, POIFIND_AND));
+
+#if defined _DEBUG
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   ATLASSERT(vPoi.size() == nSegments);
+#endif
+
+   Float64 tWebMin = DBL_MAX;
+   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; iter != end; iter++ )
+   {
+      pgsPointOfInterest& poi(*iter);
+      Float64 minWebWidth = pGirder->GetMinWebWidth(poi);
+      tWebMin = min(tWebMin,minWebWidth);
+   }
+
+   // Determine maximum duct area
+   GET_IFACE(IDuctLimits,pDuctLimits);
+   Float64 Kmax = pDuctLimits->GetTendonAreaLimit(girderKey);
+   Float64 Tmax = pDuctLimits->GetDuctSizeLimit(girderKey);
+   Float64 Rmin = pDuctLimits->GetRadiusOfCurvatureLimit(girderKey);
+
+   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      Float64 Apt = pTendonGeom->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
+      Float64 Aduct = pTendonGeom->GetInsideDuctArea(girderKey,ductIdx);
+      Float64 OD = pTendonGeom->GetOutsideDiameter(girderKey,ductIdx);
+
+      Float64 r = pTendonGeom->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
+
+      pgsDuctSizeArtifact artifact;
+      artifact.SetDuctArea(Apt,Aduct,Kmax);
+      artifact.SetDuctSize(OD,tWebMin,Tmax);
+      artifact.SetRadiusOfCurvature(r,Rmin);
+
+      pGirderArtifact->SetDuctSizeArtifact(ductIdx,artifact);
+   }
+}
 
 void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact)
 {
@@ -2642,8 +2698,9 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    pArtifact->SetK2(K2);
 
    // nominal shear capacities 5.8.4.1-2,3
-   if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SixthEditionWith2013Interims && gs_60KSI < fy)
+   if ( lrfdVersionMgr:: FourthEdition2007 <= lrfdVersionMgr::GetVersion() && gs_60KSI < fy)
    {
+      // 60 ksi limit was added in 4th Edition 2007
       fy = gs_60KSI;
       pArtifact->WasFyLimited(true);
    }
@@ -2679,7 +2736,9 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    Float64 bv = pGdr->GetShearInterfaceWidth( poi );
    pArtifact->SetBv(bv);
 
-   Float64 sall = lrfdConcreteUtil::MaxStirrupSpacingForHoriz();
+   Float64 Hg = pSectProp->GetHg(liveLoadIntervalIdx,poi);
+   Float64 sall = lrfdConcreteUtil::MaxStirrupSpacingForHoriz(Hg);
+
    pArtifact->SetSall(sall);
 
    lrfdConcreteUtil::HsAvfOverSMinType avfmin = lrfdConcreteUtil::AvfOverSMin(bv,fy,Vuh,phi,c,u,Pc);

@@ -98,6 +98,7 @@ libLibraryManager()
    std::auto_ptr<SpecLibrary>            spec_lib(new SpecLibrary(_T("SPECIFICATION_LIBRARY"), _T("Project Criteria")));
    std::auto_ptr<RatingLibrary>          rate_lib(new RatingLibrary(_T("RATING_LIBRARY"), _T("Load Rating Criteria")));
    std::auto_ptr<LiveLoadLibrary>        live_lib(new LiveLoadLibrary(_T("USER_LIVE_LOAD_LIBRARY"), _T("User-Defined Live Loads")));
+   std::auto_ptr<DuctLibrary>            duct_lib(new DuctLibrary(_T("DUCT_LIBRARY"), _T("Ducts")));
 
    live_lib->AddReservedName(_T("HL-93"));
    live_lib->AddReservedName(_T("Fatigue"));
@@ -117,6 +118,7 @@ libLibraryManager()
    m_SpecLibIdx   = this->AddLibrary(spec_lib.release());
    m_LiveLibIdx   = this->AddLibrary(live_lib.release());
    m_RatingLibIdx = this->AddLibrary(rate_lib.release());
+   m_DuctLibIdx   = this->AddLibrary(duct_lib.release());
 
    m_strPublisher = _T("Unknown");
    m_strLibFile   = _T("Unknown");
@@ -258,6 +260,22 @@ const LiveLoadLibrary* psgLibraryManager::GetLiveLoadLibrary() const
 {
    const libILibrary* pl = GetLibrary(m_LiveLibIdx);
    const LiveLoadLibrary* pc = dynamic_cast<const LiveLoadLibrary*>(pl);
+   ASSERT(pc);
+   return pc; 
+}
+
+DuctLibrary* psgLibraryManager::GetDuctLibrary()
+{
+   libILibrary* pl = GetLibrary(m_DuctLibIdx);
+   DuctLibrary* pc = dynamic_cast<DuctLibrary*>(pl);
+   ASSERT(pc);
+   return pc;
+}
+
+const DuctLibrary* psgLibraryManager::GetDuctLibrary() const
+{
+   const libILibrary* pl = GetLibrary(m_DuctLibIdx);
+   const DuctLibrary* pc = dynamic_cast<const DuctLibrary*>(pl);
    ASSERT(pc);
    return pc; 
 }

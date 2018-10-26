@@ -69,10 +69,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
                                              IBroker* pBroker,const CGirderKey& girderKey,
                                              IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcScalar df;
-   df.SetFormat(sysNumericFormatTool::Fixed);
-   df.SetWidth(8);
-   df.SetPrecision(3); // should match format in details reports
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, df, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);

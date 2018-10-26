@@ -230,10 +230,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
    if (do_note)
    {
-       rptRcScalar scalar;
-       scalar.SetFormat(pDisplayUnits->GetScalarFormat().Format);
-       scalar.SetWidth(pDisplayUnits->GetScalarFormat().Width);
-       scalar.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
+      INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
        pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
        *pChapter << pPara;

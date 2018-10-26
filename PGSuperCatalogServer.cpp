@@ -1062,7 +1062,7 @@ bool CFtpPGSuperCatalogServer::PopulatePgz(const CString& publisher, IProgressMo
 
    if(pProgress!=NULL)
    {
-      pProgress->put_Message(0,CComBSTR("Uncompressing Library and Templates to local cache."));
+      pProgress->put_Message(0,CComBSTR("Uncompressing Configuration to local cache."));
    }
 
    uzErrorType st = UnZipPGZ( sFile, sFolder );
@@ -1370,7 +1370,7 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
 
    if(pProgress!=NULL)
    {
-      pProgress->put_Message(0,CComBSTR("Uncompressing Library and Templates to local cache."));
+      pProgress->put_Message(0,CComBSTR("Uncompressing Configuration to local cache."));
    }
 
    uzErrorType uzst = UnZipPGZ( sFile, sFolder );

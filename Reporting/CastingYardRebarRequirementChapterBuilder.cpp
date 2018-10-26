@@ -314,11 +314,6 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    // Service III limit state after live load is applied
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
-
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS || poi.GetID() != INVALID_ID);
 

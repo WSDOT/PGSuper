@@ -781,10 +781,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey&
 
 void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDisplayUnits->GetSpanLengthUnit(),          false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,      pDisplayUnits->GetSpanLengthUnit(),          false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,    pDisplayUnits->GetShearUnit(),               false );
@@ -1668,10 +1665,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
    *pChapter << pTitle;
    *pTitle << _T("Hauling Stresses for Plumb Girder With Impact, and Factor of Safety Against Cracking")<<rptNewLine;
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,   location,      pDisplayUnits->GetSpanLengthUnit(),         false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,    force,         pDisplayUnits->GetShearUnit(),              false );
@@ -2040,10 +2034,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    *pChapter << pTitle;
    *pTitle << _T("Factor of Safety Against Rollover");
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,      pDisplayUnits->GetSpanLengthUnit(), true  );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
@@ -2182,10 +2173,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
                                                       ImpactDir dir) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,     pDisplayUnits->GetAreaUnit(),         false );

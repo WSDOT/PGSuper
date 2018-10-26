@@ -25,6 +25,8 @@
 #include <IFace\PointOfInterest.h>
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace\Bridge.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -61,6 +63,22 @@ rptChapter* CPointOfInterestChapterBuilder::Build(CReportSpecification* pRptSpec
    ReportPoi(_T("Hauling"), POI_HAUL_SEGMENT,     pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
    ReportPoi(_T("Erected"), POI_ERECTED_SEGMENT,  pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
    ReportPoi(_T("Span"),    POI_SPAN,             pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
+
+#pragma Reminder("Dummy code for testing purposes")
+   // the following code is just for quick testing of the min radius of curvature feature
+   rptParagraph* pPara = new rptParagraph;
+   *pChapter << pPara;
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, radius, pDisplayUnits->GetSpanLengthUnit(), true );
+   CGirderKey girderKey(pGdrRptSpec->GetGirderKey());
+   girderKey.groupIndex = 0;
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      Float64 maxRadius = pTendonGeom->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
+      (*pPara) << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" = ") << radius.SetValue(maxRadius) << rptNewLine;
+   }
+
 
    return pChapter;
 }

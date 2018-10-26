@@ -42,6 +42,8 @@ static char THIS_FILE[] = __FILE__;
 // This is the summation part of Tadros 1977 Eqns 3 and 4.
 //#define REPORT_INITIAL_STRAIN_DETAILS
 
+//#define REPORT_PRODUCT_LOAD_DETAILS
+
 /****************************************************************************
 CLASS
    CTimeStepParametersChapterBuilder
@@ -592,7 +594,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       {
          const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
 
-         int N = sizeof(tsDetails.Girder.dP)/sizeof(tsDetails.Girder.dP[0]);
+         int N = sizeof(tsDetails.dPi)/sizeof(tsDetails.dPi[0]);
 
          col2 = 0;
          (*pTable2)(row2,col2++) << LABEL_INTERVAL(intervalIdx);
@@ -601,15 +603,25 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.Ytr);
          (*pTable2)(row2,col2++) << momI.SetValue(tsDetails.Itr);
 
-         //GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+         // summation of externally applied loads
+#if defined REPORT_PRODUCT_LOAD_DETAILS
+         GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+#endif //REPORT_PRODUCT_LOAD_DETAILS
          Float64 dP = 0;
          Float64 dM = 0;
-         for ( int i = 0; i < N-3; i++ )
+         for ( int i = 0; i < N; i++ )
          {
-            //(*pTable2)(row2,col2  ) << pProductLoads->GetProductLoadName((ProductForceType)i).c_str() << _T(" ") << force.SetValue(tsDetails.dP[i]) << rptNewLine;
-            //(*pTable2)(row2,col2+1) << pProductLoads->GetProductLoadName((ProductForceType)i).c_str() << _T(" ") << moment.SetValue(tsDetails.dM[i]) << rptNewLine;
-            dP += tsDetails.dP[i];
-            dM += tsDetails.dM[i];
+            ProductForceType pfType = (ProductForceType)i;
+            if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
+            {
+               continue;
+            }
+#if defined REPORT_PRODUCT_LOAD_DETAILS
+            (*pTable2)(row2,col2  ) << pProductLoads->GetProductLoadName(pfType).c_str() << _T(" ") << force.SetValue(tsDetails.dPi[pfType]) << rptNewLine;
+            (*pTable2)(row2,col2+1) << pProductLoads->GetProductLoadName(pfType).c_str() << _T(" ") << moment.SetValue(tsDetails.dMi[pfType]) << rptNewLine;
+#endif //REPORT_PRODUCT_LOAD_DETAILS
+            dP += tsDetails.dPi[pfType];
+            dM += tsDetails.dMi[pfType];
          }
 
          (*pTable2)(row2,col2++) << force.SetValue(dP);
@@ -793,51 +805,75 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
          Float64 der = 0;
          Float64 drr = 0;
-         Float64 dPgirder = 0;
-         Float64 dMgirder = 0;
-         Float64 dPdeck = 0;
-         Float64 dMdeck = 0;
 
          for ( int i = 0; i < N; i++ )
          {
             der += tsDetails.der[i];
             drr += tsDetails.drr[i];
-
-            dPgirder += tsDetails.Girder.dP[i];
-            dMgirder += tsDetails.Girder.dM[i];
-
-            dPdeck += tsDetails.Deck.dP[i];
-            dMdeck += tsDetails.Deck.dM[i];
          }
 
          (*pTable2)(row2,col2++) << der;
          (*pTable2)(row2,col2++) << curvature.SetValue(drr);
 
+         Float64 dPgirder = 0;
+         Float64 dMgirder = 0;
+         Float64 dPdeck = 0;
+         Float64 dMdeck = 0;
+         Float64 dPtopMat = 0;
+         Float64 dPbotMat = 0;
+
+         for ( int i = 0; i < N; i++ )
+         {
+            dPgirder += tsDetails.Girder.dPi[i];
+            dMgirder += tsDetails.Girder.dMi[i];
+
+            dPdeck += tsDetails.Deck.dPi[i];
+            dMdeck += tsDetails.Deck.dMi[i];
+
+            dPtopMat += tsDetails.DeckRebar[pgsTypes::drmTop].dPi[i];
+            dPbotMat += tsDetails.DeckRebar[pgsTypes::drmBottom].dPi[i];
+         }
+
          (*pTable2)(row2,col2++) << force.SetValue( dPgirder );
          (*pTable2)(row2,col2++) << moment.SetValue( dMgirder );
          (*pTable2)(row2,col2++) << force.SetValue( dPdeck );
          (*pTable2)(row2,col2++) << moment.SetValue( dMdeck );
-         (*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].dP);
-         (*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].dP);
+         (*pTable2)(row2,col2++) << force.SetValue(dPtopMat);
+         (*pTable2)(row2,col2++) << force.SetValue(dPbotMat);
 
          iter = tsDetails.GirderRebar.begin();
          for ( ; iter != end; iter++ )
          {
             const TIME_STEP_REBAR& tsRebar(*iter);
-            (*pTable2)(row2,col2++) << force.SetValue(tsRebar.dP);
+            Float64 dPgirderRebar = 0;
+            for ( int i = 0; i < N; i++ )
+            {
+               dPgirderRebar += tsRebar.dPi[i];
+            }
+            (*pTable2)(row2,col2++) << force.SetValue(dPgirderRebar);
          }
 
          for ( int i = 0; i < 3; i++ )
          {
             pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
 #if defined LUMP_STRANDS
-            (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Strands[strandType].dP);
+            Float64 dPstrand = 0;
+            for ( int i = 0; i < N; i++ )
+            {
+               dPstrand += tsDetails.Strands[strandType].dPi[i];
+            }
+            (*pTable2)(row2,col2++) << force.SetValue(dPstrand);
 #else
             StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
             for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
             {
                const TIME_STEP_STRAND& strand(tsDetails.Strands[strandType][strandIdx]);
-               (*pTable2)(row2,col2) << force.SetValue(strand.dP) << rptNewLine;
+               Float64 dPstrand = 0;
+               for ( int i = 0; i < N; i++ )
+               {
+                  dPstrand += strand.dPi[i];
+               }
+               (*pTable2)(row2,col2) << force.SetValue(dPstrand) << rptNewLine;
             } // next strand
             col2 += 1;
 #endif
@@ -846,23 +882,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
             const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
-            (*pTable2)(row2,col2) << force.SetValue(tendon.dP) << rptNewLine;
+            Float64 dPtendon = 0;
+            for ( int i = 0; i < N; i++ )
+            {
+               dPtendon += tendon.dPi[i];
+            }
+            (*pTable2)(row2,col2) << force.SetValue(dPtendon) << rptNewLine;
          }
          col2 += 1;
 
-         Float64 Pgirder(0), Mgirder(0), Pdeck(0), Mdeck(0);
-         for ( int i = 0; i < N; i++ )
-         {
-            Pgirder += tsDetails.Girder.P[i];
-            Mgirder += tsDetails.Girder.M[i];
-
-            Pdeck += tsDetails.Deck.P[i];
-            Mdeck += tsDetails.Deck.M[i];
-         }
-         (*pTable2)(row2,col2++) << force.SetValue(Pgirder);
-         (*pTable2)(row2,col2++) << moment.SetValue(Mgirder);
-         (*pTable2)(row2,col2++) << force.SetValue(Pdeck);
-         (*pTable2)(row2,col2++) << moment.SetValue(Mdeck);
+         (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Girder.P);
+         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Girder.M);
+         (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.P);
+         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Deck.M);
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].P);
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].P);
 
@@ -870,7 +902,12 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          for ( ; iter != end; iter++ )
          {
             const TIME_STEP_REBAR& tsRebar(*iter);
-            (*pTable2)(row2,col2++) << force.SetValue(tsRebar.P);
+            Float64 PgirderRebar = 0;
+            for ( int i = 0; i < N; i++ )
+            {
+               PgirderRebar += tsRebar.Pi[i];
+            }
+            (*pTable2)(row2,col2++) << force.SetValue(PgirderRebar);
          }
 
          for ( int i = 0; i < 3; i++ )
@@ -901,14 +938,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
 #if defined LUMP_STRANDS
             const TIME_STEP_STRAND& strand(tsDetails.Strands[strandType]);
-            (*pTable2)(row2,col2++) << stress.SetValue(strand.dFps);
+            Float64 dfpe = 0;
+            for ( int i = 0; i < N; i++ )
+            {
+               dfpe += strand.dfpe[i];
+            }
+            (*pTable2)(row2,col2++) << stress.SetValue(dfpe);
             (*pTable2)(row2,col2++) << stress.SetValue(strand.fpe);
 #else
             StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
             for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
             {
                const TIME_STEP_STRAND& strand(tsDetails.Strands[strandType][strandIdx]);
-               (*pTable2)(row2,col2+0) << stress.SetValue(strand.dFps) << rptNewLine;
+               (*pTable2)(row2,col2+0) << stress.SetValue(strand.dfpe) << rptNewLine;
                (*pTable2)(row2,col2+1) << stress.SetValue(strand.fpe) << rptNewLine;
             } // next strand
             col2 += 2;
@@ -918,7 +960,12 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
             const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
-            (*pTable2)(row2,col2+0) << stress.SetValue(tendon.dFps) << rptNewLine;
+            Float64 dfpe = 0;
+            for ( int i = 0; i < N; i++ )
+            {
+               dfpe += tendon.dfpe[i];
+            }
+            (*pTable2)(row2,col2+0) << stress.SetValue(dfpe) << rptNewLine;
             (*pTable2)(row2,col2+1) << stress.SetValue(tendon.fpe)  << rptNewLine;
          }
          col2 += 2;
@@ -1183,71 +1230,132 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    }
 
 
-   ///////////////////////////////////////////////////////////////////////////////////
-   // Deflections
-   ///////////////////////////////////////////////////////////////////////////////////
-   GET_IFACE2(pBroker,IProductLoads,pProdLoads);
 
-   iter = vPOI.begin();
-   for ( ; iter != end; iter++ )
-   {
-      pgsPointOfInterest& poi = *iter;
-      *pPara << location.SetValue(POI_ERECTED_SEGMENT,poi,0.0) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
+   /////////////////////////////////////////////////////////////////////////////////////
+   //// Stress
+   /////////////////////////////////////////////////////////////////////////////////////
+   //GET_IFACE2(pBroker,IProductLoads,pProdLoads);
 
-      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
-      int N = sizeof(pDetails->TimeStepDetails[0].D)/sizeof(pDetails->TimeStepDetails[0].D[0]);
+   //iter = vPOI.begin();
+   //for ( ; iter != end; iter++ )
+   //{
+   //   pgsPointOfInterest& poi = *iter;
+   //   *pPara << location.SetValue(POI_ERECTED_SEGMENT,poi,0.0) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
 
-      ColumnIndexType nColumns = 1 + N*2 + 2;
-      rptRcTable* pDeflectionTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Deflections"));
-      *pPara << pDeflectionTable << rptNewLine << rptNewLine;
+   //   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
+   //   int N = sizeof(pDetails->TimeStepDetails[0].D)/sizeof(pDetails->TimeStepDetails[0].D[0]);
 
-      pDeflectionTable->SetNumberOfHeaderRows(2);
+   //   ColumnIndexType nColumns = 1 + N*2;
+   //   rptRcTable* pStressTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Girder Stress"));
+   //   *pPara << pStressTable << rptNewLine << rptNewLine;
 
-      ColumnIndexType col = 0;
-      (*pDeflectionTable)(0,col++) << _T("Interval");
-      pDeflectionTable->SetRowSpan(0,0,2);
-      pDeflectionTable->SetRowSpan(1,0,SKIP_CELL);
+   //   pStressTable->SetNumberOfHeaderRows(2);
 
-      for ( int i = 0; i < N; i++ )
-      {
-         ProductForceType pfType = (ProductForceType)i;
-         std::_tstring strName = pProdLoads->GetProductLoadName(pfType);
+   //   ColumnIndexType col = 0;
+   //   (*pStressTable)(0,col++) << _T("Interval");
+   //   pStressTable->SetRowSpan(0,0,2);
+   //   pStressTable->SetRowSpan(1,0,SKIP_CELL);
 
-         pDeflectionTable->SetColumnSpan(0,col,2);
-         (*pDeflectionTable)(0,col) << strName;
-         pDeflectionTable->SetColumnSpan(0,col+1,SKIP_CELL);
-         (*pDeflectionTable)(1,col++) << COLHDR(symbol(delta),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
-         (*pDeflectionTable)(1,col++) << COLHDR(symbol(DELTA),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
-      }
-      pDeflectionTable->SetColumnSpan(0,col,2);
-      (*pDeflectionTable)(0,col) << _T("Total");
-      pDeflectionTable->SetColumnSpan(0,col+1,SKIP_CELL);
-      (*pDeflectionTable)(1,col++) << COLHDR(symbol(delta),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
-      (*pDeflectionTable)(1,col++) << COLHDR(symbol(DELTA),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
+   //   for ( int i = 0; i < N; i++ )
+   //   {
+   //      ProductForceType pfType = (ProductForceType)i;
+   //      std::_tstring strName = pProdLoads->GetProductLoadName(pfType);
 
-      RowIndexType row = pDeflectionTable->GetNumberOfHeaderRows();
+   //      pStressTable->SetColumnSpan(0,col,2);
+   //      (*pStressTable)(0,col) << strName;
+   //      pStressTable->SetColumnSpan(0,col+1,SKIP_CELL);
+   //      (*pStressTable)(1,col++) << COLHDR(symbol(DELTA) << _T("f"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
+   //      (*pStressTable)(1,col++) << COLHDR(_T("f"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
+   //   }
 
-      for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
-      {
-         const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-         col = 0;
-         (*pDeflectionTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
+   //   RowIndexType row = pStressTable->GetNumberOfHeaderRows();
 
-         for ( int i = 0; i < N; i++ )
-         {
-            ProductForceType pfType = (ProductForceType)i;
-            Float64 dD = tsDetails.dD[pfType];
-            Float64 D  = tsDetails.D[pfType];
-            (*pDeflectionTable)(row,col++) << deflection.SetValue(dD);
-            (*pDeflectionTable)(row,col++) << deflection.SetValue(D);
-         }
+   //   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
+   //   {
+   //      const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
+   //      col = 0;
+   //      (*pStressTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
 
-         Float64 dY = tsDetails.dY;
-         Float64 Y  = tsDetails.Y;
-         (*pDeflectionTable)(row,col++) << deflection.SetValue(dY);
-         (*pDeflectionTable)(row,col++) << deflection.SetValue(Y);
-      } // next interval
-   } // next poi
+   //      for ( int i = 0; i < N; i++ )
+   //      {
+   //         ProductForceType pfType = (ProductForceType)i;
+
+   //         Float64 dfTop = tsDetails.Girder.f[pgsTypes::TopGirder][pfType][rtIncremental];
+   //         Float64 fTop  = tsDetails.Girder.f[pgsTypes::TopGirder][pfType][rtCumulative];
+   //         Float64 dfBot = tsDetails.Girder.f[pgsTypes::BottomGirder][pfType][rtIncremental];
+   //         Float64 fBot  = tsDetails.Girder.f[pgsTypes::BottomGirder][pfType][rtCumulative];
+   //         (*pStressTable)(row,col  ) << stress.SetValue(dfTop) << rptNewLine;
+   //         (*pStressTable)(row,col++) << stress.SetValue(dfBot);
+   //         (*pStressTable)(row,col  ) << stress.SetValue(fTop) << rptNewLine;
+   //         (*pStressTable)(row,col++) << stress.SetValue(fBot);
+   //      }
+   //   } // next interval
+   //} // next poi
+
+   /////////////////////////////////////////////////////////////////////////////////////
+   //// Deflections
+   /////////////////////////////////////////////////////////////////////////////////////
+
+   //iter = vPOI.begin();
+   //for ( ; iter != end; iter++ )
+   //{
+   //   pgsPointOfInterest& poi = *iter;
+   //   *pPara << location.SetValue(POI_ERECTED_SEGMENT,poi,0.0) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
+
+   //   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
+   //   int N = sizeof(pDetails->TimeStepDetails[0].D)/sizeof(pDetails->TimeStepDetails[0].D[0]);
+
+   //   ColumnIndexType nColumns = 1 + N*2 + 2;
+   //   rptRcTable* pDeflectionTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Deflections"));
+   //   *pPara << pDeflectionTable << rptNewLine << rptNewLine;
+
+   //   pDeflectionTable->SetNumberOfHeaderRows(2);
+
+   //   ColumnIndexType col = 0;
+   //   (*pDeflectionTable)(0,col++) << _T("Interval");
+   //   pDeflectionTable->SetRowSpan(0,0,2);
+   //   pDeflectionTable->SetRowSpan(1,0,SKIP_CELL);
+
+   //   for ( int i = 0; i < N; i++ )
+   //   {
+   //      ProductForceType pfType = (ProductForceType)i;
+   //      std::_tstring strName = pProdLoads->GetProductLoadName(pfType);
+
+   //      pDeflectionTable->SetColumnSpan(0,col,2);
+   //      (*pDeflectionTable)(0,col) << strName;
+   //      pDeflectionTable->SetColumnSpan(0,col+1,SKIP_CELL);
+   //      (*pDeflectionTable)(1,col++) << COLHDR(symbol(delta),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
+   //      (*pDeflectionTable)(1,col++) << COLHDR(symbol(DELTA),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
+   //   }
+   //   pDeflectionTable->SetColumnSpan(0,col,2);
+   //   (*pDeflectionTable)(0,col) << _T("Total");
+   //   pDeflectionTable->SetColumnSpan(0,col+1,SKIP_CELL);
+   //   (*pDeflectionTable)(1,col++) << COLHDR(symbol(delta),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
+   //   (*pDeflectionTable)(1,col++) << COLHDR(symbol(DELTA),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
+
+   //   RowIndexType row = pDeflectionTable->GetNumberOfHeaderRows();
+
+   //   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
+   //   {
+   //      const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
+   //      col = 0;
+   //      (*pDeflectionTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
+
+   //      for ( int i = 0; i < N; i++ )
+   //      {
+   //         ProductForceType pfType = (ProductForceType)i;
+   //         Float64 dD = tsDetails.dD[pfType];
+   //         Float64 D  = tsDetails.D[pfType];
+   //         (*pDeflectionTable)(row,col++) << deflection.SetValue(dD);
+   //         (*pDeflectionTable)(row,col++) << deflection.SetValue(D);
+   //      }
+
+   //      Float64 dY = tsDetails.dY;
+   //      Float64 Y  = tsDetails.Y;
+   //      (*pDeflectionTable)(row,col++) << deflection.SetValue(dY);
+   //      (*pDeflectionTable)(row,col++) << deflection.SetValue(Y);
+   //   } // next interval
+   //} // next poi
 
    return pChapter;
 }

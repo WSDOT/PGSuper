@@ -404,12 +404,14 @@ struct TIME_STEP_CONCRETE
    //
 
    // Force on this concrete part due to elastic effects during this interval
-   Float64 dP[19]; // index is one of the ProductForceType enum values
-   Float64 dM[19];
+   Float64 dPi[19]; // index is one of the ProductForceType enum values
+   Float64 dMi[19];
+   Float64 dP, dM; // summation of dPi and dMi
 
    // Force on this concrete part at the end of this interval
-   Float64 P[19]; // = (P in previous interval) + dP;
-   Float64 M[19]; // = (M in previous interval) + dM;
+   Float64 Pi[19]; // = (P in previous interval) + dP;
+   Float64 Mi[19]; // = (M in previous interval) + dM;
+   Float64 P, M; // summation of Pi and Mi
 
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
    // where y is the depth from the top of the concrete part
@@ -436,14 +438,19 @@ struct TIME_STEP_CONCRETE
 
       PrShrinkage = 0;
 
-      int n = sizeof(dP)/sizeof(dP[0]);
+      dP = 0;
+      dM = 0;
+      P = 0;
+      M = 0;
+
+      int n = sizeof(dPi)/sizeof(dPi[0]);
       for ( int i = 0; i < n ; i++ )
       {
-         dP[i] = 0;
-         dM[i] = 0;
+         dPi[i] = 0;
+         dMi[i] = 0;
 
-         P[i] = 0;
-         M[i] = 0;
+         Pi[i] = 0;
+         Mi[i] = 0;
 
          f[pgsTypes::TopFace][i][0] = 0;
          f[pgsTypes::TopFace][i][1] = 0;
@@ -486,16 +493,18 @@ struct TIME_STEP_STRAND
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 dP; // change in force in strand due to deformations in this interval
+   Float64 dPi[19]; // change in force in strand due to deformations in this interval
+   Float64 dP; // summation of dPi
    
-   Float64 P; // force in strand at end of this interval = (P previous interval + dP)
+   Float64 Pi[19]; // force in strand at end of this interval = (P previous interval + dP)
+   Float64 P; // summatio of Pi
 
-   // Loss/Gain during this interval
-   Float64 dFps; // = dP/Aps
+   // Loss/Gain during this interval (change in effective prestress this interval)
+   Float64 dfpe[19]; // = dP/Aps
 
    // Effective prestress
-   Float64 fpe; // = fpj + Sum(dFps for all intervals up to and including this interval)
-   // also fpe = fpe (previous) + dFps (this interval)
+   Float64 fpe; // = fpj + Sum(dfpe[i] for all intervals up to and including this interval)
+   // also fpe = fpe (previous) + Sum(dfpe[i]) (this interval)
 
    // sum of losses up to and including this interval
    Float64 loss; // = loss (previous) + dFps
@@ -521,10 +530,17 @@ struct TIME_STEP_STRAND
       Pj  = 0;
       fpj = 0;
 
-      dP = 0;
-      P  = 0;
+      Float64 dP = 0;
+      Float64 P = 0;
 
-      dFps = 0;
+      int n = sizeof(dPi)/sizeof(dPi[0]);
+      for ( int i = 0; i < n; i++ )
+      {
+         dPi[i] = 0;
+         Pi[i]  = 0;
+         dfpe[i] = 0;
+      }
+
       fpe  = 0;
       loss = 0;
 
@@ -554,16 +570,25 @@ struct TIME_STEP_REBAR
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 dP; // change in force in bar during this interval
+   Float64 dPi[19]; // change in force in bar during this interval
+   Float64 dP; // summation of dPi
 
-   Float64 P; // force in rebar at end of this interval = (P previous interval + dP)
+   Float64 Pi[19]; // force in rebar at end of this interval = (P previous interval + dP)
+   Float64 P; // summation of Pi
 
    TIME_STEP_REBAR()
    {
       As = 0;
       Ys = 0;
+      int n = sizeof(dPi)/sizeof(dPi[0]);
+      for ( int i = 0; i < n; i++ )
+      {
+         dPi[i] = 0;
+         Pi[i]  = 0;
+      }
+
       dP = 0;
-      P  = 0;
+      P = 0;
    }
 };
 
@@ -586,12 +611,13 @@ struct TIME_STEP_DETAILS
    // Change in total loading on the section due to externally applied loads during this interval
    // Array index is one of the ProductForceType enum values
    // upto and including pftRelaxation
-   Float64 dP[19], dM[19];
+   Float64 dPi[19], dMi[19];
+
 
    // Total loading on the section due to externally applied loads in all intervals upto
    // and including this interval. Array index is one of the ProductForceType enum values
    // upto and including pftRelaxation
-   Float64 P[19], M[19];
+   Float64 Pi[19], Mi[19];
 
    // Time step parameters for girder and deck
    TIME_STEP_CONCRETE Girder;
@@ -665,14 +691,14 @@ struct TIME_STEP_DETAILS
       Ytr = 0;
       Itr = 0;
 
-      int n = sizeof(dP)/sizeof(dP[0]);
+      int n = sizeof(dPi)/sizeof(dPi[0]);
       for ( int i = 0; i < n ; i++ )
       {
-         dP[i] = 0;
-         dM[i] = 0;
+         dPi[i] = 0;
+         dMi[i] = 0;
 
-         P[i] = 0;
-         M[i] = 0;
+         Pi[i] = 0;
+         Mi[i] = 0;
 
          der[i] = 0;
          drr[i] = 0;

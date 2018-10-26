@@ -25,6 +25,7 @@
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\SegmentArtifact.h>
 #include <PgsExt\TendonStressArtifact.h>
+#include <PgsExt\DuctSizeArtifact.h>
 #include <set>
 
 //////////////////////////////////////////////
@@ -87,6 +88,10 @@ public:
    const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
    pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx);
 
+   void SetDuctSizeArtifact(DuctIndexType ductIdx,const pgsDuctSizeArtifact& artifact);
+   const pgsDuctSizeArtifact* GetDuctSizeArtifact(DuctIndexType ductIdx) const;
+   pgsDuctSizeArtifact* GetDuctSizeArtifact(DuctIndexType ductIdx);
+
    void AddDeflectionCheckArtifact(const pgsDeflectionCheckArtifact& artifact);
    IndexType GetDeflectionCheckArtifactCount();
    pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact(IndexType idx);
@@ -118,6 +123,7 @@ protected:
 private:
    CGirderKey m_GirderKey;
    std::map<DuctIndexType,pgsTendonStressArtifact> m_TendonStressArtifacts;
+   std::map<DuctIndexType,pgsDuctSizeArtifact> m_DuctSizeArtifacts;
 
    std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>> m_FlexuralCapacityArtifacts[pgsTypes::LimitStateCount];
 

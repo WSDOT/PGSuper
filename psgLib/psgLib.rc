@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,15
- PRODUCTVERSION 3,0,0,15
+ FILEVERSION 3,0,0,16
+ PRODUCTVERSION 3,0,0,16
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.15"
+            VALUE "FileVersion", "3.0.0.16"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.15"
+            VALUE "ProductVersion", "3.0.0.16"
         END
     END
     BLOCK "VarFileInfo"
@@ -641,7 +641,7 @@ BEGIN
     EDITTEXT        IDC_SHIPPING_TIME,114,52,33,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Assume shipping to occur at",IDC_SHIPPING_TIME_LABEL,20,51,90,8
     LTEXT           "Shipping Losses",IDC_SHIPPING_LABEL,31,65,64,11
-    GROUPBOX        "Elastic Gains",IDC_STATIC,279,7,208,210
+    GROUPBOX        "Elastic Gains",IDC_ELASTIC_GAINS_GROUP,279,7,208,210
     LTEXT           "Define the percentage of load used to compute elastic gains",IDC_EG_LABEL,288,22,189,8
     EDITTEXT        IDC_EG_SLAB,404,37,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_SLAB_UNIT,431,40,8,8
@@ -948,9 +948,9 @@ BEGIN
     PUSHBUTTON      "Help",IDHELP,228,225,50,14
 END
 
-IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 243
+IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 278
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
-CAPTION "Limits"
+CAPTION "Limits and Warnings"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Warnings will be posted to the Status Center if the following limits are exceeded.",IDC_STATIC,7,7,251,8
@@ -982,19 +982,23 @@ BEGIN
     LTEXT           "Static",IDC_NWC_CLOSURE_FC_UNIT,132,116,29,8
     EDITTEXT        IDC_LWC_CLOSURE_FC,160,113,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LWC_CLOSURE_FC_UNIT,202,116,29,8
-    LTEXT           "Concrete Unit Weight",IDC_STATIC,14,150,69,8
+    LTEXT           "Concrete Unit Weight",IDC_STATIC,14,168,69,8
     EDITTEXT        IDC_NWC_UNIT_WEIGHT,89,148,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_NWC_UNIT_WEIGHT_UNIT,132,150,29,8
     EDITTEXT        IDC_LWC_UNIT_WEIGHT,160,148,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LWC_UNIT_WEIGHT_UNIT,203,150,29,8
-    LTEXT           "Max Aggregate Size",IDC_STATIC,14,168,64,8
+    LTEXT           "Max Aggregate Size",IDC_STATIC,14,150,64,8
     EDITTEXT        IDC_NWC_AGG_SIZE,89,166,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_NWC_AGG_SIZE_UNIT,132,168,29,8
     EDITTEXT        IDC_LWC_AGG_SIZE,160,166,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,168,29,8
-    GROUPBOX        "General Warnings",IDC_STATIC,7,194,310,42
-    CONTROL         "Issue a Spec Check warning if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
+    GROUPBOX        "General Warnings",IDC_STATIC,7,191,310,80
+    CONTROL         "Warn if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,212,291,10
+    CONTROL         "Warn if there is a potential for girders to sag under dead load effects",IDC_CHECK_GIRDER_SAG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,230,229,10
+    LTEXT           "Base sag detection on",IDC_STATIC,42,245,72,8
+    COMBOBOX        IDC_SAG_OPTIONS,116,243,170,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 363
@@ -1635,6 +1639,28 @@ BEGIN
     LTEXT           "f'c",IDC_STATIC,277,335,13,8
 END
 
+IDD_DUCT_ENTRY DIALOGEX 0, 0, 340, 122
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Ducts"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Entry:",IDC_STATIC,7,7,21,8
+    LTEXT           "Name",IDC_NAME,37,7,141,8
+    LTEXT           "Outside Diameter (OD)",IDC_STATIC,7,28,74,8
+    EDITTEXT        IDC_OD,87,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_OD_UNIT,133,29,19,8
+    LTEXT           "Inside Diameter (ID)",IDC_STATIC,7,45,66,8
+    EDITTEXT        IDC_ID,87,42,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ID_UNIT,133,44,19,8
+    LTEXT           "Max Strand Offset (Z)",IDC_STATIC,7,61,72,8
+    EDITTEXT        IDC_Z,87,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_Z_UNIT,133,61,19,8
+    CONTROL         "",IDC_ZDIM,"Static",SS_ENHMETAFILE | WS_BORDER,173,6,160,81
+    DEFPUSHBUTTON   "OK",IDOK,175,101,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,230,101,50,14
+    PUSHBUTTON      "Help",ID_HELP,283,101,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1829,7 +1855,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 317
         TOPMARGIN, 7
-        BOTTOMMARGIN, 236
+        BOTTOMMARGIN, 271
     END
 
     IDD_SPEC_DESIGN, DIALOG
@@ -1965,6 +1991,14 @@ BEGIN
         RIGHTMARGIN, 421
         TOPMARGIN, 7
         BOTTOMMARGIN, 354
+    END
+
+    IDD_DUCT_ENTRY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 333
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 115
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2198,6 +2232,7 @@ GENERATESTRANDS_STARTSPACING_SEQUENTIAL METAFILE                "res\\GenerateSt
 GENERATESTRANDS_STARTSPACING_SKIPPED METAFILE                "res\\GenerateStrands_StartSpacing_Skipped.emf"
 GENERATESTRANDS_STARTEND_SEQUENTIAL METAFILE                "res\\GenerateStrands_StartEnd_Sequential.emf"
 GENERATESTRANDS_STARTEND_SKIPPED METAFILE                "res\\GenerateStrands_StartEnd_Skipped.emf"
+ZDIM                    METAFILE                "res\\Z.emf"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2213,6 +2248,7 @@ IDI_GIRDER_ENTRY        ICON                    "res\\girder.ico"
 IDI_SPECIFICATION_ENTRY ICON                    "res\\specification.ico"
 IDI_TRAFFIC_BARRIER_ENTRY ICON                    "res\\trafficbarrier.ico"
 IDI_DIAPHRAGM_ENTRY     ICON                    "res\\diaphragm.ico"
+IDI_DUCT_ENTRY          ICON                    "res\\duct.ico"
 IDI_LIVE_LOAD_ENTRY     ICON                    "res\\live_loa.ico"
 IDI_RATING_ENTRY        ICON                    "res\\Rating.ico"
 IDI_LIBRARY_MANAGER     ICON                    "res\\LibraryManager.ico"

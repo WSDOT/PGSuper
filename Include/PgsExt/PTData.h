@@ -26,47 +26,13 @@
 #include <PgsExt\PgsExtExp.h>
 #include <Units\Units.h>
 
+#include <psgLib\DuctLibraryEntry.h>
+
 #include <EAF\EAFUtilities.h>
 
 class CPTData;
 class CSplicedGirderData;
 class CTimelineManager;
-
-
-/*****************************************************************************
-CLASS 
-   CDuctSize
-
-DESCRIPTION
-   Utility class that defines the available duct sizes, number of 0.5" and 0.6"
-   strands that can fit into the duct, and the eccentricity of the strands
-   within the duct
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
-*****************************************************************************/
-class PGSEXTCLASS CDuctSize
-{
-public:
-   CDuctSize(const std::_tstring& name,Float64 dia,StrandIndexType n5,StrandIndexType n6,Float64 e5,Float64 e6) :
-   Name(name),Diameter(dia),MaxStrands5(n5),MaxStrands6(n6),Ecc5(e5),Ecc6(e6){}
-
-   std::_tstring Name;
-   Float64 Diameter;
-   StrandIndexType MaxStrands5; // max # of 0.5" strands
-   StrandIndexType MaxStrands6; // max # of 0.6" strands
-   Float64 Ecc5; // eccentricty for 0.5" strands
-   Float64 Ecc6; // eccentricty for 0.6" strands
-
-   StrandIndexType GetMaxStrands(matPsStrand::Size size) const;
-   Float64 GetEccentricity(matPsStrand::Size size) const;
-
-   static const CDuctSize DuctSizes[];
-   static const Uint32 nDuctSizes;
-};
-
 
 /*****************************************************************************
 CLASS 
@@ -523,7 +489,9 @@ public:
 
    CPTData* m_pPTData; // weak reference to the parent PTData
 
-   Uint32 Size; // Index into CDuctSize::DuctSizes
+   std::_tstring Name; // name of the library entry
+   const DuctLibraryEntry* pDuctLibEntry;
+
    StrandIndexType nStrands;
    bool bPjCalc;
    Float64 Pj;
@@ -588,6 +556,7 @@ public:
    const matPsStrand* pStrand; // tendon strand type
 
    pgsTypes::DuctType DuctType;
+   pgsTypes::StrandInstallationType InstallationType;
 
 protected:
    std::vector<CDuctData> m_Ducts;

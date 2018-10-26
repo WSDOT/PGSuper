@@ -249,6 +249,7 @@ public:
    virtual bool IsExteriorGirder(const CGirderKey& girderKey);
    virtual bool IsLeftExteriorGirder(const CGirderKey& girderKey);
    virtual bool IsRightExteriorGirder(const CGirderKey& girderKey);
+   virtual bool IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEndType endType);
    virtual bool AreGirderTopFlangesRoughened(const CSegmentKey& segmentKey);
    virtual void GetClosureJointProfile(const CClosureKey& closureKey,IShape** ppShape);
    virtual Float64 GetClosureJointLength(const CClosureKey& closureKey);
@@ -930,11 +931,14 @@ public:
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,const CSplicedGirderData* pGirder,IPoint2dCollection** ppPoints);
    virtual void GetDuctPoint(const pgsPointOfInterest& poit,DuctIndexType ductIdx,IPoint2d** ppPoint);
    virtual void GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint);
-   virtual Float64 GetDuctDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual Float64 GetOutsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual Float64 GetInsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual Float64 GetInsideDuctArea(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual StrandIndexType GetTendonStrandCount(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx);
    virtual void GetTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope);
    virtual void GetTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope);
+   virtual Float64 GetMinimumRadiusOfCurvature(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetPjack(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetFpj(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx);

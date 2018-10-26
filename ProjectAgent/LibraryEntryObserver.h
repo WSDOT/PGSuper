@@ -34,6 +34,7 @@
 #include <PsgLib\RatingLibraryEntry.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\LiveLoadLibraryEntry.h>
+#include <PsgLib\DuctLibraryEntry.h>
 
 // LOCAL INCLUDES
 //
@@ -74,7 +75,8 @@ class pgsLibraryEntryObserver : public ConcreteLibraryEntryObserver,
                                 public SpecLibraryEntryObserver,
                                 public RatingLibraryEntryObserver,
                                 public TrafficBarrierEntryObserver,
-                                public LiveLoadLibraryEntryObserver
+                                public LiveLoadLibraryEntryObserver,
+                                public DuctLibraryEntryObserver
 {
 public:
    // GROUP: LIFECYCLE
@@ -95,6 +97,7 @@ public:
    virtual void Update(RatingLibraryEntry* pSubject, Int32 hint);
    virtual void Update(TrafficBarrierEntry* pSubject, Int32 hint);
    virtual void Update(LiveLoadLibraryEntry* pSubject,Int32 hint);
+   virtual void Update(DuctLibraryEntry* pSubject,Int32 hint);
 
    // GROUP: ACCESS
    void SetAgent(CProjectAgentImp* pAgent);

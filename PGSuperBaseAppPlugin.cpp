@@ -760,7 +760,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
 
    CComQIPtr<IProgressMonitor> progress(wndProgress);
    CEAFMainFrame* pWnd = EAFGetMainFrame();
-   wndProgress->Show(CComBSTR("Update Libraries and Templates"),pWnd->GetSafeHwnd());
+   wndProgress->Show(CComBSTR("Updating Configuration"),pWnd->GetSafeHwnd());
 
    // setup cache folders
    CString strAppPath = pApp->GetAppLocation();

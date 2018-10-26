@@ -53,7 +53,7 @@ static char THIS_FILE[] = __FILE__;
 
 GRID_IMPLEMENT_REGISTER(CDuctGrid, CS_DBLCLKS, 0, 0, 0);
 
-ROWCOL nDuctSizeCol   = 0;
+ROWCOL nDuctTypeCol   = 0;
 ROWCOL nNumStrandCol  = 0;
 ROWCOL nJackEndCol    = 0;
 ROWCOL nPjackCheckCol = 0;
@@ -93,7 +93,7 @@ int CDuctGrid::GetColWidth(ROWCOL nCol)
    {
       return rect.Width()/18;
    }
-   else if ( nCol == nDuctSizeCol )
+   else if ( nCol == nDuctTypeCol )
    {
       return rect.Width()/9;
    }
@@ -151,13 +151,13 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
    col++;
 
    // set text along top row
-   nDuctSizeCol = col++;
-	this->SetStyleRange(CGXRange(0,nDuctSizeCol), CGXStyle()
+   nDuctTypeCol = col++;
+	this->SetStyleRange(CGXRange(0,nDuctTypeCol), CGXStyle()
          .SetWrapText(TRUE)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue(_T("Duct\nSize"))
+         .SetValue(_T("Duct\nType"))
 		);
 
    nNumStrandCol = col++;
@@ -268,10 +268,11 @@ void CDuctGrid::AddDuct(const CDuctData& duct,EventIndexType stressingEvent)
 
    InsertRows(nRow,1);
    SetRowStyle(nRow);
+   UpdateStyleRange(CGXRange(nRow,nDuctTypeCol));
    
    RefreshRowHeading(1,GetRowCount());
-   UpdateNumStrandsList(nRow);
    SetDuctData(nRow,duct,stressingEvent);
+   UpdateNumStrandsList(nRow);
 
 	Invalidate();
    GetParam()->EnableUndo(TRUE);
@@ -298,20 +299,29 @@ void CDuctGrid::DeleteDuct()
 
 void CDuctGrid::SetRowStyle(ROWCOL row)
 {
-   std::_tstring ductSizes;
-   for (Uint32 i = 0; i < CDuctSize::nDuctSizes; i++ )
-   {
-      if ( i != 0 )
-      {
-         ductSizes += _T("\n");
-      }
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
 
-      ductSizes += CDuctSize::DuctSizes[i].Name;
+   std::vector<std::_tstring> vNames;
+   pLibNames->EnumDuctNames(&vNames);
+
+   std::_tstring strDuctNames;
+   std::vector<std::_tstring>::iterator begin(vNames.begin());
+   std::vector<std::_tstring>::iterator iter(begin);
+   std::vector<std::_tstring>::iterator end(vNames.end());
+   for ( ; iter != end; iter++ )
+   {
+      if ( iter != begin )
+      {
+         strDuctNames += _T("\n");
+      }
+      strDuctNames += (*iter);
    }
 
-	SetStyleRange(CGXRange(row,nDuctSizeCol), CGXStyle()
+	SetStyleRange(CGXRange(row,nDuctTypeCol), CGXStyle()
 	   .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
-		.SetChoiceList(ductSizes.c_str())
+		.SetChoiceList(strDuctNames.c_str())
 		.SetValue(0L)
       .SetHorizontalAlignment(DT_RIGHT)
       );
@@ -554,7 +564,7 @@ void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
 
 void CDuctGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
-   if ( nCol == nDuctSizeCol )
+   if ( nCol == nDuctTypeCol )
    {
       // Duct size changed... Update the number of strands choice
       UpdateNumStrandsList(nRow);
@@ -605,28 +615,37 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
 {
    // Get Current value for number of strands
    StrandIndexType nStrands = (StrandIndexType)_tstol(GetCellValue(nRow,nNumStrandCol));
-   Uint32 ductSize = _tstol(GetCellValue(nRow,nDuctSizeCol));
+   CString ductName = GetCellValue(nRow,nDuctTypeCol);
 
-   CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(pParentPage->GetParent());
-
-   StrandIndexType maxStrands;
-   const matPsStrand* pStrand = pParent->m_pGirder->GetPostTensioning()->pStrand;
-   switch ( pStrand->GetSize() )
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   const DuctLibraryEntry* pDuctEntry = pLib->GetDuctEntry(ductName);
+   if ( pDuctEntry == NULL )
    {
-   case matPsStrand::D1270: // 0.5"
-      maxStrands = CDuctSize::DuctSizes[ductSize].MaxStrands5;
-      break;
-
-   case matPsStrand::D1524: // 0.6"
-      maxStrands = CDuctSize::DuctSizes[ductSize].MaxStrands6;
-      break;
-
-   default:
-      ATLASSERT(false); // should never get here... don't have data for other strand sizes
-      maxStrands = 0;
-      break;
+      // sometimes the duct name comes back as the index into the choice list
+      // get the duct entry another way
+      GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+      std::vector<std::_tstring> vNames;
+      pLibNames->EnumDuctNames(&vNames);
+      IndexType ductNameIdx = (IndexType)_tstol(ductName);
+      pDuctEntry = pLib->GetDuctEntry(vNames[ductNameIdx].c_str());
+      if ( pDuctEntry == NULL )
+      {
+         return;
+      }
    }
+   Float64 A = pDuctEntry->GetInsideArea();
+
+   CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
+   const matPsStrand* pStrand = pParent->GetStrand();
+   Float64 aps = pStrand->GetNominalArea();
+
+   // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel
+   pgsTypes::StrandInstallationType installationType = pParent->GetInstallationType();
+   Float64 K = (installationType == pgsTypes::sitPush ? 2.0 : 2.5);
+
+   StrandIndexType maxStrands = (StrandIndexType)fabs(A/(K*aps));
 
    SetStyleRange(CGXRange(nRow,nNumStrandCol), CGXStyle()
       .SetUserAttribute(GX_IDS_UA_SPINBOUND_MIN,0L)
@@ -634,12 +653,15 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
       .SetUserAttribute(GX_IDS_UA_SPINBOUND_WRAP,1L)
       );
 
-   if ( nStrands < maxStrands )
+   if ( nStrands <= maxStrands )
    {
       SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)nStrands);
    }
    else
    {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CString strMsg(_T("The number of strands exceeds the maximum value for this duct size.\r\n\r\nNumber of strands will be set to the maximum value."));
+      AfxMessageBox(strMsg);
       SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)maxStrands);
    }
 
@@ -675,13 +697,27 @@ void CDuctGrid::OnStrandChanged()
    }
 }
 
+void CDuctGrid::OnInstallationTypeChanged()
+{
+   ROWCOL nRows = GetRowCount();
+   for ( ROWCOL row = 0; row < nRows; row++ )
+   {
+      UpdateNumStrandsList(row+1);
+   }
+}
+
 void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressingEvent)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   duct.Size             = _tstol(GetCellValue(row,nDuctSizeCol));
+   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   std::vector<std::_tstring> vNames;
+   pLibNames->EnumDuctNames(&vNames);
+
+   IndexType ductNameIdx = _tstoi(GetCellValue(row,nDuctTypeCol));
+   duct.Name             = vNames[ductNameIdx];
    duct.nStrands         = _tstoi(GetCellValue(row,nNumStrandCol));
    duct.JackingEnd       = (pgsTypes::JackingEndType)_tstoi(GetCellValue(row,nJackEndCol));
    duct.bPjCalc          = 0 < _tstoi(GetCellValue(row,nPjackCheckCol)) ? false : true;
@@ -702,7 +738,10 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
 
    GetParam()->SetLockReadOnly(FALSE);
 
-   SetValueRange(CGXRange(row,nDuctSizeCol),    (LONG)duct.Size);
+   CGXComboBox* pCB = (CGXComboBox*)GetControl(row,nDuctTypeCol);
+   pCB->SetValue(duct.Name.c_str());
+
+   //SetValueRange(CGXRange(row,nDuctTypeCol),    duct.Name.c_str());
    SetValueRange(CGXRange(row,nNumStrandCol),   (LONG)duct.nStrands);
    SetValueRange(CGXRange(row,nJackEndCol),     (LONG)duct.JackingEnd);
    SetValueRange(CGXRange(row,nPjackCheckCol),  (LONG)!duct.bPjCalc);

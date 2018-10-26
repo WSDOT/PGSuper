@@ -403,8 +403,10 @@ public:
    virtual Float64 GetCreepFactor(pgsTypes::LimitState ls);
    virtual void SetShrinkageFactor(pgsTypes::LimitState ls,Float64 gSH);
    virtual Float64 GetShrinkageFactor(pgsTypes::LimitState ls);
-   virtual void SetPrestressFactor(pgsTypes::LimitState ls,Float64 gPS);
-   virtual Float64 GetPrestressFactor(pgsTypes::LimitState ls);
+   virtual void SetRelaxationFactor(pgsTypes::LimitState ls,Float64 gRE);
+   virtual Float64 GetRelaxationFactor(pgsTypes::LimitState ls);
+   virtual void SetSecondaryEffectsFactor(pgsTypes::LimitState ls,Float64 gPS);
+   virtual Float64 GetSecondaryEffectsFactor(pgsTypes::LimitState ls);
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL);
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false);
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false);
@@ -433,6 +435,7 @@ public:
    virtual void EnumSpecNames( std::vector<std::_tstring>* pNames) const;
    virtual void EnumRatingCriteriaNames( std::vector<std::_tstring>* pNames) const;
    virtual void EnumLiveLoadNames( std::vector<std::_tstring>* pNames) const;
+   virtual void EnumDuctNames( std::vector<std::_tstring>* pNames ) const;
    virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames );
    virtual void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory);
 
@@ -447,6 +450,7 @@ public:
    virtual const TrafficBarrierEntry* GetTrafficBarrierEntry( LPCTSTR lpszName ) const;
    virtual const SpecLibraryEntry* GetSpecEntry( LPCTSTR lpszName ) const;
    virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( LPCTSTR lpszName ) const;
+   virtual const DuctLibraryEntry* GetDuctEntry( LPCTSTR lpszName ) const;
    virtual ConcreteLibrary&        GetConcreteLibrary();
    virtual ConnectionLibrary&      GetConnectionLibrary();
    virtual GirderLibrary&          GetGirderLibrary();
@@ -454,6 +458,7 @@ public:
    virtual TrafficBarrierLibrary&  GetTrafficBarrierLibrary();
    virtual LiveLoadLibrary*        GetLiveLoadLibrary();
    virtual SpecLibrary*            GetSpecLibrary();
+   virtual DuctLibrary*            GetDuctLibrary();
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const;
    virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const;
    virtual RatingLibrary* GetRatingLibrary();
@@ -639,6 +644,7 @@ private:
    Float64 m_gDW[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
    Float64 m_gCR[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
    Float64 m_gSH[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
+   Float64 m_gRE[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
    Float64 m_gPS[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
    Float64 m_gLL[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
 
@@ -828,8 +834,10 @@ private:
 
    void UseBridgeLibraryEntries();
    void UseGirderLibraryEntries();
+   void UseDuctLibraryEntries();
    void ReleaseBridgeLibraryEntries();
    void ReleaseGirderLibraryEntries();
+   void ReleaseDuctLibraryEntries();
 
    void VerifyRebarGrade();
 

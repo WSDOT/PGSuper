@@ -212,6 +212,44 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
    pDoc->SetModified();
 }
 
+void pgsLibraryEntryObserver::Update(DuctLibraryEntry* pSubject,Int32 hint)
+{
+   m_pAgent->HoldEvents();
+   if ( hint & LibraryHints::EntryRenamed )
+   {
+      GroupIndexType nGroups = m_pAgent->m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      {
+         CGirderGroupData* pGroup = m_pAgent->m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            CPTData* pPTData = pGirder->GetPostTensioning();
+            DuctIndexType nDucts = pPTData->GetDuctCount();
+            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+            {
+               CDuctData* pDuct = pPTData->GetDuct(ductIdx);
+               if ( pDuct->pDuctLibEntry == pSubject )
+               {
+                  pDuct->Name = pSubject->GetName();
+               }
+            }
+         }
+      }
+   }
+
+   if ( hint & LibraryHints::EntryEdited )
+   {
+      ClearStatusItems();
+      m_pAgent->Fire_BridgeChanged();
+   }
+   m_pAgent->FirePendingEvents();
+
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
+}
+
 //======================== ACCESS     =======================================
 void pgsLibraryEntryObserver::SetAgent(CProjectAgentImp* pAgent)
 {

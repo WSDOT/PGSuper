@@ -1132,6 +1132,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DuctEntryDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DuctLibraryEntry.cpp"
+				>
+			</File>
+			<File
 				RelativePath="GirderDebondCriteriaPage.cpp"
 				>
 				<FileConfiguration
@@ -3975,6 +3983,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DuctEntryDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\DuctLibraryEntry.h"
+				>
+			</File>
+			<File
 				RelativePath=".\GirderDebondCriteriaPage.h"
 				>
 			</File>
@@ -4352,6 +4368,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\duct.ico"
+				>
+			</File>
+			<File
 				RelativePath="..\res\folder_closed.ico"
 				>
 			</File>
@@ -4396,11 +4416,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00002.ico"
+				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00002.ico"
+				RelativePath="ico00002.ico"
 				>
 			</File>
 			<File
@@ -4420,11 +4440,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00005.ico"
+				RelativePath="res\ico00005.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00005.ico"
+				RelativePath="ico00005.ico"
 				>
 			</File>
 			<File
@@ -4496,6 +4516,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\res\Z.emf"
+			>
+		</File>
 	</Files>
 	<Globals>
 		<Global

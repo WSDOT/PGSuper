@@ -33,10 +33,35 @@ static char THIS_FILE[] = __FILE__;
 CLASS
    pgsShearRatingArtifact
 ****************************************************************************/
-pgsShearRatingArtifact::pgsShearRatingArtifact()
+pgsShearRatingArtifact::pgsShearRatingArtifact() :
+m_strVehicleName(_T("Unknown"))
 {
    m_bRFComputed = false;
    m_RF = 0;
+
+   m_RatingType = pgsTypes::lrDesign_Inventory;
+
+   m_VehicleIndex = INVALID_INDEX;
+   m_VehicleWeight = -999999;
+
+   m_SystemFactor = 1.0;
+   m_ConditionFactor = 1.0;
+   m_CapacityRedutionFactor = 0.9;
+   m_Vn = 0;
+   m_gDC = 1;
+   m_gDW = 1;
+   m_gCR = 1;
+   m_gSH = 1;
+   m_gRE = 1;
+   m_gPS = 1;
+   m_gLL = 1;
+   m_Vdc = 0;
+   m_Vdw = 0;
+   m_Vcr = 0;
+   m_Vsh = 0;
+   m_Vre = 0;
+   m_Vps = 0;
+   m_Vllim = 0;
 }
 
 pgsShearRatingArtifact::pgsShearRatingArtifact(const pgsShearRatingArtifact& rOther)
@@ -196,6 +221,94 @@ Float64 pgsShearRatingArtifact::GetWearingSurfaceShear() const
    return m_Vdw;
 }
 
+void pgsShearRatingArtifact::SetCreepFactor(Float64 gCR)
+{
+   m_gCR = gCR;
+   m_bRFComputed = false;
+}
+
+Float64 pgsShearRatingArtifact::GetCreepFactor() const
+{
+   return m_gCR;
+}
+
+void pgsShearRatingArtifact::SetCreepShear(Float64 Vcr)
+{
+   m_Vcr = Vcr;
+   m_bRFComputed = false;
+}
+
+Float64 pgsShearRatingArtifact::GetCreepShear() const
+{
+   return m_Vcr;
+}
+
+void pgsShearRatingArtifact::SetShrinkageFactor(Float64 gSH)
+{
+   m_gSH = gSH;
+   m_bRFComputed = false;
+}
+
+Float64 pgsShearRatingArtifact::GetShrinkageFactor() const
+{
+   return m_gSH;
+}
+
+void pgsShearRatingArtifact::SetShrinkageShear(Float64 Vsh)
+{
+   m_Vsh = Vsh;
+   m_bRFComputed = false;
+}
+
+Float64 pgsShearRatingArtifact::GetShrinkageShear() const
+{
+   return m_Vsh;
+}
+
+void pgsShearRatingArtifact::SetRelaxationFactor(Float64 gRE)
+{
+   m_gRE = gRE;
+   m_bRFComputed = false;
+}
+
+Float64 pgsShearRatingArtifact::GetRelaxationFactor() const
+{
+   return m_gRE;
+}
+
+void pgsShearRatingArtifact::SetRelaxationShear(Float64 Vre)
+{
+   m_Vre = Vre;
+   m_bRFComputed = false;
+}
+
+Float64 pgsShearRatingArtifact::GetRelaxationShear() const
+{
+   return m_Vre;
+}
+
+void pgsShearRatingArtifact::SetSecondaryEffectsFactor(Float64 gPS)
+{
+   m_gPS = gPS;
+   m_bRFComputed = false;
+}
+
+Float64 pgsShearRatingArtifact::GetSecondaryEffectsFactor() const
+{
+   return m_gPS;
+}
+
+void pgsShearRatingArtifact::SetSecondaryEffectsShear(Float64 Vps)
+{
+   m_Vps = Vps;
+   m_bRFComputed = false;
+}
+
+Float64 pgsShearRatingArtifact::GetSecondaryEffectsShear() const
+{
+   return m_Vps;
+}
+
 void pgsShearRatingArtifact::SetLiveLoadFactor(Float64 gLL)
 {
    m_gLL = gLL;
@@ -249,7 +362,7 @@ Float64 pgsShearRatingArtifact::GetRatingFactor() const
       }
 
       Float64 C = p * m_CapacityRedutionFactor * m_Vn;
-      Float64 RF = (C - m_gDC*m_Vdc - m_gDW*m_Vdw)/(m_gLL*m_Vllim);
+      Float64 RF = (C - m_gDC*m_Vdc - m_gDW*m_Vdw - m_gCR*m_Vcr - m_gSH*m_Vsh - m_gRE*m_Vre - m_gPS*m_Vps)/(m_gLL*m_Vllim);
 
       if ( RF < 0 )
       {
@@ -278,9 +391,17 @@ void pgsShearRatingArtifact::MakeCopy(const pgsShearRatingArtifact& rOther)
    m_Vn                         = rOther.m_Vn;
    m_gDC                        = rOther.m_gDC;
    m_gDW                        = rOther.m_gDW;
+   m_gCR                        = rOther.m_gCR;
+   m_gSH                        = rOther.m_gSH;
+   m_gRE                        = rOther.m_gRE;
+   m_gPS                        = rOther.m_gPS;
    m_gLL                        = rOther.m_gLL;
    m_Vdc                        = rOther.m_Vdc;
    m_Vdw                        = rOther.m_Vdw;
+   m_Vcr                        = rOther.m_Vcr;
+   m_Vsh                        = rOther.m_Vsh;
+   m_Vre                        = rOther.m_Vre;
+   m_Vps                        = rOther.m_Vps;
    m_Vllim                      = rOther.m_Vllim;
    m_LongReinfShearArtifact     = rOther.m_LongReinfShearArtifact;
 }

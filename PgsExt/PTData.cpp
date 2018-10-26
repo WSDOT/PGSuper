@@ -36,6 +36,8 @@ CLASS
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\SplicedGirderData.h>
 
+#include <IFace\Project.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -43,51 +45,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 Float64 gs_DefaultOffset2 = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
-
-const CDuctSize CDuctSize::DuctSizes[] = {
-   CDuctSize(_T("3.15\""), ::ConvertToSysUnits(3.15,unitMeasure::Inch),31,22,::ConvertToSysUnits(0.55,unitMeasure::Inch),::ConvertToSysUnits(0.70,unitMeasure::Inch)),
-   CDuctSize(_T("4\""),    ::ConvertToSysUnits(4.00,unitMeasure::Inch),31,22,::ConvertToSysUnits(0.55,unitMeasure::Inch),::ConvertToSysUnits(0.70,unitMeasure::Inch)),
-   CDuctSize(_T("4 1/2\""),::ConvertToSysUnits(4.50,unitMeasure::Inch),37,27,::ConvertToSysUnits(1.00,unitMeasure::Inch),::ConvertToSysUnits(1.00,unitMeasure::Inch))
-};
-const Uint32 CDuctSize::nDuctSizes = sizeof(CDuctSize::DuctSizes)/sizeof(CDuctSize::DuctSizes[0]);
-
-StrandIndexType CDuctSize::GetMaxStrands(matPsStrand::Size size) const
-{
-   StrandIndexType nMax;
-   switch(size)
-   {
-   case matPsStrand::D1270: // 0.5"
-      nMax = MaxStrands5;
-      break;
-
-   case matPsStrand::D1524: // 0.6"
-      nMax = MaxStrands6;
-      break;
-
-   default:
-      ATLASSERT(false);
-   }
-   return nMax;
-}
-
-Float64 CDuctSize::GetEccentricity(matPsStrand::Size size) const
-{
-   Float64 e;
-   switch(size)
-   {
-   case matPsStrand::D1270: // 0.5"
-      e = Ecc5;
-      break;
-
-   case matPsStrand::D1524: // 0.6"
-      e = Ecc6;
-      break;
-
-   default:
-      ATLASSERT(false);
-   }
-   return e;
-}
 
 
 CComVariant GetOffsetTypeProperty(CDuctGeometry::OffsetType offsetType)
@@ -913,7 +870,15 @@ CDuctData::CDuctData()
 {
    m_pPTData = NULL;
 
-   Size = 0;
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   std::vector<std::_tstring> vNames;
+   pLibNames->EnumDuctNames(&vNames);
+   Name = vNames.front();
+
+   pDuctLibEntry = 0;
+
    nStrands = 0;
    bPjCalc = true;
    Pj = 0.0;
@@ -927,7 +892,15 @@ CDuctData::CDuctData(const CSplicedGirderData* pGirder)
 {
    m_pPTData = NULL;
 
-   Size = 0;
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   std::vector<std::_tstring> vNames;
+   pLibNames->EnumDuctNames(&vNames);
+   Name = vNames.front();
+
+   pDuctLibEntry = 0;
+
    nStrands = 0;
    bPjCalc = true;
    Pj = 0.0;
@@ -965,7 +938,7 @@ void CDuctData::Init(const CSplicedGirderData* pGirder)
 
 bool CDuctData::operator==(const CDuctData& rOther) const
 {
-   if ( Size != rOther.Size )
+   if ( Name != rOther.Name )
    {
       return false;
    }
@@ -1052,9 +1025,27 @@ HRESULT CDuctData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    pStrLoad->BeginUnit(_T("Duct"));
 
-   var.vt = VT_UI2;
-   pStrLoad->get_Property(_T("Size"),&var);
-   Size = var.uiVal;
+   Float64 version;
+   pStrLoad->get_Version(&version);
+
+   var.vt = VT_BSTR;
+   if ( FAILED(pStrLoad->get_Property(_T("Name"),&var)) )
+   {
+      var.vt = VT_UI4;
+      pStrLoad->get_Property(_T("Size"),&var);
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+      std::vector<std::_tstring> vNames;
+      pLibNames->EnumDuctNames(&vNames);
+      Name = vNames.front();
+   }
+   else
+   {
+      USES_CONVERSION;
+      Name = OLE2T(var.bstrVal);
+   }
 
    var.vt = VT_UI4;
    pStrLoad->get_Property(_T("NumStrands"),&var);
@@ -1113,7 +1104,7 @@ HRESULT CDuctData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 HRESULT CDuctData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    pStrSave->BeginUnit(_T("Duct"),1.0);
-   pStrSave->put_Property(_T("Size"),CComVariant(Size));
+   pStrSave->put_Property(_T("Name"),CComVariant(Name.c_str()));
    pStrSave->put_Property(_T("NumStrands"),CComVariant(nStrands));
    pStrSave->put_Property(_T("CalcPj"),CComVariant(bPjCalc ? VARIANT_TRUE : VARIANT_FALSE));
    pStrSave->put_Property(_T("Pj"),CComVariant(Pj));
@@ -1155,6 +1146,7 @@ CPTData::CPTData()
    LastUserPjTemp = 0;
 
    DuctType = pgsTypes::dtMetal;
+   InstallationType = pgsTypes::sitPush;
 
    pStrand = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::D1524);
 }  
@@ -1213,6 +1205,11 @@ bool CPTData::operator==(const CPTData& rOther) const
    }
 
    if ( DuctType != rOther.DuctType )
+   {
+      return false;
+   }
+
+   if ( InstallationType != rOther.InstallationType )
    {
       return false;
    }
@@ -1429,6 +1426,14 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       DuctType = (pgsTypes::DuctType)var.lVal;
    }
 
+   // added in version 3
+   if ( 2 < version )
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("InstallationType"),&var);
+      InstallationType = (pgsTypes::StrandInstallationType)var.lVal;
+   }
+
    pStrLoad->EndUnit();
 
    return hr;
@@ -1438,7 +1443,7 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PTData"),2.0);
+   pStrSave->BeginUnit(_T("PTData"),3.0);
 
    DuctIndexType ductCount = m_Ducts.size();
    pStrSave->put_Property(_T("DuctCount"),CComVariant(ductCount));
@@ -1454,6 +1459,9 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    // added in version 2
    pStrSave->put_Property(_T("DuctType"),CComVariant(DuctType));
+
+   // added in version 3
+   pStrSave->put_Property(_T("InstallationType"),CComVariant(InstallationType));
 
    pStrSave->EndUnit();
 
@@ -1484,6 +1492,7 @@ void CPTData::MakeCopy(const CPTData& rOther)
    pStrand = rOther.pStrand;
 
    DuctType = rOther.DuctType;
+   InstallationType = rOther.InstallationType;
 }
 
 void CPTData::MakeAssignment(const CPTData& rOther)

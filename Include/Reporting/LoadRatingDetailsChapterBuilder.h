@@ -65,10 +65,10 @@ private:
    CLoadRatingDetailsChapterBuilder(const CLoadRatingDetailsChapterBuilder&);
    CLoadRatingDetailsChapterBuilder& operator=(const CLoadRatingDetailsChapterBuilder&);
 
-   void ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const;
-   void MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
-   void ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact) const;
-   void StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact) const;
-   void ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
+   void ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const;
+   void MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const;
+   void ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const;
+   void StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const;
+   void ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const;
    void LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact) const;
 };
