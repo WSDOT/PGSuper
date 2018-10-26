@@ -469,7 +469,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
          if ( bRating )
          {
             Float64 pedMin(0), pedMax(0);
-            if ( pRatingSpec->IncludePedestrianLiveLoad() )
+            if ( bPedLoading && pRatingSpec->IncludePedestrianLiveLoad() )
             {
                pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &pedMax );
                (*p_table)(row,col++) << reaction.SetValue( pedMax );
@@ -578,7 +578,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
          if ( bRating )
          {
             Float64 pedMin(0), pedMax(0);
-            if ( pRatingSpec->IncludePedestrianLiveLoad() )
+            if ( bPedLoading && pRatingSpec->IncludePedestrianLiveLoad() )
             {
                pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, girder, bat, includeImpact, &pedMin, &pedMax );
                (*p_table)(row,col++) << reaction.SetValue( pedMax );

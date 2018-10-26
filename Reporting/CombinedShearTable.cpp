@@ -571,7 +571,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
          if ( bRating )
          {
-            if ( pRatingSpec->IncludePedestrianLiveLoad() )
+            if ( bPedLoading && pRatingSpec->IncludePedestrianLiveLoad() )
             {
                (*p_table)(row,col++) << shear.SetValue( maxPedestrianLL[index] );
                (*p_table)(row,col++) << shear.SetValue( minPedestrianLL[index] );

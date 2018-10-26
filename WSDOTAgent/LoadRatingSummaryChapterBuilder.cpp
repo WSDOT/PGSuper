@@ -199,7 +199,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       (*pTable)(row,2) << _T("HL-93");
       row++;
 
-      (*pTable)(row,0) << _T("Legal Load Rating: Live Loads for Routine Commercial Traffic");
+      (*pTable)(row,0) << _T("Legal Load Rating: Live Loads for Routine Commercial Vehicles");
       nameIter    = routine_legal_loads.begin();
       nameIterEnd = routine_legal_loads.end();
       for ( ; nameIter != nameIterEnd; nameIter++ )

@@ -591,7 +591,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
 
          if ( bRating )
          {
-            if(pRatingSpec->IncludePedestrianLiveLoad())
+            if(bPedLoading && pRatingSpec->IncludePedestrianLiveLoad())
             {
                (*p_table)(row,col++) << moment.SetValue( maxPedestrianLL[index] );
                (*p_table)(row,col++) << moment.SetValue( minPedestrianLL[index] );

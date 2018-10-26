@@ -874,7 +874,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
 
    if ( bRating )
    {
-      if (pRatingSpec->IncludePedestrianLiveLoad())
+      if (bPedLoading && pRatingSpec->IncludePedestrianLiveLoad())
          nCols += 2;
 
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
@@ -1018,7 +1018,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       nRows = 2;
       pTable->SetNumberOfHeaderRows(nRows);
 
-      if (pRatingSpec->IncludePedestrianLiveLoad())
+      if (bPedLoading && pRatingSpec->IncludePedestrianLiveLoad())
       {
          pTable->SetColumnSpan(0,col1,2);
          (*pTable)(0,col1++) << _T("*$ PED");

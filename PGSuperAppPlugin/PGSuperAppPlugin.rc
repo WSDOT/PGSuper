@@ -1,8 +1,8 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include <EAF\EAFResources.h>
 #include "..\PGSuperCommandIDs.h"
+#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
-    "..\PGSuperCommandIDs.h\0"
+    "..\\PGSuperCommandIDs.h\0"
     "<EAF\\EAFResources.h>\0"
     "\0"
 END
@@ -278,7 +278,7 @@ BEGIN
         MENUITEM "Li&ve Loads...",              ID_LIVE_LOADS,MFT_STRING,MFS_ENABLED
         MENUITEM "Live Load &Distribution Factors...", ID_LOADS_LLDF,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
-        MENUITEM "Construction Loads...",       33232,MFT_STRING,MFS_ENABLED
+        MENUITEM "Construction Loads...",       ID_CONSTRUCTION_LOADS,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         MENUITEM "&Load Modifiers...",          ID_LOADS_LOADMODIFIERS,MFT_STRING,MFS_ENABLED
         MENUITEM "Load &Factors...",            ID_LOADS_LOADFACTORS,MFT_STRING,MFS_ENABLED
@@ -2213,8 +2213,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,0,6
- PRODUCTVERSION 2,7,0,6
+ FILEVERSION 2,7,1,0
+ PRODUCTVERSION 2,7,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2231,12 +2231,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.7.0.6"
+            VALUE "FileVersion", "2.7.1.0"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.0.6"
+            VALUE "ProductVersion", "2.7.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -3054,28 +3054,46 @@ END
 STRINGTABLE 
 BEGIN
     ID_HELP_INET_ARP        "Visit the Alternate Route Project Home Page"
+    ID_HELP_INET_WSDOT      "Open the WSDOT Home Page at www.wsdot.wa.gov"
+    ID_HELP_INET_PGSUPER    "Open the PGSuper Home Page\nPGSuper Online Resources"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_LEFT_HP              "Cut section at left harping point"
+    ID_CENTER               "Cut section at center of girder"
+    ID_RIGHT_HP             "Cut section at right harping point"
+    ID_USER_CUT             "Enter a user defined cut location"
     ID_VIEW_FACTOROFSAFETY  "View Factor of Safety graphs for Girder Stability\n\nGirder Stability"
     ID_VIEW_STABILITY       "View Factor of Safety graphs for Girder Stability\nGirder Stability View"
+END
+
+STRINGTABLE 
+BEGIN
     ID_LOADS_LLDF           "Input distribution factors"
     ID_ADD_POINT_LOAD       "Add a concentrated load to the model"
     ID_EDIT_USERLOADS       "Edit user-defined loads on the structure\nEdit user-defined loads"
     ID_ADD_DISTRIBUTED_LOAD "Add a distributed load to the model"
     ID_EDIT_LOAD            "Edit the selected load"
     ID_DELETE_LOAD          "Delete the selected load"
-END
-
-STRINGTABLE 
-BEGIN
     ID_PROJECT_ALIGNMENT    "Edit Roadway Alignment and Profile\nEdit Roadway Alignment and Profile"
     ID_LIVE_LOADS           "Change which live loads are used for the analysis...\nSpecify Live Loads for Analysis"
     ID_ADD_MOMENT_LOAD      "Add a moment load to the model"
     ID_EDIT_PIER            "Edit Pier\nEdit Pier"
     ID_PROJECT_SPANDESC     "Edit the selected Span\nEdit the selected Span"
     ID_PROJECT_PIERDESC     "Edit the selected Pier\nEdit the selected Pier"
+END
+
+STRINGTABLE 
+BEGIN
     ID_DELETE               "Delete\nDelete"
     ID_INSERT               "Insert Span\nInsert Span"
     ID_INSERT_SPAN          "Insert Span\nInsert Span"
     ID_INSERT_PIER          "Insert Span\nInsert Span"
+    ID_OPTIONS_HINTS        "Edit User Interface Hint Options\nHints"
+    ID_OPTIONS_LABELS       "Set the format for girder labels\nEdit girder label format"
+    ID_RATING_SPEC          "Edit load rating options for this project\nEdit Load Rating Options"
+    ID_MANAGE_PLUGINS       "Manage PGSuper Plug-ins and Extensions\nManage Plug-ins and Extensions"
 END
 
 STRINGTABLE 
@@ -3085,17 +3103,23 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_OPTIONS_HINTS        "Edit User Interface Hint Options\nHints"
-    ID_OPTIONS_LABELS       "Set the format for girder labels\nEdit girder label format"
-    ID_RATING_SPEC          "Edit load rating options for this project\nEdit Load Rating Options"
-    ID_MANAGE_PLUGINS       "Manage PGSuper Plug-ins and Extensions\nManage Plug-ins and Extensions"
     ID_PROJECT_ANALYSIS     "Set the structural analysis method\nStructural Analysis Method"
-    ID_HELP_INET_WSDOT      "Open the WSDOT Home Page at www.wsdot.wa.gov"
-    ID_HELP_INET_PGSUPER    "Open the PGSuper Home Page\nPGSuper Online Resources"
+    ID_CONSTRUCTION_LOADS   "Add permanent construction loads for stay-in-place forms or other construction materials\nConstruction Loads"
+    ID_PROJECT_EFFECTIVEFLANGEWIDTH 
+                            "Modify effective flange width calculations\nEffective Flange Width"
+    ID_LOADS_LOADFACTORS    "Edit the load factors\nLoad factors"
 END
 
 STRINGTABLE 
 BEGIN
+    ID_VIEWSETTINGS_BRIDGEMODELEDITOR "Bridge Model View Settings"
+    ID_VIEWSETTINGS_GIRDEREDITOR "Girder View Settings"
+    ID_VIEWSETTINGS_ANALYSISMODELEDITOR "Analysis Model Editor view settings"
+    ID_VIEWSETTINGS_LIBRARYEDITOR "Library Editor view settings"
+    ID_CONFIGURE_PGSUPER    "Configure the library, template, and user information settings\nConfigure PGSuper"
+    ID_PROJECT_AUTOCALC     "Toggles AutoCalc mode.\nAutoCalc"
+    ID_PROJECT_UPDATENOW    "Update all views, reports, and graphs\nUpdate Now"
+    ID_PROJECT_DESIGNGIRDER "Run Preliminary Girder Designer\nPreliminary Girder Designer"
     ID_PROJECT_SPEC         "Choose the design and analysis criteria for your project\nSelect Project Criteria"
     ID_VIEW_ANALYSISRESULTS "View analysis results\nAnalysis Results"
     ID_PROJECT_ENVIRONMENT  "Specify environment conditions\nEnvironment"
@@ -3103,10 +3127,6 @@ BEGIN
     ID_LOADS_LOADMODIFIERS  "Edit the load modifiers\nLoad modifiers"
     ID_LEFTEND              "Cut section at left end of the girder"
     ID_RIGHTEND             "Cut section at right end of girder"
-    ID_LEFT_HP              "Cut section at left harping point"
-    ID_CENTER               "Cut section at center of girder"
-    ID_RIGHT_HP             "Cut section at right harping point"
-    ID_USER_CUT             "Enter a user defined cut location"
 END
 
 STRINGTABLE 
@@ -3119,11 +3139,11 @@ BEGIN
     IDM_SMALL_ICONS         "View library entries using small icons\nSmall Icons"
     IDM_LIST_ICONS          "View library entries in a list\nList"
     IDM_RENAME_ENTRY        "Rename the selected entry\nRename the selected entry"
-END
-
-STRINGTABLE 
-BEGIN
     IDM_EXPORT_TEMPLATE     "Save the current project as a PGSuper template file\nSave as template file"
+    IDM_EDIT_GIRDER         "Edit a Girder\nEdit a Girder"
+    IDM_COPY_GIRDER_PROPS   "Copy Properties From One Girder to Another\nCopy Girder Properties"
+    IDM_IMPORT_PROJECT_LIBRARY 
+                            "Get Library Entries From Another Project\nGet Library Entries From Another Project"
 END
 
 STRINGTABLE 
@@ -3136,14 +3156,6 @@ BEGIN
                             "Shows the Analysis Model View\nAnalysis Model View"
     ID_VIEW_LIBRARYEDITOR   "Shows the Library Editor\nEdit Library"
     ID_VIEW_REPORTS         "View a report\nReports"
-    ID_VIEWSETTINGS_BRIDGEMODELEDITOR "Bridge Model View Settings"
-    ID_VIEWSETTINGS_GIRDEREDITOR "Girder View Settings"
-    ID_VIEWSETTINGS_ANALYSISMODELEDITOR "Analysis Model Editor view settings"
-    ID_VIEWSETTINGS_LIBRARYEDITOR "Library Editor view settings"
-    ID_CONFIGURE_PGSUPER    "Configure the library, template, and user information settings\nConfigure PGSuper"
-    ID_PROJECT_AUTOCALC     "Toggles AutoCalc mode.\nAutoCalc"
-    ID_PROJECT_UPDATENOW    "Update all views, reports, and graphs\nUpdate Now"
-    ID_PROJECT_DESIGNGIRDER "Run Preliminary Girder Designer\nPreliminary Girder Designer"
 END
 
 STRINGTABLE 
@@ -3227,14 +3239,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDM_EDIT_GIRDER         "Edit a Girder\nEdit a Girder"
-    IDM_COPY_GIRDER_PROPS   "Copy Properties From One Girder to Another\nCopy Girder Properties"
-    IDM_IMPORT_PROJECT_LIBRARY 
-                            "Get Library Entries From Another Project\nGet Library Entries From Another Project"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
     IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
     IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
@@ -3251,14 +3255,6 @@ BEGIN
     ID_APP_LEGAL            "Display PGSuper Legal Notices"
     ID_UNITS_SI             "Change units to SI\nSI Units"
     ID_UNITS_US             "Change units to US\nUS Units"
-END
-
-STRINGTABLE 
-BEGIN
-    ID_CONSTRUCTION_LOADS   "Add permanent construction loads for stay-in-place forms or other construction materials\nConstruction Loads"
-    ID_PROJECT_EFFECTIVEFLANGEWIDTH 
-                            "Modify effective flange width calculations\nEffective Flange Width"
-    ID_LOADS_LOADFACTORS    "Edit the load factors\nLoad factors"
 END
 
 #endif    // English (U.S.) resources

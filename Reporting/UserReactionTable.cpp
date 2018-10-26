@@ -84,16 +84,6 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,SpanIndexType span,Girder
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   // TRICKY: use adapter class to get correct reaction interfaces
-   std::auto_ptr<IProductReactionAdapter> pForces;
-   if( tableType==PierReactionsTable )
-   {
-      pForces =  std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces));
-   }
-   else
-   {
-      pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, span) );
-   }
 
    PierIndexType nPiers = pBridge->GetPierCount();
 
@@ -105,6 +95,18 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,SpanIndexType span,Girder
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( PierIndexType pier = startPier; pier < endPier; pier++ )
    {
+      // TRICKY: use adapter class to get correct reaction interfaces
+      SpanIndexType spanIdx = (pier == nPiers-1 ? pier-1 : pier);
+      std::auto_ptr<IProductReactionAdapter> pForces;
+      if( tableType==PierReactionsTable )
+      {
+         pForces =  std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces));
+      }
+      else
+      {
+         pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, spanIdx) );
+      }
+
       if (!pForces->DoReportAtPier(pier, girder))
       {
          continue; // don't report if no bearing
