@@ -590,7 +590,7 @@ public:
 
    virtual void GetHarpingPointLocations(const CSegmentKey& segmentKey,Float64* lhp,Float64* rhp);
    virtual void GetHighestHarpedStrandLocation(const CSegmentKey& segmentKey,Float64* pElevation);
-   virtual Uint16 GetNumHarpPoints(const CSegmentKey& segmentKey);
+   virtual IndexType GetNumHarpPoints(const CSegmentKey& segmentKey);
 
    virtual StrandIndexType GetMaxNumPermanentStrands(const CSegmentKey& segmentKey);
    virtual StrandIndexType GetMaxNumPermanentStrands(LPCTSTR strGirderName);

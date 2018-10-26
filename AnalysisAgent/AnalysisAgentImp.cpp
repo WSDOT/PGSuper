@@ -15536,11 +15536,11 @@ void CAnalysisAgentImp::GetBearingProductReaction(IntervalIndexType intervalIdx,
 
       if (idx == 0)
       {
-         *pLftEnd = sec_vals.front().Left();
+         *pLftEnd = sec_vals.front().Right();
       }
       else
       {
-         *pRgtEnd = -sec_vals.front().Right();
+         *pRgtEnd = -sec_vals.front().Left();
       }
    }
 
@@ -16013,11 +16013,11 @@ void CAnalysisAgentImp::GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadTyp
    Float64 lldfLeftRatio  = lldfLeftReact/lldfLeftShear;
    Float64 lldfRightRatio = lldfRightReact/lldfRightShear;
 
-   *pLeftRmin =  lft_min_sec_val.Left() * lldfLeftRatio;
-   *pLeftRmax =  lft_max_sec_val.Left() * lldfLeftRatio;
+   *pLeftRmin =  lft_min_sec_val.Right() * lldfLeftRatio;
+   *pLeftRmax =  lft_max_sec_val.Right() * lldfLeftRatio;
 
-   *pRightRmin = -rgt_max_sec_val.Right() * lldfRightRatio;
-   *pRightRmax = -rgt_min_sec_val.Right() * lldfRightRatio;
+   *pRightRmin = -rgt_max_sec_val.Left() * lldfRightRatio;
+   *pRightRmax = -rgt_min_sec_val.Left() * lldfRightRatio;
 }
 
 void CAnalysisAgentImp::GetBearingLimitStateReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const CGirderKey& girderKey,

@@ -3,7 +3,8 @@
  54.25   5 11.00  1     1    U40        37   1/2  270 13.65 13.32  14  2.17  27  14  8  6  0  0  0  0  0  0  0  0  4.000  5.000    2.307   -2.477    5084 0.985  1.147  0.20 -0.04 -0.00 -0.01 -0.05  82.35 222.56   1.00   1.00   1.00
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul

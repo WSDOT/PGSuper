@@ -198,7 +198,7 @@ void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
    CSegmentKey segmentKey(span,gdr,0);
 
    ATLASSERT( span != ALL_SPANS && gdr != ALL_GIRDERS  );
-   Uint16 nHarpPoints = pStrandGeom->GetNumHarpPoints(segmentKey);
+   IndexType nHarpPoints = pStrandGeom->GetNumHarpPoints(segmentKey);
 
    CTogaSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
 

@@ -21,7 +21,8 @@ Stirrup detailing checks failed for the Strength I Limit State.
  26.00   4  7.00  2     1   5SB15       56   1/2  270  4.00  3.73  12  2.50  28  12  6  2  4  0  0  0  0  0  0  0  6.000  6.000    3.309   -4.352    1854 0.528  0.669  0.35 -0.10 -0.01 -0.01 -0.12 160.04 472.07   1.00   1.00   1.00
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul

@@ -566,7 +566,7 @@ void CGirderModelChildFrame::ShowCutDlg()
    CSegmentKey segmentKey(m_GirderKey,0);
 
    ATLASSERT( segmentKey.groupIndex != ALL_GROUPS && segmentKey.girderIndex != ALL_GIRDERS  );
-   Uint16 nHarpPoints = pStrandGeom->GetNumHarpPoints(segmentKey);
+   IndexType nHarpPoints = pStrandGeom->GetNumHarpPoints(segmentKey);
 
    CSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
 

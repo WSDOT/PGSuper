@@ -831,7 +831,7 @@ interface IStrandGeometry : IUnknown
    virtual Float64 GetHarpedEndOffsetIncrement(LPCTSTR strGirderName) = 0;
    virtual Float64 GetHarpedHpOffsetIncrement(LPCTSTR strGirderName) = 0;
 
-   virtual Uint16 GetNumHarpPoints(const CSegmentKey& segmentKey) = 0;
+   virtual IndexType GetNumHarpPoints(const CSegmentKey& segmentKey) = 0;
 
    virtual StrandIndexType GetNumExtendedStrands(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::StrandType standType) = 0;
    virtual bool IsExtendedStrand(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;

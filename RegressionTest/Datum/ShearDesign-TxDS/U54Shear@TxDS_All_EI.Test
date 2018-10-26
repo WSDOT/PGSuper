@@ -1,0 +1,27 @@
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  1     1    U54        74   1/2  270 18.50 17.68  34  2.17  27  20  0 10  6  2  2  0  0  0  0  0  5.100  6.400    4.242   -3.788   10031 0.655  0.936  0.44 -0.19 -0.01 -0.02 -0.21 210.26 560.84   1.00   1.00   1.00
+                                                                       4.14  27  14 14  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  1     2    U54        72   1/2  270 18.56 17.75  34  2.17  27  20  0 10  6  2  2  0  0  0  0  0  5.000  6.300    4.227   -3.724    9850 0.655  0.936  0.42 -0.19 -0.01 -0.01 -0.21 200.01 536.64   1.00   1.00   1.00
+                                                                       4.14  27  14 14  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 59.25   6 10.25  1     4    U54        70   1/2  270 18.63 17.85  32  2.17  27  20  0 10  6  2  2  0  0  0  0  0  4.800  6.300    4.190   -3.626    9571 0.655  0.936  0.41 -0.19 -0.01  0.00 -0.20 191.46 514.68   1.00   1.00   1.00
+                                                                       4.14  27  12 12  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+

@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     1    WF83G  *    46  0.60  270 36.66 18.23  12 78.6  5.500  7.000    4.475   -4.276  14240  0.537  0.671  0.35 -0.16 -0.02 -0.02 -0.20 182.54 321.03   4.00  14.00  14.00
+ 34.25   6  6.00  1     1    WF83G  *    46  0.60  270 36.66 18.23  12 78.6  5.500  7.000    4.475   -4.276  14238  0.537  0.671  0.35 -0.16 -0.02 -0.02 -0.20 182.54 321.22   4.00  14.00  14.00
 
 
 The Specification Check was Not Successful
@@ -10,7 +10,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     2    WF83G  *    46  0.60  270 36.66 18.23  12 78.6  5.800  7.100    4.527   -4.320  14343  0.538  0.671  0.33 -0.17 -0.02 -0.02 -0.20 178.76 306.40   3.75  14.00  14.00
+ 34.25   6  6.00  1     2    WF83G  *    47  0.60  270 36.60 17.27  13 78.6  5.800  7.100    4.527   -4.320  14557  0.538  0.671  0.34 -0.17 -0.02 -0.02 -0.20 187.29 320.44   3.75  14.00  14.00
 
 
 The Specification Check was Not Successful
@@ -20,7 +20,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     4    WF83G  *    46  0.60  270 36.66 18.23  12 78.6  5.800  7.100    4.527   -4.320  14343  0.538  0.671  0.33 -0.17 -0.02 -0.02 -0.20 178.76 306.40   3.75  14.00  14.00
+ 34.25   6  6.00  1     4    WF83G  *    47  0.60  270 36.60 17.27  13 78.6  5.800  7.100    4.527   -4.320  14557  0.538  0.671  0.34 -0.17 -0.02 -0.02 -0.20 187.29 320.44   3.75  14.00  14.00
 
 
 The Specification Check was Not Successful

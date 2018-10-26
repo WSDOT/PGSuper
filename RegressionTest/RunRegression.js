@@ -60,7 +60,7 @@ var NewCatalogServer = new String("Regression");
 var OldCatalogPublisher = new String;
 var NewCatalogPublisher = new String("Regression");
 
-var Application = PGSuperDrive+"\\ARP\\PGSuper\\RegFreeCOM\\" +PGSuperPlatform+"\\"+PGSuperVersion+"\\PGSuper.exe ";
+var Application = PGSuperDrive+"\\ARP\\BridgeLink\\RegFreeCOM\\" +PGSuperPlatform+"\\"+PGSuperVersion+"\\BridgeLink.exe ";
 var StartFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest" );
 var CurrFolderSpec  = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Current" );
 var DatumFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Datum" );
@@ -76,7 +76,7 @@ if (!FSO.FileExists(Application))
 }
 
 // Ensure TxDOT Extension Agent is enabled. It is required for the /Tx commands
-var OldTxDOTAgentState = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}");
+var OldTxDOTAgentState = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{3700B253-8489-457c-8A6D-D174F95C457C}");
 if (OldTxDOTAgentState == "Disabled") {
     DisplayMessage("********");
     DisplayMessage("********");

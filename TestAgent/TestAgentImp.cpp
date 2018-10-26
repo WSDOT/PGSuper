@@ -594,9 +594,21 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   std::vector<pgsPointOfInterest> vPoi;
-
-   vPoi = pIPoi->GetPointsOfInterest(segmentKey);
+   // This complex method of getting POIs is to match the POIs used in the regression test
+   // from previous version of PGSuper (Versions 2.x). By making the vector of POI match
+   // the older versions the same regression test results are reported making it easier to
+   // compare results.
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   pIPoi->RemovePointsOfInterest(vPoi,POI_15H);
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
+   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT, POIFIND_OR) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPoi.begin(),vPoi.end()));
+   vPoi.erase(newEnd,vPoi.end());
 
    GirderIndexType gdrIdx = segmentKey.girderIndex;
 
@@ -727,7 +739,21 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
+   // This complex method of getting POIs is to match the POIs used in the regression test
+   // from previous version of PGSuper (Versions 2.x). By making the vector of POI match
+   // the older versions the same regression test results are reported making it easier to
+   // compare results.
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   pIPoi->RemovePointsOfInterest(vPoi,POI_15H);
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
+   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT, POIFIND_OR) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPoi.begin(),vPoi.end()));
+   vPoi.erase(newEnd,vPoi.end());
 
    GirderIndexType gdrIdx = segmentKey.girderIndex;
 
@@ -752,6 +778,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( erectSegmentIntervalIdx, pftGirder, poi, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( erectSegmentIntervalIdx, pftGirder, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( erectSegmentIntervalIdx, pftGirder, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30200, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( erectSegmentIntervalIdx, pftGirder, pierIdx, segmentKey, bat) , unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
@@ -978,7 +1005,21 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
+   // This complex method of getting POIs is to match the POIs used in the regression test
+   // from previous version of PGSuper (Versions 2.x). By making the vector of POI match
+   // the older versions the same regression test results are reported making it easier to
+   // compare results.
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   pIPoi->RemovePointsOfInterest(vPoi,POI_15H);
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
+   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT, POIFIND_OR) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPoi.begin(),vPoi.end()));
+   vPoi.erase(newEnd,vPoi.end());
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    pgsTypes::BridgeAnalysisType bat;
@@ -1490,6 +1531,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       pCompositeCap = pGdrArtifact->GetPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,it-vPoi.begin());
       if ( pCompositeCap )
       {
+         ATLASSERT(pCompositeCap->GetPointOfInterest() == poi);
 #pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
          // the bug is probably with the POIs
          resultsFile<<bridgeId<<", "<<pid<<", 122016, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetDemand() , unitMeasure::NewtonMillimeter)) <<",15, "<<gdrIdx<<std::endl;
@@ -1588,8 +1630,11 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100209, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAvOverSReqd(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdrIdx<<std::endl;
 
                const pgsVerticalShearArtifact* pVertical = psArtifact->GetVerticalShearArtifact();
-#pragma Reminder("UPDATE: update regression test...") // 100210 and 100211 are now the same (PGSplice). The probably should have been the same all along
-               // I've left them in place for now so the initial regression test versus the HEAD branch wont change
+#pragma Reminder("UPDATE: update regression test...") // remove 100211
+               // In previons versions of PGSuper (2.x) IsStrutAndTieRequired() was evaluated at each end of span. 100210 was at
+               // the start of the span and 100211 was at the end of the span. In this version, IsStrutAndTieRequired() is evaluated
+               // for the segment as a whole so there is only one results. Test 100211 can be removed.
+               // I've left 100211 in place for now so the initial regression test versus the HEAD branch wont change
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100210, ")<<loc<<_T(", ")<<(int)(pVertical->IsStrutAndTieRequired()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100211, ")<<loc<<_T(", ")<<(int)(pVertical->IsStrutAndTieRequired()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100212, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetAvOverSReqd(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdrIdx<<std::endl;

@@ -3432,7 +3432,7 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
 
 void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float64 segmentOffset)
 {
-   Uint16 maxHarped = GetNumHarpPoints(segmentKey);
+   IndexType maxHarped = GetNumHarpPoints(segmentKey);
 
    // if there can't be any harped strands, then there is no need to use the harping point attribute
    if ( maxHarped == 0 )
@@ -3789,13 +3789,26 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       Xg = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_fos( segmentKey, X, Xs, Xg, Xgp, POI_FACEOFSUPPORT);
       m_PoiMgr.AddPointOfInterest(poi_fos);
+
+#pragma Reminder("REVIEW: remove this POI after all regression tests results match older versions of PGSuper")
+      // Version 2.x of PGSuper had a POI at H from the end of the girder
+      // This POI isn't necessary but it is evaluated in the regression tests.
+      // The POI is created here for the sole purpose regression testing.
+      Hg = GetHeight(pgsPointOfInterest(segmentKey,0.0));
+
+      if ( IsEqual(Hg,left_end_dist) )
+         Hg = left_end_dist;
+
+      m_PoiMgr.AddPointOfInterest(pgsPointOfInterest(segmentKey,Hg,POI_H | POI_RELEASED_SEGMENT));
    }
 
    pSegment->GetEndSupport(&pPier,&pTS);
    if ( pPier )
    {
       // this is a pier at the end of this segment
-      Float64 Hg = GetHeight(pgsPointOfInterest(segmentKey,segment_length));
+      Float64 dist_from_start;
+      GetPierLocation(pPier->GetIndex(),segmentKey,&dist_from_start);
+      Float64 Hg = GetHeight(pgsPointOfInterest(segmentKey,dist_from_start));
 
       Float64 support_width = GetSegmentEndSupportWidth(segmentKey);
       Float64 end_size = GetSegmentEndEndDistance(segmentKey);
@@ -3833,6 +3846,17 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       Xg = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_fos( segmentKey, X, Xs, Xg, Xgp, POI_FACEOFSUPPORT);
       m_PoiMgr.AddPointOfInterest(poi_fos);
+
+#pragma Reminder("REVIEW: remove this POI after all regression tests results match older versions of PGSuper")
+      // Version 2.x of PGSuper had a POI at H from the end of the girder
+      // This POI isn't necessary but it is evaluated in the regression tests.
+      // The POI is created here for the sole purpose regression testing.
+      Hg = GetHeight(pgsPointOfInterest(segmentKey,segment_length));
+
+      if ( IsEqual(Hg,left_end_dist) )
+         Hg = left_end_dist;
+
+      m_PoiMgr.AddPointOfInterest(pgsPointOfInterest(segmentKey,segment_length-Hg,POI_H | POI_RELEASED_SEGMENT));
    }
 
    // POI's at stirrup zone boundaries
@@ -11827,7 +11851,7 @@ void CBridgeAgentImp::GetHighestHarpedStrandLocation(const CSegmentKey& segmentK
    *pElevation = max(startTop,endTop);
 }
 
-Uint16 CBridgeAgentImp::GetNumHarpPoints(const CSegmentKey& segmentKey)
+IndexType CBridgeAgentImp::GetNumHarpPoints(const CSegmentKey& segmentKey)
 {
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
@@ -21445,9 +21469,10 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
    WebIndexType nWebs;
    section->get_WebCount(&nWebs);
 
-   Float64 Ls = 0;
    for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
    {
+      Float64 Ls = 0;
+
       CComPtr<ITendon> tendon;
       tendon.CoCreateInstance(CLSID_Tendon);
 

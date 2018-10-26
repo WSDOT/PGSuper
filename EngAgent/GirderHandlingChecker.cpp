@@ -163,7 +163,9 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
    bool found_mid = false;
 
    Float64 dx,dy,rz;
-   for (std::vector<pgsPointOfInterest>::const_iterator poiIter = rpoiVec.begin(); poiIter != rpoiVec.end(); poiIter++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(rpoiVec.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(rpoiVec.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
       const pgsPointOfInterest& poi = *poiIter;
       Float64 fx,fy,mz;
@@ -176,7 +178,8 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
       if (poi.IsMidSpan(poiReference))
       {
          ATLASSERT(found_mid == false);
-         ATLASSERT( IsEqual(poi.GetDistFromStart(),glen/2) );
+         // poi should be at the half-way point between the supports
+         ATLASSERT( IsEqual(poi.GetDistFromStart(),leftOH + (glen-leftOH-rightOH)/2) );
 
          hr = results->ComputePOIDisplacements(lcid,femPoiID,lotMember,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));
