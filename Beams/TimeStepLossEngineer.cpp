@@ -274,7 +274,13 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
       Float64 Ept = pMaterials->GetTendonMaterial(girderKey)->GetE();
 
       // this is iterating by POI
+      GET_IFACE(IPointOfInterest,pPoi);
       SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
+      while ( !pPoi->IsOnGirder(sectionLossIter->first) && sectionLossIter != losses.SectionLosses.end() )
+      {
+         sectionLossIter++;
+      }
+
       const LOSSDETAILS& lossDetails = sectionLossIter->second;
       Float64 X1    = lossDetails.FrictionLossDetails[ductIdx].X;
       Float64 dfpF1 = lossDetails.FrictionLossDetails[ductIdx].dfpF;
@@ -284,18 +290,21 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
       SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
       for ( ; sectionLossIter != sectionLossIterEnd; sectionLossIter++ )
       {
-         const LOSSDETAILS& lossDetails = sectionLossIter->second;
-         Float64 X2    = lossDetails.FrictionLossDetails[ductIdx].X;
-         Float64 dfpF2 = lossDetails.FrictionLossDetails[ductIdx].dfpF;
+         if ( pPoi->IsOnGirder(sectionLossIter->first) )
+         {
+            const LOSSDETAILS& lossDetails = sectionLossIter->second;
+            Float64 X2    = lossDetails.FrictionLossDetails[ductIdx].X;
+            Float64 dfpF2 = lossDetails.FrictionLossDetails[ductIdx].dfpF;
 
-         Float64 dX = X2 - X1;
-         Float64 dP = Pj - 0.5*Apt*(dfpF2 + dfpF1);
-         Float64 dElongation = dP*dX;
-         elongation += dElongation;
+            Float64 dX = X2 - X1;
+            Float64 dP = Pj - 0.5*Apt*(dfpF2 + dfpF1);
+            Float64 dElongation = dP*dX;
+            elongation += dElongation;
 
-         // get ready for next time throught hte loop
-         X1 = X2;
-         dfpF1 = dfpF2;
+            // get ready for next time throught hte loop
+            X1 = X2;
+            dfpF1 = dfpF2;
+         }
       }
 
       elongation /= (Ept*Apt);
@@ -557,6 +566,20 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
                Float64 df = fpj - 0.5*(frDetails.dfpF + pLosses->SectionLosses[prevPoi].FrictionLossDetails[ductIdx].dfpF);
                m_Elongation[tendonKey].first += df*dX;
             }
+
+            details.FrictionLossDetails.push_back(frDetails);
+         } // next duct
+      }
+      else
+      {
+         // poi is not on girder.... just add a place holder
+         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         {
+            FRICTIONLOSSDETAILS frDetails;
+            frDetails.alpha = 0;
+            frDetails.X = 0;
+            frDetails.dfpF = 0;
+            frDetails.dfpA = 0;
 
             details.FrictionLossDetails.push_back(frDetails);
          } // next duct
@@ -2987,28 +3010,31 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
       for ( ; iter != end; iter++, row++ )
       {
          const pgsPointOfInterest& poi(*iter);
-         const LOSSDETAILS* pLossDetails = GetLosses(poi,INVALID_INDEX);
-
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         if ( pPoi->IsOnGirder(poi) )
          {
-            ColumnIndexType ductCol = 0;
+            const LOSSDETAILS* pLossDetails = GetLosses(poi,INVALID_INDEX);
 
-            IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
-
-            (*pPTLossTable[ductIdx])(row,ductCol++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
-
-            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->FrictionLossDetails[ductIdx].dfpF );
-            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->FrictionLossDetails[ductIdx].dfpA );
-
-            for ( IntervalIndexType intervalIdx = ptIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
             {
-               // dfpe is the change in force... values < 0 are losses (a reduction in force)
-               // however, in the context of this table, we want losses to be positive
-               // so that's why there is the - sign in stress.SetValue(-dfpe)
-               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( -pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].dfpe );
-            }
+               ColumnIndexType ductCol = 0;
 
-            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->TimeStepDetails.back().Tendons[ductIdx].loss );
+               IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+
+               (*pPTLossTable[ductIdx])(row,ductCol++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+
+               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->FrictionLossDetails[ductIdx].dfpF );
+               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->FrictionLossDetails[ductIdx].dfpA );
+
+               for ( IntervalIndexType intervalIdx = ptIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+               {
+                  // dfpe is the change in force... values < 0 are losses (a reduction in force)
+                  // however, in the context of this table, we want losses to be positive
+                  // so that's why there is the - sign in stress.SetValue(-dfpe)
+                  (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( -pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].dfpe );
+               }
+
+               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->TimeStepDetails.back().Tendons[ductIdx].loss );
+            }
          }
       }
 

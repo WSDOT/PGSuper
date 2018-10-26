@@ -571,10 +571,7 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool 
    }
 
    vPOI = pIPoi->GetPointsOfInterest(segmentKey);
-
-   // Remove closure joint POI as they are off the segment
-   pIPoi->RemovePointsOfInterest(vPOI,POI_CLOSURE);
-   pIPoi->RemovePointsOfInterest(vPOI,POI_BOUNDARY_PIER);
+   vPOI.erase(std::remove_if(vPOI.begin(),vPOI.end(),RemoveOffSegmentPOI),vPOI.end());
 
    GET_IFACE(ISegmentLiftingPointsOfInterest,pLiftPOI);
    std::vector<pgsPointOfInterest> liftingPOI( pLiftPOI->GetLiftingPointsOfInterest(segmentKey,0) );
@@ -1725,6 +1722,11 @@ void CAnalysisAgentImp::DumpAnalysisModels(GirderIndexType gdrIdx)
 void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot)
 {
    m_pGirderModelManager->GetDeckShrinkageStresses(poi,pftop,pfbot);
+}
+
+void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr,Float64* pftop,Float64* pfbot)
+{
+   m_pGirderModelManager->GetDeckShrinkageStresses(poi,fcGdr,pftop,pfbot);
 }
 
 std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
@@ -3693,9 +3695,6 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    Float64 dw = pLoadFactors->DWmax[limitState];
    Float64 ll = pLoadFactors->LLIMmax[limitState];
 
-
-   GET_IFACE_NOCHECK(IBridge,pBridge); // not always used... depends on whether there is an overlay or not
-
    Float64 ft,fb;
 
    // Erect Segment (also covers temporary strand removal)
@@ -3717,15 +3716,15 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       ftop1 += dc*ft;   
       fbot1 += dc*fb;
 
+      GetDesignSlabStressAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi,&ft,&fb);
+      ftop1 += dc*ft;   
+      fbot1 += dc*fb;
+
       GetStress(castDeckIntervalIdx,pftSlabPad,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop1 += dc*ft;   
       fbot1 += dc*fb;
 
       GetStress(castDeckIntervalIdx,pftSlabPanel,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
-      ftop1 += dc*ft;   
-      fbot1 += dc*fb;
-
-      GetDesignSlabStressAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi,&ft,&fb);
       ftop1 += dc*ft;   
       fbot1 += dc*fb;
 
@@ -3761,7 +3760,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       ftop2 += dc*k_top*ft;   
       fbot2 += dc*k_bot*fb;
 
-      if ( overlayIntervalIdx != INVALID_INDEX && !pBridge->IsFutureOverlay() )
+      if ( overlayIntervalIdx != INVALID_INDEX && overlayIntervalIdx <= intervalIdx )
       {
          GetStress(overlayIntervalIdx,pftOverlay,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
          ftop2 += dw*k_top*ft;   
@@ -3775,22 +3774,19 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       GetStress(compositeDeckIntervalIdx,pftUserDW,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop2 += dw*k_top*ft;   
       fbot2 += dw*k_bot*fb;
+
+      // slab shrinkage stresses
+      Float64 ft_ss, fb_ss;
+      GetDeckShrinkageStresses(poi,fcgdr,&ft_ss,&fb_ss);
+      ftop2 += ft_ss;
+      fbot2 += fb_ss;
    }
 
    // Open to traffic, carrying live load
    if ( liveLoadIntervalIdx <= intervalIdx )
    {
-      if (overlayIntervalIdx != INVALID_INDEX && pBridge->IsFutureOverlay() )
-      {
-         GetStress(overlayIntervalIdx,pftOverlay,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
-         ftop3Min = ftop3Max = dw*k_top*ft;   
-         fbot3Min = fbot3Max = dw*k_bot*fb;   
-      }
-      else
-      {
-         ftop3Min = ftop3Max = 0.0;   
-         fbot3Min = fbot3Max = 0.0;   
-      }
+      ftop3Min = ftop3Max = 0.0;   
+      fbot3Min = fbot3Max = 0.0;   
 
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pGirderMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -3832,14 +3828,6 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
 
       ftop3Max += ll*k_top*ft;   
       fbot3Max += ll*k_bot*fb;
-
-      // slab shrinkage stresses
-      Float64 ft_ss, fb_ss;
-      GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
-      ftop3Min += ft_ss;
-      ftop3Max += ft_ss;
-      fbot3Min += fb_ss;
-      fbot3Max += fb_ss;
    }
 
    if ( loc == pgsTypes::TopGirder )

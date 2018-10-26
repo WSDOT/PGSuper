@@ -109,6 +109,16 @@ void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
       {
          m_TimelineMgr.SetLiveLoadEventByIndex(INVALID_INDEX);
       }
+
+      DDX_Check(pDX,IDC_LOAD_RATING,value);
+      if ( value == BST_CHECKED )
+      {
+         m_TimelineMgr.SetLoadRatingEventByIndex(m_EventIndex);
+      }
+      else if ( value == BST_UNCHECKED )
+      {
+         m_TimelineMgr.SetLoadRatingEventByIndex(INVALID_INDEX);
+      }
    }
    else
    {
@@ -120,6 +130,9 @@ void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
 
       EventIndexType liveLoadEventIdx = m_TimelineMgr.GetLiveLoadEventIndex();
       InitalizeCheckBox(pDX,liveLoadEventIdx,IDC_LIVELOAD);
+
+      EventIndexType loadRatingEventIdx = m_TimelineMgr.GetLoadRatingEventIndex();
+      InitalizeCheckBox(pDX,loadRatingEventIdx,IDC_LOAD_RATING);
    }
 }
 

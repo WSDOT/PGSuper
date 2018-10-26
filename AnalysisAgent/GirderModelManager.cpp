@@ -1144,6 +1144,37 @@ void CGirderModelManager::GetDeflLiveLoadDeflection(IProductForces::DeflectionLi
    *pDmax = DyMaxLeft;
 }
 
+void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr,Float64* pftop,Float64* pfbot)
+{
+   // This is sort of a dummy function until deck shrinkage stress issues are resolved.
+   // If you count on deck shrinkage for elastic gain, then you have to account for the fact
+   // that the deck shrinkage changes the stresses in the girder as well. Deck shrinkage is
+   // an external load to the girder
+
+   // Top and bottom girder stresses are computed using the composite section method described in
+   // Branson, D. E., "Time-Dependent Effects in Composite Concrete Beams", 
+   // American Concrete Institute J., Vol 61, Issue 2, (1964) pp. 213-230
+
+   VERIFY_NOT_TIME_STEP_ANALYSIS;
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+   GET_IFACE(ILosses,pLosses);
+   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
+
+   Float64 P, M;
+   pDetails->pLosses->GetDeckShrinkageEffects(&P,&M);
+
+   GET_IFACE(ISectionProperties,pProps);
+   Float64 A  = pProps->GetAg(compositeIntervalIdx,poi,fcGdr);
+   Float64 St = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder,fcGdr);
+   Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder,fcGdr);
+
+   *pftop = P/A + M/St;
+   *pfbot = P/A + M/Sb;
+}
+
 void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot)
 {
    // This is sort of a dummy function until deck shrinkage stress issues are resolved.
@@ -6314,7 +6345,7 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
       Float64 K = nColumns/nGirders;
 
       Float64 H, A, I, E;
-      pBridge->GetColumnProperties(pierIdx,&H,&A,&I,&E);
+      pBridge->GetColumnProperties(pierIdx,true,&H,&A,&I,&E);
       objSupport->put_Length(H);
 
       Float64 EA = K*E*A;

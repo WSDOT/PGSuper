@@ -82,10 +82,6 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX,IDC_EC,IDC_EC_UNIT,m_Ec,pDisplayUnits->GetModEUnit());
 
-   // Transverse location of the pier
-   DDX_UnitValueAndTag(pDX,IDC_X5,IDC_X5_UNIT,m_TransverseOffset, pDisplayUnits->GetSpanLengthUnit() );
-   DDX_CBItemData(pDX,IDC_X5_MEASUREMENT,m_TransverseOffsetMeasurement);
-
    DDX_UnitValueAndTag(pDX,IDC_H1,IDC_H1_UNIT,m_XBeamHeight[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX,IDC_H2,IDC_H2_UNIT,m_XBeamTaperHeight[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX,IDC_X1,IDC_X1_UNIT,m_XBeamTaperLength[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
@@ -96,10 +92,14 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX,IDC_W,IDC_W_UNIT,m_XBeamWidth,pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag(pDX,IDC_X3,IDC_X3_UNIT,m_XBeamOverhang[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_X4,IDC_X4_UNIT,m_XBeamOverhang[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
-
    DDX_Text(pDX,IDC_COLUMN_COUNT,m_nColumns);
+   DDX_CBIndex(pDX,IDC_REFCOLUMN,m_RefColumnIdx);
+   DDX_OffsetAndTag(pDX,IDC_X5,IDC_X5_UNIT,m_TransverseOffset, pDisplayUnits->GetSpanLengthUnit() );
+   DDX_CBItemData(pDX,IDC_X5_MEASUREMENT,m_TransverseOffsetMeasurement);
+
+   DDX_UnitValueAndTag(pDX,IDC_X3,IDC_X3_UNIT,m_XBeamOverhang[pgsTypes::pstLeft], pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_X4,IDC_X4_UNIT,m_XBeamOverhang[pgsTypes::pstRight],pDisplayUnits->GetSpanLengthUnit() );
+
    DDX_UnitValueAndTag(pDX,IDC_S,IDC_S_UNIT,m_ColumnSpacing,pDisplayUnits->GetSpanLengthUnit());
    DDX_UnitValueAndTag(pDX,IDC_H,IDC_H_UNIT,m_ColumnHeight,pDisplayUnits->GetSpanLengthUnit());
    DDX_CBItemData(pDX,IDC_HEIGHT_MEASURE,m_ColumnHeightMeasurementType);
@@ -116,6 +116,8 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
       if ( m_PierModelType == pgsTypes::pmtPhysical )
       {
+         m_pPier->SetModE(m_Ec);
+
          m_pPier->SetTransverseOffset(m_RefColumnIdx,m_TransverseOffset,m_TransverseOffsetMeasurement);
          for ( int i = 0; i < 2; i++ )
          {
@@ -125,21 +127,18 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
          }
          m_pPier->SetXBeamWidth(m_XBeamWidth);
 
-         if ( 1 < m_nColumns )
+         m_pPier->SetColumnCount(m_nColumns);
+         CColumnData columnData = m_pPier->GetColumnData(0);
+         columnData.SetColumnHeight(m_ColumnHeight,m_ColumnHeightMeasurementType);
+         columnData.SetColumnShape(m_ColumnShape);
+         columnData.SetColumnDimensions(m_B,m_D);
+         for ( ColumnIndexType colIdx = 0; colIdx < m_nColumns; colIdx++ )
          {
-            m_pPier->SetColumnCount(m_nColumns);
-            CColumnData columnData = m_pPier->GetColumnData(0);
-            columnData.SetColumnHeight(m_ColumnHeight,m_ColumnHeightMeasurementType);
-            columnData.SetColumnShape(m_ColumnShape);
-            columnData.SetColumnDimensions(m_B,m_D);
-            for ( ColumnIndexType colIdx = 0; colIdx < m_nColumns; colIdx++ )
+            m_pPier->SetColumnData(colIdx,columnData);
+            if ( 0 < colIdx )
             {
-               m_pPier->SetColumnData(colIdx,columnData);
-               if ( 1 < colIdx )
-               {
-                  SpacingIndexType spaceIdx = (SpacingIndexType)(colIdx-1);
-                  m_pPier->SetColumnSpacing(spaceIdx,m_ColumnSpacing);
-               }
+               SpacingIndexType spaceIdx = (SpacingIndexType)(colIdx-1);
+               m_pPier->SetColumnSpacing(spaceIdx,m_ColumnSpacing);
             }
          }
 
@@ -315,7 +314,7 @@ void CPierLayoutPage::OnColumnShapeChanged()
    CColumnData::ColumnShapeType shapeType = (CColumnData::ColumnShapeType)pcbColumnShape->GetItemData(curSel);
    if ( shapeType == CColumnData::cstCircle )
    {
-      GetDlgItem(IDC_B_LABEL)->SetWindowText(_T("R"));
+      GetDlgItem(IDC_B_LABEL)->SetWindowText(_T("D"));
       GetDlgItem(IDC_D_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_D)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_D_UNIT)->ShowWindow(SW_HIDE);

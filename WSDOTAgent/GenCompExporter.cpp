@@ -164,6 +164,7 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
       CString strPathName = fileDlg.GetPathName();
       if (  SaveGenCompModel(strPathName,genCompXML.get()) )
       {
+         AFX_MANAGE_STATE(AfxGetAppModuleState());
          AfxMessageBox(_T("Export complete"),MB_OK | MB_ICONEXCLAMATION);
          return S_OK;
       }

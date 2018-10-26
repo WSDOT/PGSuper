@@ -98,7 +98,8 @@ class CPGSuperDocProxyAgent :
    public IRegisterViewEvents,
    public IExtendPGSuperUI,
    public IExtendPGSpliceUI,
-   public IDocumentType
+   public IDocumentType,
+   public IDocumentUnitSystem
 {
 public:
    CPGSuperDocProxyAgent();
@@ -129,6 +130,7 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IExtendPGSuperUI)
    COM_INTERFACE_ENTRY(IExtendPGSpliceUI)
    COM_INTERFACE_ENTRY(IDocumentType)
+   COM_INTERFACE_ENTRY(IDocumentUnitSystem)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CPGSuperDocProxyAgent)
@@ -322,6 +324,10 @@ public:
 public:
    virtual bool IsPGSuperDocument();
    virtual bool IsPGSpliceDocument();
+
+// IDocumentUnitSystem
+public:
+   virtual void GetUnitServer(IUnitServer** ppUnitServer);
 
 private:
    DECLARE_EAF_AGENT_DATA;

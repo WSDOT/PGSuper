@@ -56,6 +56,9 @@ public:
    void ApplyLiveLoad(bool bApplyLoad = true);
    bool IsLiveLoadApplied() const;
 
+   void ApplyRatingLiveLoad(bool bApplyLoad = true);
+   bool IsRatingLiveLoadApplied() const;
+
    void AddUserLoad(LoadIDType loadID);
    void RemoveUserLoad(LoadIDType loadID);
    bool HasUserLoad(LoadIDType loadID);
@@ -77,6 +80,7 @@ protected:
    bool m_bApplyRailingSystemLoad;
    bool m_bApplyOverlayLoad;
    bool m_bApplyLiveLoad;
+   bool m_bApplyRatingLiveLoad;
 
    std::set<LoadIDType> m_UserLoads;
 };

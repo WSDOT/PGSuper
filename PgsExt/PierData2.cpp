@@ -1659,7 +1659,7 @@ void CPierData2::GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight
 
 void CPierData2::SetXBeamWidth(Float64 width)
 {
-   m_XBeamWidth;
+   m_XBeamWidth = width;
 }
 
 Float64 CPierData2::GetXBeamWidth() const

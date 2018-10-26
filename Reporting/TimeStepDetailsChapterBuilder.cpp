@@ -156,8 +156,6 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
              << _T("Yn = ") << ecc.SetValue(tsDetails.Girder.Yn)  << _T(" ")
              << _T("H = ") << height.SetValue(tsDetails.Girder.H) << _T(" ") << rptNewLine;
       
-      *pPara << rptNewLine;
-
       *pPara << _T("Deck: An = ") << area.SetValue(tsDetails.Deck.An) << _T(" ")
              << _T("In = ") << momI.SetValue(tsDetails.Deck.In) << _T(" ")
              << _T("Yn = ") << ecc.SetValue(tsDetails.Deck.Yn)  << _T(" ")
@@ -176,18 +174,32 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       for ( int i = 0; i < 2; i++ )
       {
          pgsTypes::DeckRebarMatType matType = (pgsTypes::DeckRebarMatType)i;
-         if ( matType == pgsTypes::drmTop )
-         {
-            *pPara << _T("Deck Top Mat Rebar: Es = ");
-         }
-         else
-         {
-            *pPara << _T("Deck Bottom Mat Rebar: Es = ");
-         }
-
          for ( int j = 0; j < 2; j++ )
          {
             pgsTypes::DeckRebarBarType barType = (pgsTypes::DeckRebarBarType)j;
+            if ( matType == pgsTypes::drmTop )
+            {
+               if ( barType == pgsTypes::drbIndividual )
+               {
+                  *pPara << _T("Deck Top Mat Individual Rebar: Es = ");
+               }
+               else
+               {
+                  *pPara << _T("Deck Top Mat Lump Sum Rebar: Es = ");
+               }
+            }
+            else
+            {
+               if ( barType == pgsTypes::drbIndividual )
+               {
+                  *pPara << _T("Deck Bottom Mat Individual Rebar: Es = ");
+               }
+               else
+               {
+                  *pPara << _T("Deck Bottom Mat Lump Sum Rebar: Es = ");
+               }
+            }
+
             *pPara << _T("As = ") << area.SetValue(tsDetails.DeckRebar[matType][barType].As) << _T(" ")
                    << _T("Ys = ") << ecc.SetValue(tsDetails.DeckRebar[matType][barType].Ys) << rptNewLine;
          }
@@ -200,18 +212,19 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
          if ( strandType == pgsTypes::Straight )
          {
-            *pPara << _T("Straight Strands: Eps = ");
+            *pPara << _T("Straight Strands: ");
          }
          else if ( strandType == pgsTypes::Harped )
          {
-            *pPara << _T("Harped Strands: Eps = ");
+            *pPara << _T("Harped Strands: ");
          }
          else if ( strandType == pgsTypes::Temporary )
          {
-            *pPara << _T("Temporary Strands: Eps = ");
+            *pPara << _T("Temporary Strands: ");
          }
 
-         *pPara << _T("As = ") << area.SetValue(tsDetails.Strands[strandType].As) << _T(" ")
+         *pPara << _T("Eps = ") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(" ")
+                << _T("As = ") << area.SetValue(tsDetails.Strands[strandType].As) << _T(" ")
                 << _T("Ys = ") << area.SetValue(tsDetails.Strands[strandType].Ys) << rptNewLine;
       }
 
@@ -219,7 +232,9 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    
       BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
       {
-         *pPara << _T("Tendon: As = ") << area.SetValue(tsTendon.As) << _T(" ")
+         *pPara << _T("Tendon: ") 
+            << _T("Ept = ") << modE.SetValue(tsTendon.E) << _T(" ")
+            << _T("Apt = ") << area.SetValue(tsTendon.As) << _T(" ")
             << _T("Ys = ") << ecc.SetValue(tsTendon.Ys) << rptNewLine;
       }
 
@@ -232,9 +247,11 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       *pPara << rptNewLine;
 
       // Incremental Strains (Tadros Eqn 3 & 4)
+      *pPara << _T("Externally applied forces") << rptNewLine;
+      *pPara << _T("dP = ") << force.SetValue(tsDetails.dPext) << rptNewLine;
+      *pPara << _T("dM = ") << moment.SetValue(tsDetails.dMext) << rptNewLine;
 
       *pPara << _T("Incremental Strain and Curvature Due to Loads Applied During this Interval") << rptNewLine;
-
       ColumnIndexType nColumns = 0;
       nColumns++; // Load Name
       nColumns += 2; // P & M for Composite
@@ -243,7 +260,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       nColumns += tsDetails.Tendons.size();
       nColumns += tsDetails.GirderRebar.size();
       nColumns += 2; // P & M for Deck
-      nColumns += 2; // top bottom deck rebar
+      nColumns += 4; // top bottom deck rebar
 
       rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nColumns);
       *pPara << pLayoutTable << rptNewLine;
@@ -271,8 +288,12 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       (*pLayoutTable)(rowIdx,colIdx++) << _T("Deck");
       colIdx++;//(*pLayoutTable)(rowIdx,colIdx++) << SKIP
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("Top Deck Rebar");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("Bottom Deck Rebar");
+
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("Top Deck Individual Rebar");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("Top Deck Lump Sum Rebar");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("Bottom Deck Individual Rebar");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("Bottom Deck Lump Sum Rebar");
+
       rowIdx++;
 
       colIdx = 0;
@@ -298,8 +319,12 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(Ed*An)/(Eg*Atr)");
       (*pLayoutTable)(rowIdx,colIdx++) << _T("dM*(Ed*In)/(Eg*Itr)");
+
       (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
       (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
+
       rowIdx++;
 
       int nLoads = sizeof(tsDetails.Girder.dPi)/sizeof(tsDetails.Girder.dPi[0]);

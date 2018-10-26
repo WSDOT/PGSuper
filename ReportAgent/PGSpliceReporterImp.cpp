@@ -85,12 +85,12 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEquilibriumCheckChapterBuilder) );
    pRptMgr->AddReportBuilder( pMyRptBuilder );
 
-   boost::shared_ptr<CReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
-   pMyRptBuilder = new CReportBuilder(_T("Initial Strain Analysis"));
-   pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
-   pMyRptBuilder->SetReportSpecificationBuilder( pInitialStrainAnalysisSpecBuilder );
-   pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
-   pRptMgr->AddReportBuilder( pMyRptBuilder );
+   //boost::shared_ptr<CReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
+   //pMyRptBuilder = new CReportBuilder(_T("Initial Strain Analysis"));
+   //pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   //pMyRptBuilder->SetReportSpecificationBuilder( pInitialStrainAnalysisSpecBuilder );
+   //pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
+   //pRptMgr->AddReportBuilder( pMyRptBuilder );
 
    return S_OK;
 }

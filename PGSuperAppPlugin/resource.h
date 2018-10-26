@@ -804,6 +804,7 @@
 #define IDC_HARP_END_CB                 1423
 #define IDC_DUCT_TYPE                   1423
 #define IDC_X5_MEASUREMENT              1423
+#define IDC_LOAD_RATING_EVENT           1423
 #define IDC_ERECTION_EVENT              1424
 #define IDC_HP_COMBO_HP                 1424
 #define IDC_HARP_HP_CB                  1424
@@ -1039,6 +1040,8 @@
 #define IDC_IGNORE_CREEP                1562
 #define IDC_ADD_SPAN                    1563
 #define IDC_SERVICE_III_SH              1563
+#define IDC_LIVELOAD2                   1563
+#define IDC_LOAD_RATING                 1563
 #define IDC_REMOVE_SPAN                 1564
 #define IDC_SERVICE_III_PS              1564
 #define IDC_LINK_TARGET_NOTE            1565
@@ -1551,6 +1554,8 @@
 #define IDC_D_UNIT                      1844
 #define IDC_EC_LABEL                    1846
 #define IDC_PIER_MODEL_LABEL            1849
+#define IDC_DIMENSIONS_NOTE             1850
+#define IDC_LOAD_RATING_EVENT_LABEL     1851
 #define IDC_SERVICE_I_CR                1859
 #define IDC_SERVICE_I_SH                1860
 #define IDC_SERVICE_I_PS                1861
@@ -1726,7 +1731,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        367
 #define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1850
+#define _APS_NEXT_CONTROL_VALUE         1852
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

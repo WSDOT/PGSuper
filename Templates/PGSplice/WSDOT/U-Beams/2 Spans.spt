@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PGSplice version="3">
-  <Version>3.0.0.26</Version>
+  <Version>3.0.0.27</Version>
   <Broker version="1">
     <Agent version="1">
       <CLSID>{256B5B5B-762C-4693-8802-6B0351290FEA}</CLSID>
       <LIBRARY_MANAGER version="2">
-        <TimeStamp>3601757903</TimeStamp>
+        <TimeStamp>3602855490</TimeStamp>
         <LIBRARY_MANAGER_ENTRY version="1">
           <LIBRARY_NAME>CONCRETE_LIBRARY</LIBRARY_NAME>
           <LIBRARY version="1">
@@ -657,6 +657,42 @@
               </LiveLoadLibraryEntry>
             </LIBRARY_ENTRY>
             <LIBRARY_ENTRY version="1">
+              <ENTRY_KEY>OL1 (Neg Moment)</ENTRY_KEY>
+              <LiveLoadLibraryEntry version="2">
+                <Name>OL1 (Neg Moment)</Name>
+                <IsNotional>0</IsNotional>
+                <LiveLoadApplicabilityType>2</LiveLoadApplicabilityType>
+                <LiveLoadConfigurationType>2</LiveLoadConfigurationType>
+                <LaneLoad>2918.7805874412725</LaneLoad>
+                <LaneLoadSpanLength>0</LaneLoadSpanLength>
+                <MaxVariableAxleSpacing>0</MaxVariableAxleSpacing>
+                <VariableAxleIndex>-1</VariableAxleIndex>
+                <Axles version="1">
+                  <AxleCount>5</AxleCount>
+                  <Axle version="1">
+                    <Weight>44482.216152604997</Weight>
+                    <Spacing>0</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>3.048</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>1.2192000000000001</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>3.6576000000000004</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>1.2192000000000001</Spacing>
+                  </Axle>
+                </Axles>
+              </LiveLoadLibraryEntry>
+            </LIBRARY_ENTRY>
+            <LIBRARY_ENTRY version="1">
               <ENTRY_KEY>OL2</ENTRY_KEY>
               <LiveLoadLibraryEntry version="2">
                 <Name>OL2</Name>
@@ -665,6 +701,62 @@
                 <LiveLoadConfigurationType>2</LiveLoadConfigurationType>
                 <LaneLoad>2918.7805874412725</LaneLoad>
                 <LaneLoadSpanLength>60.960000000000001</LaneLoadSpanLength>
+                <MaxVariableAxleSpacing>0</MaxVariableAxleSpacing>
+                <VariableAxleIndex>-1</VariableAxleIndex>
+                <Axles version="1">
+                  <AxleCount>10</AxleCount>
+                  <Axle version="1">
+                    <Weight>53378.659383125996</Weight>
+                    <Spacing>0</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>3.048</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>1.2192000000000001</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>97860.875535731</Weight>
+                    <Spacing>1.8288000000000002</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>4.8768000000000002</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>1.2192000000000001</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>97860.875535731</Weight>
+                    <Spacing>1.8288000000000002</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>4.2671999999999999</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>95636.764728100738</Weight>
+                    <Spacing>1.2192000000000001</Spacing>
+                  </Axle>
+                  <Axle version="1">
+                    <Weight>97860.875535731</Weight>
+                    <Spacing>1.8288000000000002</Spacing>
+                  </Axle>
+                </Axles>
+              </LiveLoadLibraryEntry>
+            </LIBRARY_ENTRY>
+            <LIBRARY_ENTRY version="1">
+              <ENTRY_KEY>OL2 (Neg Moment)</ENTRY_KEY>
+              <LiveLoadLibraryEntry version="2">
+                <Name>OL2 (Neg Moment)</Name>
+                <IsNotional>0</IsNotional>
+                <LiveLoadApplicabilityType>2</LiveLoadApplicabilityType>
+                <LiveLoadConfigurationType>2</LiveLoadConfigurationType>
+                <LaneLoad>2918.7805874412725</LaneLoad>
+                <LaneLoadSpanLength>0</LaneLoadSpanLength>
                 <MaxVariableAxleSpacing>0</MaxVariableAxleSpacing>
                 <VariableAxleIndex>-1</VariableAxleIndex>
                 <Axles version="1">
@@ -848,8 +940,8 @@
           <BridgeName></BridgeName>
           <BridgeId></BridgeId>
           <JobNumber></JobNumber>
-          <Engineer>Richard Brice</Engineer>
-          <Company>WSDOT</Company>
+          <Engineer>Your Name</Engineer>
+          <Company>Your Company</Company>
           <Comments></Comments>
         </ProjectProperties>
         <ProjectSettings version="1">
@@ -1166,8 +1258,7 @@
                   <Count>0</Count>
                 </Piers>
                 <TempSupports version="1">
-                  <Count>2</Count>
-                  <TempSupportID>2</TempSupportID>
+                  <Count>1</Count>
                   <TempSupportID>3</TempSupportID>
                 </TempSupports>
                 <AgeAtContinuity>7</AgeAtContinuity>
@@ -1452,12 +1543,13 @@
           </TimelineEvents>
           <Piers version="1">
             <PierCount>3</PierCount>
-            <PierDataDetails version="13">
+            <PierDataDetails version="14">
               <ID>0</ID>
               <Station>0</Station>
               <Orientation>NORMAL</Orientation>
               <IsBoundaryPier>-1</IsBoundaryPier>
               <PierConnectionType>6</PierConnectionType>
+              <PierModelType>0</PierModelType>
               <Back version="2">
                 <GirderEndDistance>0.52069999999999994</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
@@ -1483,13 +1575,14 @@
                 </Diaphragm>
               </Ahead>
             </PierDataDetails>
-            <PierDataDetails version="13">
+            <PierDataDetails version="14">
               <ID>1</ID>
               <Station>38.100000000000001</Station>
               <Orientation>NORMAL</Orientation>
               <IsBoundaryPier>0</IsBoundaryPier>
               <PierConnectionType>1</PierConnectionType>
               <SegmentConnectionType>2</SegmentConnectionType>
+              <PierModelType>0</PierModelType>
               <Back version="2">
                 <GirderEndDistance>0.30479999999999996</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
@@ -1515,12 +1608,13 @@
                 </Diaphragm>
               </Ahead>
             </PierDataDetails>
-            <PierDataDetails version="13">
+            <PierDataDetails version="14">
               <ID>2</ID>
               <Station>76.199999999999989</Station>
               <Orientation>NORMAL</Orientation>
               <IsBoundaryPier>-1</IsBoundaryPier>
               <PierConnectionType>6</PierConnectionType>
+              <PierModelType>0</PierModelType>
               <Back version="2">
                 <GirderEndDistance>0.30479999999999996</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
@@ -3735,10 +3829,12 @@
           <PermitSpecialLiveLoads version="2">
             <TruckImpact>0.10000000000000001</TruckImpact>
             <LaneImpact>0</LaneImpact>
-            <VehicleCount>2</VehicleCount>
+            <VehicleCount>4</VehicleCount>
             <Vehicles version="1">
               <VehicleName>OL1</VehicleName>
+              <VehicleName>OL1 (Neg Moment)</VehicleName>
               <VehicleName>OL2</VehicleName>
+              <VehicleName>OL2 (Neg Moment)</VehicleName>
             </Vehicles>
             <PedestrianLoadApplicationType>-1</PedestrianLoadApplicationType>
           </PermitSpecialLiveLoads>
@@ -3751,15 +3847,15 @@
           <IncludePedestrianLiveLoad>0</IncludePedestrianLiveLoad>
           <DesignInventoryRating version="4">
             <Enabled>-1</Enabled>
-            <DC_StrengthI>1</DC_StrengthI>
-            <DW_StrengthI>1</DW_StrengthI>
+            <DC_StrengthI>1.25</DC_StrengthI>
+            <DW_StrengthI>1.5</DW_StrengthI>
             <CR_StrengthI>1</CR_StrengthI>
             <SH_StrengthI>1</SH_StrengthI>
             <RE_StrengthI>1</RE_StrengthI>
             <PS_StrengthI>1</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
-            <DC_ServiceIII>1.25</DC_ServiceIII>
-            <DW_ServiceIII>1.5</DW_ServiceIII>
+            <DC_ServiceIII>1</DC_ServiceIII>
+            <DW_ServiceIII>1</DW_ServiceIII>
             <CR_ServiceIII>1</CR_ServiceIII>
             <SH_ServiceIII>1</SH_ServiceIII>
             <RE_ServiceIII>1</RE_ServiceIII>
@@ -3770,8 +3866,8 @@
           </DesignInventoryRating>
           <DesignOperatingRating version="4">
             <Enabled>-1</Enabled>
-            <DC_StrengthI>1</DC_StrengthI>
-            <DW_StrengthI>1</DW_StrengthI>
+            <DC_StrengthI>1.25</DC_StrengthI>
+            <DW_StrengthI>1.5</DW_StrengthI>
             <CR_StrengthI>1</CR_StrengthI>
             <SH_StrengthI>1</SH_StrengthI>
             <RE_StrengthI>1</RE_StrengthI>
@@ -3796,7 +3892,7 @@
             <RE_StrengthI>1</RE_StrengthI>
             <PS_StrengthI>1</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
-            <DC_ServiceIII>1.5</DC_ServiceIII>
+            <DC_ServiceIII>1</DC_ServiceIII>
             <DW_ServiceIII>1</DW_ServiceIII>
             <CR_ServiceIII>1</CR_ServiceIII>
             <SH_ServiceIII>1</SH_ServiceIII>
@@ -3810,14 +3906,14 @@
           </LegalRoutineRating>
           <LegalSpecialRating version="4">
             <Enabled>-1</Enabled>
-            <DC_StrengthI>1</DC_StrengthI>
-            <DW_StrengthI>1</DW_StrengthI>
+            <DC_StrengthI>1.25</DC_StrengthI>
+            <DW_StrengthI>1.5</DW_StrengthI>
             <CR_StrengthI>1</CR_StrengthI>
             <SH_StrengthI>1</SH_StrengthI>
             <RE_StrengthI>1</RE_StrengthI>
             <PS_StrengthI>1</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
-            <DC_ServiceIII>1.5</DC_ServiceIII>
+            <DC_ServiceIII>1</DC_ServiceIII>
             <DW_ServiceIII>1</DW_ServiceIII>
             <CR_ServiceIII>1</CR_ServiceIII>
             <SH_ServiceIII>1</SH_ServiceIII>
@@ -3829,8 +3925,8 @@
             <RateForStress>-1</RateForStress>
           </LegalSpecialRating>
           <PermitRoutineRating version="4">
-            <Enabled>-1</Enabled>
-            <DC_StrengthII>1</DC_StrengthII>
+            <Enabled>0</Enabled>
+            <DC_StrengthII>1.5</DC_StrengthII>
             <DW_StrengthII>1</DW_StrengthII>
             <CR_StrengthII>1</CR_StrengthII>
             <SH_StrengthII>1</SH_StrengthII>
@@ -3857,7 +3953,7 @@
             <RE_StrengthII>1</RE_StrengthII>
             <PS_StrengthII>1</PS_StrengthII>
             <LL_StrengthII>-1</LL_StrengthII>
-            <DC_ServiceI>1.5</DC_ServiceI>
+            <DC_ServiceI>1</DC_ServiceI>
             <DW_ServiceI>1</DW_ServiceI>
             <CR_ServiceI>1</CR_ServiceI>
             <SH_ServiceI>1</SH_ServiceI>

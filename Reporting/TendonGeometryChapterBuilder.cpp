@@ -121,28 +121,31 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
          col = 0;
 
          pgsPointOfInterest& poi = *iter;
-         (*pTable)(row,col++) << location.SetValue(POI_SPAN,poi);
+         if ( pPoi->IsOnGirder(poi) )
+         {
+            (*pTable)(row,col++) << location.SetValue(POI_SPAN,poi);
 
-         const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,stressTendonIntervalIdx);
-         const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);
+            const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,stressTendonIntervalIdx);
+            const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);
 
-         (*pTable)(row,col++) << dist.SetValue( frDetails.X );
-         (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetDuctOffset(stressTendonIntervalIdx,poi,ductIdx));
+            (*pTable)(row,col++) << dist.SetValue( frDetails.X );
+            (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetDuctOffset(stressTendonIntervalIdx,poi,ductIdx));
 
-         CComPtr<IVector3d> slope;
-         pTendonGeom->GetTendonSlope(poi,ductIdx,&slope);
-         Float64 X, Y;
-         slope->get_X(&X);
-         slope->get_Y(&Y);
-         (*pTable)(row,col++) << X;
-         (*pTable)(row,col++) << Y;
+            CComPtr<IVector3d> slope;
+            pTendonGeom->GetTendonSlope(poi,ductIdx,&slope);
+            Float64 X, Y;
+            slope->get_X(&X);
+            slope->get_Y(&Y);
+            (*pTable)(row,col++) << X;
+            (*pTable)(row,col++) << Y;
 
-         (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetEccentricity(stressTendonIntervalIdx,poi,ductIdx));
-         (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metStart);
-         (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metEnd);
-         (*pTable)(row,col++) << stress.SetValue( frDetails.dfpF ); // friction
-         (*pTable)(row,col++) << stress.SetValue( frDetails.dfpA ); // anchor set
-      }
+            (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetEccentricity(stressTendonIntervalIdx,poi,ductIdx));
+            (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metStart);
+            (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metEnd);
+            (*pTable)(row,col++) << stress.SetValue( frDetails.dfpF ); // friction
+            (*pTable)(row,col++) << stress.SetValue( frDetails.dfpA ); // anchor set
+         }
+      } // next poi
 
       dist.ShowUnitTag(true);
       ecc.ShowUnitTag(true);

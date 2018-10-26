@@ -1954,6 +1954,76 @@ void CTimelineManager::SetLiveLoadEventByID(EventIDType ID)
    ASSERT_VALID;
 }
 
+EventIndexType CTimelineManager::GetLoadRatingEventIndex() const
+{
+   ASSERT_VALID;
+
+   std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
+   std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CTimelineEvent* pTimelineEvent = *iter;
+      if ( pTimelineEvent->GetApplyLoadActivity().IsRatingLiveLoadApplied() )
+      {
+         return iter - m_TimelineEvents.begin();
+      }
+   }
+
+   return INVALID_INDEX;
+}
+
+EventIDType CTimelineManager::GetLoadRatingEventID() const
+{
+   ASSERT_VALID;
+
+   std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
+   std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CTimelineEvent* pTimelineEvent = *iter;
+      if ( pTimelineEvent->GetApplyLoadActivity().IsRatingLiveLoadApplied() )
+      {
+         return pTimelineEvent->GetID();
+      }
+   }
+   return INVALID_ID;
+}
+
+void CTimelineManager::SetLoadRatingEventByIndex(EventIndexType eventIdx)
+{
+   std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
+   std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
+   for ( ; iter != end; iter++ )
+   {
+      CTimelineEvent* pTimelineEvent = *iter;
+      pTimelineEvent->GetApplyLoadActivity().ApplyRatingLiveLoad(false);
+   }
+
+   if ( eventIdx != INVALID_INDEX )
+   {
+      m_TimelineEvents[eventIdx]->GetApplyLoadActivity().ApplyRatingLiveLoad(true);
+   }
+
+   ASSERT_VALID;
+}
+
+void CTimelineManager::SetLoadRatingEventByID(EventIDType ID)
+{
+   std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
+   std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
+   for ( ; iter != end; iter++ )
+   {
+      CTimelineEvent* pTimelineEvent = *iter;
+      if ( pTimelineEvent->GetID() == ID )
+      {
+         SetLoadRatingEventByIndex(iter - m_TimelineEvents.begin());
+         break;
+      }
+   }
+
+   ASSERT_VALID;
+}
+
 int CTimelineManager::Validate() const
 {
    if ( m_pBridgeDesc == NULL )
@@ -1977,6 +2047,12 @@ int CTimelineManager::Validate() const
    if ( GetRailingSystemLoadEventIndex() <= GetCastDeckEventIndex() )
    {
       return TLM_RAILING_SYSTEM_ERROR;
+   }
+
+   // Make sure load rating doesn't occur before bridge is open to traffic
+   if ( GetLoadRatingEventIndex() < GetLiveLoadEventIndex() )
+   {
+      return TLM_LOAD_RATING_ERROR;
    }
 
    // Make sure all piers are erected

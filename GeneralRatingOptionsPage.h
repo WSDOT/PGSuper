@@ -45,7 +45,13 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
    afx_msg void OnHelp();
+   afx_msg void OnLoadRatingEventChanged();
+   afx_msg void OnLoadRatingEventChanging();
    BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
+
+   void FillLoadRatingEventComboBox();
+   EventIndexType CreateEvent();
+   int m_PrevLoadRatingEventIdx;
 
    CString m_strTip; // buffer that holds the tooltip text
 

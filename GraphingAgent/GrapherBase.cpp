@@ -63,7 +63,7 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
 
 #if defined _DEBUG || defined _BETA_VERSION
-   pGraphMgr->AddGraphBuilder(new CInitialStrainGraphBuilder);
+   //pGraphMgr->AddGraphBuilder(new CInitialStrainGraphBuilder);
 #endif
 }
 

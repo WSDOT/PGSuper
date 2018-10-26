@@ -9350,7 +9350,7 @@ ColumnIndexType CBridgeAgentImp::GetColumnCount(PierIndexType pierIdx)
    }
 }
 
-void CBridgeAgentImp::GetColumnProperties(PierIndexType pierIdx,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE)
+void CBridgeAgentImp::GetColumnProperties(PierIndexType pierIdx,bool bSkewAdjust,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
@@ -9382,21 +9382,28 @@ void CBridgeAgentImp::GetColumnProperties(PierIndexType pierIdx,Float64* pHeight
          Float64 Iy = D2*D1*D1*D1/12;
 
          // use Mohr's circle to get ix about an axis that is normal to the alignment
-         CComPtr<IMohrCircle> mc;
-         mc.CoCreateInstance(CLSID_MohrCircle);
-         mc->put_Sii(Ix);
-         mc->put_Sjj(Iy);
-         mc->put_Sij(0);
+         if ( bSkewAdjust )
+         {
+            CComPtr<IMohrCircle> mc;
+            mc.CoCreateInstance(CLSID_MohrCircle);
+            mc->put_Sii(Ix);
+            mc->put_Sjj(Iy);
+            mc->put_Sij(0);
 
-         CComPtr<IAngle> objSkew;
-         GetPierSkew(pierIdx,&objSkew);
-         Float64 skew;
-         objSkew->get_Value(&skew);
+            CComPtr<IAngle> objSkew;
+            GetPierSkew(pierIdx,&objSkew);
+            Float64 skew;
+            objSkew->get_Value(&skew);
 
-         Float64 ix;
-         mc->ComputeSxx(-skew,&ix);
-         ATLASSERT(0 < ix);
-         I = ix;
+            Float64 ix;
+            mc->ComputeSxx(-skew,&ix);
+            ATLASSERT(0 < ix);
+            I = ix;
+         }
+         else
+         {
+            I = Ix;
+         }
       }
 
       *pA = A;
@@ -21909,10 +21916,19 @@ IntervalIndexType CBridgeAgentImp::GetLiveLoadInterval()
 
 IntervalIndexType CBridgeAgentImp::GetLoadRatingInterval()
 {
-   // the could occur in any interval after the bridge is open to traffic.
-   // should allow the user to select the load rating interval in the loading rating configuration dialog
    VALIDATE(BRIDGE);
-   return m_IntervalManager.GetIntervalCount()-1;
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   EventIndexType eventIdx = pTimelineMgr->GetLoadRatingEventIndex();
+   if ( eventIdx == INVALID_INDEX )
+   {
+      // load rating event wasn't specifically defined... assum last interval
+      return m_IntervalManager.GetIntervalCount()-1;
+   }
+   else
+   {
+      return m_IntervalManager.GetInterval(eventIdx);
+   }
 }
 
 IntervalIndexType CBridgeAgentImp::GetOverlayInterval()

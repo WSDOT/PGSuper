@@ -806,6 +806,14 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
             hr = pStrLoad->EndUnit(); // End
 
             hr = pStrLoad->EndUnit(); // ExtendedStrands
+
+            // Was a bug in the design algorithm pre-2.9 that allowed extended strand data to creep in if there were no 
+            // strands. Kill this data if it exists
+            if( m_Nstrands[pgsTypes::Straight] == 0)
+            {
+               m_NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].clear();
+               m_NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].clear();
+            }
          }
 
          if (12 <= version && m_NumPermStrandsType == CStrandData::sdtDirectSelection)

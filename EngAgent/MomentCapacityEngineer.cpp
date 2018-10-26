@@ -173,20 +173,22 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
    std::vector<Float64> fpe_pt;
    std::vector<Float64> ept_initial;
-   if ( bIsOnGirder )
+   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
+   Float64 Ept = pTendon->GetE();
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if 0 < nDucts
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
-      Float64 Ept = pTendon->GetE();
-      GET_IFACE(ITendonGeometry,pTendonGeom);
-      GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if 0 < nDucts
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      Float64 fpe = 0;
+      Float64 e = 0;
+      if ( bIsOnGirder )
       {
-         Float64 fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
-         Float64 e = fpe/Ept;
-         fpe_pt.push_back(fpe);
-         ept_initial.push_back(e);
+         fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
+         e = fpe/Ept;
       }
+      fpe_pt.push_back(fpe);
+      ept_initial.push_back(e);
    }
 
    pgsBondTool bondTool(m_pBroker,poi);
@@ -220,6 +222,9 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       eps_initial = fpe_ps/Eps;
    }
 
+   GET_IFACE(IPointOfInterest,pPoi);
+   bool bIsOnGirder = pPoi->IsOnGirder(poi);
+
    std::vector<Float64> fpe_pt;
    std::vector<Float64> ept_initial;
    const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
@@ -229,8 +234,13 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      Float64 fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
-      Float64 e = fpe/Ept;
+      Float64 fpe = 0;
+      Float64 e = 0;
+      if ( bIsOnGirder )
+      {
+         fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
+         e = fpe/Ept;
+      }
       fpe_pt.push_back(fpe);
       ept_initial.push_back(e);
    }
@@ -836,6 +846,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       }
       pmcd->ecl = ecl;
       pmcd->etl = etl;
+
+      pmcd->et = 0;
 
       // Compute Phi based on the net tensile strain....
       // This not applicable at closure joints

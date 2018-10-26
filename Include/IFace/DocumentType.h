@@ -41,3 +41,11 @@ interface IDocumentType : IUnknown
    virtual bool IsPGSuperDocument() = 0;
    virtual bool IsPGSpliceDocument() = 0;
 };
+
+// {A3ABCA05-C3A3-4797-904A-F4D6E6147A92}
+DEFINE_GUID(IID_IDocumentUnitSystem, 
+0xa3abca05, 0xc3a3, 0x4797, 0x90, 0x4a, 0xf4, 0xd6, 0xe6, 0x14, 0x7a, 0x92);
+interface IDocumentUnitSystem : IUnknown
+{
+   virtual void GetUnitServer(IUnitServer** ppUnitServer) = 0;
+};

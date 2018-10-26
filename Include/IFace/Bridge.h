@@ -527,8 +527,9 @@ interface IBridge : IUnknown
    virtual ColumnIndexType GetColumnCount(PierIndexType pierIdx) = 0;
 
    // returns the basic properties for a single column at a pier... all columns at a pier are assumed
-   // to be the same.
-   virtual void GetColumnProperties(PierIndexType pierIdx,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE) = 0;
+   // to be the same. if bSkewAdjust is true, the column properties are adjusted for skew and the
+   // moment of inertia about an axis normal to the alignment is returned
+   virtual void GetColumnProperties(PierIndexType pierIdx,bool bSkewAdjust,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE) = 0;
 
    // negative moment calculations and results need not be processed if a simple span analysis is
    // used or if there isn't any continuity.

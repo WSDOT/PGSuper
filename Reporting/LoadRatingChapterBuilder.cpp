@@ -25,6 +25,7 @@
 #include <Reporting\RatingSummaryTable.h>
 
 #include <IFace\Artifact.h>
+#include <IFace\Intervals.h>
 
 #include <IFace\RatingSpecification.h>
 #include <IFace\Bridge.h>
@@ -71,6 +72,14 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara;
+   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   (*pChapter) << pPara;
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
+   CString str;
+   str.Format(_T("Load rating occurs in Interval %d: %s"),LABEL_INTERVAL(loadRatingIntervalIdx),pIntervals->GetDescription(loadRatingIntervalIdx));
+   (*pPara) << str << rptNewLine;
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
@@ -96,22 +105,30 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrLegal_Routine);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
 
          pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Routine);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrLegal_Special);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
 
          pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Special);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
       }
    }
 
@@ -129,14 +146,18 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrPermit_Routine);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrPermit_Special);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
       }
    }
 

@@ -712,16 +712,18 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
    {
       IntervalIndexType loadingIntervalIdx = intervalIdx;
 
-      bool bRailing  = applyLoadActivity.IsRailingSystemLoadApplied();
-      bool bOverlay  = applyLoadActivity.IsOverlayLoadApplied();
-      bool bLiveLoad = applyLoadActivity.IsLiveLoadApplied();
-      bool bUserLoad = applyLoadActivity.IsUserLoadApplied();
+      bool bRailing    = applyLoadActivity.IsRailingSystemLoadApplied();
+      bool bOverlay    = applyLoadActivity.IsOverlayLoadApplied();
+      bool bLiveLoad   = applyLoadActivity.IsLiveLoadApplied();
+      bool bLoadRating = applyLoadActivity.IsRatingLiveLoadApplied();
+      bool bUserLoad   = applyLoadActivity.IsUserLoadApplied();
 
-      bool bHasRailingBeenApplied  = false;
-      bool bHasOverlayBeenApplied  = false;
-      bool bHasLiveLoadBeenApplied = false;
+      bool bHasRailingBeenApplied    = false;
+      bool bHasOverlayBeenApplied    = false;
+      bool bHasLiveLoadBeenApplied   = false;
+      bool bHasLoadRatingBeenApplied = false;
 
-      if ( bUserLoad && !bRailing && !bOverlay && !bLiveLoad )
+      if ( bUserLoad && !bRailing && !bOverlay && !bLiveLoad && !bLoadRating )
       {
          strDescriptions.push_back(CString(_T("User Defined Loading Applied")));
       }
@@ -771,6 +773,29 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          // live load is applied in its own interval
          strDescriptions.push_back(CString(_T("Open to Traffic")));
          bHasLiveLoadBeenApplied = true;
+
+         if ( bLoadRating )
+         {
+            bHasLoadRatingBeenApplied = true;
+         }
+      }
+
+      if ( bLiveLoad && !bHasLiveLoadBeenApplied )
+      {
+         // live load is applied in its own interval
+         strDescriptions.push_back(CString(_T("Open to Traffic")));
+         bHasLiveLoadBeenApplied = true;
+
+         if ( bLoadRating )
+         {
+            bHasLoadRatingBeenApplied = true;
+         }
+      }
+
+      if ( bLoadRating && !bHasLoadRatingBeenApplied )
+      {
+         strDescriptions.push_back(CString(_T("Load Rating")));
+         bHasLoadRatingBeenApplied = true;
       }
 
 

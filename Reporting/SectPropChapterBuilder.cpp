@@ -25,6 +25,7 @@
 #include <Reporting\SectPropTable.h>
 #include <Reporting\SectPropTable2.h>
 #include <Reporting\NetGirderPropertiesTable.h>
+#include <Reporting\ColumnPropertiesTable.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ReportPointOfInterest.h>
@@ -334,18 +335,18 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             }
             else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
             {
-               GET_IFACE2(pBroker,ILossParameters,pLossParams);
-               if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-               {
-                  IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-                  IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-                  for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-                  {
-                     rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptTransformed,thisSegmentKey,intervalIdx,pDisplayUnits);
-                     *pPara << pTable << rptNewLine;
-                  }
-               }
-               else
+               //GET_IFACE2(pBroker,ILossParameters,pLossParams);
+               //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+               //{
+               //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+               //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+               //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+               //   {
+               //      rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptTransformed,thisSegmentKey,intervalIdx,pDisplayUnits);
+               //      *pPara << pTable << rptNewLine;
+               //   }
+               //}
+               //else
                {
                   std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
                   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
@@ -372,17 +373,17 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                pPara = new rptParagraph;
                *pChapter << pPara;
 
-               if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-               {
-                  IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-                  IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-                  for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-                  {
-                     rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-                     *pPara << pTable << rptNewLine;
-                  }
-               }
-               else
+               //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+               //{
+               //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+               //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+               //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+               //   {
+               //      rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
+               //      *pPara << pTable << rptNewLine;
+               //   }
+               //}
+               //else
                {
                   std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
                   BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
@@ -399,6 +400,11 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          } // segIdx
       } // gdrIdx
    } // grpIdx
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   (*pPara) << CColumnPropertiesTable().Build(pBroker,pDisplayUnits) << rptNewLine;
 
    return pChapter;
 }

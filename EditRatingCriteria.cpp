@@ -47,28 +47,49 @@ txnGeneralRatingData::txnGeneralRatingData()
 bool txnGeneralRatingData::operator==(const txnGeneralRatingData& other) const
 {
    if ( bDesignRating != other.bDesignRating )
+   {
       return false;
+   }
 
    if ( bLegalRating != other.bLegalRating )
+   {
       return false;
+   }
 
    if ( bPermitRating != other.bPermitRating )
+   {
       return false;
+   }
 
    if ( CriteriaName != other.CriteriaName )
+   {
       return false;
+   }
+
+   if ( TimelineMgr != other.TimelineMgr )
+   {
+      return false;
+   }
 
    if ( ADTT != other.ADTT )
+   {
       return false;
+   }
 
    if ( !IsEqual(SystemFactorFlexure,other.SystemFactorFlexure) )
+   {
       return false;
+   }
 
    if ( !IsEqual(SystemFactorShear,other.SystemFactorShear) )
+   {
       return false;
+   }
 
    if ( bIncludePedestrianLiveLoad != other.bIncludePedestrianLiveLoad )
+   {
       return false;
+   }
 
    return true;
 }
@@ -394,9 +415,11 @@ void txnEditRatingCriteria::Execute(int i)
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec );
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 
+   pIBridgeDesc->SetTimelineManager(m_Data[i].m_General.TimelineMgr);
    pRatingSpec->SetRatingSpecification( m_Data[i].m_General.CriteriaName );
    pRatingSpec->SetADTT( m_Data[i].m_General.ADTT );
    pRatingSpec->SetSystemFactorFlexure(m_Data[i].m_General.SystemFactorFlexure);
@@ -409,26 +432,42 @@ void txnEditRatingCriteria::Execute(int i)
    // Legal rating must be enabled and live loads must be selected for Routine Commercial Vehicles
    // for load rating to be performed
    if ( m_Data[i].m_General.bLegalRating && m_Data[i].m_Legal.RoutineNames.size() != 0 )
+   {
       pRatingSpec->EnableRating(pgsTypes::lrLegal_Routine,   true);
+   }
    else
+   {
       pRatingSpec->EnableRating(pgsTypes::lrLegal_Routine,   false);
+   }
 
    // Legal rating must be enabled and live loads must be selected for Special Hauling Vehicles
    // for load rating to be performed
    if ( m_Data[i].m_General.bLegalRating && m_Data[i].m_Legal.SpecialNames.size() != 0 )
+   {
       pRatingSpec->EnableRating(pgsTypes::lrLegal_Special,   true);
+   }
    else
+   {
       pRatingSpec->EnableRating(pgsTypes::lrLegal_Special,   false);
+   }
 
    if ( m_Data[i].m_General.bPermitRating && m_Data[i].m_Permit.RoutinePermitNames.size() != 0 )
+   {
       pRatingSpec->EnableRating(pgsTypes::lrPermit_Routine, true);
+   }
    else
+   {
       pRatingSpec->EnableRating(pgsTypes::lrPermit_Routine, false);
+   }
 
    if ( m_Data[i].m_General.bPermitRating && m_Data[i].m_Permit.SpecialPermitNames.size() != 0 )
+   {
       pRatingSpec->EnableRating(pgsTypes::lrPermit_Special, true);
+   }
    else
+   {
       pRatingSpec->EnableRating(pgsTypes::lrPermit_Special, false);
+   }
 
 
    // Design Rating Parameters

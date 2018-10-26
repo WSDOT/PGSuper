@@ -323,7 +323,7 @@ public:
    virtual bool GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew);
    virtual pgsTypes::PierModelType GetPierModelType(PierIndexType pierIdx);
    virtual ColumnIndexType GetColumnCount(PierIndexType pierIdx);
-   virtual void GetColumnProperties(PierIndexType pierIdx,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE);
+   virtual void GetColumnProperties(PierIndexType pierIdx,bool bSkewAdjust,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE);
    virtual bool ProcessNegativeMoments(SpanIndexType spanIdx);
    virtual pgsTypes::BoundaryConditionType GetBoundaryConditionType(PierIndexType pierIdx);
    virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx);

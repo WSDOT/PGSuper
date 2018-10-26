@@ -265,6 +265,14 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       vLiveLoadIntervals.push_back(intervalIdx);
    }
 
+   // intervals only after load rating live load is applied
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
+   std::vector<IntervalIndexType> vLoadRatingIntervals;
+   for ( IntervalIndexType intervalIdx = loadRatingIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+   {
+      vLoadRatingIntervals.push_back(intervalIdx);
+   }
+
    std::vector<IntervalIndexType> vPTIntervals, vAllPTIntervals;
    GET_IFACE(ITendonGeometry,pTendonGeometry);
    IntervalIndexType firstPTIntervalIdx = nIntervals;
@@ -400,27 +408,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       vLiveLoadTypes.push_back(pgsTypes::lltPermit);
    }
 
-   GET_IFACE(IRatingSpecification,pRatingSpec);
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-   {
-      vLiveLoadTypes.push_back(pgsTypes::lltLegalRating_Routine);
-   }
-
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-   {
-      vLiveLoadTypes.push_back(pgsTypes::lltLegalRating_Special);
-   }
-
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-   {
-      vLiveLoadTypes.push_back(pgsTypes::lltPermitRating_Routine);
-   }
-
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-   {
-      vLiveLoadTypes.push_back(pgsTypes::lltPermitRating_Special);
-   }
-
    std::vector<pgsTypes::LiveLoadType>::iterator iter;
    for ( iter = vLiveLoadTypes.begin(); iter != vLiveLoadTypes.end(); iter++ )
    {
@@ -512,6 +499,119 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, strLLName, llType,  INVALID_INDEX, vLiveLoadIntervals,  ACTIONS_ALL) );
    }
 
+
+   std::vector<pgsTypes::LiveLoadType> vLoadRatingTypes;
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+   {
+      vLoadRatingTypes.push_back(pgsTypes::lltLegalRating_Routine);
+   }
+
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   {
+      vLoadRatingTypes.push_back(pgsTypes::lltLegalRating_Special);
+   }
+
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+   {
+      vLoadRatingTypes.push_back(pgsTypes::lltPermitRating_Routine);
+   }
+
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+   {
+      vLoadRatingTypes.push_back(pgsTypes::lltPermitRating_Special);
+   }
+
+   for ( iter = vLoadRatingTypes.begin(); iter != vLoadRatingTypes.end(); iter++ )
+   {
+      pgsTypes::LiveLoadType llType = *iter;
+
+      std::_tstring strBase;
+      switch(llType)
+      {
+      case pgsTypes::lltDesign:
+         strBase = _T("Design");
+         break;
+
+      case pgsTypes::lltFatigue:
+         strBase = _T("Fatigue");
+         break;
+
+      case pgsTypes::lltPermit:
+         strBase = _T("Permit");
+         break;
+
+      case pgsTypes::lltLegalRating_Routine:
+         strBase = _T("Legal Rating (Routine)");
+         break;
+
+      case pgsTypes::lltLegalRating_Special:
+         strBase = _T("Legal Rating (Special)");
+         break;
+
+      case pgsTypes::lltPermitRating_Routine:
+         strBase = _T("Permit Rating (Routine)");
+         break;
+
+      case pgsTypes::lltPermitRating_Special:
+         strBase = _T("Permit Rating (Special)");
+         break;
+
+      default:
+         ATLASSERT(false); // should never get here
+      }
+
+      std::vector<std::_tstring> strLLNames( pProductLoads->GetVehicleNames(llType,girderKey) );
+      long colorIdx = 0;
+      int action;
+      switch(llType)
+      {
+      case pgsTypes::lltDesign:
+      case pgsTypes::lltFatigue:
+      case pgsTypes::lltLegalRating_Routine:
+      case pgsTypes::lltLegalRating_Special:
+      case pgsTypes::lltPermitRating_Routine:
+      case pgsTypes::lltPermitRating_Special:
+         action = ACTIONS_ALL;
+         break;
+
+      case pgsTypes::lltPermit:
+         action = ACTIONS_FORCE_DEFLECTION;
+         break;
+
+      default:
+         ATLASSERT(false);
+      }
+
+      VehicleIndexType vehicleIndex = 0;
+      std::vector<std::_tstring>::iterator iter(strLLNames.begin());
+      std::vector<std::_tstring>::iterator end(strLLNames.end());
+      for ( ; iter != end; iter++, vehicleIndex++ )
+      {
+         std::_tstring& strName( *iter );
+
+         // skip the dummy live load
+         if ( strName == _T("No Live Load Defined") )
+         {
+            continue;
+         }
+
+         std::_tstring strLLName( strBase + _T(" - ") + strName );
+
+         CAnalysisResultsGraphDefinition def(graphID++,
+                                             strLLName,
+                                             llType,
+                                             vehicleIndex,
+                                             vLoadRatingIntervals,
+                                             action);
+
+         m_pGraphDefinitions->AddGraphDefinition(def);
+      }
+
+      std::_tstring strLLName( strBase + _T(" - LL+IM") );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, strLLName, llType,  INVALID_INDEX, vLoadRatingIntervals,  ACTIONS_ALL) );
+   }
+
    // Combined Results
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDC), lcDC, vAllIntervals,  ACTIONS_ALL) );
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDW), lcDW, vAllIntervals,  ACTIONS_ALL) );
@@ -543,22 +643,22 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Legal Rating, Routine)"), pgsTypes::lltLegalRating_Routine, vLiveLoadIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Legal Rating, Routine)"), pgsTypes::lltLegalRating_Routine, vLoadRatingIntervals, ACTIONS_ALL) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Legal Rating, Special)"), pgsTypes::lltLegalRating_Special, vLiveLoadIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Legal Rating, Special)"), pgsTypes::lltLegalRating_Special, vLoadRatingIntervals, ACTIONS_ALL) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Permit Rating, Routine)"), pgsTypes::lltPermitRating_Routine, vLiveLoadIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Permit Rating, Routine)"), pgsTypes::lltPermitRating_Routine, vLoadRatingIntervals, ACTIONS_ALL) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Permit Rating, Special)"), pgsTypes::lltPermitRating_Special, vLiveLoadIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Permit Rating, Special)"), pgsTypes::lltPermitRating_Special, vLoadRatingIntervals, ACTIONS_ALL) );
    }
 
    // Limit States and Capacities
@@ -589,38 +689,38 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Design Rating, Inventory)"),           pgsTypes::StrengthI_Inventory,                 vLiveLoadIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design Rating, Inventory)"),  pgsTypes::StrengthI_Inventory, graphCapacity,  vLiveLoadIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Design Rating, Inventory)"),           pgsTypes::StrengthI_Inventory,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design Rating, Inventory)"),  pgsTypes::StrengthI_Inventory, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Design Rating, Operating)"),           pgsTypes::StrengthI_Operating,                 vLiveLoadIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design Rating, Operating)"),  pgsTypes::StrengthI_Operating, graphCapacity,  vLiveLoadIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Design Rating, Operating)"),           pgsTypes::StrengthI_Operating,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design Rating, Operating)"),  pgsTypes::StrengthI_Operating, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Routine)"),           pgsTypes::StrengthI_LegalRoutine,                 vLiveLoadIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Legal Rating, Routine)"),  pgsTypes::StrengthI_LegalRoutine, graphCapacity,  vLiveLoadIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Routine)"),           pgsTypes::StrengthI_LegalRoutine,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Legal Rating, Routine)"),  pgsTypes::StrengthI_LegalRoutine, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Special)"),            pgsTypes::StrengthI_LegalSpecial,                vLiveLoadIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Special)"),  pgsTypes::StrengthI_LegalSpecial, graphCapacity, vLiveLoadIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Special)"),            pgsTypes::StrengthI_LegalSpecial,                vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Special)"),  pgsTypes::StrengthI_LegalSpecial, graphCapacity, vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II (Routine Permit Rating)"),           pgsTypes::StrengthII_PermitRoutine,                 vLiveLoadIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Routine Permit Rating)"),  pgsTypes::StrengthII_PermitRoutine, graphCapacity,  vLiveLoadIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II (Routine Permit Rating)"),           pgsTypes::StrengthII_PermitRoutine,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Routine Permit Rating)"),  pgsTypes::StrengthII_PermitRoutine, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II (Special Permit Rating)"),           pgsTypes::StrengthII_PermitSpecial,                 vLiveLoadIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Special Permit Rating)"),  pgsTypes::StrengthII_PermitSpecial, graphCapacity,  vLiveLoadIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II (Special Permit Rating)"),           pgsTypes::StrengthII_PermitSpecial,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Special Permit Rating)"),  pgsTypes::StrengthII_PermitSpecial, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
    }
 
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Moment Capacity"),      pgsTypes::StrengthI, graphCapacity,    vLiveLoadIntervals,  ACTIONS_MOMENT_ONLY) );
@@ -647,20 +747,20 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Design Rating, Inventory)"),   pgsTypes::ServiceIII_Inventory,graphDemand,    vLiveLoadIntervals) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Design Rating, Inventory)"),pgsTypes::ServiceIII_Inventory,graphAllowable, vLiveLoadIntervals) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Design Rating, Inventory)"),   pgsTypes::ServiceIII_Inventory,graphDemand,    vLoadRatingIntervals) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Design Rating, Inventory)"),pgsTypes::ServiceIII_Inventory,graphAllowable, vLoadRatingIntervals) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Routine)"),   pgsTypes::ServiceIII_LegalRoutine,graphDemand,    vLiveLoadIntervals) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Legal Rating, Routine)"),pgsTypes::ServiceIII_LegalRoutine,graphAllowable, vLiveLoadIntervals) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Routine)"),   pgsTypes::ServiceIII_LegalRoutine,graphDemand,    vLoadRatingIntervals) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Legal Rating, Routine)"),pgsTypes::ServiceIII_LegalRoutine,graphAllowable, vLoadRatingIntervals) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Special)"),   pgsTypes::ServiceIII_LegalSpecial,graphDemand,    vLiveLoadIntervals) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Legal Rating, Special)"),pgsTypes::ServiceIII_LegalSpecial,graphAllowable, vLiveLoadIntervals) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Special)"),   pgsTypes::ServiceIII_LegalSpecial,graphDemand,    vLoadRatingIntervals) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Legal Rating, Special)"),pgsTypes::ServiceIII_LegalSpecial,graphAllowable, vLoadRatingIntervals) );
    }
 }
 

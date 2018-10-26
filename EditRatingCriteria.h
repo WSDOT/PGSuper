@@ -23,11 +23,13 @@
 #pragma once
 
 #include <System\Transaction.h>
+#include <PgsExt\TimelineManager.h>
 
 class txnGeneralRatingData
 {
 public:
    std::_tstring CriteriaName;
+   CTimelineManager TimelineMgr;
    Int16 ADTT; // < 0 means unknown
    Float64 SystemFactorFlexure;
    Float64 SystemFactorShear;

@@ -1029,6 +1029,10 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, 
 
    pSegmentData->Strands.SetTemporaryStrandUsage( GetTemporaryStrandUsage() );
 
+   // Designer doesn't do extended strands
+   pSegmentData->Strands.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
+   pSegmentData->Strands.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
+
    // Get debond information from design artifact
    pSegmentData->Strands.ClearDebondData();
    pSegmentData->Strands.IsSymmetricDebond(true);  // design is always symmetric

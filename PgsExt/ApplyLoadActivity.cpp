@@ -35,6 +35,7 @@ CApplyLoadActivity::CApplyLoadActivity()
    m_bApplyRailingSystemLoad = false;
    m_bApplyOverlayLoad = false;
    m_bApplyLiveLoad = false;
+   m_bApplyRatingLiveLoad = false;
 }
 
 CApplyLoadActivity::CApplyLoadActivity(const CApplyLoadActivity& rOther)
@@ -78,6 +79,11 @@ bool CApplyLoadActivity::operator==(const CApplyLoadActivity& rOther) const
       return false;
    }
 
+   if ( m_bApplyRatingLiveLoad != rOther.m_bApplyRatingLiveLoad )
+   {
+      return false;
+   }
+
    if ( m_UserLoads != rOther.m_UserLoads )
    {
       return false;
@@ -106,6 +112,7 @@ void CApplyLoadActivity::Clear()
    m_bApplyRailingSystemLoad = false;
    m_bApplyOverlayLoad       = false;
    m_bApplyLiveLoad          = false;
+   m_bApplyRatingLiveLoad    = false;
    m_UserLoads.clear();
    m_bEnabled                = false;
 }
@@ -141,6 +148,17 @@ void CApplyLoadActivity::ApplyLiveLoad(bool bApplyLoad)
 bool CApplyLoadActivity::IsLiveLoadApplied() const
 {
    return m_bApplyLiveLoad;
+}
+
+void CApplyLoadActivity::ApplyRatingLiveLoad(bool bApplyLoad)
+{
+   m_bApplyRatingLiveLoad = bApplyLoad;
+   Update();
+}
+
+bool CApplyLoadActivity::IsRatingLiveLoadApplied() const
+{
+   return m_bApplyRatingLiveLoad;
 }
 
 void CApplyLoadActivity::AddUserLoad(LoadIDType loadID)
@@ -193,6 +211,9 @@ HRESULT CApplyLoadActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       hr = pStrLoad->BeginUnit(_T("ApplyLoad"));
 
+      Float64 version;
+      pStrLoad->get_Version(&version);
+
       CComVariant var;
       var.vt = VT_BOOL;
       hr = pStrLoad->get_Property(_T("Enabled"),&var);
@@ -208,6 +229,12 @@ HRESULT CApplyLoadActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          hr = pStrLoad->get_Property(_T("ApplyLiveLoad"),&var);
          m_bApplyLiveLoad = (var.boolVal == VARIANT_TRUE ? true : false);
+
+         if ( 1 < version )
+         {
+            hr = pStrLoad->get_Property(_T("ApplyRatingLiveLoad"),&var);
+            m_bApplyRatingLiveLoad = (var.boolVal == VARIANT_TRUE ? true : false);
+         }
 
          pStrLoad->BeginUnit(_T("UserLoads"));
          var.vt = VT_INDEX;
@@ -235,7 +262,7 @@ HRESULT CApplyLoadActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CApplyLoadActivity::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("ApplyLoad"),1.0);
+   pStrSave->BeginUnit(_T("ApplyLoad"),2.0);
    pStrSave->put_Property(_T("Enabled"),CComVariant(m_bEnabled));
 
    if ( m_bEnabled )
@@ -243,6 +270,7 @@ HRESULT CApplyLoadActivity::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("ApplyRailingSystemLoad"),CComVariant(m_bApplyRailingSystemLoad));
       pStrSave->put_Property(_T("ApplyOverlayLoad"),CComVariant(m_bApplyOverlayLoad));
       pStrSave->put_Property(_T("ApplyLiveLoad"),CComVariant(m_bApplyLiveLoad));
+      pStrSave->put_Property(_T("ApplyRatingLiveLoad"),CComVariant(m_bApplyRatingLiveLoad));
 
       pStrSave->BeginUnit(_T("UserLoads"),1.0);
       pStrSave->put_Property(_T("Count"),CComVariant(m_UserLoads.size()));
@@ -266,6 +294,7 @@ void CApplyLoadActivity::MakeCopy(const CApplyLoadActivity& rOther)
    m_bApplyRailingSystemLoad = rOther.m_bApplyRailingSystemLoad;
    m_bApplyOverlayLoad       = rOther.m_bApplyOverlayLoad;
    m_bApplyLiveLoad          = rOther.m_bApplyLiveLoad;
+   m_bApplyRatingLiveLoad    = rOther.m_bApplyRatingLiveLoad;
    m_UserLoads               = rOther.m_UserLoads;
 }
 
@@ -277,7 +306,7 @@ void CApplyLoadActivity::MakeAssignment(const CApplyLoadActivity& rOther)
 void CApplyLoadActivity::Update()
 {
    // if none of the loads are applied... disable this activity
-   if ( !m_bApplyRailingSystemLoad && !m_bApplyOverlayLoad && !m_bApplyLiveLoad && m_UserLoads.size() == 0 )
+   if ( !m_bApplyRailingSystemLoad && !m_bApplyOverlayLoad && !m_bApplyLiveLoad && !m_bApplyRatingLiveLoad && m_UserLoads.size() == 0 )
    {
       m_bEnabled = false;
    }

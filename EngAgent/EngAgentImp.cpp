@@ -1477,8 +1477,16 @@ Float64 CEngAgentImp::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& po
 
 Float64 CEngAgentImp::GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx)
 {
-   const LOSSDETAILS* pLossDetails = GetLossDetails(poi,0); // friction losses are always computed in the first interval
-   return pLossDetails->FrictionLossDetails[ductIdx].dfpF;
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOnGirder(poi) )
+   {
+      const LOSSDETAILS* pLossDetails = GetLossDetails(poi,0); // friction losses are always computed in the first interval
+      return pLossDetails->FrictionLossDetails[ductIdx].dfpF;
+   }
+   else
+   {
+      return 0;
+   }
 }
 
 Float64 CEngAgentImp::GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
@@ -1489,8 +1497,16 @@ Float64 CEngAgentImp::GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctInd
 
 Float64 CEngAgentImp::GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx)
 {
-   const LOSSDETAILS* pLossDetails = GetLossDetails(poi,0); // anchor set losses are always computed in the first interval
-   return pLossDetails->FrictionLossDetails[ductIdx].dfpA;
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOnGirder(poi) )
+   {
+      const LOSSDETAILS* pLossDetails = GetLossDetails(poi,0); // anchor set losses are always computed in the first interval
+      return pLossDetails->FrictionLossDetails[ductIdx].dfpA;
+   }
+   else
+   {
+      return 0;
+   }
 }
 
 Float64 CEngAgentImp::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)

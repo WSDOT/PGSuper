@@ -110,7 +110,6 @@ STDMETHODIMP CCurvelExporter::GetCommandHintText(BSTR*  bstrText)
 #define xTEST_CODE
 STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 #pragma Reminder("UPDATE: remove test code after creating example")
    // There are two block of code here, conditionally compiled with the TEST_CODE macro.
    // The TEST_CODE was used to prototype and test the OpenBridgeML Units implementation

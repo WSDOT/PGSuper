@@ -664,6 +664,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ColumnPropertiesTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CombinedMomentsTable.cpp"
 				>
 			</File>
@@ -1442,6 +1446,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\CEBFIPShrinkageStrainChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\ColumnPropertiesTable.h"
 				>
 			</File>
 			<File

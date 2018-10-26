@@ -2099,6 +2099,9 @@ void CPGSuperDocBase::OnRatingSpec()
 
    GET_IFACE( ILibraryNames, pLibNames );
 
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
    CRatingOptionsDlg dlg;
    txnRatingCriteriaData oldData;
 
@@ -2115,6 +2118,7 @@ void CPGSuperDocBase::OnRatingSpec()
    std::_tstring cur_spec = pSpec->GetRatingSpecification();
    oldData.m_General.CriteriaName  = cur_spec;
    oldData.m_General.bIncludePedestrianLiveLoad = pSpec->IncludePedestrianLiveLoad();
+   oldData.m_General.TimelineMgr = *pTimelineMgr;
 
    oldData.m_General.SystemFactorFlexure = pSpec->GetSystemFactorFlexure();
    oldData.m_General.SystemFactorShear   = pSpec->GetSystemFactorShear();

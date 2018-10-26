@@ -455,6 +455,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
    pBrokerInit->RegInterface( IID_IExtendPGSuperUI,    this );
    pBrokerInit->RegInterface( IID_IExtendPGSpliceUI,   this );
    pBrokerInit->RegInterface( IID_IDocumentType,       this );
+   pBrokerInit->RegInterface( IID_IDocumentUnitSystem, this );
    return S_OK;
 }
 
@@ -1300,4 +1301,18 @@ bool CPGSuperDocProxyAgent::IsPGSuperDocument()
 bool CPGSuperDocProxyAgent::IsPGSpliceDocument()
 {
    return m_pMyDocument->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? true : false;
+}
+
+// IDocumentUnitSystem
+void CPGSuperDocProxyAgent::GetUnitServer(IUnitServer** ppUnitServer)
+{
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+
+   CComPtr<IAppUnitSystem> appUnitSystem;
+   pPGSuper->GetAppUnitSystem(&appUnitSystem);
+
+   appUnitSystem->get_UnitServer(ppUnitServer);
 }

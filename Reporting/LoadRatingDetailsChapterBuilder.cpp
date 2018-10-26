@@ -525,13 +525,13 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,col++) << _T("Location");
-   (*table)(0,col++) << RPT_STRESS(_T("allow"));
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("allow")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if (bSplicedGirder)
    {
       (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
-   (*table)(0,col++) << RPT_STRESS(_T("r"));
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("r")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("DC"));
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("DC")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("DW"));

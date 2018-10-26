@@ -30,6 +30,9 @@
 #include "GeneralRatingOptionsPage.h"
 #include "RatingOptionsDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
+#include "PGSuperAppPlugin\TimelineEventDlg.h"
+
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -57,6 +60,18 @@ void CGeneralRatingOptionsPage::DoDataExchange(CDataExchange* pDX)
 
 	DDX_CBStringExactCase(pDX, IDC_RATING_CRITERIA, m_Data.CriteriaName);
 
+   EventIndexType loadRatingEventIdx;
+   if ( pDX->m_bSaveAndValidate )
+   {
+      DDX_CBItemData(pDX, IDC_LOAD_RATING_EVENT, loadRatingEventIdx );
+      m_Data.TimelineMgr.SetLoadRatingEventByIndex(loadRatingEventIdx);
+   }
+   else
+   {
+      loadRatingEventIdx = m_Data.TimelineMgr.GetLoadRatingEventIndex();
+      DDX_CBItemData(pDX, IDC_LOAD_RATING_EVENT, loadRatingEventIdx );
+   }
+
    DDX_Text(pDX,   IDC_SYSTEM_FACTOR_FLEXURE, m_Data.SystemFactorFlexure);
    DDX_Text(pDX,   IDC_SYSTEM_FACTOR_SHEAR,   m_Data.SystemFactorShear);
    DDX_Keyword(pDX,IDC_ADTT,_T("Unknown"),m_Data.ADTT);
@@ -73,12 +88,23 @@ BEGIN_MESSAGE_MAP(CGeneralRatingOptionsPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGeneralRatingOptionsPage)
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+   ON_CBN_DROPDOWN(IDC_LOAD_RATING_EVENT, OnLoadRatingEventChanging)
+   ON_CBN_SELCHANGE(IDC_LOAD_RATING_EVENT, OnLoadRatingEventChanged)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 // CGeneralRatingOptionsPage message handlers
 BOOL CGeneralRatingOptionsPage::OnInitDialog()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      GetDlgItem(IDC_LOAD_RATING_EVENT_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_LOAD_RATING_EVENT)->ShowWindow(SW_HIDE);
+   }
+
    EnableToolTips();
 
    CComboBox* pcbRatingSpec = (CComboBox*)GetDlgItem( IDC_RATING_CRITERIA );
@@ -90,6 +116,7 @@ BOOL CGeneralRatingOptionsPage::OnInitDialog()
       pcbRatingSpec->AddString(spec);
    }
 
+   FillLoadRatingEventComboBox();
    CPropertyPage::OnInitDialog();
 
    return TRUE;  // return TRUE unless you set the focus to a control
@@ -165,4 +192,70 @@ BOOL CGeneralRatingOptionsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* 
       return TRUE;
    }
    return FALSE;
+}
+
+void CGeneralRatingOptionsPage::FillLoadRatingEventComboBox()
+{
+   CComboBox* pcbLoadRatingEvents = (CComboBox*)GetDlgItem(IDC_LOAD_RATING_EVENT);
+   int curSel = pcbLoadRatingEvents->GetCurSel();
+   pcbLoadRatingEvents->ResetContent();
+
+   EventIndexType firstEventIdx = m_Data.TimelineMgr.GetLiveLoadEventIndex();
+   EventIndexType nEvents = m_Data.TimelineMgr.GetEventCount();
+   for ( EventIndexType eventIdx = firstEventIdx; eventIdx < nEvents; eventIdx++ )
+   {
+      CString strLabel;
+      strLabel.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),m_Data.TimelineMgr.GetEventByIndex(eventIdx)->GetDescription());
+      int idx = pcbLoadRatingEvents->AddString(strLabel);
+      pcbLoadRatingEvents->SetItemData(idx,(DWORD_PTR)eventIdx);
+   }
+   int idx = pcbLoadRatingEvents->AddString(_T("Create Event..."));
+   pcbLoadRatingEvents->SetItemData(idx,(DWORD_PTR)CREATE_TIMELINE_EVENT);
+
+   if ( pcbLoadRatingEvents->SetCurSel(curSel) == CB_ERR )
+   {
+      pcbLoadRatingEvents->SetCurSel(pcbLoadRatingEvents->GetCount()-2);
+   }
+}
+
+void CGeneralRatingOptionsPage::OnLoadRatingEventChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_LOAD_RATING_EVENT);
+   m_PrevLoadRatingEventIdx = pCB->GetCurSel();
+}
+
+void CGeneralRatingOptionsPage::OnLoadRatingEventChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_LOAD_RATING_EVENT);
+   int curSel = pCB->GetCurSel();
+   EventIndexType eventIdx = (EventIndexType)pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
+   {
+      eventIdx = CreateEvent();
+      FillLoadRatingEventComboBox();
+   }
+
+   if (eventIdx == INVALID_INDEX)
+   {
+      // event creation was canceled... restore the original selection
+      pCB->SetCurSel((int)m_PrevLoadRatingEventIdx);
+   }
+   else
+   {
+      CDataExchange dx(this,FALSE);
+      DDX_CBItemData(&dx,IDC_LOAD_RATING_EVENT,eventIdx);
+   }
+}
+
+EventIndexType CGeneralRatingOptionsPage::CreateEvent()
+{
+   CTimelineEventDlg dlg(m_Data.TimelineMgr,INVALID_INDEX,FALSE);
+   if ( dlg.DoModal() == IDOK )
+   {
+      EventIndexType eventIdx;
+      int result = m_Data.TimelineMgr.AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
+      return eventIdx;
+  }
+
+   return INVALID_INDEX;
 }
