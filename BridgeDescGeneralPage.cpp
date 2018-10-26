@@ -856,8 +856,9 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
 
    pcbDeck->ResetContent();
 
-   pgsTypes::SupportedDeckTypes::iterator iter;
+   cursel = CB_ERR;
    int selidx = 0;
+   pgsTypes::SupportedDeckTypes::iterator iter;
    for ( iter = deckTypes.begin(); iter != deckTypes.end(); iter++ )
    {
       CString typestr = GetDeckString(*iter);

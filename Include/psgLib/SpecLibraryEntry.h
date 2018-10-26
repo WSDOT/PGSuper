@@ -956,6 +956,19 @@ public:
    int GetTimeDependentModel() const;
    void SetTimeDependentModel(int model);
 
+   //------------------------------------------------------------------------
+   // Returns the losses before prestress xfer for a lump sum method
+   Float64 GetBeforeXferLosses() const;
+   void SetBeforeXferLosses(Float64 loss);
+
+   //------------------------------------------------------------------------
+   // Returns the losses after prestress xfer for a lump sum method
+   Float64 GetAfterXferLosses() const;
+   void SetAfterXferLosses(Float64 loss);
+
+   Float64 GetLiftingLosses() const;
+   void SetLiftingLosses(Float64 loss);
+
    // Set/Get the shipping losses for lump sum loss methods or for a method
    // that does not support computing losses at shipping.
    Float64 GetShippingLosses() const;
@@ -965,6 +978,39 @@ public:
    // computed by the LRFD refined method after LRFD 2005
    void SetShippingTime(Float64 time);
    Float64 GetShippingTime() const;
+
+   //------------------------------------------------------------------------
+   Float64 GetBeforeTempStrandRemovalLosses() const;
+   void SetBeforeTempStrandRemovalLosses(Float64 loss);
+
+   //------------------------------------------------------------------------
+   Float64 GetAfterTempStrandRemovalLosses() const;
+   void SetAfterTempStrandRemovalLosses(Float64 loss);
+
+   //------------------------------------------------------------------------
+   Float64 GetAfterDeckPlacementLosses() const;
+   void SetAfterDeckPlacementLosses(Float64 loss);
+
+   //------------------------------------------------------------------------
+   Float64 GetAfterSIDLLosses() const;
+   void SetAfterSIDLLosses(Float64 loss);
+
+   //------------------------------------------------------------------------
+   // Returns the final losses for a lump sum method
+   Float64 GetFinalLosses() const;
+   void SetFinalLosses(Float64 loss);
+
+   //------------------------------------------------------------------------
+   // Returns the anchor set
+   bool UpdatePTParameters() const;
+   Float64 GetAnchorSet() const;
+   void SetAnchorSet(Float64 dset);
+
+   Float64 GetWobbleFrictionCoefficient() const;
+   void SetWobbleFrictionCoefficient(Float64 K);
+
+   Float64 GetFrictionCoefficient() const;
+   void SetFrictionCoefficient(Float64 u);
 
    // Set/Get the method for computing relaxation losses.
    // Use one of the RLM_xxx constants
@@ -1072,6 +1118,18 @@ public:
    // that it is excessive. A warning will be issued for any value greater than the threshold.
    void SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64 agg);
    Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const;
+
+   // Returns true if the load factors were loaded from an old library
+   // and the main application needs to be updated with these values
+   bool UpdateLoadFactors() const;
+
+   void GetDCLoadFactors(pgsTypes::LimitState ls,Float64* pDCmin,Float64* pDCmax) const;
+   void GetDWLoadFactors(pgsTypes::LimitState ls,Float64* pDWmin,Float64* pDWmax) const;
+   void GetLLIMLoadFactors(pgsTypes::LimitState ls,Float64* pLLIMmin,Float64* pLLIMmax) const;
+   
+   void SetDCLoadFactors(pgsTypes::LimitState ls,Float64 DCmin,Float64 DCmax);
+   void SetDWLoadFactors(pgsTypes::LimitState ls,Float64 DWmin,Float64 DWmax);
+   void SetLLIMLoadFactors(pgsTypes::LimitState ls,Float64 LLIMmin,Float64 LLIMmax);
 
    void SetDoCheckStirrupSpacingCompatibility(bool doCheck);
    bool GetDoCheckStirrupSpacingCompatibility() const;
@@ -1288,8 +1346,21 @@ private:
    // Losses
    int     m_LossMethod;
    int     m_TimeDependentModel;
+   Float64 m_FinalLosses;
+   Float64 m_LiftingLosses;
    Float64 m_ShippingLosses;  // if between -1.0 and 0, shipping loss is fraction of final loss. Fraction is abs(m_ShippingLoss)
+   Float64 m_BeforeXferLosses;
+   Float64 m_AfterXferLosses;
    Float64 m_ShippingTime;
+   Float64 m_BeforeTempStrandRemovalLosses;
+   Float64 m_AfterTempStrandRemovalLosses;
+   Float64 m_AfterDeckPlacementLosses;
+   Float64 m_AfterSIDLLosses;
+
+   bool m_bUpdatePTParameters;
+   Float64 m_Dset; // anchor set
+   Float64 m_WobbleFriction; // wobble friction, K
+   Float64 m_FrictionCoefficient; // mu
 
    Float64 m_SlabElasticGain;
    Float64 m_SlabPadElasticGain;
@@ -1337,6 +1408,14 @@ private:
    Float64 m_MaxClosureFc[3];
    Float64 m_MaxConcreteUnitWeight[3];
    Float64 m_MaxConcreteAggSize[3];
+
+   bool m_bUpdateLoadFactors; // true if the load factors are from an old library entry
+   Float64 m_DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
+   Float64 m_DWmin[6];
+   Float64 m_LLIMmin[6];
+   Float64 m_DCmax[6];
+   Float64 m_DWmax[6];
+   Float64 m_LLIMmax[6];
 
    // Warning checks
    bool m_DoCheckStirrupSpacingCompatibility;

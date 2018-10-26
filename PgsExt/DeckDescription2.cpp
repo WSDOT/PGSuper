@@ -446,6 +446,27 @@ const CBridgeDescription2* CDeckDescription2::GetBridgeDescription() const
 {
    return m_pBridgeDesc;
 }
+   std::vector<CDeckPoint> DeckEdgePoints;
+
+Float64 CDeckDescription2::GetMinWidth() const
+{
+   Float64 width = DBL_MAX;
+   BOOST_FOREACH(const CDeckPoint& deckPoint,DeckEdgePoints)
+   {
+      width = Min(width,deckPoint.GetWidth());
+   }
+   return width;
+}
+
+Float64 CDeckDescription2::GetMaxWidth() const
+{
+   Float64 width = -DBL_MAX;
+   BOOST_FOREACH(const CDeckPoint& deckPoint,DeckEdgePoints)
+   {
+      width = Max(width,deckPoint.GetWidth());
+   }
+   return width;
+}
 
 void CDeckDescription2::MakeCopy(const CDeckDescription2& rOther,bool bCopyDataOnly)
 {

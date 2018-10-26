@@ -1,15 +1,15 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      1     Girde         29   0.6  270  10.33   1.00   0   0.00    0     0    0   0   0   0   0   6.700  7.900   2.905    -4.980     2066   0.625  0.625  2.570  0.000  -0.16  -0.15  -0.32  111.44  246.97    3.00    2.25    2.25 
+ 28.25    5   6.00                   1      1     Girde         29   0.6  270  10.33   1.00   0   0.00    0     0    0   0   0   0   0   6.700  7.900   2.905    -4.980     2066   0.625  0.625   2.570  0.000 -0.166 -0.157 -0.323 111.44  246.97    3.00    2.25    2.25 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      2     Girde         29   0.6  270  10.33   1.00   0   0.00    0     0    0   0   0   0   0   6.700  7.900   2.612    -4.524     1832   0.518  0.667  2.570  0.000  -0.16  -0.15  -0.32  111.44  246.97    3.00    2.25    2.25 
+ 28.25    5   6.00                   1      2     Girde         29   0.6  270  10.33   1.00   0   0.00    0     0    0   0   0   0   0   6.700  7.900   2.612    -4.524     1832   0.518  0.667   2.570  0.000 -0.166 -0.157 -0.323 111.44  246.97    3.00    2.25    2.25 
 
 
 The Specification Check was Successful
@@ -17,15 +17,15 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      3     Girde          0   0.6  270   0.00   0.00   0   0.00    0     0    0   0   0   0   0   5.000  6.000   2.612    -4.524     1832   0.518  0.667  -2.19  0.000  -0.19  -0.18  -0.37    0.00    0.00    1.75    5.00    5.00 
+ 28.25    5   6.00                   1      3     Girde          0   0.6  270   0.00   0.00   0   0.00    0     0    0   0   0   0   0   5.000  6.000   2.612    -4.524     1832   0.518  0.667  -2.193  0.000 -0.190 -0.181 -0.370   0.00    0.00    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed

@@ -63,8 +63,7 @@ interface IPointOfInterest : public IUnknown
 
    // Returns a point of interest at the specified distance from the start of the segment. If a poi
    // has been, or can be, defined at the location, returns an actual poi. Otherwise a poi is created 
-   // (but not stored) and it will have an ID of INVALID_ID. NOTE: Xpoi is NOT in 
-   // Segment Coordinates. Use ConvertSegmentCoordinateToPoi if the distance you have is in segment coordinates.
+   // (but not stored) and it will have an ID of INVALID_ID.
    virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi,Float64 tolerance=0.001) = 0;
 
    // Gets the point of interest where a line defined by station and direction intersects a segment

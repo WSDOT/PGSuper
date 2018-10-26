@@ -50,6 +50,8 @@ CLASS
 #define YCR(_details_) symbol(PSI) << _T("(") << time1.SetValue(_details_.t) << _T(",") << time2.SetValue(_details_.ti) << _T(")")
 #define DEFL(_f_) Sub2(symbol(DELTA),_f_)
 
+#pragma Reminder("WORKING HERE - CAMBER - need to update report details because of storage support locations and new camber calcs")
+
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================

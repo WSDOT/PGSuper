@@ -184,8 +184,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
             (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
             (*p_table)(row,col) << _T("P (temporary) = ") << force.SetValue(Ft) << rptNewLine;
 
-            Float64 fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder);
-            Float64 fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder);
+            Float64 fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/);
+            Float64 fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/);
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
@@ -197,8 +197,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
          Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,loadRatingIntervalIdx,intervalTime);
          (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
 
-         Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);
-         Float64 fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder);
+         Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/);
+         Float64 fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/);
          (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
          (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
          col++;

@@ -1,10 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                   1      1      Slab         14   0.6  270  15.86  15.91   0   2.00   14     0    0   0   0   0   0   4.000  5.300   0.870    -0.898     1935   0.406  0.662  0.488  -0.04  -0.00  -0.01  -0.06   60.76  145.82    3.00    3.00    3.00 
+ 32.17    7   0.00                   1      1      Slab         14   0.6  270  15.86  15.91   0   2.00   14     0    0   0   0   0   0   4.000  5.300   0.870    -0.898     1935   0.406  0.662   0.488 -0.042 -0.009 -0.014 -0.065  60.76  145.82    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
@@ -12,11 +12,11 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                   1      2      Slab         14   0.6  270  15.70  15.81   0   2.00   14     0    0   0   0   0   0   4.000  5.300   0.884    -0.899     1927   0.406  0.679  0.494  -0.04  -0.00  -0.01  -0.06   60.76  145.82    3.00    3.00    3.00 
+ 32.17    7   0.00                   1      2      Slab         14   0.6  270  15.70  15.81   0   2.00   14     0    0   0   0   0   0   4.000  5.300   0.884    -0.899     1927   0.406  0.679   0.495 -0.043 -0.009 -0.014 -0.066  60.76  145.82    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
@@ -24,14 +24,14 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                   1      4      Slab         14   0.6  270  15.70  15.81   0   2.00   14     0    0   0   0   0   0   4.000  5.300   0.854    -0.858     1850   0.406  0.679  0.494  -0.04  -0.00  0.000  -0.05   60.76  145.82    3.00    3.00    3.00 
+ 32.17    7   0.00                   1      4      Slab         14   0.6  270  15.70  15.81   0   2.00   14     0    0   0   0   0   0   4.000  5.300   0.854    -0.858     1850   0.406  0.679   0.495 -0.043 -0.009  0.000 -0.052  60.76  145.82    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Stirrup detailing checks failed for the Strength I Limit State.
+Lifting checks failed
+Hauling checks failed
 Slab Offset ("A" Dimension) check failed
-Lifting checks failed
-Hauling checks failed
 
 

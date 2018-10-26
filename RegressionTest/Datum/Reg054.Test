@@ -1,0 +1,23 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 18.25    5   0.00                   1      1      Slab         26   0.6  270  10.46  10.30   6   2.00   19     6    4   2   0   0   0   6.900  6.900   3.440    -3.114     2110   0.378  0.547   2.641  0.000  0.000 -0.350 -0.350  69.39  161.27    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Bursting zone check failed.
+Confinement zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 18.25    5   0.00                   1      2      Slab         24   0.6  270  10.58  10.44   6   2.00   19     6    4   2   0   0   0   6.700  6.700   3.275    -2.982     1991   0.340  0.445   2.335  0.000  0.000 -0.356 -0.356  58.96  142.39    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Confinement zone check failed.
+
+

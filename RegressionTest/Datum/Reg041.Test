@@ -1,0 +1,25 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      1      C            36   1/2  270  12.42   5.76                                               8  38.0  8.0  6.000  6.000   3.540    -3.962     3708   0.641  0.814   4.079 -1.423 -0.100 -0.064 -1.587 120.95  333.06    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      2      C            36   1/2  270  12.42   5.76                                               8  38.0  8.0  6.000  6.000   3.767    -4.159     3819   0.641  0.814   4.079 -1.662 -0.096 -0.061 -1.820 120.95  327.34    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+

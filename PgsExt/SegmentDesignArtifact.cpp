@@ -578,17 +578,20 @@ const pgsSegmentDesignArtifact::ConcreteStrengthDesignState& pgsSegmentDesignArt
 
 void pgsSegmentDesignArtifact::SetReleaseDesignState(const ConcreteStrengthDesignState& state)
 {
+   ATLASSERT(state.Interval() != INVALID_INDEX);
    m_ConcreteReleaseDesignState = state;
 }
 
 void pgsSegmentDesignArtifact::SetFinalDesignState(const ConcreteStrengthDesignState& state)
 {
+   ATLASSERT(state.Interval() != INVALID_INDEX);
    m_ConcreteFinalDesignState = state;
 }
 
 void pgsSegmentDesignArtifact::ConcreteStrengthDesignState::SetStressState(bool controlledByMin, const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::StressType stressType, 
                     pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
 {
+   ATLASSERT(intervalIdx != INVALID_INDEX);
    m_Action = actStress;
    m_MinimumControls = controlledByMin;
    m_SegmentKey      = segmentKey;
@@ -600,6 +603,7 @@ void pgsSegmentDesignArtifact::ConcreteStrengthDesignState::SetStressState(bool 
 
 void pgsSegmentDesignArtifact::ConcreteStrengthDesignState::SetShearState(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState)
 {
+   ATLASSERT(intervalIdx != INVALID_INDEX);
    m_Action = actShear;
    m_MinimumControls = false;
    m_SegmentKey      = segmentKey;
@@ -619,7 +623,6 @@ pgsSegmentDesignArtifact::ConcreteStrengthDesignState::Action pgsSegmentDesignAr
 
 IntervalIndexType pgsSegmentDesignArtifact::ConcreteStrengthDesignState::Interval() const
 {
-   PRECONDITION(m_MinimumControls==false);
    return m_IntervalIdx;
 }
 
@@ -703,6 +706,11 @@ LPCTSTR StressTypeString(pgsTypes::StressType type)
 
 std::_tstring pgsSegmentDesignArtifact::ConcreteStrengthDesignState::AsString() const
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   std::_tstring strDesc = pIntervals->GetDescription(m_IntervalIdx);
+
    if (m_MinimumControls)
    {
       return std::_tstring(_T("Minimum"));
@@ -710,13 +718,13 @@ std::_tstring pgsSegmentDesignArtifact::ConcreteStrengthDesignState::AsString() 
    else if (m_Action==actStress)
    {
       std::_tostringstream sstr;
-      sstr<< _T("flexural stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(", ") << LimitStateString(m_LimitState)<<_T(", ") << StressTypeString(m_StressType)<<_T(", at ") << StressLocationString(m_StressLocation);
+      sstr<< _T("flexural stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(" ") << strDesc << _T(", ") << LimitStateString(m_LimitState)<<_T(", ") << StressTypeString(m_StressType)<<_T(", at ") << StressLocationString(m_StressLocation);
       return sstr.str();
    }
    else if (m_Action==actShear)
    {
       std::_tostringstream sstr;
-      sstr<< _T("ultimate shear stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(", ") << LimitStateString(m_LimitState);
+      sstr<< _T("ultimate shear stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(" ") << strDesc << _T(", ") << LimitStateString(m_LimitState);
       return sstr.str();
    }
    else
@@ -1096,8 +1104,6 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, 
 
 void pgsSegmentDesignArtifact::ModSegmentDataForShearDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const
 {
-   GET_IFACE2(pBroker,IShear,pShear);
-
    // get the design data
    pSegmentData->ShearData.ShearZones.clear();
 

@@ -94,7 +94,7 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, pSegment->HandlingData.LeftLiftPoint, pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag( pDX, IDC_STORAGE_LOCATION, IDC_STORAGE_LOCATION_UNITS, pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
+   DDX_KeywordUnitValueAndTag(pDX,IDC_STORAGE_LOCATION,IDC_STORAGE_LOCATION_UNITS,_T("BRG"),pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
    if ( pDX->m_bSaveAndValidate )
    {
       pSegment->HandlingData.RightLiftPoint    = pSegment->HandlingData.LeftLiftPoint;
@@ -102,7 +102,11 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDV_UnitValueZeroOrMore( pDX, IDC_LIFTING_LOOP_LOCATION, pSegment->HandlingData.LeftLiftPoint, pDisplayUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, IDC_STORAGE_LOCATION, pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
+
+   if ( pSegment->HandlingData.LeftStoragePoint != -1 )
+   {
+      DDV_UnitValueZeroOrMore( pDX, IDC_STORAGE_LOCATION, pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
+   }
 
    DDX_UnitValueAndTag( pDX, IDC_LEADINGOVERHANG, IDC_LEADINGOVERHANG_UNITS, pSegment->HandlingData.LeadingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );
    DDV_UnitValueZeroOrMore( pDX, IDC_LEADINGOVERHANG, pSegment->HandlingData.LeadingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );

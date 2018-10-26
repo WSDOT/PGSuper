@@ -311,7 +311,7 @@ bool pgsFlexuralStressArtifact::StressedPassed(pgsTypes::StressLocation stressLo
    }
    else
    {
-      if (m_AsRequired <= m_AsProvided)
+      if (m_AsRequired[stressLocation] <= m_AsProvided[stressLocation] && !IsZero(m_AsProvided[stressLocation]) )
       {
         // If we have adequate rebar, we can use higher limit
          return TensionPassedWithRebar(fStress,stressLocation); 

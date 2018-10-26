@@ -1,4 +1,4 @@
- Span    Gdr    gpM     gpM1    gpM2    gnM     gnM1    gnM2     gV     gV1     gV2      gR     gR1     gR2   
---------------------------------------------------------------------------------------------------------------
-     1      1   1.000   0.600   1.000    1.00    0.60    1.00    1.00    0.60    1.00    1.00    0.60    1.00 
-
+Live Load Distribution Factors could not be calculated for the following reason
+Number of girders is out of range. See Table 4.6.2.2.2b-1
+A refined method of analysis is required for this bridge
+See Status Center for Details

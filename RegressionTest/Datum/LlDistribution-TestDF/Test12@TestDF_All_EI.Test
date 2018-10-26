@@ -1,0 +1,8 @@
+Live Load Distribution Factors could not be calculated for the following reason
+Curb offset (de) is out of range. See Table 4.6.2.2.2d-1
+A refined method of analysis is required for this bridge
+See Status Center for Details
+ Span    Gdr    gpM     gpM1    gpM2    gnM     gnM1    gnM2     gV     gV1     gV2      gR     gR1     gR2   
+--------------------------------------------------------------------------------------------------------------
+     1      2   0.734   0.514   0.734    0.73    0.51    0.73    0.88    0.72    0.88    0.88    0.72    0.88 
+

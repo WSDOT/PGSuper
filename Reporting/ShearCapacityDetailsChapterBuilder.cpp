@@ -1715,7 +1715,15 @@ void write_btsummary_table(IBroker* pBroker,
 
       if(shear_capacity_method == scmBTTables)
       {
-         (*table)(0,col++) << _T("Table") << rptNewLine << _T("5.8.3.4.2-");
+         if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FourthEdition2007 )
+         {
+            (*table)(0,col++) << _T("Table") << rptNewLine << _T("5.8.3.4.2-");
+         }
+         else
+         {
+            // tables moved to appendx B5 in 2008
+            (*table)(0,col++) << _T("Table") << rptNewLine << _T("B5.2-");
+         }
       }
       else
       {
@@ -1767,13 +1775,14 @@ void write_btsummary_table(IBroker* pBroker,
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
+      bool bSufficientTransverseReinforcement = (shear_capacity_method == scmBTTables) ? (scd.BetaThetaTable == 1) : (scd.BetaEqn == 1);
+
       if (print_sxe)
       {
-         bool do_mtr = (shear_capacity_method == scmBTTables) ? scd.BetaThetaTable == 1 : scd.BetaEqn==1;
 
-         (*table)(row,col++) << (do_mtr  ? _T("Yes") : _T("No"));
-         (*table)(row,col++) << (do_mtr  ? _T("1")   : _T("2") );
-         if(do_mtr)
+         (*table)(row,col++) << (bSufficientTransverseReinforcement  ? _T("Yes") : _T("No"));
+         (*table)(row,col++) << (bSufficientTransverseReinforcement  ? _T("1")   : _T("2") );
+         if(bSufficientTransverseReinforcement)
          {
             (*table)(row,col++) << _T("---");
             (*table)(row,col++) << _T("---");
@@ -1794,9 +1803,7 @@ void write_btsummary_table(IBroker* pBroker,
       if ( bAfter1999 && (shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001) )
       {
          // Don't print vfc if sxe method was used
-         bool do_vfc = (shear_capacity_method == scmBTTables) ? scd.BetaThetaTable == 1 : scd.BetaEqn==1;
-
-         if (do_vfc)
+         if (bSufficientTransverseReinforcement)
          {
             (*table)(row,col) << scalar.SetValue( scd.vfc );
             (*table)(row,col++) << _T(" ") << symbol(LTE) << _T(" ") << scalar.SetValue(scd.vfc_tbl);
@@ -1846,7 +1853,7 @@ void write_btsummary_table(IBroker* pBroker,
 
    if (print_sxe)
    {
-      *pParagraph << _T("* Value of s")<<Sub(_T("x"))<<_T(" taken equal to d")<<Sub(_T("v"))<< rptNewLine<<rptNewLine;
+      *pParagraph << _T("* Value of ") << Sub2(_T("s"),_T("x")) << _T(" taken equal to ") << Sub2(_T("d"),_T("v")) << rptNewLine<<rptNewLine;
    }
 
    // print footnote if any values could not be calculated

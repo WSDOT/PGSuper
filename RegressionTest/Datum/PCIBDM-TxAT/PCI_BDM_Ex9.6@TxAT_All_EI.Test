@@ -1,12 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                   1      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.724    -3.662     8432   1.020  1.000  -2.01  -1.19  -0.07  -0.04  -1.30    0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                   1      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.730    -3.678     8487   1.018  1.000  -2.019 -1.192 -0.076 -0.044 -1.312   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -18,13 +17,12 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                   1      2      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.869    -3.762     8361   0.928  1.083  -2.01  -1.40  -0.07  -0.04  -1.51    0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                   1      2      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.875    -3.776     8412   0.925  1.083  -2.019 -1.401 -0.075 -0.043 -1.520   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -35,17 +33,16 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                   2      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.990    -3.785     8223   1.000  1.000  -2.77  -1.63  -0.02  -0.01  -1.67    0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                   2      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   3.002    -3.815     8325   1.000  1.000  -2.773 -1.637 -0.027 -0.016 -1.680   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed
@@ -53,27 +50,28 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                   2      2      BT72         44   1/2  270  30.79  16.06                                              12  70.0 16.0  5.500  7.000   3.180    -3.935     8255   0.908  1.083  4.361  -1.92  -0.02  -0.01  -1.96  132.18  342.70    3.00   10.00   10.00 
+ 42.00    4  12.00                   2      2      BT72         44   1/2  270  30.79  16.06                                              12  70.0 16.0  5.500  7.000   3.189    -3.959     8332   0.904  1.083   4.361 -1.925 -0.027 -0.015 -1.968 132.18  342.46    3.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                   3      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.724    -3.662     8433   1.020  1.000  -2.01  -1.19  -0.07  -0.04  -1.30    0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                   3      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.730    -3.678     8487   1.018  1.000  -2.019 -1.192 -0.076 -0.044 -1.312   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
@@ -83,13 +81,12 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                   3      2      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.869    -3.762     8361   0.928  1.083  -2.01  -1.40  -0.07  -0.04  -1.51    0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                   3      2      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.875    -3.776     8412   0.925  1.083  -2.019 -1.401 -0.075 -0.043 -1.520   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

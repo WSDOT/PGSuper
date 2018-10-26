@@ -125,6 +125,7 @@ public:
    virtual LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState);
    virtual bool ReportAxialResults();
    virtual void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad);
+   virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,bool bTempStrandInstallation=true);
    virtual Float64 GetTrafficBarrierLoad(const CSegmentKey& segmentKey);
    virtual Float64 GetSidewalkLoad(const CSegmentKey& segmentKey);
    virtual bool HasPedestrianLoad();
@@ -155,8 +156,6 @@ public:
    virtual pgsTypes::LiveLoadApplicabilityType GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx);
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType);
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx);
-
-   virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
 
 // IProductForces
 public:
@@ -320,11 +319,11 @@ public:
 
 // IPretensionStresses
 public:
-   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc);
+   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad);
+   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad);
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e);
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc);
-   virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config);
-   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc);
+   virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config,bool bIncludeLiveLoad);
 
 // ICamber
 public:
@@ -503,6 +502,7 @@ private:
    void InvalidateCamberModels();
    CamberModelData GetPrestressDeflectionModel(const CSegmentKey& segmentKey,CamberModels& models);
 
+   std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,pgsTypes::StrandType strandType,bool bTempStrandInstallation=true);
 
    void Invalidate(bool clearStatus=true);
 

@@ -183,14 +183,7 @@ void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
 
    Float64 dFpT = pDetails->pLosses->PermanentStrand_Final(); // this is the time-dependent loss only... it does not include elastic effects
-
-   if ( m_bIgnoreElasticGain )
-   {
-      // we ignore elastic gains for LRFD versions before 2005. For LRFD 2004 and earlier, the total
-      // loss included the elastic shortening. Add it in here so the results table matches earlier
-      // versions of PGSuper
-      dFpT += pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
-   }
+   dFpT += pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
 
    (*this)(row,col++) << stress.SetValue( dFpT );
 }

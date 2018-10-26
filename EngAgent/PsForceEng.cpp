@@ -847,6 +847,11 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType N = pStrandGeom->GetStrandCount(segmentKey,strandType);
+
+   if ( N == 0 )
+   {
+      return 0;
+   }
    
    GET_IFACE(ISegmentData,pSegmentData );
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
@@ -1308,7 +1313,7 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
             }
          }
       }
-      else if ( intervalIdx == castDeckIntervalIdx || intervalIdx == compositeDeckIntervalIdx )
+      else if ( intervalIdx == castDeckIntervalIdx || (intervalIdx == compositeDeckIntervalIdx && compositeDeckIntervalIdx != railingSystemIntervalIdx) )
       {
          if ( intervalTime == pgsTypes::Start )
          {
@@ -1333,7 +1338,18 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
             }
          }
       }
-      else if ( railingSystemIntervalIdx <= intervalIdx  )
+      else if ( railingSystemIntervalIdx == intervalIdx  )
+      {
+         if ( strandType == pgsTypes::Temporary )
+         {
+            loss = pDetails->pLosses->TemporaryStrand_AfterSIDL();
+         }
+         else
+         {
+            loss = pDetails->pLosses->PermanentStrand_AfterSIDL();
+         }
+      }
+      else
       {
          if ( strandType == pgsTypes::Temporary )
          {
@@ -1343,10 +1359,6 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
          {
             loss = pDetails->pLosses->PermanentStrand_Final();
          }
-      }
-      else
-      {
-         ATLASSERT(false); // didn't expect that interval....
       }
 
       return loss;
@@ -1635,9 +1647,9 @@ Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInter
    {
       Float64 llGain;
       if ( pDetails->LossMethod == pgsTypes::GENERAL_LUMPSUM )
-   	  {
+      {
          llGain = 0.0;
-   	  }
+      }
       else
       {
          llGain = pDetails->pLosses->ElasticGainDueToLiveLoad();
@@ -1690,24 +1702,15 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
       N  = pStrandGeom->GetStrandCount(segmentKey,strandType);
    }
 
-   if ( strandType == pgsTypes::Temporary )
+   if ( strandType == pgsTypes::Temporary &&
+         ( intervalIdx < tsInstallationIntervalIdx || 
+            tsRemovalIntervalIdx < intervalIdx      || 
+           (tsRemovalIntervalIdx == intervalIdx && intervalTime != pgsTypes::Start) 
+         )
+      )
    {
-      if ( pConfig )
-      {
-         if ( intervalIdx < tsInstallationIntervalIdx || tsRemovalIntervalIdx <= intervalIdx )
-         {
-            N = 0;
-            Pj = 0;
-         }
-      }
-      else
-      {
-         if ( castDeckIntervalIdx <= intervalIdx )
-         {
-            N = 0;
-            Pj = 0;
-         }
-      }
+      N = 0;
+      Pj = 0;
    }
 
    if ( strandType == pgsTypes::Temporary && N == 0)

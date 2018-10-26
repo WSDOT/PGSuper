@@ -1466,6 +1466,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTempSupport); // only gets used if there are temporary supports
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -1492,15 +1493,16 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
             // assumes top flange of girder is a rectangle (parallelogram) in plan view
             // a future version may go back to the beam factory to get a shape
             // that represents the top flange (curved girders???)
-            Float64 top_width = pIGirder->GetTopWidth( pgsPointOfInterest(segmentKey,0.0) );
+            pgsPointOfInterest poi = pPoi->GetPointOfInterest(segmentKey,0.0);
+            Float64 top_width = pIGirder->GetTopWidth( poi );
 
             // get the segment geometry points
             CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
             pIGirder->GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
-            const CPrecastSegmentData* pSegment   = pGirder->GetSegment(segIdx);
-            const CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
-            const CClosureJointData* pEndClosure = pSegment->GetEndClosure();
+            const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segIdx);
+            const CClosureJointData* pStartClosure = pSegment->GetStartClosure();
+            const CClosureJointData* pEndClosure   = pSegment->GetEndClosure();
 
             CComPtr<IDirection> objStartDirection,objEndDirection;
             if( pStartClosure )

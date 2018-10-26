@@ -472,7 +472,6 @@ void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
-   std::_tstring strDescription(pIntervals->GetDescription(intervalIdx));
    std::_tstring strLimitState(pProductLoads->GetLimitStateName(ls));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -493,7 +492,7 @@ void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const 
          if ( !pShear->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Stirrup detailing checks failed for the ") << strLimitState << _T(" Limit State in Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << strDescription << std::ends;
+            os << _T("Stirrup detailing checks failed for the ") << strLimitState << _T(" Limit State.") << std::ends;
             rFailures.push_back(os.str());
             return;
          }

@@ -85,9 +85,9 @@ public:
 class LeftRightStirrupZoneIter : public StirrupZoneIter
 {
 public:
-   LeftRightStirrupZoneIter(CShearData2::ShearZoneVec& rZoneVec, Float64 girderLength):
+   LeftRightStirrupZoneIter(CShearData2::ShearZoneVec& rZoneVec, Float64 segmentLength):
    m_ZoneVec(rZoneVec),
-   m_GirderLength2(girderLength/2.0)
+   m_SegmentLength2(segmentLength/2.0)
    {
 
    }
@@ -106,7 +106,7 @@ public:
       Float64 zl = m_Iter->ZoneLength;
       m_ZoneStart += zl;
 
-      if (m_ZoneStart >= m_GirderLength2)
+      if (m_SegmentLength2 <= m_ZoneStart)
       {
          m_bDone = true;
       }
@@ -130,10 +130,10 @@ public:
       ATLASSERT(!m_bDone);
       Float64 zl = m_Iter->ZoneLength;
 
-      if (m_ZoneStart+zl >= m_GirderLength2)
+      if (m_SegmentLength2 <= m_ZoneStart+zl)
       {
          // This is last zone because it extends beyond half-girder length
-         zl = m_GirderLength2 - m_ZoneStart;
+         zl = m_SegmentLength2 - m_ZoneStart;
       }
       else
       {
@@ -142,7 +142,7 @@ public:
          iter++;
          if (iter == m_ZoneVec.end())
          {
-            zl = m_GirderLength2 - m_ZoneStart; // we are at end of collection - extend last zone to gl/2
+            zl = m_SegmentLength2 - m_ZoneStart; // we are at end of collection - extend last zone to gl/2
          }
       }
 
@@ -161,7 +161,7 @@ public:
 
 private:
    CShearData2::ShearZoneVec& m_ZoneVec;
-   Float64 m_GirderLength2;
+   Float64 m_SegmentLength2; // half the segment length
 
    Float64 m_ZoneStart;
    CShearData2::ShearZoneIterator m_Iter;
@@ -172,9 +172,9 @@ private:
 class RightLeftStirrupZoneIter : public StirrupZoneIter
 {
 public:
-   RightLeftStirrupZoneIter(CShearData2::ShearZoneVec& rZoneVec, Float64 girderLength):
+   RightLeftStirrupZoneIter(CShearData2::ShearZoneVec& rZoneVec, Float64 segmentLength):
    m_ZoneVec(rZoneVec),
-   m_GirderLength(girderLength)
+   m_SegmentLength(segmentLength)
    {
 
    }
@@ -184,25 +184,26 @@ public:
       m_StirrupZoneItems.clear();
 
       // Build list of StirrupZoneItem's along right half of girder. We will reverse iterate along this
-      Float64 gl2 = m_GirderLength/2.0;
+      Float64 gl2 = m_SegmentLength/2.0;
       Float64 zone_start(0.0);
-      ZoneIndexType nzones = m_ZoneVec.size();
+      ZoneIndexType nZones = m_ZoneVec.size();
       bool quit(false);
       bool is_first(true); // haven't created first zone yet
-      for(ZoneIndexType iz=0; iz<nzones; iz++)
+      
+      for(ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
       {
-         CShearZoneData2& rdata = m_ZoneVec[iz];
+         CShearZoneData2& rdata = m_ZoneVec[zoneIdx];
 
          Float64 zone_end = zone_start + rdata.ZoneLength;
 
-         if(zone_end >= m_GirderLength || iz==nzones-1)
+         if(m_SegmentLength <= zone_end || zoneIdx == nZones-1)
          {
-            zone_end = m_GirderLength;
+            zone_end = m_SegmentLength;
             quit = true;
          }
 
          // only want zones in right half
-         if (zone_end > gl2)
+         if ( gl2 < zone_end )
          {
             if (is_first)
             {
@@ -254,7 +255,7 @@ public:
 
 private:
    CShearData2::ShearZoneVec& m_ZoneVec;
-   Float64 m_GirderLength;
+   Float64 m_SegmentLength;
 
    std::vector<StirrupZoneItem> m_StirrupZoneItems;
    std::vector<StirrupZoneItem>::reverse_iterator m_rIter;
@@ -433,7 +434,7 @@ void pgsShearDesignTool::ResetDesign(const std::vector<pgsPointOfInterest>& pois
    m_StirrupCheckArtifact.Clear();
 }
 
-std::vector<pgsPointOfInterest> pgsShearDesignTool::GetDesignPoi()
+const std::vector<pgsPointOfInterest>& pgsShearDesignTool::GetDesignPoi() const
 {
    ATLASSERT(!m_DesignPois.empty());
    return m_DesignPois;
@@ -590,8 +591,8 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    // Get CSS for current configuration and add POI to our list
    GDRCONFIG gconfig = GetSegmentConfiguration();
 
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vCSPoi = pPOI->GetCriticalSections(pgsTypes::StrengthI,m_SegmentKey,gconfig);
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vCSPoi = pPoi->GetCriticalSections(pgsTypes::StrengthI,m_SegmentKey,gconfig);
    ATLASSERT(vCSPoi.size() == 2);
 
    std::vector<pgsPointOfInterest>::iterator csIter(vCSPoi.begin());
@@ -668,9 +669,29 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    }
 
    // Update our Vector to allow ordered access to design pois
+
+   // Design at span 10th points
+   std::vector<pgsPointOfInterest> pois;
+   m_PoiMgr.GetPointsOfInterest(m_SegmentKey,POI_SPAN,POIFIND_OR,&pois);
+
+   // Add other important POI
+   // POI_H and POI_15H are for the WSDOT summary report. They are traditional location for reporting shear checks
+   std::vector<pgsPointOfInterest> morePois;
+   m_PoiMgr.GetPointsOfInterest(m_SegmentKey,POI_H | POI_15H | POI_CRITSECTSHEAR1 | POI_FACEOFSUPPORT | POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_DEBOND, POIFIND_OR, &morePois);
+   pois.insert(pois.end(),morePois.begin(),morePois.end()); 
+
+   // sort and remove duplicates
+   std::sort(pois.begin(),pois.end());
+   pois.erase(std::unique(pois.begin(),pois.end()),pois.end());
+
+   // remove all POI from the container that are outside of the CL Bearings...
+   // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
+   // put the results into m_DesignPois using the back_inserter
+   GET_IFACE(IBridge,pBridge);
+   Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(m_SegmentKey);
+   Float64 endDist   = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
    m_DesignPois.clear();
-   m_DesignPois = m_PoiMgr.GetPointsOfInterest(m_SegmentKey);
-   //m_PoiMgr.GetPointsOfInterest(m_SegmentKey, POI_SHEAR, POIMGR_OR, &m_DesignPois);
+   std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(m_DesignPois), PoiIsOutsideOfBearings(endDist,endDist+segmentSpanLength));
 }
 
 pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate()
@@ -1239,7 +1260,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
       Float64 zone_len;
 
       Float64 location = m_DesignPois[ipoi].GetDistFromStart();
-      if (location >= gl2) 
+      if (gl2 <= location) 
       {
          // We are past left end of mid-girder - close and quit
          close_zone = true;
@@ -1256,14 +1277,14 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
          if (GetExtendBarsIntoDeck())
          {
             Float64 havs_demand = this->GetHorizontalAvsDemand(ipoi);
-            if(havs_demand > avs_demand)
+            if(avs_demand < havs_demand)
             {
                avs_demand = havs_demand;
                horiz_controlled = true;
             }
          }
 
-         if (ipoi==0)
+         if (ipoi == 0)
          {
             // First POI - select stirrup size and nlegs to be used for entire girder
             // Base size and legs on vertical demand
@@ -1299,7 +1320,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
             if(GetDoPrimaryBarsProvideSplittingCapacity() && DoDesignForSplitting())
             {
                Float64 avs_split = GetAvsReqdForSplitting();
-               if (avs_split > avs_demand)
+               if (avs_demand < avs_split)
                {
                   // Use same bar size for splitting as selected above for vertical shear demand. 
                   // We may not be able to make splitting requirement with primary zone only, 
@@ -1322,33 +1343,28 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
          else
          {
             // After first poi. We might be able to start a new zone if location is in new zone
-            if (location > curr_zone_start)
+            if (curr_zone_start < location)
             {
                // Get bar spacing for current stirrups
                bool st = GetBarSpacingForAvs(avs_demand, max_spac, bar_size, Av, &S_reqd);
                ATLASSERT(st); // should never fail since av/s demand decreases to mid-span
 
                // Don't allow spacing to increase too quickly. Feather if necessary.
-               if (S_reqd > S_max_next)
+               if (S_max_next < S_reqd)
                {
                   S_reqd = S_max_next;
                }
 
                // Should we close existing zone and start new zone based on this spacing?
-               if ( S_reqd > zone_data.BarSpacing )
+               if ( zone_data.BarSpacing < S_reqd )
                {
-                  zone_len = prev_location - curr_zone_start;
+                  zone_len = location - curr_zone_start;
 
                   // Make zone length a multiple of required spacing
                   zone_len = CeilOff(zone_len, zone_data.BarSpacing); 
 
-                  // FUDGE: Artificiallly increase zone length by two bar spacings. This is done
-                  //        because POI's for design are not exactly located at zone termination
-                  //        locations.
-                  zone_len += 2.0 * zone_data.BarSpacing;
-
                   // Is the zone long enough?
-                  if (zone_len >= L_zone_min)
+                  if (L_zone_min <= zone_len)
                   {
                      close_zone = true;
                      create_zone = true;
@@ -1359,7 +1375,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
       }
 
       // Terminate loop if current spacing is max possible.
-      if (ipoi != 0 && zone_data.BarSpacing >= m_SMaxMax)
+      if (ipoi != 0 && m_SMaxMax <= zone_data.BarSpacing)
       {
          // This will be our last zone
          close_zone = true;
@@ -1524,7 +1540,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
       {
          // Design for horizontal shear if neccessary
          Float64 havs_demand = GetHorizontalAvsMaxInRange(sz_item.leftEnd ,sz_item.rightEnd);
-         if (havs_demand > avs_demand)
+         if (avs_demand < havs_demand)
          {
             avs_demand = havs_demand;
          }
@@ -1534,7 +1550,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
       Float64 max_spacing = ComputeMaxStirrupSpacing(sz_item.startLocation);
 
       // check demand
-      if (avs_demand > avs_cap)
+      if (avs_cap < avs_demand)
       {
          // We need to increase capacity. First try bars of the same size/nlegs
          Float64 new_spacing;
@@ -1571,7 +1587,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
       }
 
       // make sure we've met spacing requirements
-      if(rzdata.BarSpacing > max_spacing)
+      if(max_spacing < rzdata.BarSpacing)
       {
          rzdata.BarSpacing = max_spacing;
 
@@ -1591,11 +1607,11 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
    }
 
    // Last, we need to make sure that av/s does not decrease from CSS to CL bearing
-   if(idxCSS!=INVALID_INDEX && idxCSS>0)
+   if(idxCSS != INVALID_INDEX && 0 < idxCSS)
    {
       // We have captured shear zone data at css, and it is not the first zone.
       // Make sure previous zones have at least the same av/s
-      if(szdAtCSS.VertBarSize!=matRebar::bsNone && szdAtCSS.BarSpacing>0.0)
+      if(szdAtCSS.VertBarSize != matRebar::bsNone && 0.0 < szdAtCSS.BarSpacing)
       {
          const matRebar* pRebar = pool->GetRebar(barType,barGrade,szdAtCSS.VertBarSize);
          Float64 av = pRebar->GetNominalArea() * szdAtCSS.nVertBars;
@@ -1741,7 +1757,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
    {
       Float64 zone_end = zone_start + ith->ZoneLength;
       CShearData2::HorizontalInterfaceZoneIterator ittest(ith);
-      if (zone_end >= zone_max || ++ittest==m_ShearData.HorizontalInterfaceZones.end())
+      if (zone_max <= zone_end || ++ittest == m_ShearData.HorizontalInterfaceZones.end())
       {
          // we've run of the end of the girder here
          zone_end = zone_max;

@@ -1217,6 +1217,8 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    CComPtr<IPoint2dCollection> surfacePoints;
    pRoadway->GetRoadwaySurface(station,NULL,&surfacePoints);
 
+   TrimSurface(surfacePoints,left_offset,right_offset);
+
    CComPtr<IPoint2d> pos;
    surfacePoints->get_Item(0,&pos);
    dispObj->SetPosition(pos,FALSE,FALSE);
@@ -1261,7 +1263,7 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
       poly_shape->AddPointEx(pnt);
    }
 
-   // now work backwards, offset the point by the depth of the overlay
+   // now work backwards, offset the points upwards by the depth of the overlay
    for ( IndexType pntIdx = nPoints-1; pntIdx != INVALID_INDEX; pntIdx-- )
    {
       CComPtr<IPoint2d> pnt;
@@ -2318,4 +2320,62 @@ BOOL CBridgeSectionView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
 {
    OnKeyDown(zDelta < 0 ? VK_RIGHT : VK_LEFT, 1, nFlags);
    return TRUE;
+}
+
+void CBridgeSectionView::TrimSurface(IPoint2dCollection* pPoints,Float64 Xleft,Float64 Xright)
+{
+   IndexType nPoints;
+   pPoints->get_Count(&nPoints);
+   for ( IndexType idx = 0; idx < nPoints-1; idx++ )
+   {
+      CComPtr<IPoint2d> pnt1, pnt2;
+      pPoints->get_Item(idx,  &pnt1);
+      pPoints->get_Item(idx+1,&pnt2);
+
+      Float64 x1,x2;
+      pnt1->get_X(&x1);
+      pnt2->get_X(&x2);
+
+      if ( x1 < Xleft && x2 < Xleft )
+      {
+         // pnt1 and pnt2 are to the left of the left trimming line
+         // remove pnt1 and try again
+         ATLASSERT(idx == 0);
+         pPoints->Remove(idx);
+         TrimSurface(pPoints,Xleft,Xright);
+         return;
+      }
+
+      if ( x1 < Xleft && Xleft < x2 )
+      {
+         // found an intersecting line segment
+         // find the intersection point at make this the left point
+         ATLASSERT(idx == 0);
+         Float64 y1,y2;
+         pnt1->get_Y(&y1);
+         pnt2->get_Y(&y2);
+
+         Float64 y = ::LinInterp(Xleft-x1,y1,y2,x2-x1);
+         pnt1->Move(Xleft,y);
+      }
+
+      if ( x1 < Xright && Xright < x2 )
+      {
+         // found an interscting line segment
+         // find the intersection point and make this the right point
+         Float64 y1,y2;
+         pnt1->get_Y(&y1);
+         pnt2->get_Y(&y2);
+
+         Float64 y = ::LinInterp(Xright-x1,y1,y2,x2-x1);
+         pnt2->Move(Xright,y);
+
+         // remove all remaining points
+         for ( IndexType i = idx+2; i < nPoints-1; i++ )
+         {
+            pPoints->Remove(idx+2);
+         }
+         return; // leave now, the point container has been changed
+      }
+   }
 }

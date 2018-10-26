@@ -1,10 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.13    8   6.00                   1      1      III          36   0.6  270  17.41  10.30                                               8  40.0  8.0  8.000  9.300   6.081    -7.484     8354   0.897  0.897  5.200  -1.92  0.000  -0.60  -2.52  153.10  205.90    2.25    5.00    5.00 
+ 46.13    8   6.00                   1      1      III          36   0.6  270  17.41  10.30                                               8  40.0  8.0  8.000  9.300   6.081    -7.484     8354   0.897  0.897   5.200 -1.921  0.000 -0.602 -2.523 153.10  205.90    2.25    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -14,7 +14,7 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.13    8   6.00                   1      2      III          36   0.6  270  17.41  10.30                                               8  40.0  8.0  8.000  9.300   5.136    -6.099     6334   0.523  0.671  5.200  -1.57  0.000  -0.60  -2.17  153.10  221.38    2.25    5.00    5.00 
+ 46.13    8   6.00                   1      2      III          36   0.6  270  17.41  10.30                                               8  40.0  8.0  8.000  9.300   5.136    -6.099     6334   0.523  0.671   5.200 -1.571  0.000 -0.602 -2.173 153.10  221.38    2.25    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -24,15 +24,15 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.13    8   6.00                   1      5      III          36   0.6  270  17.41  10.30                                               8  40.0  8.0  8.000  9.300  112.95    -304.0    -1529   0.523  0.671  5.200  -1.57  -199.  -0.20  -201.  153.10  -12773    2.25    5.00    5.00 
+ 46.13    8   6.00                   1      5      III          36   0.6  270  17.41  10.30                                               8  40.0  8.0  8.000  9.300  112.95    -304.0    -1529   0.523  0.671   5.200 -1.571 -199.6 -0.203 -201.4 153.10  -12773    2.25    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

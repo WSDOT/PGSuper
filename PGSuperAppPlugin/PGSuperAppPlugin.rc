@@ -13,7 +13,6 @@
 #include "afxres.h"
 #include <EAF\EAFResources.h>
 #include "grid\gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -117,8 +116,8 @@ IDI_EDIT_LOADS          ICON                    "..\\res\\edit_loa.ico"
 IDI_POINT_LOAD          ICON                    "..\\res\\point_load.ico"
 IDI_DISTRIBUTED_LOAD    ICON                    "..\\res\\distributed_load.ico"
 IDI_MOMENT_LOAD         ICON                    "..\\res\\moment.ico"
-IDR_PGSUPERPROJECTIMPORTER     ICON                    "..\\res\\Bridge2.ico"
-IDR_PGSPLICEPROJECTIMPORTER     ICON                    "..\\res\\Bridge2.ico"
+IDR_PGSUPERPROJECTIMPORTER ICON                    "..\\res\\Bridge2.ico"
+IDR_PGSPLICEPROJECTIMPORTER ICON                    "..\\res\\Bridge2.ico"
 IDI_EARTH               ICON                    "..\\res\\Globe.ico"
 IDI_EDIT_BRIDGE         ICON                    "..\\res\\EditBridge.ico"
 IDI_EDIT_GIRDER         ICON                    "..\\res\\EditGirder.ico"
@@ -1145,30 +1144,31 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,203,115,10
 END
 
-IDD_GIRDERDESC_LIFTING_PAGE DIALOGEX 0, 0, 390, 211
+IDD_GIRDERDESC_LIFTING_PAGE DIALOGEX 0, 0, 390, 230
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Lifting, Storage, Hauling"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Lifting Device Location",IDC_STATIC_LL,7,7,182,46
+    GROUPBOX        "Lifting Device Location",IDC_STATIC_LL,7,7,182,74
     LTEXT           "Measured from ends",IDC_STATIC_LLE,19,25,65,8
     EDITTEXT        IDC_LIFTING_LOOP_LOCATION,88,23,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LIFTING_LOOP_LOCATION_UNITS,131,25,18,8
-    GROUPBOX        "Storage Support Location",IDC_STATIC_LL2,197,7,186,46
-    LTEXT           "Measured from ends",IDC_STATIC_LLE2,222,28,65,8
-    EDITTEXT        IDC_STORAGE_LOCATION,290,26,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_STORAGE_LOCATION_UNITS,334,28,18,8
-    GROUPBOX        "Hauling Support Location",IDC_STATIC_SL,7,58,376,146
-    CONTROL         "",IDC_HAULINGOVERHANGS,"Static",SS_ENHMETAFILE | WS_BORDER,17,75,355,65
-    LTEXT           "Trailing Overhang",IDC_STATIC_TLSO,21,155,64,8
-    EDITTEXT        IDC_TRAILINGOVERHANG,91,153,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TRAILINGOVERHANG_UNITS,133,155,18,8
-    LTEXT           "Leading Overhang",IDC_STATIC_SLLO,229,155,64,8
-    EDITTEXT        IDC_LEADINGOVERHANG,299,153,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LEADINGOVERHANG_UNITS,341,155,18,8
-    LTEXT           "Girder Length",IDC_STATICSLGL,41,182,44,8
-    RTEXT           "Length",IDC_GIRDERLENGTH,89,182,40,8
-    LTEXT           "Static",IDC_GIRDERLENGTH_UNIT,133,182,19,8
+    GROUPBOX        "Storage Support Location",IDC_STATIC_LL2,197,7,186,74
+    LTEXT           "Measured from ends",IDC_STATIC_LLE2,222,25,65,8
+    EDITTEXT        IDC_STORAGE_LOCATION,290,23,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_STORAGE_LOCATION_UNITS,334,25,18,8
+    GROUPBOX        "Hauling Support Location",IDC_STATIC_SL,7,85,376,138
+    CONTROL         "",IDC_HAULINGOVERHANGS,"Static",SS_ENHMETAFILE | WS_BORDER,17,106,355,65
+    LTEXT           "Trailing Overhang",IDC_STATIC_TLSO,21,186,64,8
+    EDITTEXT        IDC_TRAILINGOVERHANG,91,184,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TRAILINGOVERHANG_UNITS,133,186,18,8
+    LTEXT           "Leading Overhang",IDC_STATIC_SLLO,21,204,64,8
+    EDITTEXT        IDC_LEADINGOVERHANG,91,202,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LEADINGOVERHANG_UNITS,133,204,18,8
+    LTEXT           "Girder Length",IDC_STATICSLGL,206,185,44,8
+    RTEXT           "Length",IDC_GIRDERLENGTH,254,185,40,8
+    LTEXT           "Static",IDC_GIRDERLENGTH_UNIT,298,185,19,8
+    LTEXT           "(Use the keyword BRG to locate the storage supports at the same location as the bearings)",IDC_STATIC,217,46,139,28
 END
 
 IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 347, 254
@@ -1495,37 +1495,37 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Deck Reinforcement"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Top Mat Cover",IDC_STATIC,7,35,48,8
+    LTEXT           "Top Mat Cover",IDC_TOP_COVER_LABEL,7,35,48,8
     EDITTEXT        IDC_TOP_COVER,59,35,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TOP_COVER_UNIT,103,35,19,8
-    LTEXT           "Bottom Mat Cover",IDC_STATIC,133,35,58,8
+    LTEXT           "Bottom Mat Cover",IDC_BOTTOM_COVER_LABEL,133,35,58,8
     EDITTEXT        IDC_BOTTOM_COVER,195,35,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BOTTOM_COVER_UNIT,242,36,19,8
-    GROUPBOX        "Primary Reinforcement",IDC_STATIC,7,52,290,59
-    LTEXT           "Top Mat",IDC_STATIC,22,79,28,8
+    GROUPBOX        "Primary Reinforcement",IDC_PRIMARY_REBAR_GROUP,7,52,290,59
+    LTEXT           "Top Mat",IDC_TOP_MAT_BAR_LABEL,22,79,28,8
     COMBOBOX        IDC_TOP_MAT_BAR,54,77,41,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "at",IDC_STATIC,99,79,8,8
+    LTEXT           "at",IDC_TOP_MAT_BAR_AT,99,79,8,8
     EDITTEXT        IDC_TOP_MAT_BAR_SPACING,111,77,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TOP_MAT_BAR_SPACING_UNIT,156,79,19,8
     EDITTEXT        IDC_TOP_MAT_LUMP_SUM,203,76,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TOP_MAT_LUMP_SUM_UNIT,249,80,36,8
-    LTEXT           "Bottom Mat",IDC_STATIC,13,97,37,8
+    LTEXT           "Bottom Mat",IDC_BOTTOM_MAT_BAR_LABEL,13,97,37,8
     COMBOBOX        IDC_BOTTOM_MAT_BAR,54,95,41,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "at",IDC_STATIC,99,97,8,8
+    LTEXT           "at",IDC_BOTTOM_MAT_BAR_AT,99,97,8,8
     EDITTEXT        IDC_BOTTOM_MAT_BAR_SPACING,111,95,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BOTTOM_MAT_BAR_SPACING_UNIT,156,97,19,8
     EDITTEXT        IDC_BOTTOM_MAT_LUMP_SUM,203,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BOTTOM_MAT_LUMP_SUM_UNIT,249,98,36,8
-    GROUPBOX        "Supplemental Reinforcement",IDC_STATIC,7,113,293,119
+    GROUPBOX        "Supplemental Reinforcement",IDC_SECONDARY_REBAR_GROUP,7,113,293,119
     CONTROL         "Custom1",IDC_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,135,280,75
     PUSHBUTTON      "Add",IDC_ADD,102,214,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE,156,214,50,14
     LTEXT           "Static",IDC_DECK,7,6,293,8
     COMBOBOX        IDC_MILD_STEEL_SELECTOR,7,17,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "PLUS",IDC_STATIC,180,79,20,8
-    LTEXT           "PLUS",IDC_STATIC,180,97,20,8
-    LTEXT           "Negative moment reinforcement at integral abutments and continuous piers",IDC_STATIC,16,124,236,8
-    LTEXT           "Longitudinal reinforcement running the full length of the bridge",IDC_STATIC,17,65,194,8
+    LTEXT           "PLUS",IDC_TOP_MAT_BAR_PLUS,180,79,20,8
+    LTEXT           "PLUS",IDC_BOTTOM_MAT_BAR_PLUS,180,97,20,8
+    LTEXT           "Negative moment reinforcement at integral abutments and continuous piers",IDC_SECONDARY_REBAR_GROUP_LABEL,16,124,236,8
+    LTEXT           "Longitudinal reinforcement running the full length of the bridge",IDC_PRIMARY_REBAR_GROUP_LABEL,17,65,194,8
 END
 
 IDD_GIRDERDESC_LONGITUDINAL_REBAR DIALOGEX 0, 0, 422, 237
@@ -3305,8 +3305,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,43
- PRODUCTVERSION 3,0,0,43
+ FILEVERSION 3,0,0,44
+ PRODUCTVERSION 3,0,0,44
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3323,12 +3323,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.43"
+            VALUE "FileVersion", "3.0.0.44"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.43"
+            VALUE "ProductVersion", "3.0.0.44"
         END
     END
     BLOCK "VarFileInfo"
@@ -3470,7 +3470,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 383
         TOPMARGIN, 7
-        BOTTOMMARGIN, 204
+        BOTTOMMARGIN, 223
     END
 
     IDD_COPY_GIRDER_PROPERTIES, DIALOG
@@ -4278,8 +4278,10 @@ STRINGTABLE
 BEGIN
     IDR_PGSUPER             "\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
     IDR_BRIDGEMODELEDITOR   "Bridge View\n\n\n\n\n\n"
-    IDR_PGSUPERPROJECTIMPORTER     "Bridge View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
-    IDR_PGSPLICEPROJECTIMPORTER     "Bridge View\nPGSplice\nPGSplice Project Importers\n\n\n\n"
+    IDR_PGSUPERPROJECTIMPORTER 
+                            "Bridge View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
+    IDR_PGSPLICEPROJECTIMPORTER 
+                            "Bridge View\nPGSplice\nPGSplice Project Importers\n\n\n\n"
     IDR_GIRDERMODELEDITOR   "Girder View\n\n\n\n\n\n"
     IDR_ANALYSISMODELEDITOR "Analysis Model Editor\n\n\n\n\n\n"
     IDR_LIBRARYEDITOR       "Library Editor\n\n\n\n\n\n"

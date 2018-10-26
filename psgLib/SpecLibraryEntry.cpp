@@ -32,8 +32,6 @@
 
 #include <MathEx.h>
 
-#include <psgLib\ProjectLibraryManager.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -164,10 +162,22 @@ m_CreepDuration2Max(::ConvertToSysUnits(120,unitMeasure::Day)),
 m_TotalCreepDuration(::ConvertToSysUnits(2000,unitMeasure::Day)),
 m_CamberVariability(0.50),
 m_LossMethod(LOSSES_AASHTO_REFINED),
+m_BeforeXferLosses(0),
+m_AfterXferLosses(0),
+m_LiftingLosses(0),
 m_TimeDependentModel(TDM_ACI209),
 m_ShippingLosses(::ConvertToSysUnits(20,unitMeasure::KSI)),
+m_FinalLosses(0),
 m_ShippingTime(::ConvertToSysUnits(10,unitMeasure::Day)),
 m_LldfMethod(LLDF_LRFD),
+m_BeforeTempStrandRemovalLosses(0),
+m_AfterTempStrandRemovalLosses(0),
+m_AfterDeckPlacementLosses(0),
+m_AfterSIDLLosses(0),
+m_bUpdatePTParameters(false),
+m_Dset(::ConvertToSysUnits(0.375,unitMeasure::Inch)),
+m_WobbleFriction(::ConvertToSysUnits(0.0002,unitMeasure::PerFeet)),
+m_FrictionCoefficient(0.25),
 m_SlabElasticGain(1.0),
 m_SlabPadElasticGain(1.0),
 m_DiaphragmElasticGain(1.0),
@@ -244,6 +254,31 @@ m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading)
    m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]    = 0.74;
    m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL] = 0.80;
    m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]  = 0.80;
+
+   m_bUpdateLoadFactors = false;
+   m_DCmin[pgsTypes::ServiceI]   = 1.0;         m_DCmax[pgsTypes::ServiceI]   = 1.0;
+   m_DWmin[pgsTypes::ServiceI]   = 1.0;         m_DWmax[pgsTypes::ServiceI]   = 1.0;
+   m_LLIMmin[pgsTypes::ServiceI] = 1.0;         m_LLIMmax[pgsTypes::ServiceI] = 1.0;
+
+   m_DCmin[pgsTypes::ServiceIA]   = 0.5;        m_DCmax[pgsTypes::ServiceIA]   = 0.5;
+   m_DWmin[pgsTypes::ServiceIA]   = 0.5;        m_DWmax[pgsTypes::ServiceIA]   = 0.5;
+   m_LLIMmin[pgsTypes::ServiceIA] = 1.0;        m_LLIMmax[pgsTypes::ServiceIA] = 1.0;
+
+   m_DCmin[pgsTypes::ServiceIII]   = 1.0;       m_DCmax[pgsTypes::ServiceIII]   = 1.0;
+   m_DWmin[pgsTypes::ServiceIII]   = 1.0;       m_DWmax[pgsTypes::ServiceIII]   = 1.0;
+   m_LLIMmin[pgsTypes::ServiceIII] = 0.8;       m_LLIMmax[pgsTypes::ServiceIII] = 0.8;
+
+   m_DCmin[pgsTypes::StrengthI]   = 0.90;       m_DCmax[pgsTypes::StrengthI]   = 1.25;
+   m_DWmin[pgsTypes::StrengthI]   = 0.65;       m_DWmax[pgsTypes::StrengthI]   = 1.50;
+   m_LLIMmin[pgsTypes::StrengthI] = 1.75;       m_LLIMmax[pgsTypes::StrengthI] = 1.75;
+
+   m_DCmin[pgsTypes::StrengthII]   = 0.90;      m_DCmax[pgsTypes::StrengthII]   = 1.25;
+   m_DWmin[pgsTypes::StrengthII]   = 0.65;      m_DWmax[pgsTypes::StrengthII]   = 1.50;
+   m_LLIMmin[pgsTypes::StrengthII] = 1.35;      m_LLIMmax[pgsTypes::StrengthII] = 1.35;
+
+   m_DCmin[pgsTypes::FatigueI]   = 0.5;        m_DCmax[pgsTypes::FatigueI]   = 0.5;
+   m_DWmin[pgsTypes::FatigueI]   = 0.5;        m_DWmax[pgsTypes::FatigueI]   = 0.5;
+   m_LLIMmin[pgsTypes::FatigueI] = 1.5;        m_LLIMmax[pgsTypes::FatigueI] = 1.5;
 
    m_bCheckTendonStressAtJacking      = false;
    m_bCheckTendonStressPriorToSeating = true;
@@ -2454,15 +2489,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_TimeDependentModel = temp;
       }
 
-      Float64 LiftingLosses;
-      Float64 ShippingLosses;
-      Float64 BeforeXferLosses;
-      Float64 AfterXferLosses;
-      Float64 BeforeTempStrandRemovalLosses;
-      Float64 AfterTempStrandRemovalLosses;
-      Float64 AfterDeckPlacementLosses;
-      Float64 AfterSIDLLosses;
-      Float64 FinalLosses;
       if ( 50 <= version )
       {
          if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
@@ -2477,32 +2503,29 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         if ( !pLoad->Property(_T("FinalLosses"),&FinalLosses) )
+         if ( !pLoad->Property(_T("FinalLosses"),&m_FinalLosses) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad );
          }
 
-         if ( !pLoad->Property(_T("ShippingLosses"),&ShippingLosses) )
+         if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad );
          }
 
-         m_ShippingLosses = ShippingLosses;
-
-         if ( !pLoad->Property(_T("BeforeXferLosses"),&BeforeXferLosses) )
+         if ( !pLoad->Property(_T("BeforeXferLosses"),&m_BeforeXferLosses) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad );
          }
 
-         if ( !pLoad->Property(_T("AfterXferLosses"),&AfterXferLosses) )
+         if ( !pLoad->Property(_T("AfterXferLosses"),&m_AfterXferLosses) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad );
          }
 
-         Float64 ShippingTime = m_ShippingTime;
          if ( 13.0 <= version )
          {
-            if ( !pLoad->Property(_T("ShippingTime"),&ShippingTime) )
+            if ( !pLoad->Property(_T("ShippingTime"),&m_ShippingTime) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad );
             }
@@ -2510,69 +2533,46 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          if ( 22 <= version )
          {
-            if ( !pLoad->Property(_T("LiftingLosses"),&LiftingLosses) )
+            if ( !pLoad->Property(_T("LiftingLosses"),&m_LiftingLosses) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            if ( !pLoad->Property(_T("BeforeTempStrandRemovalLosses"),&BeforeTempStrandRemovalLosses) )
+            if ( !pLoad->Property(_T("BeforeTempStrandRemovalLosses"),&m_BeforeTempStrandRemovalLosses) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            if ( !pLoad->Property(_T("AfterTempStrandRemovalLosses"),&AfterTempStrandRemovalLosses) )
+            if ( !pLoad->Property(_T("AfterTempStrandRemovalLosses"),&m_AfterTempStrandRemovalLosses) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            if ( !pLoad->Property(_T("AfterDeckPlacementLosses"),&AfterDeckPlacementLosses) )
+            if ( !pLoad->Property(_T("AfterDeckPlacementLosses"),&m_AfterDeckPlacementLosses) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
             if ( 38 <= version )
             {
-               if ( !pLoad->Property(_T("AfterSIDLLosses"),&AfterSIDLLosses) )
+               if ( !pLoad->Property(_T("AfterSIDLLosses"),&m_AfterSIDLLosses) )
                {
                   THROW_LOAD(InvalidFileFormat,pLoad);
                }
             }
             else
             {
-               AfterSIDLLosses = AfterDeckPlacementLosses;
+               m_AfterSIDLLosses = m_AfterDeckPlacementLosses;
             }
          }
          else
          {
-            LiftingLosses                 = AfterXferLosses;
-            BeforeTempStrandRemovalLosses = ShippingLosses < 0 ? LiftingLosses : ShippingLosses;
-            AfterTempStrandRemovalLosses  = BeforeTempStrandRemovalLosses;
-            AfterDeckPlacementLosses      = FinalLosses;
-            AfterSIDLLosses               = FinalLosses;
+            m_LiftingLosses                 = m_AfterXferLosses;
+            m_BeforeTempStrandRemovalLosses = m_ShippingLosses < 0 ? m_LiftingLosses : m_ShippingLosses;
+            m_AfterTempStrandRemovalLosses  = m_BeforeTempStrandRemovalLosses;
+            m_AfterDeckPlacementLosses      = m_FinalLosses;
+            m_AfterSIDLLosses               = m_FinalLosses;
          }
-      }
-
-      const libILibrary* pLib = GetLibrary();
-      psgProjectLibraryManager* pLibMgr = dynamic_cast<psgProjectLibraryManager*>(pLib->GetLibraryManager());
-      if ( pLibMgr )
-      {
-         // the cast above is successful if we are loading the library entry that is in use.... capture
-         // the data so that we don't change the user's actual data.
-         pLibMgr->m_bGeneralLumpSum               = false;
-         if ( m_LossMethod == 3 )
-         {
-            pLibMgr->m_bGeneralLumpSum = true;
-            m_LossMethod = LOSSES_AASHTO_REFINED;
-         }
-         pLibMgr->m_FinalLosses                   = FinalLosses;
-         pLibMgr->m_LiftingLosses                 = LiftingLosses;
-         pLibMgr->m_ShippingLosses                = ShippingLosses;
-         pLibMgr->m_BeforeXferLosses              = BeforeXferLosses;
-         pLibMgr->m_AfterXferLosses               = AfterXferLosses;
-         pLibMgr->m_BeforeTempStrandRemovalLosses = BeforeTempStrandRemovalLosses;
-         pLibMgr->m_AfterTempStrandRemovalLosses  = AfterTempStrandRemovalLosses;
-         pLibMgr->m_AfterDeckPlacementLosses      = AfterDeckPlacementLosses;
-         pLibMgr->m_AfterSIDLLosses               = AfterSIDLLosses;
       }
 
       if ( 19 <= version )
@@ -2742,32 +2742,20 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 22 < version && version < 50)
       {
          // added in version 23 and removed in version 50
-         Float64 Dset, WobbleFriction, FrictionCoefficient;
-         if ( !pLoad->Property(_T("AnchorSet"),&Dset) )
+         m_bUpdatePTParameters = true;
+         if ( !pLoad->Property(_T("AnchorSet"),&m_Dset) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if ( !pLoad->Property(_T("WobbleFriction"),&WobbleFriction) )
+         if ( !pLoad->Property(_T("WobbleFriction"),&m_WobbleFriction) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if ( !pLoad->Property(_T("CoefficientOfFriction"),&FrictionCoefficient) )
+         if ( !pLoad->Property(_T("CoefficientOfFriction"),&m_FrictionCoefficient) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
-         }
-
-
-         const libILibrary* pLib = GetLibrary();
-         psgProjectLibraryManager* pLibMgr = dynamic_cast<psgProjectLibraryManager*>(pLib->GetLibraryManager());
-         if ( pLibMgr )
-         {
-            // the cast above is successful if we are loading the library entry that is in use.... capture
-            // the data so that we don't change the user's actual data.
-            pLibMgr->m_DSet                = Dset;
-            pLibMgr->m_WobbleFriction      = WobbleFriction;
-            pLibMgr->m_FrictionCoefficient = FrictionCoefficient;
          }
       }
 
@@ -3148,29 +3136,16 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             pLoad->BeginUnit(strLimitState[i].c_str());
 
-            Float64 dcMin, dcMax, dwMin, dwMax, llimMin, llimMax;
-            pLoad->Property(_T("DCmin"),  &dcMin);
-            pLoad->Property(_T("DCmax"),  &dcMax);
-            pLoad->Property(_T("DWmin"),  &dwMin);
-            pLoad->Property(_T("DWmax"),  &dwMax);
-            pLoad->Property(_T("LLIMmin"),&llimMin);
-            pLoad->Property(_T("LLIMmax"),&llimMax);
-
-            const libILibrary* pLib = GetLibrary();
-            psgProjectLibraryManager* pLibMgr = dynamic_cast<psgProjectLibraryManager*>(pLib->GetLibraryManager());
-            if ( pLibMgr )
-            {
-               // the cast above is successful if we are loading the library entry that is in use.... capture
-               // the data so that we don't change the user's actual data.
-               pLibMgr->m_DCmin[i]   = dcMin;
-               pLibMgr->m_DWmin[i]   = dwMin;
-               pLibMgr->m_LLIMmin[i] = llimMin;
-               pLibMgr->m_DCmax[i]   = dcMax;
-               pLibMgr->m_DWmax[i]   = dwMax;
-               pLibMgr->m_LLIMmax[i] = llimMax;
-            }
+            pLoad->Property(_T("DCmin"),  &m_DCmin[i]);
+            pLoad->Property(_T("DCmax"),  &m_DCmax[i]);
+            pLoad->Property(_T("DWmin"),  &m_DWmin[i]);
+            pLoad->Property(_T("DWmax"),  &m_DWmax[i]);
+            pLoad->Property(_T("LLIMmin"),&m_LLIMmin[i]);
+            pLoad->Property(_T("LLIMmax"),&m_LLIMmax[i]);
 
             pLoad->EndUnit();
+
+            m_bUpdateLoadFactors = true; // need to update load factors in PGS with these values
          }
          pLoad->EndUnit();
       }
@@ -3808,9 +3783,22 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_TotalCreepDuration  , rOther.m_TotalCreepDuration  );
    TESTD(m_CamberVariability   , rOther.m_CamberVariability  );
    TEST (m_LossMethod                 , rOther.m_LossMethod                 );
+   TESTD(m_FinalLosses                , rOther.m_FinalLosses                );
    TEST (m_TimeDependentModel         , rOther.m_TimeDependentModel         );
    TESTD(m_ShippingLosses             , rOther.m_ShippingLosses             );
+   TESTD(m_BeforeXferLosses           , rOther.m_BeforeXferLosses           );
+   TESTD(m_AfterXferLosses            , rOther.m_AfterXferLosses            );
    TESTD(m_ShippingTime               , rOther.m_ShippingTime               );
+   TESTD(m_LiftingLosses              , rOther.m_LiftingLosses              );
+   TESTD(m_BeforeTempStrandRemovalLosses , rOther.m_BeforeTempStrandRemovalLosses );
+   TESTD(m_AfterTempStrandRemovalLosses  , rOther.m_AfterTempStrandRemovalLosses );
+   TESTD(m_AfterDeckPlacementLosses      , rOther.m_AfterDeckPlacementLosses );
+   TESTD(m_AfterSIDLLosses               , rOther.m_AfterSIDLLosses );
+
+   TEST(m_bUpdatePTParameters,rOther.m_bUpdatePTParameters);
+   TESTD(m_Dset,rOther.m_Dset);
+   TESTD(m_WobbleFriction,rOther.m_WobbleFriction);
+   TESTD(m_FrictionCoefficient,rOther.m_FrictionCoefficient);
 
    TESTD(m_SlabElasticGain          , rOther.m_SlabElasticGain);
    TESTD(m_SlabPadElasticGain       , rOther.m_SlabPadElasticGain);
@@ -3892,6 +3880,17 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_LiftPointAccuracy , rOther.m_LiftPointAccuracy );
    TESTD(m_MinHaulPoint      , rOther.m_MinHaulPoint );
    TESTD(m_HaulPointAccuracy , rOther.m_HaulPointAccuracy);
+
+   TEST(m_bUpdateLoadFactors,rOther.m_bUpdateLoadFactors);
+   for ( int i = 0; i < 6; i++ )
+   {
+      TESTD( m_DCmin[i], rOther.m_DCmin[i] );
+      TESTD( m_DWmin[i], rOther.m_DWmin[i] );
+      TESTD( m_LLIMmin[i], rOther.m_LLIMmin[i] );
+      TESTD( m_DCmax[i], rOther.m_DCmax[i] );
+      TESTD( m_DWmax[i], rOther.m_DWmax[i] );
+      TESTD( m_LLIMmax[i], rOther.m_LLIMmax[i] );
+   }
 
    TEST(m_UseMinTruckSupportLocationFactor , rOther.m_UseMinTruckSupportLocationFactor);
    TESTD(m_MinTruckSupportLocationFactor , rOther.m_MinTruckSupportLocationFactor);
@@ -5012,6 +5011,16 @@ void SpecLibraryEntry::SetLossMethod(int method)
    m_LossMethod = method;
 }
 
+Float64 SpecLibraryEntry::GetFinalLosses() const
+{
+   return m_FinalLosses;
+}
+
+void SpecLibraryEntry::SetFinalLosses(Float64 loss)
+{
+   m_FinalLosses = loss;
+}
+
 int SpecLibraryEntry::GetTimeDependentModel() const
 {
    return m_TimeDependentModel;
@@ -5032,6 +5041,36 @@ void SpecLibraryEntry::SetShippingLosses(Float64 loss)
    m_ShippingLosses = loss;
 }
 
+Float64 SpecLibraryEntry::GetLiftingLosses() const
+{
+   return m_LiftingLosses;
+}
+
+void SpecLibraryEntry::SetLiftingLosses(Float64 loss)
+{
+   m_LiftingLosses = loss;
+}
+
+Float64 SpecLibraryEntry::GetBeforeXferLosses() const
+{
+   return m_BeforeXferLosses;
+}
+
+void SpecLibraryEntry::SetBeforeXferLosses(Float64 loss)
+{
+   m_BeforeXferLosses = loss;
+}
+
+Float64 SpecLibraryEntry::GetAfterXferLosses() const
+{
+   return m_AfterXferLosses;
+}
+
+void SpecLibraryEntry::SetAfterXferLosses(Float64 loss)
+{
+   m_AfterXferLosses = loss;
+}
+
 void SpecLibraryEntry::SetShippingTime(Float64 time)
 {
    m_ShippingTime = time;
@@ -5040,6 +5079,81 @@ void SpecLibraryEntry::SetShippingTime(Float64 time)
 Float64 SpecLibraryEntry::GetShippingTime() const
 {
    return m_ShippingTime;
+}
+
+Float64 SpecLibraryEntry::GetBeforeTempStrandRemovalLosses() const
+{
+   return m_BeforeTempStrandRemovalLosses;
+}
+
+void SpecLibraryEntry::SetBeforeTempStrandRemovalLosses(Float64 loss)
+{
+   m_BeforeTempStrandRemovalLosses = loss;
+}
+
+Float64 SpecLibraryEntry::GetAfterTempStrandRemovalLosses() const
+{
+   return m_AfterTempStrandRemovalLosses;
+}
+
+void SpecLibraryEntry::SetAfterTempStrandRemovalLosses(Float64 loss)
+{
+   m_AfterTempStrandRemovalLosses = loss;
+}
+
+Float64 SpecLibraryEntry::GetAfterDeckPlacementLosses() const
+{
+   return m_AfterDeckPlacementLosses;
+}
+
+void SpecLibraryEntry::SetAfterDeckPlacementLosses(Float64 loss)
+{
+   m_AfterDeckPlacementLosses = loss;
+}
+
+Float64 SpecLibraryEntry::GetAfterSIDLLosses() const
+{
+   return m_AfterSIDLLosses;
+}
+
+void SpecLibraryEntry::SetAfterSIDLLosses(Float64 loss)
+{
+   m_AfterSIDLLosses = loss;
+}
+
+bool SpecLibraryEntry::UpdatePTParameters() const
+{
+   return m_bUpdatePTParameters;
+}
+
+Float64 SpecLibraryEntry::GetAnchorSet() const
+{
+   return m_Dset;
+}
+
+void SpecLibraryEntry::SetAnchorSet(Float64 dset)
+{
+   m_Dset = dset;
+}
+
+Float64 SpecLibraryEntry::GetWobbleFrictionCoefficient() const
+{
+   return m_WobbleFriction;
+}
+
+void SpecLibraryEntry::SetWobbleFrictionCoefficient(Float64 K)
+{
+   m_WobbleFriction = K;
+}
+
+Float64 SpecLibraryEntry::GetFrictionCoefficient() const
+{
+   return m_FrictionCoefficient;
+}
+
+void SpecLibraryEntry::SetFrictionCoefficient(Float64 u)
+{
+   m_FrictionCoefficient = u;
 }
 
 Float64 SpecLibraryEntry::GetSlabElasticGain() const
@@ -5373,6 +5487,47 @@ void SpecLibraryEntry::SetDoCheckStirrupSpacingCompatibility(bool doCheck)
 bool SpecLibraryEntry::GetDoCheckStirrupSpacingCompatibility() const
 {
    return m_DoCheckStirrupSpacingCompatibility;
+}
+
+bool SpecLibraryEntry::UpdateLoadFactors() const
+{
+   return m_bUpdateLoadFactors;
+}
+
+void SpecLibraryEntry::GetDCLoadFactors(pgsTypes::LimitState ls,Float64* pDCmin,Float64* pDCmax) const
+{
+   *pDCmin = m_DCmin[ls];
+   *pDCmax = m_DCmax[ls];
+}
+
+void SpecLibraryEntry::GetDWLoadFactors(pgsTypes::LimitState ls,Float64* pDWmin,Float64* pDWmax) const
+{
+   *pDWmin = m_DWmin[ls];
+   *pDWmax = m_DWmax[ls];
+}
+
+void SpecLibraryEntry::GetLLIMLoadFactors(pgsTypes::LimitState ls,Float64* pLLIMmin,Float64* pLLIMmax) const
+{
+   *pLLIMmin = m_LLIMmin[ls];
+   *pLLIMmax = m_LLIMmax[ls];
+}
+
+void SpecLibraryEntry::SetDCLoadFactors(pgsTypes::LimitState ls,Float64 DCmin,Float64 DCmax)
+{
+   m_DCmin[ls] = DCmin;
+   m_DCmax[ls] = DCmax;
+}
+
+void SpecLibraryEntry::SetDWLoadFactors(pgsTypes::LimitState ls,Float64 DWmin,Float64 DWmax)
+{
+   m_DWmin[ls] = DWmin;
+   m_DWmax[ls] = DWmax;
+}
+
+void SpecLibraryEntry::SetLLIMLoadFactors(pgsTypes::LimitState ls,Float64 LLIMmin,Float64 LLIMmax)
+{
+   m_LLIMmin[ls] = LLIMmin;
+   m_LLIMmax[ls] = LLIMmax;
 }
 
 void SpecLibraryEntry::EnableSlabOffsetCheck(bool enable)
@@ -5995,8 +6150,21 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_LossMethod                 = rOther.m_LossMethod;
    m_TimeDependentModel         = rOther.m_TimeDependentModel;
+   m_FinalLosses                = rOther.m_FinalLosses;
    m_ShippingLosses             = rOther.m_ShippingLosses;
+   m_BeforeXferLosses           = rOther.m_BeforeXferLosses;
+   m_AfterXferLosses            = rOther.m_AfterXferLosses;
+   m_LiftingLosses              = rOther.m_LiftingLosses;
    m_ShippingTime               = rOther.m_ShippingTime;
+   m_BeforeTempStrandRemovalLosses = rOther.m_BeforeTempStrandRemovalLosses;
+   m_AfterTempStrandRemovalLosses  = rOther.m_AfterTempStrandRemovalLosses;
+   m_AfterDeckPlacementLosses      = rOther.m_AfterDeckPlacementLosses;
+   m_AfterSIDLLosses               = rOther.m_AfterSIDLLosses;
+
+   m_bUpdatePTParameters = rOther.m_bUpdatePTParameters;
+   m_Dset = rOther.m_Dset;
+   m_WobbleFriction = rOther.m_WobbleFriction;
+   m_FrictionCoefficient = rOther.m_FrictionCoefficient;
 
    m_SlabElasticGain          = rOther.m_SlabElasticGain;
    m_SlabPadElasticGain       = rOther.m_SlabPadElasticGain;
@@ -6060,6 +6228,17 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
    m_bCheckSag = rOther.m_bCheckSag;
    m_SagCamberType = rOther.m_SagCamberType;
+
+   m_bUpdateLoadFactors = rOther.m_bUpdateLoadFactors;
+   for ( int i = 0; i < 6; i++ )
+   {
+      m_DCmin[i]   = rOther.m_DCmin[i];
+      m_DWmin[i]   = rOther.m_DWmin[i];
+      m_LLIMmin[i] = rOther.m_LLIMmin[i];
+      m_DCmax[i]   = rOther.m_DCmax[i];
+      m_DWmax[i]   = rOther.m_DWmax[i];
+      m_LLIMmax[i] = rOther.m_LLIMmax[i];
+   }
 
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;

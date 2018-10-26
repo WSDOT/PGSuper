@@ -175,141 +175,100 @@ CAnalysisAgentImp::CamberModelData CAnalysisAgentImp::GetPrestressDeflectionMode
    return (*found).second;
 }
 
-Float64 g_Ls;
-bool RemoveOffSegmentPOI(const pgsPointOfInterest& poi)
+std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,pgsTypes::StrandType strandType,bool bTempStrandInstallation)
 {
-   return !::InRange(0.0,poi.GetDistFromStart(),g_Ls);
-}
+   std::vector<EquivPretensionLoad> equivLoads;
 
-void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,CamberModelData* pModelData)
-{
-#pragma Reminder("UPDATE: IS THIS CODE NEEDED? THIS DUPLICATES SEGMENT MODEL MANAGER")
-   Float64 Ms;  // Concentrated moments at straight strand debond location
+   Float64 Ms;    // Concentrated moments at straight strand debond location
    Float64 Msl;   // Concentrated moments at straight strand bond locations (left)
    Float64 Msr;   // Concentrated moments at straight strand bond locations (right)
    Float64 Mhl;   // Concentrated moments at ends of beam for eccentric prestress forces from harped strands (left)
    Float64 Mhr;   // Concentrated moments at ends of beam for eccentric prestress forces from harped strands (right)
-   Float64 Nl;   // Vertical loads at left harping point
-   Float64 Nr;   // Vertical loads at right harping point
-   Float64 Ps;   // Force in straight strands (varies with location due to debonding)
-   Float64 Ph;   // Force in harped strands
+   Float64 Mtl;   // Concentrated moments at temporary straight strand bond locations (left)
+   Float64 Mtr;   // Concentrated moments at temporary straight strand bond locations (right)
+   Float64 Nl;    // Vertical loads at left harping point
+   Float64 Nr;    // Vertical loads at right harping point
+   Float64 Ps;    // Force in straight strands (varies with location due to debonding)
+   Float64 PsStart;  // Force in straight strands (varies with location due to debonding)
+   Float64 PsEnd;    // Force in straight strands (varies with location due to debonding)
+   Float64 Ph;    // Force in harped strands
+   Float64 Pt;    // Force in temporary strands
    Float64 ecc_harped_start; // Eccentricity of harped strands at end of girder
-   Float64 ecc_harped_end; // Eccentricity of harped strands at end of girder
+   Float64 ecc_harped_end;  // Eccentricity of harped strands at end of girder
    Float64 ecc_harped_hp1;  // Eccentricity of harped strand at harping point (left)
    Float64 ecc_harped_hp2;  // Eccentricity of harped strand at harping point (right)
-   Float64 ecc_straight_start;   // Eccentricity of straight strands (left)
-   Float64 ecc_straight_end;   // Eccentricity of straight strands (right)
-   Float64 ecc_straight_debond;   // Eccentricity of straight strands (location varies)
+   Float64 ecc_straight_start;  // Eccentricity of straight strands (left)
+   Float64 ecc_straight_end;    // Eccentricity of straight strands (right)
+   Float64 ecc_straight_debond; // Eccentricity of straight strands (location varies)
+   Float64 ecc_temporary_start; // Eccentricity of temporary strands (left)
+   Float64 ecc_temporary_end;   // Eccentricity of temporary strands (right)
    Float64 hp1; // Location of left harping point
    Float64 hp2; // Location of right harping point
-   Float64 Lg;  // Length of girder
+   Float64 Ls;  // Length of segment
 
    // These are the interfaces we will be using
-   GET_IFACE(IPretensionForce,pPrestressForce);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE_NOCHECK(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPointOfInterest,pIPoi);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IMaterials,pMaterial);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   Float64 E;
+
+   Ls = pBridge->GetSegmentLength(segmentKey);
+
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L | POI_5L | POI_10L) );
+   ATLASSERT( vPoi.size() == 3 );
+   pgsPointOfInterest poiStart(vPoi[0]);
+   pgsPointOfInterest poiMiddle(vPoi[1]);
+   pgsPointOfInterest poiEnd(vPoi[2]);
+
+#if defined _DEBUG
+   ATLASSERT( poiMiddle.IsMidSpan(POI_RELEASED_SEGMENT) == true );
+#endif
+
+   StrandIndexType Ns, Nh, Nt;
    if ( bUseConfig )
    {
-      if ( config.bUserEci )
-      {
-         E = config.Eci;
-      }
-      else
-      {
-         E = pMaterial->GetEconc(config.Fci,pMaterial->GetSegmentStrengthDensity(segmentKey),pMaterial->GetSegmentEccK1(segmentKey),pMaterial->GetSegmentEccK2(segmentKey));
-      }
+      Ns = config.PrestressConfig.GetStrandCount(pgsTypes::Straight);
+      Nh = config.PrestressConfig.GetStrandCount(pgsTypes::Harped);
+      Nt = config.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
    }
    else
    {
-      E = pMaterial->GetSegmentEc(segmentKey,releaseIntervalIdx);
+      Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+      Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+      Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
    }
 
-   //
-   // Create the FEM model (includes girder dead load)
-   //
-   Lg = pBridge->GetSegmentLength(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(segmentKey) );
-   g_Ls = Lg;
-   vPOI.erase(std::remove_if(vPOI.begin(),vPOI.end(),RemoveOffSegmentPOI),vPOI.end());
-
-   GET_IFACE(ISegmentLiftingPointsOfInterest,pLiftPOI);
-   std::vector<pgsPointOfInterest> liftingPOI( pLiftPOI->GetLiftingPointsOfInterest(segmentKey,0) );
-
-   GET_IFACE(ISegmentHaulingPointsOfInterest,pHaulPOI);
-   std::vector<pgsPointOfInterest> haulingPOI( pHaulPOI->GetHaulingPointsOfInterest(segmentKey,0) );
-
-   vPOI.insert(vPOI.end(),liftingPOI.begin(),liftingPOI.end());
-   vPOI.insert(vPOI.end(),haulingPOI.begin(),haulingPOI.end());
-   std::sort(vPOI.begin(),vPOI.end());
-
-   vPOI.erase(std::unique(vPOI.begin(),vPOI.end()), vPOI.end() );
-
-   pgsGirderModelFactory().CreateGirderModel(m_pBroker,releaseIntervalIdx,segmentKey,0.0,Lg,E,g_lcidGirder,false,vPOI,&pModelData->Model,&pModelData->PoiMap);
-
-   //
-   // Apply the loads due to prestressing (use prestress force at mid-span)
-   //
-
-   CComPtr<IFem2dLoadingCollection> loadings;
-   CComPtr<IFem2dLoading> loading;
-   pModelData->Model->get_Loadings(&loadings);
-
-   loadings->Create(g_lcidHarpedStrand,&loading);
-
-   CComPtr<IFem2dPointLoadCollection> pointLoads;
-   loading->get_PointLoads(&pointLoads);
-   LoadIDType ptLoadID;
-   pointLoads->get_Count((CollectionIndexType*)&ptLoadID);
-
-   vPOI = pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L,POIFIND_AND);
-   ATLASSERT( vPOI.size() == 1 );
-   pgsPointOfInterest mid_span_poi( vPOI.front() );
-
-#if defined _DEBUG
-   ATLASSERT( mid_span_poi.IsMidSpan(POI_ERECTED_SEGMENT) == true );
-#endif
-
-   pgsPointOfInterest poiStart(segmentKey,0.0);
-   pgsPointOfInterest poiEnd(segmentKey,Lg);
-
-
-   // Start with harped strands because they are easiest (assume no debonding)
-   hp1 = 0;
-   hp2 = 0;
-   Nl = 0;
-   Nr = 0;
-   Mhl = 0;
-   Mhr = 0;
-
-
-   StrandIndexType Nh = (bUseConfig ? config.PrestressConfig.GetStrandCount(pgsTypes::Harped) : pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped));
-   if ( 0 < Nh )
+   if ( strandType == pgsTypes::Harped && 0 < Nh )
    {
+      hp1 = 0;
+      hp2 = 0;
+      Nl  = 0;
+      Nr  = 0;
+      Mhl = 0;
+      Mhr = 0;
+
       // Determine the prestress force
+      GET_IFACE(IPretensionForce,pPrestressForce);
       if ( bUseConfig )
       {
-         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End,config);
+         Ph = pPrestressForce->GetPrestressForce(poiMiddle,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End,config);
       }
       else
       {
-         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End);
+         Ph = pPrestressForce->GetPrestressForce(poiMiddle,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End);
       }
 
       // get harping point locations
-      vPOI.clear(); // recycle the vector
-      vPOI = pIPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
-      ATLASSERT( 0 <= vPOI.size() && vPOI.size() < 3 );
+      vPoi.clear(); // recycle the vector
+      vPoi = pIPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
+      ATLASSERT( 0 <= vPoi.size() && vPoi.size() < 3 );
       pgsPointOfInterest hp1_poi;
       pgsPointOfInterest hp2_poi;
-      if ( vPOI.size() == 0 )
+      if ( vPoi.size() == 0 )
       {
          hp1_poi.SetSegmentKey(segmentKey);
          hp1_poi.SetDistFromStart(0.0);
@@ -318,9 +277,9 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
          hp1 = hp1_poi.GetDistFromStart();
          hp2 = hp2_poi.GetDistFromStart();
       }
-      else if ( vPOI.size() == 1 )
+      else if ( vPoi.size() == 1 )
       { 
-         std::vector<pgsPointOfInterest>::const_iterator iter( vPOI.begin() );
+         std::vector<pgsPointOfInterest>::const_iterator iter( vPoi.begin() );
          hp1_poi = *iter++;
          hp2_poi = hp1_poi;
          hp1 = hp1_poi.GetDistFromStart();
@@ -328,7 +287,7 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
       }
       else
       {
-         std::vector<pgsPointOfInterest>::const_iterator iter( vPOI.begin() );
+         std::vector<pgsPointOfInterest>::const_iterator iter( vPoi.begin() );
          hp1_poi = *iter++;
          hp2_poi = *iter++;
          hp1 = hp1_poi.GetDistFromStart();
@@ -358,8 +317,8 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
       // Determine equivalent loads
 
       // moment
-      Mhr = Ph*ecc_harped_start;
-      Mhl = Ph*ecc_harped_end;
+      Mhl = Ph*ecc_harped_start;
+      Mhr = Ph*ecc_harped_end;
 
       // upward force
       Float64 e_prime_start, e_prime_end;
@@ -370,189 +329,367 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
       e_prime_end = IsZero(e_prime_end) ? 0 : e_prime_end;
 
       Nl = IsZero(hp1)    ? 0 : Ph*e_prime_start/hp1;
-      Nr = IsZero(Lg-hp2) ? 0 : Ph*e_prime_end/(Lg-hp2);
+      Nr = IsZero(Ls-hp2) ? 0 : Ph*e_prime_end/(Ls-hp2);
+
+      EquivPretensionLoad startMoment;
+      startMoment.Xs = 0;
+      startMoment.P  = Ph;
+      startMoment.N  = 0;
+      startMoment.M  = Mhl;
+
+      EquivPretensionLoad leftHpLoad;
+      leftHpLoad.Xs = hp1;
+      leftHpLoad.P  = 0;
+      leftHpLoad.N  = Nl;
+      leftHpLoad.M  = 0;
+
+      EquivPretensionLoad rightHpLoad;
+      rightHpLoad.Xs = hp2;
+      rightHpLoad.P  = 0;
+      rightHpLoad.N  = Nr;
+      rightHpLoad.M  = 0;
+
+      EquivPretensionLoad endMoment;
+      endMoment.Xs = Ls;
+      endMoment.P = -Ph;
+      endMoment.N = 0;
+      endMoment.M = -Mhr;
+
+      equivLoads.push_back(startMoment);
+      equivLoads.push_back(leftHpLoad);
+      equivLoads.push_back(rightHpLoad);
+      equivLoads.push_back(endMoment);
    }
-
-   // add loads to the model
-   CComPtr<IFem2dPointLoad> ptLoad;
-   MemberIDType mbrID;
-   Float64 x;
-   pgsGirderModelFactory::FindMember(pModelData->Model,0.00,&mbrID,&x);
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,Mhl,lotGlobal,&ptLoad);
-
-   pgsGirderModelFactory::FindMember(pModelData->Model,Lg,&mbrID,&x);
-   ptLoad.Release();
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,-Mhr,lotGlobal,&ptLoad);
-
-   pgsGirderModelFactory::FindMember(pModelData->Model,hp1,&mbrID,&x);
-   ptLoad.Release();
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,Nl,0.00,lotGlobal,&ptLoad);
-
-   pgsGirderModelFactory::FindMember(pModelData->Model,hp2,&mbrID,&x);
-   ptLoad.Release();
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,Nr,0.00,lotGlobal,&ptLoad);
-
-   //
-   // Add the effects of the straight strands
-   //
-   loading.Release();
-   pointLoads.Release();
-
-   loadings->Create(g_lcidStraightStrand,&loading);
-   loading->get_PointLoads(&pointLoads);
-   pointLoads->get_Count((CollectionIndexType*)&ptLoadID);
-
-   // start with the ends of the girder
-
-   // the prestress force varies over the length of the girder.. use the mid-span value as an average
-   Float64 nSsEffective;
-   if ( bUseConfig )
+   else if ( strandType == pgsTypes::Straight && 0 < Ns )
    {
-      ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, config, pgsTypes::Straight, &nSsEffective);
-      ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   config, pgsTypes::Straight, &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
+      GET_IFACE(IPretensionForce,pPrestressForce);
 
-      StrandIndexType Ns = config.PrestressConfig.GetStrandCount(pgsTypes::Straight);
-      if ( Ns != 0 )
+      Float64 nSsEffective;
+      if ( bUseConfig )
       {
-         Ps *= nSsEffective/Ns;
+         Float64 Ps = pPrestressForce->GetPrestressForce(poiMiddle,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
+         ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, config, pgsTypes::Straight, &nSsEffective);
+         PsStart = Ps*nSsEffective/Ns;
+
+         ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   config, pgsTypes::Straight, &nSsEffective);
+         PsEnd = Ps*nSsEffective/Ns;
       }
-   }
-   else
-   {
-      StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-      ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Straight, &nSsEffective);
-      ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Straight, &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End);
-      if ( Ns != 0 )
+      else
       {
-         Ps *= nSsEffective/Ns;
-      }
-   }
-   Msl = Ps*ecc_straight_start;
-   Msr = Ps*ecc_straight_end;
+         Ps = pPrestressForce->GetPrestressForce(poiMiddle,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End);
 
-   pgsGirderModelFactory::FindMember(pModelData->Model,0.00,&mbrID,&x);
-   ptLoad.Release();
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,Msl,lotGlobal,&ptLoad);
+         ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Straight, &nSsEffective);
+         PsStart = Ps*nSsEffective/Ns;
 
-   pgsGirderModelFactory::FindMember(pModelData->Model,Lg,&mbrID,&x);
-   ptLoad.Release();
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,-Msr,lotGlobal,&ptLoad);
-
-   // now do it at the debond sections
-   if ( bUseConfig )
-   {
-      // use tool to extract section data
-      CDebondSectionCalculator dbcomp(config.PrestressConfig.Debond[pgsTypes::Straight], Lg);
-
-      // left end first
-      Float64 sign = 1;
-      SectionIndexType nSections = dbcomp.GetNumLeftSections();
-      SectionIndexType sectionIdx = 0;
-      for ( sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
-      {
-         StrandIndexType nDebondedAtSection;
-         Float64 location;
-         dbcomp.GetLeftSectionInfo(sectionIdx,&location,&nDebondedAtSection);
-
-         // nDebonded is to be interpreted as the number of strands that become bonded at this section
-         // (ok, not at this section but lt past this section)
-         Float64 nSsEffective;
-
-         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
-         ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location),config, pgsTypes::Straight, &nSsEffective);
-
-         Ms = sign*Ps*ecc_straight_debond;
-
-         pgsGirderModelFactory::FindMember(pModelData->Model,location,&mbrID,&x);
-         ptLoad.Release();
-         pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,Ms,lotGlobal,&ptLoad);
+         ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Straight, &nSsEffective);
+         PsEnd = Ps*nSsEffective/Ns;
       }
 
-      // right end 
-      sign = -1;
-      nSections = dbcomp.GetNumRightSections();
-      for ( sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+      Msl = PsStart*ecc_straight_start;
+      Msr = PsEnd*ecc_straight_end;
+
+      EquivPretensionLoad startMoment;
+      startMoment.Xs = 0;
+      startMoment.P  = PsStart;
+      startMoment.N  = 0;
+      startMoment.M  = Msl;
+
+      equivLoads.push_back(startMoment);
+
+      EquivPretensionLoad endMoment;
+      endMoment.Xs = Ls;
+      endMoment.P  = -PsEnd;
+      endMoment.N  = 0;
+      endMoment.M  = -Msr;
+
+      equivLoads.push_back(endMoment);
+
+      // debonding
+      if ( bUseConfig )
       {
-         StrandIndexType nDebondedAtSection;
-         Float64 location;
-         dbcomp.GetRightSectionInfo(sectionIdx,&location,&nDebondedAtSection);
+         // use tool to extract section data
+         CDebondSectionCalculator dbcomp(config.PrestressConfig.Debond[pgsTypes::Straight], Ls);
 
-         Float64 nSsEffective;
-
-         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
-         ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location),config, pgsTypes::Straight, &nSsEffective);
-
-         Ms = sign*Ps*ecc_straight_debond;
-
-         pgsGirderModelFactory::FindMember(pModelData->Model,location,&mbrID,&x);
-         ptLoad.Release();
-         pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,Ms,lotGlobal,&ptLoad);
-      }
-
-   }
-   else
-   {
-      for (int iside=0; iside<2; iside++)
-      {
-         // left end first, right second
-         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)iside;
-         Float64 sign = (iside==0)?  1 : -1;
-         StrandIndexType nSections = pStrandGeom->GetNumDebondSections(segmentKey,endType,pgsTypes::Straight);
-         for ( Uint16 sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+         // left end first
+         Float64 sign = 1;
+         SectionIndexType nSections = dbcomp.GetNumLeftSections();
+         SectionIndexType sectionIdx = 0;
+         for ( sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
          {
-            Float64 location = pStrandGeom->GetDebondSection(segmentKey,endType,sectionIdx,pgsTypes::Straight);
-            if ( location < 0 || Lg < location )
-            {
-               continue; // bond occurs after the end of the girder... skip this one
-            }
+            StrandIndexType nDebondedAtSection;
+            Float64 location;
+            dbcomp.GetLeftSectionInfo(sectionIdx,&location,&nDebondedAtSection);
 
-            StrandIndexType nDebondedAtSection = pStrandGeom->GetNumDebondedStrandsAtSection(segmentKey,endType,sectionIdx,pgsTypes::Straight);
-
-            // nDebonded is to be interperted as the number of strands that become bonded at this section
+            // nDebonded is to be interpreted as the number of strands that become bonded at this section
             // (ok, not at this section but lt past this section)
             Float64 nSsEffective;
 
-            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End);
-            ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location), pgsTypes::Straight, &nSsEffective);
+            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(poiMiddle,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
+            ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location),config, pgsTypes::Straight, &nSsEffective);
 
             Ms = sign*Ps*ecc_straight_debond;
 
-            pgsGirderModelFactory::FindMember(pModelData->Model,location,&mbrID,&x);
-            ptLoad.Release();
-            pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,Ms,lotGlobal,&ptLoad);
+            EquivPretensionLoad leftEndMoment;
+            leftEndMoment.Xs = location;
+            leftEndMoment.P  = Ps;
+            leftEndMoment.N  = 0;
+            leftEndMoment.M  = Ms;
+
+            equivLoads.push_back(leftEndMoment);
+         }
+
+         // right end 
+         sign = -1;
+         nSections = dbcomp.GetNumRightSections();
+         for ( sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+         {
+            StrandIndexType nDebondedAtSection;
+            Float64 location;
+            dbcomp.GetRightSectionInfo(sectionIdx,&location,&nDebondedAtSection);
+
+            Float64 nSsEffective;
+
+            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(poiMiddle,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
+            ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location),config, pgsTypes::Straight, &nSsEffective);
+
+            Ms = sign*Ps*ecc_straight_debond;
+
+            EquivPretensionLoad rightEndMoment;
+            rightEndMoment.Xs = location;
+            rightEndMoment.P  = Ps;
+            rightEndMoment.N  = 0;
+            rightEndMoment.M  = Ms;
+
+            equivLoads.push_back(rightEndMoment);
+         }
+
+      }
+      else
+      {
+         for (int end = 0; end < 2; end++)
+         {
+            // left end first, right second
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)end;
+            Float64 sign = (end == 0 ?  1 : -1);
+            IndexType nSections = pStrandGeom->GetNumDebondSections(segmentKey,endType,pgsTypes::Straight);
+            for ( IndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+            {
+               Float64 location = pStrandGeom->GetDebondSection(segmentKey,endType,sectionIdx,pgsTypes::Straight);
+               if ( location < 0 || Ls < location )
+               {
+                  continue; // bond occurs after the end of the segment... skip this one
+               }
+
+               StrandIndexType nDebondedAtSection = pStrandGeom->GetNumDebondedStrandsAtSection(segmentKey,endType,sectionIdx,pgsTypes::Straight);
+
+               // nDebonded is to be interperted as the number of strands that start to become bonded at this section
+               // (full bonding occurs at lt past this section)
+               Float64 PsDebond = nDebondedAtSection*Ps/Ns;
+
+               // using actual poi is faster than using one created on the fly
+               pgsPointOfInterest poi = pIPoi->GetPointOfInterest(segmentKey,location); // there should be a poi at the debond point...
+               ATLASSERT(poi.GetID() != INVALID_ID);
+               ATLASSERT(poi.HasAttribute(POI_DEBOND));
+
+               Float64 nSsEffective;
+               ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &nSsEffective);
+
+               Ms = PsDebond*ecc_straight_debond;
+
+               EquivPretensionLoad debondLocationLoad;
+               debondLocationLoad.Xs = location;
+               debondLocationLoad.P  = sign*PsDebond;
+               debondLocationLoad.N  = 0;
+               debondLocationLoad.M  = sign*Ms;
+
+               equivLoads.push_back(debondLocationLoad);
+            }
          }
       }
    }
+   else if ( strandType == pgsTypes::Temporary && 0 < Nt )
+   {
+      GET_IFACE(IPretensionForce,pPrestressForce);
+
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType tsIntervalIdx;
+      pgsTypes::IntervalTimeType time;
+      if ( bTempStrandInstallation )
+      {
+         tsIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+         time = pgsTypes::End;
+      }
+      else
+      {
+         tsIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+         time = pgsTypes::Start;
+      }
+      ATLASSERT(tsIntervalIdx != INVALID_INDEX);
+
+      GET_IFACE(ISegmentData,pSegmentData);
+      const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+
+      pgsTypes::TTSUsage tempStrandUsage = (bUseConfig ? config.PrestressConfig.TempStrandUsage : pStrands->GetTemporaryStrandUsage());
+
+      Float64 nTsEffective;
+      if ( bUseConfig )
+      {
+         Pt = pPrestressForce->GetPrestressForce(poiMiddle,pgsTypes::Temporary,tsIntervalIdx,time,config);
+         ecc_temporary_start = pStrandGeom->GetEccentricity(releaseIntervalIdx,poiStart, config, pgsTypes::Temporary, &nTsEffective);
+         ecc_temporary_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx,poiEnd,   config, pgsTypes::Temporary, &nTsEffective);
+      }
+      else
+      {
+         Pt = pPrestressForce->GetPrestressForce(poiMiddle,pgsTypes::Temporary,tsIntervalIdx,time);
+         ecc_temporary_start = pStrandGeom->GetEccentricity(releaseIntervalIdx,poiStart,pgsTypes::Temporary, &nTsEffective);
+         ecc_temporary_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx,poiEnd,  pgsTypes::Temporary, &nTsEffective);
+      }
+
+      if ( !bTempStrandInstallation )
+      {
+         // temp strands are being removed so the force is in the opposite direction
+         Pt *= -1.0;
+      }
+
+      Pt *= nTsEffective/Nt;
+
+      Mtl = Pt*ecc_temporary_start;
+      Mtr = Pt*ecc_temporary_end;
+
+      EquivPretensionLoad startMoment;
+      startMoment.Xs = 0;
+      startMoment.P  = Pt;
+      startMoment.N  = 0;
+      startMoment.M  = Mtl;
+      equivLoads.push_back(startMoment);
+
+      EquivPretensionLoad endMoment;
+      endMoment.Xs = Ls;
+      endMoment.P  = -Pt;
+      endMoment.N  = 0;
+      endMoment.M  = -Mtr;
+
+      equivLoads.push_back(endMoment);
+   }
+   else
+   {
+      ATLASSERT(strandType != pgsTypes::Permanent); // can't be permanent
+   }
+
+   return equivLoads;
 }
 
-void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,CamberModelData* pInitialModelData,CamberModelData* pReleaseModelData)
+Float64 g_Ls;
+bool RemoveOffSegmentPOI(const pgsPointOfInterest& poi)
 {
-   Float64 Mi;   // Concentrated moments at ends of beams for eccentric prestress forces
-   Float64 Mr;
-   Float64 Pti;  // Prestress force in temporary strands initially
-   Float64 Ptr;  // Prestress force in temporary strands when removed
-   Float64 ecc; // Eccentricity of the temporary strands
-   std::vector<pgsPointOfInterest> vPOI; // Vector of points of interest
+   return !::InRange(0.0,poi.GetDistFromStart(),g_Ls);
+}
+
+void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,CamberModelData* pModelData)
+{
+   Float64 Ls;  // Length of segment
 
    // These are the interfaces we will be using
-   GET_IFACE(IPretensionForce,pPrestressForce);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPointOfInterest,pIPoi);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IMaterials,pMaterial);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
-   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   if ( tsRemovalIntervalIdx == INVALID_INDEX )
+
+   Float64 E;
+   if ( bUseConfig )
    {
-      // there aren't any temporary strands so just fake it
-      tsRemovalIntervalIdx = erectSegmentIntervalIdx;
+      if ( config.bUserEci )
+      {
+         E = config.Eci;
+      }
+      else
+      {
+         E = pMaterial->GetEconc(config.Fci,pMaterial->GetSegmentStrengthDensity(segmentKey),pMaterial->GetSegmentEccK1(segmentKey),pMaterial->GetSegmentEccK2(segmentKey));
+      }
    }
+   else
+   {
+      E = pMaterial->GetSegmentEc(segmentKey,releaseIntervalIdx);
+   }
+
+   //
+   // Create the FEM model (includes girder dead load)
+   //
+   Ls = pBridge->GetSegmentLength(segmentKey);
+
+   std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(segmentKey) );
+   g_Ls = Ls;
+   vPOI.erase(std::remove_if(vPOI.begin(),vPOI.end(),RemoveOffSegmentPOI),vPOI.end());
+
+   GET_IFACE(ISegmentLiftingPointsOfInterest,pLiftPOI);
+   std::vector<pgsPointOfInterest> liftingPOI( pLiftPOI->GetLiftingPointsOfInterest(segmentKey,0) );
+
+   GET_IFACE(ISegmentHaulingPointsOfInterest,pHaulPOI);
+   std::vector<pgsPointOfInterest> haulingPOI( pHaulPOI->GetHaulingPointsOfInterest(segmentKey,0) );
+
+   vPOI.insert(vPOI.end(),liftingPOI.begin(),liftingPOI.end());
+   vPOI.insert(vPOI.end(),haulingPOI.begin(),haulingPOI.end());
+   std::sort(vPOI.begin(),vPOI.end());
+
+   vPOI.erase(std::unique(vPOI.begin(),vPOI.end()), vPOI.end() );
+
+   pgsGirderModelFactory().CreateGirderModel(m_pBroker,releaseIntervalIdx,segmentKey,0.0,Ls,E,g_lcidGirder,false,false,vPOI,&pModelData->Model,&pModelData->PoiMap);
+
+   CComPtr<IFem2dLoadingCollection> loadings;
+   pModelData->Model->get_Loadings(&loadings);
+
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      std::vector<EquivPretensionLoad> vLoads = GetEquivPretensionLoads(segmentKey,bUseConfig,config,strandType);
+
+      CComPtr<IFem2dLoading> loading;
+      CComPtr<IFem2dPointLoadCollection> pointLoads;
+
+      LoadCaseIDType lcid;
+      if ( strandType == pgsTypes::Straight )
+      {
+         lcid = g_lcidStraightStrand;
+      }
+      else if ( strandType == pgsTypes::Harped )
+      {
+         lcid = g_lcidHarpedStrand;
+      }
+
+      loadings->Create(lcid,&loading);
+      loading->get_PointLoads(&pointLoads);
+      LoadIDType ptLoadID;
+      pointLoads->get_Count((CollectionIndexType*)&ptLoadID);
+
+      std::vector<EquivPretensionLoad>::iterator iter(vLoads.begin());
+      std::vector<EquivPretensionLoad>::iterator iterEnd(vLoads.end());
+      for ( ; iter != iterEnd; iter++ )
+      {
+         EquivPretensionLoad& equivLoad = *iter;
+
+         CComPtr<IFem2dPointLoad> ptLoad;
+         MemberIDType mbrID;
+         Float64 x;
+         pgsGirderModelFactory::FindMember(pModelData->Model,equivLoad.Xs,&mbrID,&x);
+         pointLoads->Create(ptLoadID++,mbrID,x,equivLoad.P,equivLoad.N,equivLoad.M,lotGlobal,&ptLoad);
+      }
+   }
+}
+
+void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,CamberModelData* pInitialModelData,CamberModelData* pReleaseModelData)
+{
+   std::vector<pgsPointOfInterest> vPOI; // Vector of points of interest
+
+   // These are the interfaces we will be using
+   GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IMaterials,pMaterial);
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
    // Build models
    Float64 L;
@@ -582,7 +719,7 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool 
    }
    else
    {
-      Eci = pMaterial->GetSegmentEc(segmentKey,releaseIntervalIdx);
+      Eci = pMaterial->GetSegmentEc(segmentKey,tsInstallationIntervalIdx);
       Ec  = pMaterial->GetSegmentEc(segmentKey,tsRemovalIntervalIdx);
    }
 
@@ -600,39 +737,12 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool 
    std::sort(vPOI.begin(),vPOI.end());
    vPOI.erase(std::unique(vPOI.begin(),vPOI.end()), vPOI.end() );
 
-   pgsGirderModelFactory().CreateGirderModel(m_pBroker,releaseIntervalIdx,   segmentKey,0.0,L,Eci,g_lcidGirder,false,vPOI,&pInitialModelData->Model,&pInitialModelData->PoiMap);
-   pgsGirderModelFactory().CreateGirderModel(m_pBroker,tsRemovalIntervalIdx, segmentKey,0.0,L,Ec, g_lcidGirder,false,vPOI,&pReleaseModelData->Model,&pReleaseModelData->PoiMap);
+   pgsGirderModelFactory().CreateGirderModel(m_pBroker,tsInstallationIntervalIdx, segmentKey,0.0,L,Eci,g_lcidGirder,false,false,vPOI,&pInitialModelData->Model,&pInitialModelData->PoiMap);
+   pgsGirderModelFactory().CreateGirderModel(m_pBroker,tsRemovalIntervalIdx,      segmentKey,0.0,L,Ec, g_lcidGirder,false,false,vPOI,&pReleaseModelData->Model,&pReleaseModelData->PoiMap);
 
-   // Determine the prestress forces and eccentricities
-   vPOI = pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L);
-   ATLASSERT( vPOI.size() != 0 );
-   const pgsPointOfInterest& mid_span_poi = vPOI.front();
+   std::vector<EquivPretensionLoad> vInstallationLoads = GetEquivPretensionLoads(segmentKey,bUseConfig,config,pgsTypes::Temporary,true);
+   std::vector<EquivPretensionLoad> vRemovalLoads = GetEquivPretensionLoads(segmentKey,bUseConfig,config,pgsTypes::Temporary,false);
 
-   GET_IFACE(ISegmentData,pSegmentData);
-   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-
-   pgsTypes::TTSUsage tempStrandUsage = (bUseConfig ? config.PrestressConfig.TempStrandUsage : pStrands->GetTemporaryStrandUsage());
-   Float64 nTsEffective;
-
-   if ( bUseConfig )
-   {
-      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End,config);
-      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End,config);
-      ecc = pStrandGeom->GetEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0.00),config, pgsTypes::Temporary, &nTsEffective);
-   }
-   else
-   {
-      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End);
-      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End);
-      ecc = pStrandGeom->GetEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0.00), pgsTypes::Temporary, &nTsEffective);
-   }
-
-
-   // Determine equivalent loads
-   Mi = Pti*ecc;
-   Mr = Ptr*ecc;
-
-   // Apply loads to initial model
    CComPtr<IFem2dLoadingCollection> loadings;
    CComPtr<IFem2dLoading> loading;
    pInitialModelData->Model->get_Loadings(&loadings);
@@ -644,18 +754,16 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool 
    LoadIDType ptLoadID;
    pointLoads->get_Count((CollectionIndexType*)&ptLoadID);
 
-   CComPtr<IFem2dPointLoad> ptLoad;
-   MemberIDType mbrID;
-   Float64 x;
-   pgsGirderModelFactory::FindMember(pInitialModelData->Model,0.00,&mbrID,&x);
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,Mi,lotGlobal,&ptLoad);
+   BOOST_FOREACH(EquivPretensionLoad& equivLoad,vInstallationLoads)
+   {
+      CComPtr<IFem2dPointLoad> ptLoad;
+      MemberIDType mbrID;
+      Float64 x;
+      pgsGirderModelFactory::FindMember(pInitialModelData->Model,equivLoad.Xs,&mbrID,&x);
+      pointLoads->Create(ptLoadID++,mbrID,x,equivLoad.P,equivLoad.N,equivLoad.M,lotGlobal,&ptLoad);
+   }
 
-   pgsGirderModelFactory::FindMember(pInitialModelData->Model,L,&mbrID,&x);
-   ptLoad.Release();
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,-Mi,lotGlobal,&ptLoad);
 
-   // apply loads to the release model
-   ptLoadID = 0;
    loadings.Release();
    loading.Release();
    pReleaseModelData->Model->get_Loadings(&loadings);
@@ -666,13 +774,14 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool 
    loading->get_PointLoads(&pointLoads);
    pointLoads->get_Count((CollectionIndexType*)&ptLoadID);
 
-   pgsGirderModelFactory::FindMember(pReleaseModelData->Model,0.00,&mbrID,&x);
-   ptLoad.Release();
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00,-Mr,lotGlobal,&ptLoad);
-
-   pgsGirderModelFactory::FindMember(pReleaseModelData->Model,L,&mbrID,&x);
-   ptLoad.Release();
-   pointLoads->Create(ptLoadID++,mbrID,x,0.00,0.00, Mr,lotGlobal,&ptLoad);
+   BOOST_FOREACH(EquivPretensionLoad& equivLoad,vRemovalLoads)
+   {
+      CComPtr<IFem2dPointLoad> ptLoad;
+      MemberIDType mbrID;
+      Float64 x;
+      pgsGirderModelFactory::FindMember(pReleaseModelData->Model,equivLoad.Xs,&mbrID,&x);
+      pointLoads->Create(ptLoadID++,mbrID,x,equivLoad.P,equivLoad.N,equivLoad.M,lotGlobal,&ptLoad);
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -945,6 +1054,8 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,pgsTypes::Produc
    *pfBot = fBot[0];
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+// IProductLoads
 LPCTSTR CAnalysisAgentImp::GetProductLoadName(pgsTypes::ProductForceType pfType)
 {
    // these are the names that are displayed to the user in the UI and reports
@@ -1185,6 +1296,12 @@ void CAnalysisAgentImp::GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,st
    m_pGirderModelManager->GetGirderSelfWeightLoad(segmentKey,pDistLoad,pPointLoad);
 }
 
+std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,bool bTempStrandInstallation)
+{
+   GDRCONFIG dummy;
+   return GetEquivPretensionLoads(segmentKey,false,dummy,strandType,bTempStrandInstallation);
+}
+
 Float64 CAnalysisAgentImp::GetTrafficBarrierLoad(const CSegmentKey& segmentKey)
 {
    return m_pGirderModelManager->GetTrafficBarrierLoad(segmentKey);
@@ -1272,10 +1389,6 @@ void CAnalysisAgentImp::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderInde
 
 void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
 {
-#pragma Reminder("UPDATE: eliminate this method")
-   // Instead use GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
-   // and GetRotation(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
-
    // NOTE: This function assumes that deflection due to girder self-weight is the only loading
    // that goes into the camber calculations
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -1288,6 +1401,18 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    Float64 delta    = GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
    Float64 rotation = GetRotation(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
+
+#pragma Reminder("WORKING HERE - CAMBER - this isn't exactly the right way to do camber")
+   // we want (1+Y(release,deck))*Dstorage + (1+Y(storage,deck))*Dinc
+   // Update all the camber functions that call this.
+   // Also, need to figure why this gets called twice for each calculation and make it
+   // be called only once
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   Float64 d_inc = GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,poi,bat,rtIncremental,false);
+   Float64 r_inc = GetRotation(erectionIntervalIdx,pgsTypes::pftGirder,poi,bat,rtIncremental,false);
+
+   delta    += d_inc;
+   rotation += r_inc;
 
    *pDy = delta;
    *pRz = rotation;
@@ -1309,6 +1434,8 @@ Float64 CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest
 
 void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64* pDy,Float64* pRz)
 {
+#pragma Reminder("WORKING HERE - CAMBER - see changes in GetGirderDeflectionForCamber above")
+
    // this is the deflection during storage based on the concrete properties input by the user
    Float64 delta, rotation;
    GetGirderDeflectionForCamber(poi,&delta,&rotation);
@@ -1317,31 +1444,31 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
 
    // we need to adjust the deflections for the concrete properties in config
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
 
-   // get E used to compute delta and rotation
-   Float64 Eoriginal = pMaterial->GetSegmentEc(segmentKey,storageIntervalIdx);
+   // get Eci used to compute delta and rotation
+   Float64 Eci_original = pMaterial->GetSegmentEc(segmentKey,releaseIntervalIdx);
 
-   // get E for the concrete properties in the config object
-   Float64 Econfig;
+   // get Eci for the concrete properties in the config object
+   Float64 Eci_config;
    if ( config.bUserEci )
    {
-      Econfig = config.Eci;
+      Eci_config = config.Eci;
    }
    else
    {
-      Econfig = pMaterial->GetEconc(config.Fci,pMaterial->GetSegmentStrengthDensity(segmentKey),
-                                               pMaterial->GetSegmentEccK1(segmentKey),
-                                               pMaterial->GetSegmentEccK2(segmentKey));
+      Eci_config = pMaterial->GetEconc(config.Fci,pMaterial->GetSegmentStrengthDensity(segmentKey),
+                                                  pMaterial->GetSegmentEccK1(segmentKey),
+                                                  pMaterial->GetSegmentEccK2(segmentKey));
    }
 
    // adjust the deflections
    // deltaOriginal = K/Ix*Eoriginal
    // deltaConfig   = K/Ix*Econfig = (K/Ix*Eoriginal)(Eoriginal/Econfig) = deltaOriginal*(Eoriginal/Econfig)
-   delta    *= (Eoriginal/Econfig);
-   rotation *= (Eoriginal/Econfig);
+   delta    *= (Eci_original/Eci_config);
+   rotation *= (Eci_original/Eci_config);
 
    *pDy = delta;
    *pRz = rotation;
@@ -1826,11 +1953,6 @@ Float64 CAnalysisAgentImp::GetVehicleWeight(pgsTypes::LiveLoadType llType,Vehicl
    return m_pGirderModelManager->GetVehicleWeight(llType,vehicleIdx);
 }
 
-std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
-{
-   return m_pSegmentModelManager->GetEquivPretensionLoads(segmentKey,strandType);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // IProductForces2
 //
@@ -2200,20 +2322,6 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
          }
          else
          {
-   #pragma Reminder("UPDATE: this isn't the right deflection")
-            // there is a problem with deflection like pgsTypes::pftGirder. The deflection computed from
-            // the girder model manager is the deflection of the girder self weight using Ec. 
-            // However the deflection is set based on Eci and then only changes because of
-            // changing boundary conditions from release, lifting, storage, transportation, and
-            // finally erection.
-            //
-            // Look at the camber details for a PGSuper analysis. You'll see that for the support location
-            // being the same for release, storage, and erection, the girder self-weight
-            // deflections are different. The modulus changing over time will not change the deflection,
-            // however that is exactly what is happening in this analysis..
-            //
-            // The same issue occurs for rotations.
-
             deflections = m_pGirderModelManager->GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
          }
       }
@@ -4434,7 +4542,6 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx           = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType erectSegmentIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType tempStrandRemovalintervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castDeckIntervalIdx          = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx     = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType trafficBarrierIntervalIdx    = pIntervals->GetInstallRailingSystemInterval();
@@ -4632,7 +4739,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    *pMin = (IsZero(*pMin) ? 0 : *pMin);
 }
 
-std::vector<Float64> CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation stressLocation)
+std::vector<Float64> CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad)
 {
    std::vector<Float64> stresses;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -4641,7 +4748,7 @@ std::vector<Float64> CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,
    {
       const pgsPointOfInterest& poi = *iter;
 
-      Float64 stress = GetStress(intervalIdx,poi,stressLocation);
+      Float64 stress = GetStress(intervalIdx,poi,stressLocation,bIncludeLiveLoad);
       stresses.push_back(stress);
    }
 
@@ -5283,14 +5390,14 @@ void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, const 
 void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
 {
    // Screen camber is equal to and opposite the deflection caused by loads applied to the structure
-   // from just before deck casting to the bridge opening to traffic.
+   // from just before deck casting until the railing system is installed.
    pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(); // this is when the bridge is open for service
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
 
    Float64 DdeckCasting, D;
    GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,poi,bat,true,false,true,&DdeckCasting,&D);
@@ -5299,10 +5406,10 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,Float64* p
    GetRotation(castDeckIntervalIdx-1,pgsTypes::ServiceI,poi,bat,true,false,true,&RdeckCasting,&R);
 
    Float64 Dopen;
-   GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false,true,&Dopen,&D);
+   GetDeflection(railingSystemIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false,true,&Dopen,&D);
 
    Float64 Ropen;
-   GetRotation(liveLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false,true,&Ropen,&R);
+   GetRotation(railingSystemIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false,true,&Ropen,&R);
 
    GET_IFACE(IBridge,pBridge);
    if ( pBridge->IsFutureOverlay() )
@@ -5611,9 +5718,9 @@ Float64 CAnalysisAgentImp::GetLowerBoundCamberVariabilityFactor()const
 /////////////////////////////////////////////////////////////////////////////
 // IPretensionStresses
 //
-Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation)
+Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad)
 {
-   return m_pGirderModelManager->GetStress(intervalIdx,poi,stressLocation);
+   return m_pGirderModelManager->GetStress(intervalIdx,poi,stressLocation,bIncludeLiveLoad);
 }
 
 Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e)
@@ -5639,7 +5746,7 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,cons
    return GetStress(intervalIdx,poi,stressLocation,P,e);
 }
 
-Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,const GDRCONFIG& config)
+Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,const GDRCONFIG& config,bool bIncludeLiveLoad)
 {
    // Computes design-time stresses due to prestressing
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -5663,14 +5770,21 @@ Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsType
    }
    else
    {
-      P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,limitState,config);
+      if ( bIncludeLiveLoad )
+      {
+         P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,limitState,config);
+      }
+      else
+      {
+         P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType,config);
+      }
    }
 
    // NOTE: since we are doing design, the main bridge model may not have temporary strand removal
    // intervals. Use the deck casting interval as the break point for "before temporary strands are removed"
    // and "after temporary strands are removed"
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   bool bIncludeTemporaryStrands = intervalIdx < castDeckIntervalIdx ? true : false;
+   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   bool bIncludeTemporaryStrands = intervalIdx < tsRemovalIntervalIdx ? true : false;
    if ( bIncludeTemporaryStrands ) 
    {
       P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,timeType,config);
@@ -5786,9 +5900,7 @@ HRESULT CAnalysisAgentImp::OnLossParametersChanged()
 
 void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi,bool bRelativeToBearings,Float64* pDy,Float64* pRz)
 {
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   CamberModelData camber_model_data = GetPrestressDeflectionModel(segmentKey,m_PrestressDeflectionModels);
+   CamberModelData camber_model_data = GetPrestressDeflectionModel(poi.GetSegmentKey(),m_PrestressDeflectionModels);
 
    Float64 Dharped, Rharped;
    GetPrestressDeflection(poi,camber_model_data,g_lcidHarpedStrand,bRelativeToBearings,&Dharped,&Rharped);
@@ -6052,6 +6164,7 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP_TempStrands(const pgsPointOfInter
       GetGirderDeflectionForCamber(poi,&Dgirder,&Rgirder);
    }
 
+#pragma Reminder("WORKING HERE - CAMBER - need Dgirder and DgirderInc as well as associated creep coefficients")
    Float64 Ct1 = (bUseConfig ? GetCreepCoefficient(segmentKey,config,cpReleaseToDiaphragm,constructionRate)
                              : GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate));
 
@@ -6089,19 +6202,32 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP(const pgsPointOfInterest& poi,boo
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
 
-   Float64 Dharped, Rharped;
-   GetPrestressDeflection( poi, initModelData,     g_lcidHarpedStrand,    true, &Dharped, &Rharped);
+   Float64 Dps, Rps;
+   if ( bUseConfig )
+   {
+      Float64 Dharped, Rharped;
+      GetPrestressDeflection( poi, initModelData,     g_lcidHarpedStrand,    true, &Dharped, &Rharped);
 
-   Float64 Dstraight, Rstraight;
-   GetPrestressDeflection( poi, initModelData,     g_lcidStraightStrand,    true, &Dstraight, &Rstraight);
+      Float64 Dstraight, Rstraight;
+      GetPrestressDeflection( poi, initModelData,     g_lcidStraightStrand,    true, &Dstraight, &Rstraight);
 
-   Float64 Dps = Dharped + Dstraight;
-   Float64 Rps = Rharped + Rstraight;
+      Dps = Dharped + Dstraight;
+      Rps = Rharped + Rstraight;
+   }
+   else
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+      pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
+      Dps = GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,poi,bat,rtCumulative,false);
+      Rps = GetRotation(storageIntervalIdx,pgsTypes::pftPretension,poi,bat,rtCumulative,false);
+   }
 
    Float64 Ct1 = -999;
    Float64 Dgirder = -999;
    Float64 Rgirder = -999;
 
+#pragma Reminder("WORKING HERE - CAMBER - need Dgirder and DgirderInc as well as associated creep coefficients")
    if ( bUseConfig )
    {
       GetGirderDeflectionForCamber(poi,config,&Dgirder,&Rgirder);
@@ -6202,6 +6328,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
    if ( creepPeriod == cpReleaseToDiaphragm )
    {
       // Creep1
+#pragma Reminder("WORKING HERE - CAMBER - need Dgirder and DgirderInc as well as associated creep coefficients")
       Float64 Ct1 = (bUseConfig ? GetCreepCoefficient(segmentKey,config,cpReleaseToDiaphragm,constructionRate) 
                                 : GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate) );
 
@@ -6213,6 +6340,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
       // Creep2
       Float64 Ct1, Ct2, Ct3;
 
+#pragma Reminder("WORKING HERE - CAMBER - need Dgirder and DgirderInc as well as associated creep coefficients")
       if ( bUseConfig )
       {
          Ct1 = GetCreepCoefficient(segmentKey,config,cpReleaseToDiaphragm,constructionRate);
@@ -6234,6 +6362,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
       // Creep3
       Float64 Ct1, Ct2, Ct3, Ct4, Ct5;
 
+#pragma Reminder("WORKING HERE - CAMBER - need Dgirder and DgirderInc as well as associated creep coefficients")
       if ( bUseConfig )
       {
          Ct1 = GetCreepCoefficient(segmentKey,config,cpReleaseToDeck,      constructionRate);
@@ -6322,6 +6451,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
    if ( creepPeriod == cpReleaseToDiaphragm )
    {
       // Creep1
+#pragma Reminder("WORKING HERE - CAMBER - need Dgirder and DgirderInc as well as associated creep coefficients")
       Float64 Ct1 = (bUseConfig ? GetCreepCoefficient(segmentKey,config,cpReleaseToDiaphragm,constructionRate)
                                 : GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate) );
 
@@ -6333,6 +6463,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
       // Creep2
       Float64 Ct1, Ct2, Ct3;
 
+#pragma Reminder("WORKING HERE - CAMBER - need Dgirder and DgirderInc as well as associated creep coefficients")
       if ( bUseConfig )
       {
          Ct1 = GetCreepCoefficient(segmentKey,config,cpReleaseToDiaphragm,constructionRate);
@@ -6354,6 +6485,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
       // Creep3
       Float64 Ct1, Ct2, Ct3, Ct4, Ct5;
 
+#pragma Reminder("WORKING HERE - CAMBER - need Dgirder and DgirderInc as well as associated creep coefficients")
       if ( bUseConfig )
       {
          Ct1 = GetCreepCoefficient(segmentKey,config,cpReleaseToDeck,      constructionRate);
@@ -7781,7 +7913,7 @@ bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInteres
    }
 
    // The section is in tension, does the prestress cause compression?
-   Float64 fPreTension  = GetStress(serviceLoadIntervalIdx,poi,stressLocation);
+   Float64 fPreTension  = GetStress(serviceLoadIntervalIdx,poi,stressLocation,false/*don't include live load*/);
    Float64 fPostTension,fDummy;
    GetStress(serviceLoadIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPostTension,&fDummy);
    Float64 fPS = fPreTension + fPostTension;
@@ -7990,12 +8122,12 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    Float64 fPreTension, fPostTension;
    if ( pConfig )
    {
-      fPreTension = GetDesignStress(serviceLoadIntervalIdx,limitState,poi,stressLocation,*pConfig);
+      fPreTension = GetDesignStress(serviceLoadIntervalIdx,limitState,poi,stressLocation,*pConfig,false/*don't include live load*/);
       fPostTension = 0; // no post-tensioning for precast girder design
    }
    else
    {
-      fPreTension  = GetStress(serviceLoadIntervalIdx,poi,stressLocation);
+      fPreTension  = GetStress(serviceLoadIntervalIdx,poi,stressLocation,false/*don't include live load*/);
 
       Float64 fDummy;
       GetStress(serviceLoadIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPostTension,&fDummy);

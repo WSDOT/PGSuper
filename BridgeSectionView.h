@@ -113,6 +113,8 @@ protected:
 
    void DrawFocusRect();
 
+   void TrimSurface(IPoint2dCollection* pPoints,Float64 Xleft,Float64 Xright);
+
    CBridgeModelViewChildFrame* GetFrame();
 
    typedef std::map<CGirderKey,IDType> GirderIDCollection;

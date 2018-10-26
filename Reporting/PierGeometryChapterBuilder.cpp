@@ -182,7 +182,14 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
       CComBSTR bstrBearing;
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
-      (*pTable)(row,0) << _T("Pier ") << (Int32)(pierIdx+1);
+      if ( pPier->IsAbutment() )
+      {
+         (*pTable)(row,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
+      }
+      else
+      {
+         (*pTable)(row,0) << _T("Pier ") << LABEL_PIER(pierIdx);
+      }
 
       (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
       (*pTable)(row,2) << RPT_BEARING(OLE2T(bstrBearing));

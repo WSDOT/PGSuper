@@ -812,6 +812,19 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                var.vt = VT_I4;
                hr = pStrLoad->get_Property(_T("ColumnFixity"),&var);
                m_ColumnFixity = (pgsTypes::ColumnFixityType)var.lVal;
+
+               // NOTE: during the original implemention of v3 (PGSplice)
+               // I thought we could model the longitudinal base fixity of the pier
+               // as either fixed or pinned. This would give bounded results for
+               // flexable footing systems. However, it turns out that the bridge
+               // model is unstable before continuity is achieved if there is a
+               // pin at the base of the column. For this reason, the UI has been
+               // changed to allow only fixed columns and we are forcing the bridge
+               // model to use only fixed base columns as well.
+               if ( m_ColumnFixity == pgsTypes::cftPinned )
+               {
+                  m_ColumnFixity = pgsTypes::cftFixed;
+               }
             }
 
 

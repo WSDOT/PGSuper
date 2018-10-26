@@ -1,0 +1,30 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.40    6   7.02         S         1      1     W74MG    *    43   0.6  270  34.45  12.98                                              17  65.6  5.9  7.687  8.992   5.239    -6.949    13880   0.612  0.754   5.771 -2.216  0.000 -0.214 -2.430 216.00  503.36    8.20    8.50    8.50 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone check failed.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.40    6   7.02         S         1      2     W74MG    *    43   0.6  270  34.45  12.98                                              17  65.6  5.9  7.687  8.992   4.859    -6.466    14460   0.610  0.754   5.771 -2.330  0.000 -0.210 -2.540 216.00  503.36    8.20    8.50    8.50 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone check failed.
+Lifting checks failed
+Hauling checks failed
+
+

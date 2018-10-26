@@ -1577,18 +1577,30 @@
 #define IDC_SERVICE_I_PS                1861
 #define IDC_GIRDERTYPE_HYPERLINK        1861
 #define IDC_CHECK_YIELDING              1862
+#define IDC_TOP_COVER_LABEL             1862
 #define IDC_FY_LABEL                    1863
+#define IDC_BOTTOM_COVER_LABEL          1863
 #define IDC_FY                          1864
 #define IDC_SERVICE_III_PLUS            1864
+#define IDC_TOP_MAT_BAR_LABEL           1864
 #define IDC_SERVICE_III_CR_LABEL        1865
+#define IDC_BOTTOM_MAT_BAR_LABEL        1865
 #define IDC_SERVICE_III_SH_LABEL        1866
+#define IDC_TOP_MAT_BAR_AT              1866
 #define IDC_SERVICE_III_PS_LABEL        1867
+#define IDC_TOP_MAT_BAR_PLUS            1867
 #define IDC_FATIGUE_I_PLUS              1868
+#define IDC_BOTTOM_MAT_BAR_AT           1868
 #define IDC_FATIGUE_I_CR_LABEL          1869
+#define IDC_BOTTOM_MAT_BAR_PLUS         1869
 #define IDC_FATIGUE_I_SH_LABEL          1870
+#define IDC_PRIMARY_REBAR_GROUP         1870
 #define IDC_FATIGUE_I_PS_LABEL          1871
+#define IDC_SECONDARY_REBAR_GROUP       1871
 #define IDC_SERVICE_IA_PLUS             1872
+#define IDC_PRIMARY_REBAR_GROUP_LABEL   1872
 #define IDC_SERVICE_IA_CR_LABEL         1873
+#define IDC_SECONDARY_REBAR_GROUP_LABEL 1873
 #define IDC_SERVICE_IA_SH_LABEL         1874
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
@@ -1750,7 +1762,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        367
 #define _APS_NEXT_COMMAND_VALUE         36994
-#define _APS_NEXT_CONTROL_VALUE         1862
+#define _APS_NEXT_CONTROL_VALUE         1874
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

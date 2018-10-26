@@ -29,6 +29,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\BeamFactory.h>
+#include <WBFLGenericBridge.h>
 
 #include <PgsExt\BridgeDescription.h>
 
@@ -3301,6 +3302,205 @@ bool CBridgeDescription2::IsSegmentOverconstrained(const CSegmentKey& segmentKey
    }
 
    return false;
+}
+
+Float64 CBridgeDescription2::GetBridgeWidth() const
+{
+   const CDeckDescription2* pDeck = GetDeckDescription();
+
+   if ( pDeck->DeckType == pgsTypes::sdtNone || pDeck->DeckType == pgsTypes::sdtCompositeOverlay ) 
+   {
+      // there isn't a deck, estimate bridge width by adding the girder spacings
+      Float64 max_spacing_width = -DBL_MAX;
+
+      if ( ::IsBridgeSpacing(GetGirderSpacingType()) )
+      {
+         // the same spacing is used for the entire bridge
+         Float64 s = GetGirderSpacing();
+         if ( UseSameNumberOfGirdersInAllGroups() )
+         {
+            GirderIndexType nGirders = GetGirderCount();
+            
+            if ( UseSameGirderForEntireBridge() )
+            {
+               if ( ::IsAdjacentSpacing(GetGirderSpacingType()) )
+               {
+                  // beams are adjacent so spacing is actually a joint spacing...
+
+                  // get the width of the girder
+                  CComPtr<IBeamFactory> factory;
+                  m_pGirderLibraryEntry->GetBeamFactory(&factory);
+                  
+                  CComPtr<IGirderSection> gdrSection;
+                  factory->CreateGirderSection(NULL,INVALID_ID,m_pGirderLibraryEntry->GetDimensions(),-1,-1,&gdrSection);
+
+                  Float64 Wtf;
+                  gdrSection->get_TopWidth(&Wtf);
+
+                  if ( 1 < nGirders )
+                  {
+                     Float64 w = s*(nGirders-1) + nGirders*Wtf;
+                     max_spacing_width = Max(max_spacing_width,w);
+                  }
+                  else
+                  {
+                     max_spacing_width = Max(max_spacing_width,Wtf);
+                  }
+               }
+               else
+               {
+                  ATLASSERT(::IsSpreadSpacing(GetGirderSpacingType()));
+                  if ( 1 < nGirders )
+                  {
+                     Float64 w = s*(nGirders-1);
+                     max_spacing_width = Max(max_spacing_width,w);
+                  }
+               }
+            }
+            else
+            {
+               // Different girders are used in each group... need to add spacing for each
+               // girder individually
+               if ( ::IsAdjacentSpacing(GetGirderSpacingType()) )
+               {
+                  // beams are adjacent so spacing is actually a joint spacing...
+                  GroupIndexType nGroups = GetGirderGroupCount();
+                  for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+                  {
+                     const CGirderGroupData* pGroup = GetGirderGroup(grpIdx);
+                     nGirders = pGroup->GetGirderCount();
+                     Float64 w = 0;
+                     for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+                     {
+                        // get the width of the girder
+                        const GirderLibraryEntry* pGdrLibEntry = pGroup->GetGirderLibraryEntry(gdrIdx);
+                        CComPtr<IBeamFactory> factory;
+                        pGdrLibEntry->GetBeamFactory(&factory);
+                        
+                        CComPtr<IGirderSection> gdrSection;
+                        factory->CreateGirderSection(NULL,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
+
+                        Float64 Wtf;
+                        gdrSection->get_TopWidth(&Wtf);
+
+                        w += Wtf;
+                     } // next girder
+
+                     if ( 1 < nGirders )
+                     {
+                        w += s*(nGirders-1);
+                     }
+                     max_spacing_width = Max(max_spacing_width,w);
+                  } // next group
+               }
+               else
+               {
+                  ATLASSERT(::IsSpreadSpacing(GetGirderSpacingType()));
+                  if ( 1 < nGirders )
+                  {
+                     Float64 w = s*(nGirders-1);
+                     max_spacing_width = Max(max_spacing_width,w);
+                  }
+               }
+            }
+         }
+         else
+         {
+            // different number of girders in each group, need to compute spacing width for each group
+            GroupIndexType nGroups = GetGirderGroupCount();
+            for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+            {
+               Float64 w = 0;
+               const CGirderGroupData* pGroup = GetGirderGroup(grpIdx);
+               GirderIndexType nGirders = pGroup->GetGirderCount();
+               for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+               {
+                  if ( ::IsAdjacentSpacing(GetGirderSpacingType()) )
+                  {
+                     // beams are adjacent so spacing is actually a joint spacing...
+                     const GirderLibraryEntry* pGdrLibEntry = pGroup->GetGirderLibraryEntry(gdrIdx);
+
+                     // get the width of the girder
+                     CComPtr<IBeamFactory> factory;
+                     pGdrLibEntry->GetBeamFactory(&factory);
+                     
+                     CComPtr<IGirderSection> gdrSection;
+                     factory->CreateGirderSection(NULL,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
+
+                     Float64 Wtf;
+                     gdrSection->get_TopWidth(&Wtf);
+                     w += Wtf;
+                     if ( gdrIdx < nGirders-1 )
+                     {
+                        w += s;
+                     }
+                  }
+                  else
+                  {
+                     ATLASSERT(::IsSpreadSpacing(GetGirderSpacingType()));
+                     if ( gdrIdx < nGirders-1 )
+                     {
+                        w += s;
+                     }
+                  }
+               } // next girder
+
+               max_spacing_width = Max(max_spacing_width,w);
+            } // next group
+         }
+      }
+      else
+      {
+         PierIndexType nPiers = GetPierCount();
+         for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+         {
+            const CPierData2* pPier = GetPier(pierIdx);
+            if ( pPier->HasSpacing() )
+            {
+               if ( pPier->GetClosureJoint(0) != NULL )
+               {
+                  // if there is a closure joint, only back spacing is valid
+                  const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
+                  Float64 w = pSpacing->GetSpacingWidth();
+                  max_spacing_width = Max(max_spacing_width,w);
+               }
+               
+               if ( pPier->GetPrevSpan() != NULL )
+               {
+                  const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
+                  Float64 w = pSpacing->GetSpacingWidth();
+                  max_spacing_width = Max(max_spacing_width,w);
+               }
+
+               if ( pPier->GetNextSpan() != NULL )
+               {
+                  const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Ahead);
+                  Float64 w = pSpacing->GetSpacingWidth();
+                  max_spacing_width = Max(max_spacing_width,w);
+               }
+            }
+         }
+
+         SupportIndexType nTS = GetTemporarySupportCount();
+         for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
+         {
+            const CTemporarySupportData* pTS = GetTemporarySupport(tsIdx);
+            if ( pTS->HasSpacing() )
+            {
+               const CGirderSpacing2* pSpacing = pTS->GetSegmentSpacing();
+               Float64 w = pSpacing->GetSpacingWidth();
+               max_spacing_width = Max(max_spacing_width,w);
+            }
+         }
+      }
+
+      return max_spacing_width;
+   }
+   else
+   {
+      Float64 max_deck_width = pDeck->GetMaxWidth();
+      return max_deck_width;
+   }
 }
 
 bool CBridgeDescription2::MoveBridge(PierIndexType pierIdx,Float64 newStation)

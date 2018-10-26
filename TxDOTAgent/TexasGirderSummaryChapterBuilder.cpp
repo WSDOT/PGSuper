@@ -91,18 +91,28 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(CReportSpecification* pRptS
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   // eject a page break before this chapter
+   pChapter->SetEjectPageBreakBefore(true);
 
    // let the paragraph builder to all the work here...
+   bool doEjectPage;
    CTexasIBNSParagraphBuilder parabuilder;
    std::vector<CSegmentKey> segmentKeys;
    segmentKeys.push_back(segmentKey);
-   rptParagraph* pcontent = parabuilder.Build(pBroker,segmentKeys,pDisplayUnits,level);
+   rptParagraph* pcontent = parabuilder.Build(pBroker,segmentKeys,pDisplayUnits,level,doEjectPage);
 
    *pChapter << pcontent;
 
    // girder line geometry table
    girder_line_geometry( pChapter, pBroker, segmentKey, pDisplayUnits );
 
+   // put a page break at bottom of table
+   if (doEjectPage)
+   {
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+      *p << rptNewPage;
+   }
 
    return pChapter;
 }

@@ -859,6 +859,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBr
       // adjust the witness lines on the vertical dimensions
       m_pCoordinateMap->WPtoTP(bottom_width/2.0,0,&tx1,&ty1);
       doDimLineCGPS->SetWitnessLength(tx1-tx0+twip_offset); 
+      
+      doDimLineHeight->SetWitnessLength(tx1-tx0+2*twip_offset);
    }
 
    // add the dimension line display objects to the display list

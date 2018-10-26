@@ -232,36 +232,19 @@ void CDiaphragmDefinitionDlg::FillMeasurementTypeComboBox()
    pcbMeasurementType->ResetContent();
 
    int idx;
-   // If the diaphragm is cast in place, it can be located as a fraction of the span length
-   if ( constructionType == GirderLibraryEntry::ctBridgeSite )
-   {
-      idx = pcbMeasurementType->AddString(_T("fraction of the span length"));
-      pcbMeasurementType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mtFractionOfSpanLength);
-   }
 
-   // if the diaprham is precast, it can be located as a fraction of the segment length
-   if ( constructionType == GirderLibraryEntry::ctCastingYard )
+   idx = pcbMeasurementType->AddString(_T("fraction of the span length"));
+   pcbMeasurementType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mtFractionOfSpanLength);
+
+   if ( m_bSplicedGirder )
    {
-      if ( m_bSplicedGirder )
-      {
-         idx = pcbMeasurementType->AddString(_T("fraction of the segment length"));
-      }
-      else
-      {
-         idx = pcbMeasurementType->AddString(_T("fraction of the girder length"));
-      }
-      pcbMeasurementType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mtFractionOfGirderLength);
+      idx = pcbMeasurementType->AddString(_T("fraction of the segment length"));
    }
    else
    {
-      // if the diapragm is cast in place and this is not a spliced girder, the diaphragm can
-      // be a fraction of the girder length.
-      if ( !m_bSplicedGirder )
-      {
-         idx = pcbMeasurementType->AddString(_T("fraction of the girder length"));
-         pcbMeasurementType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mtFractionOfGirderLength);
-      }
+      idx = pcbMeasurementType->AddString(_T("fraction of the girder length"));
    }
+   pcbMeasurementType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mtFractionOfGirderLength);
 
    // diaphragm can always be located as a fixed distance
    idx = pcbMeasurementType->AddString(_T("fixed distance"));

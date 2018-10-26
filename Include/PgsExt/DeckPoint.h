@@ -92,6 +92,8 @@ public:
    pgsTypes::DeckPointTransitionType LeftTransitionType; // how the deck edge transitions to the next point
    pgsTypes::DeckPointTransitionType RightTransitionType; // how the deck edge transitions to the next point
 
+   Float64 GetWidth() const;
+
 
 protected:
    void MakeCopy(const CDeckPoint& rOther);

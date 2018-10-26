@@ -114,6 +114,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
@@ -148,6 +149,10 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // report the required concrete strengths for the current bridge configuration
    rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << p;
+   *p << _T("Required Concrete Strengths") << rptNewLine;
+
+   p = new rptParagraph;
    if ( pDocType->IsPGSuperDocument() )
    {
       p->SetName(_T("Girder Stresses"));
@@ -156,7 +161,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    {
       p->SetName(_T("Segment Stresses"));
    }
-   *p << p->GetName() << rptNewLine;
    *pChapter << p;
 
    p = new rptParagraph;
@@ -178,6 +182,13 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *p << _T("Required ") << RPT_FCI << _T(" = Regardless of the release strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 
+
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,0));
+      *p << _T("Actual ") << RPT_FCI << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc(CSegmentKey(girderKey,0),releaseIntervalIdx) ) << rptNewLine;
+   }
+
    *p << rptNewLine;
 
    if ( 0 <= fc_reqd )
@@ -190,6 +201,11 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    {
       ATLASSERT(fc_reqd == -99999);
       *p << _T("Required ") << RPT_FC << _T(" = Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
+   }
+
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      *p << _T("Actual ") << RPT_FC << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc28(CSegmentKey(girderKey,0))) << rptNewLine;
    }
 
    // information about continuity and how it impacts the analysis

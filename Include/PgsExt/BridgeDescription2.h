@@ -352,8 +352,17 @@ public:
    // Gets the segments on either side of a temporary support... left and right segment key will be the same if segment is continuous over TS
    void GetSegmentsAtTemporarySupport(SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) const;
 
+   // Returns true of the overall bridge model is stable
    bool IsStable() const;
+
+   // Returns true if a segment is over constrained. Over constrained segments are supported
+   // at three or more locations and the elevations of the location are not in a straight line
    bool IsSegmentOverconstrained(const CSegmentKey& segmentKey) const;
+
+   // Returns the approximate maximum width of the bridge. The width is computed as:
+   // for bridges with decks - the maximum sum of the left right deck overhangs
+   // for bridges without decks - the maximum spacing width (this width is based on the raw input and is not adjusted for skews)
+   Float64 GetBridgeWidth() const;
 
 protected:
    void MakeCopy(const CBridgeDescription2& rOther);

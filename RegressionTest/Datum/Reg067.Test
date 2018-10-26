@@ -1,0 +1,36 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      1     WF66G          0   0.6  270   0.00   0.00                                               0   0.0  0.0  5.000  6.000   3.698    -3.796     8992   0.558  0.671  -4.707 -1.594 -0.154 -0.219 -1.967   0.00    0.00    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Tension stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      2     WF66G          0   0.6  270   0.00   0.00                                               0   0.0  0.0  5.000  6.000   3.703    -3.799     8992   0.556  0.671  -4.707 -1.602 -0.154 -0.219 -1.975   0.00    0.00    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Tension stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Lifting checks failed
+Hauling checks failed
+
+

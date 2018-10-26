@@ -30,7 +30,7 @@ class REPORTINGCLASS CPGSuperTitlePageBuilder :
    public CTitlePageBuilder
 {
 public:
-   CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true);
+   CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true, bool bPageBreakAfter=true);
    CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other);
    ~CPGSuperTitlePageBuilder(void);
 
@@ -42,4 +42,5 @@ public:
 protected:
    CComPtr<IBroker> m_pBroker;
    bool m_bFullVersion;
+   bool m_bPageBreakAfter;
 };

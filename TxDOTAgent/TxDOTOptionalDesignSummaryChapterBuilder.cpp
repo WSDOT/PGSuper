@@ -186,8 +186,23 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row++,1) << length.SetValue(pBridge->GetSegmentSpanLength(fabrSegmentKey));
 
    ASSERT(pgsTypes::sbsUniform==pBridgeDesc->GetGirderSpacingType() || pgsTypes::sbsUniformAdjacent==pBridgeDesc->GetGirderSpacingType());
+   Float64 spacing = pBridgeDesc->GetGirderSpacing();
+
+   if (pgsTypes::sbsUniformAdjacent==pBridgeDesc->GetGirderSpacingType())
+   {
+      // For adjacent girders, the spacing returned above is the joint spacing. Add the girder width to 
+      // this to get the CL-CL girder spacing
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(fabrSegmentKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(fabrSegmentKey.girderIndex);
+
+      const GirderLibraryEntry* pGdr = pGirder->GetGirderLibraryEntry();
+
+      Float64 wid = pGdr->GetBeamWidth(pgsTypes::metStart);
+      spacing += wid;
+   }
+
    (*p_table)(row,0) << _T("Beam Spacing") ;
-   (*p_table)(row++,1) << length.SetValue(pBridgeDesc->GetGirderSpacing());
+   (*p_table)(row++,1) << length.SetValue(spacing);
 
    pgsPointOfInterest zero_poi(fabrSegmentKey,0.0);
 
@@ -376,7 +391,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
          Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
          TxDOTIBNSDebondWriter tx_writer(segmentKey, girder_length, pStrandGeometry);
-         tx_writer.WriteDebondData(p, pDisplayUnits, title);
+         tx_writer.WriteDebondData(p, pBroker, pDisplayUnits, title);
       }
    }
 }

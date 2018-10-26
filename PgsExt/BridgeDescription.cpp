@@ -611,17 +611,10 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
 
          // copy handling data. storage configuration was added in PGSuper Version 3
          // the assumed storage configuration was at the permanent support locations.
-         // use the average girder end distance as the default storage location.
          pNewSegment->HandlingData = girderData.HandlingData;
-         CPierData2* pPier = pNewSpan->GetPier(pgsTypes::metStart);
-         Float64 startEndDist, endEndDist;
-         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-         pPier->GetGirderEndDistance(pgsTypes::Ahead,&startEndDist,&endDistMeasure);
-         pPier = pNewSpan->GetPier(pgsTypes::metEnd);
-         pPier->GetGirderEndDistance(pgsTypes::Back,&endEndDist,&endDistMeasure);
-         Float64 endDist = (startEndDist + endEndDist)/2;
-         pNewSegment->HandlingData.LeftStoragePoint = endDist;
-         pNewSegment->HandlingData.RightStoragePoint = endDist;
+
+         pNewSegment->HandlingData.LeftStoragePoint  = -1; // -1 means locate at CL Brg
+         pNewSegment->HandlingData.RightStoragePoint = -1;
 
          pNewSegment->LongitudinalRebarData = girderData.LongitudinalRebarData;
          pNewSegment->Material              = girderData.Material;
@@ -1521,6 +1514,10 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
    // NOTE: The logic here isn't, and probably can't be perfect. If spans or girder groups are added and 
    //       shuffled, it's impossible to compare with the original configuration. The default here
    //       is, if in doubt, use seed data
+   // 
+   // BUG: The call to CopyDown above overwrites the girdername in most cases and causes the code below to do nothing.
+   //      This probably needs to be fixed at the editing level for Bridge|Span|Girder and will require some time and thought
+   //      to get correct.
    std::vector<CSpanData*>::const_iterator origSpanIter( pOriginal->m_Spans.begin() );
    std::vector<CSpanData*>::iterator thisSpanIter( m_Spans.begin() );
    std::vector<CSpanData*>::iterator thisSpanIterEnd( m_Spans.end() );
@@ -1548,7 +1545,7 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
             pOrigSpan->GetGirderTypes()->GetGirderGroup(iGroup, &norigGstart, &norigGend, origGirderName);
          }
 
-         if (thisGirderName != origGirderName)
+         if (copyGirderType || thisGirderName != origGirderName)
          {
             // Enough evidence here that the girder type was changed - refill with seed data
             const GirderLibraryEntry* pGird = pLib->GetGirderEntry( thisGirderName.c_str());

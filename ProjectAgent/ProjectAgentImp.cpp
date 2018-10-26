@@ -40,7 +40,6 @@
 #include <psgLib\StructuredLoad.h>
 #include <psgLib\StructuredSave.h>
 #include <psgLib\BeamFamilyManager.h>
-#include <psgLib\ProjectLibraryManager.h>
 
 #include <Lrfd\StrandPool.h>
 
@@ -4727,7 +4726,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    // Load the library data first into a temporary library. Then deal with entry
    // conflict resolution.
    // This library manager contains data that has been removed from some library entries
-   psgProjectLibraryManager temp_manager;
+   psgLibraryManager temp_manager;
    try
    {
 //      pProgress->UpdateMessage( _T(_T("Loading the Project Libraries")) );
@@ -4736,37 +4735,6 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       {
          return E_FAIL;
       }
-
-      // recover parameters that are no longer part of the spec library entry
-      for ( int i = 0; i < 6; i++ )
-      {
-         m_LoadFactors.DCmin[i]   = temp_manager.m_DCmin[i];
-         m_LoadFactors.DWmin[i]   = temp_manager.m_DWmin[i];
-         m_LoadFactors.LLIMmin[i] = temp_manager.m_LLIMmin[i];
-
-         m_LoadFactors.DCmax[i]   = temp_manager.m_DCmax[i];
-         m_LoadFactors.DWmax[i]   = temp_manager.m_DWmax[i];
-         m_LoadFactors.LLIMmax[i] = temp_manager.m_LLIMmax[i];
-      }
-
-      m_bGeneralLumpSum               = temp_manager.m_bGeneralLumpSum;
-      m_BeforeXferLosses              = temp_manager.m_BeforeXferLosses;
-      m_AfterXferLosses               = temp_manager.m_AfterXferLosses;
-      m_LiftingLosses                 = temp_manager.m_LiftingLosses;
-      m_ShippingLosses                = temp_manager.m_ShippingLosses;
-      m_BeforeTempStrandRemovalLosses = temp_manager.m_BeforeTempStrandRemovalLosses;
-      m_AfterTempStrandRemovalLosses  = temp_manager.m_AfterTempStrandRemovalLosses;
-      m_AfterDeckPlacementLosses      = temp_manager.m_AfterDeckPlacementLosses;
-      m_AfterSIDLLosses               = temp_manager.m_AfterSIDLLosses;
-      m_FinalLosses                   = temp_manager.m_FinalLosses;
-
-      m_Dset_PT                = temp_manager.m_DSet;
-      m_WobbleFriction_PT      = temp_manager.m_WobbleFriction;
-      m_FrictionCoefficient_PT = temp_manager.m_FrictionCoefficient;
-
-      m_Dset_TTS                = temp_manager.m_DSet;
-      m_WobbleFriction_TTS      = temp_manager.m_WobbleFriction;
-      m_FrictionCoefficient_TTS = temp_manager.m_FrictionCoefficient;
    }
    catch( sysXStructuredLoad& e )
    {
@@ -5278,6 +5246,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
                   // remove invalid debonding
                   debond_changed=true;
                   iter = vDebond.erase(iter);
+                  end = vDebond.end();
                }
                else
                {
@@ -9459,6 +9428,46 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    m_Spec = _T("");
    InitSpecification(specName);
 
+   // now that the spec library entry has been set, see if there are any obsolete
+   // values in the library that need to be brought into the project agent
+
+   if ( m_pSpecEntry->UpdateLoadFactors() )
+   {
+      // recover parameters that are no longer part of the spec library entry
+      for ( int i = 0; i < 6; i++ )
+      {
+         pgsTypes::LimitState ls = (pgsTypes::LimitState)i;
+         m_pSpecEntry->GetDCLoadFactors(ls,&m_LoadFactors.DCmin[i],&m_LoadFactors.DCmax[i]);
+         m_pSpecEntry->GetDWLoadFactors(ls,&m_LoadFactors.DWmin[i],&m_LoadFactors.DWmax[i]);
+         m_pSpecEntry->GetLLIMLoadFactors(ls,&m_LoadFactors.LLIMmin[i],&m_LoadFactors.LLIMmax[i]);
+      }
+   }
+
+   if ( m_pSpecEntry->GetLossMethod() == 3 ) // old general lump sum method
+   {
+      m_bGeneralLumpSum               = true;
+      m_BeforeXferLosses              = m_pSpecEntry->GetBeforeXferLosses();
+      m_AfterXferLosses               = m_pSpecEntry->GetAfterXferLosses();
+      m_LiftingLosses                 = m_pSpecEntry->GetLiftingLosses();
+      m_ShippingLosses                = m_pSpecEntry->GetShippingLosses();
+      m_BeforeTempStrandRemovalLosses = m_pSpecEntry->GetBeforeTempStrandRemovalLosses();
+      m_AfterTempStrandRemovalLosses  = m_pSpecEntry->GetAfterTempStrandRemovalLosses();
+      m_AfterDeckPlacementLosses      = m_pSpecEntry->GetAfterDeckPlacementLosses();
+      m_AfterSIDLLosses               = m_pSpecEntry->GetAfterSIDLLosses();
+      m_FinalLosses                   = m_pSpecEntry->GetFinalLosses();
+   }
+
+   if ( m_pSpecEntry->UpdatePTParameters() )
+   {
+      m_Dset_PT                = m_pSpecEntry->GetAnchorSet();
+      m_WobbleFriction_PT      = m_pSpecEntry->GetWobbleFrictionCoefficient();
+      m_FrictionCoefficient_PT = m_pSpecEntry->GetFrictionCoefficient();
+
+      m_Dset_TTS                = m_Dset_PT;
+      m_WobbleFriction_TTS      = m_WobbleFriction_PT;
+      m_FrictionCoefficient_TTS = m_FrictionCoefficient_PT;
+   }
+
 
    // Rating Library
    const RatingLibrary& rratinglib = *(m_pLibMgr->GetRatingLibrary());
@@ -9880,20 +9889,39 @@ Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,StrandIndexT
 HRESULT CProjectAgentImp::FireContinuityRelatedSpanChange(const CSpanKey& spanKey,Uint32 lHint)
 {
    // Some individual girder changes can affect an entire girderline
-   const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(m_BridgeDescription.GetSpan(spanKey.spanIndex));
-   GroupIndexType grpIdx = pGroup->GetIndex();
-
-   GirderIndexType continuityGirderIdx = (spanKey.girderIndex == ALL_GIRDERS) ? 0 : spanKey.girderIndex;
-   CGirderKey girderKey(grpIdx,continuityGirderIdx);
-   
-   GET_IFACE(IContinuity,pContinuity);
-   if (pContinuity->IsContinuityFullyEffective(girderKey))
+   SpanIndexType startSpanIdx = (spanKey.spanIndex == ALL_SPANS ? 0 : spanKey.spanIndex);
+   SpanIndexType endSpanIdx   = (spanKey.spanIndex == ALL_SPANS ? m_BridgeDescription.GetSpanCount()-1 : startSpanIdx);
+   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
-      grpIdx = ALL_GROUPS; // assume the entire girder line is affected...specify change affects all groups
-   }
+      const CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+      const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(pSpan);
+      GroupIndexType grpIdx = pGroup->GetIndex();
 
-   CGirderKey key(grpIdx,spanKey.girderIndex);
-   return Fire_GirderChanged(key, lHint); 
+      GirderIndexType continuityGirderIdx = (spanKey.girderIndex == ALL_GIRDERS) ? 0 : spanKey.girderIndex;
+      CGirderKey girderKey(grpIdx,continuityGirderIdx);
+      
+      GET_IFACE(IContinuity,pContinuity);
+      if (pContinuity->IsContinuityFullyEffective(girderKey))
+      {
+         grpIdx = ALL_GROUPS; // assume the entire girder line is affected...specify change affects all groups
+      }
+
+      CGirderKey key(grpIdx,spanKey.girderIndex);
+      HRESULT hr = Fire_GirderChanged(key, lHint); 
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      // we only want to do this once per girder, which a girder can cover more than one span.
+      // get the last span in the current group
+      const CSpanData2* pLastSpan = pGroup->GetPier(pgsTypes::metEnd)->GetPrevSpan();
+
+      // move the span index to the last span in this group
+      // so that when we increment spanIdx it goes into the next group
+      spanIdx = pLastSpan->GetIndex();
+   }
+   return S_OK;
 }
 
 CPrecastSegmentData* CProjectAgentImp::GetSegment(const CSegmentKey& segmentKey)

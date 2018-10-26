@@ -363,7 +363,7 @@ private:
    };
    std::map<RatingArtifactKey,pgsRatingArtifact> m_RatingArtifacts[6]; // pgsTypes::LoadRatingType enum as key
 
-   // NOTE: Caching of prestress losses has been moved to CPsBeamLossEngineer
+   std::map<PrestressPoiKey,Float64> m_PsForce; // cache of prestress forces
 
    pgsPsForceEng             m_PsForceEngineer;
    pgsDesigner2              m_Designer;

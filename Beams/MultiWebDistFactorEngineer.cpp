@@ -486,19 +486,23 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
+   Float64 Ix, Iy, A;
    if (0 < fcgdr)
    {
-      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
+      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+      Ix = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+      Iy = pSectProp->GetIy(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+      A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
    }
    else
    {
-      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
+      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi);
+      Ix = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi);
+      Iy = pSectProp->GetIy(pgsTypes::sptGross,llIntervalIdx,poi);
+      A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi);
    }
    
-   Float64 Ix, Iy, A, Ip, Yt;
-   Ix = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
-   Iy = pSectProp->GetIy(pgsTypes::sptGross,releaseIntervalIdx,poi);
-   A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   Float64 Yt;
    Yt = pSectProp->GetY(pgsTypes::sptGross,releaseIntervalIdx,poi,pgsTypes::TopGirder);
 
    plldf->PossionRatio = 0.2;
@@ -545,7 +549,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
 
    plldf->A  = A;
    plldf->Yt = Yt;
-   Ip = Ix + Iy;
+   Float64 Ip = Ix + Iy;
    plldf->Ip = Ip;
    plldf->J = A*A*A*A/(40.0*Ip);
 

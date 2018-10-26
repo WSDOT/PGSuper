@@ -136,12 +136,6 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    ATLASSERT(pPoi->IsOnSegment(poi));
 #endif
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
-
-   GET_IFACE(ISpecification,pSpec);
-   std::_tstring strSpecName = pSpec->GetSpecification();
-
    GET_IFACE(ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 

@@ -815,7 +815,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
    (*p_table)(0,1) << _T("Top Stress, ") << RPT_FTOP;
 
    p_table->SetColumnSpan(0,2,3);
-   (*p_table)(0,2) << _T("Bottom Stress ") << RPT_FBOT;
+   (*p_table)(0,2) << _T("Bottom Stress, ") << RPT_FBOT;
 
    p_table->SetColumnSpan(0,3,SKIP_CELL);
    p_table->SetColumnSpan(0,4,SKIP_CELL);

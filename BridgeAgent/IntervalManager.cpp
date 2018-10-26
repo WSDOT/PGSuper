@@ -436,7 +436,8 @@ IntervalIndexType CIntervalManager::GetTemporaryStrandRemovalInterval(const CSeg
    }
    else
    {
-      return INVALID_INDEX; // there aren't any temporary strands in this segment
+      return GetErectSegmentInterval(segmentKey);
+      //return INVALID_INDEX; // there aren't any temporary strands in this segment
    }
 }
 

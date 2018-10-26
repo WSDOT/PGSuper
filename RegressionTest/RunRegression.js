@@ -14,6 +14,8 @@ var PGSuperPlatform = "WIN32";
 var DoSendEmail=false;
 var EmailAddress = new String;
 var ExecuteCommands=true; // if false, only show commands
+var RunMultipleFiles=false;
+
 
 var startDate = new Date();
 var startTime = startDate.getTime();
@@ -74,6 +76,9 @@ var CurrFolderSpec  = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\
 var DatumFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Datum" );
 
 var ErrorsExist = "FALSE";
+
+var concurrencyCount = 1; // keeps track of number of concurrent processes
+var maxConcurrencyCount = 4; // maximum number of concurrent processes
 
 // make sure pgsuper.exe exists
 if (!FSO.FileExists(Application))
@@ -175,15 +180,29 @@ function RunTest (currFolder, currCommand)
       
       if (newCommand!="TxToga")
       {
-          // Not TOGA - get pgsuper files
-          var fc = new Enumerator(subFolder.Files);
-          for (; !fc.atEnd(); fc.moveNext())
+         // Not TOGA - get pgsuper files
+         var fc = new Enumerator(subFolder.Files);
+
+         // Get number of pgs files
+         var nPgsFiles = 0;
+          for (; !fc.atEnd(); fc.moveNext() )
           {
              s = new String(fc.item());
             
             idx = s.indexOf(".pgs");
             if (-1 != idx)
-            {
+               nPgsFiles++;
+          }
+          
+          var fileCount = 0;
+          for (fc.moveFirst(); !fc.atEnd(); fc.moveNext())
+          {
+             s = new String(fc.item());
+            
+            idx = s.indexOf(".pgs");
+            if (-1 != idx) {
+               fileCount++; // processing a pgs file.. increment count
+               
                // Get span and girder from file name
                var newSG = new SpanGirder();
                newSG = ParseGirderFromFileName(s, currSpan, currGirder);
@@ -199,6 +218,21 @@ function RunTest (currFolder, currCommand)
                {
                   outFile = s.substring(0,idx) + "@" + newCommand + "_" + newSG.m_Span + "_" + newSG.m_Girder + ".Test";
                   cmd = Application + " /" + newCommand + " " + s + " " + outFile + " " + newSG.m_Span + " " + newSG.m_Girder;
+               }
+
+               
+               if (RunMultipleFiles && fileCount != nPgsFiles) {
+                  // if we are running multiple files and this is not the last PGS file, add the spawning code
+                  // don't ever want to do this for the last non-TOGA file. we must wait until the last non-TOGA
+                  // file is done so that we don't change the library too soon
+               
+	               if (concurrencyCount < maxConcurrencyCount) {
+        	          cmd = "cmd.exe /C START \"XYZ\" " + cmd
+                	  concurrencyCount++;
+	               }
+	               else {
+        	          concurrencyCount = 1;
+	               }
                }
 
                if(ExecuteCommands)
@@ -560,6 +594,7 @@ function ParseCommandLine()
          DisplayMessage("    /V<version>    - Version of PGSuper to test (either \"Debug\", \"Profile\", or \"Release\"");
          DisplayMessage("    /P<platform>   - Platform (Win32 or X64)");
          DisplayMessage("    /N             - No execute. Display but do not execute pgsuper commands.");
+         DisplayMessage("    /M             - Run multiple files.");
          DisplayMessage("");
          return 1;
        }
@@ -618,6 +653,11 @@ function ParseCommandLine()
        {
           // No execute. Display but do not execute commands.
           ExecuteCommands=false;
+       }
+       else if (s.charAt(1)=="M" || s.charAt(1)=="m")
+       {
+          // Run multiple files... though this messes up timing.
+          RunMultipleFiles=true;
        }
        else
        {

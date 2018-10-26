@@ -1,15 +1,92 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                   1      1     Sellw    *    42   0.6  270  25.47   7.64                                              16  59.0  8.2  4.000 14.600   4.645    -4.646     8232   0.720  0.709  6.301  -0.78  0.000  -0.15  -0.93  208.78  455.35    4.50   13.00   13.00 
+ 61.00    8   8.25                   1      1     Sellw    *    42   0.6  270  25.47   7.64                                              16  59.0  8.2  4.000 14.600   4.672    -4.683     8235   0.717  0.709   6.298 -0.783  0.000 -0.160 -0.942 208.81  454.98    4.50   13.00   13.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
+Splitting zone check failed.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    8   8.25                   1      2     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4  4.000 11.400   4.729    -4.868     8568   0.747  0.832   6.763 -1.026  0.000 -0.164 -1.190 240.87  488.49    4.50   13.00   13.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
+Splitting zone check failed.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    8   8.25                   1      5     Sellw    *    46   0.6  270  25.20   6.06                                              20  59.0  9.4  6.000  6.500   5.110    -5.408     9190   0.728  0.832   5.034 -1.277  0.000 -0.192 -1.469 212.17  279.65    3.00   13.00   13.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
+Splitting zone check failed.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    8   8.25                   2      1     Sellw    *    39   0.6  270  25.62   9.31                                              13  59.0  7.6  4.000 14.600   4.525    -4.450     7881   0.800  0.800   5.828 -0.814  0.000 -0.031 -0.845 177.97  400.83    4.50   17.00   17.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
@@ -26,19 +103,19 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                   1      2     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4  4.000 13.500   4.817    -4.898     8619   0.757  0.832  6.766  -0.94  0.000  -0.14  -1.09  240.83  499.85    4.50   13.00   13.00 
+ 61.00    8   8.25                   2      2     Sellw    *    40   0.6  270  25.58   8.69                                              14  59.0  7.6  4.000 14.600   4.626    -4.559     8035   0.752  0.832   5.987 -0.898  0.000 -0.030 -0.928 188.11  413.04    4.50   17.00   17.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -52,18 +129,19 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                   1      5     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4  6.000  6.500   5.087    -5.368     9032   0.732  0.832  4.922  -1.27  0.000  -0.18  -1.45  202.77  266.37    3.00   13.00   13.00 
+ 61.00    8   8.25                   2      5     Sellw    *    46   0.6  270  25.20   6.06                                              20  59.0  9.4  4.000  5.600   4.895    -5.053     8405   0.720  0.832   6.919 -1.424  0.000 -0.050 -1.474 251.84  396.92    4.50   17.00   17.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -71,23 +149,51 @@ Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.
 Confinement zone check failed.
 Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
 Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    9   6.17                   3      1     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4  4.000 13.500   5.000    -4.955     8416   0.671  0.672   7.038 -1.152  0.000 -0.129 -1.282 223.44  470.39    8.00   17.00   17.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
 Lifting checks failed
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                   2      1     Sellw    *    38   0.6  270  25.66   9.97                                              12  59.0  7.0  4.000 14.600   4.473    -4.378     7759   0.798  0.798  5.668  -0.81  0.000  -0.02  -0.83  168.08  381.74    4.50   17.00   17.00 
+ 61.00    9   6.17                   3      2     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4  4.000 11.900   4.963    -4.955     8358   0.662  0.762   7.038 -1.237  0.000 -0.131 -1.367 223.55  459.55    8.00   17.00   17.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
@@ -104,16 +210,17 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                   2      2     Sellw    *    39   0.6  270  25.62   9.31                                              13  59.0  7.6  4.000 14.600   4.580    -4.492     7911   0.759  0.832  5.828  -0.89  0.000  -0.02  -0.91  177.97  393.87    4.50   17.00   17.00 
+ 61.00    9   8.25                   3      5     Sellw    *    46   0.6  270  25.20   6.06                                              20  59.0  9.4 10.000 10.500   5.807    -5.866     9540   0.691  0.798   3.641 -1.300  0.000 -0.121 -1.421 157.97  183.06    4.00   17.00   17.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Hold down force exceeds maximum
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
@@ -130,15 +237,18 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                   2      5     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4  4.000  5.600   4.867    -4.999     8264   0.727  0.832  6.766  -1.42  0.000  -0.03  -1.46  240.83  379.97    4.50   17.00   17.00 
+ 61.00    9   7.60                   4      1     Sellw    *    27   0.6  270  27.01   7.29                                              11  57.0  7.0  4.000 13.800   3.513    -3.417     6599   0.905  0.919   3.079 -0.386  0.000 -0.003 -0.389  96.60  246.29    3.00    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Strand slope exceeds maximum
+Hold down force exceeds maximum
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
@@ -146,174 +256,78 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    9   7.60                   4      2     Sellw    *    29   0.6  270  26.55  11.09                                               9  57.0  4.9  4.000 14.600   3.734    -3.626     6841   0.800  0.863   3.646 -0.464  0.000 -0.010 -0.474 107.81  267.18    3.00   11.50   11.50 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    9   8.25                   4      5     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4  4.000  7.700   4.769    -4.884     8296   0.746  0.854   6.518 -1.008  0.000 -0.051 -1.059 248.61  442.49    3.00   13.00   13.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.
 Confinement zone check failed.
 Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
 Slab Offset ("A" Dimension) check failed
-Lifting checks failed
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   6.17                   3      1     Sellw    *    44   0.6  270  25.34   6.77                                              18  59.0  8.8  4.000 14.600   4.994    -4.915     8343   0.672  0.673  6.851  -1.10  0.000  -0.11  -1.21  212.93  455.38    8.00   17.00   17.00 
+ 61.00    9   9.31                   5      1     Sellw    *    26   0.6  270  12.42   3.84                                              10  30.0  4.9 14.000 15.000   5.781    -6.604     3845   1.014  1.068   2.545 -1.377  0.000 -0.111 -1.489  80.71   92.96    0.00    0.00    0.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   6.17                   3      2     Sellw    *    44   0.6  270  25.34   6.77                                              18  59.0  8.8  4.000 14.600   5.039    -4.971     8331   0.674  0.761  6.850  -1.11  0.000  -0.10  -1.22  213.04  452.56    8.00   17.00   17.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Splitting zone check failed.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   8.25                   3      5     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4 10.000 10.500   5.762    -5.801     9373   0.697  0.797  3.544  -1.29  0.000  -0.10  -1.39  150.60  174.25    4.00   17.00   17.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hold Down Force is excessive.
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Splitting zone check failed.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   7.60                   4      1     Sellw    *    26   0.6  270  27.10   8.93                                              10  55.0  5.0  4.000 12.400   3.402    -3.307     6390   0.902  0.916  2.993  -0.40  0.000  -0.00  -0.40   88.98  227.30    3.00    5.00    5.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hold Down Force is excessive.
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   7.60                   4      2     Sellw    *    28   0.6  270  26.81   9.22                                              10  57.0  5.0  4.000 13.500   3.647    -3.537     6669   0.806  0.862  3.398  -0.48  0.000  -0.00  -0.49  100.74  249.28    3.00    5.00    5.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hold Down Force is excessive.
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   8.25                   4      5     Sellw    *    45   0.6  270  25.27   6.40                                              19  59.0  9.4  4.000  8.800   4.811    -4.874     8293   0.758  0.853  6.518  -0.94  0.000  -0.04  -0.98  248.61  456.48    3.00   13.00   13.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hold Down Force is excessive.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Splitting zone check failed.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   9.31                   5      1     Sellw    *    26   0.6  270  12.42   3.84                                              10  30.0  4.9 14.000 15.000   5.758    -6.543     3774   1.014  1.067  2.547  -1.37  0.000  -0.10  -1.48   80.70   93.08    0.00    0.00    0.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
@@ -329,17 +343,16 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   9.31                   5      2     Sellw    *    26   0.6  270  12.42   3.84                                              10  30.0  4.9 14.000 15.000   5.652    -6.258     3395   0.793  0.962  2.557  -1.37  0.000  -0.10  -1.47   80.50   91.43    0.00    0.00    0.00 
+ 61.00    9   9.31                   5      2     Sellw    *    26   0.6  270  12.42   3.84                                              10  30.0  4.9 14.000 15.000   5.668    -6.300     3442   0.786  0.962   2.555 -1.371  0.000 -0.112 -1.483  80.52   91.28    0.00    0.00    0.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -352,12 +365,12 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   8.83                   5      5     Sellw    *    26   0.6  270  12.42   3.84                                              10  30.0  4.9 14.000 15.000   6.817    -7.408     3805   0.751  0.916  2.588  -1.36  0.000  -0.10  -1.47   79.87   66.61    0.00    0.00    0.00 
+ 61.00    9   8.83                   5      5     Sellw    *    26   0.6  270  12.42   3.84                                              10  30.0  4.9 14.000 15.000   6.837    -7.459     3866   0.745  0.917   2.586 -1.366  0.000 -0.109 -1.476  79.89   66.55    0.00    0.00    0.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

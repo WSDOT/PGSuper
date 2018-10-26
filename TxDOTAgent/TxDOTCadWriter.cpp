@@ -138,10 +138,6 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    bool is_test_output = (format== tcxTest) ? true : false;
    CadWriterWorkerBee workerB(is_test_output);//
 
-   // Determine type of output and number of strands
-   bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
-                        0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
-
 	/* Create pois at the start of girder and mid-span */
    pgsPointOfInterest pois(segmentKey, 0.0);
 	std::vector<pgsPointOfInterest> pmid( pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN) );
@@ -152,6 +148,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    std::_tstring girderFamily = pBridgeDesc->GetGirderFamilyName();
 
    bool isIBeam = girderFamily == _T("I-Beam");
+
+
+   // Determine type of output and number of strands
+   bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
+                        0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped) &&
+                        isIBeam;
 
    bool isExtendedVersion = (format==tcxExtended || format==tcxTest);
 
@@ -507,15 +509,15 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       /* WRITE TO FILE */
       //==================
 	   //----- COL 18 ---- 
-      workerB.WriteFloat64(initialCamber,_T("Dinit"),7,5,_T("%5.3f"));
+      workerB.WriteFloat64(initialCamber,_T("Dinit"),7,6,_T("%6.3f"));
 	   //----- COL 19 ---- 
-      workerB.WriteFloat64(slabDiaphDeflection,_T("Dslab"),7,5,_T("%5.3f"));
+      workerB.WriteFloat64(slabDiaphDeflection,_T("Dslab"),7,6,_T("%6.3f"));
 	   //----- COL 20 ---- 
-      workerB.WriteFloat64(overlayDeflection,_T("Dolay"),7,5,_T("%5.3f"));
+      workerB.WriteFloat64(overlayDeflection,_T("Dolay"),7,6,_T("%6.3f"));
 	   //----- COL 21 ---- 
-      workerB.WriteFloat64(otherDeflection,_T("Dothr"),7,5,_T("%5.3f"));
+      workerB.WriteFloat64(otherDeflection,_T("Dothr"),7,6,_T("%6.3f"));
 	   //----- COL 22 ---- 
-      workerB.WriteFloat64(totalDeflection,_T("Dtot "),7,5,_T("%5.3f"));
+      workerB.WriteFloat64(totalDeflection,_T("Dtot "),7,6,_T("%6.3f"));
 	   //----- COL 23 ---- 
       workerB.WriteFloat64(initialLoss,_T("LossIn"),8,6,_T("%6.2f"));
 	   //----- COL 24 ---- 

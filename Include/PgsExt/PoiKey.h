@@ -63,14 +63,73 @@ public:
       return false;
    }
 
+   bool operator==(const TPoiKey& rOther) const
+   {
+      if ( m_Poi != rOther.m_Poi )
+      {
+         return false;
+      }
+
+      if ( m_Subkey != rOther.m_Subkey )
+      {
+         return false;
+      }
+
+      return true;
+   }
+
    const pgsPointOfInterest& GetPoi() const {return m_Poi;}
+   const T& GetSubKey() const { return m_Subkey; }
+
 private:
    T                  m_Subkey;
    pgsPointOfInterest m_Poi;
 };
 
+class PrestressSubKey
+{
+public:
+   PrestressSubKey()
+   {
+      m_IntervalIdx = INVALID_INDEX;
+      m_Strand = pgsTypes::Straight;
+   }
+
+   PrestressSubKey(pgsTypes::StrandType strand,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) :
+      m_Strand(strand), m_IntervalIdx(intervalIdx), m_IntervalTime(intervalTime)
+      {
+      }
+
+   PrestressSubKey(const PrestressSubKey& rOther)
+   {
+      m_Strand = rOther.m_Strand;
+      m_IntervalIdx = rOther.m_IntervalIdx;
+      m_IntervalTime = rOther.m_IntervalTime;
+   }
+
+   bool operator<(const PrestressSubKey& rOther) const
+   {
+      if ( m_IntervalIdx < rOther.m_IntervalIdx ) return true;
+      if ( rOther.m_IntervalIdx < m_IntervalIdx ) return false;
+
+      if ( m_IntervalTime < rOther.m_IntervalTime ) return true;
+      if ( rOther.m_IntervalTime < m_IntervalTime ) return false;
+
+      if ( m_Strand < rOther.m_Strand ) return true;
+      if ( rOther.m_Strand < m_Strand ) return false;
+
+      return false;
+   }
+
+private:
+   IntervalIndexType m_IntervalIdx;
+   pgsTypes::IntervalTimeType m_IntervalTime;
+   pgsTypes::StrandType m_Strand;
+};
+
 typedef TPoiKey<IntervalIndexType> PoiIntervalKey;
 typedef TPoiKey<PoiIDType> PoiIDKey;
+typedef TPoiKey<PrestressSubKey> PrestressPoiKey;
 
 
 

@@ -1,0 +1,43 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.25    6   8.00                   1      1     U48G4         48   0.6  270  15.34  11.09   0   2.00   19     0    0   0   0   0   0   5.000  6.000  10.448    -7.736    14530   0.935  1.385   5.024 -2.484  0.000 -0.112 -2.596 183.81  402.54    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service IA Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.25    6   8.00                   1      2     U48G4         48   0.6  270  15.34  11.09   0   2.00   19     0    0   0   0   0   0   5.000  6.000   6.248    -4.899     9462   0.489  0.997   5.024 -2.106  0.000 -0.115 -2.220 183.81  402.54    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service IA Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Lifting checks failed
+Hauling checks failed
+
+

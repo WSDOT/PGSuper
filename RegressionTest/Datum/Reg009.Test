@@ -1,0 +1,18 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.65    7   6.00                   1      1      W50G    *    12   1/2  270  20.33   2.50                                               6  40.0  3.0  5.000  7.000   1.037    -1.251     2205   0.672  0.671   0.479 -0.089  0.000 -0.009 -0.098  18.36   42.23    3.00    3.00    3.00 
+
+
+The Specification Check was Not Successful
+Strand slope exceeds maximum
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.65    7   6.00                   1      2      W50G    *    12   1/2  270  20.33   2.50                                               6  40.0  3.0  5.000  7.000   1.029    -1.230     2159   0.655  0.671   0.479 -0.087  0.000 -0.009 -0.096  18.36   42.23    3.00    3.00    3.00 
+
+
+The Specification Check was Not Successful
+Strand slope exceeds maximum
+
+

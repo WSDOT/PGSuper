@@ -165,7 +165,6 @@ m_MaxDebondLengthByHardDistance(-1.0)
    {
 	   std::vector<CString> familyNames;
 	   if ( createType == DEFAULT )
-	
 	   {
 	      familyNames = CBeamFamilyManager::GetBeamFamilyNames();
 	   }
@@ -663,13 +662,19 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    {
       Float64 version = pLoad->GetVersion();
       if ( version > CURRENT_VERSION)
+      {
          THROW_LOAD(BadVersion,pLoad);
+      }
 
       std::_tstring name;
-      if(pLoad->Property(_T("Name"),&name))
+      if( pLoad->Property(_T("Name"),&name) )
+      {
          this->SetName(name.c_str());
+      }
       else
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       m_Dimensions.clear();
       if ( version <= 1.1 )
@@ -688,19 +693,25 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // Version 1.2 or greater... dictionary based defintion of girder dimensions
          std::_tstring strCLSID;
          if (!pLoad->Property(_T("CLSID"),&strCLSID) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          make_upper(strCLSID.begin(),strCLSID.end());
 
          std::_tstring strPublisher;
          if ( !pLoad->Property(_T("Publisher"),&strPublisher) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          std::_tstring strPublisherContactInfo;
          if ( 24 < version )
          {
             if ( !pLoad->Property(_T("ContactInfo"),&strPublisherContactInfo) )
+            {
               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          else
          {
@@ -709,7 +720,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          std::_tstring strSectionName;
          if ( !pLoad->Property(_T("SectionName"),&strSectionName) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          strCLSID = TranslateCLSID(strCLSID);
 
@@ -808,16 +821,24 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // max adjustment goes away and replaced with cover values
          Float64 dummy;
          if(!pLoad->Property(_T("DownwardStrandAdjustment"), &dummy))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("DownwardStrandIncrement"), &m_EndAdjustment.m_StrandIncrement))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("UpwardStrandAdjustment"), &dummy))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("UpwardStrandIncrement"), &m_HPAdjustment.m_StrandIncrement))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
       else
       {
@@ -832,22 +853,32 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
 
          if(!pLoad->Property(_T("UseDifferentHarpedGridAtEnds"), &m_bUseDifferentHarpedGridAtEnds))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (version < 7.0)
          {
             if(!pLoad->Property(_T("EndAllowVertAdjustment"), &m_EndAdjustment.m_AllowVertAdjustment))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("HPAllowVertAdjustment"), &m_HPAdjustment.m_AllowVertAdjustment))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             Float64 top_cover, bottom_cover;
             if(!pLoad->Property(_T("TopCover"), &top_cover))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+   
             if(!pLoad->Property(_T("BottomCover"), &bottom_cover))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             // convert old cover to adjustment limit
             m_EndAdjustment.m_TopFace = pgsTypes::TopFace;
@@ -861,58 +892,86 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_HPAdjustment.m_BottomLimit = bottom_cover;
 
             if(!pLoad->Property(_T("EndStrandIncrement"), &m_EndAdjustment.m_StrandIncrement))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          
             if(!pLoad->Property(_T("HPStrandIncrement"), &m_HPAdjustment.m_StrandIncrement))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          else
          {
 
             if(!pLoad->Property(_T("EndAllowVertAdjustment"), &m_EndAdjustment.m_AllowVertAdjustment))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("EndStrandIncrement"), &m_EndAdjustment.m_StrandIncrement))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             int lface;
             if(!pLoad->Property(_T("EndBottomFace"), &lface))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad); 
+            }
 
             m_EndAdjustment.m_BottomFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
             if(!pLoad->Property(_T("EndBottomLimit"), &m_EndAdjustment.m_BottomLimit))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("EndTopFace"), &lface))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad); 
+            }
 
             m_EndAdjustment.m_TopFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
             if(!pLoad->Property(_T("EndTopLimit"), &m_EndAdjustment.m_TopLimit))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("HPAllowVertAdjustment"), &m_HPAdjustment.m_AllowVertAdjustment))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("HPStrandIncrement"), &m_HPAdjustment.m_StrandIncrement))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("HPBottomFace"), &lface))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad); 
+            }
 
             m_HPAdjustment.m_BottomFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
             if(!pLoad->Property(_T("HPBottomLimit"), &m_HPAdjustment.m_BottomLimit))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("HPTopFace"), &lface))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad); 
+            }
 
             m_HPAdjustment.m_TopFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
             if(!pLoad->Property(_T("HPTopLimit"), &m_HPAdjustment.m_TopLimit))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             // Added separate adjustment for adj straight strands in version 23.0
             if (23.0 <= version)
@@ -931,23 +990,33 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                {
                   // load succeeded so carry on normally
                   if(!pLoad->Property(_T("StraightStrandIncrement"), &m_StraightAdjustment.m_StrandIncrement))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   if(!pLoad->Property(_T("StraightBottomFace"), &lface))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad); 
+                  }
 
                   m_StraightAdjustment.m_BottomFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
                   if(!pLoad->Property(_T("StraightBottomLimit"), &m_StraightAdjustment.m_BottomLimit))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   if(!pLoad->Property(_T("StraightTopFace"), &lface))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad); 
+                  }
 
                   m_StraightAdjustment.m_TopFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
                   if(!pLoad->Property(_T("StraightTopLimit"), &m_StraightAdjustment.m_TopLimit))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
                }
                else
                {
@@ -980,13 +1049,19 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( version <= 1.1 )
       {
          if(!pLoad->Property(_T("MaxStrandsInBottomBundle"), &maxStrandsInBottomBundle))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("BottomBundleLocation"), &bottomBundleLocation))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("TopBundleLocation"), &topBundleLocation))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       // Create a legacy bar saver if we need it
@@ -996,7 +1071,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          Int32 size;
          if(!pLoad->Property(_T("ShearSteelBarSize"), &size))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          lrfdRebarPool::MapOldRebarKey(size,legacy.m_StirrupBarGrade,legacy.m_StirrupBarType,legacy.m_ConfinementBarSize);
       }
@@ -1005,7 +1082,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // rename in version 18
          Int32 value;
          if ( !pLoad->Property(_T("ConfinementBarSize"), &value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          legacy.m_ConfinementBarSize = matRebar::Size(value);
       }
@@ -1013,25 +1092,37 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( version < 19 )
       {
          if(!pLoad->Property(_T("LastConfinementZone"), &legacy.m_LastConfinementZone))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("HarpingPointLocation"), &m_HarpingPointLocation))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( version <= 1.4 )
+      {
          m_HarpingPointLocation *= -1.0; // fractional distances < 0 starting with version 1.5
+      }
 
       if ( version <= 3.9 )
+      {
          m_HarpingPointLocation *= -1.0; // fractional distances are positive values again starting with version 4
+      }
 
       if ( 4.0 <= version )
       {
          if ( !pLoad->Property(_T("UseMinHarpingPointLocation"),&m_bMinHarpingPointLocation) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( m_bMinHarpingPointLocation && !pLoad->Property(_T("MinHarpingPointLocation"),&m_MinHarpingPointLocation) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( version <= 1.5 )
@@ -1042,7 +1133,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          int value;
          if(!pLoad->Property(_T("HarpingPointReference"), &value))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_HarpPointReference = (MeasurementLocation)value;
       }
@@ -1051,7 +1144,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          int value;
          if ( !pLoad->Property(_T("HarpingPointMeasure"),&value))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_HarpPointMeasure = (MeasurementType)value;
       }
@@ -1070,10 +1165,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // 120+       = 1/4 points
          Float64 H,W;
          if(!pLoad->Property(_T("DiaphragmHeight"), &H))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("DiaphragmWidth"), &W))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          DiaphragmLayoutRule rule1;
          rule1.Description = _T("40-80ft");
@@ -1156,10 +1255,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          std::_tstring strMat;
 
          if(!pLoad->Property(_T("ShearSteelMaterial"), &strMat))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("LongSteelMaterial"),  &strMat))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       // No longer needed in vesrion 18
@@ -1171,23 +1274,29 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // top flange shear steel
       if (version < 19 )
       {
-         if ( version >= 1.8 )
+         if ( 1.8 <= version )
          {
             if ( !pLoad->Property(_T("DoStirrupsEngageDeck"),    &legacy.m_bStirrupsEngageDeck) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          if ( 17 <= version )
          {
             if ( !pLoad->Property(_T("IsRoughenedSurface"),       &legacy.m_bIsRoughenedSurface) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          if (1.1 <= version )
          {
             Int32 size;
             if(!pLoad->Property(_T("TopFlangeShearBarSize"),  &size))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( version < 18 )
             {
@@ -1201,7 +1310,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
 
             if(!pLoad->Property(_T("TopFlangeShearBarSpacing"),  &legacy.m_TopFlangeShearBarSpacing))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          else
          {
@@ -1214,39 +1325,61 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if (12 < version)
       {
          if(!pLoad->BeginUnit(_T("DebondingCritia")))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          Float64 local_vers = pLoad->GetVersion();
          
             if (local_vers!=1.0)
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("MaxDebondStrands"),               &m_MaxDebondStrands))
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             if ( !pLoad->Property(_T("MaxDebondStrandsPerRow"),         &m_MaxDebondStrandsPerRow))
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             if ( !pLoad->Property(_T("MaxNumDebondedStrandsPerSection"),&m_MaxNumDebondedStrandsPerSection))
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             if ( !pLoad->Property(_T("MaxDebondedStrandsPerSection"),   &m_MaxDebondedStrandsPerSection))
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             if ( !pLoad->Property(_T("MinDebondLength"),                &m_MinDebondLength))
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             if ( !pLoad->Property(_T("DefaultDebondLength"),            &m_DefaultDebondLength))
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             if ( !pLoad->Property(_T("MaxDebondLengthBySpanFraction"),  &m_MaxDebondLengthBySpanFraction))
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             if ( !pLoad->Property(_T("MaxDebondLengthByHardDistance"),  &m_MaxDebondLengthByHardDistance))
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
          if ( !pLoad->EndUnit())
+         {
             THROW_LOAD(BadVersion,pLoad);
+         }
       }
 
       // old global debonding of strands. transfer this value to all straight strands in girder
@@ -1254,7 +1387,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 1.6 < version && version < 12.0)
       {
          if ( !pLoad->Property(_T("CanDebondStraightStrands"),&canDebondStraightStrands) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       // straight strand locations
@@ -1266,22 +1401,30 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             Float64 local_vers = pLoad->GetVersion();
             
             if (local_vers!=1.0 && local_vers!=2.0)
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             StraightStrandLocation locs;
             if(!pLoad->Property(_T("X"), &locs.m_Xstart))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Y"), &locs.m_Ystart))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             locs.m_Xend = locs.m_Xstart;
             locs.m_Yend = locs.m_Ystart;
 
-            if (local_vers>=2.0)
+            if (2.0 <= local_vers)
             {
                if(!pLoad->Property(_T("CanDebond"), &locs.m_bCanDebond))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
             }
             else
             {
@@ -1289,7 +1432,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
 
             if(!pLoad->EndUnit())
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_StraightStrands.push_back(locs);
          }
@@ -1297,35 +1442,51 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if ( !pLoad->BeginUnit(_T("StraightStrands")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          while( pLoad->BeginUnit(_T("StrandLocation")) )
          {
             StraightStrandLocation strandLocation;
             if(!pLoad->Property(_T("Xstart"), &strandLocation.m_Xstart))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Ystart"), &strandLocation.m_Ystart))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Xend"), &strandLocation.m_Xend))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Yend"), &strandLocation.m_Yend))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("CanDebond"), &strandLocation.m_bCanDebond))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->EndUnit()) // StrandLocation
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_StraightStrands.push_back(strandLocation);
          }
 
          // StraightStrands
          if(!pLoad->EndUnit())
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       // Harped Strands
@@ -1337,26 +1498,38 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             while(pLoad->BeginUnit(_T("HarpedStrandLocations")))
             {
                if(pLoad->GetVersion()!=2.0)
+               {
                   THROW_LOAD(BadVersion,pLoad);
+               }
 
                HarpedStrandLocation strandLocation;
                if(!pLoad->Property(_T("HpX"), &strandLocation.m_Xhp))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if(!pLoad->Property(_T("HpY"), &strandLocation.m_Yhp))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if(!pLoad->Property(_T("EndX"), &strandLocation.m_Xstart))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if(!pLoad->Property(_T("EndY"), &strandLocation.m_Ystart))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                strandLocation.m_Xend = strandLocation.m_Xstart;
                strandLocation.m_Yend = strandLocation.m_Ystart;
 
                if(!pLoad->EndUnit())
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                m_HarpedStrands.push_back(strandLocation);
             }
@@ -1378,19 +1551,27 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             while(pLoad->BeginUnit(_T("HarpedStrandLocations")))
             {
                if(pLoad->GetVersion()!=1.0)
+               {
                   THROW_LOAD(BadVersion,pLoad);
+               }
 
                Float64 x,y;
                if(!pLoad->Property(_T("X"), &x))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                num_harped += x>0.0 ? 2 : 1; // track total number for hp strand computation
 
                if(!pLoad->Property(_T("Y"), &y))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if(!pLoad->EndUnit())
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                CComPtr<IPoint2d> point;
                point.CoCreateInstance(CLSID_Point2d);
@@ -1422,22 +1603,30 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             // harped strands at harping point
             CComPtr<IPoint2dCollection> pHPStrandLocations;
             pHPStrandLocations.CoCreateInstance(CLSID_Point2dCollection);
-            if ( version >= 1.2 )
+            if ( 1.2 <= version )
             {
                while(pLoad->BeginUnit(_T("HPStrandLocations")))
                {
                   if(pLoad->GetVersion()!=1.0)
+                  {
                      THROW_LOAD(BadVersion,pLoad);
+                  }
 
                   Float64 x,y;
                   if(!pLoad->Property(_T("X"), &x))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   if(!pLoad->Property(_T("Y"), &y))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   if(!pLoad->EndUnit())
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   CComPtr<IPoint2d> point;
                   point.CoCreateInstance(CLSID_Point2d);
@@ -1507,7 +1696,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
                // now deal with issues related to X>0 and Float64 locations
                // indexes must be incremented if Float64 x==0's
-               if (hpx>0.0 && IsZero(endx))
+               if (0.0 < hpx && IsZero(endx))
                {
                   // next end point better have x==0
                   Float64 x;
@@ -1520,7 +1709,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
                }
-               if (endx>0.0 && IsZero(hpx))
+               if (0.0 < endx && IsZero(hpx))
                {
                   // next HP point better have x==0
                   Float64 x;
@@ -1542,42 +1731,60 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if ( !pLoad->BeginUnit(_T("HarpedStrands")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          while( pLoad->BeginUnit(_T("StrandLocation")) )
          {
             HarpedStrandLocation strandLocation;
             if(!pLoad->Property(_T("Xstart"), &strandLocation.m_Xstart))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Ystart"), &strandLocation.m_Ystart))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Xhp"), &strandLocation.m_Xhp))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Yhp"), &strandLocation.m_Yhp))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Xend"), &strandLocation.m_Xend))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Yend"), &strandLocation.m_Yend))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             // debond is ignore for temporary strands
             //if(!pLoad->Property(_T("CanDebond"), &strandLocation.m_bCanDebond))
             //   THROW_LOAD(InvalidFileFormat,pLoad);
 
             if(!pLoad->EndUnit()) // StrandLocation
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_HarpedStrands.push_back(strandLocation);
          }
 
          // HarpedStrands
          if(!pLoad->EndUnit())
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          pLoad->Property(_T("OddNumberOfHarpedStrands"),&m_bOddNumberOfHarpedStrands);
@@ -1633,17 +1840,25 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          while(pLoad->BeginUnit(_T("TemporaryStrandLocations")))
          {
             if(pLoad->GetVersion()!=1.0)
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             Float64 x,y;
             if(!pLoad->Property(_T("X"), &x))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Y"), &y))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->EndUnit())
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             StraightStrandLocation strandLocation;
             strandLocation.m_bCanDebond = false;
@@ -1658,36 +1873,50 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if ( !pLoad->BeginUnit(_T("TemporaryStrands")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          while( pLoad->BeginUnit(_T("StrandLocation")) )
          {
             StraightStrandLocation strandLocation;
             if(!pLoad->Property(_T("Xstart"), &strandLocation.m_Xstart))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Ystart"), &strandLocation.m_Ystart))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Xend"), &strandLocation.m_Xend))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Yend"), &strandLocation.m_Yend))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             // debond is ignore for temporary strands
             //if(!pLoad->Property(_T("CanDebond"), &strandLocation.m_bCanDebond))
             //   THROW_LOAD(InvalidFileFormat,pLoad);
 
             if(!pLoad->EndUnit()) // StrandLocation
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_TemporaryStrands.push_back(strandLocation);
          }
 
          // TemporaryStrands
          if(!pLoad->EndUnit())
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       // global strand order
@@ -1717,11 +1946,15 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          while(pLoad->BeginUnit(_T("GlobalStrandOrder")))
          {
             if(pLoad->GetVersion()!=1.0)
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             std::_tstring name;
             if(!pLoad->Property(_T("StrandType"),&name))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             PermanentStrand permStrand;
 
@@ -1740,11 +1973,15 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
          
             if(!pLoad->Property(_T("LocalSortOrder"), &permStrand.m_GridIdx))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
 
             if(!pLoad->EndUnit())
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_PermanentStrands.push_back(permStrand);
          }
@@ -1752,14 +1989,16 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if (version < 7.0)
          {
             // added in version 5, removed in 7
-         int smtype;
-         if(!pLoad->Property(_T("StressMitigationType"), &smtype))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            int smtype;
+            if(!pLoad->Property(_T("StressMitigationType"), &smtype))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
       }
 
       // shear zones
-      if (version >= 19)
+      if (19 <= version)
       {
          // After 19, we just user common data class
          m_ShearData.Load(pLoad);
@@ -1772,12 +2011,16 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             Int32 value;
             if ( !pLoad->Property(_T("ShearSteelBarType"), &value) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             legacy.m_StirrupBarType = matRebar::Type(value);
 
             if ( !pLoad->Property(_T("ShearSteelBarGrade"), &value) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             legacy.m_StirrupBarGrade = matRebar::Grade(value);
          }
@@ -1789,16 +2032,22 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             Float64 shear_zone_version = pLoad->GetVersion();
 
             if(3 < shear_zone_version )
+            {
                THROW_LOAD(BadVersion,pLoad);
+            }
 
             if ( shear_zone_version < 2 )
             {
                if(!pLoad->Property(_T("ZoneLength"),&zi.ZoneLength))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                Int32 size;
                if(!pLoad->Property(_T("BarSize"), &size))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                matRebar::Grade grade;
                matRebar::Type type;
@@ -1808,12 +2057,16 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                if ( version < 11.0 )
                {
                   if(!pLoad->Property(_T("SS"), &zi.StirrupSpacing))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
                }
                else
                {
                   if(!pLoad->Property(_T("Spacing"), &zi.StirrupSpacing))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
                }
 
                if ( 1.1 <= shear_zone_version )
@@ -1821,7 +2074,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                   ATLASSERT( shear_zone_version < 2 );
 
                   if ( !pLoad->Property(_T("NBars"), &zi.nVertBars) )
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
                }
                else
                {
@@ -1834,16 +2089,22 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             else
             {
                if(!pLoad->Property(_T("ZoneLength"),&zi.ZoneLength))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if(!pLoad->Property(_T("Spacing"), &zi.StirrupSpacing))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( shear_zone_version < 3 )
                {
                   Int32 size;
                   if(!pLoad->Property(_T("VertBarSize"), &size))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   matRebar::Grade grade;
                   matRebar::Type type;
@@ -1853,19 +2114,25 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                {
                   Int32 value;
                   if(!pLoad->Property(_T("VertBarSize"), &value))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   zi.VertBarSize = matRebar::Size(value);
                }
 
                if(!pLoad->Property(_T("VertBars"), &zi.nVertBars))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( shear_zone_version < 3 )
                {
                   Int32 size;
                   if(!pLoad->Property(_T("HorzBarSize"), &size))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   matRebar::Grade grade;
                   matRebar::Type type;
@@ -1875,18 +2142,24 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                {
                   Int32 value;
                   if(!pLoad->Property(_T("HorzBarSize"), &value))
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   zi.HorzBarSize = matRebar::Size(value);
                }
 
                if(!pLoad->Property(_T("HorzBars"), &zi.nHorzBars))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
             }
 
 
             if(!pLoad->EndUnit())
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             legacy.m_ShearZoneInfo.push_back(zi);
          }
@@ -1901,12 +2174,16 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          int value;
 
          if(!pLoad->Property(_T("LongitudinalBarType"), &value))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_LongitudinalBarType = matRebar::Type(value);
 
          if(!pLoad->Property(_T("LongitudinalBarGrade"), &value))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_LongitudinalBarGrade = matRebar::Grade(value);
       }
@@ -1927,35 +2204,53 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             Int32 layout;
             if(!pLoad->Property(_T("BarLayout"),  &layout))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             li.BarLayout = (pgsTypes::RebarLayoutType)layout;
 
             if(!pLoad->Property(_T("DistFromEnd"), &li.DistFromEnd))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("BarLength"), &li.BarLength))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          if(!pLoad->Property(_T("Face"), &tmp))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (tmp==_T("Bottom"))
+         {
             li.Face = pgsTypes::BottomFace;
+         }
          else if (tmp==_T("Top"))
+         {
             li.Face = pgsTypes::TopFace;
+         }
          else
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("NumberOfBars"), &li.NumberOfBars))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( pLoad->GetVersion() < 2.0 )
          {
             Int32 barSize;
             if(!pLoad->Property(_T("BarSize"),  &barSize))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             matRebar::Grade grade;
             matRebar::Type type;
@@ -1965,26 +2260,36 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             Int32 value;
             if(!pLoad->Property(_T("BarSize"),  &value))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             li.BarSize = matRebar::Size(value);
          }
 
          if(!pLoad->Property(_T("BarCover"), &li.Cover))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("BarSpacing"), &li.BarSpacing))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->EndUnit())
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_LongSteelInfo.push_back(li);
       }
    
 
       if ( !bOldIntermediateDiaphragms )
+      {
          m_DiaphragmLayoutRules.clear();
+      }
 
       while ( pLoad->BeginUnit(_T("DiaphragmLayoutRule")) )
       {
@@ -1992,21 +2297,31 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          Float64 diaVersion = pLoad->GetVersion();
 
          if ( !pLoad->Property(_T("Description"),&dlr.Description) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MinSpan"),&dlr.MinSpan) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MaxSpan"),&dlr.MaxSpan) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( diaVersion < 2 )
          {
             if ( !pLoad->Property(_T("Height"),&dlr.Height) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("Thickness"),&dlr.Thickness) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             dlr.Method = dwmCompute;
          }
@@ -2014,62 +2329,96 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             int value;
             if ( !pLoad->Property(_T("Method"),&value) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             dlr.Method = (DiaphragmWeightMethod)value;
 
             if ( dlr.Method == dwmCompute )
             {
                if ( !pLoad->Property(_T("Height"),&dlr.Height) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("Thickness"),&dlr.Thickness) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
             }
             else
             {
                if ( !pLoad->Property(_T("Weight"),&dlr.Weight) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
             }
          }
 
          int value;
          if ( !pLoad->Property(_T("DiaphragmType"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
          dlr.Type = (DiaphragmType)(value);
 
          if ( !pLoad->Property(_T("ConstructionType"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
          dlr.Construction = (ConstructionType)(value);
 
          if ( !pLoad->Property(_T("MeasurementType"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+/*
+         if ( value == 0 )
+         {
+            // value = 0 is fraction of span length... this doesn't make sense for the generalized approach for spliced girders
+            // set value to 1, fraction of precast segment length
+            value = 1;
+         }
+*/
          dlr.MeasureType = (MeasurementType)(value);
 
          if ( !pLoad->Property(_T("MeasurmentLocation"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
          dlr.MeasureLocation = (MeasurementLocation)(value);
 
          if ( !pLoad->Property(_T("Location"),&dlr.Location) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_DiaphragmLayoutRules.push_back(dlr);
 
          if ( !pLoad->EndUnit() )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if (20 <= version)
       {
          if ( !pLoad->BeginUnit(_T("ShearDesign")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          IndexType size;
          if ( !pLoad->Property(_T("StirrupSizeBarComboCollSize"),&size) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->BeginUnit(_T("StirrupSizeBarComboColl")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_StirrupSizeBarComboColl.clear();
          for (IndexType is=0; is<size; is++)
@@ -2078,78 +2427,112 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             Int32 value;
             if ( !pLoad->Property(_T("BarSize"), &value) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             cbo.Size = matRebar::Size(value);
 
              if ( !pLoad->Property(_T("NLegs"),&(cbo.NLegs)) )
+             {
                 THROW_LOAD(InvalidFileFormat,pLoad);
+             }
 
              m_StirrupSizeBarComboColl.push_back(cbo);
          }
 
          if ( !pLoad->EndUnit() ) // StirrupSizeBarComboColl
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("NumAvailableBarSpacings"),&size) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->BeginUnit(_T("AvailableBarSpacings")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_AvailableBarSpacings.clear();
          for (IndexType is=0; is<size; is++)
          {
             Float64 spacing;
             if ( !pLoad->Property(_T("Spacing"),&spacing) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_AvailableBarSpacings.push_back(spacing);
          }
 
          if ( !pLoad->EndUnit() ) // AvailableBarSpacings
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          if ( !pLoad->Property(_T("MaxSpacingChangeInZone"),&m_MaxSpacingChangeInZone) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MaxShearCapacityChangeInZone"),&m_MaxShearCapacityChangeInZone) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MinZoneLengthSpacings"),&m_MinZoneLengthSpacings) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MinZoneLengthLength"),&m_MinZoneLengthLength) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          bool bogus_bool; // Load these values even though they are no longer used.
          if ( !pLoad->Property(_T("IsTopFlangeRoughened"),&bogus_bool) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("DoExtendBarsIntoDeck"),&m_DoExtendBarsIntoDeck) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("DoBarsProvideSplittingCapacity"),&bogus_bool) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("DoBarsActAsConfinement"),&m_DoBarsActAsConfinement) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          Int32 lval;
          if ( !pLoad->Property(_T("LongShearCapacityIncreaseMethod"),&lval) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_LongShearCapacityIncreaseMethod = (LongShearCapacityIncreaseMethod)lval;
 
          if ( !pLoad->EndUnit() ) // ShearDesign
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       // Strand data is all loaded now - need to clean up adjustable strand type so design strategies
       // get set up correctly next
-      if ( 23.0 >= version)
+      if ( version <= 23.0 )
       {
          m_AdjustableStrandType = m_HarpedStrands.empty() ? pgsTypes::asStraight : pgsTypes::asHarped;
       }
@@ -2176,24 +2559,34 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                PrestressDesignStrategy strategy;
                Int32 lval;
                if(!pLoad->Property(_T("FlexuralDesignType"),&lval))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                strategy.m_FlexuralDesignType = (arFlexuralDesignType)lval;
 
                if(!pLoad->Property(_T("MaxFc"), &strategy.m_MaxFc))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if(!pLoad->Property(_T("MaxFci"), &strategy.m_MaxFci))
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if(!pLoad->EndUnit()) // PrestressDesignStrategy
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                m_PrestressDesignStrategies.push_back(strategy);
             }
 
             if ( !pLoad->EndUnit() ) // PrestressDesignStrategies
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          else
          {
@@ -2221,7 +2614,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
       if(!pLoad->EndUnit())
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
@@ -2253,7 +2648,9 @@ HRESULT GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
       CComPtr<IClassFactory> classFactory;
       HRESULT hr = ::CoGetClassObject(clsid,CLSCTX_ALL,NULL,IID_IClassFactory,(void**)&classFactory);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       CClassFactoryHolder cfh(classFactory);
 
@@ -2278,67 +2675,93 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
 
    Float64 value;
    if(!pLoad->Property(_T("D1"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("D1"),value));
 
    if(!pLoad->Property(_T("D2"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("D2"),value));
 
    if(!pLoad->Property(_T("D3"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("D3"),value));
 
    if(!pLoad->Property(_T("D4"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("D4"),value));
 
    if(!pLoad->Property(_T("D5"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("D5"),value));
 
    if(!pLoad->Property(_T("D6"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("D6"),value));
 
    if(!pLoad->Property(_T("D7"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("D7"),value));
 
    if(!pLoad->Property(_T("W1"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("W1"),value));
 
    if(!pLoad->Property(_T("W2"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("W2"),value));
 
    if(!pLoad->Property(_T("W3"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("W3"),value));
 
    if(!pLoad->Property(_T("W4"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("W4"),value));
 
    if(!pLoad->Property(_T("T1"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("T1"),value));
 
    if(!pLoad->Property(_T("T2"), &value))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_Dimensions.push_back(Dimension(_T("T2"),value));
 
@@ -2367,7 +2790,9 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
    test &= (m_bMinHarpingPointLocation == rOther.m_bMinHarpingPointLocation);
 
    if ( m_bMinHarpingPointLocation )
+   {
       test &= (m_MinHarpingPointLocation == rOther.m_MinHarpingPointLocation);
+   }
 
    test &= (m_HarpPointReference       == rOther.m_HarpPointReference);
    test &= (m_HarpPointMeasure         == rOther.m_HarpPointMeasure);
@@ -2411,11 +2836,15 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
 
    // Must first check that size of vectors match,
    if (m_AvailableBarSpacings.size() != rOther.m_AvailableBarSpacings.size())
+   {
       return false;
+   }
 
    // then we can compare content
    if (!std::equal(m_AvailableBarSpacings.begin(), m_AvailableBarSpacings.end(), rOther.m_AvailableBarSpacings.begin(), EqualDoublePred))
+   {
       return false;
+   }
 
    test &= ::IsEqual(m_MaxSpacingChangeInZone, rOther.m_MaxSpacingChangeInZone);
    test &= ::IsEqual(m_MaxShearCapacityChangeInZone, rOther.m_MaxShearCapacityChangeInZone);
@@ -2428,7 +2857,9 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
    test &= m_PrestressDesignStrategies == rOther.m_PrestressDesignStrategies;
 
    if (considerName)
+   {
       test &= this->GetName()==rOther.GetName();
+   }
 
    return test;
 }
@@ -2874,9 +3305,13 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       gpPoint2d testpnt;
       testpnt.X() = (*itl).BarSpacing * ((*itl).NumberOfBars-1)/2.;
       if ((*itl).Face==pgsTypes::BottomFace)
+      {
          testpnt.Y() = (*itl).Cover;
+      }
       else
+      {
          testpnt.Y() = height-(*itl).Cover;
+      }
 
       point->Move(testpnt.X(),testpnt.Y());
       VARIANT_BOOL bPointInShape;
@@ -3034,7 +3469,9 @@ Float64 GirderLibraryEntry::GetDimension(const std::_tstring& name) const
    {
       const Dimension& dim = *iter;
       if ( name == dim.first )
+      {
          return dim.second;
+      }
    }
 
    ATLASSERT(false); // should never get here
@@ -3103,9 +3540,13 @@ void GirderLibraryEntry::EnableVariableDepthSection(bool bEnable)
 bool GirderLibraryEntry::IsVariableDepthSectionEnabled() const
 {
    if ( m_bSupportsVariableDepthSection )
+   {
       return m_bIsVariableDepthSectionEnabled;
+   }
    else
+   {
       return false;
+   }
 }
 
 void GirderLibraryEntry::ClearAllStrands()
@@ -3428,7 +3869,9 @@ bool GirderLibraryEntry::GetPermStrandDistribution(StrandIndexType totalNumStran
          np = nh + ns;
 
          if (totalNumStrands <= np)
+         {
             break;
+         }
       }
 
       if (np == totalNumStrands)
@@ -3482,10 +3925,14 @@ bool GirderLibraryEntry::IsValidNumberOfStraightStrands(StrandIndexType ns) cons
          nStrands++;
 
          if (0.0 < strandLocation.m_Xstart)
+         {
             nStrands++;
+         }
 
          if (ns <= nStrands)
+         {
             break;
+         }
       }
 
       return (nStrands == ns) ? true : false;
@@ -3524,7 +3971,9 @@ bool GirderLibraryEntry::IsValidNumberOfHarpedStrands(StrandIndexType nh) const
             }
 
             if (nh <= nHarped)
+            {
                break;
+            }
          }
 
          return (nh == nHarped ? true : false);
@@ -3550,10 +3999,14 @@ bool GirderLibraryEntry::IsValidNumberOfTemporaryStrands(StrandIndexType nt) con
          nStrands++;
 
          if (0.0 < strandLocation.m_Xstart)
+         {
             nStrands++;
+         }
 
          if (nt <= nStrands)
+         {
             break;
+         }
       }
 
       return (nStrands == nt) ? true : false;
@@ -3890,9 +4343,13 @@ HICON  GirderLibraryEntry::GetIcon() const
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if (m_pBeamFactory)
+   {
       return m_pBeamFactory->GetIcon();
+   }
    else
+   {
       return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_GIRDER_ENTRY) );
+   }
 }
 
 void GirderLibraryEntry::ConfigureStraightStrandGrid(Float64 HgStart,Float64 HgEnd,IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const
@@ -4045,7 +4502,9 @@ bool GirderLibraryEntry::CanDebondStraightStrands() const
       const StraightStrandLocation& strandLocation = *iter;
 
       if (strandLocation.m_bCanDebond)
+      {
          return true; // if there is one, we can debond
+      }
    }
 
    return false;
@@ -4152,7 +4611,9 @@ bool GirderLibraryEntry::IsEqual(IPoint2dCollection* points1,IPoint2dCollection*
    points2->get_Count(&c2);
 
    if ( c1 != c2 )
+   {
       return false;
+   }
 
    CollectionIndexType idx;
    for ( idx = 0; idx < c1; idx++ )
@@ -4162,7 +4623,9 @@ bool GirderLibraryEntry::IsEqual(IPoint2dCollection* points1,IPoint2dCollection*
       points2->get_Item(idx,&p2);
 
       if ( !IsEqual(p1,p2) )
+      {
          return false;
+      }
    }
 
    return true;

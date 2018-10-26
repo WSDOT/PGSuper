@@ -34,8 +34,15 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-CColumnFixityComboBox::CColumnFixityComboBox()
+CColumnFixityComboBox::CColumnFixityComboBox(UINT fixity) :
+m_Fixity(fixity)
 {
+}
+
+void CColumnFixityComboBox::SetFixityTypes(UINT fixity)
+{
+   m_Fixity = fixity;
+   UpdateFixity();
 }
 
 int CColumnFixityComboBox::AddFixity(pgsTypes::ColumnFixityType fixityType)
@@ -48,9 +55,23 @@ int CColumnFixityComboBox::AddFixity(pgsTypes::ColumnFixityType fixityType)
 void CColumnFixityComboBox::PreSubclassWindow()
 {
    CComboBox::PreSubclassWindow();
+   UpdateFixity();
+}
 
-   AddFixity(pgsTypes::cftFixed);
-   AddFixity(pgsTypes::cftPinned);
+void CColumnFixityComboBox::UpdateFixity()
+{
+   if ( GetSafeHwnd() )
+   {
+      if ( sysFlags<UINT>::IsSet(m_Fixity,COLUMN_FIXITY_FIXED) )
+      {
+         AddFixity(pgsTypes::cftFixed);
+      }
+
+      if ( sysFlags<UINT>::IsSet(m_Fixity,COLUMN_FIXITY_PINNED) )
+      {
+         AddFixity(pgsTypes::cftPinned);
+      }
+   }
 }
 
 void CColumnFixityComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)

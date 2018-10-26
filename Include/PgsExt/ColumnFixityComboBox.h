@@ -32,17 +32,23 @@
 //   DDX_Control(pDX,IDC_COLUMN_FIXITY,m_cbColumnFixity);
 //   DDX_CBItemData(pDX, IDC_COLUMN_FIXITY, m_ColumnFixity);
 
+#define COLUMN_FIXITY_FIXED  0x0001
+#define COLUMN_FIXITY_PINNED 0x0002
 class PGSEXTCLASS CColumnFixityComboBox : public CComboBox
 {
 public:
-   CColumnFixityComboBox();
+   CColumnFixityComboBox(UINT fixity = COLUMN_FIXITY_FIXED | COLUMN_FIXITY_PINNED);
+
+   void SetFixityTypes(UINT fixity);
 
    virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
 
 
 private:
+   void UpdateFixity();
    int AddFixity(pgsTypes::ColumnFixityType fixityType);
 
 protected:
+   UINT m_Fixity;
    virtual void PreSubclassWindow();
 };

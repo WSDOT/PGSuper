@@ -177,6 +177,9 @@ interface IIntervals : IUnknown
    // returns true if a tendon is stressed during the specified interval
    virtual bool IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
 
+   // returns true if there is a change in prestressing during the specified interval
+   virtual bool IsStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+
    // returns the interval index when a temporary support is erected
    virtual IntervalIndexType GetTemporarySupportErectionInterval(SupportIndexType tsIdx) = 0;
 

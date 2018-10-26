@@ -1,0 +1,30 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 41.33    6   7.17      E Camas      1      1     W74MG          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  9.000   4.296    -5.449    11116   0.686  0.755  -5.684 -2.329  0.000 -0.195 -2.524   0.00    0.00    3.00    3.00    3.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Confinement zone check failed.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 41.33    6   7.17      E Camas      1      2     W74MG    *    42   0.6  270  34.50  14.31                                              16  63.6  5.9  7.500  9.000   4.178    -5.254    10547   0.620  0.755   4.974 -2.272  0.000 -0.195 -2.467 218.74  455.70    5.00    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 7 Remove temporary strands
+Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone check failed.
+
+

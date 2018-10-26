@@ -522,12 +522,12 @@ bool pgsVerticalShearArtifact::Passed() const
          return false;
       }
 
-      if (m_AreStirrupsReqd && ! m_AreStirrupsProvided)
+      if (m_AreStirrupsReqd && !m_AreStirrupsProvided)
       {
          return false;
       }
 
-      if (m_Demand > m_Capacity)
+      if (m_Capacity < m_Demand)
       {
          return false;
       }

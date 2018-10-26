@@ -75,6 +75,11 @@ CPierLayoutPage::CPierLayoutPage() : CPropertyPage(CPierLayoutPage::IDD)
 	//{{AFX_DATA_INIT(CPierLayoutPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+   
+   
+   // only using the fixed option (no pinned at base of column,
+   // it leads to unstable models before continuity is achieved)
+   m_cbColumnFixity.SetFixityTypes(COLUMN_FIXITY_FIXED); 
 }
 
 CPierLayoutPage::~CPierLayoutPage()

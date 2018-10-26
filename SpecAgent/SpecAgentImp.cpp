@@ -808,8 +808,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
    else
    {
       // now for the normal cases
-      bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
-      bool bIsStressingInterval = (releaseIntervalIdx == intervalIdx || bIsTendonStressingInterval ? true : false);
+      bool bIsStressingInterval = pIntervals->IsStressingInterval(segmentKey,intervalIdx);
 
       if ( bIsStressingInterval )
       {
@@ -971,8 +970,7 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
-   bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
-   bool bIsStressingInterval = (intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval ? true : false);
+   bool bIsStressingInterval = pIntervals->IsStressingInterval(segmentKey,intervalIdx);
 
    // first deal with the special cases
    if ( intervalIdx == liftingIntervalIdx )

@@ -66,26 +66,27 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,                 
                                  Float64 rightSupportLoc,                     // distance from the right end of the model to the right support location
                                  Float64 E,                                   // modulus of elasticity
                                  LoadCaseIDType lcidGirder,                   // load case ID that is to be used to define the girder dead load
-                                 bool bIncludeCantilevers,                    // if true, cantilevers defined by leftSupportLoc and rightSupportLoc are modeled
+                                 bool bModelLeftCantilever,                   // if true, the cantilever defined by leftSupportLoc is modeled
+                                 bool bModelRightCantilever,                  // if true, the cantilever defined by rightSupportLoc is modeled
                                  const std::vector<pgsPointOfInterest>& vPOI, // vector of PGSuper POIs that are to be modeld in the Fem2d Model
                                  IFem2dModel** ppModel,                       // the Fem2d Model
                                  pgsPoiMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
                                  )
 {
-   // use template methods
-   BuildModel(pBroker, intervalIdx, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
+   // Build the model... always model the cantilevers in the geometry of the FEM model
+   BuildModel(pBroker, intervalIdx, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, true, true, vPOI, ppModel, pPoiMap);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
 
-   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
+   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel, pPoiMap);
 
-   ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
+   ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel, pPoiMap);
 }
 
 void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,
                                           Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
-                                          LoadCaseIDType lcidGirder,bool bIncludeCantilevers,
+                                          LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
                                           const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
 {
    if ( *ppModel )
@@ -158,7 +159,8 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
    {
       pgsPointOfInterest& poi( *jointIter );
       Float64 Xpoi = poi.GetDistFromStart();
-      if ( !bIncludeCantilevers && (Xpoi < leftSupportLoc || rightSupportLoc < Xpoi) )
+      if ( (!bModelLeftCantilever && (Xpoi < leftSupportLoc)) || 
+           (!bModelRightCantilever && (rightSupportLoc < Xpoi)) )
       {
          // location is before or after the left/right support and we arn't modeling
          // the cantilevers... next joint
@@ -215,14 +217,15 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
    jointIter = prevJointIter;
    jointIter++;
    jointIterEnd = xsPOI.end();
-   for ( ; jointIter < jointIterEnd; jointIter++, prevJointIter++, jntID++, prevJntID++ )
+   for ( ; jointIter < jointIterEnd; jointIter++, prevJointIter++ )
    {
       pgsPointOfInterest& prevPoi( *prevJointIter );
       pgsPointOfInterest& poi( *jointIter );
 
-      if ( !bIncludeCantilevers && (prevPoi.GetDistFromStart() < leftSupportLoc || rightSupportLoc < prevPoi.GetDistFromStart()) )
+      if ( (!bModelLeftCantilever  && (prevPoi.GetDistFromStart() < leftSupportLoc)) || 
+           (!bModelRightCantilever && (rightSupportLoc <= prevPoi.GetDistFromStart())) )
       {
-         // location is before or after the left/right support and we arn't modeling
+         // location is before or after the left/right support and we aren't modeling
          // the cantilevers... next member
          continue;
       }
@@ -238,6 +241,9 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
 
       CComPtr<IFem2dMember> member;
       members->Create(mbrID++,prevJntID,jntID,EA,EI,&member);
+
+      prevJntID++;
+      jntID++;
 
       if ( poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) )
       {
@@ -255,7 +261,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
 
 void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                        Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
-                                       bool bIncludeCantilevers,const std::vector<pgsPointOfInterest>& vPOI,
+                                       bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,
                                        IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
 {
    // apply loads
@@ -292,7 +298,7 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
       Float64 start  = gdrLoad.StartLoc;
       Float64 end    = gdrLoad.EndLoc;
 
-      if ( !bIncludeCantilevers && ::IsLT(start,leftSupportLoc) )
+      if ( !bModelLeftCantilever && ::IsLT(start,leftSupportLoc) )
       {
          // this load segment begins before the left support and we are ignoring loads out there
   
@@ -300,7 +306,8 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
          wStart = ::LinInterp(leftSupportLoc,wStart,wEnd,end-start);
          start = leftSupportLoc;
       }
-      else if ( !bIncludeCantilevers && ::IsLT(rightSupportLoc,end) )
+
+      if ( !bModelRightCantilever && ::IsLT(rightSupportLoc,end) )
       {
          // this load segment ends after the right support and we are ignoring loads out there
 
@@ -393,6 +400,7 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
       DiaphragmLoad& diaphragmLoad = *diaLoadIter;
 
       mbrID = 0;
+      bool bApplyLoad = false;
 
       CollectionIndexType nJoints;
       joints->get_Count(&nJoints);
@@ -406,7 +414,8 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
          prevJoint->get_X(&xPrev);
          nextJoint->get_X(&xNext);
 
-         if ( !bIncludeCantilevers && (xPrev < leftSupportLoc || rightSupportLoc < xPrev) )
+         if ((!bModelLeftCantilever  && ::IsLT(xPrev,leftSupportLoc) ) ||
+             (!bModelRightCantilever && ::IsLT(rightSupportLoc,xPrev) ) )
          {
             // location is before or after the left/right support and we arn't modeling
             // the cantilevers... next member
@@ -416,18 +425,22 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
          if ( InRange(xPrev,diaphragmLoad.Loc,xNext) )
          {
             x = diaphragmLoad.Loc - xPrev;
+            bApplyLoad = true;
             break;
          }
       }
 
-      CComPtr<IFem2dPointLoad> pointLoad;
-      pointLoads->Create(loadID++,mbrID,x,0,diaphragmLoad.Load,0,lotMember,&pointLoad);
+      if ( bApplyLoad )
+      {
+         CComPtr<IFem2dPointLoad> pointLoad;
+         pointLoads->Create(loadID++,mbrID,x,0,diaphragmLoad.Load,0,lotMember,&pointLoad);
+      }
    }
 }
 
 void pgsGirderModelFactory::ApplyPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
-                                                  bool bIncludeCantilevers,const std::vector<pgsPointOfInterest>& vPOI,
+                                                  bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,
                                                   IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
 {
    // layout poi on fem model
@@ -556,12 +569,12 @@ pgsKdotHaulingGirderModelFactory::~pgsKdotHaulingGirderModelFactory(void)
 {
 }
 
-void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength, 
-                                                  Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
-                                                  bool bIncludeCantilevers,const std::vector<pgsPointOfInterest>& vPOI,
-                                                  IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
+                                                  Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
+                                                  LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
+                                                  const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
 {
-   ATLASSERT(bIncludeCantilevers); // kdot method should always include cantilevers
+   ATLASSERT(bModelLeftCantilever && bModelRightCantilever); // kdot method should always include cantilevers
 
    // apply  loads
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);

@@ -739,7 +739,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
 
    pDetails->ControllingLocation = ctrl_loc_from_gdr;
 
-   pgsPointOfInterest ctrl_poi(segmentKey,Xs);
+   pgsPointOfInterest ctrl_poi = pPoi->GetPointOfInterest(segmentKey,Xs);
 
    // station of controlling loc
    Float64 ctrl_station, ctrl_offset;

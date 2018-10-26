@@ -103,10 +103,11 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // let the paragraph builder to all the work here...
+   bool doEjectPage;
    CTexasIBNSParagraphBuilder parabuilder;
    std::vector<CSegmentKey> segmentKeys;
    segmentKeys.push_back(segmentKey);
-   rptParagraph* pcontent = parabuilder.Build(pBroker,segmentKeys,pDisplayUnits,level);
+   rptParagraph* pcontent = parabuilder.Build(pBroker,segmentKeys,pDisplayUnits,level, doEjectPage);
 
    *pChapter << pcontent;
 

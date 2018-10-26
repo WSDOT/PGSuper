@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 54.25    5  11.00                   1      1      U40          37   1/2  270  13.65  13.32  14   2.17   27    14    8   6   0   0   0   4.000  5.000   2.307    -2.477     5084   0.985  1.147  2.367  -0.53  -0.00  -0.11  -0.65   82.35  221.94    1.00    1.00    1.00 
+ 54.25    5  11.00                   1      1      U40          37   1/2  270  13.65  13.32  14   2.17   27    14    8   6   0   0   0   4.000  5.000   2.307    -2.477     5084   0.985  1.147   2.366 -0.534 -0.008 -0.116 -0.657  82.34  221.93    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -9,11 +9,11 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 54.25    5  11.00                   1      2      U40          37   1/2  270  13.65  13.32  14   2.17   27    14    8   6   0   0   0   4.000  5.000   2.730    -2.896     6054   1.150  1.343  2.452  -0.75  -0.04  -0.08  -0.88   78.25  209.88    1.00    1.00    1.00 
+ 54.25    5  11.00                   1      2      U40          37   1/2  270  13.65  13.32  14   2.17   27    14    8   6   0   0   0   4.000  5.000   2.730    -2.896     6054   1.150  1.343   2.451 -0.759 -0.041 -0.081 -0.882  78.24  209.87    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -21,7 +21,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 54.25    5  11.00                   1      3      U40          54   1/2  270  13.20  12.70  26   2.17   27    20    4   8   6   0   2   4.300  5.000   3.171    -3.197     6554   1.166  1.367  4.119  -1.08  -0.04  -0.03  -1.17  155.85  409.60    1.00    1.00    1.00 
+ 54.25    5  11.00                   1      3      U40          54   1/2  270  13.20  12.70  26   2.17   27    20    4   8   6   0   2   4.300  5.000   3.171    -3.197     6554   1.166  1.367   4.117 -1.089 -0.049 -0.034 -1.172 155.84  409.58    1.00    1.00    1.00 
                                                                                                   4.14   27     6    6   0   0   0   0 
 
 

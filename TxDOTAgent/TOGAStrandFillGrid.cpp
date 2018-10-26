@@ -258,10 +258,6 @@ void CTOGAStrandFillGrid::SetRowStyle(ROWCOL nRow)
 
 void CTOGAStrandFillGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
@@ -397,6 +393,10 @@ void CTOGAStrandFillGrid::FillGrid()
          if ( bIsDebonded )
          {
             // strand is debonded
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
             SetStyleRange(CGXRange(row,DEBOND_VAL_COL), CGXStyle()
                .SetValue(FormatDimension(leftDebond, pDisplayUnits->GetXSectionDimUnit(), false))
                .SetReadOnly(FALSE)
@@ -495,9 +495,6 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
 {
    // Strand fill information is kept up to date in OnClickedButtonRowCol
    // However, debonding and extended strand information must be taken care of here
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // clear out old debond data
    m_pParent->m_StraightDebond.clear();
@@ -532,6 +529,10 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
                this->SetCurrentCell(nRow,DEBOND_VAL_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
                return false;
             }
+
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             leftDebond  = ::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
          }

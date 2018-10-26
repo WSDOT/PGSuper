@@ -926,7 +926,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    (*p_table)(0,1) << _T("Top Stress, ") << RPT_FTOP;
 
    p_table->SetColumnSpan(0,2,4);
-   (*p_table)(0,2) << _T("Bottom Stress ") << RPT_FBOT;
+   (*p_table)(0,2) << _T("Bottom Stress, ") << RPT_FBOT;
 
    p_table->SetColumnSpan(0,3,SKIP_CELL);
    p_table->SetColumnSpan(0,4,SKIP_CELL);
@@ -1082,7 +1082,7 @@ void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKe
    GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
 
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_HAUL_SEGMENT | POI_5L);
+   vPoi = pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_5L);
    ATLASSERT(vPoi.size()==1);
    pgsPointOfInterest& poi = vPoi[0];
    Float64 loc = poi.GetDistFromStart();

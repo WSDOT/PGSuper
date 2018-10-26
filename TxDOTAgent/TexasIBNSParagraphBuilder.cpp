@@ -75,7 +75,7 @@ static void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisp
 CLASS	TxDOTIBNSDebondWriter
 ****************************************************************************/
 
-void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName)
+void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName)
 {
    *pPara<<rptNewLine; // make some space
 
@@ -189,13 +189,18 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          CComPtr<IPoint2dCollection> coords;
          m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
+         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         GET_IFACE2(pBroker,IIntervals,pIntervals);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+         Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
+
          // get elevation of strand
          CComPtr<IPoint2d> point;
          coords->get_Item(vss[0],&point);
          Float64 curr_y;
          point->get_Y(&curr_y);
 
-         (*p_table)(row,0) << ucomp.SetValue(curr_y);
+         (*p_table)(row,0) << ucomp.SetValue(Hg + curr_y);
          (*p_table)(row,1) << (long)vss.size();
 
          // rest of colums are zeros
@@ -219,9 +224,15 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
             {
                row++; // table 
 
-               (*p_table)(row,0) << ucomp.SetValue(rowdata.m_Elevation);
-
                pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
+
+               GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+               GET_IFACE2(pBroker,IIntervals,pIntervals);
+               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+               Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
+
+               (*p_table)(row,0) << ucomp.SetValue(Hg + rowdata.m_Elevation);
+
                StrandIndexType nsrow = m_pStrandGeometry->GetNumStrandInRow(poi,nrow,pgsTypes::Straight);
                (*p_table)(row,1) << nsrow;
 
@@ -283,8 +294,11 @@ CTexasIBNSParagraphBuilder::CTexasIBNSParagraphBuilder()
 
 /*--------------------------------------------------------------------*/
 rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vector<CSegmentKey>& segmentKeys,
-                                                IEAFDisplayUnits* pDisplayUnits, Uint16	level) const
+                                                IEAFDisplayUnits* pDisplayUnits, Uint16 level, bool& rbEjectPage) const
 {
+   rbEjectPage = true; // we can just fit this and the geometry table on a page if there is no additional data
+
+
    rptParagraph* p = new rptParagraph;
 
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
@@ -414,6 +428,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
       // Write debond table(s)
       if (areAnyDebondingInTable)
       {
+         rbEjectPage = false;
          itsg = segmentKeys.begin();
          while(itsg != itsg_end)
          {
@@ -441,6 +456,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
 
          if ( IsNonStandardStrands( ns+nh, isHarpedDesign, pStrands->GetStrandDefinitionType() ) )
          {
+            rbEjectPage = false;
             // Nonstandard strands table
             std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(segmentKey,POI_5L | POI_ERECTED_SEGMENT);
             ATLASSERT(pmid.size()==1);
@@ -496,7 +512,7 @@ void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* 
    // Need compute tool to decipher debond data
    TxDOTIBNSDebondWriter tx_writer(segmentKey, segment_length, pStrandGeometry);
 
-   tx_writer.WriteDebondData(pPara, pDisplayUnits, std::_tstring());
+   tx_writer.WriteDebondData(pPara, pBroker, pDisplayUnits, std::_tstring());
 }
 
 void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,

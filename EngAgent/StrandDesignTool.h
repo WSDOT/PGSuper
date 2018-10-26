@@ -46,6 +46,7 @@
 struct InitialDesignParameters
 {
    IntervalIndexType intervalIdx;
+   bool bIncludeLiveLoad;
    std::_tstring strLimitState;
    std::_tstring strStressLocation;
    pgsTypes::LimitState limit_state;
@@ -59,11 +60,11 @@ struct InitialDesignParameters
    StrandIndexType Np;
    Float64 fN;
 
-   InitialDesignParameters(IntervalIndexType intervalIdx,
+   InitialDesignParameters(IntervalIndexType intervalIdx,bool bIncludeLiveLoad,
                            pgsTypes::LimitState limitState,LPCTSTR lpszLimitState,
                            pgsTypes::StressLocation stressLocation,LPCTSTR lpszStressLocation,
                            pgsTypes::StressType stressType) :
-   intervalIdx(intervalIdx),limit_state(limitState),strLimitState(lpszLimitState),
+   intervalIdx(intervalIdx),bIncludeLiveLoad(bIncludeLiveLoad),limit_state(limitState),strLimitState(lpszLimitState),
       stress_location(stressLocation),strStressLocation(lpszStressLocation),
       stress_type(stressType) {}
 };
@@ -145,8 +146,8 @@ public:
    
    void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
 
-   void InitReleaseStrength(Float64 fci);
-   void InitFinalStrength(Float64 fc);
+   void InitReleaseStrength(Float64 fci,IntervalIndexType intervalIdx);
+   void InitFinalStrength(Float64 fc,IntervalIndexType intervalIdx);
 
    void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
 
@@ -478,7 +479,7 @@ private:
    {
       ConcreteStrengthController()
       {
-         Init(0.0);
+         Init(0.0,INVALID_INDEX);
       }
 
       bool WasSet() const {return m_Control!=fciInitial;} // if false, minimum strength controlled
@@ -495,10 +496,11 @@ private:
       pgsTypes::LimitState LimitState() const {return m_CurrentState.m_LimitState;}
       pgsTypes::StressLocation StressLocation() const {return m_CurrentState.m_StressLocation;}
 
-      void Init(Float64 strength)
+      void Init(Float64 strength,IntervalIndexType intervalIdx)
       {
          m_Control=fciInitial;
          m_CurrentState.m_Strength = strength;
+         m_CurrentState.m_IntervalIdx = intervalIdx;
          m_Decreases.clear();
       }
 
@@ -715,7 +717,7 @@ private:
    // compute possible debond levels for the current span/girder
    void InitDebondData();
    void ComputeDebondLevels(IPretensionForce* pPrestressForce);
-   void DumpDebondLevels();
+   void DumpDebondLevels(Float64 Hg);
    bool SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections);
    DebondLevelType GetMinAdjacentDebondLevel(DebondLevelType currLevel, StrandIndexType maxDbsTermAtSection);
 
@@ -732,7 +734,7 @@ private:
       MinTotalStrandsRequired(0),m_DebondedStrandsCg(-Float64_Max)
       {;}
 
-      void Init(IPoint2dCollection* strandLocations);
+      void Init(Float64 Hg,IPoint2dCollection* strandLocations);
       // Stress relief from debonding at this level
       Float64 ComputeReliefStress(Float64 psForcePerStrand,Float64 Hg,Float64 Yb, Float64 Ag, Float64 S) const;
    };

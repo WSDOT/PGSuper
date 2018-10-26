@@ -421,7 +421,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       Float64 HgStart, HgHp1, HgHp2, HgEnd;
       pStrandGeometry->GetHarpedStrandControlHeights(segmentKey,&HgStart,&HgHp1,&HgHp2,&HgEnd);
 
-      if (0 < pStrands->GetStrandCount(pgsTypes::Harped) && 
+      if (0 < config.PrestressConfig.GetStrandCount(pgsTypes::Harped) && 
           options.doDesignForFlexure == dtDesignForHarping &&
           !options.doForceHarpedStrandsStraight)
       {
@@ -691,11 +691,11 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          *pParagraph << _T("Proposed Design:") << rptNewLine;
 
         // stirrup design results
-         ZoneIndexType nz = pArtifact->GetNumberOfStirrupZonesDesigned();
+         ZoneIndexType nZones = pArtifact->GetNumberOfStirrupZonesDesigned();
 
-         if (nz>0)
+         if (0 < nZones)
          {
-            write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nz, pShearData);
+            write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nZones, pShearData);
          }
          else
          {
@@ -709,9 +709,9 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       GET_IFACE2(pBroker,IShear,pShear);
       const CShearData2* p_shear_data = pShear->GetSegmentShearData(segmentKey);
-      ZoneIndexType ncz = p_shear_data->ShearZones.size();
+      ZoneIndexType nZones = p_shear_data->ShearZones.size();
 
-      write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, ncz, p_shear_data);
+      write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nZones, p_shear_data);
 
       // Horiz interface bars
       *pParagraph <<rptNewLine<< Bold(_T("Additional Bars For Horizontal Interface Shear"))<<rptNewLine;
@@ -827,7 +827,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
 
    if ( outcome == pgsSegmentDesignArtifact::Success)
    {
-      *pParagraph << color(Green)
+      *pParagraph << rptNewLine << color(Green)
                   << _T("The design for Span ") << LABEL_GROUP(segmentKey.groupIndex)
                   << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                   << _T(" was successful.") 
@@ -838,7 +838,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
             outcome == pgsSegmentDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionLifting ||
             outcome == pgsSegmentDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling)
    {
-      *pParagraph << color(OrangeRed)
+      *pParagraph << rptNewLine << color(OrangeRed)
                   << _T("The design for Span ") << LABEL_GROUP(segmentKey.groupIndex)
                   << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                   << _T(" failed.")
@@ -881,7 +881,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
    pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pParagraph;
 
-   *pParagraph << color(Red)
+   *pParagraph << rptNewLine << color(Red)
                << _T("The design attempt for Span ") << LABEL_GROUP(segmentKey.groupIndex)
                << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                << _T(" failed.") 
@@ -1431,9 +1431,13 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
          else
          {
             if (is_symm)
+            {
                (*pTables)(row,col++) << _T("Mid-Girder");
+            }
             else
+            {
                (*pTables)(row,col++) << _T("End of Girder");
+            }
 
             (*pTables)(row,col++) << _T("");
          }
@@ -1449,7 +1453,6 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
          else
          {
             (*pTables)(row,col++) << _T("none");
-            (*pTables)(row,col++) << _T("--");
             (*pTables)(row,col++) << _T("--");
             (*pTables)(row,col++) << _T("--");
             (*pTables)(row,col++) << _T("--");
@@ -1532,9 +1535,13 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
          else
          {
             if (is_symm)
+            {
                (*pTables)(row,col++) << _T("Mid-Girder");
+            }
             else
+            {
                (*pTables)(row,col++) << _T("End of Girder");
+            }
 
             (*pTables)(row,col++) << _T("");
          }

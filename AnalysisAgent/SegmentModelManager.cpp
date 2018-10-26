@@ -71,260 +71,6 @@ void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx)
 
       save->Close();
    }
-
-}
-
-std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
-{
-   std::vector<EquivPretensionLoad> equivLoads;
-
-   Float64 Ms;    // Concentrated moments at straight strand debond location
-   Float64 Msl;   // Concentrated moments at straight strand bond locations (left)
-   Float64 Msr;   // Concentrated moments at straight strand bond locations (right)
-   Float64 Mhl;   // Concentrated moments at ends of beam for eccentric prestress forces from harped strands (left)
-   Float64 Mhr;   // Concentrated moments at ends of beam for eccentric prestress forces from harped strands (right)
-   Float64 Mtl;   // Concentrated moments at temporary straight strand bond locations (left)
-   Float64 Mtr;   // Concentrated moments at temporary straight strand bond locations (right)
-   Float64 Nl;    // Vertical loads at left harping point
-   Float64 Nr;    // Vertical loads at right harping point
-   Float64 Ps;    // Force in straight strands (varies with location due to debonding)
-   Float64 Ph;    // Force in harped strands
-   Float64 Pt;    // Force in temporary strands
-   Float64 ecc_harped_start; // Eccentricity of harped strands at end of girder
-   Float64 ecc_harped_end;  // Eccentricity of harped strands at end of girder
-   Float64 ecc_harped_hp1;  // Eccentricity of harped strand at harping point (left)
-   Float64 ecc_harped_hp2;  // Eccentricity of harped strand at harping point (right)
-   Float64 ecc_straight_start;  // Eccentricity of straight strands (left)
-   Float64 ecc_straight_end;    // Eccentricity of straight strands (right)
-   Float64 ecc_straight_debond; // Eccentricity of straight strands (location varies)
-   Float64 ecc_temporary_start; // Eccentricity of temporary strands (left)
-   Float64 ecc_temporary_end;   // Eccentricity of temporary strands (right)
-   Float64 hp1; // Location of left harping point
-   Float64 hp2; // Location of right harping point
-   Float64 Ls;  // Length of segment
-
-   // These are the interfaces we will be using
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   GET_IFACE(IPointOfInterest,pIPoi);
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IMaterials,pMaterial);
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-   Float64 E = pMaterial->GetSegmentEc(segmentKey,releaseIntervalIdx);
-
-   Ls = pBridge->GetSegmentLength(segmentKey);
-
-
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_5L) );
-   ATLASSERT( vPoi.size() == 1 );
-   pgsPointOfInterest mid_span_poi( vPoi.front() );
-
-#if defined _DEBUG
-   ATLASSERT( mid_span_poi.IsMidSpan(POI_RELEASED_SEGMENT) == true );
-#endif
-
-   pgsPointOfInterest poiStart(segmentKey,0.0);
-   pgsPointOfInterest poiEnd(segmentKey,Ls);
-
-   if ( strandType == pgsTypes::Harped && 0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped) )
-   {
-      hp1 = 0;
-      hp2 = 0;
-      Nl  = 0;
-      Nr  = 0;
-      Mhl = 0;
-      Mhr = 0;
-
-      // Determine the prestress force
-      GET_IFACE(IPretensionForce,pPrestressForce);
-      Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End);
-
-      // get harping point locations
-      vPoi.clear(); // recycle the vector
-      vPoi = pIPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
-      ATLASSERT( 0 <= vPoi.size() && vPoi.size() < 3 );
-      pgsPointOfInterest hp1_poi;
-      pgsPointOfInterest hp2_poi;
-      if ( vPoi.size() == 0 )
-      {
-         hp1_poi.SetSegmentKey(segmentKey);
-         hp1_poi.SetDistFromStart(0.0);
-         hp2_poi.SetSegmentKey(segmentKey);
-         hp2_poi.SetDistFromStart(0.0);
-         hp1 = hp1_poi.GetDistFromStart();
-         hp2 = hp2_poi.GetDistFromStart();
-      }
-      else if ( vPoi.size() == 1 )
-      { 
-         std::vector<pgsPointOfInterest>::const_iterator iter( vPoi.begin() );
-         hp1_poi = *iter++;
-         hp2_poi = hp1_poi;
-         hp1 = hp1_poi.GetDistFromStart();
-         hp2 = hp2_poi.GetDistFromStart();
-      }
-      else
-      {
-         std::vector<pgsPointOfInterest>::const_iterator iter( vPoi.begin() );
-         hp1_poi = *iter++;
-         hp2_poi = *iter++;
-         hp1 = hp1_poi.GetDistFromStart();
-         hp2 = hp2_poi.GetDistFromStart();
-      }
-
-      // Determine eccentricity of harped strands at end and harp point
-      // (assumes eccentricities are the same at each harp point - which they are because
-      // of the way the input is defined)
-      Float64 nHs_effective;
-
-      ecc_harped_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Harped, &nHs_effective);
-      ecc_harped_hp1   = pStrandGeom->GetEccentricity(releaseIntervalIdx, hp1_poi,  pgsTypes::Harped, &nHs_effective);
-      ecc_harped_hp2   = pStrandGeom->GetEccentricity(releaseIntervalIdx, hp2_poi,  pgsTypes::Harped, &nHs_effective);
-      ecc_harped_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Harped, &nHs_effective);
-
-      // Determine equivalent loads
-
-      // moment
-      Mhl = Ph*ecc_harped_start;
-      Mhr = Ph*ecc_harped_end;
-
-      // upward force
-      Float64 e_prime_start, e_prime_end;
-      e_prime_start = ecc_harped_hp1 - ecc_harped_start;
-      e_prime_start = IsZero(e_prime_start) ? 0 : e_prime_start;
-
-      e_prime_end = ecc_harped_hp2 - ecc_harped_end;
-      e_prime_end = IsZero(e_prime_end) ? 0 : e_prime_end;
-
-      Nl = IsZero(hp1)    || IsZero(hp2-hp1) ? 0 : Ph*(e_prime_start/hp1 + (e_prime_end - e_prime_start)/(hp2-hp1));
-      Nr = IsZero(Ls-hp2) || IsZero(hp2-hp1) ? 0 : Ph*((e_prime_end - e_prime_start)/(hp2-hp1) + e_prime_end/(Ls-hp2));
-
-      EquivPretensionLoad startMoment;
-      startMoment.Xs = 0;
-      startMoment.P  = Ph;
-      startMoment.N  = 0;
-      startMoment.M  = Mhl;
-
-      EquivPretensionLoad leftHpLoad;
-      leftHpLoad.Xs = hp1;
-      leftHpLoad.P  = 0;
-      leftHpLoad.N  = Nl;
-      leftHpLoad.M  = 0;
-
-      EquivPretensionLoad rightHpLoad;
-      rightHpLoad.Xs = hp2;
-      rightHpLoad.P  = 0;
-      rightHpLoad.N  = Nr;
-      rightHpLoad.M  = 0;
-
-      EquivPretensionLoad endMoment;
-      endMoment.Xs = Ls;
-      endMoment.P = -Ph;
-      endMoment.N = 0;
-      endMoment.M = -Mhr;
-
-      equivLoads.push_back(startMoment);
-      equivLoads.push_back(leftHpLoad);
-      equivLoads.push_back(rightHpLoad);
-      equivLoads.push_back(endMoment);
-   }
-   else if ( strandType == pgsTypes::Straight && 0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight))
-   {
-      GET_IFACE(IPretensionForce,pPrestressForce);
-
-      Float64 nSsEffective;
-      ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Straight, &nSsEffective);
-      ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Straight, &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End);
-
-      Msl = Ps*ecc_straight_start;
-      Msr = Ps*ecc_straight_end;
-
-      EquivPretensionLoad startMoment;
-      startMoment.Xs = 0;
-      startMoment.P  = Ps;
-      startMoment.N  = 0;
-      startMoment.M  = Msl;
-
-      equivLoads.push_back(startMoment);
-
-      EquivPretensionLoad endMoment;
-      endMoment.Xs = Ls;
-      endMoment.P  = -Ps;
-      endMoment.N  = 0;
-      endMoment.M  = -Msr;
-
-      equivLoads.push_back(endMoment);
-
-      // debonding
-      for (int end = 0; end < 2; end++)
-      {
-         // left end first, right second
-         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)end;
-         Float64 sign = (end == 0 ?  1 : -1);
-         IndexType nSections = pStrandGeom->GetNumDebondSections(segmentKey,endType,pgsTypes::Straight);
-         for ( IndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
-         {
-            Float64 location = pStrandGeom->GetDebondSection(segmentKey,endType,sectionIdx,pgsTypes::Straight);
-            if ( location < 0 || Ls < location )
-            {
-               continue; // bond occurs after the end of the segment... skip this one
-            }
-
-            StrandIndexType nDebondedAtSection = pStrandGeom->GetNumDebondedStrandsAtSection(segmentKey,endType,sectionIdx,pgsTypes::Straight);
-
-            // nDebonded is to be interperted as the number of strands that become bonded at this section
-            // (ok, not at this section but lt past this section)
-            Float64 nSsEffective;
-
-            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End);
-            ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location), pgsTypes::Straight, &nSsEffective);
-
-            Ms = sign*Ps*ecc_straight_debond;
-
-            EquivPretensionLoad debondLocationLoad;
-            debondLocationLoad.Xs = location;
-            debondLocationLoad.P  = sign*Ps;
-            debondLocationLoad.N  = 0;
-            debondLocationLoad.M  = Ms;
-
-            equivLoads.push_back(debondLocationLoad);
-         }
-      }
-   }
-   else if ( strandType == pgsTypes::Temporary && 0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary) )
-   {
-      GET_IFACE(IPretensionForce,pPrestressForce);
-
-      Float64 nTsEffective;
-      Pt = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::End);
-      ecc_temporary_start = pStrandGeom->GetEccentricity(releaseIntervalIdx,poiStart,pgsTypes::Temporary, &nTsEffective);
-      ecc_temporary_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx,poiEnd,  pgsTypes::Temporary, &nTsEffective);
-
-      Mtl = Pt*ecc_temporary_start;
-      Mtr = Pt*ecc_temporary_end;
-
-      EquivPretensionLoad startMoment;
-      startMoment.Xs = 0;
-      startMoment.P  = Pt;
-      startMoment.N  = 0;
-      startMoment.M  = Mtl;
-
-      EquivPretensionLoad endMoment;
-      endMoment.Xs = Ls;
-      endMoment.P  = -Pt;
-      endMoment.N  = 0;
-      endMoment.M  = -Mtr;
-
-      equivLoads.push_back(endMoment);
-   }
-   else
-   {
-      ATLASSERT(strandType != pgsTypes::Permanent); // can't be permanent
-   }
-
-   return equivLoads;
 }
 
 Float64 CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType)
@@ -1752,25 +1498,6 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
          hr = results->ComputePOIDeflections(lcid,poi_id,lotGlobal,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));
 
-         //// The fem model is for either release or storage intervals. The model
-         //// was build with Ec for that interval. Since Ec can change with time, we
-         //// need to adjust deflections with the ratio of EcModel/EcThisInterval
-         //// Delta = K/EI... want to multply by EcModel to remove it, then divide
-         //// by the Ec this interval so we end up with K/(EcThisInterval)(I)
-         //Float64 Ec;
-         //Float64 EcRatio;
-         //if ( !segmentKey.IsEqual(prevSegmentKey) )
-         //{
-         //   // segment key changed... update the modular ratio
-         //   GET_IFACE(IMaterials, pMaterial);
-         //   Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
-         //   EcRatio = pModelData->Ec/Ec;
-         //}
-
-         //dx *= EcRatio;
-         //dy *= EcRatio;
-         //rz *= EcRatio;
-
          pvDx->push_back(dx);
          pvDy->push_back(dy);
          pvRz->push_back(rz);
@@ -2090,11 +1817,9 @@ void CSegmentModelManager::BuildStorageModel(const CSegmentKey& segmentKey)
       os << "Building storage model" << std::ends;
       pProgress->UpdateMessage( os.str().c_str() );
 
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-      Float64 left  = pSegment->HandlingData.LeftStoragePoint;
-      Float64 right = pSegment->HandlingData.RightStoragePoint;
-
+      GET_IFACE(IGirder,pGirder);
+      Float64 left,right;
+      pGirder->GetSegmentStorageSupportLocations(segmentKey,&left,&right);
 
       CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,storageIntervalIdx,left,right,POI_STORAGE_SEGMENT);
       std::pair<SegmentModels::iterator,bool> result = m_StorageModels.insert( std::make_pair(segmentKey,segmentModel) );
@@ -2177,7 +1902,15 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    model_data.Ec = Ec;
    LoadCaseIDType lcid = GetLoadCaseID(pgsTypes::pftGirder);
    model_data.Loads.insert(lcid);
-   pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ec,lcid,true,vPOI,&model_data.Model,&model_data.PoiMap);
+
+   bool bModelLeftCantilever  = true;
+   bool bModelRightCantilever = true;
+   if ( refAttribute == POI_STORAGE_SEGMENT )
+   {
+      pBridge->ModelCantilevers(segmentKey,&bModelLeftCantilever,&bModelRightCantilever);
+   }
+
+   pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ec,lcid,bModelLeftCantilever,bModelRightCantilever,vPOI,&model_data.Model,&model_data.PoiMap);
 
    // create loadings for all product load types
    // this may seems silly because many of these loads aren't applied
@@ -2210,6 +1943,8 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
    CComPtr<IFem2dLoadingCollection> loadings;
    pModelData->Model->get_Loadings(&loadings);
 
+   GET_IFACE_NOCHECK(IProductLoads,pProductLoads);
+
    for ( int i = 0; i < 3; i++ )
    {
       pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
@@ -2222,7 +1957,7 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
          continue;
       }
 
-      std::vector<EquivPretensionLoad> vLoads = GetEquivPretensionLoads(segmentKey,strandType);
+      std::vector<EquivPretensionLoad> vLoads = pProductLoads->GetEquivPretensionLoads(segmentKey,strandType);
 
       CComPtr<IFem2dLoading> loading;
       CComPtr<IFem2dPointLoadCollection> pointLoads;

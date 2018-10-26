@@ -945,6 +945,28 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
       nAttributes++;
    }
 
+   if ( HasAttribute(POI_SECTCHANGE_RIGHTFACE) )
+   {
+      if ( 0 < nAttributes )
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("STRF");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_SECTCHANGE_LEFTFACE) )
+   {
+      if ( 0 < nAttributes )
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("STLF");
+      nAttributes++;
+   }
+
    if ( HasAttribute(POI_INTERMEDIATE_PIER) )
    {
       if ( 0 < nAttributes )

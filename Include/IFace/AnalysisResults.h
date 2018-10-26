@@ -79,12 +79,14 @@ typedef struct LinearLoad
    Float64 wEnd;
 } LinearLoad;
 
-typedef struct DiaphragmLoad
+typedef struct ConcentratedLoad
 {
    Float64 Loc;  // measured from left end of segment if precast or left end of span if cast-in-place
    Float64 Load;
-   bool operator<(const DiaphragmLoad& other) const { return Loc < other.Loc; }
-} DiaphragmLoad;
+   bool operator<(const ConcentratedLoad& other) const { return Loc < other.Loc; }
+} ConcentratedLoad;
+
+typedef ConcentratedLoad DiaphragmLoad;
 
 struct OverlayLoad : public LinearLoad
 {
@@ -151,6 +153,10 @@ interface IProductLoads : IUnknown
 
    // product loads applied to girder
    virtual void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad) = 0;
+
+   // gets the equivalent pretension forces. If strandType is pgsTypes::Temporary, bTempStrandInstallation is used to determine of the equivalent loads
+   // are for the installation or removal interval
+   virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,bool bTempStrandInstallation=true) = 0;
    virtual Float64 GetTrafficBarrierLoad(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetSidewalkLoad(const CSegmentKey& segmentKey) = 0;
    virtual bool HasPedestrianLoad() = 0;
@@ -198,9 +204,6 @@ interface IProductLoads : IUnknown
    virtual pgsTypes::LiveLoadApplicabilityType GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx) = 0;
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType) = 0;
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx) = 0;
-
-   // Equivalent loads for pretensioning
-   virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
 };
 
 
@@ -538,11 +541,11 @@ DEFINE_GUID(IID_IPretensionStresses,
 0xfdcc4ed6, 0x7d9b, 0x11d2, 0x88, 0x57, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IPretensionStresses : IUnknown
 {
-   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc) = 0;
-   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc) = 0;
+   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad) = 0;
+   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad) = 0;
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e) = 0;
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc) = 0;
-   virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config) = 0;
+   virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config,bool bIncludeLiveLoad) = 0;
 };
 
 /*****************************************************************************

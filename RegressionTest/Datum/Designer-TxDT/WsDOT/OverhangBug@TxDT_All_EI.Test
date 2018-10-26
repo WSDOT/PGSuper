@@ -1,36 +1,32 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                   1      1      III          22   0.6  270  18.81  10.62                                               6  36.0  6.0  5.000  6.400   3.276    -3.912     4259   0.674  0.674  3.195  -0.59  0.000  -0.21  -0.80   77.50  152.77    1.00    5.00    5.00 
+ 45.29    8   6.00                   1      1      III          20   0.6  270  19.08  11.28                                               4  43.0  4.0  4.800  6.300   3.148    -3.798     4185   0.674  0.674   3.008 -0.506  0.000 -0.217 -0.723  64.95  133.99    1.00    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Confinement zone check failed.
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                   1      2      III          20   0.6  270  19.08  11.28                                               4  43.0  4.0  4.600  5.900   2.897    -3.510     3798   0.556  0.671  3.116  -0.51  0.000  -0.21  -0.73   66.20  139.50    1.00    5.00    5.00 
+ 45.29    8   6.00                   1      2      III          20   0.6  270  19.08  11.28                                               4  43.0  4.0  4.600  5.900   2.920    -3.536     3818   0.556  0.671   3.116 -0.532  0.000 -0.222 -0.755  66.20  138.54    1.00    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Confinement zone check failed.
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                   1      5      III          16   0.6  270  19.33   9.58                                               4  43.0  4.0  4.000  5.000   2.627    -2.931     3111   0.552  0.671  2.588  -0.55  -0.04  -0.06  -0.66   42.83  104.27    1.00    5.00    5.00 
+ 45.29    8   6.00                   1      5      III          16   0.6  270  19.33   9.58                                               4  43.0  4.0  4.000  5.000   2.647    -2.946     3106   0.552  0.671   2.588 -0.571 -0.041 -0.068 -0.680  42.83  103.80    1.00    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Confinement zone check failed.
 Hauling checks failed
 

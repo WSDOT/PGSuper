@@ -189,6 +189,7 @@ void CEngAgentImp::InvalidateLosses()
 {
    LOG("Invalidating losses");
    m_PsForceEngineer.Invalidate();
+   m_PsForce.clear(); // if losses are gone, so are forces
 }
 
 //-----------------------------------------------------------------------------
@@ -998,17 +999,17 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          csDetails.CsDv.Poi.SetDistFromStart(face == pgsTypes::Ahead ? x1 + poiFaceOfSupport.GetDistFromStart() : poiFaceOfSupport.GetDistFromStart() - x1);
 
          csDetails.CsDv.DistFromFOS = x1;
-         csDetails.CsDv.Dv             = dv.Evaluate(x1);
-         csDetails.CsDv.InRange        = theta.GetRange().IsInRange(x1);
+         csDetails.CsDv.Dv          = dv.Evaluate(x1);
+         csDetails.CsDv.InRange     = theta.GetRange().IsInRange(x1);
          if (csDetails.CsDv.InRange)
          {
-            csDetails.CsDv.Intersection = CRITSECTIONDETAILSATPOI::DvIntersection;
+            csDetails.CsDv.Intersection   = CRITSECTIONDETAILSATPOI::DvIntersection;
             csDetails.CsDv.Theta          = theta.Evaluate(x1);
             csDetails.CsDv.CotanThetaDv05 = dv_cos_theta.Evaluate(x1);
          }
          else
          {
-            csDetails.CsDv.Intersection = CRITSECTIONDETAILSATPOI::NoIntersection;
+            csDetails.CsDv.Intersection   = CRITSECTIONDETAILSATPOI::NoIntersection;
             csDetails.CsDv.Theta          = 0.0;
             csDetails.CsDv.CotanThetaDv05 = 0.0;
          }
@@ -1021,10 +1022,9 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          {
             x1 = p.X(); // distance from face of support where the intersection occurs
 
-            csDetails.CsDvt.InRange        = true;
+            csDetails.CsDvt.InRange      = true;
             csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::ThetaIntersection;
-
-            csDetails.CsDvt.DistFromFOS = x1;
+            csDetails.CsDvt.DistFromFOS  = x1;
 
             // set the critical section poi data... need the segment key and the
             // distance from the start of the segment. Distance from start of segment is
@@ -1042,7 +1042,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          else
          {
             ATLASSERT(nIntersections == 0);
-            csDetails.CsDvt.InRange        = false;
+            csDetails.CsDvt.InRange      = false;
             csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::NoIntersection;
             LOG(_T(".5*Dv*cot(theta) on Left Intersection = No Intersection"));
          }
@@ -1756,7 +1756,18 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,Int
 
 Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
-   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime);
+   PrestressPoiKey key(poi,PrestressSubKey(strandType,intervalIdx,intervalTime));
+   std::map<PrestressPoiKey,Float64>::iterator found = m_PsForce.find(key);
+   if ( found != m_PsForce.end() )
+   {
+      return (*found).second;
+   }
+   else
+   {
+      Float64 F = m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime);
+      m_PsForce.insert(std::make_pair(key,F));
+      return F;
+   }
 }
 
 Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
@@ -3216,7 +3227,7 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
 
    Float64 curb_to_curb_width;
 
-   if ( width2 < width1 )
+   if ( ::IsLE(width2,width1) )
    {
       curb_to_curb_width = width1;
       *pDistToSection = loc1;
@@ -3259,9 +3270,9 @@ void CEngAgentImp::GetMomentCapacityDetails(IntervalIndexType intervalIdx,const 
 {
 #if defined _DEBUG
    // Mu is only considered once live load is applied to the structure
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EventIndexType llEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   ATLASSERT( llEventIdx <= intervalIdx );
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
 #endif
 
    if ( poi.GetID() == INVALID_ID )
@@ -3366,9 +3377,9 @@ void CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const 
 {
 #if defined _DEBUG
    // Mu is only considered once live load is applied to the structure
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EventIndexType llEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   ATLASSERT( llEventIdx <= intervalIdx );
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
 #endif
 
    if ( poi.GetID() == INVALID_ID )
@@ -3426,9 +3437,9 @@ void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,con
 
 #if defined _DEBUG
    // Mu is only considered once live load is applied to the structure
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EventIndexType llEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   ATLASSERT( llEventIdx <= intervalIdx );
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
 #endif
 
    *pmmcd = ValidateMinMomentCapacity(intervalIdx,poi,bPositiveMoment);
@@ -3956,8 +3967,8 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       Float64 fBotLimitStateMin,fBotLimitStateMax;
       pLS->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::BottomGirder,&fBotLimitStateMin,&fBotLimitStateMax);
 
-      Float64 fTopPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::TopGirder,config_WithoutTTS);
-      Float64 fBotPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::BottomGirder,config_WithoutTTS);
+      Float64 fTopPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::TopGirder,config_WithoutTTS,false);
+      Float64 fBotPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::BottomGirder,config_WithoutTTS,false);
 
       Float64 fTopMin_WithoutTTS = fTopLimitStateMin + fTopPre_WithoutTTS;
       Float64 fTopMax_WithoutTTS = fTopLimitStateMax + fTopPre_WithoutTTS;

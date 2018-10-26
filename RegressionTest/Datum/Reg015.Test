@@ -1,0 +1,29 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.25    6   8.00                   1      1     U48G4         40   0.6  270  15.50  11.35   0   2.00   19     0    0   0   0   0   0  15.000 15.000   5.892    -4.384     8461   0.935  1.385   1.709 -1.483  0.000 -0.086 -1.569  72.03  254.31    1.00    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Lifting checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.25    6   8.00                   1      2     U48G4         48   0.6  270  15.34  11.09   0   2.00   19     0    0   0   0   0   0   5.000  6.000   4.850    -3.487     7836   0.489  0.997   5.024 -2.038  0.000 -0.115 -2.152 183.81  402.54    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Lifting checks failed
+Hauling checks failed
+Slab Offset ("A" Dimension) check failed
+
+

@@ -57,7 +57,7 @@ public:
 
    rptParagraph* Build(IBroker* pBroker,const std::vector<CSegmentKey>& segmentKeys,
                        IEAFDisplayUnits* pDisplayUnits,
-                       Uint16 level) const;
+                       Uint16 level, bool& rbEjectPage) const;
 
 protected:
 
@@ -81,7 +81,7 @@ public:
    TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry)
    {;}
 
-   void WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName);
+   void WriteDebondData(rptParagraph* pPara,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName);
 };
 
 #endif // INCLUDED_TEXASIBNSParagraphBUILDER_H_

@@ -185,13 +185,18 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       m_pArtifact->SetUserEci(pGirderMaterial->Concrete.Eci);
    }
 
-   m_FcControl.Init(ifc);
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+   m_FcControl.Init(ifc,lastIntervalIdx);
 
    // Initialize release strength
    Float64 ifci = GetMinimumReleaseStrength();
    m_ReleaseStrengthResult = ConcSuccess; // assume that no rebar is needed to make 4 ksi
    m_pArtifact->SetReleaseStrength( ifci );
-   m_FciControl.Init(ifci);
+   m_FciControl.Init(ifci,releaseIntervalIdx);
 
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone || !(m_DesignOptions.doDesignSlabOffset) )
    {
@@ -256,16 +261,16 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    pStrandGeom->GetHarpedStrandControlHeights(m_SegmentKey,&m_HgStart,&m_HgHp1,&m_HgHp2,&m_HgEnd);
 }
 
-void pgsStrandDesignTool::InitReleaseStrength(Float64 fci)
+void pgsStrandDesignTool::InitReleaseStrength(Float64 fci,IntervalIndexType intervalIdx)
 {
-   m_FciControl.Init(fci);
+   m_FciControl.Init(fci,intervalIdx);
    m_pArtifact->SetReleaseStrength(fci);
    m_bConfigDirty = true; // cache is dirty
 }
 
-void pgsStrandDesignTool::InitFinalStrength(Float64 fc)
+void pgsStrandDesignTool::InitFinalStrength(Float64 fc,IntervalIndexType intervalIdx)
 {
-   m_FcControl.Init(fc);
+   m_FcControl.Init(fc,intervalIdx);
    m_pArtifact->SetConcreteStrength(fc);
    m_bConfigDirty = true; // cache is dirty
 }
@@ -293,8 +298,8 @@ void pgsStrandDesignTool::RestoreDefaults(bool retainProportioning, bool justAdd
          SetNumPermanentStrands(npnew);
 
          // Also, conscrete strength may be out of wack. Init back to min
-         InitReleaseStrength( GetMinimumReleaseStrength() );
-         InitFinalStrength( GetMinimumConcreteStrength() );
+         InitReleaseStrength( GetMinimumReleaseStrength(), m_FciControl.Interval() );
+         InitFinalStrength( GetMinimumConcreteStrength(), m_FcControl.Interval() );
 
       }
       else if (m_StrandFillType != m_DesignOptions.doStrandFillType)
@@ -3002,6 +3007,17 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetDesignPoi(IntervalIndexT
 {
    std::vector<pgsPointOfInterest> vPoi;
    m_PoiMgr.GetPointsOfInterest(m_SegmentKey, attrib, POIMGR_OR, &vPoi);
+
+   if ( pgsPointOfInterest::IsReferenceAttribute(attrib) )
+   {
+      std::vector<pgsPointOfInterest> vPoi2;
+      m_PoiMgr.GetPointsOfInterest(m_SegmentKey,POI_HARPINGPOINT,POIMGR_OR,&vPoi2);
+
+      vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+      std::sort(vPoi.begin(),vPoi.end());
+      vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   }
+
    return vPoi;
 }
 
@@ -3215,11 +3231,14 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
    // get the ps xfer, debond, and harping point locations
    std::vector<pgsPointOfInterest> vPoi3;
    m_PoiMgr.GetPointsOfInterest(segmentKey, POI_PSXFER | POI_BARDEVELOP | POI_DEBOND | POI_SECTCHANGE | POI_HARPINGPOINT, POIMGR_OR, &vPoi3);
-
    vPoi2.insert(vPoi2.end(),vPoi3.begin(),vPoi3.end());
-   std::sort(vPoi2.begin(),vPoi2.end());
+
+   // v2.9 lifting design considered 10th point POI at release, so we will add them here
+   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, POIMGR_OR, &vPoi3);
+   vPoi2.insert(vPoi2.end(),vPoi3.begin(),vPoi3.end());
 
    // eliminate duplicates
+   std::sort(vPoi2.begin(),vPoi2.end());
    vPoi2.erase(std::unique(vPoi2.begin(),vPoi2.end()), vPoi2.end() );
 
    return vPoi2;
@@ -3436,11 +3455,15 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       // Need development length for design and this is a chicken and egg kinda thing
       // make some basic assumptions;
 
-      // According to Article 5.7.3.1.1, fpe must be at least 50% of fps  (where fps is fpu)
+      // According to Article 5.7.3.1.1, fpe must be at least 50% of fps  (where fps is fpu at the most)
       // Substitute into (5.11.4.2-1)
       // k = 2.0  (from 5.11.4.3)
       // We get:
       // ld = 2.0(fps - 2/3 * fps/2.0)db   = 4/3(fpu)db
+      // 
+      // This is highly conservative and has caused problems with short span designs, so reduce ld by
+      // 15% (rdp - 11/17/2015, after running regression tests)
+      // 
       const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Permanent);
       ATLASSERT(pstrand!=0);
 
@@ -3448,7 +3471,8 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       Float64 db = ::ConvertFromSysUnits(pstrand->GetNominalDiameter(),unitMeasure::Inch);
       Float64 fpu = ::ConvertFromSysUnits(pstrand->GetUltimateStrength(),unitMeasure::KSI);
 
-      Float64 dev_len = fpu*db*4.0/3.0;
+      Float64 dev_len = fpu*db*4.0/3.0 * 0.85; // 15% reduction is arbitrary, but fixes Mantis 485 and makes better designs.
+                                               // More testing may allow more reduction.
 
       dev_len = ::ConvertToSysUnits(dev_len,unitMeasure::Inch);
       LOG(_T("Approximate upper bound of development length = ")<< ::ConvertFromSysUnits(dev_len,unitMeasure::Inch)<<_T(" in"));
@@ -3606,7 +3630,7 @@ struct Row
 
    bool operator<(const Row& rOther) const 
    { 
-      return Elevation < rOther.Elevation; 
+      return ::IsLT(Elevation,rOther.Elevation); 
    }
 };
 typedef std::set<Row> RowSet;
@@ -3748,23 +3772,31 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
       currnum = nextnum;
    }
 
+   // strands are located from the top down, in girder section coordinates.
+   // in 2.9 they were located bottom up... need to add Hg to the strand location
+   // to match the 2.9 log files
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+   GET_IFACE(ISectionProperties,pSectProp);
+   Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,pgsPointOfInterest(m_SegmentKey,0.0));
+
    if (debondable_list.empty())
    {
       LOG(_T("No debondable strands - Cannot build debond levels"));
       ATLASSERT(false); // this should probably be vetted before here ?
       return;
    }
+#ifdef ENABLE_LOGGING
    else
    {
-#ifdef _DEBUG
       LOG(_T("Finished building debondable list of ")<<num_debondable<<_T(" strands"));
       LOG(_T("Max Strands per row in ")<<rows.size()<<_T(" rows as follows:"));
       for (RowIter riter=rows.begin(); riter!=rows.end(); riter++)
       {
-         LOG(_T("elev = ")<<::ConvertFromSysUnits(riter->Elevation,unitMeasure::Inch)<<_T(" max strands = ")<<riter->MaxInRow);
+         LOG(_T("elev = ")<<::ConvertFromSysUnits(Hg + riter->Elevation,unitMeasure::Inch)<<_T(" max strands = ")<<riter->MaxInRow);
       }
-#endif
    }
+#endif // ENABLE_LOGGING
 
    // Second step is to build temporary list containing all debond levels
    // that can be created
@@ -3804,7 +3836,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
 
       curr_row.StrandsFilled.push_back(nextnum-1);
 
-      LOG(_T("nextnum = ")<<nextnum<<_T(" Y = ")<<::ConvertFromSysUnits(curr_y,unitMeasure::Inch)<<_T(" to fill = ")<< nextnum-currnum );
+      LOG(_T("nextnum = ")<<nextnum<<_T(" Y = ")<<::ConvertFromSysUnits(Hg+curr_y,unitMeasure::Inch)<<_T(" to fill = ")<< nextnum-currnum );
 
       // TRICKY: A nested loop here to try and debond as many strands on the queue as possible for the current fill
       //         Most of the time we will break out of this loop before our queus is depleted
@@ -3861,14 +3893,14 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
                   Float64 db_percent_max = Float64(num_to_db + num_db_in_row) / db_row.MaxInRow;
                   if ( db_max_percent_row < db_percent_max )
                   {
-                     LOG(_T("Row at ")<<::ConvertFromSysUnits(curr_db_y,unitMeasure::Inch)<<_T(" (in), is full try next debondable in queue."));
+                     LOG(_T("Row at ")<<::ConvertFromSysUnits(Hg+curr_db_y,unitMeasure::Inch)<<_T(" (in), is full try next debondable in queue."));
                   
                      db_iter++;
                   }
                   else
                   {
                      // break from inner loop because we need more strands
-                     LOG(_T("Cannot debond in row at ")<<::ConvertFromSysUnits(curr_db_y,unitMeasure::Inch)<<_T(" (in), until more strands are added"));
+                     LOG(_T("Cannot debond in row at ")<<::ConvertFromSysUnits(Hg+curr_db_y,unitMeasure::Inch)<<_T(" (in), until more strands are added"));
                      break;
                   }
                }
@@ -3895,7 +3927,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
 
    // add an empty debond level at head of list. This is debond level 0
    DebondLevel db_level_z;
-   db_level_z.Init(ss_locations);
+   db_level_z.Init(Hg,ss_locations);
    m_DebondLevels.push_back(db_level_z);
 
    // now add the rest
@@ -3918,20 +3950,20 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
       db_level.StrandsDebonded.assign(running_debonds.begin(), running_debonds.end());
 
       // compute values for each debond level
-      db_level.Init(ss_locations);
+      db_level.Init(Hg,ss_locations);
 
       m_DebondLevels.push_back(db_level);
    }
    // finished creating debond levels - dump them and get outta here
 #ifdef _DEBUG
-   DumpDebondLevels();
+   DumpDebondLevels(Hg);
 #endif
 
    LOG(_T("Exiting ComputeDebondLevels"));
    LOG(_T("****************************"));
 }
 
-void pgsStrandDesignTool::DebondLevel::Init(IPoint2dCollection* strandLocations)
+void pgsStrandDesignTool::DebondLevel::Init(Float64 Hg,IPoint2dCollection* strandLocations)
 {
    // Compute and store eccentricity
    StrandIndexType ns = StrandsDebonded.size();
@@ -3949,7 +3981,7 @@ void pgsStrandDesignTool::DebondLevel::Init(IPoint2dCollection* strandLocations)
    }
    else
    {
-      m_DebondedStrandsCg = 0.0;
+      m_DebondedStrandsCg = -Hg;
    }
 }
 
@@ -3963,7 +3995,7 @@ Float64 pgsStrandDesignTool::DebondLevel::ComputeReliefStress(Float64 psForcePer
    return stress;
 }
 
-void pgsStrandDesignTool::DumpDebondLevels()
+void pgsStrandDesignTool::DumpDebondLevels(Float64 Hg)
 {
    LOG(_T("Dump of ")<<m_DebondLevels.size()<<_T(" debond levels:"));
    Int16 levn = 0;
@@ -3986,7 +4018,7 @@ void pgsStrandDesignTool::DumpDebondLevels()
          str.erase(n-2,2);
       }
       LOG(_T("   Debonded Strands = ")<<str);
-      LOG(_T("   DebondedStrandsCg = ")<<::ConvertFromSysUnits(level.m_DebondedStrandsCg,unitMeasure::Inch));
+      LOG(_T("   DebondedStrandsCg = ")<<::ConvertFromSysUnits(Hg+level.m_DebondedStrandsCg,unitMeasure::Inch));
       levn++;
    }
 }

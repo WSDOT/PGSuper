@@ -176,8 +176,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
-   bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(girderKey,intervalIdx);
-   bool bIsStressingInterval = (intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval);
+   bool bIsStressingInterval = pIntervals->IsStressingInterval(girderKey,intervalIdx);
 
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    std::_tstring strLimitState = pProductLoads->GetLimitStateName(limitState);
@@ -1195,13 +1194,13 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,artifactIdx);
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
       ATLASSERT( !poi.HasAttribute(POI_CLOSURE) );
+      ATLASSERT( poi.GetSegmentKey() == segmentKey);
       
       // use f'ci if this is at release, otherwise use f'c
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
       bool bFci = (intervalIdx == releaseIntervalIdx ? true : false);
 
-      bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
-      bool bIsStressingInterval = (intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval ? true : false);
+      bool bIsStressingInterval = pIntervals->IsStressingInterval(segmentKey,intervalIdx);
 
       Float64 t;            // tension coefficient
       Float64 t_max;        // maximum allowable tension

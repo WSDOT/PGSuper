@@ -409,6 +409,7 @@ private:
       IntervalIndexType intervalIdx;
       pgsTypes::LimitState limitState;
       pgsTypes::StressType stressType;
+      bool bIncludeLiveLoad; // if intervalIdx is a live load interval, live load is include in the prestressing if this parameter is tru
    };
    std::vector<StressCheckTask> m_StressCheckTasks;
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey);

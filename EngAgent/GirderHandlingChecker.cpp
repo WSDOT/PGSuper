@@ -150,7 +150,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
    Float64 leftSupportLocation = leftOH;
    Float64 rightSupportLocation = glen - rightOH;
    LoadCaseIDType lcid = 0;
-   pGirderModelFactory->CreateGirderModel(pBroker,intervalIdx,segmentKey,leftSupportLocation,rightSupportLocation,E,lcid,true,rpoiVec,&pModel,&poiMap);
+   pGirderModelFactory->CreateGirderModel(pBroker,intervalIdx,segmentKey,leftSupportLocation,rightSupportLocation,E,lcid,true,true,rpoiVec,&pModel,&poiMap);
 
    // Get results
    CComQIPtr<IFem2dModelResults> results(pModel);

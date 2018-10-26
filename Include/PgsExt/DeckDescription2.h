@@ -106,6 +106,9 @@ public:
 
    std::vector<CDeckPoint> DeckEdgePoints;
 
+   Float64 GetMinWidth() const;
+   Float64 GetMaxWidth() const;
+
 
 protected:
    void MakeCopy(const CDeckDescription2& rOther,bool bCopyDataOnly);

@@ -67,8 +67,13 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi(  pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi(  pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) ); // gets all POI
+   // remove poi at points that don't matter for load rating
+   pPoi->RemovePointsOfInterest(vPoi,POI_RELEASED_SEGMENT,POI_SPAN); // retain span points
+   pPoi->RemovePointsOfInterest(vPoi,POI_LIFT_SEGMENT,    POI_SPAN);
+   pPoi->RemovePointsOfInterest(vPoi,POI_STORAGE_SEGMENT, POI_SPAN);
+   pPoi->RemovePointsOfInterest(vPoi,POI_HAUL_SEGMENT,    POI_SPAN);
 
    pgsRatingArtifact ratingArtifact;
 
@@ -666,7 +671,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
             fPL = 0;
          }
 
-         Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation);
+         Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation,true/*include live load if applicable*/);
 
          Float64 fpt;
          pProductForces->GetStress(loadRatingIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fpt,&fDummy);

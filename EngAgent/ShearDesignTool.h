@@ -44,6 +44,40 @@
 interface IBroker;
 class StirrupZoneIter;
 
+
+class PoiIsOutsideOfBearings
+{
+public:
+   PoiIsOutsideOfBearings(Float64 startBrg,Float64 endBrg) 
+   {
+      m_StartBrg = startBrg; 
+      m_EndBrg = endBrg;
+   }
+
+   bool operator()(const pgsPointOfInterest& poi) const
+   {
+      // returning true causes the poi to be excluded from the container
+      // return false for those poi that match the search criteria... return false for the poi we want to keep
+
+      if ( poi.HasAttribute(POI_CLOSURE) )
+      {
+         return false; // want to keep
+      }
+
+      if ( (poi.GetDistFromStart() < m_StartBrg || m_EndBrg < poi.GetDistFromStart()) )
+      {
+         return true; // don't want to keep
+      }
+
+      return false; // want to keep
+   }
+
+private:
+   Float64 m_StartBrg;
+   Float64 m_EndBrg;
+};
+
+
 // MISCELLANEOUS
 // Virtual class for checking long reinf for shear - we need this from Designer2,
 // but don't need the whole enchilada
@@ -116,7 +150,7 @@ public:
    Float64 GetFcRequiredForShearStress() const;
 
    // Pois for spec check and design
-   std::vector<pgsPointOfInterest> GetDesignPoi();
+   const std::vector<pgsPointOfInterest>& GetDesignPoi() const;
 
    // Get our check artifact to hand off to spec check routine
    pgsStirrupCheckArtifact* GetStirrupCheckArtifact();

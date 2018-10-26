@@ -1,16 +1,16 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    1      1      K4+3         26   0.6  270  25.18  18.26                                               6  36.0  6.0  5.000  6.000  26.331    -94.78    -1912   0.867  0.867  3.869  -0.64  -41.6  -0.05  -42.3  120.00  -2797.    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    1      1      K4+3         26   0.6  270  25.18  18.26                                               6  36.0  6.0  5.000  6.000  26.327    -94.76    -1914   0.867  0.867   3.869 -0.645 -41.64 -0.051 -42.34 120.00  -2797.    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -27,16 +27,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    1      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.44  -0.78  -43.0  -0.05  -43.8    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    1      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    -1906   0.736  0.884  -1.446 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -53,16 +52,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    1      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.44  -0.78  -43.0  -0.05  -43.8    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    1      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    -1906   0.736  0.884  -1.446 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -79,16 +77,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    2      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.44  -0.70  -44.4  -0.05  -45.2    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    2      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.446 -0.707 -44.45 -0.055 -45.21   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -105,16 +102,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    2      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.44  -0.78  -43.0  -0.05  -43.8    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    2      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.734  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -131,16 +127,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    2      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.44  -0.78  -43.0  -0.05  -43.8    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    2      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.734  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -157,16 +152,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    3      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.44  -0.70  -44.4  -0.05  -45.2    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    3      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.446 -0.707 -44.45 -0.055 -45.21   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -183,16 +177,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    3      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.44  -0.78  -43.0  -0.05  -43.8    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    3      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.734  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -209,16 +202,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    3      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.44  -0.78  -43.0  -0.05  -43.8    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    3      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.734  0.884  -1.446 -0.785 -43.03 -0.053 -43.86   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -235,16 +227,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    4      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.192    -93.88    -1912   0.867  0.867  -1.44  -0.70  -44.4  -0.05  -45.2    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    4      1      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  24.188    -93.87    -1914   0.867  0.867  -1.446 -0.706 -44.44 -0.055 -45.20   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -261,16 +252,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    4      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.44  -0.78  -43.0  -0.05  -43.8    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    4      2      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    -1906   0.736  0.884  -1.446 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -287,16 +277,15 @@ Stirrup detailing checks failed for the Strength II Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template    4      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.671    -92.87    -1903   0.739  0.884  -1.44  -0.78  -43.0  -0.05  -43.8    0.00    0.00    1.00   13.00   13.00 
+ 50.00    6   9.00    K4 Template    4      4      K4+3          0   0.6  270   0.00   0.00                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    -1906   0.736  0.884  -1.446 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State

@@ -59,6 +59,8 @@
 
 #include <Units\Units.h>
 
+#include <IFace\TxDOTCadExport.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -321,6 +323,20 @@ bool CTestAgentImp::RunTest(long type,
             VERIFY( RunLoadRatingTest(resf, poif, extSegmentKey) );
             VERIFY( RunLoadRatingTest(resf, poif, intSegmentKey) );
 
+            std::_tstring testFileName(outputFileName);
+            testFileName.replace(testFileName.begin()+testFileName.find(_T(".")),testFileName.end(),_T(".Test"));
+        	   FILE	*fp = NULL;
+            if (_tfopen_s(&fp,testFileName.c_str(), _T("w+")) != 0 || fp == NULL)
+            {
+			      AfxMessageBox (_T("Warning: File Cannot be Created."));
+			      return S_OK;
+		      }
+
+            GET_IFACE(ITxDOTCadExport,pTxDOTExport);
+            pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, extSegmentKey, tcxTest, true);
+            pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, intSegmentKey, tcxTest, true);
+		      fclose (fp);
+
             return true;
             break;
          }
@@ -447,6 +463,10 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
 
       case RUN_REGRESSION:
       case RUN_CADTEST:
+         if (!RunWsdotGirderScheduleTest(resf, poif, segmentKey) )
+         {
+            return false;
+         }
          if ( !RunGeometryTest(resf, poif, segmentKey) )
          {
             return false;
@@ -476,10 +496,6 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
             return false;
          }
          if (!RunHandlingTest(resf, poif, segmentKey))
-         {
-            return false;
-         }
-         if (!RunWsdotGirderScheduleTest(resf, poif, segmentKey) )
          {
             return false;
          }
@@ -1669,14 +1685,14 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       }
 
       // stresses due to prestress
-      resultsFile<<bridgeId<<", "<<pid<<", 56018, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(releaseIntervalIdx,poi,pgsTypes::TopGirder), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56019, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56020, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(castDeckIntervalIdx,poi,pgsTypes::TopGirder), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56021, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(castDeckIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56022, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56023, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56024, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(liveLoadIntervalIdx,poi,pgsTypes::TopGirder), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56025, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(liveLoadIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56018, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56019, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56020, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(castDeckIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56021, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(castDeckIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56022, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56023, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56024, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(liveLoadIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56025, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(liveLoadIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/), unitMeasure::MPa)) <<         ",15, "<<gdrIdx<<std::endl;
 
       // positive moment capacity
       CRACKINGMOMENTDETAILS cmd;
@@ -2138,7 +2154,50 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    Float64 days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), unitMeasure::Day);
    resultsFile<<bridgeId<<", "<<pid<<", 123021, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), unitMeasure::Day)) <<   ", 101, "<<gdrIdx<<std::endl;
 
+   // Stirrup data
+   GET_IFACE(IStirrupGeometry,pStirrupGeometry);
 
+   // Primary zones
+   Int32 id = 123100;
+   ZoneIndexType nz = pStirrupGeometry->GetPrimaryZoneCount(segmentKey);
+   for (ZoneIndexType iz=0; iz<nz; iz++)
+   {
+      Float64 zoneStart, zoneEnd;
+      pStirrupGeometry->GetPrimaryZoneBounds(segmentKey, iz, &zoneStart, &zoneEnd);
+
+      matRebar::Size barSize;
+      Float64 spacing;
+      Float64 nStirrups;
+      pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
+
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", Zone ")<< LABEL_STIRRUP_ZONE(iz) <<  _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zoneStart, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zoneEnd, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< nStirrups <<   _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< GetBarSize(barSize) <<   _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(spacing, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdrIdx<<std::endl;
+   }
+
+   // Additional horizontal shear interface zones
+   id = 123300;
+   nz = pStirrupGeometry->GetHorizInterfaceZoneCount(segmentKey);
+   for (ZoneIndexType iz=0; iz<nz; iz++)
+   {
+      Float64 zoneStart, zoneEnd;
+      pStirrupGeometry->GetHorizInterfaceZoneBounds(segmentKey, iz, &zoneStart, &zoneEnd);
+
+      matRebar::Size barSize;
+      Float64 spacing;
+      Float64 nStirrups;
+      pStirrupGeometry->GetHorizInterfaceBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
+
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", Zone ")<< LABEL_STIRRUP_ZONE(iz) <<  _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zoneStart, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zoneEnd, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< nStirrups <<   _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< GetBarSize(barSize) <<   _T(", 102, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(spacing, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdrIdx<<std::endl;
+   }
 
    return true;
 }

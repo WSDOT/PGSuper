@@ -80,6 +80,8 @@ public:
    void RemoveSelectedRows();
    void Enable(BOOL bEnable);
 
+   BOOL Validate();
+
 private:
    BOOL m_bEnabled;
 
@@ -99,6 +101,9 @@ private:
    // create this object once and use it over and over
    CComPtr<IStation> m_objStation;
 };
+
+
+void DDV_DeckPointGrid(CDataExchange* pDX,int nIDC,CBridgeDescDeckPointGrid* pGrid);
 
 /////////////////////////////////////////////////////////////////////////////
 

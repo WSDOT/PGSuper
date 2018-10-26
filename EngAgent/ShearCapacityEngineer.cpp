@@ -632,10 +632,10 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       GET_IFACE(IBridge, pBridge);
       Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
       Float64 location       = poi.GetDistFromStart();
-      Float64 lft_supp_loc   = pBridge->GetSegmentStartBearingOffset(segmentKey);
-      Float64 rgt_sup_loc    = segment_length - pBridge->GetSegmentEndBearingOffset(segmentKey);
+      Float64 lft_supp_loc   = pBridge->GetSegmentStartEndDistance(segmentKey);
+      Float64 rgt_sup_loc    = segment_length - pBridge->GetSegmentEndEndDistance(segmentKey);
 
-      avs = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getVerticalStirrup, poi.GetDistFromStart(), segment_length, 
+      avs = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getVerticalStirrup, location, segment_length, 
                                  lft_supp_loc, rgt_sup_loc, &size, &abar, &nl, &s);
    }
 

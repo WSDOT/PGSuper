@@ -91,7 +91,8 @@ class ATL_NO_VTABLE CBridgeAgentImp :
 {
    friend class CStrandMoverSwapper;
 public:
-   CBridgeAgentImp()
+   CBridgeAgentImp() :
+      m_LOTFSectionPropertiesKey(CSegmentKey(INVALID_INDEX,INVALID_INDEX,INVALID_INDEX),0.0,INVALID_INDEX)
 	{
       m_Level        = 0;
       m_pBroker      = 0;
@@ -151,6 +152,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidPointLoadWarning;
    StatusCallbackIDType m_scidDistributedLoadWarning;
    StatusCallbackIDType m_scidMomentLoadWarning;
+   StatusCallbackIDType m_scidZeroOverlayWarning;
 
 // IAgent
 public:
@@ -1048,6 +1050,7 @@ public:
    virtual IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual bool IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual bool IsStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
    virtual IntervalIndexType GetTemporarySupportErectionInterval(SupportIndexType tsIdx);
    virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIndexType tsIdx);
    virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(GroupIndexType groupIdx);
@@ -1130,13 +1133,23 @@ private:
    } SectProp;
    typedef std::map<PoiIntervalKey,SectProp> SectPropContainer; // Key = PoiIntervalKey object
    std::auto_ptr<SectPropContainer> m_pSectProps[pgsTypes::sptSectionPropertyTypeCount]; // index = one of the pgsTypes::SectionPropertyType constants
+
+   // These are the last on the fly section property results
+   // (LOTF = last on the fly)
+   PoiIntervalKey m_LOTFSectionPropertiesKey;
+   pgsTypes::SectionPropertyType m_LOTFSectionPropertiesType;
+   SectProp m_LOTFSectionProperties;
+
    void InvalidateSectionProperties(pgsTypes::SectionPropertyType sectPropType);
    static UINT DeleteSectionProperties(LPVOID pParam);
    pgsTypes::SectionPropertyType GetSectionPropertiesType(); // returns the section properties types for the current section properties mode
+   PoiIntervalKey GetSectionPropertiesKey(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType);
    SectProp GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType);
    HRESULT GetSection(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType,ISection** ppSection);
    Float64 ComputeY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,IShapeProperties* sprops);
    Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShapeProperties* beamProps);
+
+   std::map<PoiIntervalKey,CComPtr<IShape>> m_Shapes;
 
    // Points of interest for precast segments (precast girders/spliced girder segments)
    std::auto_ptr<pgsPoiMgr> m_pPoiMgr;

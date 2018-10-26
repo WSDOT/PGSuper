@@ -38,8 +38,8 @@ CLASS
 
 CHandlingData::CHandlingData()
 {
-   LeftStoragePoint     = 0;
-   RightStoragePoint    = 0;
+   LeftStoragePoint     = -1;
+   RightStoragePoint    = -1;
    LeftLiftPoint        = 0;
    RightLiftPoint       = 0;
    LeadingSupportPoint  = 0;

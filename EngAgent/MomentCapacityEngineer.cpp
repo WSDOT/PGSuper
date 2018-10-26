@@ -1683,7 +1683,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
    if ( compBeam && // beam is a composite (made of many shapes) 
         pBridge->GetDeckType() != pgsTypes::sdtNone && // bridge has a deck
-        compositeDeckIntervalIdx <= intervalIdx // deck is become composite with the girder
+        compositeDeckIntervalIdx <= intervalIdx // deck is composite with the girder
       )
    {
       // The last item is the bridge deck and we don't want it...
@@ -1766,6 +1766,15 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    Float64 Yc; // elevation of the extreme compression fiber
    (*pntCompression)->get_Y(&Yc);
 
+   // strand and rebar are measured from down from the top of the precast section
+   // If we have a no-deck girder, we have to adjust the depth to the bar/strand
+   // by the sacrifical depth
+   Float64 sacDepth = 0;
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   {
+      sacDepth = pBridge->GetSacrificalDepth();
+   }
+
    if ( bPositiveMoment || 0 < nDucts ) // only model strands for positive moment or if there are tendons in the model
    {
       // strands
@@ -1812,14 +1821,14 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             // the harped strands in the moment capacity model.
             //////////////////////////////////////////////////////////////////////////
 
-            RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(poi,nStrands,strandType);
+            RowIndexType nStrandRows = (pConfig ? pStrandGeom->GetNumRowsWithStrand(poi,nStrands,strandType) : pStrandGeom->GetNumRowsWithStrand(poi,strandType));
             for ( RowIndexType rowIdx = 0; rowIdx < nStrandRows; rowIdx++ )
             {
                Float64 rowArea = 0;
-               std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(poi,nStrands,rowIdx,strandType);
+               std::vector<StrandIndexType> strandIdxs = (pConfig ? pStrandGeom->GetStrandsInRow(poi,nStrands,rowIdx,strandType) : pStrandGeom->GetStrandsInRow(poi,rowIdx,strandType));
 
    #if defined _DEBUG
-               StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(poi,nStrands,rowIdx,strandType);
+               StrandIndexType nStrandsInRow = (pConfig ? pStrandGeom->GetNumStrandInRow(poi,nStrands,rowIdx,strandType) : pStrandGeom->GetNumStrandInRow(poi,rowIdx,strandType));
                ATLASSERT( nStrandsInRow == strandIdxs.size() );
    #endif
 
@@ -1860,6 +1869,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                   Float64 rowY;
                   point->get_Y(&rowY);
                   point.Release();
+
+                  // this Y value is measured from the top of the precast section
+                  // if there isn't a deck and we are using a sacrificial wearing surface
+                  // we need to deducted the sacrifical depth
+                  rowY += sacDepth;
 
                   // position the "strand" rectangle
                   CComQIPtr<IXYPosition> position(bar_shape);
@@ -1967,7 +1981,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          CComPtr<IPoint2d> hp;
          square->get_HookPoint(&hp);
          hp->MoveEx(location);
-         hp->Offset(-dx,-dy);
+         hp->Offset(-dx,-dy+sacDepth);
 
          Float64 cy;
          hp->get_Y(&cy);

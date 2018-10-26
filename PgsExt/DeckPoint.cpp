@@ -164,6 +164,11 @@ HRESULT CDeckPoint::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    return hr;
 }
 
+Float64 CDeckPoint::GetWidth() const
+{
+   return RightEdge + LeftEdge;
+}
+
 HRESULT CDeckPoint::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;

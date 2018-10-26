@@ -160,6 +160,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    std::sort(vPoi.begin(),vPoi.end());
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
