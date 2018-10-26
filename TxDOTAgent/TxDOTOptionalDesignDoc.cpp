@@ -377,6 +377,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
          m_pMyToolBar = pFrame->GetToolBar(tbID);
          m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
+         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
       }
 
       // use our status bar
@@ -639,7 +640,7 @@ void CTxDOTOptionalDesignDoc::OnFileExportPgsuperModel()
    CFileDialog  fildlg(FALSE,_T("pgs"),default_name,OFN_HIDEREADONLY,
                    _T("PGSuper Files (*.pgs)|*.pgs||"));
 
-   int stf = fildlg.DoModal();
+   INT_PTR stf = fildlg.DoModal();
    if (stf==IDOK)
    {
       // try loop with a new file name
@@ -1398,7 +1399,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
 
                   StrandIndexType glob_idx = srit->GlobalFill;
 
-                  if (glob_idx > -1) // don't look at zero strands location
+                  if (glob_idx != INVALID_INDEX) // don't look at zero strands location
                   {
                      // Convert either to straight. Assume prismatic section
                      Float64 xStrand(0),yStrand(0);
@@ -1502,7 +1503,7 @@ void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription& brid
 
    CDeckDescription* pDeck = bridgeDesc.GetDeckDescription();
 
-   int ndp = pDeck->DeckEdgePoints.size();
+   std::vector<CDeckPoint>::size_type ndp = pDeck->DeckEdgePoints.size();
    if (ndp!=1)
    {
       TxDOTBrokerRetrieverException exc;
@@ -1543,7 +1544,7 @@ void CTxDOTOptionalDesignDoc::EditGirderViewSettings(int nPage)
    dlg.SetSettings(settings);
    dlg.SetActivePage(nPage);
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if (st==IDOK)
    {
       settings = dlg.GetSettings();

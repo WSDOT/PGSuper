@@ -113,7 +113,7 @@ BOOL CLLDFFillDlg::OnInitDialog()
    CString str;
    m_SpanCB.AddString(_T("None"));
    m_SpanCB.AddString(_T("All"));
-   for (int ispan=0; ispan<nspans; ispan++)
+   for (SpanIndexType ispan=0; ispan<nspans; ispan++)
    {
       str.Format(_T("%d"),LABEL_SPAN(ispan));
       m_SpanCB.AddString(str);
@@ -123,7 +123,7 @@ BOOL CLLDFFillDlg::OnInitDialog()
 
    m_PierCB.AddString(_T("None"));
    m_PierCB.AddString(_T("All"));
-   for (int ipier=0; ipier<=nspans; ipier++)
+   for (PierIndexType ipier=0; ipier<=nspans; ipier++)
    {
       str.Format(_T("%d"),LABEL_PIER(ipier));
       m_PierCB.AddString(str);
@@ -169,7 +169,7 @@ void CLLDFFillDlg::OnCbnSelchangeGirderSpan()
 
       if (enable)
       {
-         int ngdrs;
+         GirderIndexType ngdrs;
          if (sel==1) // All
          {
             ngdrs = m_MaxNumGirders;
@@ -184,14 +184,14 @@ void CLLDFFillDlg::OnCbnSelchangeGirderSpan()
          m_GirderGirderCB.AddString(_T("All"));
 
          CString str;
-         for (int igdr=0; igdr<ngdrs; igdr++)
+         for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
          {
             str.Format(_T("%s"),LABEL_GIRDER(igdr));
             m_GirderGirderCB.AddString(str);
          }
 
          // Go back to previous selection if possible
-         gsel = gsel>ngdrs ? 0:gsel;
+         gsel = gsel> (int)ngdrs ? 0:gsel;
          m_GirderGirderCB.SetCurSel(gsel);
       }
    }
@@ -218,7 +218,7 @@ void CLLDFFillDlg::OnCbnSelchangePier()
 
       if (enable)
       {
-         int ngdrs;
+         GirderIndexType ngdrs;
          if (sel==1) // All
          {
             ngdrs = m_MaxNumGirders;
@@ -233,14 +233,14 @@ void CLLDFFillDlg::OnCbnSelchangePier()
          m_PierGirderCB.AddString(_T("All"));
 
          CString str;
-         for (int igdr=0; igdr<ngdrs; igdr++)
+         for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
          {
             str.Format(_T("%s"),LABEL_GIRDER(igdr));
             m_PierGirderCB.AddString(str);
          }
 
          // Go back to previous selection if possible
-         gsel = gsel>ngdrs ? 0:gsel;
+         gsel = gsel>(int)ngdrs ? 0:gsel;
          m_PierGirderCB.SetCurSel(gsel);
       }
    }
@@ -255,7 +255,7 @@ void CLLDFFillDlg::ComputeMaxNumGirders()
    m_MaxNumGirders = 0;
 
    SpanIndexType nspans = m_pBridgeDesc->GetSpanCount();
-   for (int ispan=0; ispan<nspans; ispan++)
+   for (SpanIndexType ispan=0; ispan<nspans; ispan++)
    {
       const CSpanData* pSpan = m_pBridgeDesc->GetSpan(ispan);
       GirderIndexType ngdrs = pSpan->GetGirderCount();
@@ -275,7 +275,7 @@ SpanGirderList CLLDFFillDlg::GetSpanGirders()
       {
          // all spans
          SpanIndexType nspans = m_pBridgeDesc->GetSpanCount();
-         for (int ispan=0; ispan<nspans; ispan++)
+         for (SpanIndexType ispan=0; ispan<nspans; ispan++)
          {
             int gdrsel = m_GIRDER_GIRDER_INT;
             if (gdrsel==0)
@@ -284,7 +284,7 @@ SpanGirderList CLLDFFillDlg::GetSpanGirders()
                const CSpanData* pSpan = m_pBridgeDesc->GetSpan(ispan);
                GirderIndexType ngdrs = pSpan->GetGirderCount();
 
-               for (int igdr=0; igdr<ngdrs; igdr++)
+               for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
                {
                   theList.push_back( SpanGirderType(ispan, igdr) );
                }
@@ -308,7 +308,7 @@ SpanGirderList CLLDFFillDlg::GetSpanGirders()
             const CSpanData* pSpan = m_pBridgeDesc->GetSpan(span);
             GirderIndexType ngdrs = pSpan->GetGirderCount();
 
-            for (int igdr=0; igdr<ngdrs; igdr++)
+            for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
             {
                theList.push_back( SpanGirderType(span, igdr) );
             }
@@ -336,7 +336,7 @@ PierGirderList CLLDFFillDlg::GetPierGirders()
       {
          // all Piers
          PierIndexType nPiers = m_pBridgeDesc->GetPierCount();
-         for (int iPier=0; iPier<nPiers; iPier++)
+         for (PierIndexType iPier=0; iPier<nPiers; iPier++)
          {
             int gdrsel = m_PIER_GIRDER_INT;
             if (gdrsel==0)
@@ -345,7 +345,7 @@ PierGirderList CLLDFFillDlg::GetPierGirders()
                const CPierData* pPier = m_pBridgeDesc->GetPier(iPier);
                GirderIndexType ngdrs = GetPierGirderCount(pPier);
 
-               for (int igdr=0; igdr<ngdrs; igdr++)
+               for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
                {
                   theList.push_back( PierGirderType(iPier, igdr) );
                }
@@ -369,7 +369,7 @@ PierGirderList CLLDFFillDlg::GetPierGirders()
             const CPierData* pPier = m_pBridgeDesc->GetPier(Pier);
             GirderIndexType ngdrs = GetPierGirderCount(pPier);
 
-            for (int igdr=0; igdr<ngdrs; igdr++)
+            for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
             {
                theList.push_back( PierGirderType(Pier, igdr) );
             }

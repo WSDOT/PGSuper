@@ -57,7 +57,7 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, SpanIn
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
    GirderIndexType start_gdr, end_gdr;
-   if (gdr<0)
+   if (gdr == INVALID_INDEX)
    {
       start_gdr = 0;
       end_gdr = pSpan->GetGirderCount()-1;

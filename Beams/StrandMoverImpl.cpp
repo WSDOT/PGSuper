@@ -249,13 +249,13 @@ STDMETHODIMP CStrandMoverImpl::AddRegion(IShape* shape, double arcSlope)
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::get_NumRegions(long* pNum)
+STDMETHODIMP CStrandMoverImpl::get_NumRegions(IndexType* pNum)
 {
    *pNum = m_Regions.size();
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::GetRegion(long index, IShape** shape, double* arcSlope)
+STDMETHODIMP CStrandMoverImpl::GetRegion(IndexType index, IShape** shape, double* arcSlope)
 {
    HarpRegion& region = m_Regions[index];
    

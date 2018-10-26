@@ -303,7 +303,7 @@ bool SpecLibraryEntry::Edit(bool allowEditing)
    SpecLibraryEntry tmp(*this);
 
    CSpecMainSheet dlg(tmp, IDS_SPEC_SHEET, allowEditing);
-   int i = dlg.DoModal();
+   INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       *this = tmp;
@@ -983,7 +983,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         long method;
+         int method;
          if(!pLoad->Property(_T("TruckRollStiffnessMethod"), &method))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1215,7 +1215,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          if ( version > 33.0 )
          {
-            long oldt;
+            int oldt;
             if(!pLoad->Property(_T("OverlayLoadDistribution"), &oldt))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1753,7 +1753,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // added in version 8.0 and removed in version 28
       if ( 8.0 <= version && version < 28 )
       {
-         long value;
+         int value;
          if ( !pLoad->Property(_T("AnalysisType"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1901,7 +1901,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         long ftype;
+         int ftype;
          if(!pLoad->Property(_T("DesignStrandFillType"), &ftype))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1910,7 +1910,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( 16 <= version )
       {
-         long value;
+         int value;
          if ( !pLoad->Property(_T("EffectiveFlangeWidthMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1920,14 +1920,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // only a valid input between data block version 17 and 23
       if ( 17 <= version && version <= 23)
       {
-         long value;
+         int value;
          if ( !pLoad->Property(_T("SlabOffsetMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( 18 <= version && version < 37 )
       {
-         long value;
+         int value;
          if ( !pLoad->Property(_T("ShearFlowMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1989,7 +1989,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          m_bIncludeRebar_Shear = (temp == 0 ? false : true);
 
-         long value;
+         int value;
          if ( !pLoad->Property(_T("ShearFlowMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2072,7 +2072,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if (32 <= version)
       {
-         if ( !pLoad->Property(_T("PrestressTransferComputationType"),(long*)&m_PrestressTransferComputationType) )
+         if ( !pLoad->Property(_T("PrestressTransferComputationType"),(int*)&m_PrestressTransferComputationType) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 

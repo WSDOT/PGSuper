@@ -70,8 +70,8 @@ interface IConfigureStrandMover : IUnknown
    [helpstring("method AddRegion")] HRESULT AddRegion([in]IShape* shape,[in]double arcSlope);
 
    // methods to help debugging
-   [propget, helpstring("NumRegions")] HRESULT NumRegions([out,retval]long* pNum);
-   [helpstring("method GetRegion")] HRESULT GetRegion([in]long index, [out]IShape** shape,[out]double* arcSlope);
+   [propget, helpstring("NumRegions")] HRESULT NumRegions([out,retval]IndexType* pNum);
+   [helpstring("method GetRegion")] HRESULT GetRegion([in]IndexType index, [out]IShape** shape,[out]double* arcSlope);
 };
 
 

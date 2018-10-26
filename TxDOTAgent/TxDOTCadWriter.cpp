@@ -198,10 +198,10 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    }
 
 	/* 5. STRAND COUNT */
-   int harpedCount   = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Harped);
-   int straightCount = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Straight);
+   StrandIndexType harpedCount   = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Harped);
+   StrandIndexType straightCount = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Straight);
 
-	int strandNum = harpedCount + straightCount;
+	StrandIndexType strandNum = harpedCount + straightCount;
 
 
 	/* 6. STRAND SIZE */
@@ -289,7 +289,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    workerB.WriteString(strandPat,_T("N"),1,_T("%1s"),true);
 	workerB.WriteBlankSpaces(2);
 	//----- COL 5 ----- 
-   workerB.WriteInt16(strandNum,_T("Ns "),3,_T("%3d"),true);
+   workerB.WriteInt16((Int16)strandNum,_T("Ns "),3,_T("%3d"),true);
 	//----- COL 6 ----- 
    workerB.WriteString(strandSize,_T("Size "),5,_T("%5s"),true);
 	//----- COL 7 ----- 
@@ -307,7 +307,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    if (isHarpedDesign)
    {
 	   /* 10. COUNT OF DEPRESSED (HARPED) STRANDS */
-	   int dstrandNum = harpedCount;
+	   StrandIndexType dstrandNum = harpedCount;
 
 	   /* 11. DEPRESSED (HARPED) STRAND */
       pStrandGeometry->GetHighestHarpedStrandLocation(span, gdr, &value);
@@ -316,7 +316,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
       // output
 	   //----- COL 10 ---- 
-      workerB.WriteInt16(dstrandNum,_T("Nh "),3,_T("%3d"),true);
+      workerB.WriteInt16((Int16)dstrandNum,_T("Nh "),3,_T("%3d"),true);
 	   //----- COL 11 ---- 
       workerB.WriteFloat64(dstrandTo,_T(" To "),4,_T("%4.1f"),true);
    }
@@ -345,8 +345,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    if (do_write_ns_data)
    {
-      int cnt = max(ns_strand_str.size(), 7);
-      workerB.WriteString(ns_strand_str.c_str(),_T("NS Data"),cnt,_T("%s"),true);
+      std::_tstring::size_type cnt = max(ns_strand_str.size(), 7);
+      workerB.WriteString(ns_strand_str.c_str(),_T("NS Data"),(Int16)cnt,_T("%s"),true);
    }
 
 

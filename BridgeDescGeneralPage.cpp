@@ -101,7 +101,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    if ( m_bSameNumberOfGirders )
    {
       DDX_Text(pDX, IDC_NUMGDR, m_nGirders );
-      DDV_MinMaxLong(pDX, m_nGirders, m_MinGirderCount, MAX_GIRDERS_PER_SPAN );
+      DDV_MinMaxLong(pDX, (long)m_nGirders, (long)m_MinGirderCount, MAX_GIRDERS_PER_SPAN );
    }
 
    CComPtr<IBroker> pBroker;
@@ -220,7 +220,8 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
 
 	CPropertyPage::OnInitDialog();
    
-   m_NumGdrSpinner.SetRange32(m_MinGirderCount,MAX_GIRDERS_PER_SPAN);
+   m_NumGdrSpinner.SetRange32((int)m_MinGirderCount,(int)MAX_GIRDERS_PER_SPAN);
+
    UDACCEL accel[2];
    accel[0].nInc = 1;
    accel[0].nSec = 5;
@@ -513,7 +514,7 @@ void CBridgeDescGeneralPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 
    // this is what the count will be
-   int new_count = pNMUpDown->iPos + pNMUpDown->iDelta;
+   GirderIndexType new_count = GirderIndexType(pNMUpDown->iPos + pNMUpDown->iDelta);
 
    // if it goes over the top
    if ( MAX_GIRDERS_PER_SPAN < new_count )
@@ -828,14 +829,14 @@ void CBridgeDescGeneralPage::FillRefGirderComboBox()
    pCB->ResetContent();
 
    int idx = pCB->AddString(_T("Center of Girders"));
-   pCB->SetItemData(idx,(DWORD)-1);
+   pCB->SetItemData(idx,(DWORD_PTR)INVALID_INDEX);
 
    for ( GirderIndexType i = 0; i < m_nGirders; i++ )
    {
       CString str;
       str.Format(_T("Girder %s"),LABEL_GIRDER(i));
       idx = pCB->AddString(str);
-      pCB->SetItemData(idx,(DWORD)i);
+      pCB->SetItemData(idx,(DWORD_PTR)i);
    }
 
    pCB->SetCurSel(curSel == CB_ERR ? 0 : curSel);

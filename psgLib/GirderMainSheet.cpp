@@ -320,10 +320,10 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
       // grab a reference to grid's internal data to save typing
       CGirderGlobalStrandGrid::EntryCollectionType& grid_collection =  m_GirderHarpedStrandPage.m_MainGrid.m_Entries;
 
-      long g_cnt = grid_collection.size();
-      Uint16 num_straight=0;
-      Uint16 num_harped=0;
-      for (long g_idx=0; g_idx<g_cnt; g_idx++)
+      CollectionIndexType g_cnt = grid_collection.size();
+      StrandIndexType num_straight=0;
+      StrandIndexType num_harped=0;
+      for (CollectionIndexType g_idx=0; g_idx<g_cnt; g_idx++)
       {
          const CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry = grid_collection[g_idx];
 
@@ -493,8 +493,8 @@ void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
       m_Entry.SetShearZoneInfo(vec);
 
       // last confinement zone
-      int siz = vec.size();
-      int iz = m_ShearSteelPage.m_LastZone.GetCurSel();
+      ZoneIndexType siz = vec.size();
+      ZoneIndexType iz = (ZoneIndexType)m_ShearSteelPage.m_LastZone.GetCurSel();
       if (iz==CB_ERR)
       {
          m_Entry.SetLastConfinementZone(iz);
@@ -530,10 +530,10 @@ void CGirderMainSheet::UploadTransverseData()
 
    // last confinement zone
    m_ShearSteelPage.FillLastZone(vec.size());
-   int sel = m_Entry.GetNumConfinementZones();
-   if (sel <= (int)vec.size())
+   ZoneIndexType sel = m_Entry.GetNumConfinementZones();
+   if (sel <= vec.size())
    {
-      m_ShearSteelPage.m_LastZone.SetCurSel(sel);
+      m_ShearSteelPage.m_LastZone.SetCurSel((int)sel);
    }
    else
    {

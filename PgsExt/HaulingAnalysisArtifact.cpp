@@ -866,14 +866,14 @@ void pgsHaulingAnalysisArtifact::GetMinMaxHaulingStresses(MaxHaulingStressCollec
 {
    PRECONDITION(m_HaulingStressAnalysisArtifacts.size()>0);
 
-   Int32 size = m_HaulingStressAnalysisArtifacts.size();
-   Int32 psiz = m_HaulingPois.size();
+   IndexType size = m_HaulingStressAnalysisArtifacts.size();
+   IndexType psiz = m_HaulingPois.size();
    PRECONDITION(m_HaulingStressAnalysisArtifacts.size()==psiz);
 
    rMaxStresses.clear();
    rMaxStresses.reserve(size);
 
-   Int16 idx=0;
+   IndexType idx=0;
    for (std::map<Float64,pgsHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin(); 
         is!=m_HaulingStressAnalysisArtifacts.end(); is++)
    {

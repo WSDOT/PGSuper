@@ -129,7 +129,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   int row2 = 1;
+   RowIndexType row2 = 1;
    rptRcTable* p_table2 = 0;
    if ( stage == pgsTypes::BridgeSite3 )
    {

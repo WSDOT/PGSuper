@@ -152,21 +152,21 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    *pParagraph << paraTable << rptNewLine;
    paraTable->SetNumberOfHeaderRows(2);
    paraTable->SetRowSpan(0,0,2);
-   paraTable->SetRowSpan(1,0,-1);
+   paraTable->SetRowSpan(1,0,SKIP_CELL);
    (*paraTable)(0,0) << COLHDR(Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    paraTable->SetRowSpan(0,1,2);
-   paraTable->SetRowSpan(1,1,-1);
+   paraTable->SetRowSpan(1,1,SKIP_CELL);
    (*paraTable)(0,1) << COLHDR(Sub2(_T("E"),_T("ci")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    paraTable->SetColumnSpan(0,2,3);
-   paraTable->SetColumnSpan(0,3,-1);
-   paraTable->SetColumnSpan(0,4,-1);
+   paraTable->SetColumnSpan(0,3,SKIP_CELL);
+   paraTable->SetColumnSpan(0,4,SKIP_CELL);
    (*paraTable)(0,2) << _T("Shrinkage");
    (*paraTable)(1,2) << Sub2(_T("K"),_T("1"));
    (*paraTable)(1,3) << Sub2(_T("K"),_T("2"));
    (*paraTable)(1,4) << Sub2(symbol(epsilon),_T("bih")) << _T("x 1000");
    paraTable->SetColumnSpan(0,5,3);
-   paraTable->SetColumnSpan(0,6,-1);
-   paraTable->SetColumnSpan(0,7,-1);
+   paraTable->SetColumnSpan(0,6,SKIP_CELL);
+   paraTable->SetColumnSpan(0,7,SKIP_CELL);
    (*paraTable)(0,5) << _T("Creep");
    (*paraTable)(1,5) << Sub2(_T("K"),_T("1"));
    (*paraTable)(1,6) << Sub2(_T("K"),_T("2"));
@@ -225,24 +225,24 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
 
       col = 0;
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       if ( !bIsPrismatic )
       {
          table->SetRowSpan(0,col,2);
-         table->SetRowSpan(1,col++,-1);
+         table->SetRowSpan(1,col++,SKIP_CELL);
 
          table->SetRowSpan(0,col,2);
-         table->SetRowSpan(1,col++,-1);
+         table->SetRowSpan(1,col++,SKIP_CELL);
       }
 
       table->SetColumnSpan(0,col,3);
@@ -252,7 +252,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
       (*table)(0,col++) << _T("Temporary Strands");
 
       for ( ColumnIndexType i = col; i < numColumns; i++ )
-         table->SetColumnSpan(0,i,-1);
+         table->SetColumnSpan(0,i,SKIP_CELL);
 
       // perm
       col -= 2;

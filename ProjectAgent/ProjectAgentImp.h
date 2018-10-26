@@ -476,10 +476,10 @@ private:
    void RemoveGirderStatusItems(SpanIndexType span, GirderIndexType girder);
 
    // save hash value and vector of status ids
-   typedef std::map<SpanGirderHashType, std::vector<long> > StatusContainer;
+   typedef std::map<SpanGirderHashType, std::vector<StatusItemIDType> > StatusContainer;
    typedef StatusContainer::iterator StatusIterator;
 
-   std::map<SpanGirderHashType, std::vector<long> > m_CurrentGirderStatusItems;
+   std::map<SpanGirderHashType, std::vector<StatusItemIDType> > m_CurrentGirderStatusItems;
 
    std::_tstring m_BridgeName;
    std::_tstring m_BridgeId;

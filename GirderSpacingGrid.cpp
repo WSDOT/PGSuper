@@ -221,7 +221,7 @@ void CGirderSpacingGrid::FillGrid()
 
 
    const int num_rows = 2;
-   const int num_cols = nSpacingGroups;
+   const int num_cols = (int)nSpacingGroups;
 
    SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -264,7 +264,7 @@ void CGirderSpacingGrid::FillGrid()
 
       UserData* pUserData = new UserData(firstGdrIdx,lastGdrIdx); // the grid will delete this
 
-      SetStyleRange(CGXRange(0,grpIdx+1), CGXStyle()
+      SetStyleRange(CGXRange(0,ROWCOL(grpIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_CENTER)
          .SetEnabled(FALSE)
          .SetValue(strHeading)
@@ -312,7 +312,7 @@ void CGirderSpacingGrid::FillGrid()
 
       CString strSpacing;
       strSpacing.Format(_T("%s"),FormatDimension(spacing,spacingUnit,false));
-      SetStyleRange(CGXRange(1,grpIdx+1), CGXStyle()
+      SetStyleRange(CGXRange(1,ROWCOL(grpIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
          .SetEnabled(TRUE)
          .SetReadOnly(FALSE)
@@ -344,7 +344,7 @@ void CGirderSpacingGrid::FillGrid()
             FormatDimension(minGirderSpacing,spacingUnit,false));
       }
 
-      SetStyleRange(CGXRange(2,grpIdx+1), CGXStyle()
+      SetStyleRange(CGXRange(2,ROWCOL(grpIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
          .SetEnabled(FALSE)
          .SetReadOnly(TRUE)
@@ -475,7 +475,7 @@ void CGirderSpacingGrid::OnJoin()
 {
    CRowColArray selLeftCols,selRightCols;
    GetSelectedCols(selLeftCols,selRightCols,FALSE,FALSE);
-   ROWCOL nSelRanges = selLeftCols.GetSize();
+   ROWCOL nSelRanges = (ROWCOL)selLeftCols.GetSize();
    ASSERT( 0 < nSelRanges ); // must be more that one selected column to join
 
    for (ROWCOL i = 0; i < nSelRanges; i++ )

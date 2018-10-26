@@ -520,7 +520,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    return pLLDF;
 }
 
-void CUBeamDistFactorEngineer::ReportMoment(Uint32 spanOrPier, rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPier, rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -767,7 +767,7 @@ void CUBeamDistFactorEngineer::ReportMoment(Uint32 spanOrPier, rptParagraph* pPa
    }
 }
 
-void CUBeamDistFactorEngineer::ReportShear(Uint32 spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 

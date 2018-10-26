@@ -85,8 +85,8 @@ public:
    // point is to be moved along
    STDMETHOD(AddRegion)(IShape* shape, double arcSlope);
    // debuggin
-   STDMETHOD(get_NumRegions)(long* pNum);
-   STDMETHOD(GetRegion)(long index, IShape** shape, double* arcSlope);
+   STDMETHOD(get_NumRegions)(IndexType* pNum);
+   STDMETHOD(GetRegion)(IndexType index, IShape** shape, double* arcSlope);
 
 private:
    double m_TopElevation;

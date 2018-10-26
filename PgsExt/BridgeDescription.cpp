@@ -305,9 +305,9 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          if ( 4 <= version )
          {
             // added in version 4
-            var.vt = VT_UI4;
+            var.vt = VT_I4;
             hr = pStrLoad->get_Property(_T("RefGirder"),&var);
-            m_RefGirderIdx = (GirderIndexType)var.ulVal;
+            m_RefGirderIdx = (GirderIndexType)var.lVal;
 
             hr = pStrLoad->get_Property(_T("RefGirderOffsetType"),&var);
             m_RefGirderOffsetType = (pgsTypes::OffsetMeasurementType)(var.lVal);
@@ -713,7 +713,7 @@ void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpan
 void CBridgeDescription::AppendSpan(const CSpanData* pSpanData,const CPierData* pPierData)
 {
    // Use pier stationing to determine span length
-   InsertSpan(-1,pgsTypes::Ahead,-1.0,pSpanData,pPierData);
+   InsertSpan(INVALID_INDEX,pgsTypes::Ahead,-1.0,pSpanData,pPierData);
 }
 
 void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 newSpanLength, const CSpanData* pSpanData,const CPierData* pPierData)
@@ -730,15 +730,15 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
       }
    }
 
-   // if refPierIdx < 0 then treat this as an append
-   if ( refPierIdx == ALL_PIERS )
+   // if refPierIdx == INVALID_INDEX then treat this as an append
+   if ( refPierIdx == INVALID_INDEX )
    {
       refPierIdx = m_Piers.size()-1;
    }
 
    // Index for our new span
    SpanIndexType newSpanIdx;
-   if (refPierIdx==0)
+   if (refPierIdx == 0)
    {
       newSpanIdx = 0;
    }

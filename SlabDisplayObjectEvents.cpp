@@ -176,8 +176,8 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMe
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
 
-      std::map<Uint32,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-      std::map<Uint32,IBridgePlanViewEventCallback*>::iterator iter;
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgePlanViewEventCallback* callback = iter->second;
@@ -216,7 +216,7 @@ STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnSelect(iD
 {
    METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
    
-   long id = pDO->GetID();
+   IDType id = pDO->GetID();
    if ( id == DECK_ID ) // plan view
    {
       // fill when selected
@@ -237,7 +237,7 @@ STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnUnselect(
 {
    METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
 
-   long id = pDO->GetID();
+   IDType id = pDO->GetID();
    if ( id == DECK_ID )
    {
       // don't fill when not selected
@@ -388,8 +388,8 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContex
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
 
-      std::map<Uint32,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
-      std::map<Uint32,IBridgeSectionViewEventCallback*>::iterator iter;
+      std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
+      std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgeSectionViewEventCallback* callback = iter->second;
@@ -428,7 +428,7 @@ STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnSelect
 {
    METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    
-   long id = pDO->GetID();
+   IDType id = pDO->GetID();
    if ( id == DECK_ID ) // plan view
    {
       // fill when selected
@@ -449,7 +449,7 @@ STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnUnsele
 {
    METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
 
-   long id = pDO->GetID();
+   IDType id = pDO->GetID();
    if ( id == DECK_ID )
    {
       // don't fill when not selected

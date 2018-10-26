@@ -199,12 +199,12 @@ void CShearSteelPage::DoInsertRow()
 
 }
 
-void CShearSteelPage::FillLastZone(int siz)
+void CShearSteelPage::FillLastZone(ZoneIndexType siz)
 {
    CString tmp;
    m_LastZone.ResetContent();
    m_LastZone.AddString(_T("None"));
-   for (int i=1; i<=siz; i++)
+   for (ZoneIndexType i=1; i<=siz; i++)
    {
       tmp.Format(_T("Zone %d"),i);
       m_LastZone.AddString(tmp);

@@ -187,32 +187,32 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
 
    p_table->SetRowSpan(0,0,3);
    (*p_table)(0,0) << _T("Girder");
-   p_table->SetRowSpan(1,0,-1);
-   p_table->SetRowSpan(2,0,-1);
+   p_table->SetRowSpan(1,0,SKIP_CELL);
+   p_table->SetRowSpan(2,0,SKIP_CELL);
 
    p_table->SetColumnSpan(0,1,7);
-   p_table->SetColumnSpan(0,2,-1);
-   p_table->SetColumnSpan(0,3,-1);
-   p_table->SetColumnSpan(0,4,-1);
-   p_table->SetColumnSpan(0,5,-1);
-   p_table->SetColumnSpan(0,6,-1);
-   p_table->SetColumnSpan(0,7,-1);
+   p_table->SetColumnSpan(0,2,SKIP_CELL);
+   p_table->SetColumnSpan(0,3,SKIP_CELL);
+   p_table->SetColumnSpan(0,4,SKIP_CELL);
+   p_table->SetColumnSpan(0,5,SKIP_CELL);
+   p_table->SetColumnSpan(0,6,SKIP_CELL);
+   p_table->SetColumnSpan(0,7,SKIP_CELL);
    (*p_table)(0,1) << _T("Permanent Strands");
 
    p_table->SetRowSpan(1,1,2);
    (*p_table)(1,1) << _T("Material");
-   p_table->SetRowSpan(2,1,-1);
+   p_table->SetRowSpan(2,1,SKIP_CELL);
 
    p_table->SetColumnSpan(1,2,2);
-   p_table->SetColumnSpan(1,3,-1);
+   p_table->SetColumnSpan(1,3,SKIP_CELL);
    (*p_table)(1,2) << _T("Straight");
    (*p_table)(2,2) << _T("# Total")<<rptNewLine<<_T("(Debonded)");
    (*p_table)(2,3) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
 
    p_table->SetColumnSpan(1,4,4);
-   p_table->SetColumnSpan(1,5,-1);
-   p_table->SetColumnSpan(1,6,-1);
-   p_table->SetColumnSpan(1,7,-1);
+   p_table->SetColumnSpan(1,5,SKIP_CELL);
+   p_table->SetColumnSpan(1,6,SKIP_CELL);
+   p_table->SetColumnSpan(1,7,SKIP_CELL);
    (*p_table)(1,4) << _T("Harped");
    (*p_table)(2,4) << _T("#");
    (*p_table)(2,5) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
@@ -222,25 +222,25 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    if ( bTempStrands )
    {
       p_table->SetColumnSpan(0,8,3);
-      p_table->SetColumnSpan(0,9,-1);
-      p_table->SetColumnSpan(0,10,-1);
+      p_table->SetColumnSpan(0,9,SKIP_CELL);
+      p_table->SetColumnSpan(0,10,SKIP_CELL);
       (*p_table)(0,8) << _T("Temporary Strands");
 
       p_table->SetRowSpan(1,8,2);
       (*p_table)(1,8) << _T("Material");
-      p_table->SetRowSpan(2,8,-1);
+      p_table->SetRowSpan(2,8,SKIP_CELL);
 
       p_table->SetRowSpan(1,9,2);
       (*p_table)(1,9) << _T("#");
-      p_table->SetRowSpan(2,9,-1);
+      p_table->SetRowSpan(2,9,SKIP_CELL);
 
       p_table->SetRowSpan(1,10,2);
       (*p_table)(1,10) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
-      p_table->SetRowSpan(2,10,-1);
+      p_table->SetRowSpan(2,10,SKIP_CELL);
    }
 
    GirderIndexType ngirds = pBridge->GetGirderCount(span);
-   int row=p_table->GetNumberOfHeaderRows();
+   RowIndexType row=p_table->GetNumberOfHeaderRows();
    for (GirderIndexType ig=0; ig<ngirds; ig++)
    {
       CGirderData girderData = pGirderData->GetGirderData(span,ig);
@@ -250,7 +250,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       (*p_table)(row,col++) << girderData.Material.pStrandMaterial[pgsTypes::Straight]->GetName();
       
       (*p_table)(row,col) << girderData.Nstrands[pgsTypes::Straight];
-      long nd = pStrandGeometry->GetNumDebondedStrands(span,ig,pgsTypes::Straight);
+      StrandIndexType nd = pStrandGeometry->GetNumDebondedStrands(span,ig,pgsTypes::Straight);
       if (nd>0)
       {
          (*p_table)(row,col) << _T(" (")<<nd<<_T(")");
@@ -267,7 +267,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       (*p_table)(row,col++) << force.SetValue(girderData.Pjack[pgsTypes::Harped]);
 
       // convert to absolute adjustment
-      double adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(span, ig, girderData.Nstrands[pgsTypes::Harped], girderData.HsoEndMeasurement, girderData.HpOffsetAtEnd);
+      Float64 adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(span, ig, girderData.Nstrands[pgsTypes::Harped], girderData.HsoEndMeasurement, girderData.HpOffsetAtEnd);
       (*p_table)(row,col++) << dim.SetValue(adjustment);
 
       adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(span, ig, girderData.Nstrands[pgsTypes::Harped], girderData.HsoHpMeasurement, girderData.HpOffsetAtHp);
@@ -359,7 +359,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       DebondStatus Init(SpanIndexType span, GirderIndexType ngirds, IStrandGeometry* pStrandGeometry);
 
       // get debond row data for a given girder
-      DebondRowDataSet GetDebondRowDataSet(Uint32 gdr)
+      DebondRowDataSet GetDebondRowDataSet(GirderIndexType gdr)
       {
          assert(gdr<m_DebondRowData.size());
          return m_DebondRowData[gdr];
@@ -480,8 +480,8 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   Int32 num_section_locations = debond_comparison.m_SectionLocations.size();
-   Int32 num_cols = 3 + num_section_locations;
+   CollectionIndexType num_section_locations = debond_comparison.m_SectionLocations.size();
+   ColumnIndexType num_cols = 3 + num_section_locations;
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(num_cols,_T(""));
    *pPara << p_table<<rptNewLine;
@@ -492,22 +492,22 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
    ColumnIndexType col2 = 0;
    p_table->SetRowSpan(0,col1,2);
    (*p_table)(0,col1++) << _T("Girder");
-   p_table->SetRowSpan(1,col2++,-1);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
 
    p_table->SetRowSpan(0,col1,2);
    (*p_table)(0,col1++) << COLHDR(_T("Strand Elev"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   p_table->SetRowSpan(1,col2++,-1);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
 
    p_table->SetRowSpan(0,col1,2);
    (*p_table)(0,col1++) << _T("Total #")<<rptNewLine<<_T("Strands")<<rptNewLine<<_T("Debond");
-   p_table->SetRowSpan(1,col2++,-1);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
 
    p_table->SetColumnSpan(0, col1, num_section_locations);
    (*p_table)(0,col1) << COLHDR(_T(" # of Strands Debonded at Distance from Ends of Girder"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
 
    for ( ColumnIndexType i = 1; i < num_section_locations; i++ )
    {
-      p_table->SetColumnSpan(0,col1+i,-1);
+      p_table->SetColumnSpan(0,col1+i,SKIP_CELL);
    }
 
    // section location header columns
@@ -517,7 +517,7 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
    }
 
    // Data rows in table
-   int row=p_table->GetNumberOfHeaderRows();
+   RowIndexType row=p_table->GetNumberOfHeaderRows();
    for (GirderIndexType ig=0; ig<ngirds; ig++)
    {
       (*p_table)(row,0) << LABEL_GIRDER(ig);

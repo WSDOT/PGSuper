@@ -89,7 +89,7 @@ txnEditPier::txnEditPier(PierIndexType pierIdx,
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
-   long nPiers = pBridgeDesc->GetBridgeDescription()->GetPierCount();
+   PierIndexType nPiers = pBridgeDesc->GetBridgeDescription()->GetPierCount();
    if ( m_PierIdx == 0 || m_PierIdx == nPiers-1 )
       m_strPierType = _T("Abutment");
    else

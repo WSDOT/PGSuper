@@ -50,7 +50,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CTogaSectionCutDlgEx)
 	enum { IDD = IDD_SECTION_CUT_DIALOG_EX };
-	int		m_CutIndex;
+	IndexType m_CutIndex;
 	//}}AFX_DATA
 
 

@@ -147,8 +147,8 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
    {
       pTable->SetNumberOfHeaderRows(3);
       pTable->SetRowSpan(0,0,3);
-      pTable->SetRowSpan(1,0,-1);
-      pTable->SetRowSpan(2,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
+      pTable->SetRowSpan(2,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,4);
       (*pTable)(0,1) << _T("Bridge Site 1");
@@ -161,7 +161,7 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
 
       ColumnIndexType i;
       for ( i = 4; i < nCols; i++ )
-         pTable->SetColumnSpan(0,i,-1);
+         pTable->SetColumnSpan(0,i,SKIP_CELL);
 
       pTable->SetColumnSpan(1,1,2);
       (*pTable)(1,1) << _T("User DC");
@@ -179,7 +179,7 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
       (*pTable)(1,5) << _T("User LL+IM");
 
       for ( i = 6; i < nCols; i++ )
-         pTable->SetColumnSpan(1,i,-1);
+         pTable->SetColumnSpan(1,i,SKIP_CELL);
 
       (*pTable)(2,1) << COLHDR(_T("Max"), M, unitT );
       (*pTable)(2,2) << COLHDR(_T("Min"), M, unitT );
@@ -196,7 +196,7 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
    {
       pTable->SetNumberOfHeaderRows(2);
       pTable->SetRowSpan(0,0,3);
-      pTable->SetRowSpan(1,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,2);
       (*pTable)(0,1) << _T("Bridge Site 1");
@@ -208,7 +208,7 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
       (*pTable)(0,3) << _T("");
 
       for ( ColumnIndexType i = 4; i < nCols; i++ )
-         pTable->SetColumnSpan(0,i,-1);
+         pTable->SetColumnSpan(0,i,SKIP_CELL);
 
       (*pTable)(1,1) << COLHDR(_T("User DC"),          M, unitT );
       (*pTable)(1,2) << COLHDR(_T("User DW"),          M, unitT );

@@ -67,7 +67,7 @@ interface IDistFactorEngineer : IUnknown
    //---------------------------------------------------------------------
    // Associated a broker object with this object. Call only from
    // IBeamFactory at create time.
-   virtual void SetBroker(IBroker* pBroker,long statusGroupID) = 0;
+   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for moment

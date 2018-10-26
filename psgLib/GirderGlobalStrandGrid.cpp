@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 static COLORREF DISABLED_COLOR = RGB(200,200,200);
 static COLORREF SYS_COLOR = GetSysColor(COLOR_WINDOW);
 
-static COLORREF GetEntryColor(long entryIndex)
+static COLORREF GetEntryColor(CollectionIndexType entryIndex)
 {
    return entryIndex%2 ? SYS_COLOR : DISABLED_COLOR;
 }
@@ -129,14 +129,14 @@ BOOL CGirderGlobalStrandGrid::OnGridKeyDown(UINT nChar, UINT nRepCnt, UINT nFlag
 
    if (nChar==VK_DOWN)
    {
-      long orig_idx =GetRowEntry(row);
-      if ( orig_idx >= (long)(m_Entries.size()-1))
+      CollectionIndexType orig_idx =GetRowEntry(row);
+      if ( orig_idx >= (m_Entries.size()-1))
       {
          ::MessageBeep(MB_ICONASTERISK);
       }
       else
       {
-         long idx=orig_idx;
+         CollectionIndexType idx=orig_idx;
          while(idx==orig_idx)
          {
             idx = GetRowEntry(++row);
@@ -149,14 +149,14 @@ BOOL CGirderGlobalStrandGrid::OnGridKeyDown(UINT nChar, UINT nRepCnt, UINT nFlag
    }
    else if (nChar==VK_UP)
    {
-      long orig_idx =GetRowEntry(row);
+      CollectionIndexType orig_idx =GetRowEntry(row);
       if (orig_idx==0)
       {
          ::MessageBeep(MB_ICONASTERISK);
       }
       else
       {
-         long idx=orig_idx;
+         CollectionIndexType idx=orig_idx;
          while(idx==orig_idx)
          {
             idx = GetRowEntry(--row);
@@ -207,7 +207,7 @@ BOOL CGirderGlobalStrandGrid::OnLButtonDblClkRowCol(ROWCOL nRow, ROWCOL nCol, UI
 void CGirderGlobalStrandGrid::EditSelectedRow()
 {
    ROWCOL row = GetSelectedRow();
-   long idx =GetRowEntry(row);
+   CollectionIndexType idx =GetRowEntry(row);
    GlobalStrandGridEntry& entry = m_Entries[idx];
 
    // existing number of rows
@@ -247,7 +247,7 @@ BOOL CGirderGlobalStrandGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, U
 void CGirderGlobalStrandGrid::InsertSelectedRow()
 {
    ROWCOL sel_row = GetSelectedRow();
-   long idx =GetRowEntry(sel_row);
+   CollectionIndexType idx =GetRowEntry(sel_row);
    EntryIteratorType entry_iter = m_Entries.begin()+idx;
    ATLASSERT(entry_iter != m_Entries.end());
 
@@ -264,9 +264,9 @@ void CGirderGlobalStrandGrid::InsertSelectedRow()
       m_Entries.insert(entry_iter, entry);
 
       // draw new entry and all below it
-      long size = m_Entries.size();
+      CollectionIndexType size = m_Entries.size();
       ROWCOL row = sel_row;
-      for (long cnt=idx; cnt<size; cnt++)
+      for (CollectionIndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
          row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, curr_color);
@@ -319,7 +319,7 @@ void CGirderGlobalStrandGrid::AppendSelectedRow()
       // add entry to data store
       m_Entries.push_back(entry);
 
-      long idx = m_Entries.size()-1;
+      CollectionIndexType idx = m_Entries.size()-1;
       COLORREF curr_color  =  GetEntryColor(idx);
 
 
@@ -363,7 +363,7 @@ void CGirderGlobalStrandGrid::AppendEntry(CGirderGlobalStrandGrid::GlobalStrandG
    // add entry to data store
    m_Entries.push_back(entry);
 
-   long idx = m_Entries.size()-1;
+   CollectionIndexType idx = m_Entries.size()-1;
    COLORREF curr_color  =  GetEntryColor(idx);
 
 
@@ -386,7 +386,7 @@ void CGirderGlobalStrandGrid::OnEditRemoverows()
 void CGirderGlobalStrandGrid::RemoveSelectedRow()
 {
    ROWCOL sel_row = GetSelectedRow();
-   long idx =GetRowEntry(sel_row);
+   CollectionIndexType idx =GetRowEntry(sel_row);
    EntryIteratorType entry_iter = m_Entries.begin()+idx;
    ATLASSERT(entry_iter != m_Entries.end());
 
@@ -399,10 +399,10 @@ void CGirderGlobalStrandGrid::RemoveSelectedRow()
    m_Entries.erase(entry_iter);
 
    // now refill trailing entries so color matches
-   long size = m_Entries.size();
+   CollectionIndexType size = m_Entries.size();
 
    ROWCOL row = sel_row;
-   for (long cnt=idx; cnt<size; cnt++)
+   for (CollectionIndexType cnt=idx; cnt<size; cnt++)
    {
       COLORREF curr_color  =  GetEntryColor(cnt);
       row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, curr_color);
@@ -431,7 +431,7 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
    }
    else
    {
-      long idx =GetRowEntry(sel_row);
+      CollectionIndexType idx =GetRowEntry(sel_row);
       EntryIteratorType entry_iter = m_Entries.begin()+idx;
       ATLASSERT(entry_iter!=m_Entries.end());
 
@@ -439,7 +439,7 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
       bool use_harped = m_pClient->DoUseHarpedGrid();
       EntryIteratorType above_iter = entry_iter-1;
       ROWCOL load = GetEntryLoad(*above_iter, use_harped);
-      long top_row = sel_row-load;
+      ROWCOL top_row = sel_row-load;
 
       // deal with data move
       GlobalStrandGridEntry entry = *entry_iter;
@@ -449,9 +449,9 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
       idx--;
 
       // draw moved entry and all below it
-      long size = m_Entries.size();
+      CollectionIndexType size = m_Entries.size();
       ROWCOL row = top_row;
-      for (long cnt=idx; cnt<size; cnt++)
+      for (CollectionIndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
          row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, curr_color);
@@ -469,8 +469,8 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
 void CGirderGlobalStrandGrid::MoveDownSelectedRow()
 {
    ROWCOL sel_row = GetSelectedRow();
-   long idx =GetRowEntry(sel_row);
-   long num_entries = m_Entries.size();
+   CollectionIndexType idx =GetRowEntry(sel_row);
+   CollectionIndexType num_entries = m_Entries.size();
    if (idx>=num_entries-1)
    {
       ::MessageBeep(MB_ICONASTERISK);
@@ -492,9 +492,9 @@ void CGirderGlobalStrandGrid::MoveDownSelectedRow()
       m_Entries.insert(pivot_iter, entry);
 
       // draw pivot entry and all below it
-      long size = m_Entries.size();
+      CollectionIndexType size = m_Entries.size();
       ROWCOL row = sel_row;
-      for (long cnt=idx; cnt<size; cnt++)
+      for (CollectionIndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
          row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, curr_color);
@@ -826,8 +826,8 @@ void CGirderGlobalStrandGrid::SelectRow(ROWCOL nRow)
    // unselect currently selected rows
    CRowColArray awRows;
    GetSelectedRows(awRows);
-   int cnt = awRows.GetSize();
-   for(int idx=0; idx<cnt; idx++)
+   INT_PTR cnt = awRows.GetSize();
+   for(INT_PTR idx=0; idx<cnt; idx++)
    {
       ROWCOL row = awRows[idx];
       SelectRange(CGXRange(row,0,row,ncols), FALSE);
@@ -870,14 +870,14 @@ void CGirderGlobalStrandGrid::SelectRow(ROWCOL nRow)
    m_pClient->OnEnableDelete(nRow!=0);
 }
 
-long CGirderGlobalStrandGrid::GetRowEntry(ROWCOL nRow)
+CollectionIndexType CGirderGlobalStrandGrid::GetRowEntry(ROWCOL nRow)
 {
    ATLASSERT(nRow>0 && nRow<=GetRowCount());
 
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
    // brute search from start
-   Uint16 global_index=0;
+   CollectionIndexType global_index=0;
    ROWCOL curr_row=0;
    for(CGirderGlobalStrandGrid::EntryIteratorType it2=m_Entries.begin(); it2!=m_Entries.end(); it2++)
    {
@@ -929,7 +929,7 @@ bool CGirderGlobalStrandGrid::EditEntry(ROWCOL row, GlobalStrandGridEntry& entry
    dlg.m_Row = row;
    dlg.SetEntry(entry, use_harped);
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if (st==IDOK)
    {
       GlobalStrandGridEntry new_entry = dlg.GetEntry();

@@ -277,7 +277,7 @@ void CLLDFGrid::AddGirderRow(GirderIndexType gdr, const CSpanData* pSpan)
 
 void CLLDFGrid::GetGirderRow(GirderIndexType gdr, CSpanData* pSpan)
 {
-   ROWCOL row = gdr + 2;
+   ROWCOL row = ROWCOL(gdr + 2);
 
    pSpan->SetLLDFPosMoment(gdr, pgsTypes::StrengthI, _tstof(GetCellValue(row,1)));
    pSpan->SetLLDFShear(gdr, pgsTypes::StrengthI, _tstof(GetCellValue(row,3)));
@@ -570,7 +570,7 @@ BOOL CLLDFGrid::PasteTextRowCol(ROWCOL nRow, ROWCOL nCol, const CString& str, UI
 
 void CLLDFGrid::SetGirderLLDF(GirderIndexType gdr, Float64 value )
 {
-   ROWCOL row = gdr+2; // first two rows are header
+   ROWCOL row = ROWCOL(gdr+2); // first two rows are header
    ROWCOL nrows = this->GetRowCount();
    if (row<=nrows)
    {
@@ -591,7 +591,7 @@ void CLLDFGrid::SetGirderLLDF(GirderIndexType gdr, Float64 value )
 
 void CLLDFGrid::SetGirderLLDF(GirderIndexType gdr, const SpanLLDF& rlldf )
 {
-   ROWCOL row = gdr+2; // first two rows are header
+   ROWCOL row = ROWCOL(gdr+2); // first two rows are header
    ATLASSERT(this->GetColCount()==6);
    const Float64* pdbl = &(rlldf.sgPMService); // pointer to first member in struct
    for (ROWCOL col=1; col<=6; col++)

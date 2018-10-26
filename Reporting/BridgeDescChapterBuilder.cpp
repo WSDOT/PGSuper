@@ -736,23 +736,23 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       for ( int i = 0; i < 10; i++ )
       {
          pTable->SetRowSpan(0,i,2); 
-         pTable->SetRowSpan(1,i,-1);
+         pTable->SetRowSpan(1,i,SKIP_CELL);
       }
 
       pTable->SetColumnSpan(0,10,2);
-      pTable->SetColumnSpan(0,11,-1);
+      pTable->SetColumnSpan(0,11,SKIP_CELL);
       (*pTable)(0,10) << Sub2(_T("E"),_T("c"));
       (*pTable)(1,10) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,11) << Sub2(_T("K"),_T("2"));
 
       pTable->SetColumnSpan(0,12,2);
-      pTable->SetColumnSpan(0,13,-1);
+      pTable->SetColumnSpan(0,13,SKIP_CELL);
       (*pTable)(0,12) << _T("Creep");
       (*pTable)(1,12) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,13) << Sub2(_T("K"),_T("2"));
 
       pTable->SetColumnSpan(0,14,2);
-      pTable->SetColumnSpan(0,15,-1);
+      pTable->SetColumnSpan(0,15,SKIP_CELL);
       (*pTable)(0,14) << _T("Shrinkage");
       (*pTable)(1,14) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,15) << Sub2(_T("K"),_T("2"));
@@ -905,29 +905,29 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pTable->SetRowSpan(0,0,2);
-   pTable->SetRowSpan(1,0,-1);
+   pTable->SetRowSpan(1,0,SKIP_CELL);
    (*pTable)(0,0) << _T("");
 
    pTable->SetRowSpan(0,1,2);
-   pTable->SetRowSpan(1,1,-1);
+   pTable->SetRowSpan(1,1,SKIP_CELL);
    (*pTable)(0,1) << _T("Station");
 
    pTable->SetRowSpan(0,2,2);
-   pTable->SetRowSpan(1,2,-1);
+   pTable->SetRowSpan(1,2,SKIP_CELL);
    (*pTable)(0,2) << _T("Bearing");
 
    pTable->SetRowSpan(0,3,2);
-   pTable->SetRowSpan(1,3,-1);
+   pTable->SetRowSpan(1,3,SKIP_CELL);
    (*pTable)(0,3) << _T("Skew Angle");
 
    pTable->SetColumnSpan(0,4,2);
-   pTable->SetColumnSpan(0,5,-1);
+   pTable->SetColumnSpan(0,5,SKIP_CELL);
    (*pTable)(0,4) << _T("Connection Geometry");
    (*pTable)(1,4) << _T("Back");
    (*pTable)(1,5) << _T("Ahead");
 
    pTable->SetRowSpan(0,6,2);
-   pTable->SetRowSpan(1,6,-1);
+   pTable->SetRowSpan(1,6,SKIP_CELL);
    (*pTable)(0,6) << _T("Boundary") << rptNewLine << _T("Condition");
 
 
@@ -1014,8 +1014,8 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pTable->SetRowSpan(0,1,2);
    (*pTable)(0,1) << _T("# Girders");
 
-   pTable->SetRowSpan(1,4,-1);
-   pTable->SetRowSpan(1,5,-1);
+   pTable->SetRowSpan(1,4,SKIP_CELL);
+   pTable->SetRowSpan(1,5,SKIP_CELL);
 
    pTable->SetColumnSpan(0,2,2);
    (*pTable)(0,2) << _T("Start of Span");
@@ -1028,8 +1028,8 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pTable)(1,1) << _T("Datum");
 
    pTable->SetColumnSpan(0,3,2);
-   pTable->SetColumnSpan(0,4,-1);
-   pTable->SetColumnSpan(0,5,-1);
+   pTable->SetColumnSpan(0,4,SKIP_CELL);
+   pTable->SetColumnSpan(0,5,SKIP_CELL);
    (*pTable)(0,3) << _T("End of Span");
 
    if (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
@@ -1531,7 +1531,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       overhang.ShowUnitTag(false);
       (*table)(0,0) << deckTable << rptNewLine;
       std::vector<CDeckPoint>::const_iterator iter;
-      int row = deckTable->GetNumberOfHeaderRows();
+      RowIndexType row = deckTable->GetNumberOfHeaderRows();
       for ( iter = pDeck->DeckEdgePoints.begin(); iter != pDeck->DeckEdgePoints.end(); iter++ )
       {
          const CDeckPoint& dp = *iter;
@@ -1550,7 +1550,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
          if ( iter != pDeck->DeckEdgePoints.end()-1 )
          {
             deckTable->SetColumnSpan(row,0,2);
-            deckTable->SetColumnSpan(row,1,-1);
+            deckTable->SetColumnSpan(row,1,SKIP_CELL);
             (*deckTable)(row,0) << _T("Transition");
 
             switch( dp.LeftTransitionType )
@@ -1701,7 +1701,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       for ( iter = deckRebar.NegMomentRebar.begin(); iter != deckRebar.NegMomentRebar.end(); iter++ )
       {
          const CDeckRebarData::NegMomentRebarData& negMomentRebar = *iter;
-         (*pTable)(row,0) << (negMomentRebar.PierIdx+1L);
+         (*pTable)(row,0) << LABEL_PIER(negMomentRebar.PierIdx);
          (*pTable)(row,1) << (negMomentRebar.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
          (*pTable)(row,2) << As.SetValue(negMomentRebar.LumpSum);
          (*pTable)(row,3) << lrfdRebarPool::GetBarSize(negMomentRebar.RebarSize);

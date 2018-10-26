@@ -122,7 +122,7 @@ void CGirderNameGrid::FillGrid()
    GirderIndexType nGirders     = m_GirderTypes.GetGirderCount();
 
    const int num_rows = 1;
-   const int num_cols = nGirderGroups;
+   const int num_cols = (int)nGirderGroups;
 
    SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -158,14 +158,14 @@ void CGirderNameGrid::FillGrid()
 
       UserData* pUserData = new UserData(firstGdrIdx,lastGdrIdx); // the grid will delete this
 
-      SetStyleRange(CGXRange(0,grpIdx+1), CGXStyle()
+      SetStyleRange(CGXRange(0,ROWCOL(grpIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_CENTER)
          .SetEnabled(FALSE)
          .SetValue(strHeading)
          .SetItemDataPtr((void*)pUserData)
          );
 
-      SetStyleRange(CGXRange(1,grpIdx+1), CGXStyle()
+      SetStyleRange(CGXRange(1,ROWCOL(grpIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
          .SetEnabled(TRUE)
          .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
@@ -179,13 +179,13 @@ void CGirderNameGrid::FillGrid()
       // first name in the girder list
       if ( strGirderFamilyName == m_strGirderFamilyName )
       {
-         SetStyleRange(CGXRange(1,grpIdx+1), CGXStyle()
+         SetStyleRange(CGXRange(1,ROWCOL(grpIdx+1)), CGXStyle()
             .SetValue(strName.c_str())
             );
       }
       else
       {
-         SetStyleRange(CGXRange(1,grpIdx+1), CGXStyle()
+         SetStyleRange(CGXRange(1,ROWCOL(grpIdx+1)), CGXStyle()
             .SetValue(m_GirderList.Left(m_GirderList.FindOneOf(_T("\n"))))
             );
       }
@@ -283,7 +283,7 @@ void CGirderNameGrid::OnExpand()
       for ( int i = nSelCols-1; 0 <= i; i-- )
       {
          ROWCOL col = selCols[i];
-         long grpIdx = col-1;
+         GroupIndexType grpIdx = (GroupIndexType)col-1;
 
          m_GirderTypes.Expand(grpIdx);
       }
@@ -296,7 +296,7 @@ void CGirderNameGrid::OnJoin()
 {
    CRowColArray selLeftCols,selRightCols;
    GetSelectedCols(selLeftCols,selRightCols,FALSE,FALSE);
-   ROWCOL nSelRanges = selLeftCols.GetSize();
+   ROWCOL nSelRanges = (ROWCOL)selLeftCols.GetSize();
    ASSERT( 0 < nSelRanges ); // must be more that one selected column to join
 
    for (ROWCOL i = 0; i < nSelRanges; i++ )

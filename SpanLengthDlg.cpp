@@ -80,9 +80,9 @@ BOOL CSpanLengthDlg::OnInitDialog()
    m_Grid.CustomInit();
 
    m_PierIdx = 0;
-   double nPiers = m_SpanLengths.size() + 1;
+   PierIndexType nPiers = m_SpanLengths.size() + 1;
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_PIER);
-   for ( long i = 0; i < nPiers; i++ )
+   for ( PierIndexType i = 0; i < nPiers; i++ )
    {
       CString strValue;
       strValue.Format(_T("%d"),i+1);

@@ -76,7 +76,7 @@ void pgsPsForceEng::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-void pgsPsForceEng::SetStatusGroupID(long statusGroupID)
+void pgsPsForceEng::SetStatusGroupID(StatusGroupIDType statusGroupID)
 {
    m_StatusGroupID = statusGroupID;
 }
@@ -178,18 +178,11 @@ Float64 pgsPsForceEng::GetPjackMax(SpanIndexType span,GirderIndexType gdr,const 
       std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest( span, gdr, pgsTypes::CastingYard, POI_MIDSPAN);
       pgsPointOfInterest poi = vPoi[0];
 
-      GET_IFACE(IBridge,pBridge);
-      GDRCONFIG config = pBridge->GetGirderConfiguration(span,gdr);
-      Float64 slabOffset = pBridge->GetSlabOffset(poi);
-
       GET_IFACE(ILosses,pLosses);
-      Float64 loss = pLosses->GetBeforeXferLosses(poi,pgsTypes::Permanent,config); // should be the same for all girders in all spans
+      Float64 loss = pLosses->GetBeforeXferLosses(poi,pgsTypes::Permanent); // should be the same for all girders in all spans
 
-      Float64 fpu;
-      Float64 aps;
-
-      fpu = strand.GetUltimateStrength();
-      aps = strand.GetNominalArea();
+      Float64 fpu = strand.GetUltimateStrength();
+      Float64 aps = strand.GetNominalArea();
 
       Pjack = (coeff*fpu + loss) * aps * nStrands;
    }

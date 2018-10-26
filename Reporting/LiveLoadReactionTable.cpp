@@ -115,7 +115,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    p_table->SetNumberOfHeaderRows(2);
 
    p_table->SetRowSpan(0,0,2);
-   p_table->SetRowSpan(1,0,-1);
+   p_table->SetRowSpan(1,0,SKIP_CELL);
    (*p_table)(0,0) << _T("");
 
  	ColumnIndexType col1 = 1;
@@ -140,8 +140,8 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
       p_table->SetRowSpan(0,col1,2);
 		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
-      p_table->SetRowSpan(1,col2++,-1);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
 	}
 
    if ( bPedLoading )
@@ -179,7 +179,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
 	}
 
    for ( ColumnIndexType i = col1; i < nCols; i++ )
-      p_table->SetColumnSpan(0,i,-1);
+      p_table->SetColumnSpan(0,i,SKIP_CELL);
 
    *p << p_table;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;

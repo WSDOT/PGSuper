@@ -1027,42 +1027,42 @@ CString CPGSuperDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
 }
 
 // IRegisterViewEvents
-Uint32 CPGSuperDocProxyAgent::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
 {
    return m_pPGSuperDoc->RegisterBridgePlanViewCallback(pCallback);
 }
 
-Uint32 CPGSuperDocProxyAgent::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
 {
    return m_pPGSuperDoc->RegisterBridgeSectionViewCallback(pCallback);
 }
 
-Uint32 CPGSuperDocProxyAgent::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
 {
    return m_pPGSuperDoc->RegisterGirderElevationViewCallback(pCallback);
 }
 
-Uint32 CPGSuperDocProxyAgent::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
 {
    return m_pPGSuperDoc->RegisterGirderSectionViewCallback(pCallback);
 }
 
-bool CPGSuperDocProxyAgent::UnregisterBridgePlanViewCallback(Uint32 ID)
+bool CPGSuperDocProxyAgent::UnregisterBridgePlanViewCallback(IDType ID)
 {
    return m_pPGSuperDoc->UnregisterBridgePlanViewCallback(ID);
 }
 
-bool CPGSuperDocProxyAgent::UnregisterBridgeSectionViewCallback(Uint32 ID)
+bool CPGSuperDocProxyAgent::UnregisterBridgeSectionViewCallback(IDType ID)
 {
    return m_pPGSuperDoc->UnregisterBridgeSectionViewCallback(ID);
 }
 
-bool CPGSuperDocProxyAgent::UnregisterGirderElevationViewCallback(Uint32 ID)
+bool CPGSuperDocProxyAgent::UnregisterGirderElevationViewCallback(IDType ID)
 {
    return m_pPGSuperDoc->UnregisterGirderElevationViewCallback(ID);
 }
 
-bool CPGSuperDocProxyAgent::UnregisterGirderSectionViewCallback(Uint32 ID)
+bool CPGSuperDocProxyAgent::UnregisterGirderSectionViewCallback(IDType ID)
 {
    return m_pPGSuperDoc->UnregisterGirderSectionViewCallback(ID);
 }

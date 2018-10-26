@@ -194,11 +194,11 @@ void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
    if (rows>=1)
 	   RemoveRows(1, rows);
 
-   int size = vSpanLengths.size();
+   CollectionIndexType size = vSpanLengths.size();
    if (0 < size)
    {
       // size grid
-      for (int i = 0; i < size; i++)
+      for (CollectionIndexType i = 0; i < size; i++)
 	      InsertRow();
 
       // fill grid

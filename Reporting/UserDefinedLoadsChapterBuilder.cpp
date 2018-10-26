@@ -208,9 +208,9 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
       const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(stage, span, girder);
       if (ppl!=0)
       {
-         Int32 npl = ppl->size();
+         IndexType npl = ppl->size();
 
-         for (Int32 ipl=0; ipl<npl; ipl++)
+         for (IndexType ipl=0; ipl<npl; ipl++)
          {
             loads_exist = true;
 
@@ -302,8 +302,8 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
       const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(stage, span, girder);
       if (ppl!=0)
       {
-         Int32 npl = ppl->size();
-         for (Int32 ipl=0; ipl<npl; ipl++)
+         IndexType npl = ppl->size();
+         for (IndexType ipl=0; ipl<npl; ipl++)
          {
             loads_exist = true;
 
@@ -396,9 +396,9 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
       const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(stage, span, girder);
       if (ppl!=0)
       {
-         Int32 npl = ppl->size();
+         IndexType npl = ppl->size();
 
-         for (Int32 ipl=0; ipl<npl; ipl++)
+         for (IndexType ipl=0; ipl<npl; ipl++)
          {
             loads_exist = true;
 

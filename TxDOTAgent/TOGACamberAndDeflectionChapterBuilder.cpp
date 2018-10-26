@@ -119,8 +119,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pTable->SetColumnSpan(0,2,2);
    (*pTable)(0,2) << _T("Fabricator Optional Design");
 
-   pTable->SetColumnSpan(0,3,-1);
-   pTable->SetColumnSpan(0,4,-1);
+   pTable->SetColumnSpan(0,3,SKIP_CELL);
+   pTable->SetColumnSpan(0,4,SKIP_CELL);
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDisplacementUnit(), true );

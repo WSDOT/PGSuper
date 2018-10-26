@@ -1843,16 +1843,16 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
 
       // A bug released in 2.07 can allow files to be saved with more girder data
       // than spans exist. we need to trap this
-      long nspans = pObj->m_BridgeDescription.GetSpanCount();
+      SpanIndexType nspans = pObj->m_BridgeDescription.GetSpanCount();
 
       hr = pLoad->get_Property(_T("PrestressDataCount"), &var );
       if ( FAILED(hr) )
          return hr;
 
-      int cnt = var.lVal;
+      IndexType cnt = var.lVal;
 
       const ConcreteLibraryEntry* pConcreteLibraryEntry = pObj->GetConcreteEntry(pObj->m_strOldGirderConcreteName.c_str());
-      for ( int i = 0; i < cnt; i++ )
+      for ( IndexType i = 0; i < cnt; i++ )
       {
          HRESULT hr = pLoad->BeginUnit(_T("GirderPrestressData"));
          if ( FAILED(hr) )
@@ -1988,16 +1988,16 @@ HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad*
 
       // A bug released in 2.07 can allow files to be saved with more girder data
       // than spans exist. we need to trap this
-      long nspans = pObj->m_BridgeDescription.GetSpanCount();
+      SpanIndexType nspans = pObj->m_BridgeDescription.GetSpanCount();
 
       var.vt = VT_I4;
       HRESULT hr = pLoad->get_Property(_T("ShearDataCount"), &var );
       if ( FAILED(hr) )
          return hr;
 
-      int cnt = var.lVal;
+      IndexType cnt = var.lVal;
 
-      for ( int i = 0; i < cnt; i++ )
+      for ( IndexType i = 0; i < cnt; i++ )
       {
          HRESULT hr = pLoad->BeginUnit(_T("GirderShearData"));
          if ( FAILED(hr) )
@@ -2142,16 +2142,16 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
 
          // A bug released in 2.07 can allow files to be saved with more girder data
          // than spans exist. we need to trap this
-         long nspans = pObj->m_BridgeDescription.GetSpanCount();
+         SpanIndexType nspans = pObj->m_BridgeDescription.GetSpanCount();
 
          var.vt = VT_I4;
          hr = pLoad->get_Property(_T("LongitudinalRebarDataCount"), &var );
          if ( FAILED(hr) )
             return hr;
 
-         int cnt = var.lVal;
+         IndexType cnt = var.lVal;
 
-         for ( int i = 0; i < cnt; i++ )
+         for ( IndexType i = 0; i < cnt; i++ )
          {
             HRESULT hr = pLoad->BeginUnit(_T("GirderLongitudinalRebarData"));
             if ( FAILED(hr) )
@@ -2814,12 +2814,12 @@ HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgre
    pSave->put_Property(_T("TruckImpact"),CComVariant(pObj->m_TruckImpact[llType]));
    pSave->put_Property(_T("LaneImpact"), CComVariant(pObj->m_LaneImpact[llType]));
 
-   long cnt = pObj->m_SelectedLiveLoads[llType].size();
+   VehicleIndexType cnt = pObj->m_SelectedLiveLoads[llType].size();
    pSave->put_Property(_T("VehicleCount"), CComVariant(cnt));
    {
       pSave->BeginUnit(_T("Vehicles"),1.0);
       
-      for (long itrk=0; itrk<cnt; itrk++)
+      for (VehicleIndexType itrk=0; itrk<cnt; itrk++)
       {
          LiveLoadSelection& sel = pObj->m_SelectedLiveLoads[llType][itrk];
          const std::_tstring& name = sel.EntryName;
@@ -3218,8 +3218,8 @@ void CProjectAgentImp::UseGirderLibraryEntries()
       while ( pSpan )
       {
          CGirderTypes girderTypes = *pSpan->GetGirderTypes();
-         long nGroups = girderTypes.GetGirderGroupCount();
-         for ( long groupIdx = 0; groupIdx < nGroups; groupIdx++ )
+         GroupIndexType nGroups = girderTypes.GetGirderGroupCount();
+         for ( GroupIndexType groupIdx = 0; groupIdx < nGroups; groupIdx++ )
          {
             GirderIndexType firstGdrIdx,lastGdrIdx;
             std::_tstring strGirderName;
@@ -3515,14 +3515,14 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    ATLASSERT(concLib.GetMinCount() == 0); // did this change???
 
    ConnectionLibrary& connLib = GetConnectionLibrary();
-   int nEntries    = connLib.GetCount();
-   int nMinEntries = connLib.GetMinCount();
+   CollectionIndexType nEntries    = connLib.GetCount();
+   CollectionIndexType nMinEntries = connLib.GetMinCount();
    if ( nEntries < nMinEntries )
    {
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),connLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( int i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          connLib.NewEntry(connLib.GetUniqueEntryName().c_str());
       }
@@ -3553,7 +3553,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),gdrLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( int i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          gdrLib.NewEntry(gdrLib.GetUniqueEntryName().c_str());
       }
@@ -3591,7 +3591,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),tbLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( int i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          tbLib.NewEntry(tbLib.GetUniqueEntryName().c_str());
       }
@@ -3620,7 +3620,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pSpecLib->GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( int i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          pSpecLib->NewEntry(pSpecLib->GetUniqueEntryName().c_str());
       }
@@ -3639,7 +3639,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pRatingLib->GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( int i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          pRatingLib->NewEntry(pRatingLib->GetUniqueEntryName().c_str());
       }
@@ -5463,7 +5463,7 @@ arDesignOptions CProjectAgentImp::GetDesignOptions(SpanIndexType spanIdx,GirderI
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
 
    // determine flexural design from girder attributes
-   long  nh = pGirderEntry->GetNumHarpedStrandCoordinates();
+   StrandIndexType  nh = pGirderEntry->GetNumHarpedStrandCoordinates();
    if (nh>0)
    {
       options.doDesignForFlexure = dtDesignForHarping;
@@ -7114,7 +7114,7 @@ void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType gi
    // first post message
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pgsGirderDescriptionStatusItem* pStatusItem =  new pgsGirderDescriptionStatusItem(span,girder,0,m_StatusGroupID,m_scidGirderDescriptionWarning,message.c_str());
-   long st_id = pStatusCenter->Add(pStatusItem);
+   StatusItemIDType st_id = pStatusCenter->Add(pStatusItem);
 
    // then store message id's for a given span/girder
    SpanGirderHashType hashval = HashSpanGirder(span, girder);
@@ -7123,7 +7123,7 @@ void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType gi
    if (iter==m_CurrentGirderStatusItems.end())
    {
       // not found, must insert
-      std::pair<StatusContainer::iterator, bool> itbp = m_CurrentGirderStatusItems.insert(StatusContainer::value_type(hashval, std::vector<long>() ));
+      std::pair<StatusContainer::iterator, bool> itbp = m_CurrentGirderStatusItems.insert(StatusContainer::value_type(hashval, std::vector<StatusItemIDType>() ));
       ATLASSERT(itbp.second);
       itbp.first->second.push_back(st_id);
    }
@@ -7142,12 +7142,12 @@ void CProjectAgentImp::RemoveGirderStatusItems(SpanIndexType span,GirderIndexTyp
    StatusIterator iter = m_CurrentGirderStatusItems.find(hashval);
    if (iter!=m_CurrentGirderStatusItems.end())
    {
-      std::vector<long>& rvec = iter->second;
+      std::vector<StatusItemIDType>& rvec = iter->second;
 
       // remove all status items
-      for (std::vector<long>::iterator viter = rvec.begin(); viter!=rvec.end(); viter++)
+      for (std::vector<StatusItemIDType>::iterator viter = rvec.begin(); viter!=rvec.end(); viter++)
       {
-         long id = *viter;
+         StatusItemIDType id = *viter;
          pStatusCenter->RemoveByID(id);
       }
 

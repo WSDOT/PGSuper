@@ -233,7 +233,7 @@ void CEditLoadsView::OnDeleteLoad()
    {
       int nItem = m_LoadsListCtrl.GetNextSelectedItem(pos);
 
-      DWORD data = m_LoadsListCtrl.GetItemData(nItem);
+      DWORD_PTR data = m_LoadsListCtrl.GetItemData(nItem);
       WORD load_type = LOWORD(data);
       WORD load_idx = HIWORD(data);
 
@@ -324,8 +324,8 @@ void CEditLoadsView::InsertData()
 
    // Add Point Loads
    GET_IFACE(IUserDefinedLoadData, pUdl);
-   Uint32 pl_cnt = pUdl->GetPointLoadCount();
-   Uint32 ipl;
+   CollectionIndexType pl_cnt = pUdl->GetPointLoadCount();
+   CollectionIndexType ipl;
    for (ipl=0; ipl<pl_cnt; ipl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Point"));
@@ -357,8 +357,8 @@ void CEditLoadsView::InsertData()
    }
 
    // Add Distributed Loads
-   Int32 dl_cnt = pUdl->GetDistributedLoadCount();
-   for (Int32 idl=0; idl<dl_cnt; idl++)
+   CollectionIndexType dl_cnt = pUdl->GetDistributedLoadCount();
+   for (CollectionIndexType idl=0; idl<dl_cnt; idl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Distributed"));
 
@@ -530,7 +530,7 @@ void CEditLoadsView::EditLoad(POSITION pos)
 
    int nItem = m_LoadsListCtrl.GetNextSelectedItem(pos);
 
-   DWORD data = m_LoadsListCtrl.GetItemData(nItem);
+   DWORD_PTR data = m_LoadsListCtrl.GetItemData(nItem);
    WORD load_type = LOWORD(data);
    WORD load_idx = HIWORD(data);
 

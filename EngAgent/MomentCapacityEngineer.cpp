@@ -206,7 +206,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    CComPtr<IGeneralSection> section;
    CComPtr<IPoint2d> pntCompression; // needed to figure out the result geometry
    CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
-   std::map<long,Float64> bond_factors[2];
+   std::map<StrandIndexType,Float64> bond_factors[2];
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
    BuildCapacityProblem(stage,poi,config,e_initial,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,bond_factors);
 
@@ -920,7 +920,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    CComPtr<IGeneralSection> beam_section;
    CComPtr<IPoint2d> pntCompression; // needed to figure out the result geometry
    CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
-   std::map<long,Float64> bond_factors[2];
+   std::map<StrandIndexType,Float64> bond_factors[2];
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
    BuildCapacityProblem(pgsTypes::BridgeSite3,poi,config,0,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,bond_factors);
 
@@ -1045,7 +1045,7 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(SpanIndexType span,GirderIn
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,std::map<long,Float64>* pBondFactors)
+void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,std::map<StrandIndexType,Float64>* pBondFactors)
 {
    ATLASSERT( stage == pgsTypes::BridgeSite3 );
 

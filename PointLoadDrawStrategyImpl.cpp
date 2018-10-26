@@ -62,7 +62,7 @@ DELEGATE_CUSTOM_INTERFACE(CPointLoadDrawStrategyImpl,EditLoad);
 
 
 void CPointLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, CPointLoadData load,
-                                                 Uint32 loadIndex, Float64 girderDepth, Float64 spanLength, 
+                                                 IndexType loadIndex, Float64 girderDepth, Float64 spanLength, 
                                                  Float64 maxMagnitude, COLORREF color)
 {
    METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,Strategy);

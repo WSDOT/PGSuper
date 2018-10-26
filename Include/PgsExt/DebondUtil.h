@@ -332,17 +332,17 @@ class DebondSectionComputer
 public:
    DebondSectionComputer(const std::vector<DEBONDINFO>& rDebondInfo, Float64 girderLength);
 
-   Int16 GetNumLeftSections();
-   void GetLeftSectionInfo(Int16 idx, Float64* location, Int16* numStrandsDebonded);
+   CollectionIndexType GetNumLeftSections();
+   void GetLeftSectionInfo(CollectionIndexType idx, Float64* location, StrandIndexType* numStrandsDebonded);
 
-   Int16 GetNumRightSections();
-   void GetRightSectionInfo(Int16 idx, Float64* location, Int16* numStrandsDebonded);
+   CollectionIndexType GetNumRightSections();
+   void GetRightSectionInfo(CollectionIndexType idx, Float64* location, StrandIndexType* numStrandsDebonded);
 
 private:
    struct DbSection
    {
       Float64 m_Location;
-      Int16   m_NumDebonds;
+      StrandIndexType   m_NumDebonds;
 
       bool operator==(const DbSection& rOther) const
       { 
@@ -419,15 +419,15 @@ inline DebondSectionComputer::DebondSectionComputer(const std::vector<DEBONDINFO
    }
 }
 
-inline Int16 DebondSectionComputer::GetNumLeftSections()
+inline CollectionIndexType DebondSectionComputer::GetNumLeftSections()
 {
    return m_LeftSections.size();
 }
 
-inline void DebondSectionComputer::GetLeftSectionInfo(Int16 idx, Float64* pLocation, Int16* numStrandsDebonded)
+inline void DebondSectionComputer::GetLeftSectionInfo(CollectionIndexType idx, Float64* pLocation, StrandIndexType* numStrandsDebonded)
 {
    std::set<DbSection>::iterator sec_it = m_LeftSections.begin();
-   for(Int16 is=0; is<idx; is++)
+   for(CollectionIndexType is=0; is<idx; is++)
       sec_it++;
 
    DbSection& sec = *sec_it;
@@ -435,15 +435,15 @@ inline void DebondSectionComputer::GetLeftSectionInfo(Int16 idx, Float64* pLocat
    *pLocation = sec.m_Location;
 }
 
-inline Int16 DebondSectionComputer::GetNumRightSections()
+inline CollectionIndexType DebondSectionComputer::GetNumRightSections()
 {
    return m_RightSections.size();
 }
 
-inline void DebondSectionComputer::GetRightSectionInfo(Int16 idx, Float64* pLocation, Int16* numStrandsDebonded)
+inline void DebondSectionComputer::GetRightSectionInfo(CollectionIndexType idx, Float64* pLocation, StrandIndexType* numStrandsDebonded)
 {
    std::set<DbSection>::iterator sec_it = m_RightSections.begin();
-   for(Int16 is=0; is<idx; is++)
+   for(CollectionIndexType is=0; is<idx; is++)
       sec_it++;
 
    DbSection& sec = *sec_it;

@@ -41,14 +41,14 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CPointLoadData m_LoadData;
 };
 
 class txnDeletePointLoad : public txnTransaction
 {
 public:
-   txnDeletePointLoad(Uint32 loadIdx);
+   txnDeletePointLoad(CollectionIndexType loadIdx);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -57,14 +57,14 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CPointLoadData m_LoadData;
 };
 
 class txnEditPointLoad : public txnTransaction
 {
 public:
-   txnEditPointLoad(Uint32 loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData);
+   txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -74,7 +74,7 @@ public:
 
 private:
    void DoExecute(int i);
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CPointLoadData m_LoadData[2];
 };
 
@@ -90,14 +90,14 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CDistributedLoadData m_LoadData;
 };
 
 class txnDeleteDistributedLoad : public txnTransaction
 {
 public:
-   txnDeleteDistributedLoad(Uint32 loadIdx);
+   txnDeleteDistributedLoad(CollectionIndexType loadIdx);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -106,14 +106,14 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CDistributedLoadData m_LoadData;
 };
 
 class txnEditDistributedLoad : public txnTransaction
 {
 public:
-   txnEditDistributedLoad(Uint32 loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData);
+   txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -123,7 +123,7 @@ public:
 
 private:
    void DoExecute(int i);
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CDistributedLoadData m_LoadData[2];
 };
 
@@ -139,14 +139,14 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CMomentLoadData m_LoadData;
 };
 
 class txnDeleteMomentLoad : public txnTransaction
 {
 public:
-   txnDeleteMomentLoad(Uint32 loadIdx);
+   txnDeleteMomentLoad(CollectionIndexType loadIdx);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -155,14 +155,14 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CMomentLoadData m_LoadData;
 };
 
 class txnEditMomentLoad : public txnTransaction
 {
 public:
-   txnEditMomentLoad(Uint32 loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData);
+   txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -172,7 +172,7 @@ public:
 
 private:
    void DoExecute(int i);
-   Uint32 m_LoadIdx;
+   CollectionIndexType m_LoadIdx;
    CMomentLoadData m_LoadData[2];
 };
 

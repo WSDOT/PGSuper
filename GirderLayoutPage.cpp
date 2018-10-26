@@ -127,7 +127,7 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_SLAB_OFFSET_NOTE,    m_SlabOffsetHyperLink);
 
    DDX_Text( pDX, IDC_NUMGDR, m_nGirders );
-   DDV_MinMaxLong(pDX, m_nGirders, m_MinGirderCount, MAX_GIRDERS_PER_SPAN );
+   DDV_MinMaxLong(pDX, (long)m_nGirders, (long)m_MinGirderCount, MAX_GIRDERS_PER_SPAN );
 
    DDX_Check_Bool(pDX, IDC_SAME_GIRDER_SPACING, m_bUseSameSpacingAtBothEnds );
 
@@ -497,14 +497,14 @@ void CSpanGirderLayoutPage::FillRefGirderComboBox(pgsTypes::PierFaceType pierFac
    pCB->ResetContent();
 
    int idx = pCB->AddString(_T("Center of Girders"));
-   pCB->SetItemData(idx,(DWORD)-1);
+   pCB->SetItemData(idx,(DWORD_PTR)INVALID_INDEX);
 
    for ( GirderIndexType i = 0; i < m_nGirders; i++ )
    {
       CString str;
       str.Format(_T("Girder %s"),LABEL_GIRDER(i));
       idx = pCB->AddString(str);
-      pCB->SetItemData(idx,(DWORD)i);
+      pCB->SetItemData(idx,(DWORD_PTR)i);
    }
 
    pCB->SetCurSel(curSel == CB_ERR ? 0 : curSel);
@@ -544,12 +544,12 @@ void CSpanGirderLayoutPage::CacheEndSpacing()
    CComboBox* pcbEndOfSpanSpacingDatum   = (CComboBox*)GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE);
 
    // cache the current value of the end of span spacing datum
-   m_CacheGirderSpacingMeasure[pgsTypes::Back]  = pcbEndOfSpanSpacingDatum->GetItemData( pcbEndOfSpanSpacingDatum->GetCurSel() );
+   m_CacheGirderSpacingMeasure[pgsTypes::Back]  = (long)pcbEndOfSpanSpacingDatum->GetItemData( pcbEndOfSpanSpacingDatum->GetCurSel() );
 
    // cache the reference girder
    CComboBox* pcbStartRefGirder = (CComboBox*)GetDlgItem(IDC_PREV_REF_GIRDER);
    CComboBox* pcbEndRefGirder   = (CComboBox*)GetDlgItem(IDC_NEXT_REF_GIRDER);
-   m_CacheRefGirderIdx[pgsTypes::Back] = pcbEndRefGirder->GetItemData( pcbEndRefGirder->GetCurSel() );
+   m_CacheRefGirderIdx[pgsTypes::Back] = (long)pcbEndRefGirder->GetItemData( pcbEndRefGirder->GetCurSel() );
 
    // cache the reference girder offset
    CComPtr<IBroker> pBroker;
@@ -794,8 +794,8 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
 
       CComboBox* pcbStartOfSpanSpacingDatum = (CComboBox*)GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_MEASURE);
       CComboBox* pcbEndOfSpanSpacingDatum   = (CComboBox*)GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE);
-      m_CacheGirderSpacingMeasure[pgsTypes::Ahead] = pcbStartOfSpanSpacingDatum->GetItemData( pcbStartOfSpanSpacingDatum->GetCurSel() );
-      m_CacheGirderSpacingMeasure[pgsTypes::Back]  = pcbEndOfSpanSpacingDatum->GetItemData( pcbEndOfSpanSpacingDatum->GetCurSel() );
+      m_CacheGirderSpacingMeasure[pgsTypes::Ahead] = (long)pcbStartOfSpanSpacingDatum->GetItemData( pcbStartOfSpanSpacingDatum->GetCurSel() );
+      m_CacheGirderSpacingMeasure[pgsTypes::Back]  = (long)pcbEndOfSpanSpacingDatum->GetItemData( pcbEndOfSpanSpacingDatum->GetCurSel() );
 
       // determine if there is more than one spacing group
       std::set<double> spacings;
@@ -971,7 +971,7 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderType(WPARAM wParam,LPARAM lPara
             if ( dlg.DoModal() == IDOK )
             {
                iter = girderNames.begin();
-               for ( int i = 0; i < dlg.m_ItemIdx; i++ )
+               for ( IndexType i = 0; i < dlg.m_ItemIdx; i++ )
                   iter++;
 
                strBridgeGirderName = *iter;

@@ -522,7 +522,7 @@ inline DWORD HashGirderSpacing(pgsTypes::MeasurementLocation ml,pgsTypes::Measur
    return MAKELONG(ml,mt);
 }
 
-inline void UnhashGirderSpacing(DWORD girderSpacingHash,pgsTypes::MeasurementLocation *ml,pgsTypes::MeasurementType *mt)
+inline void UnhashGirderSpacing(DWORD_PTR girderSpacingHash,pgsTypes::MeasurementLocation *ml,pgsTypes::MeasurementType *mt)
 {
    *ml = (pgsTypes::MeasurementLocation)LOWORD(girderSpacingHash);
    *mt = (pgsTypes::MeasurementType)HIWORD(girderSpacingHash);

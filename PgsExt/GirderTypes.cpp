@@ -749,11 +749,10 @@ GroupIndexType CGirderTypes::GetGirderGroupCount() const
 
 void CGirderTypes::SetGirderCount(GirderIndexType nGirders)
 {
-   long nDeltaGirders = nGirders - m_GirderNames.size();
-   if ( nDeltaGirders < 0 )
-      RemoveGirders((GirderIndexType)(-nDeltaGirders));
+   if ( nGirders < m_GirderNames.size() )
+      RemoveGirders(m_GirderNames.size() - nGirders);
    else
-      AddGirders((GirderIndexType)nDeltaGirders);
+      AddGirders(nGirders - m_GirderNames.size());
 
    ATLASSERT( m_GirderGroups.size() != 0 );
 #if defined _DEBUG

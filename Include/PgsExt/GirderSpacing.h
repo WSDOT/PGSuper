@@ -100,7 +100,7 @@ public:
    void RemoveGirders(GirderIndexType nGirders);
 
 #if defined _DEBUG
-   long Debug_GetGirderCount() const { return m_GirderSpacing.size()+1; }
+   GirderIndexType Debug_GetGirderCount() const { return m_GirderSpacing.size()+1; }
    void AssertValid() const;
 #endif
 

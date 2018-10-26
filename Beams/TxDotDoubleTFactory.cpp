@@ -111,7 +111,7 @@ HRESULT CTxDotDoubleTFactory::FinalConstruct()
    return S_OK;
 }
 
-void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IMultiWebSection2> gdrsection;
    gdrsection.CoCreateInstance(CLSID_MultiWebSection2);
@@ -144,7 +144,7 @@ void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,long statusGroup
    gdrsection.QueryInterface(ppSection);
 }
 
-void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -172,7 +172,7 @@ void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,long statusGroup
    rect->QueryInterface(ppShape);
 }
 
-void CTxDotDoubleTFactory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CTxDotDoubleTFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
@@ -267,7 +267,7 @@ void CTxDotDoubleTFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -279,7 +279,7 @@ void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,long status
    (*ppEng)->AddRef();
 }
 
-void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
@@ -865,7 +865,7 @@ void CTxDotDoubleTFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensio
    }
 }
 
-long CTxDotDoubleTFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CTxDotDoubleTFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 {
    return 2;
 }

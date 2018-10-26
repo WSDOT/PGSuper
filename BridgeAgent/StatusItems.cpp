@@ -130,7 +130,7 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////
 
-pgsPointLoadStatusItem::pgsPointLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+pgsPointLoadStatusItem::pgsPointLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
                                                SpanIndexType span,GirderIndexType gdr) :
 pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
 m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
@@ -169,7 +169,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    CDealWithLoadDlg dlg;
    dlg.m_Message = pItem->GetDescription().c_str();
 
-   int result = dlg.DoModal();
+   INT_PTR result = dlg.DoModal();
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
@@ -197,7 +197,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
                                                            SpanIndexType span,GirderIndexType gdr) :
 pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
 m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
@@ -236,7 +236,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    CDealWithLoadDlg dlg;
    dlg.m_Message = pItem->GetDescription().c_str();
 
-   int result = dlg.DoModal();
+   INT_PTR result = dlg.DoModal();
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
@@ -264,7 +264,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////
 
-pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
                                                  SpanIndexType span,GirderIndexType gdr):
 pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
 m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
@@ -302,7 +302,7 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    CDealWithLoadDlg dlg;
    dlg.m_Message = pItem->GetDescription().c_str();
 
-   int result = dlg.DoModal();
+   INT_PTR result = dlg.DoModal();
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
 

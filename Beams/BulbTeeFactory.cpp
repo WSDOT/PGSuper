@@ -132,7 +132,7 @@ HRESULT CBulbTeeFactory::FinalConstruct()
    return S_OK;
 }
 
-void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IBulbTeeSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_BulbTeeSection);
@@ -186,7 +186,7 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanInde
    gdrsection.QueryInterface(ppSection);
 }
 
-void CBulbTeeFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CBulbTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -223,7 +223,7 @@ void CBulbTeeFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanInde
    polyShape->QueryInterface(ppShape);
 }
 
-void CBulbTeeFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CBulbTeeFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<ISegment> segment;
 
@@ -258,7 +258,7 @@ void CBulbTeeFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexTy
    if ( bPrismatic )
    {
       CComPtr<IGirderSection> gdrSection;
-      CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrSection);
+      CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrSection);
       CComQIPtr<IPrismaticSegment> prisSegment(segment);
       CComQIPtr<IShape> shape(gdrSection);
       prisSegment->putref_Shape(shape);
@@ -266,7 +266,7 @@ void CBulbTeeFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexTy
    else
    {
       CComPtr<IGirderSection> gdrSection;
-      CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrSection);
+      CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrSection);
 
       CComQIPtr<IThickenedFlangeBulbTeeSegment> bulbTeeSegment(segment);
       CComQIPtr<IBulbTeeSection> bulbTeeSection(gdrSection);
@@ -351,7 +351,7 @@ void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanI
    }
 }
 
-void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    GET_IFACE2(pBroker, ISpecification,    pSpec);
    GET_IFACE2(pBroker, ILibrary,          pLib);
@@ -378,17 +378,17 @@ void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,con
    CComObject<CBulbTeeDistFactorEngineer>::CreateInstance(&pEngineer);
 
    pEngineer->Init(useIBeam);
-   pEngineer->SetBroker(pBroker,agentID);
+   pEngineer->SetBroker(pBroker,statusGroupID);
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();
 }
 
-void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
     pEngineer->Init(CPsLossEngineer::IBeam);
-    pEngineer->SetBroker(pBroker,agentID);
+    pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();
 }
@@ -1022,7 +1022,7 @@ void CBulbTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
    };
 }
 
-long CBulbTeeFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CBulbTeeFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 {
    return 1;
 }

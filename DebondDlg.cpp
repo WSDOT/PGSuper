@@ -205,7 +205,7 @@ std::vector<CString>  CGirderDescDebondPage::GetStrandList()
    {
       StrandIndexType nextnum = pStrandGeom->GetNextNumStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, pgsTypes::Straight, currnum);
 
-      Int32 is_debondable;
+      IDType is_debondable;
       // nextnum is a count. need to subtract 1 to get index
       m_Debondables->get_Item(nextnum-1, &is_debondable);
 
@@ -403,7 +403,7 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& m
       i++;
    }
 
-   pDC->Polygon(points,nPoints);
+   pDC->Polygon(points,(int)nPoints);
 
    delete[] points;
 }
@@ -445,10 +445,10 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       CComPtr<IPoint2d> point;
       points->get_Item(strIdx,&point);
 
-      Int32 is_debondable;
+      IDType is_debondable;
       m_Debondables->get_Item(strIdx, &is_debondable);
 
-      long dx,dy;
+      LONG dx,dy;
       mapper.WPtoDP(point,&dx,&dy);
 
       CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
@@ -481,7 +481,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    {
       CDebondInfo& debond_info = *iter;
 
-      if ( debond_info.idxStrand1 == Uint32_Max )
+      if ( debond_info.idxStrand1 == INVALID_INDEX )
          continue;
 
       CComPtr<IPoint2d> point;
@@ -494,7 +494,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
 
       pDC->Ellipse(&rect);
 
-      if ( debond_info.idxStrand2 != Uint32_Max )
+      if ( debond_info.idxStrand2 != INVALID_INDEX )
       {
          point.Release();
          points->get_Item(debond_info.idxStrand2,&point);
@@ -530,7 +530,7 @@ bool CGirderDescDebondPage:: CanDebondMore()
    StrandIndexType nDebondable = 0; // number of strand that can be debonded
    for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
    {
-      Int32 is_debondable;
+      IDType is_debondable;
       m_Debondables->get_Item(strandIdx, &is_debondable);
       if (is_debondable)
       {
@@ -613,10 +613,10 @@ void CGirderDescDebondPage::OnHelp()
 
 void CGirderDescDebondPage::OnChange() 
 {
-   long ns = GetNumStrands(); 
-   long ndbs =  m_Grid.GetNumDebondedStrands();
+   StrandIndexType ns = GetNumStrands(); 
+   StrandIndexType ndbs =  m_Grid.GetNumDebondedStrands();
    double percent = 0.0;
-   if (ns>0)
+   if (ns != INVALID_INDEX)
       percent = 100.0 * (double)ndbs/ns;
 
    CString str;

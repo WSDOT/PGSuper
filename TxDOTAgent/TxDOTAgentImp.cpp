@@ -232,13 +232,13 @@ void CTxDOTAgentImp::ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo)
 
    if (rCmdInfo.m_TxGirder != TXALLGIRDERS && 
        rCmdInfo.m_TxGirder != TXEIGIRDERS && 
-       (rCmdInfo.m_TxGirder < 0 || 27 < rCmdInfo.m_TxGirder))
+       (rCmdInfo.m_TxGirder == INVALID_INDEX || 27 < rCmdInfo.m_TxGirder))
    {
       ::AfxMessageBox(_T("Invalid girder specified on command line for TxDOT CAD report"));
       return;
    }
 
-   if (rCmdInfo.m_TxSpan != ALL_SPANS && rCmdInfo.m_TxSpan < 0)
+   if (rCmdInfo.m_TxSpan != ALL_SPANS /*&& rCmdInfo.m_TxSpan < 0*/)
    {
       ::AfxMessageBox(_T("Invalid span specified on command line for TxDOT CAD report"));
       return;

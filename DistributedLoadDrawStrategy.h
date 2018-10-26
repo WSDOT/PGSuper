@@ -35,7 +35,7 @@ DEFINE_GUID(IID_iDistributedLoadDrawStrategy,
 
 interface iDistributedLoadDrawStrategy : public IUnknown
 {
-  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, Uint32 loadIndex, 
+  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex, 
                         Float64 loadLength, Float64 spanLength, Float64 girderDepthAtStartOfLoad, Float64 girderDepthAtEndOfLoad, Float64 maxMagnitude, COLORREF color) PURE;
 };
 

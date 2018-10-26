@@ -62,7 +62,7 @@ void CBulbTeeDistFactorEngineer::Init(bool treatAsWsDotI)
    ATLASSERT(m_pImpl);
 }
 
-void CBulbTeeDistFactorEngineer::SetBroker(IBroker* pBroker,long statusGroupID)
+void CBulbTeeDistFactorEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
 

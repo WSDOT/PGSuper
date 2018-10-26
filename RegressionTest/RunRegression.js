@@ -10,6 +10,7 @@
 // first some defaults
 // first some defaults
 var PGSuperVersion = "Debug";
+var PGSuperPlatform = "WIN32";
 var DoSendEmail=false;
 var EmailAddress = new String;
 var ExecuteCommands=true; // if false, only show commands
@@ -48,7 +49,7 @@ var NewCatalogServer = new String("Regression");
 var OldCatalogPublisher = new String;
 var NewCatalogPublisher = new String("Regression");
 
-var Application = PGSuperDrive+"\\ARP\\PGSuper\\RegFreeCOM\\"+PGSuperVersion+"\\PGSuper.exe ";
+var Application = PGSuperDrive+"\\ARP\\PGSuper\\RegFreeCOM\\" +PGSuperPlatform+"\\"+PGSuperVersion+"\\PGSuper.exe ";
 var StartFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest" );
 var CurrFolderSpec  = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Current" );
 var DatumFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Datum" );
@@ -485,6 +486,7 @@ function ParseCommandLine()
 {
    var didDrive=0; // drive on command line?
    var didVersion=0; // Release or Debug on command line?
+   var didPlatform=0;
    var objArgs = WScript.Arguments;
    var I;
    for (I=0; I<objArgs.Count(); I++)
@@ -500,6 +502,7 @@ function ParseCommandLine()
          DisplayMessage("    /?             - Help (you are here)");
          DisplayMessage("    /D<drive-name> - Drive where PGSuper is installed (e.g., /DC:)");
          DisplayMessage("    /V<version>    - Version of PGSuper to test (either \"Debug\", \"Profile\", or \"Release\"");
+         DisplayMessage("    /P<platform>   - Platform (Win32 or X64)");
          DisplayMessage("    /N             - No execute. Display but do not execute pgsuper commands.");
          DisplayMessage("");
          return 1;
@@ -530,6 +533,22 @@ function ParseCommandLine()
           {
              DisplayMessage("Invalid PGSuper version on command line - must be either Release, Profile, or Debug");
              DisplayMessage("String was: \""+ver+"\"");
+             return 1;
+          }
+       }
+       else if (s.charAt(1)=="P" || s.charAt(1)=="p")
+       {
+          var platform = s.substring(2,s.length);
+          platform = platform.toUpperCase();
+          if (platform =="WIN32" || platform =="X64")
+          {
+             PGSuperPlatform = platform;
+             didPlatform=1;
+          }
+          else
+          {
+             DisplayMessage("Invalid platform on command line - must be either Win32 or x64");
+             DisplayMessage("String was: \""+platform+"\"");
              return 1;
           }
        }

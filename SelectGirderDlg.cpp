@@ -56,8 +56,8 @@ void CSelectGirderDlg::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-	DDX_CBIndex(pDX, IDC_GIRDER, m_Girder);
-	DDX_CBIndex(pDX, IDC_SPAN, m_Span);
+	DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_Girder);
+	DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Span);
 }
 
 
@@ -82,10 +82,10 @@ BOOL CSelectGirderDlg::OnInitDialog()
    CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 	  
 	  /* Get count of spans from bridge agent */
-	Uint32 cSpan = pBridge->GetSpanCount();
+	SpanIndexType cSpan = pBridge->GetSpanCount();
 
 	/* Extract data from spans */
-	for ( Uint32 i = 0; i < cSpan; i++ )
+	for ( SpanIndexType i = 0; i < cSpan; i++ )
 	{
 		/* Add current span string to span list */
 		CString strSpan;
@@ -96,10 +96,10 @@ BOOL CSelectGirderDlg::OnInitDialog()
    OnSpanChanged();
 
 	/* Intialize each combo selections */
-	if ( pSpanBox->SetCurSel(m_Span) == CB_ERR )
+	if ( pSpanBox->SetCurSel((int)m_Span) == CB_ERR )
       pSpanBox->SetCurSel(0);
 	
-   if ( pGdrBox->SetCurSel(m_Girder) == CB_ERR )
+   if ( pGdrBox->SetCurSel((int)m_Girder) == CB_ERR )
       pGdrBox->SetCurSel(0);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -132,7 +132,7 @@ void CSelectGirderDlg::OnSpanChanged()
 		pGdrBox->AddString( strGdr );
 	}
 
-   girder = min(GirderIndexType(girder), cGirder-1); // don't allow out of bounds if ng decreases between spans
+   girder = (int)min(GirderIndexType(girder), cGirder-1); // don't allow out of bounds if ng decreases between spans
 
    pGdrBox->SetCurSel(girder);
 }

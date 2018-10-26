@@ -217,8 +217,8 @@ rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,S
    StrandIndexType nMaxStrands2 = Uint16(floor(fraMaxStrands * nDebondedStrands));
    StrandIndexType nMaxStrands = _cpp_max(nMaxStrands1,nMaxStrands2);
 
-   Uint16 nSections = pDebondArtifact->GetNumDebondSections();
-   for ( Uint16 sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+   SectionIndexType nSections = pDebondArtifact->GetNumDebondSections();
+   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
    {
       Float64 loc;
       StrandIndexType nStrands;

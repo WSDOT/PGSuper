@@ -44,8 +44,8 @@ CEAFCommandLineInfo(),
 m_DoTxCadReport(false),
 m_TxRunType(txrAnalysis),
 m_TxFType(txfNormal),
-m_TxSpan(-1),
-m_TxGirder(-1),
+m_TxSpan(INVALID_INDEX),
+m_TxGirder(INVALID_INDEX),
 m_DoAppendToFile(false),
 m_DoTogaTest(false)
 {

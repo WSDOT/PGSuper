@@ -101,12 +101,12 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
 
    ColumnIndexType i;
    for ( i = col; i < p_table->GetNumberOfColumns(); i++ )
-      p_table->SetColumnSpan(0,i,-1);
+      p_table->SetColumnSpan(0,i,SKIP_CELL);
 
    // build second hearing row
    col = 0;
-   p_table->SetRowSpan(1,col++,-1);
-   p_table->SetRowSpan(1,col++,-1);
+   p_table->SetRowSpan(1,col++,SKIP_CELL);
+   p_table->SetRowSpan(1,col++,SKIP_CELL);
 
    (*p_table)(1,col++) << COLHDR(_T("Straight"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*p_table)(1,col++) << COLHDR(_T("Harped"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );

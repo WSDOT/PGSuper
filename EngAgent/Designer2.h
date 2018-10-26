@@ -195,16 +195,16 @@ private:
    void DesignMidZoneAtRelease(IProgress* pProgress);
    void DesignEndZone(bool firstTime, arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
    void DesignForShipping(IProgress* pProgress);
-   std::vector<Int16> DesignForShippingDebondingFinal(IProgress* pProgress);
+   std::vector<DebondLevelType> DesignForShippingDebondingFinal(IProgress* pProgress);
 
    void DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
    void DesignForLiftingHarping(bool bAdjustingAfterShipping,IProgress* pProgress);
    void DesignEndZoneReleaseHarping(IProgress* pProgress);
 
    void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsDesignArtifact& artifact, IProgress* pProgress);
-   std::vector<Int16> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress);
-   std::vector<Int16> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress);
-   std::vector<Int16> DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail = true);
+   std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress);
+   std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress);
+   std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail = true);
 
    void DesignEndZoneReleaseStrength(IProgress* pProgress);
    void DesignConcreteRelease(Float64 topStress, Float64 botStress);
@@ -272,9 +272,9 @@ private:
                                          pgsLongReinfShearArtifact* pArtifact );
 
    // shear zone-based shear checks
-   pgsStirrupCheckAtZonesArtifact CreateStirrupCheckAtZonesArtifact(SpanIndexType span,GirderIndexType gdr, Uint32 zoneNum, bool checkConfinement);
+   pgsStirrupCheckAtZonesArtifact CreateStirrupCheckAtZonesArtifact(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zoneNum, bool checkConfinement);
 
-   void CheckConfinement(SpanIndexType span,GirderIndexType gdr, Uint32 zoneNum, pgsConfinementArtifact* pArtifact );
+   void CheckConfinement(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zoneNum, pgsConfinementArtifact* pArtifact );
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

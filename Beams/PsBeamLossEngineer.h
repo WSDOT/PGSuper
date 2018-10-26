@@ -53,7 +53,7 @@ BEGIN_COM_MAP(CPsBeamLossEngineer)
 END_COM_MAP()
 
 public:
-   virtual void SetBroker(IBroker* pBroker,long statusGroupID);
+   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
    virtual LOSSDETAILS ComputeLosses(const pgsPointOfInterest& poi);
    virtual LOSSDETAILS ComputeLossesForDesign(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
@@ -61,7 +61,7 @@ public:
 
 private:
    IBroker* m_pBroker;
-   long m_StatusGroupID;
+   StatusGroupIDType m_StatusGroupID;
    CPsLossEngineer::BeamType m_BeamType;
    CPsLossEngineer m_Engineer;
 };

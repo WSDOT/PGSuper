@@ -179,7 +179,7 @@ void CStrandRowGrid::FillGrid(const CTxDOTOptionalDesignGirderData::AvailableStr
 	   RemoveRows(1, rows);
 
    // One row for each available strand row
-   ROWCOL numRows = availStrands.size();
+   ROWCOL numRows = (ROWCOL)availStrands.size();
    ROWCOL row = 1;
    InsertRows(row, numRows);
 

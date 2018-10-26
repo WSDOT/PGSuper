@@ -75,7 +75,7 @@ public:
       m_Level        = 0;
       m_pBroker      = 0;
 
-      m_AlignmentID = -1;
+      m_AlignmentID = INVALID_ID;
 
       m_bUserLoadsValidated  = false;
 	}
@@ -354,8 +354,8 @@ public:
    virtual Float64 GetHorzStirrupBarNominalDiameter(const pgsPointOfInterest& poi);
    virtual Float64 GetVertStirrupBarArea(const pgsPointOfInterest& poi);
    virtual Float64 GetHorzStirrupBarArea(const pgsPointOfInterest& poi);
-   virtual Uint32 GetVertStirrupBarCount(const pgsPointOfInterest& poi);
-   virtual Uint32 GetHorzStirrupBarCount(const pgsPointOfInterest& poi);
+   virtual CollectionIndexType GetVertStirrupBarCount(const pgsPointOfInterest& poi);
+   virtual CollectionIndexType GetHorzStirrupBarCount(const pgsPointOfInterest& poi);
    virtual Float64 GetS(const pgsPointOfInterest& poi);
    virtual Float64 GetAlpha(const pgsPointOfInterest& poi);
 
@@ -369,14 +369,14 @@ public:
    virtual Float64 GetTopFlangeS(const pgsPointOfInterest& poi);
 
    virtual ZoneIndexType GetNumZones(SpanIndexType span,GirderIndexType gdr);
-   virtual Uint32 GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
+   virtual IDType GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
    virtual Float64 GetZoneStart(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone); // dist from start of girder
    virtual Float64 GetZoneEnd(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) ; // dist from start of girder
 
    virtual matRebar::Size GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
    virtual matRebar::Size GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual Uint32 GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual Uint32 GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
+   virtual CollectionIndexType GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
+   virtual CollectionIndexType GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
    virtual Float64 GetS(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
    virtual ZoneIndexType GetNumConfinementZones(SpanIndexType span,GirderIndexType gdr);
    virtual bool IsConfinementZone(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
@@ -650,7 +650,7 @@ private:
 
    StatusGroupIDType m_LoadStatusGroupID; // ID used to identify user load-related status items created by this agent
 
-   Int32 m_AlignmentID;
+   IDType m_AlignmentID;
 
    CComPtr<IGenericBridge> m_Bridge;
    CComPtr<IBridgeGeometryTool> m_BridgeGeometryTool;

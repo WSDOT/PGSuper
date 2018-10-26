@@ -44,7 +44,7 @@ protected:
    pgsTypes::LimitState GetStrengthLimitStateType(pgsTypes::LoadRatingType ratingType);
    pgsTypes::LimitState GetServiceLimitStateType(pgsTypes::LoadRatingType ratingType);
 
-   void GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<long>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<long>& vMaxTruckIndex);
+   void GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex);
 
    DECLARE_LOGFILE;
 };

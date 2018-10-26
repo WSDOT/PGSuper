@@ -197,23 +197,23 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       p_table->SetNumberOfHeaderRows(2);
 
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( bDesign )
@@ -269,7 +269,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
 
       for ( ColumnIndexType i = col; i < nCols; i++ )
-         p_table->SetColumnSpan(0,i,-1);
+         p_table->SetColumnSpan(0,i,SKIP_CELL);
    }
    else
    {
@@ -555,22 +555,22 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       ColumnIndexType col3 = 0;
       p_table->SetRowSpan(0,col1,3);
       (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      p_table->SetRowSpan(1,col2++,-1);
-      p_table->SetRowSpan(2,col3++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(2,col3++,SKIP_CELL);
 
       if ( bDesign )
       {
          p_table->SetColumnSpan(0,col1,6);
          (*p_table)(0,col1++) << _T("Design");
-         p_table->SetColumnSpan(0,col1++,-1);
-         p_table->SetColumnSpan(0,col1++,-1);
-         p_table->SetColumnSpan(0,col1++,-1);
-         p_table->SetColumnSpan(0,col1++,-1);
-         p_table->SetColumnSpan(0,col1++,-1);
+         p_table->SetColumnSpan(0,col1++,SKIP_CELL);
+         p_table->SetColumnSpan(0,col1++,SKIP_CELL);
+         p_table->SetColumnSpan(0,col1++,SKIP_CELL);
+         p_table->SetColumnSpan(0,col1++,SKIP_CELL);
+         p_table->SetColumnSpan(0,col1++,SKIP_CELL);
 
          p_table->SetColumnSpan(1,col2,2);
          (*p_table)(1,col2++) << _T("Service I");
-         p_table->SetColumnSpan(1,col2++,-1);
+         p_table->SetColumnSpan(1,col2++,SKIP_CELL);
 
          (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -579,7 +579,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
          {
             p_table->SetColumnSpan(1,col2,2);
             (*p_table)(1,col2++) << _T("Service IA");
-            p_table->SetColumnSpan(1,col2++,-1);
+            p_table->SetColumnSpan(1,col2++,SKIP_CELL);
 
             (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
             (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -587,7 +587,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
          
          p_table->SetColumnSpan(1,col2,2);
          (*p_table)(1,col2++) << _T("Service III");
-         p_table->SetColumnSpan(1,col2++,-1);
+         p_table->SetColumnSpan(1,col2++,SKIP_CELL);
 
          (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -596,7 +596,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
          {
             p_table->SetColumnSpan(1,col2,2);
             (*p_table)(1,col2++) << _T("Fatigue I");
-            p_table->SetColumnSpan(1,col2++,-1);
+            p_table->SetColumnSpan(1,col2++,SKIP_CELL);
 
             (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
             (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -621,14 +621,14 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
             p_table->SetColumnSpan(0,col1,colSpan);
             (*p_table)(0,col1++) << _T("Rating");
 
-            for ( int i = 0; i < colSpan-1; i++ )
-               p_table->SetColumnSpan(0,col1++,-1);
+            for ( ColumnIndexType i = 0; i < colSpan-1; i++ )
+               p_table->SetColumnSpan(0,col1++,SKIP_CELL);
 
             if ( !bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
             {
                p_table->SetColumnSpan(1,col2,2);
                (*p_table)(1,col2++) << _T("Service III") << rptNewLine << _T("Inventory");
-               p_table->SetColumnSpan(1,col2++,-1);
+               p_table->SetColumnSpan(1,col2++,SKIP_CELL);
 
                (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
                (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -638,7 +638,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
             {
                p_table->SetColumnSpan(1,col2,2);
                (*p_table)(1,col2++) << _T("Service III") << rptNewLine << _T("Legal Routine");
-               p_table->SetColumnSpan(1,col2++,-1);
+               p_table->SetColumnSpan(1,col2++,SKIP_CELL);
 
                (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
                (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -648,7 +648,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
             {
                p_table->SetColumnSpan(1,col2,2);
                (*p_table)(1,col2++) << _T("Service III") << rptNewLine << _T("Legal Special");
-               p_table->SetColumnSpan(1,col2++,-1);
+               p_table->SetColumnSpan(1,col2++,SKIP_CELL);
 
                (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
                (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

@@ -92,7 +92,7 @@ HRESULT CDoubleTeeFactory::FinalConstruct()
    return S_OK;
 }
 
-void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IMultiWebSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_MultiWebSection);
@@ -152,7 +152,7 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,
    gdrsection.QueryInterface(ppSection);
 }
 
-void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -179,7 +179,7 @@ void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,
    rect->QueryInterface(ppShape);
 }
 
-void CDoubleTeeFactory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CDoubleTeeFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
@@ -260,7 +260,7 @@ void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,Spa
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -272,7 +272,7 @@ void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,long statusGro
    (*ppEng)->AddRef();
 }
 
-void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
@@ -298,7 +298,7 @@ void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    double d1,d2;
    double w,wmin,wmax;
    double t1,t2;
-   long nWebs;
+   WebIndexType nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
    double width = min(t1,t2);
@@ -370,7 +370,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    double d1,d2;
    double w,wmin,wmax;
    double t1,t2;
-   long nWebs;
+   WebIndexType nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
    if ( d1 <= 0.0 )
@@ -658,7 +658,7 @@ void CDoubleTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions
                                   double& d1,double& d2,
                                   double& w,double& wmin,double& wmax,
                                   double& t1,double& t2,
-                                  long& nWebs)
+                                  WebIndexType& nWebs)
 {
    d1 = GetDimension(dimensions,_T("D1"));
    d2 = GetDimension(dimensions,_T("D2"));
@@ -735,7 +735,7 @@ void CDoubleTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions&
    }
 }
 
-long CDoubleTeeFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CDoubleTeeFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 {
    return 1;
 }

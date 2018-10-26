@@ -412,7 +412,7 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    GetParam()->SetLockReadOnly(FALSE);
 
    // pier index
-   SetValueRange(CGXRange(nRow,1),rebarData.PierIdx+1L);
+   SetValueRange(CGXRange(nRow,1),(LONG)(rebarData.PierIdx+1L));
 
    // Mat
    SetValueRange(CGXRange(nRow,2),rebarData.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
@@ -456,10 +456,10 @@ void CBridgeDescDeckRebarGrid::FillGrid(const std::vector<CDeckRebarData::NegMom
    if (rows>=1)
 	   RemoveRows(1, rows);
 
-   int size = vRebarData.size();
+   CollectionIndexType size = vRebarData.size();
 
    // size grid
-   for (int i = 0; i < size; i++)
+   for (CollectionIndexType i = 0; i < size; i++)
 	   AddRow();
 
    // fill grid

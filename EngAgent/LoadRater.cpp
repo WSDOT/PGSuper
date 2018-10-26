@@ -105,7 +105,7 @@ void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
    std::vector<Float64> vLLIMmin,vLLIMmax;
-   std::vector<long> vMinTruckIndex, vMaxTruckIndex;
+   std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
    GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex);
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
@@ -149,7 +149,7 @@ void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
       Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
       Float64 LLIM = (bPositiveMoment ? vLLIMmax[i] : vLLIMmin[i]);
-      long truck_index = vehicleIdx;
+      VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
          truck_index = (bPositiveMoment ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
 
@@ -270,7 +270,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
    std::vector<sysSectionValue> vDWmin, vDWmax;
    std::vector<sysSectionValue> vLLIMmin,vLLIMmax;
    std::vector<sysSectionValue> vUnused;
-   std::vector<long> vMinTruckIndex, vMaxTruckIndex, vUnusedIndex;
+   std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex, vUnusedIndex;
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -350,7 +350,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
       Float64 DC   = max(fabs(DCmin),fabs(DCmax));
       Float64 DW   = max(fabs(DWmin),fabs(DWmax));
       Float64 LLIM = max(fabs(LLIMmin),fabs(LLIMmax));
-      long truck_index = vehicleIdx;
+      VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
          truck_index = (fabs(LLIMmin) < fabs(LLIMmax) ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
 
@@ -497,8 +497,8 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
    std::vector<Float64> vDWTopMin, vDWBotMin, vDWTopMax, vDWBotMax;
    std::vector<Float64> vLLIMTopMin, vLLIMBotMin, vLLIMTopMax, vLLIMBotMax;
    std::vector<Float64> vUnused1,vUnused2;
-   std::vector<long> vTruckIndexTopMin, vTruckIndexTopMax, vTruckIndexBotMin, vTruckIndexBotMax;
-   std::vector<long> vUnusedIndex1, vUnusedIndex2;
+   std::vector<VehicleIndexType> vTruckIndexTopMin, vTruckIndexTopMax, vTruckIndexBotMin, vTruckIndexBotMax;
+   std::vector<VehicleIndexType> vUnusedIndex1, vUnusedIndex2;
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -584,7 +584,7 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
       Float64 LLIM = vLLIMBotMax[i];
       Float64 PS   = vPS[i];
 
-      long truck_index = vehicleIdx;
+      VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
          truck_index = vTruckIndexBotMax[i];
 
@@ -674,7 +674,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
    std::vector<Float64> vLLIMmin,vLLIMmax;
-   std::vector<long> vMinTruckIndex, vMaxTruckIndex;
+   std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
    GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex);
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
@@ -777,7 +777,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
       Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
       Float64 LLIM = (bPositiveMoment ? vLLIMmax[i] : vLLIMmin[i]);
-      long truck_index = vehicleIdx;
+      VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
          truck_index = (bPositiveMoment ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
 
@@ -961,7 +961,7 @@ pgsTypes::LimitState pgsLoadRater::GetServiceLimitStateType(pgsTypes::LoadRating
    return ls;
 }
 
-void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<long>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<long>& vMaxTruckIndex)
+void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex)
 {
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -969,7 +969,7 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
    std::vector<Float64> vUnused;
-   std::vector<long> vUnusedIndex;
+   std::vector<VehicleIndexType> vUnusedIndex;
 
    GET_IFACE(ICombinedForces2,pCombinedForces);
    GET_IFACE(IProductForces2,pProductForces);

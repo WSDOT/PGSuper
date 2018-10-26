@@ -194,7 +194,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          if ( 2 <= version ) // added in version 2 (skip for version 1)
          {
-            long value;
+            int value;
             if ( !pLoad->Property(_T("WeightMethod"),&value) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -207,7 +207,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          // version 3 and later
-         long count;
+         CollectionIndexType count;
          double x,y;
 
          Configuration configuration;
@@ -217,7 +217,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
             ATLASSERT( version == 3 || version == 4 );
 
             // this is obsolete data... just load it and ignore it
-            long config;
+            int config;
             if ( !pLoad->Property(_T("Configuration"),&config) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -236,7 +236,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("Count"),&count) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         for ( long i = 0; i < count; i++ )
+         for ( CollectionIndexType i = 0; i < count; i++ )
          {
             if ( !pLoad->BeginUnit(_T("Point")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -299,7 +299,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
                if ( !pLoad->Property(_T("Count"),&count) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               for ( long i = 0; i < count; i++ )
+               for ( CollectionIndexType i = 0; i < count; i++ )
                {
                   if ( !pLoad->BeginUnit(_T("Point")) )
                      THROW_LOAD(InvalidFileFormat,pLoad);
@@ -325,7 +325,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->BeginUnit(_T("BarrierWeight")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         long value;
+         int value;
          if ( !pLoad->Property(_T("WeightMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -497,7 +497,7 @@ bool TrafficBarrierEntry::Edit(bool allowEditing)
    
    dlg.m_Name    = this->GetName().c_str();
 
-   int i = dlg.DoModal();
+   INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       SetEc(dlg.m_Ec);

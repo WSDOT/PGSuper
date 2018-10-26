@@ -86,7 +86,7 @@ public:
    pgsPsForceEng& operator = (const pgsPsForceEng& rOther);
 
    void SetBroker(IBroker* pBroker);
-   void SetStatusGroupID(long statusGroupID);
+   void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    void Invalidate();
 
@@ -131,7 +131,7 @@ protected:
 
 private:
    IBroker* m_pBroker;
-   long m_StatusGroupID;
+   StatusGroupIDType m_StatusGroupID;
    CComPtr<IPsLossEngineer> m_LossEngineer;
 
    // method used to compute prestress transfer length

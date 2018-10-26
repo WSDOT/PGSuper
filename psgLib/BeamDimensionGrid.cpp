@@ -209,8 +209,8 @@ void CBeamDimensionGrid::ResetGrid()
    pDad->m_Entry.GetBeamFactory(&pFactory);
    std::vector<std::_tstring> names = pFactory->GetDimensionNames();
 
-   const int num_rows = names.size();
-   const int num_cols = 1;
+   const ROWCOL num_rows = (ROWCOL)names.size();
+   const ROWCOL num_cols = 1;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);

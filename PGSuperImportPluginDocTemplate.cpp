@@ -63,8 +63,8 @@ CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMe
 
    m_ProjectImporterMgr.LoadImporters();
 
-   Uint32 nImporters = m_ProjectImporterMgr.GetImporterCount();
-   for ( Uint32 idx = 0; idx < nImporters; idx++ )
+   CollectionIndexType nImporters = m_ProjectImporterMgr.GetImporterCount();
+   for ( CollectionIndexType idx = 0; idx < nImporters; idx++ )
    {
       CComPtr<IPGSuperProjectImporter> importer;
       m_ProjectImporterMgr.GetImporter(idx,&importer);

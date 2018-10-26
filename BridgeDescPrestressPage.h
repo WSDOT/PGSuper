@@ -61,8 +61,8 @@ public:
 	//{{AFX_DATA(CGirderDescPrestressPage)
 	enum { IDD = IDD_GIRDERDESC_PRESTRESS };
 
-	int		m_StrandSizeIdx;
-	int		m_TempStrandSizeIdx;
+	StrandIndexType m_StrandSizeIdx;
+	StrandIndexType m_TempStrandSizeIdx;
 	//}}AFX_DATA
 
 // Overrides

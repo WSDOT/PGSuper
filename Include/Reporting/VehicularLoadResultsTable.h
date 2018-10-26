@@ -80,7 +80,7 @@ public:
                              IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
-   static void ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,int row,int col,IEAFDisplayUnits* pDisplayUnits);
+   static void ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,RowIndexType row,ColumnIndexType col,IEAFDisplayUnits* pDisplayUnits);
 
 protected:
    // GROUP: DATA MEMBERS

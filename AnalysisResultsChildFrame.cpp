@@ -135,7 +135,7 @@ void CAnalysisResultsChildFrame::SelectSpan(SpanIndexType spanIdx,GirderIndexTyp
    }
 
    CComboBox* pcbGirders = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_GIRDER);
-   pcbGirders->SetCurSel(gdrIdx);
+   pcbGirders->SetCurSel((int)gdrIdx);
    OnGirderChanged();
 }
 
@@ -270,7 +270,7 @@ int CAnalysisResultsChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    // fill stage bar since it won't change
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   long NtMax = pStrandGeom->GetMaxStrands(0,0,pgsTypes::Temporary);
+   StrandIndexType NtMax = pStrandGeom->GetMaxStrands(0,0,pgsTypes::Temporary);
 
    CComboBox* pstg_ctrl = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_STAGE);
    ASSERT(pstg_ctrl!=0);
@@ -280,7 +280,7 @@ int CAnalysisResultsChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    idx = pstg_ctrl->AddString(_T("Girder Placement"));
    pstg_ctrl->SetItemData(idx,pgsTypes::GirderPlacement);
 
-   if ( 0 < NtMax )
+   if ( NtMax != INVALID_INDEX )
    {
       idx = pstg_ctrl->AddString(_T("Temporary Strand Removal"));
       pstg_ctrl->SetItemData(idx,pgsTypes::TemporaryStrandRemoval);
@@ -424,7 +424,7 @@ void CAnalysisResultsChildFrame::UpdateBar()
    if (sel == CB_ERR) 
    {
       CSelection selection = pDoc->GetSelection();
-      sel = selection.GirderIdx;
+      sel = (int)selection.GirderIdx;
       if ( sel == ALL_GIRDERS )
          sel = 0;
 
@@ -722,12 +722,12 @@ void CAnalysisResultsChildFrame::FillSpanCtrl()
    if (sel == CB_ERR)
    {
       CSelection selection = pDoc->GetSelection();
-      sel = selection.SpanIdx;
+      sel = (int)selection.SpanIdx;
       if ( sel == ALL_SPANS )
          sel = 0;
 
       if (num_spans <= SpanIndexType(sel))
-         sel = num_spans-1;
+         sel = (int)(num_spans-1);
    }
 
    SpanIndexType selSpanIdx = SpanIndexType(pspan_ctrl->GetItemData(sel));
@@ -809,7 +809,7 @@ int CAnalysisResultsChildFrame::SelectedGraphIndexToGraphID(int graphIdx) const
 
    int idx = array[graphIdx];
 
-   int id = pload_case_ctrl->GetItemData(idx);
+   int id = (int)pload_case_ctrl->GetItemData(idx);
 
    return id;
 }
@@ -854,7 +854,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
       bShearKey   |= pProductLoads->HasShearKeyLoad(spanIdx,gdrIdx);
 
       StrandIndexType NtMax = pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary);
-      bTempStrand |= ( 0 < NtMax );
+      bTempStrand |= ( NtMax != INVALID_INDEX );
    }
 
    // Product Load Cases

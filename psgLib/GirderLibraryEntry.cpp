@@ -54,7 +54,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define DUMMY_AGENT_ID -1
+#define DUMMY_AGENT_ID INVALID_ID
 
 // from  2.0 to 3.0, added chamfer dimensions to several sections
 // from  3.0 to 4.0, harping point locations
@@ -454,7 +454,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if (version < 5.0)
       {
          // max adjustment goes away and replaced with cover values
-         double dummy;
+         Float64 dummy;
          if(!pLoad->Property(_T("DownwardStrandAdjustment"), &dummy))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -490,7 +490,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("HPAllowVertAdjustment"), &m_HPAdjustment.m_AllowVertAdjustment))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-            double top_cover, bottom_cover;
+            Float64 top_cover, bottom_cover;
             if(!pLoad->Property(_T("TopCover"), &top_cover))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -523,7 +523,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("EndStrandIncrement"), &m_EndAdjustment.m_StrandIncrement))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            long lface;
+            int lface;
             if(!pLoad->Property(_T("EndBottomFace"), &lface))
                THROW_LOAD(InvalidFileFormat,pLoad); 
 
@@ -627,7 +627,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         long value;
+         int value;
          if(!pLoad->Property(_T("HarpingPointReference"), &value))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -636,7 +636,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( 4 <= version )
       {
-         long value;
+         int value;
          if ( !pLoad->Property(_T("HarpingPointMeasure"),&value))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -655,7 +655,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // 40' -  80' = Mid Span
          // 80  - 120  = 1/3 points
          // 120+       = 1/4 points
-         double H,W;
+         Float64 H,W;
          if(!pLoad->Property(_T("DiaphragmHeight"), &H))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -964,7 +964,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                if(pLoad->GetVersion()!=1.0)
                   THROW_LOAD(BadVersion,pLoad);
 
-               double x,y;
+               Float64 x,y;
                if(!pLoad->Property(_T("X"), &x))
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1013,7 +1013,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                   if(pLoad->GetVersion()!=1.0)
                      THROW_LOAD(BadVersion,pLoad);
 
-                  double x,y;
+                  Float64 x,y;
                   if(!pLoad->Property(_T("X"), &x))
                      THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1038,7 +1038,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                // Generate strand locations based on bundle definitions
                for ( Int32 i = 0; i < num_harped; i++ )
                {
-                  double x,y;
+                  Float64 x,y;
                   if ( i < maxStrandsInBottomBundle )
                   {
                      x = 0;
@@ -1089,8 +1089,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                HarpedStrandLocation hp(endx, endy, hpx, hpy, endx, endy);
                m_HarpedStrands.push_back(hp);
 
-               // now deal with issues related to X>0 and double locations
-               // indexes must be incremented if double x==0's
+               // now deal with issues related to X>0 and Float64 locations
+               // indexes must be incremented if Float64 x==0's
                if (hpx>0.0 && IsZero(endx))
                {
                   // next end point better have x==0
@@ -1176,7 +1176,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(pLoad->GetVersion()!=1.0)
                THROW_LOAD(BadVersion,pLoad);
 
-            double x,y;
+            Float64 x,y;
             if(!pLoad->Property(_T("X"), &x))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1238,8 +1238,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          // must convert old data to new - just pile them together
          // straight strand locations
-         Uint16 count = m_StraightStrands.size();
-         Uint16 idx;
+         StrandIndexType count = m_StraightStrands.size();
+         StrandIndexType idx;
          for ( idx=0; idx<count; idx++)
          {
             m_GlobalStrandOrder.push_back( GlobalStrand(stStraight, idx) );
@@ -1293,7 +1293,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if (version < 7.0)
          {
             // added in version 5, removed in 7
-         long smtype;
+         int smtype;
          if(!pLoad->Property(_T("StressMitigationType"), &smtype))
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
@@ -1319,7 +1319,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       m_ShearZoneInfo.clear();
       while(pLoad->BeginUnit(_T("ShearZones")))
       {
-         double shear_zone_version = pLoad->GetVersion();
+         Float64 shear_zone_version = pLoad->GetVersion();
 
          if(3 < shear_zone_version )
             THROW_LOAD(BadVersion,pLoad);
@@ -1427,7 +1427,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // Longitudinal Steel rows
       if ( 17 < version )
       {
-         long value;
+         int value;
 
          if(!pLoad->Property(_T("LongitudinalBarType"), &value))
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1519,7 +1519,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
          else
          {
-            long value;
+            int value;
             if ( !pLoad->Property(_T("Method"),&value) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1540,7 +1540,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
          }
 
-         long value;
+         int value;
          if ( !pLoad->Property(_T("DiaphragmType"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
          dlr.Type = (DiaphragmType)(value);
@@ -1622,7 +1622,7 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
    m_pBeamFactory.Release();
    HRESULT hr = ::CoCreateInstance(clsid,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&m_pBeamFactory);
 
-   double value;
+   Float64 value;
    if(!pLoad->Property(_T("D1"), &value))
       THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1763,8 +1763,8 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    CComPtr<IGirderSection> gdrSection;
    m_pBeamFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,INVALID_INDEX,INVALID_INDEX,m_Dimensions,&gdrSection);
 
-   double end_increment = this->GetEndStrandIncrement();
-   double hp_increment  = this->GetHPStrandIncrement();
+   Float64 end_increment = this->GetEndStrandIncrement();
+   Float64 hp_increment  = this->GetHPStrandIncrement();
 
    GirderFace endTopFace, endBottomFace;
    Float64 endTopLimit, endBottomLimit;
@@ -1786,7 +1786,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                                      htf, hpTopLimit,  hbf, hpBottomLimit,
                                      end_increment, hp_increment, &strand_mover);
 
-   double height;
+   Float64 height;
    gdrSection->get_GirderHeight(&height);
 
    if (IsZero(height))
@@ -1797,7 +1797,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       return;
    }
 
-   double botwidth;
+   Float64 botwidth;
    gdrSection->get_BottomWidth(&botwidth);
    if (IsZero(botwidth))
    {
@@ -1806,7 +1806,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       return;
    }
 
-   double topwidth;
+   Float64 topwidth;
    gdrSection->get_TopWidth(&topwidth);
    if (IsZero(topwidth))
    {
@@ -2048,8 +2048,8 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    }
 
    // stirrups and shear zones
-   Int32 num=1;
-   int size = m_ShearZoneInfo.size();
+   ZoneIndexType num=1;
+   ZoneIndexType size = m_ShearZoneInfo.size();
    for(ShearZoneInfoVec::iterator its=m_ShearZoneInfo.begin(); its!=m_ShearZoneInfo.end(); its++)
    {
       // last zone has infinite length 
@@ -2151,15 +2151,15 @@ void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
    std::vector<std::_tstring> names = m_pBeamFactory->GetDimensionNames();
    std::vector<std::_tstring>::iterator name_iter = names.begin();
 
-   std::vector<double> dims = m_pBeamFactory->GetDefaultDimensions();
-   std::vector<double>::iterator dim_iter = dims.begin();
+   std::vector<Float64> dims = m_pBeamFactory->GetDefaultDimensions();
+   std::vector<Float64>::iterator dim_iter = dims.begin();
 
    ATLASSERT( dims.size() == names.size() );
 
    for ( ; name_iter != names.end() && dim_iter != dims.end(); name_iter++, dim_iter++ )
    {
       std::_tstring& rname = *name_iter;
-      double value = *dim_iter;
+      Float64 value = *dim_iter;
       AddDimension(rname,value);
    }
 }
@@ -2180,7 +2180,7 @@ const GirderLibraryEntry::Dimensions& GirderLibraryEntry::GetDimensions() const
    return m_Dimensions;
 }
 
-double GirderLibraryEntry::GetDimension(const std::_tstring& name) const
+Float64 GirderLibraryEntry::GetDimension(const std::_tstring& name) const
 {
    Dimensions::const_iterator iter;
    for ( iter = m_Dimensions.begin(); iter != m_Dimensions.end(); iter++ )
@@ -2194,12 +2194,12 @@ double GirderLibraryEntry::GetDimension(const std::_tstring& name) const
    return -99999;
 }
 
-void GirderLibraryEntry::AddDimension(const std::_tstring& name,double value)
+void GirderLibraryEntry::AddDimension(const std::_tstring& name,Float64 value)
 {
    m_Dimensions.push_back(Dimension(name.c_str(),value));
 }
 
-void GirderLibraryEntry::SetDimension(const std::_tstring& name,double value,bool bAdjustStrands)
+void GirderLibraryEntry::SetDimension(const std::_tstring& name,Float64 value,bool bAdjustStrands)
 {
    Float64 oldHeight[2];
    oldHeight[pgsTypes::metStart] = GetBeamHeight(pgsTypes::metStart);
@@ -2226,7 +2226,7 @@ void GirderLibraryEntry::SetDimension(const std::_tstring& name,double value,boo
          !::IsEqual(oldHeight[pgsTypes::metEnd],  newHeight[pgsTypes::metEnd]))  &&
          bAdjustStrands )
    {
-      double deltaY[2];
+      Float64 deltaY[2];
       deltaY[pgsTypes::metStart] = newHeight[pgsTypes::metStart] - oldHeight[pgsTypes::metStart];
       deltaY[pgsTypes::metEnd]   = newHeight[pgsTypes::metEnd]   - oldHeight[pgsTypes::metEnd];
 
@@ -2449,7 +2449,7 @@ bool GirderLibraryEntry::ComputeGlobalStrands(StrandIndexType totalNumStrands, S
       {
          const GlobalStrand& strand = *gs_it;
          psStrandType type       = strand.m_StrandType;
-         long localIndex = strand.m_LocalSortOrder;
+         StrandIndexType localIndex = strand.m_LocalSortOrder;
 
          if (type == stStraight)
          {
@@ -2720,12 +2720,12 @@ matRebar::Size GirderLibraryEntry::GetConfinementBarSize() const
    return m_ConfinementBarSize;
 }
 
-void GirderLibraryEntry::SetLastConfinementZone(Uint16 zone)
+void GirderLibraryEntry::SetLastConfinementZone(ZoneIndexType zone)
 {
    m_LastConfinementZone = zone;
 }
 
-Uint16 GirderLibraryEntry::GetNumConfinementZones() const
+ZoneIndexType GirderLibraryEntry::GetNumConfinementZones() const
 {
    return m_LastConfinementZone;
 }
@@ -2804,7 +2804,7 @@ Float64 GirderLibraryEntry::GetHarpingPointLocation() const
    return m_HarpingPointLocation;
 }
 
-void GirderLibraryEntry::SetMinHarpingPointLocation(bool bUseMin,double min)
+void GirderLibraryEntry::SetMinHarpingPointLocation(bool bUseMin,Float64 min)
 {
    m_bMinHarpingPointLocation = bUseMin;
    m_MinHarpingPointLocation = min;
@@ -2815,7 +2815,7 @@ bool GirderLibraryEntry::IsMinHarpingPointLocationUsed() const
    return m_bMinHarpingPointLocation;
 }
 
-double GirderLibraryEntry::GetMinHarpingPointLocation() const
+Float64 GirderLibraryEntry::GetMinHarpingPointLocation() const
 {
    return m_MinHarpingPointLocation;
 }
@@ -2885,7 +2885,7 @@ bool GirderLibraryEntry::Edit(bool allowEditing)
    GirderLibraryEntry tmp(*this);
 
    CGirderMainSheet dlg(tmp, IDS_GIRDER_SHEET, allowEditing);
-   int i = dlg.DoModal();
+   INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       *this = tmp;
@@ -3086,11 +3086,11 @@ void GirderLibraryEntry::ConfigureTemporaryStrandGrid(IStrandGrid* pStartGrid,IS
 //======================== OPERATIONS =======================================
 bool GirderLibraryEntry::IsEqual(IPoint2d* p1,IPoint2d* p2) const
 {
-   double x1,y1;
+   Float64 x1,y1;
    p1->get_X(&x1);
    p1->get_Y(&y1);
 
-   double x2,y2;
+   Float64 x2,y2;
    p2->get_X(&x2);
    p2->get_Y(&y2);
 

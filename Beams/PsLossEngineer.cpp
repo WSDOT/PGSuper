@@ -82,7 +82,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 template <class T>
-void ReportRow(T* pTable,rptChapter* pChapter,IBroker* pBroker,int row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void ReportRow(T* pTable,rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    if ( pTable == NULL )
       return;
@@ -1702,7 +1702,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    (*table)(1,3) << stress.SetValue( pLosses->PermanentStrand_RelaxationLossesBeforeTransfer() );
 }
 
-void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,int row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits)
+void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits)
 {
    if ( pTable == NULL )
       return;
@@ -1710,7 +1710,7 @@ void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,int row,pgsTypes::Stage
    INIT_UV_PROTOTYPE( rptPointOfInterest,  spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
    INIT_UV_PROTOTYPE( rptPointOfInterest,  gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
 
-   int rowOffset = pTable->GetNumberOfHeaderRows() - 1;
+   RowIndexType rowOffset = pTable->GetNumberOfHeaderRows() - 1;
 
    if ( stage == pgsTypes::CastingYard )
    {
@@ -1724,14 +1724,14 @@ void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,int row,pgsTypes::Stage
    }
 }
 
-void CPsLossEngineer::ReportLocation(rptRcTable* pTable,int row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits)
+void CPsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits)
 {
    if ( pTable == NULL )
       return;
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,  spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
 
-   int rowOffset = pTable->GetNumberOfHeaderRows() - 1;
+   RowIndexType rowOffset = pTable->GetNumberOfHeaderRows() - 1;
    (*pTable)(row+rowOffset,0) << spanloc.SetValue( stage, poi, endsize );
 }
 

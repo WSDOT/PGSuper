@@ -115,8 +115,8 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
       table->SetRowSpan(0,0,2);
       table->SetRowSpan(0,1,2);
-      table->SetRowSpan(1,0,-1);
-      table->SetRowSpan(1,1,-1);
+      table->SetRowSpan(1,0,SKIP_CELL);
+      table->SetRowSpan(1,1,SKIP_CELL);
 
       table->SetColumnSpan(0,2,3);
       (*table)(0,col++) << _T("Permanent Strands");
@@ -125,7 +125,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
       (*table)(0,col++) << _T("Temporary Strands");
 
       for ( ColumnIndexType i = col; i < numColumns; i++ )
-         table->SetColumnSpan(0,i,-1);
+         table->SetColumnSpan(0,i,SKIP_CELL);
 
 
       col = 2;
@@ -162,7 +162,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
-   int rowOffset = GetNumberOfHeaderRows()-1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows()-1;
 
    if ( m_GirderData.TempStrandUsage == pgsTypes::ttsPretensioned )
       (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp());

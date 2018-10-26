@@ -65,7 +65,7 @@ public:
    void Init(bool bTypeB, bool bisSpreadSlab);
 
    // IDistFactorEngineer
-//   virtual void SetBroker(IBroker* pBroker,long statusGroupID);
+//   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
 //   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
 //   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);
@@ -76,8 +76,8 @@ public:
 private:
    lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,UBEAM_LLDFDETAILS* plldf);
 
-   void ReportMoment(Uint32 spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
-   void ReportShear(Uint32 spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportMoment(IndexType spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportShear(IndexType spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
 
    bool m_bTypeB; // true if type b, otherwise type c section
    bool m_bIsSpreadSlab; // We need to model spread slabs, and aashto has no guidance

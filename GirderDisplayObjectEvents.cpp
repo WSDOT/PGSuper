@@ -229,8 +229,8 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
       pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      std::map<Uint32,IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
-      std::map<Uint32,IBridgePlanViewEventCallback*>::iterator iter;
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgePlanViewEventCallback* callback = iter->second;
@@ -451,8 +451,8 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
       pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      std::map<Uint32,IBridgeSectionViewEventCallback*> callbacks = pPGSuperDoc->GetBridgeSectionViewCallbacks();
-      std::map<Uint32,IBridgeSectionViewEventCallback*>::iterator iter;
+      std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pPGSuperDoc->GetBridgeSectionViewCallbacks();
+      std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgeSectionViewEventCallback* callback = iter->second;

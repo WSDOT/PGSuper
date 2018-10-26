@@ -34,7 +34,7 @@ public:
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Strategy,iMomentLoadDrawStrategy)
-      STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load, Uint32 loadIndex, 
+      STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load, IndexType loadIndex, 
                             Float64 girderDepth, Float64 spanLength, Float64 maxMagnitude, COLORREF color);
    END_INTERFACE_PART(Strategy)
 

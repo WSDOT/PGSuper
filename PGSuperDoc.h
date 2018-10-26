@@ -124,8 +124,8 @@ public:
 #endif
 
    // ISupportLibraryManager
-   virtual int GetNumberOfLibraryManagers() const;
-   virtual libLibraryManager* GetLibraryManager(int num);
+   virtual CollectionIndexType GetNumberOfLibraryManagers() const;
+   virtual libLibraryManager* GetLibraryManager(CollectionIndexType num);
    virtual libLibraryManager* GetTargetLibraryManager();
 
    void EditBridgeDescription(int nPage);
@@ -186,31 +186,31 @@ public:
 
    BOOL UpdateTemplates();
 
-   Uint32 RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
-   bool UnregisterBridgePlanViewCallback(Uint32 ID);
-   std::map<Uint32,IBridgePlanViewEventCallback*> GetBridgePlanViewCallbacks();
+   IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
+   bool UnregisterBridgePlanViewCallback(IDType ID);
+   std::map<IDType,IBridgePlanViewEventCallback*> GetBridgePlanViewCallbacks();
 
-   Uint32 RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
-   bool UnregisterBridgeSectionViewCallback(Uint32 ID);
-   std::map<Uint32,IBridgeSectionViewEventCallback*> GetBridgeSectionViewCallbacks();
+   IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
+   bool UnregisterBridgeSectionViewCallback(IDType ID);
+   std::map<IDType,IBridgeSectionViewEventCallback*> GetBridgeSectionViewCallbacks();
 
-   Uint32 RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
-   bool UnregisterGirderElevationViewCallback(Uint32 ID);
-   std::map<Uint32,IGirderElevationViewEventCallback*> GetGirderElevationViewCallbacks();
+   IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
+   bool UnregisterGirderElevationViewCallback(IDType ID);
+   std::map<IDType,IGirderElevationViewEventCallback*> GetGirderElevationViewCallbacks();
 
-   Uint32 RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
-   bool UnregisterGirderSectionViewCallback(Uint32 ID);
-   std::map<Uint32,IGirderSectionViewEventCallback*> GetGirderSectionViewCallbacks();
+   IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
+   bool UnregisterGirderSectionViewCallback(IDType ID);
+   std::map<IDType,IGirderSectionViewEventCallback*> GetGirderSectionViewCallbacks();
 
 
 protected:
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
-   Uint32 m_ViewCallbackID;
-   std::map<Uint32,IBridgePlanViewEventCallback*> m_BridgePlanViewCallbacks;
-   std::map<Uint32,IBridgeSectionViewEventCallback*> m_BridgeSectionViewCallbacks;
-   std::map<Uint32,IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
-   std::map<Uint32,IGirderSectionViewEventCallback*> m_GirderSectionViewCallbacks;
+   IDType m_ViewCallbackID;
+   std::map<IDType,IBridgePlanViewEventCallback*> m_BridgePlanViewCallbacks;
+   std::map<IDType,IBridgeSectionViewEventCallback*> m_BridgeSectionViewCallbacks;
+   std::map<IDType,IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
+   std::map<IDType,IGirderSectionViewEventCallback*> m_GirderSectionViewCallbacks;
 
    psgLibraryManager m_LibMgr;
 

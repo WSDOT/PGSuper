@@ -94,18 +94,16 @@ rptChapter* CDistributionFactorSummaryChapterBuilder::Build(CReportSpecification
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   // First write out girder factors
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
-   {
-       WriteGirderTable(pChapter, pBroker, spanIdx, pDisplayUnits);
-   }
-
-   // Piers
    PierIndexType nPiers = pBridge->GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
        WritePierTable(pChapter, pBroker, pierIdx, pDisplayUnits);
+
+       if ( pierIdx < nPiers-1 )
+       {
+          SpanIndexType spanIdx = (SpanIndexType)pierIdx;
+          WriteGirderTable(pChapter, pBroker, spanIdx, pDisplayUnits);
+       }
    }
 
 
@@ -123,6 +121,11 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
    df.SetFormat(sysNumericFormatTool::Fixed);
    df.SetWidth(8);
    df.SetPrecision(3); // should match format in details reports
+
+   rptRcSectionScalar dfM;
+   dfM.SetFormat(sysNumericFormatTool::Fixed);
+   dfM.SetWidth(8);
+   dfM.SetPrecision(3); // should match format in details reports
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -153,7 +156,7 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
    {
       pTable->SetNumberOfHeaderRows(2);
       pTable->SetRowSpan(0,0,2);
-      pTable->SetRowSpan(1,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,3);
       (*pTable)(0,1) << _T("Strength/Service");
@@ -161,10 +164,10 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
       pTable->SetColumnSpan(0,2,3);
       (*pTable)(0,2) << _T("Fatigue/Single");
 
-      pTable->SetColumnSpan(0,3,-1);
-      pTable->SetColumnSpan(0,4,-1);
-      pTable->SetColumnSpan(0,5,-1);
-      pTable->SetColumnSpan(0,6,-1);
+      pTable->SetColumnSpan(0,3,SKIP_CELL);
+      pTable->SetColumnSpan(0,4,SKIP_CELL);
+      pTable->SetColumnSpan(0,5,SKIP_CELL);
+      pTable->SetColumnSpan(0,6,SKIP_CELL);
 
       (*pTable)(1,1) << _T("+M");
       (*pTable)(1,2) << _T("-M");
@@ -180,17 +183,27 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
 
    for ( GirderIndexType igdr = 0; igdr<ngdrs; igdr++ )
    {
+      Float64 girder_length = pBridge->GetGirderLength(spanIdx,igdr);
+
       (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(igdr);
 
-      pgsPointOfInterest poi(spanIdx,igdr,0.0);
+      pgsPointOfInterest poi_start(spanIdx,igdr,0.0);
+      pgsPointOfInterest poi_end(spanIdx,igdr,girder_length);
 
-      double pM, nM, V;
-      pDistFact->GetDistributionFactors(poi, pgsTypes::StrengthI, &pM, &nM, &V);
+      Float64 pM, V;
+      Float64 nm;
+      sysSectionValue nM;
+      pDistFact->GetDistributionFactors(poi_start, pgsTypes::StrengthI, &pM, &nm, &V);
+      nM.Left() = nm;
+
+      pDistFact->GetDistributionFactors(poi_end, pgsTypes::StrengthI, &pM, &nm, &V);
+      nM.Right() = nm;
+
       (*pTable)(row,1) << df.SetValue(pM);
 
       if ( bNegMoments )
       {
-         (*pTable)(row,2) << df.SetValue(nM);
+         (*pTable)(row,2) << dfM.SetValue(nM);
       }
       else
       {
@@ -202,14 +215,20 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         pDistFact->GetDistributionFactors(poi,pgsTypes::FatigueI,&pM,&nM,&V);
+         pDistFact->GetDistributionFactors(poi_start,pgsTypes::FatigueI,&pM,&nm,&V);
+         nM.Left() = nm;
+
+         pDistFact->GetDistributionFactors(poi_end,pgsTypes::FatigueI,&pM,&nm,&V);
+         nM.Right() = nm;
+
          (*pTable)(row,4) << df.SetValue(pM);
 
          if ( bNegMoments )
          {
-            (*pTable)(row,5) << df.SetValue(nM);
+            (*pTable)(row,5) << dfM.SetValue(nM);
          }
          else
+
          {
             (*pTable)(row,5) << _T("------");
          }
@@ -223,10 +242,15 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
 
 void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,IEAFDisplayUnits* pDisplayUnits)
 {
-   rptRcScalar df;
-   df.SetFormat(sysNumericFormatTool::Fixed);
-   df.SetWidth(8);
-   df.SetPrecision(3); // should match format in details reports
+   rptRcSectionScalar dfM;
+   dfM.SetFormat(sysNumericFormatTool::Fixed);
+   dfM.SetWidth(8);
+   dfM.SetPrecision(3); // should match format in details reports
+
+   rptRcScalar dfV;
+   dfV.SetFormat(sysNumericFormatTool::Fixed);
+   dfV.SetWidth(8);
+   dfV.SetPrecision(3); // should match format in details reports
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -262,7 +286,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    {
       pTable->SetNumberOfHeaderRows(2);
       pTable->SetRowSpan(0,0,2);
-      pTable->SetRowSpan(1,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,2);
       (*pTable)(0,1) << _T("Strength/Service");
@@ -270,8 +294,8 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
       pTable->SetColumnSpan(0,2,2);
       (*pTable)(0,2) << _T("Fatigue/Single");
 
-      pTable->SetColumnSpan(0,3,-1);
-      pTable->SetColumnSpan(0,4,-1);
+      pTable->SetColumnSpan(0,3,SKIP_CELL);
+      pTable->SetColumnSpan(0,4,SKIP_CELL);
 
       (*pTable)(1,1) << _T("-M");
       (*pTable)(1,2) << _T("R");
@@ -291,11 +315,26 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    {
       (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(igdr);
 
-      double nM, V;
+      sysSectionValue nM;
+      Float64 V;
       if ( bNegMoments )
       {
-         nM = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI ,face);
-         (*pTable)(row,1) << df.SetValue(nM);
+         if ( pierIdx == 0 )
+         {
+            nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI,pgsTypes::Ahead);
+            nM.Left() = nM.Right();
+         }
+         else if ( pierIdx == nPiers-1 )
+         {
+            nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI,pgsTypes::Back);
+            nM.Right() = nM.Left();
+         }
+         else
+         {
+            nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI,pgsTypes::Back);
+            nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI,pgsTypes::Ahead);
+         }
+         (*pTable)(row,1) << dfM.SetValue(nM);
       }
       else
       {
@@ -303,15 +342,29 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
       }
 
       V = pDistFact->GetReactionDistFactor(pierIdx,igdr,pgsTypes::StrengthI);
-      (*pTable)(row,2) << df.SetValue(V);
+      (*pTable)(row,2) << dfV.SetValue(V);
 
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
          if ( bNegMoments )
          {
-            nM = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,face);
-            (*pTable)(row,3) << df.SetValue(nM);
+            if ( pierIdx == 0 )
+            {
+               nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,pgsTypes::Ahead);
+               nM.Left() = nM.Right();
+            }
+            else if ( pierIdx == nPiers-1 )
+            {
+               nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,pgsTypes::Back);
+               nM.Right() = nM.Left();
+            }
+            else
+            {
+               nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,pgsTypes::Back);
+               nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,pgsTypes::Ahead);
+            }
+            (*pTable)(row,3) << dfM.SetValue(nM);
          }
          else
          {
@@ -319,7 +372,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
          }
 
          V = pDistFact->GetReactionDistFactor(pierIdx,igdr,pgsTypes::FatigueI);
-         (*pTable)(row,4) << df.SetValue(V);
+         (*pTable)(row,4) << dfV.SetValue(V);
       }
 
       row++;

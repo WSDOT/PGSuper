@@ -161,49 +161,49 @@ inline Float64 compute_required_eccentricity(Float64 P,Float64 A,Float64 S,Float
    return -(fHP - fDL + P/A)*(S/P);
 }
 
-// function to give envelope of two integer vectors (for debond levels)
-inline std::vector<Int16> EnvelopIntVec(const std::vector<Int16>& rvec1, const std::vector<Int16>& rvec2)
-{
-   std::vector<Int16> result;
-   std::vector<Int16>::const_iterator r1it( rvec1.begin() );
-   std::vector<Int16>::const_iterator r2it( rvec2.begin() );
-
-   while (r1it!=rvec1.end() || r2it!=rvec2.end())
-   {
-      if (r1it!=rvec1.end() && r2it!=rvec2.end())
-      {
-         // both values at location
-         Int16 v1 = *r1it;
-         Int16 v2 = *r2it;
-         Int16 imax = max(v1, v2);
-
-         result.push_back(imax);
-
-         r1it++;
-         r2it++;
-      }
-      else if (r1it!=rvec1.end())
-      {
-         // only r1
-         Int16 v1 = *r1it;
-         result.push_back(v1);
-
-         r1it++;
-      }
-      else if (r2it!=rvec2.end())
-      {
-         // only r2
-         Int16 v2 = *r2it;
-         result.push_back(v2);
-
-         r2it++;
-      }
-      else
-         ATLASSERT(0);
-   }
-
-   return result;
-}
+//// function to give envelope of two integer vectors (for debond levels)
+//inline std::vector<DebondLevelType> EnvelopeDebondLevels(const std::vector<DebondLevelType>& rvec1, const std::vector<DebondLevelType>& rvec2)
+//{
+//   std::vector<DebondLevelType> result;
+//   std::vector<DebondLevelType>::const_iterator r1it( rvec1.begin() );
+//   std::vector<DebondLevelType>::const_iterator r2it( rvec2.begin() );
+//
+//   while (r1it!=rvec1.end() || r2it!=rvec2.end())
+//   {
+//      if (r1it!=rvec1.end() && r2it!=rvec2.end())
+//      {
+//         // both values at location
+//         DebondLevelType v1 = *r1it;
+//         DebondLevelType v2 = *r2it;
+//         DebondLevelType imax = max(v1, v2);
+//
+//         result.push_back(imax);
+//
+//         r1it++;
+//         r2it++;
+//      }
+//      else if (r1it!=rvec1.end())
+//      {
+//         // only r1
+//         Int16 v1 = *r1it;
+//         result.push_back(v1);
+//
+//         r1it++;
+//      }
+//      else if (r2it!=rvec2.end())
+//      {
+//         // only r2
+//         Int16 v2 = *r2it;
+//         result.push_back(v2);
+//
+//         r2it++;
+//      }
+//      else
+//         ATLASSERT(0);
+//   }
+//
+//   return result;
+//}
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -216,7 +216,11 @@ m_StrandDesignTool(LOGGER)
    m_bShippingDesignWithEqualCantilevers = false;
    m_bShippingDesignIgnoreConfigurationLimits = false;
 
+#if defined WIN64
+   CREATE_LOGFILE("Designer_x64");
+#else
    CREATE_LOGFILE("Designer");
+#endif
 }
 
 pgsDesigner2::pgsDesigner2(const pgsDesigner2& rOther):
@@ -311,7 +315,7 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
 
    double end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
-   Uint32 nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(span,gdr);
+   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(span,gdr);
 
    double girder_orientation = pGdr->GetOrientation(span,gdr);
 
@@ -947,7 +951,7 @@ void pgsDesigner2::CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pg
    }
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   long Nt = pStrandGeom->GetNumStrands(poi.GetSpan(),poi.GetGirder(),pgsTypes::Temporary);
+   StrandIndexType Nt = pStrandGeom->GetNumStrands(poi.GetSpan(),poi.GetGirder(),pgsTypes::Temporary);
    if ( 0 < Nt )
    {
       strandTypes.push_back(pgsTypes::Temporary);
@@ -1371,7 +1375,7 @@ pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(con
    return artifact;
 }
 
-pgsStirrupCheckAtZonesArtifact pgsDesigner2::CreateStirrupCheckAtZonesArtifact(SpanIndexType span,GirderIndexType gdr,Uint32 zoneNum, bool checkConfinement)
+pgsStirrupCheckAtZonesArtifact pgsDesigner2::CreateStirrupCheckAtZonesArtifact(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zoneNum, bool checkConfinement)
 {
    // create the artifact and return it
    pgsStirrupCheckAtZonesArtifact artifact;
@@ -1441,7 +1445,7 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       {
          pgsPointOfInterest poiCS(poi);
          poiCS.SetDistFromStart(m_LeftCS);
-         Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poiCS);
+         CollectionIndexType nl  = pStirrupGeom->GetVertStirrupBarCount(poiCS);
          Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poiCS)*nl;
          Float64 S  = pStirrupGeom->GetS(poi);
          AvS_at_CS = Av/S;
@@ -1451,7 +1455,7 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       {
          pgsPointOfInterest poiCS(poi);
          poiCS.SetDistFromStart(m_RightCS);
-         Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poiCS);
+         CollectionIndexType nl  = pStirrupGeom->GetVertStirrupBarCount(poiCS);
          Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poiCS)*nl;
          Float64 S  = pStirrupGeom->GetS(poi);
          AvS_at_CS = Av/S;
@@ -1527,7 +1531,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
    bool bDoStirrupsEngageDeck = pStirrupGeometry->DoStirrupsEngageDeck(poi.GetSpan(),poi.GetGirder());
    if (bDoStirrupsEngageDeck)
    {
-      Uint32 nl = pStirrupGeometry->GetVertStirrupBarCount(poi);
+      CollectionIndexType nl = pStirrupGeometry->GetVertStirrupBarCount(poi);
       Avfg = pStirrupGeometry->GetVertStirrupBarArea(poi)*nl; 
       Sg  = pStirrupGeometry->GetS(poi);
    }
@@ -1545,7 +1549,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
    pArtifact->SetSTopFlange(Stf);
 
    // legs per stirrup
-   Uint32 num_legs = 0;
+   CollectionIndexType num_legs = 0;
 
    if ( bDoStirrupsEngageDeck )
       num_legs += pStirrupGeometry->GetVertStirrupBarCount(poi);
@@ -1658,9 +1662,9 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
       Float64 top_flange_width = pGdr->GetTopFlangeWidth(poi);
       Float64 panel_support = pDeck->PanelSupport;
 
-      Uint32 nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(spanIdx,gdrIdx);
+      MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(spanIdx,gdrIdx);
       Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
-      for ( Uint16 i = 0; i < nMatingSurfaces; i++ )
+      for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
       {
          if ( pBridge->IsExteriorGirder(spanIdx,gdrIdx) && 
               ((gdrIdx == 0 && i == 0) || // Left exterior girder
@@ -1723,7 +1727,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    matRebar::Size size = pStirrupGeometry->GetVertStirrupBarSize(poi);
    if ( size != matRebar::bsNone )
    {
-      Uint32 nl = pStirrupGeometry->GetVertStirrupBarCount(poi);
+      CollectionIndexType nl = pStirrupGeometry->GetVertStirrupBarCount(poi);
       Float64 Av = pStirrupGeometry->GetVertStirrupBarArea(poi)*nl; 
       s  = pStirrupGeometry->GetS(poi);
       if (s!=0.0)
@@ -2074,7 +2078,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    pArtifact->SetCapacityForce(capacity);
 }
 
-void pgsDesigner2::CheckConfinement( SpanIndexType span,GirderIndexType gdr, Uint32 zoneNum, pgsConfinementArtifact* pArtifact )
+void pgsDesigner2::CheckConfinement( SpanIndexType span,GirderIndexType gdr, ZoneIndexType zoneNum, pgsConfinementArtifact* pArtifact )
 {
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IStrandGeometry,pStrandGeometry);
@@ -2319,8 +2323,8 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::S
 
    // zone-based shear check
    GET_IFACE(IStirrupGeometry, pStirrupGeometry);
-   Uint32 nZones = pStirrupGeometry->GetNumZones(span,gdr);
-   for (Uint32 zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+   ZoneIndexType nZones = pStirrupGeometry->GetNumZones(span,gdr);
+   for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
    {
       pgsStirrupCheckAtZonesArtifactKey key(zoneIdx);
       pgsStirrupCheckAtZonesArtifact artifact = CreateStirrupCheckAtZonesArtifact(span, gdr, zoneIdx,check_confinement);
@@ -2460,7 +2464,7 @@ void pgsDesigner2::CheckGirderDetailing(SpanIndexType span,GirderIndexType gdr,p
    Float64 minWeb       = DBL_MAX;
 
    GET_IFACE(IGirder,pGdr);
-   Float64 nTopFlanges = pGdr->GetNumberOfTopFlanges(span,gdr);
+   FlangeIndexType nTopFlanges = pGdr->GetNumberOfTopFlanges(span,gdr);
    WebIndexType nWebs = pGdr->GetNumberOfWebs(span,gdr);
    FlangeIndexType nBotFlanges = pGdr->GetNumberOfBottomFlanges(span,gdr);
 
@@ -2786,8 +2790,8 @@ void pgsDesigner2::CheckDebonding(SpanIndexType span,GirderIndexType gdr,pgsType
 
    // left end
    Float64 prev_location = 0.0;
-   long nSections = pStrandGeometry->GetNumDebondSections(span,gdr,IStrandGeometry::geLeftEnd,strandType);
-   for ( Uint16 sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(span,gdr,IStrandGeometry::geLeftEnd,strandType);
+   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
    {
       StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(span,gdr,IStrandGeometry::geLeftEnd,sectionIdx,strandType);
       Float64 fraDebondedStrands = (nStrands == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nStrands);
@@ -2810,7 +2814,7 @@ void pgsDesigner2::CheckDebonding(SpanIndexType span,GirderIndexType gdr,pgsType
 
    // right end
    nSections = pStrandGeometry->GetNumDebondSections(span,gdr,IStrandGeometry::geRightEnd,strandType);
-   for ( Uint16 sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
    {
       StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(span,gdr,IStrandGeometry::geRightEnd,sectionIdx,strandType);
       Float64 fraDebondedStrands = (nStrands == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nStrands);
@@ -2901,7 +2905,7 @@ void pgsDesigner2::DesignEndZoneDebonding(bool firstPass, arDesignOptions option
    pgsDesignCodes lifting_design_outcome;
 
    // Compute and layout debonding prior to hauling design
-   std::vector<Int16> debond_demand;
+   std::vector<DebondLevelType> debond_demand;
 
    m_StrandDesignTool.DumpDesignParameters();
 
@@ -2995,7 +2999,7 @@ void pgsDesigner2::DesignEndZoneDebonding(bool firstPass, arDesignOptions option
          if (options.doDesignLifting && m_StrandDesignTool.GetFlexuralDesignType()==dtDesignForDebonding)
          {
             LOG(_T("*** Secondary Lifting Design after Shipping."));
-            std::vector<Int16> debond_demand_lifting;
+            std::vector<DebondLevelType> debond_demand_lifting;
             debond_demand_lifting = DesignForLiftingDebonding(false,pProgress);
 
             // Only layout debonding if first pass through lifting design could not
@@ -3227,7 +3231,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          {
             // For debond design, set debonding to maximum allowed for the current number of strands.
             // This should result in a minimum possible release strength. 
-            std::vector<Int16> max_debonding = m_StrandDesignTool.GetMaxPhysicalDebonding();
+            std::vector<DebondLevelType> max_debonding = m_StrandDesignTool.GetMaxPhysicalDebonding();
 
             m_StrandDesignTool.LayoutDebonding( max_debonding );
          }
@@ -3807,7 +3811,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
       config.SlabOffset[pgsTypes::metEnd]   = AoldEnd;
       GetHaunchDetails(span,gdr,config,&haunch_details);
 
-      long idx = haunch_details.Haunch.size()/2;
+      IndexType idx = haunch_details.Haunch.size()/2;
       LOG(_T("A-dim Calculated        = ") << ::ConvertFromSysUnits(haunch_details.RequiredSlabOffset, unitMeasure::Inch) << _T(" in"));
 
       Float64 Anew = haunch_details.RequiredSlabOffset;
@@ -4019,7 +4023,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    }
 
    // Safety net
-   StrandIndexType Np=-1, Np_old=-1;
+   StrandIndexType Np = INVALID_INDEX, Np_old = INVALID_INDEX;
    Int16 cIter = 0;
    Int16 maxIter = 80;
 
@@ -4144,7 +4148,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
       // if we are here, tension is controlling, see if we can match Np and ecc
       Np = m_StrandDesignTool.ComputePermanentStrandsRequiredForPrestressForce(poi,P);
 
-      if ( Np == Uint32_Max )
+      if ( Np == INVALID_INDEX )
       {
          StrandIndexType npmax = m_StrandDesignTool.GetMaxPermanentStrands();
          if (m_StrandDesignTool.GetNumPermanentStrands()==npmax)
@@ -4600,7 +4604,7 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(IProgress* pProgress)
    // Done
 }
 
-std::vector<Int16> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail)
+std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail)
 {
    LOG(_T("Refine Debonded design by computing debond demand levels for release condition at End-Zone"));
 #pragma Reminder("This code needs to be changed if girder is not assumed to rest on ends at release")
@@ -4609,7 +4613,7 @@ std::vector<Int16> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgress* pProgr
    if (m_StrandDesignTool.GetFlexuralDesignType() != dtDesignForDebonding)
    {
       LOG(_T("Fully bonded design - no need to compute debond levels "));
-      std::vector<Int16> levels;
+      std::vector<DebondLevelType> levels;
       levels.assign((long)0,0);
       return levels;
    }
@@ -4680,7 +4684,7 @@ std::vector<Int16> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgress* pProgr
    }
 
    // compute debond levels at each section from demand
-   std::vector<Int16> debond_levels;
+   std::vector<DebondLevelType> debond_levels;
    debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, nss, strand_force, all_tens, all_comp);
 
    if (  debond_levels.empty() && bAbortOnFail )
@@ -5182,7 +5186,7 @@ void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress*
    m_DesignerOutcome.SetOutcome(pgsDesignCodes::RetainStrandProportioning);
 }
 
-std::vector<Int16> pgsDesigner2::DesignForLiftingDebonding(bool bProportioningStrands, IProgress* pProgress)
+std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bProportioningStrands, IProgress* pProgress)
 {
    // If designConcrete is true, we want to set the release strength for our real design. If not,
    // the goal is to simply come up with a debonding layout that will work for the strength we compute
@@ -5190,7 +5194,7 @@ std::vector<Int16> pgsDesigner2::DesignForLiftingDebonding(bool bProportioningSt
 
    pProgress->UpdateMessage(_T("Lifting Design for Debonded Girders"));
 
-   std::vector<Int16> debond_demand;
+   std::vector<DebondLevelType> debond_demand;
 
    Float64 fci_current = m_StrandDesignTool.GetReleaseStrength();
 
@@ -5380,7 +5384,7 @@ std::vector<Int16> pgsDesigner2::DesignForLiftingDebonding(bool bProportioningSt
 }
 
 
-std::vector<Int16> pgsDesigner2::DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress)
+std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress)
 {
    pProgress->UpdateMessage(_T("Designing initial debonding for Lifting"));
    ATLASSERT(m_StrandDesignTool.GetFlexuralDesignType() == dtDesignForDebonding);
@@ -5665,7 +5669,7 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
 }
 
 
-std::vector<Int16> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pProgress)
+std::vector<DebondLevelType> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pProgress)
 {
    pProgress->UpdateMessage(_T("Designing final debonding for Shipping"));
 
@@ -5673,7 +5677,7 @@ std::vector<Int16> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pPro
    SectionIndexType max_db_sections = m_StrandDesignTool.GetMaxNumberOfDebondSections();
 
    // set up our vector to return debond levels at each section
-   std::vector<Int16> shipping_debond_levels;
+   std::vector<DebondLevelType> shipping_debond_levels;
    shipping_debond_levels.assign(max_db_sections,0);
 
    Float64 fci_current = m_StrandDesignTool.GetReleaseStrength();
@@ -6375,8 +6379,8 @@ void pgsDesigner2::DetailStirrupZones(pgsTypes::Stage stage,
    LOG(_T("Av/S Envelope - loc, max_avs"));
    mathPwLinearFunction2dUsingPoints avs_envelope;
    CHECK(vPoi.size()==avsReqdAtPois.size());
-   Uint32 npoi = vPoi.size();
-   Uint32 i = 0;
+   CollectionIndexType npoi = vPoi.size();
+   CollectionIndexType i = 0;
    for(i=0; i<npoi; i++)
    {
       Float64 maxavs = max(avsReqdAtPois[i].VerticalAvS, avsReqdAtPois[i].HorizontalAvS);
@@ -6530,6 +6534,20 @@ void pgsDesigner2::DetailStirrupZones(pgsTypes::Stage stage,
       gpPoint2d limit_pnt(vPoi[i].GetDistFromStart(), avsReqdAtPois[i].Pt1FcBvDv);
       limit_funct.AddPoint(limit_pnt);
    }
+#if defined _DEBUG
+   LOG(_T("Vu Curve"));
+   for(i=0; i<npoi; i++)
+   {
+      gpPoint2d pnt = vu_funct.GetPoint(i);
+      LOG(pnt.X() << _T(", ") << pnt.Y());
+   }
+   LOG(_T("Limit Curve"));
+   for(i=0; i<npoi; i++)
+   {
+      gpPoint2d pnt = limit_funct.GetPoint(i);
+      LOG(pnt.X() << _T(", ") << pnt.Y());
+   }
+#endif
    math1dRange vu_range = vu_funct.GetRange();
    bool is_zone4=true;
    gpPoint2d left_max_loc, right_max_loc;

@@ -254,7 +254,7 @@ void CLibraryEditorDoc::OnImport()
 	// ask user for file name
    CFileDialog  fildlg(TRUE,_T("pgs"),NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
                    _T("PGSuper Project File (*.pgs)|*.pgs||"));
-   int stf = fildlg.DoModal();
+   INT_PTR stf = fildlg.DoModal();
    if (stf==IDOK)
    {
       CString rPath;

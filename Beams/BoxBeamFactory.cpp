@@ -132,7 +132,7 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    return S_OK;
 }
 
-void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IBoxBeamSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_BoxBeamSection);
@@ -350,7 +350,7 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
 void CBoxBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
    std::vector<std::_tstring>::iterator iter;
-   pSave->BeginUnit(_T("BoxBeamDimensions"),3.0);
+   pSave->BeginUnit(_T("BoxBeamDimensions"),4.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
       std::_tstring name = *iter;
@@ -437,9 +437,11 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
       // W4 = W3
       W4 = dim_vals[10];
 
+      // F1 and F2 - a bug found in the WBFL in 10/2011 requires these to be swapped
+      F1 = dim_vals[14];
+      F2 = dim_vals[13];
+
       // the rest map 1-1
-      F1 = dim_vals[13];
-      F2 = dim_vals[14];
       C1 = dim_vals[15];
        J = dim_vals[16];
 
@@ -507,6 +509,21 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
          }
+         else
+         {
+            if( dimVersion < 4 )
+            {
+               // A bug in the WBFL had F1 and F2 swapped. Version 4 fixes this
+               if( name == _T("F1") )
+               {
+                  name = _T("F2");
+               }
+               else if ( name == _T("F2") )
+               {
+                  name = _T("F1");
+               }
+            }
+         }
 
          dimensions.push_back( Dimension(name,value) );
       }
@@ -535,8 +552,9 @@ Float64 CBoxBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,G
    Float64 W3 = GetDimension(dimensions,_T("W3"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
    Float64 F1 = GetDimension(dimensions,_T("F1"));
+   Float64 F2 = GetDimension(dimensions,_T("F2"));
 
-   Float64 void_surface_area = Lg*( 2*(H2 - 2*F1) + 2*(W3 - 2*F1) + 4*sqrt(2*F1*F1) );
+   Float64 void_surface_area = Lg*( 2*(H2 - F1 - F2) + 2*(W3 - F1 - F2) + 2*sqrt(2*F1*F1) + 2*sqrt(2*F2*F2) );
 
    if ( bReduceForPoorlyVentilatedVoids )
       void_surface_area *= 0.50;

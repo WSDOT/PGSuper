@@ -176,7 +176,7 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the number of points of interest.
-   Uint32 GetPointOfInterestCount() const;
+   CollectionIndexType GetPointOfInterestCount() const;
 
 protected:
    // GROUP: DATA MEMBERS

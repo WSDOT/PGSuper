@@ -243,7 +243,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    pTable->SetNumberOfHeaderRows(2);
 
    pTable->SetRowSpan(0,0,2);
-   pTable->SetRowSpan(1,0,-1);
+   pTable->SetRowSpan(1,0,SKIP_CELL);
    (*pTable)(0,0) << _T("");
 
    pTable->SetColumnSpan(0,1,4);
@@ -252,12 +252,12 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    pTable->SetColumnSpan(0,2,4);
    (*pTable)(0,2) << _T("* Rotations");
 
-   pTable->SetColumnSpan(0,3,-1);
-   pTable->SetColumnSpan(0,4,-1);
-   pTable->SetColumnSpan(0,5,-1);
-   pTable->SetColumnSpan(0,6,-1);
-   pTable->SetColumnSpan(0,7,-1);
-   pTable->SetColumnSpan(0,8,-1);
+   pTable->SetColumnSpan(0,3,SKIP_CELL);
+   pTable->SetColumnSpan(0,4,SKIP_CELL);
+   pTable->SetColumnSpan(0,5,SKIP_CELL);
+   pTable->SetColumnSpan(0,6,SKIP_CELL);
+   pTable->SetColumnSpan(0,7,SKIP_CELL);
+   pTable->SetColumnSpan(0,8,SKIP_CELL);
 
    (*pTable)(1,1) << COLHDR(Sub2(_T("R"),_T("Max")),rptForceUnitTag, pDisplayUnits->GetShearUnit());
    (*pTable)(1,2) << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
@@ -287,7 +287,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          poi.SetDistFromStart( poi.GetDistFromStart() + pBridge->GetSpanLength(span,girder) );
    
       double Rmax,Rmin,Tmin,Tmax;
-      long minConfig, maxConfig;
+      VehicleIndexType minConfig, maxConfig;
       if ( analysisType == pgsTypes::Envelope )
       {
          // reactions and corresponding rotations

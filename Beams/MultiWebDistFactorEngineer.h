@@ -109,7 +109,7 @@ public:
 
 public:
    // IDistFactorEngineer
-//   virtual void SetBroker(IBroker* pBroker,long statusGroupID);
+//   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
 //   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
 //   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);

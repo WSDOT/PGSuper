@@ -53,7 +53,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CBoxBeamFactoryImpl
-void CBoxBeamFactoryImpl::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CBoxBeamFactoryImpl::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -78,7 +78,7 @@ void CBoxBeamFactoryImpl::CreateGirderProfile(IBroker* pBroker,long agentID,Span
    rect->QueryInterface(ppShape);
 }
 
-void CBoxBeamFactoryImpl::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CBoxBeamFactoryImpl::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<IBoxBeamEndBlockSegment> segment;
    HRESULT hr = segment.CoCreateInstance(CLSID_BoxBeamEndBlockSegment);
@@ -102,7 +102,7 @@ void CBoxBeamFactoryImpl::LayoutGirderLine(IBroker* pBroker,long agentID,SpanInd
    segment->put_EndBlockLength(etEnd,endBlockLength);
 
    CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrsection);
+   CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrsection);
 
    CComQIPtr<IBoxBeamSection> section(gdrsection);
 
@@ -224,7 +224,7 @@ void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(IBroker* pBroker,S
    }
 }
 
-void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,long agentID,
+void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,
                                                const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,
                                                IDistFactorEngineer** ppEng)
 {
@@ -237,7 +237,7 @@ void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,long agentID
    {
       CComObject<CBoxBeamDistFactorEngineer>* pEngineer;
       CComObject<CBoxBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-      pEngineer->SetBroker(pBroker,agentID);
+      pEngineer->SetBroker(pBroker,statusGroupID);
       (*ppEng) = pEngineer;
       (*ppEng)->AddRef();
    }
@@ -249,18 +249,18 @@ void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,long agentID
       CComObject<CUBeamDistFactorEngineer>* pEngineer;
       CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
       pEngineer->Init(true, false); // this is a type b cross section
-      pEngineer->SetBroker(pBroker,agentID);
+      pEngineer->SetBroker(pBroker,statusGroupID);
       (*ppEng) = pEngineer;
       (*ppEng)->AddRef();
    }
 }
 
-void CBoxBeamFactoryImpl::CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CBoxBeamFactoryImpl::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
     pEngineer->Init(CPsLossEngineer::BoxBeam);
-    pEngineer->SetBroker(pBroker,agentID);
+    pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();
 }
@@ -395,7 +395,7 @@ pgsTypes::SupportedBeamSpacings CBoxBeamFactoryImpl::GetSupportedBeamSpacings()
 }
 
 
-long CBoxBeamFactoryImpl::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CBoxBeamFactoryImpl::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 {
    return 2;
 }

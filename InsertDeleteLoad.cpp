@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 
 txnInsertPointLoad::txnInsertPointLoad(const CPointLoadData& loadData)
 {
-   m_LoadIdx = Uint32_Max;
+   m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
 }
 
@@ -91,7 +91,7 @@ void txnInsertPointLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnDeletePointLoad::txnDeletePointLoad(Uint32 loadIdx)
+txnDeletePointLoad::txnDeletePointLoad(CollectionIndexType loadIdx)
 {
    m_LoadIdx = loadIdx;
 }
@@ -148,7 +148,7 @@ void txnDeletePointLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnEditPointLoad::txnEditPointLoad(Uint32 loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData)
+txnEditPointLoad::txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData)
 {
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;
@@ -205,7 +205,7 @@ void txnEditPointLoad::DoExecute(int i)
 
 txnInsertDistributedLoad::txnInsertDistributedLoad(const CDistributedLoadData& loadData)
 {
-   m_LoadIdx = Uint32_Max;
+   m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
 }
 
@@ -260,7 +260,7 @@ void txnInsertDistributedLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnDeleteDistributedLoad::txnDeleteDistributedLoad(Uint32 loadIdx)
+txnDeleteDistributedLoad::txnDeleteDistributedLoad(CollectionIndexType loadIdx)
 {
    m_LoadIdx = loadIdx;
 }
@@ -318,7 +318,7 @@ void txnDeleteDistributedLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnEditDistributedLoad::txnEditDistributedLoad(Uint32 loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData)
+txnEditDistributedLoad::txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData)
 {
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;
@@ -375,7 +375,7 @@ void txnEditDistributedLoad::DoExecute(int i)
 
 txnInsertMomentLoad::txnInsertMomentLoad(const CMomentLoadData& loadData)
 {
-   m_LoadIdx = Uint32_Max;
+   m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
 }
 
@@ -430,7 +430,7 @@ void txnInsertMomentLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnDeleteMomentLoad::txnDeleteMomentLoad(Uint32 loadIdx)
+txnDeleteMomentLoad::txnDeleteMomentLoad(CollectionIndexType loadIdx)
 {
    m_LoadIdx = loadIdx;
 }
@@ -487,7 +487,7 @@ void txnDeleteMomentLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnEditMomentLoad::txnEditMomentLoad(Uint32 loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData)
+txnEditMomentLoad::txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData)
 {
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;

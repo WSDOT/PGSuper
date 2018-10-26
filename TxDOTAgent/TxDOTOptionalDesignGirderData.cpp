@@ -172,7 +172,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       pStrSave->BeginUnit(_T("NonstandardFillData"),1.0);
       pStrSave->put_Property(_T("UseDepressedStrands"), CComVariant(m_UseDepressedStrands));
 
-      Int32 rowcount = m_StrandRowsAtCL.size();
+      RowIndexType rowcount = m_StrandRowsAtCL.size();
       pStrSave->put_Property(_T("StrandRowsAtCLCount"),CComVariant(rowcount));
       for (StrandRowIterator it = m_StrandRowsAtCL.begin(); it!=m_StrandRowsAtCL.end(); it++)
       {
@@ -575,9 +575,8 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
       pGdrEntry->GetBeamFactory(&pFactory);
       GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
-      long DUMMY_AGENT_ID = -1;
       CComPtr<IGirderSection> gdrSection;
-      pFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
+      pFactory->CreateGirderSection(NULL,INVALID_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
 
       CComPtr<IShape>  pShape;
       gdrSection.QueryInterface(&pShape);
@@ -599,7 +598,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
 
       // compute ecc for straight group (assume non-sloping strands)
       StrandIndexType max_straight_coords = pGdrEntry->GetNumStraightStrandCoordinates();
-      Int32 num_straight_strands(0);
+      StrandIndexType num_straight_strands(0);
       Float64 firstMom(0.0);
       for(StrandIndexType currIdx=0; (currIdx<=max_straight_coords && num_straight_strands<numStraight); currIdx++)
       {
@@ -998,7 +997,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
                StrandIncrement& incr_cl  = *siit_cl;
                StrandIncrement& incr_end = *siit_end;
 
-               if (incr_cl.GlobalFill != -1)
+               if (incr_cl.GlobalFill != INVALID_INDEX)
                {
                   // Get coordinates at cl and ends - doesn't matter if they are harped or straight at this point
                   Float64 cl_x, cl_y;
@@ -1038,7 +1037,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
             {
                StrandIncrement& incr_cl  = *siit_cl;
 
-               if (incr_cl.GlobalFill!=-1 && !incr_cl.WasFilled) // make sure we didn't already fill with a harped strand
+               if (incr_cl.GlobalFill != INVALID_INDEX && !incr_cl.WasFilled) // make sure we didn't already fill with a harped strand
                {
                   // Get coordinates 
                   Float64 cl_x, cl_y;

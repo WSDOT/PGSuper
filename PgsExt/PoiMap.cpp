@@ -63,7 +63,7 @@ PoiIDType pgsPoiMap::GetModelPoi(const pgsPointOfInterest& productPoi) const
    std::map<pgsPointOfInterest,PoiIDType>::const_iterator found;
    found = m_Map.find( productPoi );
    if ( found == m_Map.end() )
-      return -1;
+      return INVALID_ID;
 
    return found->second;
 }

@@ -75,8 +75,8 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-   int GetNumberOfLibraryManagers() const {return 1;}
-   libLibraryManager* GetLibraryManager(int n){ASSERT(n!=1); return &m_LibraryManager;}
+   CollectionIndexType GetNumberOfLibraryManagers() const {return 1;}
+   libLibraryManager* GetLibraryManager(CollectionIndexType n){ASSERT(n!=1); return &m_LibraryManager;}
    libLibraryManager* GetTargetLibraryManager(){return &m_LibraryManager;}
    psgLibraryManager* GetLibraryManager(){return &m_LibraryManager;}
 

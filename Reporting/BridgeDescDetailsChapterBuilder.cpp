@@ -291,17 +291,17 @@ void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
             // header
             pTable->SetNumberOfHeaderRows(1);
             pTable->SetColumnSpan(0,0,3);
-            pTable->SetColumnSpan(0,1,-1);
-            pTable->SetColumnSpan(0,2,-1);
+            pTable->SetColumnSpan(0,1,SKIP_CELL);
+            pTable->SetColumnSpan(0,2,SKIP_CELL);
             (*pTable)(0,0) << strConnection;
 
             // picture in first column
             pTable->SetRowSpan(1,0,6);
-            pTable->SetRowSpan(2,0,-1);
-            pTable->SetRowSpan(3,0,-1);
-            pTable->SetRowSpan(4,0,-1);
-            pTable->SetRowSpan(5,0,-1);
-            pTable->SetRowSpan(6,0,-1);
+            pTable->SetRowSpan(2,0,SKIP_CELL);
+            pTable->SetRowSpan(3,0,SKIP_CELL);
+            pTable->SetRowSpan(4,0,SKIP_CELL);
+            pTable->SetRowSpan(5,0,SKIP_CELL);
+            pTable->SetRowSpan(6,0,SKIP_CELL);
             (*pTable)(1,0) << rptRcImage( pgsReportStyleHolder::GetImagePath() + get_connection_image_name(pEntry->GetBearingOffsetMeasurementType(),pEntry->GetEndDistanceMeasurementType()) );
 
 

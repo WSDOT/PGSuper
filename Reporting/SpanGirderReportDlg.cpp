@@ -68,12 +68,12 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( m_Mode == SpanAndChapters || m_Mode == SpanGirderAndChapters)
    {
-	   DDX_CBIndex(pDX, IDC_SPAN, m_Span);
+	   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Span);
    }
 
    if ( m_Mode == SpanGirderAndChapters || m_Mode == GirderAndChapters )
    {
-      DDX_CBIndex(pDX, IDC_GIRDER, m_Girder);
+      DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_Girder);
    }
 
    if ( pDX->m_bSaveAndValidate )
@@ -192,14 +192,14 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
    {
       // fill up the span box
       CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
-      Uint32 cSpan = pBridge->GetSpanCount();
-      for ( Uint32 i = 0; i < cSpan; i++ )
+      SpanIndexType cSpan = pBridge->GetSpanCount();
+      for ( SpanIndexType i = 0; i < cSpan; i++ )
       {
          CString strSpan;
          strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
          pSpanBox->AddString(strSpan);
       }
-      pSpanBox->SetCurSel(m_Span);
+      pSpanBox->SetCurSel((int)m_Span);
 
       UpdateGirderComboBox(m_Span);
    }

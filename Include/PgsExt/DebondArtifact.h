@@ -111,8 +111,8 @@ public:
    void GetMaxDebondStrandsAtSection(StrandIndexType* nStrands,Float64* fra) const;
 
    void AddDebondSection(Float64 location,StrandIndexType nStrandsDebonded,Float64 fraStrandsDebonded);
-   void GetDebondSection(Uint16 idx,Float64* location,StrandIndexType* nStrandsDebonded,Float64* fraStrandsDebonded) const;
-   Uint16 GetNumDebondSections() const;
+   void GetDebondSection(SectionIndexType idx,Float64* location,StrandIndexType* nStrandsDebonded,Float64* fraStrandsDebonded) const;
+   CollectionIndexType GetNumDebondSections() const;
 
    StrandIndexType GetNumDebondedStrands() const;
    void SetNumDebondedStrands(StrandIndexType nStrands);
@@ -132,8 +132,8 @@ public:
    // GROUP: ACCESS
    
    bool Passed() const;
-   bool RowPassed(Uint16 rowIndex) const;
-   bool SectionPassed(Uint16 sectionIndex) const;
+   bool RowPassed(CollectionIndexType rowIndex) const;
+   bool SectionPassed(CollectionIndexType sectionIndex) const;
 
    // GROUP: INQUIRY
 

@@ -745,22 +745,22 @@ void pgsHorizontalShearArtifact::SetAvOverSMin(Float64 fmin)
    m_AvOverSMin = fmin;
 }
 
-Uint32 pgsHorizontalShearArtifact::GetNumLegs() const
+CollectionIndexType pgsHorizontalShearArtifact::GetNumLegs() const
 {
    return m_NumLegs;
 }
 
-void pgsHorizontalShearArtifact::SetNumLegs(Uint32 legs)
+void pgsHorizontalShearArtifact::SetNumLegs(CollectionIndexType legs)
 {
    m_NumLegs = legs;
 }
 
-Uint32 pgsHorizontalShearArtifact::GetNumLegsReqd() const
+CollectionIndexType pgsHorizontalShearArtifact::GetNumLegsReqd() const
 {
    return m_NumLegsReqd;
 }
 
-void pgsHorizontalShearArtifact::SetNumLegsReqd(Uint32 legs)
+void pgsHorizontalShearArtifact::SetNumLegsReqd(CollectionIndexType legs)
 {
    m_NumLegsReqd = legs;
 }

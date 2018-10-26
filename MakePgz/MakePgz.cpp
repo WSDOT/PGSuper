@@ -82,7 +82,7 @@ int _tmain(int argc, _TCHAR* argv[])
          wchar_t arg1[MAX_PATH], arg2[MAX_PATH];
          _stprintf(arg1,_T("%s"),argv[1]);
          _stprintf(arg2,_T("%s.md5"),argv[1]);
-         int result = _wspawnl(_P_WAIT,strMD5Deep.c_str(),_T("-q"),arg1,_T(">"),arg2,NULL);
+         intptr_t result = _wspawnl(_P_WAIT,strMD5Deep.c_str(),_T("-q"),arg1,_T(">"),arg2,NULL);
 
          wchar_t cmd[MAX_PATH];
          _stprintf(cmd, _T("\"%s\" -q %s > %s.md5"),strMD5Deep.c_str(),argv[1],argv[1]); 

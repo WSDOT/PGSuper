@@ -71,7 +71,11 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
    rptParagraph* pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
    *pTitlePage << pPara;
+#if defined _WIN64
+   *pPara << _T("TOGA")<< Super(symbol(TRADEMARK))<<_T(" (x64), A PGSuper")<<Super(symbol(TRADEMARK))<<_T(" Extension")<< rptNewLine;
+#else
    *pPara << _T("TOGA")<< Super(symbol(TRADEMARK))<<_T(", A PGSuper")<<Super(symbol(TRADEMARK))<<_T(" Extension")<< rptNewLine;
+#endif
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetCopyrightStyle());
    *pTitlePage << pPara;

@@ -118,7 +118,7 @@ protected:
       Float64 gM;
    };
 
-   void GetIndicies(Int32 spanOrPier,DFParam dfType,SpanIndexType& span,PierIndexType& pier,SpanIndexType& prev_span,SpanIndexType& next_span,PierIndexType& prev_pier,PierIndexType& next_pier);
+   void GetIndicies(IndexType spanOrPier,DFParam dfType,SpanIndexType& span,PierIndexType& pier,SpanIndexType& prev_span,SpanIndexType& next_span,PierIndexType& prev_pier,PierIndexType& next_pier);
 
    std::map<PierGirderHashType,PIERDETAILS> m_PierLLDF[2][2]; // first index is pier face, second index is limit state type
    void GetPierDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr,PIERDETAILS* plldf);
@@ -129,10 +129,10 @@ protected:
    std::map<SpanGirderHashType,SPANDETAILS> m_SpanLLDF[2]; // index is limit state type
    void GetSpanDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf);
 
-   Float64 GetEffectiveSpanLength(Int32 spanOrPier,GirderIndexType gdr,DFParam dfType);
+   Float64 GetEffectiveSpanLength(IndexType spanOrPier,GirderIndexType gdr,DFParam dfType);
    void GetGirderSpacingAndOverhang(SpanIndexType span,GirderIndexType gdr,DFParam dfType,BASE_LLDFDETAILS* pDetails);
 
-   virtual lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(Int32 spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,T* plldf) = 0;
+   virtual lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,T* plldf) = 0;
 
    void HandleRangeOfApplicabilityError(const lrfdXRangeOfApplicability& e);
 
@@ -643,7 +643,7 @@ int CDistFactorEngineerImpl<T>::LimitStateType(pgsTypes::LimitState ls)
 }
 
 template <class T>
-void CDistFactorEngineerImpl<T>::GetIndicies(Int32 spanOrPier,DFParam dfType,SpanIndexType& span,PierIndexType& pier,SpanIndexType& prev_span,SpanIndexType& next_span,PierIndexType& prev_pier,PierIndexType& next_pier)
+void CDistFactorEngineerImpl<T>::GetIndicies(IndexType spanOrPier,DFParam dfType,SpanIndexType& span,PierIndexType& pier,SpanIndexType& prev_span,SpanIndexType& next_span,PierIndexType& prev_pier,PierIndexType& next_pier)
 {
    GET_IFACE(IBridge,pBridge);
 
@@ -820,7 +820,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType span,
 }
 
 template <class T>
-double CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(Int32 spanOrPier,GirderIndexType gdr,DFParam dfType)
+double CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPier,GirderIndexType gdr,DFParam dfType)
 {
    GET_IFACE(IBridge,pBridge);
 

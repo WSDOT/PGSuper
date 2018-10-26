@@ -476,13 +476,17 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
    Float64 IntVoidSpacing = pGirderEntry->GetDimension(_T("S2"));
    Float64 ExtVoidDiameter = pGirderEntry->GetDimension(_T("D1"));
    Float64 IntVoidDiameter = pGirderEntry->GetDimension(_T("D2"));
-   Int16   nVoids       = (Int16)pGirderEntry->GetDimension(_T("Number_of_Voids"));
-   Int16   nExtVoids = 2;
-   Int16   nIntVoids = nVoids-nExtVoids;
-   if ( nIntVoids < 0 )
+   IndexType nVoids        = (IndexType)pGirderEntry->GetDimension(_T("Number_of_Voids"));
+   IndexType nExtVoids = 2;
+   IndexType nIntVoids;
+   if ( nVoids < nExtVoids )
    {
       nIntVoids = 0;
       nExtVoids = nVoids;
+   }
+   else
+   {
+      nIntVoids = nVoids-nExtVoids;
    }
 
    plldf->b            = Width;
@@ -604,7 +608,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
          Sum_s_over_t += (s_int/t_ext_int);
 
          // between all interior voids
-         for ( Int16 i = 1; i < nIntVoids; i++ )
+         for ( IndexType i = 1; i < nIntVoids; i++ )
          {
             Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_int,t_int));
             Sum_s_over_t += (s_int/t_int);

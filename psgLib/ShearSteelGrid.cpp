@@ -388,11 +388,11 @@ void CShearSteelGrid::FillGrid(const GirderLibraryEntry::ShearZoneInfoVec& rvec)
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   unsigned size = rvec.size();
+   CollectionIndexType size = rvec.size();
    if (size>0)
    {
       // size grid
-      for (unsigned i=0; i<size; i++)
+      for (CollectionIndexType i=0; i<size; i++)
 	      DoInsertRow();
 
       // fill grid

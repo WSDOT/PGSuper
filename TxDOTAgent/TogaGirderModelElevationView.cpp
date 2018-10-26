@@ -996,10 +996,10 @@ void CTogaGirderModelElevationView::BuildRebarDisplayObjects(CTxDOTOptionalDesig
    Float64 HgStart = pGirder->GetHeight(poiStart);
    Float64 HgEnd   = pGirder->GetHeight(poiEnd);
 
-   if ( poiStart.GetID() < 0 )
+   if ( poiStart.GetID() == INVALID_ID )
       poiStart.SetDistFromStart(0.0);
 
-   if ( poiEnd.GetID() < 0 )
+   if ( poiEnd.GetID() == INVALID_ID )
       poiEnd.SetDistFromStart(gdr_length);
 
    CComPtr<IRebarSection> rebar_section_start, rebar_section_end;
@@ -1167,21 +1167,21 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(span,girder);
 
-   Uint32 nStirrupZones = pStirrupGeom->GetNumZones(span,girder);
-   for ( Uint32 zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
+   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumZones(span,girder);
+   for ( ZoneIndexType zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
    {
       Float64 start   = pStirrupGeom->GetZoneStart(span,girder,zoneIdx);
       Float64 end     = pStirrupGeom->GetZoneEnd(span,girder,zoneIdx);
       Float64 spacing = pStirrupGeom->GetS(span,girder,zoneIdx);
 
       matRebar::Size barSize = pStirrupGeom->GetVertStirrupBarSize(span,girder,zoneIdx);
-      Uint32 nStirrups = pStirrupGeom->GetVertStirrupBarCount(span,girder,zoneIdx);
+      CollectionIndexType nStirrups = pStirrupGeom->GetVertStirrupBarCount(span,girder,zoneIdx);
 
       if ( barSize != matRebar::bsNone && nStirrups != 0 )
       {
-         Uint32 nStirrupsInZone = Uint32(floor((end - start)/spacing));
+         CollectionIndexType nStirrupsInZone = Uint32(floor((end - start)/spacing));
          spacing = (end-start)/nStirrupsInZone;
-         for ( Uint32 i = 0; i <= nStirrupsInZone; i++ )
+         for ( CollectionIndexType i = 0; i <= nStirrupsInZone; i++ )
          {
             double x = start + i*spacing;
 
@@ -1399,14 +1399,14 @@ void CTogaGirderModelElevationView::OnDestroy()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   long dlcnt = dispMgr->GetDisplayListCount();
-   for (long idl=0; idl<dlcnt; idl++)
+   CollectionIndexType dlcnt = dispMgr->GetDisplayListCount();
+   for (CollectionIndexType idl=0; idl<dlcnt; idl++)
    {
       CComPtr<iDisplayList> dlist;
       dispMgr->GetDisplayList(idl, &dlist);
 
-      long docnt = dlist->GetDisplayObjectCount();
-      for (long ido=0; ido<docnt; ido++)
+      CollectionIndexType docnt = dlist->GetDisplayObjectCount();
+      for (CollectionIndexType ido=0; ido<docnt; ido++)
       {
          CComPtr<iDisplayObject> pdo;
          dlist->GetDisplayObject(ido,&pdo);

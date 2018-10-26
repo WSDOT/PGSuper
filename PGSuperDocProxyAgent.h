@@ -253,14 +253,14 @@ public:
 
 // IRegisterViewEvents
 public:
-   virtual Uint32 RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
-   virtual Uint32 RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
-   virtual Uint32 RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
-   virtual Uint32 RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
-   virtual bool UnregisterBridgePlanViewCallback(Uint32 ID);
-   virtual bool UnregisterBridgeSectionViewCallback(Uint32 ID);
-   virtual bool UnregisterGirderElevationViewCallback(Uint32 ID);
-   virtual bool UnregisterGirderSectionViewCallback(Uint32 ID);
+   virtual IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
+   virtual IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
+   virtual IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
+   virtual IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
+   virtual bool UnregisterBridgePlanViewCallback(IDType ID);
+   virtual bool UnregisterBridgeSectionViewCallback(IDType ID);
+   virtual bool UnregisterGirderElevationViewCallback(IDType ID);
+   virtual bool UnregisterGirderSectionViewCallback(IDType ID);
 
 private:
    DECLARE_AGENT_DATA;

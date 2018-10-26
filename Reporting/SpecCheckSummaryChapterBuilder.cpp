@@ -103,7 +103,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
       CEAFAutoProgress ap(pProgress,0,mask); 
 
       if (multi)
-         pProgress->Init(0,list.size(),1);  // and for multi-girders, a gauge.
+         pProgress->Init(0,(short)list.size(),1);  // and for multi-girders, a gauge.
 
       // Build chapter and fill it
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pMGRptSpec,level);

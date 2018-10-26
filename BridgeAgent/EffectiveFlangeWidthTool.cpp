@@ -107,13 +107,13 @@ STDMETHODIMP CEffectiveFlangeWidthTool::get_UseTributaryWidth(VARIANT_BOOL* bUse
    return S_OK;
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidth(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,double location, double *tribFlangeWidth)
+STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidth(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 location, Float64 *tribFlangeWidth)
 {
-   double twLeft,twRight;
+   Float64 twLeft,twRight;
    return TributaryFlangeWidthEx(bridge,spanIdx,gdrIdx,location,&twLeft,&twRight,tribFlangeWidth);
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthEx(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,double location,double* twLeft, double* twRight, double *tribFlangeWidth)
+STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthEx(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 location,Float64* twLeft, Float64* twRight, Float64 *tribFlangeWidth)
 {
    ATLASSERT( spanIdx != ALL_SPANS);
    ATLASSERT( gdrIdx != ALL_GIRDERS );
@@ -153,11 +153,11 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthEx(IGenericBridge* b
          pgsPointOfInterest poi(spanIdx,gdrIdx,location);
          GET_IFACE(IGirder,pGirder);
 
-         double topWidth = pGirder->GetTopWidth(poi);
-         double botWidth = pGirder->GetBottomWidth(poi);
+         Float64 topWidth = pGirder->GetTopWidth(poi);
+         Float64 botWidth = pGirder->GetBottomWidth(poi);
 
          GirderIndexType nGirders = pBridgeDesc->GetSpan(spanIdx)->GetGirderCount();
-         double width;
+         Float64 width;
          if ( gdrIdx == 0 || gdrIdx == nGirders-1 )
          {
             // exterior girder
@@ -187,18 +187,18 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthEx(IGenericBridge* b
          }
 
          // deal with joints
-         double leftJoint  = 0.0;
-         double rightJoint = 0.0;
+         Float64 leftJoint  = 0.0;
+         Float64 rightJoint = 0.0;
 
          if ( IsJointSpacing(beamSpacing) )
          {
             // The joint width is stored as the "girder spacing".
             SpacingIndexType nSpaces = nGirders-1;
-            SpacingIndexType leftSpaceIdx = gdrIdx-1;
+            SpacingIndexType leftSpaceIdx = (0 < gdrIdx ? gdrIdx-1 : INVALID_INDEX);
             SpacingIndexType rightSpaceIdx = gdrIdx;
 
-            double leftJointStart, leftJointEnd, rightJointStart, rightJointEnd;
-            if ( leftSpaceIdx < 0 )
+            Float64 leftJointStart, leftJointEnd, rightJointStart, rightJointEnd;
+            if ( leftSpaceIdx == INVALID_INDEX )
             {
                leftJointStart = 0;
                leftJointEnd   = 0;
@@ -221,7 +221,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthEx(IGenericBridge* b
             }
 
             GET_IFACE(IBridge,pBridge);
-            double gdr_length = pBridge->GetGirderLength(spanIdx,gdrIdx);
+            Float64 gdr_length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
             leftJoint  = LinInterp(location, leftJointStart,  leftJointEnd,  gdr_length);
             rightJoint = LinInterp(location, rightJointStart, rightJointEnd, gdr_length);
@@ -246,7 +246,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthEx(IGenericBridge* b
    return S_OK;
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidth(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,double location, double *effFlangeWidth)
+STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidth(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 location, Float64 *effFlangeWidth)
 {
    EffFlangeWidth efw;
    HRESULT hr = EffectiveFlangeWidthDetails(bridge,spanIdx,gdrIdx,location, &efw);
@@ -254,7 +254,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidth(IGenericBridge* bri
    return S_OK;
 }
 
-HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,double location, EffFlangeWidth* effFlangeWidth)
+HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 location, EffFlangeWidth* effFlangeWidth)
 {
    // Computes effective flange width, retaining details of calculation per LRFD 4.6.2.6.1
    if ( m_bUseTribWidth == VARIANT_TRUE || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
@@ -287,7 +287,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
       bool bIsExteriorGirder = pBridge->IsExteriorGirder(spanIdx,gdrIdx);
 
       // get tributary width
-      double twLeft,twRight,wTrib;
+      Float64 twLeft,twRight,wTrib;
       TributaryFlangeWidthEx(bridge,spanIdx,gdrIdx,location,&twLeft,&twRight,&wTrib);
 
       CComPtr<ISpanCollection> spans;
@@ -310,11 +310,11 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
          CComPtr<IGirderSpacing> endSpacing;
          span->get_GirderSpacing(etEnd,&endSpacing);
 
-         double S1 = 0;
-         double S2 = 0;
+         Float64 S1 = 0;
+         Float64 S2 = 0;
          for ( SpacingIndexType spaceIdx = 0; spaceIdx < nGirders-1; spaceIdx++ )
          {
-            double s;
+            Float64 s;
 
             // spacing at start pier
             startSpacing->get_GirderSpacing(spaceIdx,mlCenterlinePier,mtNormal,&s);
@@ -325,10 +325,10 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
             S2 = _cpp_max(s,S2);
          }
 
-         double S = _cpp_max(S1,S2);
+         Float64 S = _cpp_max(S1,S2);
 
          // get span length
-         double L = pBridge->GetSpanLength(spanIdx,gdrIdx);
+         Float64 L = pBridge->GetSpanLength(spanIdx,gdrIdx);
          if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && L/S < 2.0 )
          {
             //  ratio of span length to girder spacing is out of range
@@ -350,8 +350,8 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
          {
             Float64 left_trib_width_adjustment  = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,0,location));
             Float64 right_trib_width_adjustment = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,nGirders-1,location));
-            double left_overhang  = twLeft - left_trib_width_adjustment;
-            double right_overhang = twRight - right_trib_width_adjustment;
+            Float64 left_overhang  = twLeft - left_trib_width_adjustment;
+            Float64 right_overhang = twRight - right_trib_width_adjustment;
             if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && (gdrIdx == 0 && S/2 < left_overhang && !IsEqual(S/2,left_overhang)) || (gdrIdx == (nGirders-1) && S/2 < right_overhang && !IsEqual(S/2,right_overhang)) )
             {
                bOverhangCheckFailed = true;
@@ -383,7 +383,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
             // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
             // is the angle of a bearing line measured relative to a normal to
             // the cneterline of a longitudial component
-            double maxSkew = 0;
+            Float64 maxSkew = 0;
             PierIndexType nPiers = pBridge->GetPierCount();
             for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
             {
@@ -392,7 +392,10 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
 
                SpanIndexType spanIndex = pierIdx;
                if ( nPiers-1 == pierIdx ) // at the last pier... use the previous span index
+               {
+                  ATLASSERT(0 < spanIndex);
                   spanIndex -= 1;
+               }
 
                GirderIndexType nGirders = pBridge->GetGirderCount(spanIndex);
                for ( GirderIndexType gdr = 0; gdr < nGirders; gdr++ )
@@ -406,7 +409,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
                   CComPtr<IAngle> angle;
                   girderNormal->AngleBetween(pierDirection,&angle);
 
-                  double angle_value;
+                  Float64 angle_value;
                   angle->get_Value(&angle_value);
 
                   if ( M_PI < angle_value )
@@ -436,11 +439,11 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
 
       // Figure out if it is an exterior girder and if so, if the barrier is structurally continuous.
       // If the barrier is structurally continuous extend the effective flange width by Ab/(2ts)
-      double wAdd = 0;
+      Float64 wAdd = 0;
 
 
-      double Ab = 0;
-      double ts = 0;
+      Float64 Ab = 0;
+      Float64 ts = 0;
       VARIANT_BOOL bIsStructurallyContinuous = VARIANT_FALSE;
       // is it an exterior girder?
       if ( bIsExteriorGirder )
@@ -544,7 +547,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
       }
       else
       {
-         double wTrib, twLeft, twRight;
+         Float64 wTrib, twLeft, twRight;
          TributaryFlangeWidthEx(bridge,spanIdx,gdrIdx,location,&twLeft,&twRight,&wTrib);
          effFlangeWidth->Ab = 0;
          effFlangeWidth->ts = 0;
@@ -561,7 +564,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
    return E_FAIL;
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthEx(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,double location, IEffectiveFlangeWidthDetails** details)
+STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthEx(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 location, IEffectiveFlangeWidthDetails** details)
 {
    // should only get here if the effective flange width is computed
    ATLASSERT( m_bUseTribWidth == VARIANT_FALSE );
@@ -645,12 +648,12 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
 
    if ( efw.m_Details )
     {
-       double tSlab, tWeb, wFlange, lSpacing, rSpacing;
-       double effSpanLength;
+       Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
+       Float64 effSpanLength;
        efw.m_Details->get_EffectiveSpanLength(&effSpanLength);
        efw.m_Details->get_SlabThickness(&tSlab);
 
-       long count;
+       FlangeIndexType count;
        efw.m_Details->get_FlangeCount(&count);
 
        *pPara << rptNewLine;
@@ -670,7 +673,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
        (*pPara) << Sub2(_T("w"),_T("1")) << _T(" = (0.25)(") << xdim.SetValue(effSpanLength) << _T(") = ");
        (*pPara) << xdim.SetValue(0.25*effSpanLength) << _T(" = ") << xdim2.SetValue(0.25*effSpanLength) << rptNewLine;
 
-       for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
+       for ( FlangeIndexType flangeIdx = 0; flangeIdx < count; flangeIdx++ )
        {
           efw.m_Details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
 
@@ -688,7 +691,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
           (*pPara) << _T(" = ") << xdim2.SetValue(lSpacing+rSpacing) << rptNewLine;
        }
 
-       double effFlangeWidth;
+       Float64 effFlangeWidth;
        efw.m_Details->EffectiveFlangeWidth(&effFlangeWidth);
        (*pPara) << rptNewLine << _T("Effective Flange Width = ") << xdim2.SetValue(effFlangeWidth) << rptNewLine;
     }
@@ -712,7 +715,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IGirder,pGirder);
-   long nWebs = pGirder->GetNumberOfMatingSurfaces(span,gdr);
+   MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(span,gdr);
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -823,20 +826,20 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spanLength, pDisplayUnits->GetSpanLengthUnit(),   true  );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,     pDisplayUnits->GetComponentDimUnit(), true  );
 
-   double effSpanLength;
+   Float64 effSpanLength;
    details->get_EffectiveSpanLength(&effSpanLength);
    (*table)(row,1) << Sub2(_T("w"),_T("1")) << _T(" = (0.25)(") << spanLength.SetValue(effSpanLength) << _T(") = ");
    (*table)(row,1) << spanLength.SetValue(0.25*effSpanLength) << _T(" = ") << length.SetValue(0.25*effSpanLength) << rptNewLine;
 
-   long count;
+   FlangeIndexType count;
    details->get_FlangeCount(&count);
 
-   for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
+   for ( FlangeIndexType flangeIdx = 0; flangeIdx < count; flangeIdx++ )
    {
       if ( 1 < count )
          (*table)(row,1) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
 
-      double tSlab, tWeb, wFlange, lSpacing, rSpacing;
+      Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
       details->get_SlabThickness(&tSlab);
       details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
       (*table)(row,1) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
@@ -850,7 +853,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
       (*table)(row,1) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
    }
 
-   double effFlangeWidth;
+   Float64 effFlangeWidth;
    details->EffectiveFlangeWidth(&effFlangeWidth);
    (*table)(row,1) << rptNewLine << _T("Effective Flange Width = ") << length.SetValue(effFlangeWidth) << rptNewLine;
 }
@@ -858,7 +861,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IGirder,pGirder);
-   long nWebs = pGirder->GetNumberOfMatingSurfaces(span,gdr);
+   MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(span,gdr);
 
    if ( nWebs == 1 )
       ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange(pBroker,bridge,span,gdr,pChapter,pDisplayUnits);
@@ -913,13 +916,13 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
       EffFlangeWidth adjacent_efw;
       EffectiveFlangeWidthDetails(bridge,poi.GetSpan(),poi.GetGirder() + (bLeftGirder ? 1 : -1),poi.GetDistFromStart(),&adjacent_efw);
 
-      double tSlab, tWeb, wFlange, lSpacing, rSpacing;
-      double effSpanLength;
+      Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
+      Float64 effSpanLength;
       efw.m_Details->get_EffectiveSpanLength(&effSpanLength);
       efw.m_Details->get_SlabThickness(&tSlab);
       efw.m_Details->GetFlangeParameters(0,&tWeb,&wFlange,&lSpacing,&rSpacing);
 
-      double overhang = (bLeftGirder ? lSpacing : rSpacing);
+      Float64 overhang = (bLeftGirder ? lSpacing : rSpacing);
 
       (*pPara) << _T("Effective flange width is one half the effective flange width of the adjacent interior beam, plus the least of:") << rptNewLine;
       (*pPara) << _T("One-eighth of the effective span length: ") << _T("(0.125)(") << xdim.SetValue(effSpanLength) << _T(") = "); 
@@ -937,7 +940,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
       adjacent_efw.m_Details->get_EffectiveSpanLength(&effSpanLength);
       adjacent_efw.m_Details->get_SlabThickness(&tSlab);
       adjacent_efw.m_Details->GetFlangeParameters(0,&tWeb,&wFlange,&lSpacing,&rSpacing);
-      double spacing = rSpacing + lSpacing;
+      Float64 spacing = rSpacing + lSpacing;
 
       (*pPara) << _T("The effective flange width for the adjacent interior girder is the least of:") << rptNewLine;
       (*pPara) << _T("One-quarter of the effective span length: ") << _T("(0.25)(") << xdim.SetValue(effSpanLength) << _T(") = "); 
@@ -1112,20 +1115,20 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          ReportEffectiveFlangeWidth_InteriorGirderRow(adjacent_efw.m_Details,row,table,pDisplayUnits);
          col++;
 
-         double effSpanLength;
+         Float64 effSpanLength;
          efw.m_Details->get_EffectiveSpanLength(&effSpanLength);
          (*table)(row,col) << Sub2(_T("w"),_T("1")) << _T(" = (0.125)(") << spanLength.SetValue(effSpanLength) << _T(") = ");
          (*table)(row,col) << spanLength.SetValue(0.125*effSpanLength) << _T(" = ") << length.SetValue(0.125*effSpanLength) << rptNewLine;
 
-         long count;
+         FlangeIndexType count;
          efw.m_Details->get_FlangeCount(&count);
 
-         for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
+         for ( FlangeIndexType flangeIdx = 0; flangeIdx < count; flangeIdx++ )
          {
             if ( 1 < count )
                (*table)(row,col) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
 
-            double tSlab, tWeb, wFlange, lSpacing, rSpacing;
+            Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
             efw.m_Details->get_SlabThickness(&tSlab);
             efw.m_Details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
             (*table)(row,col) << Sub2(_T("w"),_T("2")) << _T(" = (6.0)(") << length.SetValue(tSlab) << _T(") + greater of [ (0.5)(");
@@ -1133,7 +1136,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
             (*table)(row,col) << length.SetValue(wFlange) << _T(") ] = ");
             (*table)(row,col) << length.SetValue( 6*tSlab + _cpp_max(0.5*tWeb,0.25*wFlange) ) << rptNewLine;
 
-            double overhang = (bLeftGirder ? lSpacing : rSpacing);
+            Float64 overhang = (bLeftGirder ? lSpacing : rSpacing);
             (*table)(row,col) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(overhang);
             (*table)(row,col) << _T(" = ") << length.SetValue(overhang) << rptNewLine;
          }
@@ -1230,15 +1233,15 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    CComPtr<IEffectiveFlangeWidthDetails> details;
    EffectiveFlangeWidthEx(bridge,poi.GetSpan(),poi.GetGirder(),poi.GetDistFromStart(),&details);
 
-   double effSpanLength;
+   Float64 effSpanLength;
    details->get_EffectiveSpanLength(&effSpanLength);
 
-   long count;
+   FlangeIndexType count;
    details->get_FlangeCount(&count);
 
-   for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
+   for ( FlangeIndexType flangeIdx = 0; flangeIdx < count; flangeIdx++ )
    {
-      double tSlab, tWeb, wFlange, lSpacing, rSpacing;
+      Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
       details->get_SlabThickness(&tSlab);
       details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
 
@@ -1275,7 +1278,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
         }
    }
 
-      double effFlangeWidth;
+      Float64 effFlangeWidth;
       details->EffectiveFlangeWidth(&effFlangeWidth);
       (*pPara) << rptNewLine << _T("Effective Flange Width = ") << length.SetValue(effFlangeWidth) << rptNewLine;
 }
@@ -1350,20 +1353,20 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
       (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite2, poi, end_size );
 
-      double effSpanLength;
+      Float64 effSpanLength;
       details->get_EffectiveSpanLength(&effSpanLength);
       (*table)(row,1) << Sub2(_T("w"),_T("1")) << _T(" = (0.25)(") << spanLength.SetValue(effSpanLength) << _T(") = ");
       (*table)(row,1) << spanLength.SetValue(0.25*effSpanLength) << _T(" = ") << length.SetValue(0.25*effSpanLength) << rptNewLine;
 
-      long count;
+      FlangeIndexType count;
       details->get_FlangeCount(&count);
 
-      for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
+      for ( FlangeIndexType flangeIdx = 0; flangeIdx < count; flangeIdx++ )
       {
          if ( 1 < count )
             (*table)(row,1) << rptNewLine << _T("Web ") << long(flangeIdx + 1) << rptNewLine;
 
-         double tSlab, tWeb, wFlange, lSpacing, rSpacing;
+         Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
          details->get_SlabThickness(&tSlab);
          details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
          (*table)(row,1) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
@@ -1396,7 +1399,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
          }
       }
 
-      double effFlangeWidth;
+      Float64 effFlangeWidth;
       details->EffectiveFlangeWidth(&effFlangeWidth);
       (*table)(row,1) << rptNewLine << _T("Effective Flange Width = ") << length.SetValue(effFlangeWidth) << rptNewLine;
 

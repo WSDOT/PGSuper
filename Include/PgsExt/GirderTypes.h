@@ -98,7 +98,7 @@ public:
    const CSpanData* GetSpan() const;
 
 #if defined _DEBUG
-   Uint32 Debug_GetNumGirderTypes() const { return m_GirderNames.size(); }
+   GirderIndexType Debug_GetNumGirderTypes() const { return m_GirderNames.size(); }
 #endif
 
 protected:

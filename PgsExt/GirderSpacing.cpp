@@ -42,7 +42,7 @@ CGirderSpacingData::CGirderSpacingData()
    m_MeasurementType     = pgsTypes::NormalToItem;
    m_MeasurementLocation = pgsTypes::AtCenterlinePier;
    
-   m_RefGirderIdx = ALL_GIRDERS; // reference girder is the center of the girder group
+   m_RefGirderIdx = INVALID_INDEX; // reference girder is the center of the girder group
    m_RefGirderOffsetType = pgsTypes::omtBridge;
    m_RefGirderOffset = 0;
 
@@ -574,16 +574,18 @@ void CGirderSpacingData::SetGirderCount(GirderIndexType nGirders)
    if ( m_GirderSpacing.size() == 0 && nGirders == 1 )
       return;
 
-   long nDeltaGirders;
    if ( m_GirderSpacing.size() == 0 )
-      nDeltaGirders = nGirders;
+   {
+      AddGirders(nGirders);
+   }
    else
-      nDeltaGirders = nGirders - (m_GirderSpacing.size()+1);
-
-   if ( nDeltaGirders < 0 )
-      RemoveGirders((GirderIndexType)(-nDeltaGirders));
-   else
-      AddGirders((GirderIndexType)nDeltaGirders);
+   {
+      GirderIndexType nGirderCurrent = m_GirderSpacing.size()+1;
+      if ( nGirders < nGirderCurrent )
+         RemoveGirders(nGirderCurrent-nGirders);
+      else
+         AddGirders(nGirders-nGirderCurrent);
+   }
 }
 
 

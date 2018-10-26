@@ -62,7 +62,7 @@ m_nHarpPoints(0),
 m_CutLocation(CTxDOTOptionalDesignGirderViewPage::Center)
 {
 	//{{AFX_DATA_INIT(CTogaSectionCutDlgEx)
-	m_CutIndex = -1;
+	m_CutIndex = INVALID_INDEX;
 	//}}AFX_DATA_INIT
 }
 
@@ -88,7 +88,7 @@ void CTogaSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CTogaSectionCutDlgEx) 
 	//}}AFX_DATA_MAP
-	DDX_Radio(pDX, IDC_LEFT_END, m_CutIndex);
+	DDX_Radio(pDX, IDC_LEFT_END, (int&)m_CutIndex);
 	DDX_Text(pDX, IDC_VALUE, m_Value);
    DDX_UnitValueAndTag( pDX, IDC_VALUE, IDC_VALUE_UNITS, m_Value, pDisplayUnits->GetSpanLengthUnit() );
 

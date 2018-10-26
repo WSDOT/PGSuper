@@ -100,7 +100,7 @@ private:
    // container for tributary width
    struct TribWidth
    {
-      double twLeft,twRight,tribWidth;
+      Float64 twLeft,twRight,tribWidth;
    };
 
    typedef std::map<PoiStageKey,TribWidth> TWContainer;
@@ -109,17 +109,17 @@ private:
    struct EffFlangeWidth
    {
       CComPtr<IEffectiveFlangeWidthDetails> m_Details;
-      double twLeft, twRight, tribWidth;
+      Float64 twLeft, twRight, tribWidth;
       bool bContinuousBarrier;
-      double Ab,ts;
-      double effFlangeWidth;
+      Float64 Ab,ts;
+      Float64 effFlangeWidth;
    };
    typedef std::map<PoiStageKey,EffFlangeWidth> FWContainer;
    FWContainer m_EFW;
 
    VARIANT_BOOL m_bUseTribWidth;
 
-   HRESULT EffectiveFlangeWidthDetails(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,double location, EffFlangeWidth* effFlangeWidth);
+   HRESULT EffectiveFlangeWidthDetails(IGenericBridge* bridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 location, EffFlangeWidth* effFlangeWidth);
 
    void ReportEffectiveFlangeWidth_InteriorGirder(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    void ReportEffectiveFlangeWidth_InteriorGirder_Prismatic(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
@@ -147,10 +147,10 @@ public:
 
 // IEffectiveFlangeWidthTool
 public:
-	STDMETHOD(TributaryFlangeWidth)(/*[in]*/IGenericBridge* bridge,/*[in]*/SpanIndexType span,/*[in]*/GirderIndexType gdr,/*[in]*/double location, /*[out,retval]*/double *tribFlangeWidth);
-	STDMETHOD(TributaryFlangeWidthEx)(/*[in]*/IGenericBridge* bridge,/*[in]*/SpanIndexType span,/*[in]*/GirderIndexType gdr,/*[in]*/double location, /*[out]*/double *twLeft, /*[out]*/double *twRight, /*[out]*/double *tribFlangeWidth);
-	STDMETHOD(EffectiveFlangeWidth)(/*[in]*/IGenericBridge* bridge,/*[in]*/SpanIndexType span,/*[in]*/GirderIndexType gdr,/*[in]*/double location, /*[out,retval]*/double *effFlangeWidth);
-   STDMETHOD(EffectiveFlangeWidthEx)(/*[in]*/IGenericBridge* bridge,/*[in]*/SpanIndexType span,/*[in]*/GirderIndexType gdr,/*[in]*/double location, /*[out,retval]*/IEffectiveFlangeWidthDetails** details);
+	STDMETHOD(TributaryFlangeWidth)(/*[in]*/IGenericBridge* bridge,/*[in]*/SpanIndexType span,/*[in]*/GirderIndexType gdr,/*[in]*/Float64 location, /*[out,retval]*/Float64 *tribFlangeWidth);
+	STDMETHOD(TributaryFlangeWidthEx)(/*[in]*/IGenericBridge* bridge,/*[in]*/SpanIndexType span,/*[in]*/GirderIndexType gdr,/*[in]*/Float64 location, /*[out]*/Float64 *twLeft, /*[out]*/Float64 *twRight, /*[out]*/Float64 *tribFlangeWidth);
+	STDMETHOD(EffectiveFlangeWidth)(/*[in]*/IGenericBridge* bridge,/*[in]*/SpanIndexType span,/*[in]*/GirderIndexType gdr,/*[in]*/Float64 location, /*[out,retval]*/Float64 *effFlangeWidth);
+   STDMETHOD(EffectiveFlangeWidthEx)(/*[in]*/IGenericBridge* bridge,/*[in]*/SpanIndexType span,/*[in]*/GirderIndexType gdr,/*[in]*/Float64 location, /*[out,retval]*/IEffectiveFlangeWidthDetails** details);
 
 // IReportEffectiveFlangeWidth
 public:

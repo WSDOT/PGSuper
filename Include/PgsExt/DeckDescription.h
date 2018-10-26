@@ -80,7 +80,7 @@ public:
    bool operator == (const CDeckDescription& rOther) const;
    bool operator != (const CDeckDescription& rOther) const;
 
-   HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pgsTypes::SlabOffsetType* pSlabOffsetType,double* pSlabOffset);
+   HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pgsTypes::SlabOffsetType* pSlabOffsetType,Float64* pSlabOffset);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
    void SetBridgeDescription(const CBridgeDescription* pBridge);

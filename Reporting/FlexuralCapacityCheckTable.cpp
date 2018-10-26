@@ -118,39 +118,39 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
    p_table->SetNumberOfHeaderRows(2);
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,-1);
+   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    if ( c_over_de )
    {
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col,-1);
+      p_table->SetRowSpan(1,col,SKIP_CELL);
       (*p_table)(0,col++) << Sub2(_T("c/d"),_T("e"));
 
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col,-1);
+      p_table->SetRowSpan(1,col,SKIP_CELL);
       (*p_table)(0,col++) << Sub2(_T("c/d"),_T("e")) << _T(" Max");
 
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col,-1);
+      p_table->SetRowSpan(1,col,SKIP_CELL);
       (*p_table)(0,col++) << _T("Over") << rptNewLine << _T("Reinforced") << rptNewLine << _T("Status");
    }
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,-1);
+   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << COLHDR(Sub2(_T("M"),_T("u")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,-1);
+   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << COLHDR(symbol(phi) << Sub2(_T("M"),_T("n")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,-1);
+   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << COLHDR(symbol(phi) << _T("M") << Sub(_T("n")) << _T(" Min"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    p_table->SetColumnSpan(0,col,2);
-   p_table->SetColumnSpan(0,col+1,-1);
+   p_table->SetColumnSpan(0,col+1,SKIP_CELL);
    (*p_table)(0,col) << _T("Status");
 
    (*p_table)(1,col++) << symbol(phi) << Sub2(_T("M"),_T("n")) << _T(" Min ") << symbol(LTE) << _T(" ") << symbol(phi) << Sub2(_T("M"),_T("n")) << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("M"),_T("n")) << _T("/") << symbol(phi) << Sub2(_T("M"),_T("n")) << _T(" Min)");

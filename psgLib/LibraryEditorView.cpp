@@ -151,7 +151,7 @@ void CLibraryEditorView::OnInitialUpdate()
    ASSERT(m_pListView);
    CDocument* pDoc = GetDocument();
    libISupportLibraryManager* pLibMgrDoc = dynamic_cast<libISupportLibraryManager*>(pDoc);
-   int num_managers = pLibMgrDoc->GetNumberOfLibraryManagers();
+   CollectionIndexType num_managers = pLibMgrDoc->GetNumberOfLibraryManagers();
    ASSERT(num_managers);
    if (num_managers==0)
       return;
@@ -238,21 +238,21 @@ void CLibraryEditorView::InsertLibraryManager(Uint32 ilib_man, Uint32 ilib_man_s
                                               int man_num, libLibraryManager* pMan, CTreeCtrl& tree, HTREEITEM hParent, int* lastIcon)
 {
    CEAFApp* papp = EAFGetApp();
-   Uint32 nlibs = pMan->GetLibraryCount();
+   CollectionIndexType nlibs = pMan->GetLibraryCount();
    if (nlibs==0) return;
 
    std::_tstring disp_name;
-   for (Uint32 ui=0; ui<nlibs; ui++)
+   for (CollectionIndexType ui=0; ui<nlibs; ui++)
    {
       // use same folder icon for all libraries
-      Uint32 ilib = ilib_man;
-      Uint32 isel = ilib_man_sel;
+      CollectionIndexType ilib = ilib_man;
+      CollectionIndexType isel = ilib_man_sel;
 
       if ( !pMan->IsDepreciated(ui) )
       {
          disp_name = pMan->GetLibraryDisplayName(ui);   
 
-         HTREEITEM hitm = tree.InsertItem(disp_name.c_str(), ilib, isel, hParent);
+         HTREEITEM hitm = tree.InsertItem(disp_name.c_str(), (int)ilib, (int)isel, hParent);
          // associate library manager with library so later we can figure out what got selected
          tree.SetItemData(hitm, ui);
       }
@@ -267,9 +267,9 @@ void CLibraryEditorView::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 	CTreeCtrl& tree = GetTreeCtrl();
    HTREEITEM hItem = tree.GetSelectedItem();
    CString library_name = tree.GetItemText( hItem );
-   int ilib             = tree.GetItemData(hItem);
+   DWORD_PTR ilib       = tree.GetItemData(hItem);
 
-   m_pListView->OnLibrarySelected(ilib, library_name);
+   m_pListView->OnLibrarySelected((int)ilib, library_name);
 	
 	*pResult = 0;
 }

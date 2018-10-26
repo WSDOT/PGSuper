@@ -58,12 +58,12 @@ inline static Float64 GetPointY(StrandIndexType idx, IPoint2dCollection* points)
 }
 
 
-static void SortDebondLevels(std::vector<Int16>& rDebondLevelsAtSections)
+static void SortDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections)
 {
-   Int16 max_level=0;
-   for(std::vector<Int16>::reverse_iterator rit=rDebondLevelsAtSections.rbegin(); rit!=rDebondLevelsAtSections.rend(); rit++)
+   DebondLevelType max_level=0;
+   for(std::vector<DebondLevelType>::reverse_iterator rit=rDebondLevelsAtSections.rbegin(); rit!=rDebondLevelsAtSections.rend(); rit++)
    {
-      Int16& rlvl = *rit;
+      DebondLevelType& rlvl = *rit;
 
       if (rlvl<0)
       {
@@ -71,7 +71,7 @@ static void SortDebondLevels(std::vector<Int16>& rDebondLevelsAtSections)
          rlvl *= -1;
       }
  
-      if (rlvl<max_level)
+      if (rlvl < max_level)
       {
          rlvl = max_level;
       }
@@ -102,7 +102,7 @@ m_ConcreteAccuracy(::ConvertToSysUnits(100,unitMeasure::PSI))
 {
 }
 
-void pgsStrandDesignTool::Initialize(IBroker* pBroker, long statusGroupID, pgsDesignArtifact* pArtif)
+void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsDesignArtifact* pArtif)
 {
    ATLASSERT(pBroker);
 
@@ -313,7 +313,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
       }
       else if (m_StrandFillType == ftMinimizeHarping)
       {
-         if (ComputeNextNumProportionalStrands(numPerm-1, &ns, &nh) == Uint32_Max)
+         if (ComputeNextNumProportionalStrands(numPerm-1, &ns, &nh) == INVALID_INDEX)
          {
             ATLASSERT(0);
             return false;
@@ -466,13 +466,13 @@ GDRCONFIG pgsStrandDesignTool::GetGirderConfiguration()
 
 StrandIndexType pgsStrandDesignTool::GetNextNumPermanentStrands(StrandIndexType prevNum)
 {
-   if (prevNum == Uint32_Max)
+   if (prevNum == INVALID_INDEX)
    {
       return 0; // trivial case
    }
    else if ( GetMaxPermanentStrands() <= prevNum)
    {
-      return Uint32_Max;
+      return INVALID_INDEX;
    }
    else if (m_StrandFillType==ftGridOrder)
    {
@@ -488,7 +488,7 @@ StrandIndexType pgsStrandDesignTool::GetNextNumPermanentStrands(StrandIndexType 
    else
    {
       ATLASSERT(0);
-      return Uint32_Max;
+      return INVALID_INDEX;
    }
 }
 
@@ -496,10 +496,10 @@ StrandIndexType pgsStrandDesignTool::GetPreviousNumPermanentStrands(StrandIndexT
 {
    StrandIndexType maxNum = GetMaxPermanentStrands();
 
-   if (nextNum == 0 || nextNum == Uint32_Max)
+   if (nextNum == 0 || nextNum == INVALID_INDEX)
    {
       ATLASSERT(0);
-      return Uint32_Max; // trivial case
+      return INVALID_INDEX; // trivial case
    }
    else if ( maxNum < nextNum )
    {
@@ -528,14 +528,14 @@ StrandIndexType pgsStrandDesignTool::GetPreviousNumPermanentStrands(StrandIndexT
    else
    {
       ATLASSERT(0);
-      return Uint32_Max;
+      return INVALID_INDEX;
    }
 }
 
 
 StrandIndexType pgsStrandDesignTool::ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* pns, StrandIndexType* pnh)
 {
-   if (prevNum < 0 || GetMaxPermanentStrands() <= prevNum)
+   if (prevNum == INVALID_INDEX || GetMaxPermanentStrands() <= prevNum)
    {
       ATLASSERT(prevNum>0);
       *pnh = INVALID_INDEX;
@@ -776,7 +776,7 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    N = GetNextNumPermanentStrands(N-1);
    LOG(_T("Actual number of permanent strands = ") << N);
 
-   ATLASSERT(fN <= N || Uint32_Max == N);
+   ATLASSERT(fN <= N || INVALID_INDEX == N);
 
    return N;
 }
@@ -794,8 +794,8 @@ StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
 
    LOG(_T("Make initial guess of permanent strands using a couple (WAGOTA) Np = ") << Np);
    
-   StrandIndexType ns = SetNumPermanentStrands(Np) ? Np : Uint32_Max;
-   if (0 <= ns && ns < Uint32_Max)
+   StrandIndexType ns = SetNumPermanentStrands(Np) ? Np : INVALID_INDEX;
+   if (0 <= ns && ns < INVALID_INDEX)
    {
       bool st = ResetEndZoneStrandConfig(); 
       ATLASSERT(st);
@@ -915,7 +915,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
    LOG(_T("Compute m_MinPermanentStrands so next num strands give positive ecc"));
 
    m_MinPermanentStrands = GetNextNumPermanentStrands(0);
-   if(m_MinPermanentStrands<0)
+   if(m_MinPermanentStrands == INVALID_INDEX)
       return;
 
    std::vector<pgsPointOfInterest> mid_pois = GetDesignPoi(pgsTypes::CastingYard,POI_MIDSPAN);
@@ -946,7 +946,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
          }
          else if (m_StrandFillType == ftMinimizeHarping)
          {
-            if (ComputeNextNumProportionalStrands(ns_curr-1, &ns, &nh) == Uint32_Max)
+            if (ComputeNextNumProportionalStrands(ns_curr-1, &ns, &nh) == INVALID_INDEX)
             {
                ATLASSERT(0);
                m_MinPermanentStrands = 0;
@@ -987,7 +987,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
             ns_prev = ns_curr;
             ns_curr = GetNextNumPermanentStrands(ns_prev);
 
-            if (ns_curr < 0)
+            if (ns_curr == INVALID_INDEX)
             {
                LOG(_T("**WARNING: Could not find number of strands to create positive eccentricity. The end is likely near..."));
             }
@@ -1245,7 +1245,7 @@ bool pgsStrandDesignTool::AddTempStrands()
 
    LOG(_T("Current configuration -> Nt = ") << Nt);
    StrandIndexType nextNt = pStrandGeom->GetNextNumStrands(m_Span,m_Girder,pgsTypes::Temporary,Nt);
-   if ( nextNt == 0 || nextNt == Uint32_Max )
+   if ( nextNt == 0 || nextNt == INVALID_INDEX )
    {
       LOG(_T("Number of temp strand exceeds maximum for this girder"));
       return false;
@@ -1343,7 +1343,7 @@ void pgsStrandDesignTool::DumpDesignParameters()
          }
 
          std::_tstring str(os.str());
-         Int16 n = str.size();
+         std::_tstring::size_type n = str.size();
          if (n>0)
             str.erase(n-2,2); // get rid of trailing _T(", ")
 
@@ -2195,7 +2195,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEzEccentricity(const pgsPointOfInte
    {
       // try to swap harped for straight
       Ns = pStrandGeom->GetNextNumStrands(m_Span, m_Girder, pgsTypes::Straight, ns_prev);
-      if (Ns == Uint32_Max)
+      if (Ns == INVALID_INDEX)
       {
          //no more straight strands left to fill
          break;
@@ -2203,7 +2203,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEzEccentricity(const pgsPointOfInte
 
       Nh = Np - Ns;
       Nh = pStrandGeom->GetPrevNumStrands(m_Span, m_Girder,pgsTypes::Harped, Nh+1);
-      if (Nh == Uint32_Max)
+      if (Nh == INVALID_INDEX)
       {
          //no more harped strands left
          break;
@@ -2215,7 +2215,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEzEccentricity(const pgsPointOfInte
       {
          ATLASSERT(remain==1);
          Ns = pStrandGeom->GetNextNumStrands(m_Span, m_Girder,pgsTypes::Straight, Ns);
-         if (Ns == Uint32_Max)
+         if (Ns == INVALID_INDEX)
          {
             // last ditch is to see if there is a harped increment we missed
             StrandIndexType nhd = pStrandGeom->GetNextNumStrands(m_Span, m_Girder,pgsTypes::Harped, Nh);
@@ -2389,7 +2389,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMzReleaseEccentricity(const pgsPoin
 
          ns = nhs - nh;
          ns = pStrandGeom->GetPrevNumStrands(m_Span, m_Girder,pgsTypes::Straight, ns+1);
-         if (ns<0)
+         if (ns == INVALID_INDEX)
          {
             //no more straight strands left
             LOG(_T("No straight strands left to trade"));
@@ -2397,12 +2397,10 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMzReleaseEccentricity(const pgsPoin
          }
 
          // we must end up with at least nhs strands
-         StrandIndexType remain = nhs - (ns+nh);
-         if (remain>0)
+         if ((ns+nh) < nhs)
          {
-            ATLASSERT(remain==1);
             nh = pStrandGeom->GetNextNumStrands(m_Span, m_Girder,pgsTypes::Harped, nh);
-            if (nh<0)
+            if (nh == INVALID_INDEX)
             {
                LOG(_T("No harped locations left"));
                break;
@@ -2456,19 +2454,19 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMzReleaseEccentricity(const pgsPoin
          ns_prev = ns;
          nh_prev = nh;
 
-         if (nh>=max_nh)
+         if (max_nh <= nh)
          {
             LOG(_T("No more harped strands to add"));
             break;
          }
-         else if (ns<=0)
+         else if (ns == INVALID_INDEX || ns == 0)
          {
             LOG(_T("No more straight strands to trade from"));
             break;
          }
       }
 
-      if (ns_prev!=GetNs() || nh_prev!=GetNh())
+      if (ns_prev != GetNs() || nh_prev != GetNh())
       {
          // we updated 
          if (succeeded)
@@ -3232,7 +3230,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPrestressForce* pPrestressForce)
 
       StrandIndexType strands_in_lift = nextnum-currnum; // number of strands in current increment
 
-      Int32 is_debondable;
+      IDType is_debondable;
 
       // nextnum is a count. need to subtract 1 to get index
       debondables->get_Item(nextnum-1, &is_debondable);
@@ -3243,7 +3241,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPrestressForce* pPrestressForce)
          if ( strands_in_lift == 1 )
          {
             num_debondable++;
-            debondable_list.push_back( StrandPair(nextnum-1, Uint32_Max) );
+            debondable_list.push_back( StrandPair(nextnum-1, INVALID_INDEX) );
             LOG(nextnum-1);
          }
          else
@@ -3334,7 +3332,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPrestressForce* pPrestressForce)
          // See if we can debond current strand(s) on the queue
          LOG(_T("Attempt to debond ")<<db_iter->first<<_T(", ")<<db_iter->second);
 
-         Int16 num_to_db = (db_iter->second == Uint32_Max) ? 1 : 2;
+         Int16 num_to_db = (db_iter->second == INVALID_INDEX) ? 1 : 2;
          // first check percentage of total
          Float64 percent_of_total = Float64(num_debonded+num_to_db) / nextnum;
          if ( percent_of_total > db_max_percent_total)
@@ -3500,7 +3498,7 @@ void pgsStrandDesignTool::DumpDebondLevels()
       }
       // chop  final ,
       std::_tstring str(stream.str());
-      Int16 n = str.size();
+      std::_tstring::size_type n = str.size();
       if (n>0)
          str.erase(n-2,2);
 
@@ -3642,7 +3640,7 @@ DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrand
    ATLASSERT(0 <= numLeadingSections);
 //   LOG(_T("Entering GetMaxDebondLevel, numStrands = ")<<numStrands<<_T(" numLeadingSections = ")<<numLeadingSections);
 
-   Uint32 num_levels = m_DebondLevels.size();
+   DebondLevelType num_levels = (DebondLevelType)m_DebondLevels.size();
    DebondLevelType level = 0;
    if ( 0 < numStrands && 0 < num_levels )
    {
@@ -3657,7 +3655,7 @@ DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrand
          {
             // Have enough strands to work at this level, see if we have room section-wise
             StrandIndexType num_debonded = rlevel.StrandsDebonded.size();
-            StrandIndexType max_debonds_at_section = max(m_MaxDebondSection, Int32(num_debonded*m_MaxPercentDebondSection) );
+            StrandIndexType max_debonds_at_section = max(m_MaxDebondSection, StrandIndexType(num_debonded*m_MaxPercentDebondSection) );
 
             // allow int to floor
             SectionIndexType leading_sections_required = (num_debonded == 0 ? 0 : SectionIndexType((num_debonded-1)/max_debonds_at_section));
@@ -3686,7 +3684,7 @@ void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebo
    SectionIndexType num_sects = GetMaxNumberOfDebondSections();
    LOG(_T("Entering RefineDebondLevels, max debond sections = ")<<num_sects);
    LOG(_T("List of raw levels at start ")<<DumpIntVector(rDebondLevelsAtSections));
-   Uint32 test_size = rDebondLevelsAtSections.size();
+   SectionIndexType test_size = rDebondLevelsAtSections.size();
 
    if (test_size != num_sects)
    {
@@ -3741,7 +3739,7 @@ void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebo
    LOG(_T("Exiting RefineDebondLevels"));
 }
 
-bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<Int16>& rDebondLevelsAtSections)
+bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections)
 {
    // make sure we abide to max bond terminations at a section
    // Get number of debonded strands (max level will be at end). Assuming that levels have been sorted
@@ -3927,7 +3925,7 @@ static double ComprDebondFudge = 1.03; // fudge compression more because it's ea
 
 void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
                                                       Float64 Yb, Float64 Ag, Float64 St,
-                                                      Int16* pOutboardLevel, Int16* pInboardLevel)
+                                                      DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel)
 {
    ATLASSERT(outboardDistance<=m_DebondSectionLength);
 
@@ -4006,7 +4004,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, 
       else
       {
          // no levels can alleviate demand - return negative of max
-         *pOutboardLevel = -1 * (m_DebondLevels.size()-1);
+         *pOutboardLevel = -1 * ((DebondLevelType)m_DebondLevels.size()-1);
          *pInboardLevel  = *pOutboardLevel;
       }
    }
@@ -4020,14 +4018,14 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, 
 
 void pgsStrandDesignTool::GetDebondLevelForBottomCompression(Float64 psForcePerStrand, StrandIndexType nss, Float64 compDemand, Float64 outboardDistance,
                                                              Float64 Yb, Float64 Ag, Float64 Sb,
-                                                             Int16* pOutboardLevel, Int16* pInboardLevel)
+                                                             DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel)
 {
    ATLASSERT(outboardDistance<=m_DebondSectionLength);
 
    if(compDemand < 0)
    {
       // First determine minimum level required to alleviate demand
-      Uint16 level=0;
+      DebondLevelType level=0;
       bool found = false;
       DebondLevelIterator it = m_DebondLevels.begin();
       while(true)
@@ -4099,7 +4097,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(Float64 psForcePerS
       else
       {
          // no levels can alleviate demand - return negative of max
-         *pOutboardLevel = -1 * (m_DebondLevels.size()-1);
+         *pOutboardLevel = -1 * ((DebondLevelType)m_DebondLevels.size()-1);
          *pInboardLevel  = *pOutboardLevel;
       }
    }

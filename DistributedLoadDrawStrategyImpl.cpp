@@ -68,7 +68,7 @@ DELEGATE_CUSTOM_INTERFACE(CDistributedLoadDrawStrategyImpl,EditLoad);
 DELEGATE_CUSTOM_INTERFACE(CDistributedLoadDrawStrategyImpl,GravityWellStrategy);
 
 
-void CDistributedLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, Uint32 loadIndex, 
+void CDistributedLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex, 
                                                        Float64 loadLength, Float64 spanLength, Float64 girderDepthAtStartOfLoad, Float64 girderDepthAtEndOfLoad, Float64 maxMagnitude, COLORREF color)
 {
    METHOD_PROLOGUE(CDistributedLoadDrawStrategyImpl,Strategy);

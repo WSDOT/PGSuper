@@ -71,8 +71,8 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CGirderModelSectionView, CDisplayView)
 
 CGirderModelSectionView::CGirderModelSectionView():
-m_CurrentSpanIdx(-1),
-m_CurrentGirderIdx(-1)
+m_CurrentSpanIdx(INVALID_INDEX),
+m_CurrentGirderIdx(INVALID_INDEX)
 {
    m_bUpdateError = false;
 }

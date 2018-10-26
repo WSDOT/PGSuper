@@ -161,7 +161,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       }
       
       // check that last confiment zone is within bounds
-      Uint32 siz = m_ShearData.ShearZones.size();
+      ZoneIndexType siz = m_ShearData.ShearZones.size();
       ASSERT(m_ShearData.NumConfinementZones<=siz);
    }
    else
@@ -187,10 +187,10 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
 
       // last confinement zone
       FillLastZone(vec.size());
-      Int32 sel = m_ShearData.NumConfinementZones;
-      if (sel <= (Int32)vec.size())
+      ZoneIndexType sel = m_ShearData.NumConfinementZones;
+      if (sel <= vec.size())
       {
-         m_LastZone.SetCurSel(sel);
+         m_LastZone.SetCurSel((int)sel);
       }
       else
       {
@@ -292,12 +292,12 @@ void CGirderDescShearPage::DoInsertRow()
       m_LastZone.SetCurSel(lz);
 }
 
-void CGirderDescShearPage::FillLastZone(int siz)
+void CGirderDescShearPage::FillLastZone(ZoneIndexType siz)
 {
    CString tmp;
    m_LastZone.ResetContent();
    m_LastZone.AddString(_T("None"));
-   for (int i=1; i<=siz; i++)
+   for (ZoneIndexType i=1; i<=siz; i++)
    {
       tmp.Format(_T("Zone %d"),i);
       m_LastZone.AddString(tmp);

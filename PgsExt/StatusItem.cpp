@@ -257,7 +257,7 @@ void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_IsSevere = is_severe;
    dlg.m_HelpID = m_HelpID;
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if (!is_severe && st==IDOK) // allow non-severe messages to be removed by user
    {
       pStatusItem->RemoveAfterEdit(true);
@@ -455,7 +455,7 @@ CEAFStatusItem(statusGroupID,callbackID,strDescription)
 bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    // we only want one of these in the status center
-   SetID(-1);
+   SetID(INVALID_ID);
 
    pgsEffectiveFlangeWidthStatusItem* other = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pOther);
    if ( !other )

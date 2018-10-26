@@ -106,6 +106,6 @@ private:
 typedef TPoiKey<pgsTypes::Stage> PoiStageKey;
 typedef TPoiKey<pgsTypes::LossStage> PoiLossStageKey;
 typedef TPoiKey<PrestressSubKey> PrestressPoiKey;
-typedef TPoiKey<long> PoiKey;
+typedef TPoiKey<PoiIDType> PoiKey;
 
 #endif // INCLUDED_POIKEY_H_

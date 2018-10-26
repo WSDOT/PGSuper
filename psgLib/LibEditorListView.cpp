@@ -49,8 +49,8 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CLibEditorListView, CListView)
 
 CLibEditorListView::CLibEditorListView():
-m_LibIndex(-1),
-m_ItemSelected(-1)
+m_LibIndex(INVALID_INDEX),
+m_ItemSelected(INVALID_INDEX)
 {
 }
 
@@ -110,15 +110,15 @@ void CLibEditorListView::Dump(CDumpContext& dc) const
 
 /////////////////////////////////////////////////////////////////////////////
 // CLibEditorListView message handlers
-void CLibEditorListView::OnLibrarySelected(int libnum, const CString& name)
+void CLibEditorListView::OnLibrarySelected(IndexType libnum, const CString& name)
 {
-   if (libnum==-1)
+   if (libnum==INVALID_INDEX)
    {
       // user selected a library manager node - display a blank list
       CListCtrl& rlist = this->GetListCtrl( );
       rlist.DeleteAllItems();
       m_LibName = "Library Manager";
-      m_LibIndex = -1;
+      m_LibIndex = INVALID_INDEX;
    }
    else
    {
@@ -143,12 +143,12 @@ void CLibEditorListView::RedrawAllEntries()
       // get names of all entries and update list control
       CDocument* pDoc = GetDocument();
       libISupportLibraryManager* pLibMgr = dynamic_cast<libISupportLibraryManager*>(pDoc);
-      int num_managers = pLibMgr->GetNumberOfLibraryManagers();
+      CollectionIndexType num_managers = pLibMgr->GetNumberOfLibraryManagers();
       ASSERT(num_managers);
 
       // first we need to determine the total number of images in our imagelist
-      int num_entries=0;
-      int ilm = 0;
+      CollectionIndexType num_entries=0;
+      CollectionIndexType ilm = 0;
       for (ilm=0; ilm<num_managers; ilm++)
       {
          libLibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
@@ -157,14 +157,14 @@ void CLibEditorListView::RedrawAllEntries()
          const libILibrary* plib = plm->GetLibrary(m_LibName);
          ASSERT(plib!=0);
 
-         int cnt = plib->GetCount();
+         CollectionIndexType cnt = plib->GetCount();
          num_entries += cnt;
       }
 
       CImageList* images = rlist.GetImageList(LVSIL_NORMAL);
-      images->SetImageCount(num_entries);
+      images->SetImageCount((UINT)num_entries);
       images = rlist.GetImageList(LVSIL_SMALL);
-      images->SetImageCount(num_entries);
+      images->SetImageCount((UINT)num_entries);
       
       for (ilm=0; ilm<num_managers; ilm++)
       {
@@ -184,8 +184,8 @@ void CLibEditorListView::RedrawAllEntries()
                const std::_tstring& name = *kit;
                const libLibraryEntry* pentry = plib->GetEntry(name.c_str());
                CHECK(pentry);
-               int st = InsertEntryToList(pentry, plib, i);
-               CHECK(st!=-1);
+               CollectionIndexType st = InsertEntryToList(pentry, plib, i);
+               CHECK(st != INVALID_INDEX);
                i++;
             }
          }
@@ -216,13 +216,13 @@ bool CLibEditorListView::AddNewEntry()
       images = rlist.GetImageList(LVSIL_SMALL);
       images->SetImageCount(ni);
 
-      int n = plib->GetCount();
+      CollectionIndexType n = plib->GetCount();
       const libLibraryEntry* pentry = plib->GetEntry(name.c_str());
-      int it = InsertEntryToList(pentry, plib, ni-1);
-      if (it!=-1)
+      CollectionIndexType it = InsertEntryToList(pentry, plib, ni-1);
+      if (it != INVALID_INDEX)
       {
-         m_ItemSelected = it;
-         rlist.EditLabel(it);
+         m_ItemSelected = (int)it;
+         rlist.EditLabel((int)it);
          pDoc->SetModifiedFlag(true);
          return true;
       }
@@ -256,17 +256,17 @@ void CLibEditorListView::OnRButtonDown(UINT nFlags, CPoint point)
 		   MessageBox(_T("Could not create CMenu"));
 	   }
 
-	   int idx;
+	   IndexType idx;
 	   LV_HITTESTINFO lvH;
 	   lvH.pt.x = point.x;
       lvH.pt.y = point.y;	   
       idx = rlist.HitTest(&lvH);
       m_ItemSelected = idx;
 
-      if ( idx != -1)
+      if ( idx != INVALID_INDEX)
       {
-         CString entry_name = rlist.GetItemText(m_ItemSelected,0);
-         libILibrary* plib = (libILibrary*)rlist.GetItemData(m_ItemSelected);
+         CString entry_name = rlist.GetItemText((int)m_ItemSelected,0);
+         libILibrary* plib = (libILibrary*)rlist.GetItemData((int)m_ItemSelected);
          ASSERT(plib);
          UINT dodel = plib->IsEditingEnabled(entry_name) ? MF_ENABLED|MF_STRING : MF_GRAYED|MF_STRING;
 
@@ -275,7 +275,7 @@ void CLibEditorListView::OnRButtonDown(UINT nFlags, CPoint point)
          menu.AppendMenu( MF_STRING | MF_ENABLED, IDM_EDIT_ENTRY, _T("Edit") );
          menu.AppendMenu( dodel,                  IDM_RENAME_ENTRY, _T("Rename") );
 
-         rlist.SetItemState( m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
+         rlist.SetItemState( (int)m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
       }
       else
       {
@@ -302,10 +302,10 @@ bool CLibEditorListView::EditEntry(libILibrary* plib, LPCTSTR entryName)
       this->RedrawAllEntries();
 
       // re-select our entry
-      if (m_ItemSelected!=-1)
+      if (m_ItemSelected != INVALID_INDEX)
       {
          CListCtrl& rlist = this->GetListCtrl();
-         rlist.SetItemState( m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
+         rlist.SetItemState( (int)m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
       }
 
       return true;
@@ -432,7 +432,7 @@ bool CLibEditorListView::IsEditableItemSelected()const
 bool CLibEditorListView::IsLibrarySelected() const
 {
    // a library must be selected
-   return m_LibIndex!=-1;
+   return m_LibIndex != INVALID_INDEX;
 }
 
 void CLibEditorListView::DeleteSelectedEntry()
@@ -475,7 +475,7 @@ void CLibEditorListView::RenameSelectedEntry()
    libILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
-      rlist.EditLabel(m_ItemSelected);
+      rlist.EditLabel((int)m_ItemSelected);
       CDocument* pDoc = GetDocument();
       pDoc->SetModifiedFlag(true);
    }
@@ -555,9 +555,9 @@ bool CLibEditorListView::DoesEntryExist(const CString& entryName)
    libISupportLibraryManager* pLibMgr = dynamic_cast<libISupportLibraryManager*>(pDoc);
    libLibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
 
-   int num_managers = pLibMgr->GetNumberOfLibraryManagers();
+   CollectionIndexType num_managers = pLibMgr->GetNumberOfLibraryManagers();
    ASSERT(num_managers);
-   for (int ilm=0; ilm<num_managers; ilm++)
+   for (CollectionIndexType ilm=0; ilm<num_managers; ilm++)
    {
       libLibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
       ASSERT(plm!=0);
@@ -577,7 +577,7 @@ bool CLibEditorListView::GetSelectedEntry(CString* pentryName, libILibrary** ppl
    CListCtrl& rlist = this->GetListCtrl();
    int idx = rlist.GetNextItem(-1,LVNI_SELECTED);
    m_ItemSelected=idx;
-   if ( idx != -1)
+   if ( idx != INVALID_INDEX)
    {
       *pentryName = rlist.GetItemText(idx,0);
       *pplib = (libILibrary*)rlist.GetItemData(idx);
@@ -643,7 +643,7 @@ void CLibEditorListView::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
    }
 }
 
-int CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i)
+CollectionIndexType CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i)
 {
    CListCtrl& rlist = this->GetListCtrl( );
 
@@ -697,6 +697,6 @@ int CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const l
     lvi.stateMask      = LVIS_STATEIMAGEMASK;
     lvi.lParam         = (LPARAM)plib; // entry holds pointer to its library
 
-    return rlist.InsertItem (&lvi);
+    return (CollectionIndexType)rlist.InsertItem (&lvi);
 }
 

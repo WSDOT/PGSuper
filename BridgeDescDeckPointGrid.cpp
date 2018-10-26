@@ -387,8 +387,8 @@ void CBridgeDescDeckPointGrid::FillGrid(const CDeckDescription* pDeck)
       RemoveRows(1,GetRowCount()); // clear the grid, except the header row
 
    std::vector<CDeckPoint>::const_iterator iter;
-   int cPoint = 0;
-   int nPoints = pDeck->DeckEdgePoints.size();
+   CollectionIndexType cPoint = 0;
+   CollectionIndexType nPoints = pDeck->DeckEdgePoints.size();
    for ( iter = pDeck->DeckEdgePoints.begin(); iter != pDeck->DeckEdgePoints.end(); iter++, cPoint++ )
    {
       const CDeckPoint& point = *iter;

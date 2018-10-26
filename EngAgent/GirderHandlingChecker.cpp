@@ -699,8 +699,8 @@ void pgsGirderHandlingChecker::ComputeLiftingStresses(SpanIndexType span,GirderI
    Float64 impact_up   = 1.0 - pArtifact->GetUpwardImpact();
    Float64 impact_down = 1.0 + pArtifact->GetDownwardImpact();
 
-   Uint32 psiz = rpoiVec.size();
-   Uint32 msiz = momVec.size();
+   IndexType psiz = rpoiVec.size();
+   IndexType msiz = momVec.size();
    CHECK(psiz==msiz);
 
    Float64 glen    = pArtifact->GetGirderLength();
@@ -720,7 +720,7 @@ void pgsGirderHandlingChecker::ComputeLiftingStresses(SpanIndexType span,GirderI
 
    GET_IFACE(ISectProp2,pSectProp2);
 
-   for(Uint32 i=0; i<psiz; i++)
+   for(IndexType i=0; i<psiz; i++)
    {
       const pgsPointOfInterest& poi = rpoiVec[i];
 
@@ -933,10 +933,10 @@ bool pgsGirderHandlingChecker::ComputeLiftingFsAgainstCracking(SpanIndexType spa
       Float64 bt_top = pGdr->GetTopWidth(poi_ms);
 
       // loop over all pois and calculate cracking fs
-      Uint32 psiz = rpoiVec.size();
-      Uint32 msiz = momVec.size();
+      IndexType psiz = rpoiVec.size();
+      IndexType msiz = momVec.size();
       CHECK(psiz==msiz);
-      for(Uint32 i=0; i<psiz; i++)
+      for(IndexType i=0; i<psiz; i++)
       {
          const pgsPointOfInterest poi = rpoiVec[i];
          Float64 mom_vert = momVec[i];
@@ -1195,13 +1195,13 @@ void pgsGirderHandlingChecker::ComputeHaulingStresses(SpanIndexType span,GirderI
    Float64 impact_up   = 1.0 - pArtifact->GetUpwardImpact();
    Float64 impact_down = 1.0 + pArtifact->GetDownwardImpact();
 
-   Uint32 psiz = rpoiVec.size();
-   Uint32 msiz = momVec.size();
+   IndexType psiz = rpoiVec.size();
+   IndexType msiz = momVec.size();
    CHECK(psiz==msiz);
 
    Float64 AsMax = 0;
 
-   for(Uint32 i=0; i<psiz; i++)
+   for(IndexType i=0; i<psiz; i++)
    {
       const pgsPointOfInterest poi = rpoiVec[i];
 
@@ -1378,10 +1378,10 @@ void pgsGirderHandlingChecker::ComputeHaulingFsForCracking(SpanIndexType span,Gi
    GET_IFACE(ISectProp2,pSectProp2);
 
    // loop over all pois and calculate cracking fs
-   Uint32 psiz = rpoiVec.size();
-   Uint32 msiz = momVec.size();
+   IndexType psiz = rpoiVec.size();
+   IndexType msiz = momVec.size();
    CHECK(psiz==msiz);
-   for(Uint32 i=0; i<psiz; i++)
+   for(IndexType i=0; i<psiz; i++)
    {
       const pgsPointOfInterest& poi = rpoiVec[i];
       Float64 bt_bot = pGdr->GetBottomWidth(poi);

@@ -161,7 +161,7 @@ void pgsDebondArtifact::AddDebondSection(Float64 location,StrandIndexType nStran
    m_Sections.push_back(section);
 }
 
-void pgsDebondArtifact::GetDebondSection(Uint16 idx,Float64* location,StrandIndexType* nStrandsDebonded,Float64* fraStrandsDebonded) const
+void pgsDebondArtifact::GetDebondSection(SectionIndexType idx,Float64* location,StrandIndexType* nStrandsDebonded,Float64* fraStrandsDebonded) const
 {
    const Section& section = m_Sections[idx];
    *location           = section.Location;
@@ -169,7 +169,7 @@ void pgsDebondArtifact::GetDebondSection(Uint16 idx,Float64* location,StrandInde
    *fraStrandsDebonded = section.fraDebonded;
 }
 
-Uint16 pgsDebondArtifact::GetNumDebondSections() const
+CollectionIndexType pgsDebondArtifact::GetNumDebondSections() const
 {
    return m_Sections.size();
 }
@@ -230,21 +230,21 @@ void pgsDebondArtifact::SetDebondSectionSpacingLimit(Float64 spacing)
 
 bool pgsDebondArtifact::Passed() const
 {
-   Uint16 nSections = m_Sections.size();
+   CollectionIndexType nSections = m_Sections.size();
    if (nSections==0)
    {
       return true;
    }
 
    bool bPassed = true;
-   Uint16 nRows = m_IsExteriorStrandDebonded.size();
+   CollectionIndexType nRows = m_IsExteriorStrandDebonded.size();
 
-   for ( Uint16 row = 0; row < nRows; row++ )
+   for ( CollectionIndexType row = 0; row < nRows; row++ )
    {
       bPassed &= RowPassed(row);
    }
 
-   for ( Uint16 section = 0; section < nSections; section++ )
+   for ( CollectionIndexType section = 0; section < nSections; section++ )
    {
       bPassed &= SectionPassed(section);
    }
@@ -256,7 +256,7 @@ bool pgsDebondArtifact::Passed() const
    return bPassed;
 }
 
-bool pgsDebondArtifact::RowPassed(Uint16 rowIndex) const
+bool pgsDebondArtifact::RowPassed(CollectionIndexType rowIndex) const
 {
    bool bPassed = true;
 
@@ -270,7 +270,7 @@ bool pgsDebondArtifact::RowPassed(Uint16 rowIndex) const
    return bPassed;
 }
 
-bool pgsDebondArtifact::SectionPassed(Uint16 sectionIndex) const
+bool pgsDebondArtifact::SectionPassed(CollectionIndexType sectionIndex) const
 {
    StrandIndexType nMaxStrands2 = (StrandIndexType)floor(m_fraMaxDebondedAtSection * m_nDebondedStrands); // allow int to floor
    StrandIndexType nMaxStrands  = _cpp_max(m_nMaxDebondedAtSection,nMaxStrands2);

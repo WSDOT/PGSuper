@@ -84,7 +84,7 @@ protected:
       // class extensions
 public:
    // a new library was selected, need to redraw
-   void OnLibrarySelected(int libnun, const CString& name);
+   void OnLibrarySelected(IndexType libnun, const CString& name);
    // redraw
    void RedrawAllEntries();
    // add a new entry to the library
@@ -106,8 +106,8 @@ public:
 
 private:
    CString             m_LibName;
-   Int32               m_LibIndex;
-   mutable int         m_ItemSelected;// current item selected. -1 if none
+   IndexType     m_LibIndex; // currently select library, INVALID_INDEX if none
+   mutable IndexType   m_ItemSelected;// current item selected. INVALID_INDEX if none
 
 	CImageList          m_NormalEntryImages;    // images for entries
 	CImageList          m_SmallEntryImages; 
@@ -120,7 +120,7 @@ private:
    void DuplicateEntry(libILibrary* plib, LPCTSTR entryName);
    bool DoesEntryExist(const CString& entryName);
    bool GetSelectedEntry(CString* entryName, libILibrary** pplib)const;
-   int InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i);
+   CollectionIndexType InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i);
 
 };
 

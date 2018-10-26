@@ -37,7 +37,7 @@ struct VOIDEDSLAB_J_SOLID
 struct VOIDEDSLAB_J_VOID
 {
    Float64 Ao;
-   typedef std::pair<double,double> Element; // first = s, second = t
+   typedef std::pair<Float64,Float64> Element; // first = s, second = t
    std::vector<Element> Elements;
    Float64 S_over_T; // Sum of s/t for all the elements
 };
@@ -54,10 +54,10 @@ struct VOIDEDSLAB_LLDFDETAILS : public BASE_LLDFDETAILS
    Float64 PossionRatio;
    pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity;
 
-   Int16 nVoids;
-
    VOIDEDSLAB_J_SOLID Jsolid;
    VOIDEDSLAB_J_VOID  Jvoid;
+
+   IndexType nVoids;
 };
 
 // {DA437468-B32C-4012-8B8E-51BAE278C170}
@@ -85,7 +85,7 @@ END_COM_MAP()
 
 public:
    // IDistFactorEngineer
-//   virtual void SetBroker(IBroker* pBroker,long statusGroupID);
+//   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
 //   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
 //   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);

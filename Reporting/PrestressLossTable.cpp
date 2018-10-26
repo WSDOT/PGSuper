@@ -117,7 +117,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    //////////////////////////////////////////
    (*p_table)(0,0) << _T("Loss Stage");
    p_table->SetRowSpan(0,0,2);
-   p_table->SetRowSpan(1,0,-1);
+   p_table->SetRowSpan(1,0,SKIP_CELL);
 
    p_table->SetColumnSpan(0,1,4);
    (*p_table)(0,1) << _T("Permanent Strand");
@@ -129,12 +129,12 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    if ( bTempStrands )
    {
       p_table->SetColumnSpan(0,2,4);
-      p_table->SetColumnSpan(0,3,-1);
-      p_table->SetColumnSpan(0,4,-1);
-      p_table->SetColumnSpan(0,5,-1);
-      p_table->SetColumnSpan(0,6,-1);
-      p_table->SetColumnSpan(0,7,-1);
-      p_table->SetColumnSpan(0,8,-1);
+      p_table->SetColumnSpan(0,3,SKIP_CELL);
+      p_table->SetColumnSpan(0,4,SKIP_CELL);
+      p_table->SetColumnSpan(0,5,SKIP_CELL);
+      p_table->SetColumnSpan(0,6,SKIP_CELL);
+      p_table->SetColumnSpan(0,7,SKIP_CELL);
+      p_table->SetColumnSpan(0,8,SKIP_CELL);
 
       (*p_table)(0,2) << _T("Temporary Strand");
 
@@ -145,9 +145,9 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    }
    else
    {
-      p_table->SetColumnSpan(0,2,-1);
-      p_table->SetColumnSpan(0,3,-1);
-      p_table->SetColumnSpan(0,4,-1);
+      p_table->SetColumnSpan(0,2,SKIP_CELL);
+      p_table->SetColumnSpan(0,3,SKIP_CELL);
+      p_table->SetColumnSpan(0,4,SKIP_CELL);
    }
 
 

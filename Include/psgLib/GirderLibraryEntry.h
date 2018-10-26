@@ -62,7 +62,7 @@ interface IStrandGrid;
 
 // MISCELLANEOUS
 //
-static const double TwoInches = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+static const Float64 TwoInches = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
 
 /*****************************************************************************
 CLASS 
@@ -177,7 +177,7 @@ public:
                            mtAbsoluteDistance       = 2
    };
 
-   typedef std::pair<std::_tstring,double> Dimension;
+   typedef std::pair<std::_tstring,Float64> Dimension;
    typedef std::vector<Dimension> Dimensions;
 
    //------------------------------------------------------------------------
@@ -187,7 +187,7 @@ public:
       Float64     ZoneLength;
       matRebar::Size VertBarSize, HorzBarSize;
       Float64     StirrupSpacing;
-      Uint32      nVertBars, nHorzBars;
+      CollectionIndexType      nVertBars, nHorzBars;
       bool operator==(const ShearZoneInfo& rOther) const
       {return ZoneLength     == rOther.ZoneLength     &&
               VertBarSize    == rOther.VertBarSize    &&
@@ -206,7 +206,7 @@ public:
    {
       GirderFace  Face;
       matRebar::Size BarSize;
-      Int32       NumberOfBars;
+      CollectionIndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
       bool operator==(const LongSteelInfo& rOther) const
@@ -335,14 +335,14 @@ public:
    class GirderEntryDataError
    {
    public:
-      GirderEntryDataError(ErrorType type, const std::_tstring& msg, Int32 index=0)
+      GirderEntryDataError(ErrorType type, const std::_tstring& msg, IndexType index=0)
          : m_Type(type), m_ErrorInfo(index), m_Msg(msg) {}
       ErrorType GetErrorType() const                     {return m_Type;}
-      Int32 GetErrorInfo() const                         {return m_ErrorInfo;}
+      IndexType GetErrorInfo() const                         {return m_ErrorInfo;}
       std::_tstring GetErrorMsg() const                    {return m_Msg;}
    private:
       ErrorType   m_Type;
-      Int32       m_ErrorInfo;  // index of offending thing (if applicable).
+      IndexType       m_ErrorInfo;  // index of offending thing (if applicable).
       std::_tstring m_Msg;      // a default error message
    };
 
@@ -398,8 +398,8 @@ public:
 
    //------------------------------------------------------------------------
    const Dimensions& GetDimensions() const;
-   double GetDimension(const std::_tstring& name) const;
-   void SetDimension(const std::_tstring& name,double value,bool bAdjustStrands);
+   Float64 GetDimension(const std::_tstring& name) const;
+   void SetDimension(const std::_tstring& name,Float64 value,bool bAdjustStrands);
 
    //------------------------------------------------------------------------
    // Remove all strands
@@ -552,11 +552,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set last zone containing confinement steel
-   void SetLastConfinementZone(Uint16 zone);
+   void SetLastConfinementZone(ZoneIndexType zone);
    
    //------------------------------------------------------------------------
    // Get last zone containing confinement steel
-   Uint16 GetNumConfinementZones() const;
+   ZoneIndexType GetNumConfinementZones() const;
 
    //------------------------------------------------------------------------
    // Set vector of longitidinal steel information.
@@ -582,9 +582,9 @@ public:
    // Get the location of the harping point as a ratio of span length
    Float64 GetHarpingPointLocation() const;
 
-   void SetMinHarpingPointLocation(bool bUseMin,double min);
+   void SetMinHarpingPointLocation(bool bUseMin,Float64 min);
    bool IsMinHarpingPointLocationUsed() const;
-   double GetMinHarpingPointLocation() const;
+   Float64 GetMinHarpingPointLocation() const;
 
    void SetHarpingPointReference(MeasurementLocation reference);
    MeasurementLocation GetHarpingPointReference() const;
@@ -692,7 +692,7 @@ private:
    matRebar::Grade m_StirrupBarGrade;
    matRebar::Size m_ConfinementBarSize; 
    matRebar::Size m_TopFlangeShearBarSize;
-   Uint16 m_LastConfinementZone;
+   ZoneIndexType m_LastConfinementZone;
    bool m_bStirrupsEngageDeck;
    bool m_bIsRoughenedSurface;
    matRebar::Type m_LongitudinalBarType;
@@ -792,7 +792,7 @@ private:
    {
       GlobalStrand(): m_StrandType(stStraight), m_LocalSortOrder(-1)
       {;}
-      GlobalStrand( psStrandType type, Uint16 localIndex): m_StrandType(type), m_LocalSortOrder(localIndex)
+      GlobalStrand( psStrandType type, StrandIndexType localIndex): m_StrandType(type), m_LocalSortOrder(localIndex)
       {;}
       bool operator==(const GlobalStrand& rOther) const
       {return m_LocalSortOrder==rOther.m_LocalSortOrder && m_StrandType==rOther.m_StrandType;} 
@@ -857,7 +857,7 @@ private:
    bool IsEqual(IPoint2d* p1,IPoint2d* p2) const;
    bool IsEqual(IPoint2dCollection* points1,IPoint2dCollection* points2) const;
 
-   void AddDimension(const std::_tstring& name,double value);
+   void AddDimension(const std::_tstring& name,Float64 value);
 
    HRESULT CreateBeamFactory(const std::_tstring& strCLSID);
    void LoadIBeamDimensions(sysIStructuredLoad* pLoad);

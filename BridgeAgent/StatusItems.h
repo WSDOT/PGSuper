@@ -81,11 +81,11 @@ private:
 class pgsPointLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsPointLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+   pgsPointLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
                           SpanIndexType span,GirderIndexType gdr);
    bool IsEqual(CEAFStatusItem* pOther);
 
-   Uint32 m_LoadIndex;
+   IndexType m_LoadIndex;
    SpanIndexType   m_Span;
    GirderIndexType m_Gdr;
 };
@@ -106,11 +106,11 @@ private:
 class pgsDistributedLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsDistributedLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+   pgsDistributedLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
                                 SpanIndexType span,GirderIndexType gdr);
    bool IsEqual(CEAFStatusItem* pOther);
 
-   Uint32 m_LoadIndex;
+   IndexType m_LoadIndex;
    SpanIndexType   m_Span;
    GirderIndexType m_Gdr;
 };
@@ -132,11 +132,11 @@ private:
 class pgsMomentLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsMomentLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+   pgsMomentLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
                            SpanIndexType span,GirderIndexType gdr);
    bool IsEqual(CEAFStatusItem* pOther);
 
-   Uint32 m_LoadIndex;
+   IndexType m_LoadIndex;
    SpanIndexType   m_Span;
    GirderIndexType m_Gdr;
 };

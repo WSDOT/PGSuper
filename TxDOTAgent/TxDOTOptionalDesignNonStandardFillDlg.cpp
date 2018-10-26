@@ -41,9 +41,8 @@ void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData
    pGdrEntry->GetBeamFactory(&pFactory);
    GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
-   long DUMMY_AGENT_ID = -1;
    CComPtr<IGirderSection> gdrSection;
-   pFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
+   pFactory->CreateGirderSection(NULL,INVALID_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
 
    CComPtr<IShape>  pShape;
    gdrSection.QueryInterface(&pShape);

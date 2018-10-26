@@ -184,7 +184,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    int col2=0;
 
    p_table->SetRowSpan(0,col1,2);
-   p_table->SetRowSpan(1,col2++,-1);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
    if ( stage == pgsTypes::CastingYard )
       (*p_table)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    else
@@ -196,7 +196,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) << COLHDR(_T("Prestress") << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
@@ -210,11 +210,11 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) << COLHDR(_T("Calculated") << rptNewLine << strLimitState << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) << COLHDR(_T("Analysis") << rptNewLine << strLimitState << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else if (stage==pgsTypes::CastingYard)
@@ -240,7 +240,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) << COLHDR(_T("Demand") << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
@@ -281,14 +281,14 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       if ( stage == pgsTypes::BridgeSite2 || (stage == pgsTypes::BridgeSite3 && limitState != pgsTypes::ServiceIII) )
       {
          p_table->SetRowSpan(0,col1,2);
-         p_table->SetRowSpan(1,col2++,-1);
+         p_table->SetRowSpan(1,col2++,SKIP_CELL);
          (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
       }
 
       if ( stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII )
       {
          p_table->SetRowSpan(0,col1,2);
-         p_table->SetRowSpan(1,col2++,-1);
+         p_table->SetRowSpan(1,col2++,SKIP_CELL);
          (*p_table)(0,col1) <<_T("Tension") << rptNewLine << _T("Status");
          if ( !IsZero(allowable_tension) )
             (*p_table)(0,col1) << rptNewLine << _T("(C/D)");
@@ -299,37 +299,37 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    else if ( stage == pgsTypes::CastingYard )
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status");
       if ( !IsZero(allowable_tension) )
          (*p_table)(0,col1-1) << rptNewLine << _T("w/o rebar") << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/ rebar");
       if ( !IsZero(allowable_tension_with_rebar) )
          (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) << _T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
    }
    else
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) <<_T("Tension")<<rptNewLine<<_T("Status");
       if ( !IsZero(allowable_tension) )
          (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,-1);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col1++) <<_T("Compression")<<rptNewLine<<_T("Status") << rptNewLine << _T("(C/D)");
    }
 
    p_table->SetNumberOfHeaderRows(2);
    for ( ColumnIndexType i = col1; i < p_table->GetNumberOfColumns(); i++ )
-      p_table->SetColumnSpan(0,i,-1);
+      p_table->SetColumnSpan(0,i,SKIP_CELL);
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);

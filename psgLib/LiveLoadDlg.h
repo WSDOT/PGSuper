@@ -32,8 +32,7 @@ public:
    LiveLoadLibraryEntry::LiveLoadApplicabilityType m_UsageType;
 
    Float64 m_MaxVariableAxleSpacing;
-   //AxleIndexType m_VariableAxleIndex;
-   int m_VariableAxleIndex;
+   AxleIndexType m_VariableAxleIndex;
    LiveLoadLibraryEntry::AxleContainer m_Axles;
 
 // Overrides

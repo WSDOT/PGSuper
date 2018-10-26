@@ -43,8 +43,8 @@ public:
 	//{{AFX_DATA(CSelectGirderDlg)
 	enum { IDD = IDD_SELECT_GIRDER };
 		// NOTE: the ClassWizard will add data members here
-	int		m_Girder;
-	int		m_Span;
+	GirderIndexType		m_Girder;
+	SpanIndexType  		m_Span;
 	//}}AFX_DATA
 
 

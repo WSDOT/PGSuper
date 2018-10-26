@@ -132,7 +132,7 @@ public:
       Float64          RowElev;
       StrandIndexType  StrandsInRow;
 
-      StrandRow(): RowElev(-1.0), StrandsInRow(-1)
+      StrandRow(): RowElev(-1.0), StrandsInRow(INVALID_INDEX)
       {;}
 
       StrandRow(Float64 rowElev, StrandIndexType strandsInRow=0):
@@ -178,7 +178,7 @@ public:
       bool WasFilled; // For use by later filling routines
 
       StrandIncrement():
-      TotalStrands(0), GlobalFill(-1), WasFilled(false)
+      TotalStrands(0), GlobalFill(INVALID_INDEX), WasFilled(false)
       {;}
    };
 

@@ -171,8 +171,8 @@ CGirderModelElevationView::CGirderModelElevationView():
 m_First(true),
 m_CurrID(0),
 m_DoBlockUpdate(false),
-m_CurrentSpanIdx(-1),
-m_CurrentGirderIdx(-1)
+m_CurrentSpanIdx(INVALID_INDEX),
+m_CurrentGirderIdx(INVALID_INDEX)
 {
    m_bUpdateError = false;
 }
@@ -1127,10 +1127,10 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDoc* pDoc, IBro
    Float64 HgStart = pGirder->GetHeight(poiStart);
    Float64 HgEnd   = pGirder->GetHeight(poiEnd);
 
-   if ( poiStart.GetID() < 0 )
+   if ( poiStart.GetID() == INVALID_ID )
       poiStart.SetDistFromStart(0.0);
 
-   if ( poiEnd.GetID() < 0 )
+   if ( poiEnd.GetID() == INVALID_ID )
       poiEnd.SetDistFromStart(gdr_length);
 
    CComPtr<IRebarSection> rebar_section_start, rebar_section_end;
@@ -1188,11 +1188,11 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
    Float64 end_lgth   = pBridge->GetGirderEndConnectionLength(span, girder);
    Float64 span_lgth  = gdr_length - start_lgth - end_lgth;
 
-   Uint32 num_loads =  pUserDefinedLoadData->GetPointLoadCount();
+   CollectionIndexType num_loads =  pUserDefinedLoadData->GetPointLoadCount();
 
    // filter loads and determine magnitude of max load
    Float64 max = 0.0;
-   Uint32 ild;
+   CollectionIndexType ild;
    for (ild=0; ild<num_loads; ild++)
    {
       const CPointLoadData& load = pUserDefinedLoadData->GetPointLoad(ild);
@@ -1293,11 +1293,11 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
    double  end_lgth   = pBridge->GetGirderEndConnectionLength(span, girder);
    double span_lgth   = gdr_length - start_lgth - end_lgth;
 
-   Uint32 num_loads =  pUserDefinedLoadData->GetDistributedLoadCount();
+   CollectionIndexType num_loads =  pUserDefinedLoadData->GetDistributedLoadCount();
 
    // filter loads and determine magnitude of max load
    Float64 max = 0.0;
-   Uint32 ild;
+   CollectionIndexType ild;
    for (ild=0; ild<num_loads; ild++)
    {
       const CDistributedLoadData& load = pUserDefinedLoadData->GetDistributedLoad(ild);
@@ -1428,11 +1428,11 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
    Float64 end_lgth   = pBridge->GetGirderEndConnectionLength(span, girder);
    Float64 span_lgth   = gdr_length - start_lgth - end_lgth;
 
-   Uint32 num_loads =  pUserDefinedLoadData->GetMomentLoadCount();
+   CollectionIndexType num_loads =  pUserDefinedLoadData->GetMomentLoadCount();
 
    // filter loads and determine magnitude of max load
    Float64 max = 0.0;
-   Uint32 ild;
+   CollectionIndexType ild;
    for (ild=0; ild<num_loads; ild++)
    {
       const CMomentLoadData& load = pUserDefinedLoadData->GetMomentLoad(ild);
@@ -1520,7 +1520,7 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSuperDoc* pDoc, IBr
 {
    if (casesExist[UserLoads::DC] || casesExist[UserLoads::DW] || casesExist[UserLoads::LL_IM])
    {
-      long nold(-1);
+      CollectionIndexType nold(-1);
       if (!m_Legend)
       {
          m_Legend.CoCreateInstance(CLSID_LegendDisplayObject);
@@ -1708,21 +1708,21 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IB
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(span,girder);
 
-   Uint32 nStirrupZones = pStirrupGeom->GetNumZones(span,girder);
-   for ( Uint32 zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
+   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumZones(span,girder);
+   for ( ZoneIndexType zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
    {
       Float64 start   = pStirrupGeom->GetZoneStart(span,girder,zoneIdx);
       Float64 end     = pStirrupGeom->GetZoneEnd(span,girder,zoneIdx);
       Float64 spacing = pStirrupGeom->GetS(span,girder,zoneIdx);
 
       matRebar::Size barSize = pStirrupGeom->GetVertStirrupBarSize(span,girder,zoneIdx);
-      Uint32 nStirrups = pStirrupGeom->GetVertStirrupBarCount(span,girder,zoneIdx);
+      CollectionIndexType nStirrups = pStirrupGeom->GetVertStirrupBarCount(span,girder,zoneIdx);
 
       if ( barSize != matRebar::bsNone && nStirrups != 0 )
       {
-         Uint32 nStirrupsInZone = Uint32(floor((end - start)/spacing));
+         CollectionIndexType nStirrupsInZone = CollectionIndexType(floor((end - start)/spacing));
          spacing = (end-start)/nStirrupsInZone;
-         for ( Uint32 i = 0; i <= nStirrupsInZone; i++ )
+         for ( CollectionIndexType i = 0; i <= nStirrupsInZone; i++ )
          {
             double x = start + i*spacing;
 
@@ -2000,14 +2000,14 @@ void CGirderModelElevationView::OnDestroy()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   long dlcnt = dispMgr->GetDisplayListCount();
-   for (long idl=0; idl<dlcnt; idl++)
+   CollectionIndexType dlcnt = dispMgr->GetDisplayListCount();
+   for (CollectionIndexType idl=0; idl<dlcnt; idl++)
    {
       CComPtr<iDisplayList> dlist;
       dispMgr->GetDisplayList(idl, &dlist);
 
-      long docnt = dlist->GetDisplayObjectCount();
-      for (long ido=0; ido<docnt; ido++)
+      CollectionIndexType docnt = dlist->GetDisplayObjectCount();
+      for (CollectionIndexType ido=0; ido<docnt; ido++)
       {
          CComPtr<iDisplayObject> pdo;
          dlist->GetDisplayObject(ido,&pdo);

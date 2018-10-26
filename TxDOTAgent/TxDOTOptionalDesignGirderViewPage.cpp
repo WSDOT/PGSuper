@@ -201,7 +201,7 @@ void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
 
    CTogaSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if (st==IDOK)
    {
       m_CurrentCutLocation = dlg.GetValue();
@@ -320,7 +320,7 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
          std::vector<pgsPointOfInterest> poi;
          std::vector<pgsPointOfInterest>::iterator iter;
          poi = pPoi->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
-         int nPoi = poi.size();
+         CollectionIndexType nPoi = poi.size();
          ASSERT(0 < nPoi && nPoi <3);
          iter = poi.begin();
          pgsPointOfInterest left_hp_poi = *iter++;

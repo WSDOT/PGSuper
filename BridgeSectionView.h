@@ -114,8 +114,8 @@ protected:
 
    CBridgeModelViewChildFrame* GetFrame();
 
-   std::map<SpanGirderHashType,long> m_GirderIDs;
-   long m_NextGirderID;
+   std::map<SpanGirderHashType,IDType> m_GirderIDs;
+   IDType m_NextGirderID;
 };
 
 /////////////////////////////////////////////////////////////////////////////

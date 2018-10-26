@@ -445,11 +445,11 @@ void CGirderDescShearGrid::FillGrid(const GirderLibraryEntry::ShearZoneInfoVec& 
    if (rows>=1)
 	   RemoveRows(1, rows);
 
-   Uint32 size = rvec.size();
+   GirderLibraryEntry::ShearZoneInfoVec::size_type size = rvec.size();
    if (0 < size)
    {
       // size grid
-      for (Uint32 i=0; i<size; i++)
+      for (GirderLibraryEntry::ShearZoneInfoVec::size_type i=0; i<size; i++)
       {
 	      InsertRow(true);
       }

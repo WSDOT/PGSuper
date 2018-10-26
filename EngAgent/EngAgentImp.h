@@ -350,7 +350,7 @@ private:
       void SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& config, const LOSSDETAILS& losses)
       {
          // don't cache if this is a temporary poi
-         if ( poi.GetID() < 0 )
+         if ( poi.GetID() == INVALID_ID )
          {
             //ATLASSERT(false);
             return; 

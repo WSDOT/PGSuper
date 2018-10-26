@@ -152,6 +152,24 @@ bool CStructuredLoad::Property(LPCTSTR name, Uint32* pvalue)
    return SUCCEEDED(hr) ? true : false;
 }
 
+bool CStructuredLoad::Property(LPCTSTR name, Int64* pvalue)
+{
+   VARIANT var;
+   var.vt = VT_I8;
+   HRESULT hr = m_pStrLoad->get_Property( name, &var );
+   *pvalue = var.llVal;
+   return SUCCEEDED(hr) ? true : false;
+}
+
+bool CStructuredLoad::Property(LPCTSTR name, Uint64* pvalue)
+{
+   VARIANT var;
+   var.vt = VT_UI8;
+   HRESULT hr = m_pStrLoad->get_Property( name, &var );
+   *pvalue = var.ullVal;
+   return SUCCEEDED(hr) ? true : false;
+}
+
 bool CStructuredLoad::Property(LPCTSTR name, bool* pvalue)
 {
    VARIANT var;

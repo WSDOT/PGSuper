@@ -212,11 +212,19 @@ BOOL CPGSuperApp::InitInstance()
    // Change help file name
    CString strHelpFile(m_pszHelpFilePath);
 #if defined _DEBUG
-   strHelpFile.Replace(_T("RegFreeCOM\\Debug\\"),_T(""));
+#if defined _WIN64
+   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
+#else
+   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
+#endif
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
-   strHelpFile.Replace(_T("RegFreeCOM\\Release\\"),_T(""));
+#if defined _WIN64
+   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
+#else
+   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
+#endif
 #endif
    free((void*)m_pszHelpFilePath);
    m_pszHelpFilePath = _tcsdup(strHelpFile);

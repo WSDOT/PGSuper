@@ -121,12 +121,12 @@ HRESULT CTaperedIBeamFactory::FinalConstruct()
    return S_OK;
 }
 
-void CTaperedIBeamFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CTaperedIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,pgsTypes::metStart,dimensions,ppSection);
 }
 
-void CTaperedIBeamFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CTaperedIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IFlangedGirderSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_FlangedGirderSection);
@@ -162,7 +162,7 @@ void CTaperedIBeamFactory::CreateGirderSection(IBroker* pBroker,long statusGroup
    gdrsection.QueryInterface(ppSection);
 }
 
-void CTaperedIBeamFactory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CTaperedIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -186,7 +186,7 @@ void CTaperedIBeamFactory::CreateGirderProfile(IBroker* pBroker,long statusGroup
    shape->QueryInterface(ppShape);
 }
 
-void CTaperedIBeamFactory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CTaperedIBeamFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<ISegment> segment;
 
@@ -303,7 +303,7 @@ void CTaperedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    }
 }
 
-void CTaperedIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CTaperedIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CIBeamDistFactorEngineer>* pEngineer;
    CComObject<CIBeamDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -312,7 +312,7 @@ void CTaperedIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,long status
    (*ppEng)->AddRef();
 }
 
-void CTaperedIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CTaperedIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
    CComObject<CPsBeamLossEngineer>* pEngineer;
    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
@@ -929,7 +929,7 @@ void CTaperedIBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensio
    }
 }
 
-long CTaperedIBeamFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CTaperedIBeamFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 {
    return 1;
 }

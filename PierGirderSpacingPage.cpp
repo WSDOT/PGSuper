@@ -126,10 +126,10 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_NEXT_SPAN_SPACING_MEASUREMENT, m_GirderSpacingMeasure[pgsTypes::Ahead]);
 
    DDX_Text( pDX, IDC_NUMGDR_PREV_SPAN, m_nGirders[pgsTypes::Back] );
-   DDV_MinMaxLong(pDX, m_nGirders[pgsTypes::Back], m_MinGirderCount[pgsTypes::Back], MAX_GIRDERS_PER_SPAN );
+   DDV_MinMaxLong(pDX, (long)m_nGirders[pgsTypes::Back], (long)m_MinGirderCount[pgsTypes::Back], MAX_GIRDERS_PER_SPAN );
 
    DDX_Text( pDX, IDC_NUMGDR_NEXT_SPAN, m_nGirders[pgsTypes::Ahead] );
-   DDV_MinMaxLong(pDX, m_nGirders[pgsTypes::Ahead], m_MinGirderCount[pgsTypes::Ahead], MAX_GIRDERS_PER_SPAN );
+   DDV_MinMaxLong(pDX, (long)m_nGirders[pgsTypes::Ahead], (long)m_MinGirderCount[pgsTypes::Ahead], MAX_GIRDERS_PER_SPAN );
 
    DDV_SpacingGrid(pDX,IDC_NEXT_SPAN_SPACING_GRID,&m_GirderSpacingGrid[pgsTypes::Ahead]);
    DDV_SpacingGrid(pDX,IDC_PREV_SPAN_SPACING_GRID,&m_GirderSpacingGrid[pgsTypes::Back]);
@@ -566,14 +566,14 @@ void CPierGirderSpacingPage::FillRefGirderComboBox(pgsTypes::PierFaceType pierFa
    pCB->ResetContent();
 
    int idx = pCB->AddString(_T("Center of Girders"));
-   pCB->SetItemData(idx,(DWORD)-1);
+   pCB->SetItemData(idx,(DWORD_PTR)INVALID_INDEX);
 
    for ( GirderIndexType i = 0; i < m_nGirders[pierFace]; i++ )
    {
       CString str;
       str.Format(_T("Girder %s"),LABEL_GIRDER(i));
       idx = pCB->AddString(str);
-      pCB->SetItemData(idx,(DWORD)i);
+      pCB->SetItemData(idx,(DWORD_PTR)i);
    }
 
    pCB->SetCurSel(curSel == CB_ERR ? 0 : curSel);
@@ -638,7 +638,7 @@ void CPierGirderSpacingPage::SetGirderCount(GirderIndexType nGirders,pgsTypes::P
 {
    m_nGirders[pierFace] = nGirders;
    m_GirderSpacingGrid[pierFace].SetGirderCount(nGirders);
-   m_NumGdrSpinner[pierFace].SetPos(nGirders);
+   m_NumGdrSpinner[pierFace].SetPos((int)nGirders);
    m_GirderSpacingCache[pierFace]  = m_GirderSpacingGrid[pierFace].GetGirderSpacingData();
 }
 
@@ -942,13 +942,13 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
 
       // determine if there is more than one spacing group
       CGirderSpacingGridData spacingData = m_GirderSpacingGrid[pierFace].GetGirderSpacingData(); 
-      long nSpacingGroups = spacingData.m_GirderSpacing.GetSpacingGroupCount();
+      GroupIndexType nSpacingGroups = spacingData.m_GirderSpacing.GetSpacingGroupCount();
       double bridgeSpacing = 0;
       if ( 1 < nSpacingGroups )
       {
          // there is more than one group... get all the unique spacing values
          std::set<double> spacings;
-         for ( long spaIdx = 0; spaIdx < nSpacingGroups;spaIdx++ )
+         for ( GroupIndexType spaIdx = 0; spaIdx < nSpacingGroups;spaIdx++ )
          {
             GirderIndexType firstGdrIdx, lastGdrIdx;
             double space;
@@ -992,7 +992,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
             if ( dlg.DoModal() == IDOK )
             {
                iter = spacings.begin();
-               for ( int i = 0; i < dlg.m_ItemIdx; i++ )
+               for ( IndexType i = 0; i < dlg.m_ItemIdx; i++ )
                   iter++;
 
                bridgeSpacing = *iter;
@@ -1028,7 +1028,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
          m_GirderSpacingGrid[pgsTypes::Back].FillGrid();
 
          CComboBox* pcbEndOfSpanSpacingDatum   = (CComboBox*)GetDlgItem(IDC_PREV_SPAN_SPACING_MEASUREMENT);
-         m_GirderSpacingMeasureCache[pgsTypes::Back]  = pcbEndOfSpanSpacingDatum->GetItemData( pcbEndOfSpanSpacingDatum->GetCurSel() );
+         m_GirderSpacingMeasureCache[pgsTypes::Back] = (long)pcbEndOfSpanSpacingDatum->GetItemData( pcbEndOfSpanSpacingDatum->GetCurSel() );
       }
 
       if ( m_pNextSpan )
@@ -1038,7 +1038,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
          m_GirderSpacingGrid[pgsTypes::Ahead].FillGrid();
 
          CComboBox* pcbStartOfSpanSpacingDatum = (CComboBox*)GetDlgItem(IDC_NEXT_SPAN_SPACING_MEASUREMENT);
-         m_GirderSpacingMeasureCache[pgsTypes::Ahead] = pcbStartOfSpanSpacingDatum->GetItemData( pcbStartOfSpanSpacingDatum->GetCurSel() );
+         m_GirderSpacingMeasureCache[pgsTypes::Ahead] = (long)pcbStartOfSpanSpacingDatum->GetItemData( pcbStartOfSpanSpacingDatum->GetCurSel() );
       }
 
       backGirderSpacingDatum  = m_GirderSpacingMeasureCache[pierFace];
@@ -1149,7 +1149,7 @@ void CPierGirderSpacingPage::OnPierSpacingDatumChanged(UINT nIDC,pgsTypes::PierF
 
    pgsTypes::MeasurementLocation ml;
    pgsTypes::MeasurementType mt;
-   UnhashGirderSpacing(pCB->GetItemData(cursel),&ml,&mt);
+   UnhashGirderSpacing((DWORD)pCB->GetItemData(cursel),&ml,&mt);
 
    m_GirderSpacingGrid[pierFace].SetMeasurementLocation(ml);
    m_GirderSpacingGrid[pierFace].SetMeasurementType(mt);

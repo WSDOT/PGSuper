@@ -157,7 +157,11 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
    *pTitlePage << pPara;
+#if defined _WIN64
+   *pPara << _T("PGSuper") << Super(symbol(TRADEMARK)) << _T(" (x64)") << rptNewLine;
+#else
    *pPara << _T("PGSuper") << Super(symbol(TRADEMARK)) << rptNewLine;
+#endif
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetCopyrightStyle());
    *pTitlePage << pPara;

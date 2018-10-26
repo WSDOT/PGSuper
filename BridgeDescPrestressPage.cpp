@@ -59,8 +59,8 @@ CGirderDescPrestressPage::CGirderDescPrestressPage() :
 CPropertyPage(CGirderDescPrestressPage::IDD)
 {
 	//{{AFX_DATA_INIT(CGirderDescPrestressPage)
-	m_StrandSizeIdx = -1;
-	m_TempStrandSizeIdx = -1;
+	m_StrandSizeIdx = INVALID_INDEX;
+	m_TempStrandSizeIdx = INVALID_INDEX;
 	//}}AFX_DATA_INIT
 }
 
@@ -343,20 +343,20 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
 
 
-	DDX_CBIndex(pDX, IDC_STRAND_SIZE, m_StrandSizeIdx);
-	DDX_CBIndex(pDX, IDC_TEMP_STRAND_SIZE, m_TempStrandSizeIdx);
+	DDX_CBIndex(pDX, IDC_STRAND_SIZE, (int&)m_StrandSizeIdx);
+	DDX_CBIndex(pDX, IDC_TEMP_STRAND_SIZE, (int&)m_TempStrandSizeIdx);
 
    if (pDX->m_bSaveAndValidate)
    {
       // strand material
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
       CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
-      Int32 key = pList->GetItemData( m_StrandSizeIdx );
+      Int32 key = (Int32)pList->GetItemData( (int)m_StrandSizeIdx );
       pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Straight] = pPool->GetStrand( key );
       pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Harped] = pPool->GetStrand( key );
 
       pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
-      key = pList->GetItemData( m_TempStrandSizeIdx );
+      key = (Int32)pList->GetItemData( (int)m_TempStrandSizeIdx );
       pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Temporary] = pPool->GetStrand( key );
    }
 }
@@ -402,7 +402,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    int cStrands = pList->GetCount();
    for ( int i = 0; i < cStrands; i++ )
    {
-      Int32 key = pList->GetItemData( i );
+      Int32 key = (Int32)pList->GetItemData( i );
       if ( key == target_key )
       {
          m_StrandSizeIdx = i;
@@ -415,7 +415,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    cStrands = pList->GetCount();
    for ( int i = 0; i < cStrands; i++ )
    {
-      Int32 key = pList->GetItemData( i );
+      Int32 key = (Int32)pList->GetItemData( i );
       if ( key == target_key )
       {
          m_TempStrandSizeIdx = i;
@@ -510,14 +510,14 @@ StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(IStrandGeometry* 
    {
       nextnum = pStrands->GetNextNumPermanentStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, currNum);
 
-      if (nextnum==-1)
+      if (nextnum == INVALID_INDEX)
          nextnum=currNum; // no increment if we hit the top
    }
    else
    {
       nextnum = pStrands->GetPreviousNumPermanentStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, currNum);
 
-      if (nextnum==-1)
+      if (nextnum == INVALID_INDEX)
          nextnum=currNum; // no increment if we hit the bottom
    }
 
@@ -535,14 +535,14 @@ StrandIndexType CGirderDescPrestressPage::StrandSpinnerInc(IStrandGeometry* pStr
    {
       nextnum = pStrands->GetNextNumStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, type, currNum);
 
-      if (nextnum==-1)
+      if (nextnum == INVALID_INDEX)
          nextnum=currNum; // no increment if we hit the top
    }
    else
    {
       nextnum = pStrands->GetPrevNumStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, type, currNum);
 
-      if (nextnum==-1)
+      if (nextnum == INVALID_INDEX)
          nextnum=currNum; // no increment if we hit the bottom
    }
 
@@ -564,7 +564,7 @@ void CGirderDescPrestressPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESUL
 
    StrandIndexType inc = StrandSpinnerInc( pStrandGeom, pgsTypes::Straight, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
 
-   pNMUpDown->iDelta = inc;
+   pNMUpDown->iDelta = (int)inc;
 
    CWnd* pWnd = GetDlgItem( IDC_SS_JACK_FORCE );
    StrandIndexType nStrands = StrandIndexType(pNMUpDown->iPos + pNMUpDown->iDelta);
@@ -602,15 +602,15 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
    int cursel = box->GetCurSel();
    if (cursel==NPS_TOTAL_NUMBER)
    {
-      pNMUpDown->iDelta  = PermStrandSpinnerInc( pStrandGeom, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
+      pNMUpDown->iDelta  = (int)PermStrandSpinnerInc( pStrandGeom, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
    }
    else
    {
-      pNMUpDown->iDelta  = StrandSpinnerInc( pStrandGeom, pgsTypes::Harped, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
+      pNMUpDown->iDelta  = (int)StrandSpinnerInc( pStrandGeom, pgsTypes::Harped, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
    }
 
    CWnd* pWnd = GetDlgItem( IDC_HS_JACK_FORCE );
-   long nStrands = pNMUpDown->iPos + pNMUpDown->iDelta;
+   StrandIndexType nStrands = StrandIndexType(pNMUpDown->iPos + pNMUpDown->iDelta);
    BOOL bCalcPsForce = IsDlgButtonChecked( IDC_HS_JACK );
    pWnd->EnableWindow( nStrands == 0 ? FALSE : (bCalcPsForce ? FALSE : TRUE) );
    Float64 Pjack;
@@ -690,7 +690,7 @@ void CGirderDescPrestressPage::OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* p
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   pNMUpDown->iDelta  = StrandSpinnerInc( pStrandGeom, pgsTypes::Temporary, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
+   pNMUpDown->iDelta  = (int)StrandSpinnerInc( pStrandGeom, pgsTypes::Temporary, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
 
    CWnd* pWnd = GetDlgItem( IDC_TEMP_JACK_FORCE );
    StrandIndexType nStrands = pNMUpDown->iPos + pNMUpDown->iDelta;
@@ -1124,7 +1124,7 @@ void CGirderDescPrestressPage::HideControls(int key)
    int nPjackCheck;
    int nPjackEdit;
    int nPjackUnit;
-   long nStrandPoints; // Number of strand points
+   StrandIndexType nStrandPoints; // Number of strand points
 
    switch( key )
    {
@@ -1463,7 +1463,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   long nh = GetHarpedStrandCount();
+   StrandIndexType nh = GetHarpedStrandCount();
 
    CComboBox* box = (CComboBox*)GetDlgItem(IDC_HP_COMBO_END);
    int cursel = box->GetCurSel();
@@ -1564,7 +1564,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       uda.nInc=1;
       pSpin->SetAccel(1,&uda);
       pSpin->SetRange( 0, short(nStrandsMax) );
-      pSpin->SetPos(num_total);
+      pSpin->SetPos((int)num_total);
 
       // convert pjack
       CButton* pbut = (CButton*) GetDlgItem( IDC_HS_JACK );
@@ -1629,7 +1629,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       StrandIndexType num_straight, num_harped;
       pStrandGeometry->ComputeNumPermanentStrands( total_strands, pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, &num_straight, &num_harped);
 
-      long nStrandsMax = pStrandGeometry->GetMaxStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, pgsTypes::Straight);
+      StrandIndexType nStrandsMax = pStrandGeometry->GetMaxStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, pgsTypes::Straight);
 
       CSpinButtonCtrl* pSpin = (CSpinButtonCtrl*)GetDlgItem( IDC_NUM_SS_SPIN );
       UDACCEL uda;
@@ -1637,7 +1637,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       uda.nInc=1;
       pSpin->SetAccel(1,&uda);
       pSpin->SetRange( 0, (short)nStrandsMax );
-      pSpin->SetPos(num_straight);
+      pSpin->SetPos((int)num_straight);
 
       nStrandsMax = pStrandGeometry->GetMaxStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, pgsTypes::Harped);
 
@@ -1646,7 +1646,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       uda.nInc=1;
       pSpin->SetAccel(1,&uda);
       pSpin->SetRange( 0, (short)nStrandsMax );
-      pSpin->SetPos(num_harped);
+      pSpin->SetPos((int)num_harped);
 
       // convert pjack
       CButton* pbut = (CButton*) GetDlgItem( IDC_HS_JACK );
@@ -1717,7 +1717,7 @@ void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
    matPsStrand::Size cur_size = matPsStrand::D1270;
    if ( cur_sel != CB_ERR )
    {
-      Int32 cur_key = pList->GetItemData( cur_sel );
+      Int32 cur_key = (Int32)pList->GetItemData( cur_sel );
       const matPsStrand* pCurStrand = pPool->GetStrand( cur_key );
       cur_size = pCurStrand->GetSize();
    }
@@ -1780,10 +1780,10 @@ void CGirderDescPrestressPage::OnStrandTypeChanged()
    // Very tricky code here - Update the strand material in order to compute new jacking forces
    // Strand material comes out of the strand pool
    CDataExchange DX(this,true);
-	DDX_CBIndex(&DX, IDC_STRAND_SIZE, m_StrandSizeIdx);
+	DDX_CBIndex(&DX, IDC_STRAND_SIZE, (int&)m_StrandSizeIdx);
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
-   Int32 key = pList->GetItemData( m_StrandSizeIdx );
+   Int32 key = (Int32)pList->GetItemData( (int)m_StrandSizeIdx );
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Straight] = pPool->GetStrand( key );
@@ -1798,10 +1798,10 @@ void CGirderDescPrestressPage::OnTempStrandTypeChanged()
    // Very tricky code here - Update the strand material in order to compute new jacking forces
    // Strand material comes out of the strand pool
    CDataExchange DX(this,true);
-	DDX_CBIndex(&DX, IDC_TEMP_STRAND_SIZE, m_TempStrandSizeIdx);
+	DDX_CBIndex(&DX, IDC_TEMP_STRAND_SIZE, (int&)m_TempStrandSizeIdx);
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
-   Int32 key = pList->GetItemData( m_TempStrandSizeIdx );
+   Int32 key = (Int32)pList->GetItemData( (int)m_TempStrandSizeIdx );
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Temporary] = pPool->GetStrand( key );

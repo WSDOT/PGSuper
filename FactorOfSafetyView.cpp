@@ -448,14 +448,14 @@ void CFactorOfSafetyView::DoUpdateNow()
    m_bValidGraph = false;
    m_Graph.ClearData();
 
-   Uint32 seriesFS1 = m_Graph.CreateDataSeries();
+   IndexType seriesFS1 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(seriesFS1, CURVE_STYLE, CURVE_WIDTH, CURVE1_COLOR);
-   Uint32 seriesFS2 = m_Graph.CreateDataSeries();
+   IndexType seriesFS2 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(seriesFS2, CURVE_STYLE, CURVE_WIDTH, CURVE2_COLOR);
 
-   Uint32 limitFS1 = m_Graph.CreateDataSeries();
+   IndexType limitFS1 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(limitFS1, LIMIT_STYLE, CURVE_WIDTH, CURVE1_COLOR);
-   Uint32 limitFS2 = m_Graph.CreateDataSeries();
+   IndexType limitFS2 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(limitFS2, LIMIT_STYLE, CURVE_WIDTH, CURVE2_COLOR);
 
    UpdateUnits();
@@ -561,7 +561,7 @@ void CFactorOfSafetyView::DoUpdateNow()
    Invalidate();
 }
 
-void CFactorOfSafetyView::AddGraphPoint(Uint32 series, Float64 xval, Float64 yval)
+void CFactorOfSafetyView::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
 {
    // deal with unit conversion
    arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);

@@ -131,28 +131,28 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 
       col = 0;
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       if ( !bIsPrismatic )
       {
          table->SetRowSpan(0,col,2);
-         table->SetRowSpan(1,col++,-1);
+         table->SetRowSpan(1,col++,SKIP_CELL);
 
          table->SetRowSpan(0,col,2);
-         table->SetRowSpan(1,col++,-1);
+         table->SetRowSpan(1,col++,SKIP_CELL);
       }
 
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       table->SetRowSpan(0,col,2);
-      table->SetRowSpan(1,col++,-1);
+      table->SetRowSpan(1,col++,SKIP_CELL);
 
       table->SetColumnSpan(0,col,3);
       (*table)(0,col++) << _T("Permanent Strands");
@@ -161,7 +161,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       (*table)(0,col++) << _T("Temporary Strands");
 
       for ( ColumnIndexType i = col; i < numColumns; i++ )
-         table->SetColumnSpan(0,i,-1);
+         table->SetColumnSpan(0,i,SKIP_CELL);
 
       // perm
       col -= 2;
@@ -249,7 +249,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 void CElasticShorteningTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
-   int rowOffset = GetNumberOfHeaderRows()-1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows()-1;
 
    const lrfdElasticShortening& es = details.pLosses->ElasticShortening();
 

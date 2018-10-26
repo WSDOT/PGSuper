@@ -35,7 +35,7 @@ DEFINE_GUID(IID_iMomentLoadDrawStrategy,
 
 interface iMomentLoadDrawStrategy : public IUnknown
 {
-  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load, Uint32 loadIndex, 
+  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load, IndexType loadIndex, 
                         Float64 girderDepth, Float64 spanLength, Float64 maxMagnitude, COLORREF color) PURE;
 };
 

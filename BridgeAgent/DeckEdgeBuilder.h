@@ -40,8 +40,8 @@ private:
    CComPtr<ICogoEngine> m_CogoEngine;
    CComPtr<IAlignment> m_Alignment;
    std::vector<CDeckPoint> m_DeckPoints;
-   long m_DeckPointIdx;
-   long m_nDeckPoints;
+   CollectionIndexType m_DeckPointIdx;
+   CollectionIndexType m_nDeckPoints;
 
    CComPtr<IPath> m_LeftPath, m_RightPath;
    CComPtr<ICubicSpline> m_LeftSpline, m_RightSpline;

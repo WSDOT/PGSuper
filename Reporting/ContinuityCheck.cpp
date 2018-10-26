@@ -76,7 +76,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISpecification,pSpec);
 
-   long nSpans = pBridge->GetSpanCount();
+   SpanIndexType nSpans = pBridge->GetSpanCount();
 
    // if there is only one span or if this is simple span analysis, get the heck outta here
    pgsTypes::AnalysisType analysis_type = pSpec->GetAnalysisType();

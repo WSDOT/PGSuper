@@ -377,7 +377,7 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(pgsTypes::Sta
    std::map<PoiKey,MINMOMENTCAPDETAILS>::iterator found;
    std::map<PoiKey,MINMOMENTCAPDETAILS>* pMap;
 
-   if ( 0 <= poi.GetID() )
+   if ( poi.GetID() != INVALID_ID )
    {
       pMap = ( stage == pgsTypes::BridgeSite1 ) ? &m_NonCompositeMinMomentCapacity[bPositiveMoment]
                                                 : &m_CompositeMinMomentCapacity[bPositiveMoment];
@@ -405,7 +405,7 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(pgsTypes::Sta
    std::map<PoiKey,CRACKINGMOMENTDETAILS>::iterator found;
    std::map<PoiKey,CRACKINGMOMENTDETAILS>* pMap;
 
-   if ( 0 <= poi.GetID() )
+   if ( poi.GetID() != INVALID_ID )
    {
       pMap = ( stage == pgsTypes::BridgeSite1 ) ? &m_NonCompositeCrackingMoment[bPositiveMoment] 
                                                 : &m_CompositeCrackingMoment[bPositiveMoment];
@@ -470,7 +470,7 @@ pgsPointOfInterest CEngAgentImp::GetEquivalentPointOfInterest(pgsTypes::Stage st
          Float64 dist_from_end = girder_length - dist_from_start;
          search_poi = pPOI->GetPointOfInterest(stage,span,gdr,dist_from_end);
 
-         if ( search_poi.GetID() == -1 ) // a symmetric POI was not actually found
+         if ( search_poi.GetID() == INVALID_ID ) // a symmetric POI was not actually found
             search_poi = poi;
       }
    }
@@ -518,7 +518,7 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(pgsTypes::Sta
    MomentCapacityDetailsContainer::const_iterator found;
 
    // if this is a real POI, then see if we've already computed results
-   if ( 0 <= search_poi.GetID() )
+   if ( search_poi.GetID() != INVALID_ID )
    {
       PoiKey key(search_poi.GetID(),search_poi);
       found = container.find( key );
@@ -628,7 +628,7 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
 
    CollectionIndexType idx = LimitStateToShearIndex(ls);
 
-   if ( 0 <= poi.GetID() )
+   if ( poi.GetID() != INVALID_ID )
    {
       PoiKey key(poi.GetID(),poi);
       found = m_ShearCapacity[idx].find( key );
@@ -651,7 +651,7 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
 {
    std::map<PoiKey,FPCDETAILS>::iterator found;
 
-   if ( 0 <= poi.GetID() )
+   if ( poi.GetID() != INVALID_ID )
    {
       PoiKey key(poi.GetID(),poi);
       found = m_Fpc.find( key );
@@ -1012,7 +1012,7 @@ const CRACKEDSECTIONDETAILS* CEngAgentImp::ValidateCrackedSectionDetails(const p
    std::map<PoiKey,CRACKEDSECTIONDETAILS>::iterator found;
 
    int idx = (bPositiveMoment ? 0 : 1);
-   if ( 0 <= poi.GetID() )
+   if ( poi.GetID() != INVALID_ID )
    {
       PoiKey key(poi.GetID(),poi);
       found = m_CrackedSectionDetails[idx].find( key );
@@ -1663,7 +1663,7 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,
                                                  pgsTypes::LossStage lossStage)
 {
    Float64 Ps = GetPrestressForce(poi,config,strandType,lossStage);
-   long nStrands = config.Nstrands[strandType];
+   StrandIndexType nStrands = config.Nstrands[strandType];
 
    GET_IFACE(IBridge,pBridge);
    Float64 gdr_length = pBridge->GetGirderLength(poi.GetSpan(),poi.GetGirder());
@@ -1776,10 +1776,10 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    GET_IFACE(ILiveLoads,pLiveLoads);
 
 
-   long nSpans = pBridge->GetSpanCount();
+   SpanIndexType nSpans = pBridge->GetSpanCount();
 
    AlignmentData2 alignment_data = pRoadway->GetAlignmentData2();
-   long nCurves = alignment_data.HorzCurves.size();
+   CollectionIndexType nCurves = alignment_data.HorzCurves.size();
    if ( nCurves == 0 )
       return; // no curves
 
@@ -2383,7 +2383,7 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
          table->SetNumberOfHeaderRows(2);
 
          table->SetRowSpan(0,0,2);
-         table->SetRowSpan(1,0,-1);
+         table->SetRowSpan(1,0,SKIP_CELL);
          (*table)(0,0) << _T("");
 
          table->SetColumnSpan(0,1,4);
@@ -2392,12 +2392,12 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
          table->SetColumnSpan(0,2,4);
          (*table)(0,2) << _T("Fatigue");
 
-         table->SetColumnSpan(0,3,-1);
-         table->SetColumnSpan(0,4,-1);
-         table->SetColumnSpan(0,5,-1);
-         table->SetColumnSpan(0,6,-1);
-         table->SetColumnSpan(0,7,-1);
-         table->SetColumnSpan(0,8,-1);
+         table->SetColumnSpan(0,3,SKIP_CELL);
+         table->SetColumnSpan(0,4,SKIP_CELL);
+         table->SetColumnSpan(0,5,SKIP_CELL);
+         table->SetColumnSpan(0,6,SKIP_CELL);
+         table->SetColumnSpan(0,7,SKIP_CELL);
+         table->SetColumnSpan(0,8,SKIP_CELL);
 
          (*table)(1,1) << _T("+M");
          (*table)(1,2) << _T("-M");
@@ -2675,7 +2675,7 @@ void CEngAgentImp::GetCrackingMomentDetails(pgsTypes::Stage stage,const pgsPoint
 {
    // Capacity is only computed in these stages
    ATLASSERT( stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite3 );
-   ATLASSERT( 0 <= poi.GetID() );
+   ATLASSERT( poi.GetID() != INVALID_ID );
 
    *pcmd = *ValidateCrackingMoments(stage,poi,bPositiveMoment);
 }

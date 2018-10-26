@@ -191,7 +191,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        poi, MinSimpleContinuousEnvelope ) );
 
          Float64 min, max;
-         long minConfig, maxConfig;
+         VehicleIndexType minConfig, maxConfig;
          if ( bDesign )
          {
             if ( bPedLoading )
@@ -363,7 +363,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
       else
       {
          Float64 min, max;
-         long minConfig, maxConfig;
+         VehicleIndexType minConfig, maxConfig;
          if ( bSidewalk )
          {
             (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftSidewalk, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );

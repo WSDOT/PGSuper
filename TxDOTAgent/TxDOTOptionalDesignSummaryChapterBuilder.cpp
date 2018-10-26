@@ -375,7 +375,7 @@ void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, c
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   int nrows = strandRows.size() + 1;
+   RowIndexType nrows = strandRows.size() + 1;
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(nrows,tableName);
    *p << p_table << rptNewLine;
@@ -385,7 +385,7 @@ void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, c
    (*p_table)(0,0) << Bold( tit.c_str() );
    (*p_table)(1,0) << Bold(_T("No. Strands"));
 
-   int col = 1;
+   ColumnIndexType col = 1;
    for (CTxDOTOptionalDesignGirderData::StrandRowConstIterator it=strandRows.begin(); it!=strandRows.end(); it++)
    {
       (*p_table)(0,col)   << component.SetValue( it->RowElev );

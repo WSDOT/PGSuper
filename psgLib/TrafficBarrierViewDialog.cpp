@@ -183,7 +183,7 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,ISha
    polypoints->get__Enum(&enum_points);
 
    ULONG nFetched;
-   enum_points->Next(nPoints,points,&nFetched);
+   enum_points->Next((ULONG)nPoints,points,&nFetched);
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
@@ -196,7 +196,7 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,ISha
       points[i]->Release();
    }
 
-   pDC->Polygon(dev_points,nPoints);
+   pDC->Polygon(dev_points,(int)nPoints);
 
    delete[] points;
    delete[] dev_points;

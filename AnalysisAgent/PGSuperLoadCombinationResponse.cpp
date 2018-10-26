@@ -125,7 +125,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeForces(/*[in]*/BSTR LoadCom
             ATLASSERT(concurrent_response != NULL);
 
             CComPtr<ISectionResult3Ds> left_results_new, right_results_new;
-            long poiID;
+            PoiIDType poiID;
             POIs->get_Item(resultIdx,&poiID);
             singlePOI->Add(poiID);
 
@@ -201,7 +201,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeDeflections(/*[in]*/BSTR Lo
             ATLASSERT(concurrent_response != NULL);
 
             CComPtr<ISectionResult3Ds> left_results_new, right_results_new;
-            long poiID;
+            PoiIDType poiID;
             POIs->get_Item(resultIdx,&poiID);
             singlePOI->Add(poiID);
 
@@ -276,7 +276,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeReactions(/*[in]*/BSTR Load
             ATLASSERT(concurrent_response != NULL);
 
             CComPtr<IResult3Ds> results_new;
-            long poiID;
+            PoiIDType poiID;
             POIs->get_Item(resultIdx,&poiID);
             singlePOI->Add(poiID);
 
@@ -348,7 +348,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeSupportDeflections(/*[in]*/
             ATLASSERT(concurrent_response != NULL);
 
             CComPtr<IResult3Ds> results_new;
-            long poiID;
+            PoiIDType poiID;
             POIs->get_Item(resultIdx,&poiID);
             singlePOI->Add(poiID);
 
@@ -421,7 +421,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeStresses(/*[in]*/BSTR LoadC
             ATLASSERT(concurrent_response != NULL);
 
             CComPtr<ISectionStressResults> left_results_new, right_results_new;
-            long poiID;
+            PoiIDType poiID;
             POIs->get_Item(resultIdx,&poiID);
             singlePOI->Add(poiID);
 

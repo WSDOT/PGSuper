@@ -442,7 +442,7 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing)
    dlg.m_bHasFct = this->HasAggSplittingStrength();
    dlg.m_Fct = this->GetAggSplittingStrength();
 
-   int i = dlg.DoModal();
+   INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       this->SetFc(dlg.m_Fc);

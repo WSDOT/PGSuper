@@ -180,7 +180,7 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject*
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      int spanIdx = (pThis->m_PierIdx == pThis->m_nPiers-1 ? pThis->m_nPiers-2 : pThis->m_PierIdx);
+      SpanIndexType spanIdx = (pThis->m_PierIdx == pThis->m_nPiers-1 ? pThis->m_nPiers-2 : pThis->m_PierIdx);
       pThis->m_pFrame->SelectGirder(spanIdx,0);
       return true;
    }
@@ -240,8 +240,8 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
          pMenu->AppendMenu(IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD,CPierData::AsString(pgsTypes::IntegralBeforeDeckHingeAhead),NULL);
       }
 
-      std::map<Uint32,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-      std::map<Uint32,IBridgePlanViewEventCallback*>::iterator iter;
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgePlanViewEventCallback* callback = iter->second;

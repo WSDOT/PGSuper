@@ -156,7 +156,7 @@ private:
    EntryCollectionType m_Entries;
 
    // get entry index associated with grid row
-   long GetRowEntry(ROWCOL nRow);
+   CollectionIndexType GetRowEntry(ROWCOL nRow);
    //  return number of rows required for entire collection
    ROWCOL GetRowsForEntries();
 

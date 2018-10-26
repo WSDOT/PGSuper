@@ -65,7 +65,7 @@ inline std::list<int> ComputeTableCols(const std::vector<SpanGirderHashType>& sp
    // Idea here is to break tables at spans. 
    // First build list of sizes of contiguous blocks of spans
    std::list<int> contiguous_blocks1;
-   SpanIndexType curr_span(-1);
+   SpanIndexType curr_span(INVALID_INDEX);
    bool first=false;
    for(std::vector<SpanGirderHashType>::const_iterator it=spanGirders.begin(); it!=spanGirders.end(); it++)
    {
@@ -270,7 +270,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       // see if fill order type was changed
       if (pArtifact->GetDesignOptions().doStrandFillType==ftGridOrder)
       {
-         Int32 num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
+         StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
          // we asked design to fill using grid, but this may be a non-standard design - let's check
          GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
@@ -322,8 +322,8 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       (*pTable)(row,2) << girderData.Nstrands[pgsTypes::Straight];
 
       // print straight debond information if exists
-      long ddb = config.Debond[pgsTypes::Straight].size();
-      long pdb = pStrandGeometry->GetNumDebondedStrands(span,gdr,pgsTypes::Straight);
+      StrandIndexType ddb = config.Debond[pgsTypes::Straight].size();
+      StrandIndexType pdb = pStrandGeometry->GetNumDebondedStrands(span,gdr,pgsTypes::Straight);
       if (ddb>0 || pdb>0)
       {
          (*pTable)(row,1) << _T(" (")<<ddb<<_T(" debonded)");
@@ -401,7 +401,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             ATLASSERT(false); // should never get here
          }
 
-         double offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
+         Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
                                                                              pArtifact->GetNumHarpedStrands(), 
                                                                              HsoEnd, 
                                                                              pArtifact->GetHarpStrandOffsetEnd());
@@ -608,7 +608,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       *pParagraph << Bold(_T("Current Values:")) << rptNewLine;
 
       GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
-      Uint32 ncz = pStirrupGeometry->GetNumZones(span,gdr);
+      ZoneIndexType ncz = pStirrupGeometry->GetNumZones(span,gdr);
 
       if (0 < ncz)
       {
@@ -626,9 +626,9 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
          CHECK(pool!=0);
 
-         Uint32 nhz = (ncz+1)/2;
+         ZoneIndexType nhz = (ncz+1)/2;
          Float64 zone_end = 0.0;
-         for (Uint32 i=0; i<nhz; i++)
+         for (ZoneIndexType i=0; i<nhz; i++)
          {
             RowIndexType row = i+1;
 
@@ -653,7 +653,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          }
 
          // confinement
-         Uint32 lz   = pStirrupGeometry->GetNumConfinementZones(span,gdr);
+         ZoneIndexType lz   = pStirrupGeometry->GetNumConfinementZones(span,gdr);
          matRebar::Size size = pStirrupGeometry->GetConfinementBarSize(span,gdr);
          if (lz != 0 && size != matRebar::bsNone )
          {
@@ -705,7 +705,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       GDRCONFIG config = pArtifact->GetGirderConfiguration();
 
       GET_IFACE2(pBroker,ICamber,pCamber);
-      double excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
+      Float64 excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
       if ( excess_camber < 0 )
       {
          *pParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
@@ -989,7 +989,7 @@ void multiple_girder_table(int startIdx, int endIdx,
       {
          if (pArtifact->GetNumHarpedStrands()>0)
          {
-            double offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
+            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
                                                                                 pArtifact->GetNumHarpedStrands(), 
                                                                                 hsoTOP2BOTTOM, 
                                                                                 pArtifact->GetHarpStrandOffsetEnd());

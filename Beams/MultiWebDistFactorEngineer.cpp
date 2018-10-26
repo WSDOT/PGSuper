@@ -535,7 +535,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    Float64 tscg = (ts*ts/2.0 - tf*tf/2.0)/(ts+tf);
    plldf->eg    = plldf->Yt + tscg;
 
-   Uint32 nWebs = pGirder->GetNumberOfWebs(span,gdr);
+   WebIndexType nWebs = pGirder->GetNumberOfWebs(span,gdr);
    plldf->connectedAsUnit = ( pDeck->TransverseConnectivity == pgsTypes::atcConnectedAsUnit ? true : false);
 
    lrfdLiveLoadDistributionFactorBase* pLLDF;

@@ -696,8 +696,8 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   std::map<Uint32,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-   std::map<Uint32,IBridgePlanViewEventCallback*>::iterator iter;
+   std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+   std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
    for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
    {
       IBridgePlanViewEventCallback* callback = iter->second;
@@ -829,7 +829,7 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
       CComPtr<iDisplayObject> pDO = selObjs[0].m_T;
       CComPtr<iDisplayList> pDispList;
       pDO->GetDisplayList(&pDispList);
-      long dispListID = pDispList->GetID();
+      IDType dispListID = pDispList->GetID();
       if ( pDO->GetID() == SECTION_CUT_ID )
       {
          bLeftRight = true;
@@ -1489,7 +1489,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
       // make the pier outline just a bit wider
       SpanIndexType prev_span_idx = pierIdx - 1;
-      SpanIndexType next_span_idx = pierIdx == nSpans ? -1 : pierIdx;
+      SpanIndexType next_span_idx = pierIdx == nSpans ? INVALID_INDEX : pierIdx;
 
       double left_offset  = 0;
       double right_offset = 0;

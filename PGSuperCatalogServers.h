@@ -33,10 +33,10 @@ public:
    CPGSuperCatalogServers();
    ~CPGSuperCatalogServers();
    void AddServer(CPGSuperCatalogServer* pserver);
-   long GetServerCount() const;
-   const CPGSuperCatalogServer* GetServer(long index) const;
+   CollectionIndexType GetServerCount() const;
+   const CPGSuperCatalogServer* GetServer(CollectionIndexType index) const;
    const CPGSuperCatalogServer* GetServer(const CString& strName) const;
-   void RemoveServer(long index);
+   void RemoveServer(CollectionIndexType index);
    void RemoveServer(const CString& strName);
    bool IsServerDefined(const CString& strName) const;
 

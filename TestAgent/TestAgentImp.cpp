@@ -376,7 +376,7 @@ std::_tstring CTestAgentImp::GetBridgeID()
 
       // Filename is in the form Regxxx.pgs
       std::_tstring::size_type pos = strPath.find(_T(".pgs"));
-      int len = strPath.length();
+      std::_tstring::size_type len = strPath.length();
       if ( pos == std::_tstring::npos )
          return 0; // "Reg" was not found
 
@@ -432,11 +432,11 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
 
    vPoi = pIPoi->GetPointsOfInterest( span,gdr,pgsTypes::BridgeSite3,attrib);
 
-   Uint32 npoi = vPoi.size();
-   for (Uint32 i=0; i<npoi; i++)
+   CollectionIndexType npoi = vPoi.size();
+   for (CollectionIndexType i=0; i<npoi; i++)
    {
       pgsPointOfInterest& rpoi = vPoi[i];
-      Uint32 locn = i+1;
+      CollectionIndexType locn = i+1;
       Float64 loc = ::ConvertFromSysUnits(rpoi.GetDistFromStart(), unitMeasure::Millimeter);
 
       // write to poi file
@@ -553,11 +553,11 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
    vPoi = pIPoi->GetPointsOfInterest( span,gdr,pgsTypes::BridgeSite3,attrib);
 
-   Uint32 npoi = vPoi.size();
-   for (Uint32 i=0; i<npoi; i++)
+   CollectionIndexType npoi = vPoi.size();
+   for (CollectionIndexType i=0; i<npoi; i++)
    {
       pgsPointOfInterest& poi = vPoi[i];
-      Uint32 locn = i+1;
+      CollectionIndexType locn = i+1;
       Float64 loc = ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter);
 
       // write to poi file
@@ -683,11 +683,11 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    BridgeAnalysisType bat;
 
-   Uint32 npoi = vPoi.size();
-   for (Uint32 i=0; i<npoi; i++)
+   CollectionIndexType npoi = vPoi.size();
+   for (CollectionIndexType i=0; i<npoi; i++)
    {
       pgsPointOfInterest& poi = vPoi[i];
-      Uint32 locn = i+1;
+      CollectionIndexType locn = i+1;
       Float64 loc = ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter);
 
       // write to poi file
@@ -1108,8 +1108,8 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
    // stirrup check at zones
    GET_IFACE( IStirrupGeometry, pStirrupGeometry );
-   Uint32 nZones = pStirrupGeometry->GetNumZones(span,gdr);
-   for (Uint32 zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+   ZoneIndexType nZones = pStirrupGeometry->GetNumZones(span,gdr);
+   for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
    {
       const pgsStirrupCheckAtZonesArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtZonesArtifact( zoneIdx );
       const pgsConfinementArtifact* pconf = psArtifact->GetConfinementArtifact();

@@ -365,12 +365,12 @@ void CPGSuperDoc::OnLibMgrChanged(psgLibraryManager* pNewLibMgr)
 }
 
 // libISupportLibraryManager implementation
-int CPGSuperDoc::GetNumberOfLibraryManagers() const
+CollectionIndexType CPGSuperDoc::GetNumberOfLibraryManagers() const
 {
    return 1;
 }
 
-libLibraryManager* CPGSuperDoc::GetLibraryManager(int num)
+libLibraryManager* CPGSuperDoc::GetLibraryManager(CollectionIndexType num)
 {
    PRECONDITION( num == 0 );
    return &m_LibMgr;
@@ -575,7 +575,7 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
 
    dlg.SetActivePage(nPage);
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if ( st == IDOK )
    {
       txnEditGirder* pTxn = new txnEditGirder(spanIdx,gdrIdx,
@@ -764,7 +764,7 @@ void CPGSuperDoc::EditGirderViewSettings(int nPage)
    dlg.SetSettings(settings);
    dlg.SetActivePage(nPage);
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if (st==IDOK)
    {
       settings = dlg.GetSettings();
@@ -785,7 +785,7 @@ void CPGSuperDoc::EditBridgeViewSettings(int nPage)
    dlg.SetSettings(settings);
    dlg.SetActivePage(nPage);
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if (st==IDOK)
    {
       settings = dlg.GetSettings();
@@ -875,16 +875,16 @@ BOOL CPGSuperDoc::UpdateTemplates()
    return FALSE; // didn't really open a file
 }
 
-Uint32 CPGSuperDoc::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
+IDType CPGSuperDoc::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
 {
-   Uint32 key = m_ViewCallbackID++;
+   IDType key = m_ViewCallbackID++;
    m_BridgePlanViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDoc::UnregisterBridgePlanViewCallback(Uint32 ID)
+bool CPGSuperDoc::UnregisterBridgePlanViewCallback(IDType ID)
 {
-   std::map<Uint32,IBridgePlanViewEventCallback*>::iterator found = m_BridgePlanViewCallbacks.find(ID);
+   std::map<IDType,IBridgePlanViewEventCallback*>::iterator found = m_BridgePlanViewCallbacks.find(ID);
    if ( found == m_BridgePlanViewCallbacks.end() )
       return false;
 
@@ -893,21 +893,21 @@ bool CPGSuperDoc::UnregisterBridgePlanViewCallback(Uint32 ID)
    return true;
 }
 
-std::map<Uint32,IBridgePlanViewEventCallback*> CPGSuperDoc::GetBridgePlanViewCallbacks()
+std::map<IDType,IBridgePlanViewEventCallback*> CPGSuperDoc::GetBridgePlanViewCallbacks()
 {
    return m_BridgePlanViewCallbacks;
 }
 
-Uint32 CPGSuperDoc::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
+IDType CPGSuperDoc::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
 {
-   Uint32 key = m_ViewCallbackID++;
+   IDType key = m_ViewCallbackID++;
    m_BridgeSectionViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDoc::UnregisterBridgeSectionViewCallback(Uint32 ID)
+bool CPGSuperDoc::UnregisterBridgeSectionViewCallback(IDType ID)
 {
-   std::map<Uint32,IBridgeSectionViewEventCallback*>::iterator found = m_BridgeSectionViewCallbacks.find(ID);
+   std::map<IDType,IBridgeSectionViewEventCallback*>::iterator found = m_BridgeSectionViewCallbacks.find(ID);
    if ( found == m_BridgeSectionViewCallbacks.end() )
       return false;
 
@@ -916,21 +916,21 @@ bool CPGSuperDoc::UnregisterBridgeSectionViewCallback(Uint32 ID)
    return true;
 }
 
-std::map<Uint32,IBridgeSectionViewEventCallback*> CPGSuperDoc::GetBridgeSectionViewCallbacks()
+std::map<IDType,IBridgeSectionViewEventCallback*> CPGSuperDoc::GetBridgeSectionViewCallbacks()
 {
    return m_BridgeSectionViewCallbacks;
 }
 
-Uint32 CPGSuperDoc::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
+IDType CPGSuperDoc::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
 {
-   Uint32 key = m_ViewCallbackID++;
+   IDType key = m_ViewCallbackID++;
    m_GirderElevationViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDoc::UnregisterGirderElevationViewCallback(Uint32 ID)
+bool CPGSuperDoc::UnregisterGirderElevationViewCallback(IDType ID)
 {
-   std::map<Uint32,IGirderElevationViewEventCallback*>::iterator found = m_GirderElevationViewCallbacks.find(ID);
+   std::map<IDType,IGirderElevationViewEventCallback*>::iterator found = m_GirderElevationViewCallbacks.find(ID);
    if ( found == m_GirderElevationViewCallbacks.end() )
       return false;
 
@@ -939,21 +939,21 @@ bool CPGSuperDoc::UnregisterGirderElevationViewCallback(Uint32 ID)
    return true;
 }
 
-std::map<Uint32,IGirderElevationViewEventCallback*> CPGSuperDoc::GetGirderElevationViewCallbacks()
+std::map<IDType,IGirderElevationViewEventCallback*> CPGSuperDoc::GetGirderElevationViewCallbacks()
 {
    return m_GirderElevationViewCallbacks;
 }
 
-Uint32 CPGSuperDoc::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
+IDType CPGSuperDoc::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
 {
-   Uint32 key = m_ViewCallbackID++;
+   IDType key = m_ViewCallbackID++;
    m_GirderSectionViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDoc::UnregisterGirderSectionViewCallback(Uint32 ID)
+bool CPGSuperDoc::UnregisterGirderSectionViewCallback(IDType ID)
 {
-   std::map<Uint32,IGirderSectionViewEventCallback*>::iterator found = m_GirderSectionViewCallbacks.find(ID);
+   std::map<IDType,IGirderSectionViewEventCallback*>::iterator found = m_GirderSectionViewCallbacks.find(ID);
    if ( found == m_GirderSectionViewCallbacks.end() )
       return false;
 
@@ -962,7 +962,7 @@ bool CPGSuperDoc::UnregisterGirderSectionViewCallback(Uint32 ID)
    return true;
 }
 
-std::map<Uint32,IGirderSectionViewEventCallback*> CPGSuperDoc::GetGirderSectionViewCallbacks()
+std::map<IDType,IGirderSectionViewEventCallback*> CPGSuperDoc::GetGirderSectionViewCallbacks()
 {
    return m_GirderSectionViewCallbacks;
 }
@@ -1767,7 +1767,7 @@ void CPGSuperDoc::OnExportToTemplateFile()
    fildlg.m_ofn.lpstrInitialDir = initial_dir;
 #endif // _DEBUG
 
-   int stf = fildlg.DoModal();
+   INT_PTR stf = fildlg.DoModal();
    if (stf==IDOK)
    {
       // try loop with a new file name
@@ -1987,7 +1987,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<SpanGirderHashType>& girderLi
       CEAFAutoProgress ap(pProgress,0,mask); 
 
       if (multi)
-         pProgress->Init(0,girderList.size(),1);  // and for multi-girders, a gauge.
+         pProgress->Init(0,(short)girderList.size(),1);  // and for multi-girders, a gauge.
 
       // Design all girders in list
       for (std::vector<SpanGirderHashType>::const_iterator it=girderList.begin(); it!=girderList.end(); it++)
@@ -2266,7 +2266,7 @@ void CPGSuperDoc::OnImportProjectLibrary()
 	// ask user for file name
    CFileDialog  fildlg(TRUE,_T("pgs"),NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
                    _T("PGSuper Project File (*.pgs)|*.pgs||"));
-   int stf = fildlg.DoModal();
+   INT_PTR stf = fildlg.DoModal();
    if (stf==IDOK)
    {
       CString rPath;
@@ -2807,7 +2807,7 @@ void CPGSuperDoc::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   long nSpans = pBridgeDesc->GetSpanCount();
+   SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
    if ( nSpans == 1 )
    {
       pCmdUI->Enable(FALSE);
@@ -2817,7 +2817,7 @@ void CPGSuperDoc::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
 
    if ( m_Selection.PierIdx != ALL_PIERS )
    {
-      long nPiers = pBridgeDesc->GetPierCount();
+      PierIndexType nPiers = pBridgeDesc->GetPierCount();
       CString strLabel;
       if ( m_Selection.PierIdx == 0 || m_Selection.PierIdx == nPiers-1 )
          strLabel.Format(_T("Delete Abutment %d"),m_Selection.PierIdx+1);
@@ -3162,7 +3162,7 @@ void CPGSuperDoc::OnImportMenu(CCmdUI* pCmdUI)
       pMenu->DeleteMenu(i,MF_BYPOSITION);
    }
 
-   Uint32 nImporters = m_PluginMgr.GetImporterCount();
+   CollectionIndexType nImporters = m_PluginMgr.GetImporterCount();
    if ( nImporters == 0 )
    {
       pCmdUI->SetText(_T("Custom importers not installed"));
@@ -3171,11 +3171,11 @@ void CPGSuperDoc::OnImportMenu(CCmdUI* pCmdUI)
    }
    else
    {
-      Uint32 idx;
+      CollectionIndexType idx;
       // clean up the menu
       for ( idx = 0; idx < nImporters; idx++ )
       {
-         pMenu->DeleteMenu(pCmdUI->m_nID+idx,MF_BYCOMMAND);
+         pMenu->DeleteMenu(pCmdUI->m_nID+(UINT)idx,MF_BYCOMMAND);
       }
 
       // populate the menu
@@ -3217,7 +3217,7 @@ void CPGSuperDoc::OnExportMenu(CCmdUI* pCmdUI)
       pMenu->DeleteMenu(i,MF_BYPOSITION);
    }
 
-   Uint32 nExporters = m_PluginMgr.GetExporterCount();
+   CollectionIndexType nExporters = m_PluginMgr.GetExporterCount();
    if ( nExporters == 0 )
    {
       pCmdUI->SetText(_T("Custom exporters not installed"));
@@ -3226,10 +3226,10 @@ void CPGSuperDoc::OnExportMenu(CCmdUI* pCmdUI)
    }
    else
    {
-      Uint32 idx;
+      CollectionIndexType idx;
       for ( idx = 0; idx < nExporters; idx++ )
       {
-         pMenu->DeleteMenu(pCmdUI->m_nID+idx,MF_BYCOMMAND);
+         pMenu->DeleteMenu(pCmdUI->m_nID+(UINT)idx,MF_BYCOMMAND);
       }
 
       for ( idx = 0; idx < nExporters; idx++ )

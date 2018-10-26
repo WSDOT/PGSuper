@@ -248,9 +248,9 @@ static bool CheckFileAgainstMd5(const CString& testFile, const CString& md5File)
    CString strArg2 = CString(_T("\"")) + testFile + CString(_T("\""));
    LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
 #if defined _UNICODE
-   int pgz_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t pgz_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
 #else
-   int pgz_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t pgz_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
 #endif
    LOG(_T("pgz_result = ") << pgz_result);
 
@@ -359,9 +359,9 @@ bool CPGSuperCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMaste
    CString strArg2 = CString(_T("\"")) + cachedMasterLibFile + CString(_T("\""));
    LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
 #if defined _UNICODE
-   int master_lib_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t master_lib_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
 #else
-   int master_lib_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t master_lib_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
 #endif
    LOG(_T("master_lib_result = ") << master_lib_result);
 
@@ -377,9 +377,9 @@ bool CPGSuperCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMaste
    strArg2 = CString(_T("-r ")) + CString(_T("\"")) + strWorkgroupTemplateFolderCache + CString(_T("\""));
    LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
 #if defined _UNICODE
-   int workgroup_template_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t workgroup_template_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
 #else
-   int workgroup_template_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t workgroup_template_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
 #endif
    LOG(_T("workgroup_template_result = ") << workgroup_template_result);
 

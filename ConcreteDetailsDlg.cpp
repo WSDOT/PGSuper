@@ -305,7 +305,7 @@ void CConcreteDetailsDlg::OnCopyMaterial()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	CCopyConcreteEntry dlg(false, this);
-   int result = dlg.DoModal();
+   INT_PTR result = dlg.DoModal();
    if ( result < 0 )
    {
       ::AfxMessageBox(_T("The Concrete library is empty"),MB_OK);

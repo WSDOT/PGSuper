@@ -107,8 +107,8 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
 
       table->SetRowSpan(0,0,2);
       table->SetRowSpan(0,1,2);
-      table->SetRowSpan(1,0,-1);
-      table->SetRowSpan(1,1,-1);
+      table->SetRowSpan(1,0,SKIP_CELL);
+      table->SetRowSpan(1,1,SKIP_CELL);
 
       table->SetColumnSpan(0,2,5);
       (*table)(0,2) << _T("Permanent Strands");
@@ -116,14 +116,14 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
       table->SetColumnSpan(0,3,5);
       (*table)(0,3) << _T("Temporary Strands");
 
-      table->SetColumnSpan(0,4,-1);
-      table->SetColumnSpan(0,5,-1);
-      table->SetColumnSpan(0,6,-1);
-      table->SetColumnSpan(0,7,-1);
-      table->SetColumnSpan(0,8,-1);
-      table->SetColumnSpan(0,9,-1);
-      table->SetColumnSpan(0,10,-1);
-      table->SetColumnSpan(0,11,-1);
+      table->SetColumnSpan(0,4,SKIP_CELL);
+      table->SetColumnSpan(0,5,SKIP_CELL);
+      table->SetColumnSpan(0,6,SKIP_CELL);
+      table->SetColumnSpan(0,7,SKIP_CELL);
+      table->SetColumnSpan(0,8,SKIP_CELL);
+      table->SetColumnSpan(0,9,SKIP_CELL);
+      table->SetColumnSpan(0,10,SKIP_CELL);
+      table->SetColumnSpan(0,11,SKIP_CELL);
 
       (*table)(1,2) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(1,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

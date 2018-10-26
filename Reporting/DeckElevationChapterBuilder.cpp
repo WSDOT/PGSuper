@@ -136,19 +136,17 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
       for ( GirderIndexType gdr = 0; gdr < nGdrs; gdr++ )
       {
          Float64 length = pBridge->GetSpanLength(span,gdr);
-         Float64 brgStart = pBridge->GetGirderStartBearingOffset(span,gdr);
-         Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
          std::vector<pgsPointOfInterest> vPoi = pPOI->GetTenthPointPOIs( pgsTypes::BridgeSite3, span, gdr );
 
          MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(span,gdr);
-         pTable->SetRowSpan(row,0,Int16(row_step*nWebs));
+         pTable->SetRowSpan(row,0,RowIndexType(row_step*nWebs));
 
          RowIndexType r;
          for ( r = row+1; r < row+row_step*nWebs; r++ )
          {
-            pTable->SetRowSpan(r,0,-1);
-            pTable->SetRowSpan(r,1,-1);
+            pTable->SetRowSpan(r,0,SKIP_CELL);
+            pTable->SetRowSpan(r,1,SKIP_CELL);
          }
 
          (*pTable)(row,0) << LABEL_GIRDER(gdr);
@@ -160,7 +158,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
             pTable->SetRowSpan(row,col,row_step);
             for ( r = row+1; r < row+row_step; r++ )
             {
-               pTable->SetRowSpan(r,col,-1);
+               pTable->SetRowSpan(r,col,SKIP_CELL);
             }
 
             (*pTable)(row,col++) << (web+1) << rptNewLine;
@@ -181,10 +179,8 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
                // in a nonprismatic member, web offset can  very with location
                Float64 webOffset = pGirder->GetMatingSurfaceLocation(poi,web);
 
-               Float64 location = poi.GetDistFromStart() + brgStart - end_size;
-
                Float64 sta, offset;
-               pBridge->GetStationAndOffset(span,gdr,location,&sta,&offset);
+               pBridge->GetStationAndOffset(poi,&sta,&offset);
 
                Float64 total_offset = offset + webOffset;
                Float64 elev = pAlignment->GetElevation(sta,total_offset);

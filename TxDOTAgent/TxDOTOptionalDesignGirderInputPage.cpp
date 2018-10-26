@@ -280,8 +280,8 @@ void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_OPT_STRAND_SIZE );
    int sel = pList->GetCurSel();
    ASSERT(sel!=CB_ERR);
-   Int32 key = pList->GetItemData( sel );
-   const matPsStrand* pmat = pPool->GetStrand( key );
+   DWORD_PTR key = pList->GetItemData( sel );
+   const matPsStrand* pmat = pPool->GetStrand( (Int32)key );
 
    pOptGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetSize());
 
@@ -300,7 +300,7 @@ void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
    sel = pList->GetCurSel();
    ASSERT(sel!=CB_ERR);
    key = pList->GetItemData( sel );
-   pmat = pPool->GetStrand( key );
+   pmat = pPool->GetStrand( (Int32)key );
 
    pOrigGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetSize());
 
@@ -391,8 +391,8 @@ void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeLi
    matPsStrand::Size cur_size = size;
    if ( cur_sel != CB_ERR )
    {
-      Int32 cur_key = pList->GetItemData( cur_sel );
-      const matPsStrand* pCurStrand = pPool->GetStrand( cur_key );
+      DWORD_PTR cur_key = pList->GetItemData( cur_sel );
+      const matPsStrand* pCurStrand = pPool->GetStrand( (Int32)cur_key );
       cur_size = pCurStrand->GetSize();
    }
 

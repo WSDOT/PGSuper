@@ -427,8 +427,8 @@ interface IStirrupGeometry : IUnknown
    virtual Float64 GetHorzStirrupBarNominalDiameter(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetVertStirrupBarArea(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetHorzStirrupBarArea(const pgsPointOfInterest& poi) = 0;
-   virtual Uint32 GetVertStirrupBarCount(const pgsPointOfInterest& poi)=0; // number of vertical stirrup bars crossing the shear plane
-   virtual Uint32 GetHorzStirrupBarCount(const pgsPointOfInterest& poi)=0; // number of horizontal stirrup bars in the splitting plane
+   virtual CollectionIndexType GetVertStirrupBarCount(const pgsPointOfInterest& poi)=0; // number of vertical stirrup bars crossing the shear plane
+   virtual CollectionIndexType GetHorzStirrupBarCount(const pgsPointOfInterest& poi)=0; // number of horizontal stirrup bars in the splitting plane
    virtual Float64 GetS(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetAlpha(const pgsPointOfInterest& poi) = 0; // stirrup angle=90 for vertical
    virtual matRebar::Size GetConfinementBarSize(SpanIndexType span,GirderIndexType gdr) = 0;
@@ -446,13 +446,13 @@ interface IStirrupGeometry : IUnknown
    // zones are sorted left->right 
    // zones are symmetric about mid-girder
    virtual ZoneIndexType GetNumZones(SpanIndexType span,GirderIndexType gdr)=0;
-   virtual Uint32 GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0;
+   virtual IDType GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0;
    virtual Float64 GetZoneStart(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0; // dist from start of girder
    virtual Float64 GetZoneEnd(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0; // dist from start of girder
    virtual matRebar::Size GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
    virtual matRebar::Size GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
-   virtual Uint32 GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
-   virtual Uint32 GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
+   virtual CollectionIndexType GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
+   virtual CollectionIndexType GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
    virtual Float64 GetS(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
 
    // bottom flange confinement bars - at same spacing as stirrups

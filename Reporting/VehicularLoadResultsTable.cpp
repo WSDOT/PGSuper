@@ -319,7 +319,7 @@ void CVehicularLoadResultsTable::MakeAssignment(const CVehicularLoadResultsTable
    MakeCopy( rOther );
 }
 
-void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,int row,int col,IEAFDisplayUnits* pDisplayUnits)
+void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,RowIndexType row,ColumnIndexType col,IEAFDisplayUnits* pDisplayUnits)
 {
    if ( config.size() == 0 )
    {

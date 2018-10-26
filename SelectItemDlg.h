@@ -49,7 +49,7 @@ private:
 	//}}AFX_DATA
 
 public:
-	int		m_ItemIdx;
+	IndexType m_ItemIdx;
    CString m_strTitle; // text for the title bar
    CString m_strItems; // \n delimited list of items
    CString m_strLabel; // descriptive label

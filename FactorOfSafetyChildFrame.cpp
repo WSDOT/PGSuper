@@ -107,7 +107,7 @@ void CFactorOfSafetyChildFrame::SelectSpan(SpanIndexType spanIdx,GirderIndexType
    }
 
    CComboBox* pcbGirders = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_GIRDER);
-   pcbGirders->SetCurSel(gdrIdx);
+   pcbGirders->SetCurSel((int)gdrIdx);
    OnGirderChanged();
 }
 
@@ -201,7 +201,7 @@ void CFactorOfSafetyChildFrame::UpdateBar()
       if (sel == CB_ERR)
       {
          CSelection selection = pDoc->GetSelection();
-         sel = selection.SpanIdx;
+         sel = (int)selection.SpanIdx;
          if ( sel == ALL_SPANS )
             sel = 0;
 
@@ -232,7 +232,7 @@ void CFactorOfSafetyChildFrame::UpdateBar()
    if (sel==CB_ERR) 
    {
       CSelection selection = pDoc->GetSelection();
-      sel = selection.GirderIdx;
+      sel = (int)selection.GirderIdx;
       if ( sel < 0 )
          sel = 0;
 

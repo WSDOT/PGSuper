@@ -120,8 +120,8 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
       table->SetRowSpan(0,0,2);
       table->SetRowSpan(0,1,2);
-      table->SetRowSpan(1,0,-1);
-      table->SetRowSpan(1,1,-1);
+      table->SetRowSpan(1,0,SKIP_CELL);
+      table->SetRowSpan(1,1,SKIP_CELL);
 
       int colspan = 4;
       if ( bIgnoreInitialRelaxation )
@@ -134,7 +134,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       (*table)(0,3) << _T("Temporary Strands");
 
       for ( ColumnIndexType i = 4; i < numColumns; i++ )
-         table->SetColumnSpan(0,i,-1);
+         table->SetColumnSpan(0,i,SKIP_CELL);
 
       // permanent
       col = 2;
@@ -209,7 +209,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
-   int rowOffset = GetNumberOfHeaderRows() - 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
    if ( !details.pLosses->IgnoreInitialRelaxation() )
          (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());

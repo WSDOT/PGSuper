@@ -397,11 +397,11 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
    if (rows>=1)
 	   RemoveRows(1, rows);
 
-   int size = rebarData.RebarRows.size();
+   CollectionIndexType size = rebarData.RebarRows.size();
    if (size>0)
    {
       // size grid
-      for (int i=0; i<size; i++)
+      for (CollectionIndexType i=0; i<size; i++)
 	      Insertrow();
 
       // fill grid
@@ -420,7 +420,7 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
          tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
 
-         VERIFY(SetValueRange(CGXRange(nRow, 3), (*it).NumberOfBars));
+         VERIFY(SetValueRange(CGXRange(nRow, 3), (LONG)(*it).NumberOfBars));
          VERIFY(SetValueRange(CGXRange(nRow, 4), (*it).Cover));
          VERIFY(SetValueRange(CGXRange(nRow, 5), (*it).BarSpacing));
          nRow++;

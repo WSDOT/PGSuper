@@ -198,19 +198,19 @@ BOOL CEditPointLoadDlg::OnInitDialog()
 
    if (m_Load.m_Span==ALL_SPANS)
    {
-      m_SpanCB.SetCurSel(nSpans);
+      m_SpanCB.SetCurSel((int)nSpans);
    }
    else
    {
       if (0 <= m_Load.m_Span && m_Load.m_Span < nSpans)
       {
-         m_SpanCB.SetCurSel(m_Load.m_Span);
+         m_SpanCB.SetCurSel((int)m_Load.m_Span);
       }
       else
       {
          ::AfxMessageBox(_T("Warning - The Span for this load is out of range. Resetting to Span 1"));
          m_Load.m_Span = 0;
-         m_SpanCB.SetCurSel(m_Load.m_Span);
+         m_SpanCB.SetCurSel((int)m_Load.m_Span);
       }
    }
 
@@ -224,13 +224,13 @@ BOOL CEditPointLoadDlg::OnInitDialog()
    {
       if (0 <= m_Load.m_Girder && m_Load.m_Girder < GirderIndexType(m_GirderCB.GetCount()-1) )
       {
-         m_GirderCB.SetCurSel(m_Load.m_Girder);
+         m_GirderCB.SetCurSel((int)m_Load.m_Girder);
       }
       else
       {
          ::AfxMessageBox(_T("Warning - The Girder for this load is out of range. Resetting to girder A"));
          m_Load.m_Girder=0;
-         m_GirderCB.SetCurSel(m_Load.m_Girder);
+         m_GirderCB.SetCurSel((int)m_Load.m_Girder);
       }
    }
 
@@ -389,9 +389,9 @@ void CEditPointLoadDlg::UpdateGirderList()
       nMaxGirders = pBridge->GetGirderCount(spanIdx);
    }
 
-   Int32 nGirders = nMaxGirders;
+   GirderIndexType nGirders = nMaxGirders;
 
-   for (Int32 gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+   for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
       CString str;
       str.Format(_T("Girder %s"), LABEL_GIRDER(gdrIdx));

@@ -54,7 +54,7 @@ m_IsNotional(false),
 m_LiveLoadConfigurationType(lcTruckPlusLane),
 m_LiveLoadApplicabilityType(llaEntireStructure),
 m_MaxVariableAxleSpacing(0.0),
-m_VariableAxleIndex(-1)
+m_VariableAxleIndex(INVALID_INDEX)
 {
    m_LaneLoadSpanLength = 0; // always use lane load if it is defined
 
@@ -165,19 +165,21 @@ bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property(_T("MaxVariableAxleSpacing"), &m_MaxVariableAxleSpacing))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
+
+
       if(!pLoad->Property(_T("VariableAxleIndex"), &m_VariableAxleIndex))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if(!pLoad->BeginUnit(_T("Axles")))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      long size;
+      AxleIndexType size;
       if(!pLoad->Property(_T("AxleCount"), &size))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       m_Axles.clear();
 
-      for (int iaxl=0; iaxl<size; iaxl++)
+      for (AxleIndexType iaxl=0; iaxl<size; iaxl++)
       {
          if(!pLoad->BeginUnit(_T("Axle")))
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -219,12 +221,12 @@ bool LiveLoadLibraryEntry::IsEqual(const LiveLoadLibraryEntry& rOther, bool cons
 
    if (test)
    {
-      int size = m_Axles.size();
+      AxleIndexType size = m_Axles.size();
       test &= ( size == rOther.m_Axles.size() );
 
       if (test)
       {
-         for (int iaxl=0; iaxl<size; iaxl++)
+         for (AxleIndexType iaxl=0; iaxl<size; iaxl++)
          {
             const Axle& axle = m_Axles[iaxl];
             const Axle& otheraxle = rOther.m_Axles[iaxl];
@@ -310,7 +312,7 @@ void LiveLoadLibraryEntry::AddAxle(Axle axle)
 
 void LiveLoadLibraryEntry::SetAxle(AxleIndexType idx, Axle axle)
 {
-   ASSERT(0 <= idx && idx < (AxleIndexType)m_Axles.size());
+   ASSERT(0 <= idx && idx < m_Axles.size());
    ASSERT(0.0 < axle.Weight);
    ASSERT(0.0 < axle.Spacing);
 
@@ -321,7 +323,7 @@ void LiveLoadLibraryEntry::SetAxle(AxleIndexType idx, Axle axle)
 
 LiveLoadLibraryEntry::Axle LiveLoadLibraryEntry::GetAxle(AxleIndexType idx) const
 {
-   ASSERT(0 <= idx && idx < (AxleIndexType)m_Axles.size());
+   ASSERT(0 <= idx && idx < m_Axles.size());
    return m_Axles[idx];
 }
 
@@ -383,7 +385,7 @@ bool LiveLoadLibraryEntry::Edit(bool allowEditing)
       dlg.m_Axles.push_back(axle);
    }
 
-   int i = dlg.DoModal();
+   INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       this->SetLiveLoadConfigurationType(dlg.m_ConfigType);
@@ -457,9 +459,9 @@ void LiveLoadLibraryEntry::Dump(dbgDumpContext& os) const
    os << _T("   m_MaxVariableAxleSpacing    = ")<< m_MaxVariableAxleSpacing<<endl;
    os << _T("   m_VariableAxleIndex         = ")<< m_VariableAxleIndex<<endl;
 
-   int size = m_Axles.size();
+   AxleIndexType size = m_Axles.size();
    os << _T("   Number of Axles = ")<<size<<endl;
-   for (int iaxl=0; iaxl<size; iaxl++)
+   for (AxleIndexType iaxl=0; iaxl<size; iaxl++)
    {
       os<<_T("    Axle ")<<iaxl<<_T(" Weight  = ")<<m_Axles[iaxl].Weight<<endl;
       os<<_T("    Axle ")<<iaxl<<_T(" Spacing = ")<<m_Axles[iaxl].Spacing<<endl;

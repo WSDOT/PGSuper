@@ -476,7 +476,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    Float64 Es, fy, fu;
    pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
 
-   Uint32 nl = pStirrups->GetVertStirrupBarCount(poi);
+   CollectionIndexType nl = pStirrups->GetVertStirrupBarCount(poi);
    pscd->Av = pStirrups->GetVertStirrupBarArea(poi)*nl;
    pscd->fy = fy;
    pscd->S  = pStirrups->GetS(poi);

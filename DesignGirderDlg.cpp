@@ -69,8 +69,8 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
    //{{AFX_DATA_MAP(CDesignGirderDlg)
-   DDX_CBIndex(pDX, IDC_GIRDER, m_Girder);
-   DDX_CBIndex(pDX, IDC_SPAN, m_Span);
+   DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_Girder);
+   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Span);
    DDX_Check(pDX, IDC_DESIGN_FLEXURE, m_DesignForFlexure);
    DDX_Check(pDX, IDC_DESIGN_SHEAR, m_DesignForShear);
    DDX_Radio(pDX, IDC_RADIO_SINGLE, m_DesignRadioNum);
@@ -161,7 +161,7 @@ BOOL CDesignGirderDlg::OnInitDialog()
       pSpanBox->AddString(strSpan);
    }
 
-   pSpanBox->SetCurSel(m_Span);
+   pSpanBox->SetCurSel((int)m_Span);
    UpdateGirderComboBox(m_Span);
 
    // don't ask/show A design option unless it's enabled

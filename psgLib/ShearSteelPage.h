@@ -79,7 +79,7 @@ protected:
 
 public:
    void OnEnableDelete(bool canDelete);
-   void FillLastZone(int siz);
+   void FillLastZone(ZoneIndexType siz);
    void DoRemoveRows();
    void DoInsertRow();
 

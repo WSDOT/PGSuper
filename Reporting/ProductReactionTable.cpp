@@ -175,7 +175,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        pier, gdr, MinSimpleContinuousEnvelope ) );
 
          Float64 min, max;
-         long minConfig, maxConfig;
+         VehicleIndexType minConfig, maxConfig;
 
          if ( bDesign )
          {
@@ -388,7 +388,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
 
          Float64 min, max;
-         long minConfig, maxConfig;
+         VehicleIndexType minConfig, maxConfig;
          if ( bDesign )
          {
             if ( bPedLoading )

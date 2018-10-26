@@ -57,7 +57,7 @@ CLASS	CTexasIBNSParagraphBuilder
 class TxDOTIBNSDebondWriter : public TxDOTDebondTool
 {
 public:
-   TxDOTIBNSDebondWriter(int span, int gdr, Float64 girderLength, IStrandGeometry* pStrandGeometry):
+   TxDOTIBNSDebondWriter(SpanIndexType span, GirderIndexType gdr, Float64 girderLength, IStrandGeometry* pStrandGeometry):
    TxDOTDebondTool(span, gdr, girderLength, pStrandGeometry)
    {;}
 
@@ -130,11 +130,11 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
       ColumnIndexType ic;
       for (ic = 3; ic < num_cols; ic++)
       {
-         p_table->SetColumnSpan(row,ic,-1);
+         p_table->SetColumnSpan(row,ic,SKIP_CELL);
       }
 
       // next row of header
-      p_table->SetColumnSpan(++row,0,-1); 
+      p_table->SetColumnSpan(++row,0,SKIP_CELL); 
 
       (*p_table)(row,1) << Bold(_T("Total"));
       (*p_table)(row,2) << Bold(_T("Debonded"));

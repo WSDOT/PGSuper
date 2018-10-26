@@ -78,7 +78,7 @@ public:
    matRebar::Type ShearBarType;
    matRebar::Grade ShearBarGrade;
    matRebar::Size ConfinementBarSize;
-   Uint32      NumConfinementZones;
+   ZoneIndexType  NumConfinementZones;
    bool        bDoStirrupsEngageDeck;
    bool        bIsRoughenedSurface;
 

@@ -138,14 +138,14 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   Uint32 m_ConcLibIdx;
-   Uint32 m_ConnLibIdx;
-   Uint32 m_GirdLibIdx;
-   Uint32 m_DiapLibIdx;
-   Uint32 m_BarrLibIdx;
-   Uint32 m_SpecLibIdx;
-   Uint32 m_RatingLibIdx;
-   Uint32 m_LiveLibIdx;
+   CollectionIndexType m_ConcLibIdx;
+   CollectionIndexType m_ConnLibIdx;
+   CollectionIndexType m_GirdLibIdx;
+   CollectionIndexType m_DiapLibIdx;
+   CollectionIndexType m_BarrLibIdx;
+   CollectionIndexType m_SpecLibIdx;
+   CollectionIndexType m_RatingLibIdx;
+   CollectionIndexType m_LiveLibIdx;
 
    std::_tstring m_strPublisher;
    std::_tstring m_strLibFile;

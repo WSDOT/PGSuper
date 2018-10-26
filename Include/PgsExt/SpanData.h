@@ -59,7 +59,7 @@ LOG
 class PGSEXTCLASS CSpanData
 {
 public:
-   CSpanData(SpanIndexType spanIdx = -1,CBridgeDescription* pBridge=NULL,CPierData* pPrevPier=NULL,CPierData* pNextPier=NULL);
+   CSpanData(SpanIndexType spanIdx = INVALID_INDEX,CBridgeDescription* pBridge=NULL,CPierData* pPrevPier=NULL,CPierData* pNextPier=NULL);
    CSpanData(const CSpanData& rOther);
    ~CSpanData();
 

@@ -153,8 +153,8 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    if ( pThis->m_bGirderElevation )
    {
-      std::map<Uint32,IGirderElevationViewEventCallback*> callbacks = pDoc->GetGirderElevationViewCallbacks();
-      std::map<Uint32,IGirderElevationViewEventCallback*>::iterator iter;
+      std::map<IDType,IGirderElevationViewEventCallback*> callbacks = pDoc->GetGirderElevationViewCallbacks();
+      std::map<IDType,IGirderElevationViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IGirderElevationViewEventCallback* callback = iter->second;
@@ -163,8 +163,8 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
    }
    else
    {
-      std::map<Uint32,IGirderSectionViewEventCallback*> callbacks = pDoc->GetGirderSectionViewCallbacks();
-      std::map<Uint32,IGirderSectionViewEventCallback*>::iterator iter;
+      std::map<IDType,IGirderSectionViewEventCallback*> callbacks = pDoc->GetGirderSectionViewCallbacks();
+      std::map<IDType,IGirderSectionViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IGirderSectionViewEventCallback* callback = iter->second;

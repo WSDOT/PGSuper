@@ -253,7 +253,7 @@ void CLLDFPierGrid::GetGirderRow(GirderIndexType gdr, CPierData* pPier)
 
    BOOL bEnableNegMoment = (bContinuous || bIntegralLeft || bIntegralRight) ? TRUE : FALSE;
 
-   ROWCOL row = gdr + 2;
+   ROWCOL row = ROWCOL(gdr + 2);
 
    if ( bEnableNegMoment )
    {
@@ -531,7 +531,7 @@ BOOL CLLDFPierGrid::PasteTextRowCol(ROWCOL nRow, ROWCOL nCol, const CString& str
 
 void CLLDFPierGrid::SetGirderLLDF(GirderIndexType gdr, Float64 value )
 {
-   ROWCOL row = gdr+2; // first two rows are header
+   ROWCOL row = ROWCOL(gdr+2); // first two rows are header
    ROWCOL nrows = this->GetRowCount();
    if (row<=nrows)
    {
@@ -552,7 +552,7 @@ void CLLDFPierGrid::SetGirderLLDF(GirderIndexType gdr, Float64 value )
 
 void CLLDFPierGrid::SetGirderLLDF(GirderIndexType gdr, const PierLLDF& rlldf )
 {
-   ROWCOL row = gdr+2; // first two rows are header
+   ROWCOL row = ROWCOL(gdr+2); // first two rows are header
    ATLASSERT(this->GetColCount()==4);
    const Float64* pdbl = &(rlldf.pgNMService); // pointer to first member in struct
    for (ROWCOL col=1; col<=4; col++)

@@ -82,8 +82,8 @@ private:
    typedef std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> > PoiSet;
    typedef std::vector<pgsPointOfInterest> PoiVector;
 
-   void ReportLocation2(rptRcTable* pTable,int row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
-   void ReportLocation(rptRcTable* pTable,int row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
+   void ReportLocation2(rptRcTable* pTable,RowIndexType row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
+   void ReportLocation(rptRcTable* pTable,RowIndexType row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
 
    void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const lrfdLosses* pLosses,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);

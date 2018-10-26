@@ -144,7 +144,7 @@ inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,SpanIn
       rFailures.push_back(_T("Tensile stress check failed for Service I for the Casting Yard Stage (At Release)."));
    }
 
-   if ( 0 < NtMax && 0 < Nt )
+   if ( NtMax != INVALID_INDEX && Nt != INVALID_INDEX )
    {
       if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
       {
@@ -347,8 +347,8 @@ inline void list_confinement_zone_failures(IBroker* pBroker,FailureList& rFailur
 {
    const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
    GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);
-   Uint32 cZones = pStirrupGeometry->GetNumZones(span,girder);
-   for (Uint16 zone = 0; zone < cZones; zone++ )
+   ZoneIndexType cZones = pStirrupGeometry->GetNumZones(span,girder);
+   for (ZoneIndexType zone = 0; zone < cZones; zone++ )
    {
       const pgsStirrupCheckAtZonesArtifact* pZoneArtifacts = pStirrups->GetStirrupCheckAtZonesArtifact( pgsStirrupCheckAtZonesArtifactKey(zone) );
       const pgsConfinementArtifact* pShear = pZoneArtifacts->GetConfinementArtifact();

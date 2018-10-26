@@ -78,7 +78,7 @@ public:
    {
       GirderFace  Face;
       matRebar::Size BarSize;
-      Int32       NumberOfBars;
+      CollectionIndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
 

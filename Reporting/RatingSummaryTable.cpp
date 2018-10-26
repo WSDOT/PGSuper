@@ -108,23 +108,23 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
    table->SetNumberOfHeaderRows(2);
 
    table->SetRowSpan(0,0,2);
-   table->SetRowSpan(1,0,-1);
+   table->SetRowSpan(1,0,SKIP_CELL);
    (*table)(0,0) << _T("Limit State");
 
    table->SetRowSpan(0,1,2);
-   table->SetRowSpan(1,1,-1);
+   table->SetRowSpan(1,1,SKIP_CELL);
    (*table)(0,1) << _T("Type");
 
    table->SetColumnSpan(0,2,3);
-   table->SetColumnSpan(0,3,-1);
-   table->SetColumnSpan(0,4,-1);
+   table->SetColumnSpan(0,3,SKIP_CELL);
+   table->SetColumnSpan(0,4,SKIP_CELL);
    (*table)(0,2) << strRoutine;
    (*table)(1,2) << _T("RF");
    (*table)(1,3) << Sub2(symbol(gamma),_T("LL"));
    (*table)(1,4) << RPT_LFT_SUPPORT_LOCATION;
    table->SetColumnSpan(0,5,3);
-   table->SetColumnSpan(0,6,-1);
-   table->SetColumnSpan(0,7,-1);
+   table->SetColumnSpan(0,6,SKIP_CELL);
+   table->SetColumnSpan(0,7,SKIP_CELL);
    (*table)(0,5) << strSpecial;
    (*table)(1,5) << _T("RF");
    (*table)(1,6) << Sub2(symbol(gamma),_T("LL"));
@@ -139,8 +139,8 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
       {
          table->SetRowSpan(row0,0,3);
          (*table)(row0++,0) << _T("Strength I");
-         table->SetRowSpan(row0++,0,-1);
-         table->SetRowSpan(row0++,0,-1);
+         table->SetRowSpan(row0++,0,SKIP_CELL);
+         table->SetRowSpan(row0++,0,SKIP_CELL);
 
          (*table)(row1++,1) << _T("Flexure (+M)");
          (*table)(row1++,1) << _T("Flexure (-M)");
@@ -151,8 +151,8 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
       {
          table->SetRowSpan(row0,0,3);
          (*table)(row0++,0) << _T("Strength II");
-         table->SetRowSpan(row0++,0,-1);
-         table->SetRowSpan(row0++,0,-1);
+         table->SetRowSpan(row0++,0,SKIP_CELL);
+         table->SetRowSpan(row0++,0,SKIP_CELL);
 
          (*table)(row1++,1) << _T("Flexure (+M)");
          (*table)(row1++,1) << _T("Flexure (-M)");
@@ -160,7 +160,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
 
          table->SetRowSpan(row0,0,2);
          (*table)(row0++,0) << _T("Service I");
-         table->SetRowSpan(row0++,0,-1);
+         table->SetRowSpan(row0++,0,SKIP_CELL);
          (*table)(row1++,1) << _T("Stress Ratio (+M)");
          (*table)(row1++,1) << _T("Stress Ratio (-M)");
       }
@@ -177,7 +177,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
       {
          table->SetRowSpan(row0,0,2);
          (*table)(row0++,0) << _T("Strength I");
-         table->SetRowSpan(row0++,0,-1);
+         table->SetRowSpan(row0++,0,SKIP_CELL);
          (*table)(row1++,1) << _T("Flexure");
          (*table)(row1++,1) << _T("Shear");
       }
@@ -186,7 +186,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
       {
          table->SetRowSpan(row0,0,2);
          (*table)(row0++,0) << _T("Strength II");
-         table->SetRowSpan(row0++,0,-1);
+         table->SetRowSpan(row0++,0,SKIP_CELL);
          (*table)(row1++,1) << _T("Flexure");
          (*table)(row1++,1) << _T("Shear");
 

@@ -183,10 +183,10 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
    }
 
    PoiIDType id = poi.m_ID;
-   if ( id < 0 )
+   if ( id == INVALID_ID )
    {
       // assert if we are about to roll over the id
-      ATLASSERT(ms_NextID != Int16_Max-1);
+      ATLASSERT(ms_NextID != INVALID_ID-1);
       id = ms_NextID++;
    }
 
@@ -420,7 +420,7 @@ Float64 pgsPoiMgr::GetTolerance() const
 }
 
 //======================== INQUIRY    =======================================
-Uint32 pgsPoiMgr::GetPointOfInterestCount() const
+CollectionIndexType pgsPoiMgr::GetPointOfInterestCount() const
 {
    return m_Poi.size();
 }
@@ -746,7 +746,7 @@ bool pgsPoiMgr::TestMe(dbgLog& rlog)
 
    TRY_TESTME( mgr.GetPointOfInterestCount() == 6 );
    pgsPointOfInterest poi = mgr.GetPointOfInterest(0,0,5.0001);
-   TRY_TESTME( poi.GetID() != -1 );
+   TRY_TESTME( poi.GetID() != INVALID_ID );
    TRY_TESTME( poi.IsConcentratedLoad(pgsTypes::CastingYard) );
    TRY_TESTME( poi.IsDisplacement(pgsTypes::CastingYard) );
    TRY_TESTME( poi.IsFlexureCapacity(pgsTypes::CastingYard) );
@@ -757,7 +757,7 @@ bool pgsPoiMgr::TestMe(dbgLog& rlog)
    TRY_TESTME( poi.IsTabular(pgsTypes::CastingYard) );
 
    // Try to get a bogus std::vector<pgsPointOfInterest>
-   TRY_TESTME( mgr.GetPointOfInterest(0,0,10000000.0).GetID() == -1 );
+   TRY_TESTME( mgr.GetPointOfInterest(0,0,10000000.0).GetID() == INVALID_ID );
    
    // Get a vector of std::vector<pgsPointOfInterest> that meet a certain criteria
    std::vector<pgsPointOfInterest> pois;

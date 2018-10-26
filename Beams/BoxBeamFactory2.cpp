@@ -120,7 +120,7 @@ HRESULT CBoxBeamFactory2::FinalConstruct()
    return S_OK;
 }
 
-void CBoxBeamFactory2::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CBoxBeamFactory2::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IBoxBeamSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_BoxBeamSection);
@@ -329,7 +329,7 @@ bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimens
 void CBoxBeamFactory2::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
    std::vector<std::_tstring>::iterator iter;
-   pSave->BeginUnit(_T("AASHTOBoxBeamDimensions"),1.0);
+   pSave->BeginUnit(_T("AASHTOBoxBeamDimensions"),2.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
       std::_tstring name = *iter;
@@ -362,6 +362,19 @@ IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredL
       if ( !pLoad->Property(name.c_str(),&value) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
+      if( dimVersion < 2 )
+      {
+         // A bug in the WBFL had F1 and F2 swapped. Version 2 fixes this
+         if( name == _T("F1") )
+         {
+            name = _T("F2");
+         }
+         else if ( name == _T("F2") )
+         {
+            name = _T("F1");
+         }
+      }
+
       dimensions.push_back( std::make_pair(name,value) );
    }
 
@@ -388,8 +401,9 @@ Float64 CBoxBeamFactory2::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,
    Float64 W2 = GetDimension(dimensions,_T("W2"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
    Float64 F1 = GetDimension(dimensions,_T("F1"));
+   Float64 F2 = GetDimension(dimensions,_T("F2"));
 
-   Float64 void_surface_area = Lg*( 2*(H2 - 2*F1) + 2*(W2 - 2*F1) + 4*sqrt(2*F1*F1) );
+   Float64 void_surface_area = Lg*( 2*(H2 - F1 - F2) + 2*(W2 - F1 - F2) + 2*sqrt(2*F1*F1) + 2*sqrt(2*F2*F2) );
 
    if ( bReduceForPoorlyVentilatedVoids )
       void_surface_area *= 0.50;

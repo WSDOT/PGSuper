@@ -96,7 +96,7 @@ protected:
 };
 
 template <class M,class T>
-int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,
+RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,
                                      bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,pgsTypes::Stage continuityStage,
                                      IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
@@ -109,18 +109,18 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bC
    int row2col = 0;
 
    p_table->SetRowSpan(0,row1col,2);
-   p_table->SetRowSpan(1,row2col++,-1);
+   p_table->SetRowSpan(1,row2col++,SKIP_CELL);
    if ( bPierTable )
       (*p_table)(0,row1col++) << _T("");
    else
       (*p_table)(0,row1col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    p_table->SetRowSpan(0,row1col,2);
-   p_table->SetRowSpan(1,row2col++,-1);
+   p_table->SetRowSpan(1,row2col++,SKIP_CELL);
    (*p_table)(0,row1col++) << COLHDR(_T("Girder"),          M, unitT );
 
    p_table->SetRowSpan(0,row1col,2);
-   p_table->SetRowSpan(1,row2col++,-1);
+   p_table->SetRowSpan(1,row2col++,SKIP_CELL);
    (*p_table)(0,row1col++) << COLHDR(_T("Diaphragm"),       M, unitT );
 
    if ( bShearKey )
@@ -135,7 +135,7 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bC
       else
       {
          p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,-1);
+         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
          (*p_table)(0,row1col++) << COLHDR(_T("Shear") << rptNewLine << _T("Key"), M, unitT );
       }
    }
@@ -152,7 +152,7 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bC
       else
       {
          p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,-1);
+         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
          (*p_table)(0,row1col++) << COLHDR(_T("Construction"), M, unitT );
       }
    }
@@ -167,7 +167,7 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bC
    else
    {
       p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,-1);
+      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
       (*p_table)(0,row1col++) << COLHDR(_T("Slab"), M, unitT );
    }
 
@@ -183,7 +183,7 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bC
       else
       {
          p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,-1);
+         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
          (*p_table)(0,row1col++) << COLHDR(_T("Deck") << rptNewLine << _T("Panel"), M, unitT );
       }
    }
@@ -213,16 +213,16 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bC
       if ( bSidewalk )
       {
          p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,-1);
+         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
          (*p_table)(0,row1col++) << COLHDR(_T("Sidewalk"), M, unitT );
       }
 
       p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,-1);
+      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
       (*p_table)(0,row1col++) << COLHDR(_T("Traffic") << rptNewLine << _T("Barrier"), M, unitT );
 
       p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,-1);
+      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
       (*p_table)(0,row1col++) << COLHDR(_T("Overlay"), M, unitT );
    }
 
@@ -303,7 +303,7 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bC
 
    for ( ColumnIndexType i = row1col; i < p_table->GetNumberOfColumns(); i++ )
    {
-      p_table->SetColumnSpan(0,i,-1);
+      p_table->SetColumnSpan(0,i,SKIP_CELL);
    }
 
    return p_table->GetNumberOfHeaderRows(); // index of first row to report data

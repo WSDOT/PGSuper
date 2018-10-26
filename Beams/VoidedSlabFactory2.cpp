@@ -118,7 +118,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    return S_OK;
 }
 
-void CVoidedSlab2Factory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CVoidedSlab2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IVoidedSlabSection2> gdrsection;
    gdrsection.CoCreateInstance(CLSID_VoidedSlabSection2);
@@ -126,7 +126,7 @@ void CVoidedSlab2Factory::CreateGirderSection(IBroker* pBroker,long statusGroupI
    gdrsection->get_Beam(&beam);
 
    double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
-   long N;
+   IndexType N;
    GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
    beam->put_Height(H);
@@ -145,7 +145,7 @@ void CVoidedSlab2Factory::CreateGirderSection(IBroker* pBroker,long statusGroupI
    gdrsection.QueryInterface(ppSection);
 }
 
-void CVoidedSlab2Factory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CVoidedSlab2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -166,7 +166,7 @@ void CVoidedSlab2Factory::CreateGirderProfile(IBroker* pBroker,long statusGroupI
    rect->QueryInterface(ppShape);
 }
 
-void CVoidedSlab2Factory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CVoidedSlab2Factory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<IVoidedSlabEndBlockSegment> segment;
    segment.CoCreateInstance(CLSID_VoidedSlabEndBlockSegment);
@@ -309,7 +309,7 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,S
    }
 }
 
-void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CVoidedSlab2DistFactorEngineer>* pEngineer;
    CComObject<CVoidedSlab2DistFactorEngineer>::CreateInstance(&pEngineer);
@@ -318,7 +318,7 @@ void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,long statusG
    (*ppEng)->AddRef();
 }
 
-void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
    CComObject<CPsBeamLossEngineer>* pEngineer;
    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
@@ -378,7 +378,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
    // Set the shapes for harped strand bounds 
    // Voided slabs don't normally support harped strands, so the question
    double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
-   long N;
+   IndexType N;
    GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
    double width = W;
@@ -398,7 +398,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
    else
    {
       // multiple voids, put rectangles between them
-      long nIntVoids, nExtVoids;
+      IndexType nIntVoids, nExtVoids;
       if ( N == 0 )
       {
          nIntVoids = 0;
@@ -517,7 +517,7 @@ std::vector<const unitLength*> CVoidedSlab2Factory::GetDimensionUnits(bool bSIUn
 bool CVoidedSlab2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg)
 {
    double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
-   long N;
+   IndexType N;
    GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
    if ( H <= 0.0 )
@@ -536,7 +536,7 @@ bool CVoidedSlab2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dim
       return false;
    }
 
-   if ( N < 0 )
+   if ( N == INVALID_INDEX )
    {
       std::_tostringstream os;
       os << _T("Invalid Number of Voids") << std::ends;
@@ -1001,7 +1001,7 @@ HICON  CVoidedSlab2Factory::GetIcon()
 }
 
 void CVoidedSlab2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                      double& H,double& W,double& D1,double& D2,double& H1,double& H2,double& S1,double& S2,double& C1,double& C2,double& C3,long& N,double& J,double& EndBlockLength)
+                      double& H,double& W,double& D1,double& D2,double& H1,double& H2,double& S1,double& S2,double& C1,double& C2,double& C3,IndexType& N,double& J,double& EndBlockLength)
 {
    H = GetDimension(dimensions,_T("H"));
    W = GetDimension(dimensions,_T("W"));
@@ -1014,7 +1014,7 @@ void CVoidedSlab2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensio
    C1 = GetDimension(dimensions,_T("C1"));
    C2 = GetDimension(dimensions,_T("C2"));
    C3 = GetDimension(dimensions,_T("C3"));
-   N = (long)GetDimension(dimensions,_T("Number_of_Voids"));
+   N = (IndexType)GetDimension(dimensions,_T("Number_of_Voids"));
    J = GetDimension(dimensions,_T("Jmax"));
    EndBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 }
@@ -1087,9 +1087,9 @@ void CVoidedSlab2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimension
    }
 }
 
-long CVoidedSlab2Factory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CVoidedSlab2Factory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 {
-   long nv = (long)GetDimension(dimensions,_T("Number_of_Voids"));
+   WebIndexType nv = (WebIndexType)GetDimension(dimensions,_T("Number_of_Voids"));
    return nv+1;
 }
 

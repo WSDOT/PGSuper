@@ -664,7 +664,7 @@ bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
    if ( !pLoad->BeginUnit(_T("LoadFactors")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   long value;
+   int value;
    if ( !pLoad->Property(_T("LiveLoadFactorType"),&value) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -894,7 +894,7 @@ bool RatingLibraryEntry::Edit(bool allowEditing)
    RatingLibraryEntry tmp(*this);
 
    CRatingDialog dlg(tmp, allowEditing);
-   int i = dlg.DoModal();
+   INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       *this = tmp;

@@ -72,7 +72,7 @@ public:
    pgsStirrupCheckAtZonesArtifactKey();
 
    //------------------------------------------------------------------------
-   pgsStirrupCheckAtZonesArtifactKey(Uint32 zoneNum);
+   pgsStirrupCheckAtZonesArtifactKey(ZoneIndexType zoneNum);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -111,7 +111,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   Uint32 m_ZoneNum;
+   ZoneIndexType m_ZoneNum;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

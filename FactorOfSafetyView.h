@@ -94,7 +94,7 @@ protected:
    void DoUpdateNow();
 
    void UpdateUnits();
-   void AddGraphPoint(Uint32 series, Float64 xval, Float64 yval);
+   void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
    void DrawLegend(CDC* pDC);
 
    CFactorOfSafetyChildFrame* m_pFrame;

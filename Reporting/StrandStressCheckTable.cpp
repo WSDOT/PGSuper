@@ -93,7 +93,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
    }
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   long Nt = pStrandGeom->GetNumStrands(poi.GetSpan(),poi.GetGirder(),pgsTypes::Temporary);
+   StrandIndexType Nt = pStrandGeom->GetNumStrands(poi.GetSpan(),poi.GetGirder(),pgsTypes::Temporary);
    if ( 0 < Nt )
    {
       strandTypes.push_back(pgsTypes::Temporary);
@@ -105,7 +105,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 
    rptCapacityToDemand cap_demand;
 
-   int nColumns = 2 + 2*strandTypes.size();
+   ColumnIndexType nColumns = 2 + 2*strandTypes.size();
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Strand Stresses [5.9.3]"));
    p_table->SetNumberOfHeaderRows(2);
@@ -117,11 +117,11 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
    int col2 = 0;
    p_table->SetRowSpan(0,col1,2);
    (*p_table)(0,col1++) << _T("Loss Stage");
-   p_table->SetRowSpan(1,col2++,-1);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
 
    p_table->SetRowSpan(0,col1,2);
    (*p_table)(0,col1++) << COLHDR(_T("Allowable") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   p_table->SetRowSpan(1,col2++,-1);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
 
    std::vector<pgsTypes::StrandType>::iterator iter;
    for ( iter = strandTypes.begin(); iter != strandTypes.end(); iter++ )
@@ -151,8 +151,8 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
       (*p_table)(1,col2++) << _T("Status") << rptNewLine << _T("(C/D)");
    }
 
-   for ( int i = col1; i < nColumns; i++ )
-      p_table->SetColumnSpan(0,i,-1);
+   for ( ColumnIndexType i = col1; i < nColumns; i++ )
+      p_table->SetColumnSpan(0,i,SKIP_CELL);
 
    Float64 demand, capacity;
    bool bPassed;
@@ -161,12 +161,12 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
    {
       pgsTypes::StrandType strandType = *iter;
 
-      Uint16 row = 2;
-      int startColumn = 2*(iter - strandTypes.begin()) + 2;
+      RowIndexType row = 2;
+      ColumnIndexType startColumn = 2*(iter - strandTypes.begin()) + 2;
       if ( strandType == strandTypes.front() )
          startColumn -= 2;
 
-      int col = startColumn;
+      ColumnIndexType col = startColumn;
       if ( pArtifact->IsCheckAtJackingApplicable(strandType) )
       {
 	      pArtifact->GetCheckAtJacking( strandType, &demand, &capacity, &bPassed );

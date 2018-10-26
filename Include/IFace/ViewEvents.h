@@ -95,13 +95,13 @@ DEFINE_GUID(IID_IRegisterViewEvents,
 struct __declspec(uuid("{EB057BFE-3A37-48af-8F19-80465DBA2A14}")) IRegisterViewEvents;
 interface IRegisterViewEvents : IUnknown
 {
-   virtual Uint32 RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback) = 0;
-   virtual Uint32 RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback) = 0;
-   virtual Uint32 RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback) = 0;
-   virtual Uint32 RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback) = 0;
+   virtual IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback) = 0;
+   virtual IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback) = 0;
+   virtual IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback) = 0;
+   virtual IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback) = 0;
 
-   virtual bool UnregisterBridgePlanViewCallback(Uint32 ID) = 0;
-   virtual bool UnregisterBridgeSectionViewCallback(Uint32 ID) = 0;
-   virtual bool UnregisterGirderElevationViewCallback(Uint32 ID) = 0;
-   virtual bool UnregisterGirderSectionViewCallback(Uint32 ID) = 0;
+   virtual bool UnregisterBridgePlanViewCallback(IDType ID) = 0;
+   virtual bool UnregisterBridgeSectionViewCallback(IDType ID) = 0;
+   virtual bool UnregisterGirderElevationViewCallback(IDType ID) = 0;
+   virtual bool UnregisterGirderSectionViewCallback(IDType ID) = 0;
 };

@@ -43,15 +43,15 @@ void CPGSuperCatalogServers::AddServer(CPGSuperCatalogServer* server)
 	m_Servers.insert( ServerPtr(server) );
 }
 
-long CPGSuperCatalogServers::GetServerCount() const
+CollectionIndexType CPGSuperCatalogServers::GetServerCount() const
 {
    return m_Servers.size();
 }
 
-const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(long index) const
+const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(CollectionIndexType index) const
 {
    Servers::const_iterator iter = m_Servers.begin();
-   for ( long i = 0; i < index; i++ )
+   for ( CollectionIndexType i = 0; i < index; i++ )
       iter++;
 
    return iter->get();
@@ -73,10 +73,10 @@ const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(const CString& st
    }
 }
 
-void CPGSuperCatalogServers::RemoveServer(long index)
+void CPGSuperCatalogServers::RemoveServer(CollectionIndexType index)
 {
    Servers::iterator iter = m_Servers.begin();
-   for ( long i = 0; i < index; i++ )
+   for ( CollectionIndexType i = 0; i < index; i++ )
       iter++;
 
    m_Servers.erase(iter);
@@ -173,8 +173,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
 void CPGSuperCatalogServers::SaveToRegistry(CWinApp* theApp) const
 {
    Servers::const_iterator iter;
-   long i = 0;
-   for ( iter = m_Servers.begin(); iter != m_Servers.end(); iter++, i++ )
+   for ( iter = m_Servers.begin(); iter != m_Servers.end(); iter++ )
    {
       const CPGSuperCatalogServer* pServer = iter->get();
       CString server_creation_string = GetCreationString(pServer);

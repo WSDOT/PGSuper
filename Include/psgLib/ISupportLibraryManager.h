@@ -28,10 +28,10 @@ class libLibraryManager;
 interface libISupportLibraryManager
 {
    // get the number of library managers available
-   virtual int GetNumberOfLibraryManagers() const=0;
+   virtual CollectionIndexType GetNumberOfLibraryManagers() const=0;
 
    // return a pointer to a in the list library manager
-   virtual libLibraryManager* GetLibraryManager(int num)=0;
+   virtual libLibraryManager* GetLibraryManager(CollectionIndexType num)=0;
 
    // return a pointer to the ONLY library manager that 
    // is a target for copied items

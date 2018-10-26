@@ -779,11 +779,11 @@ CSpanData::LLDF& CSpanData::GetLLDF(GirderIndexType igs) const
 {
    // First: Compare size of our collection with current number of girders and resize if they don't match
    GirderIndexType ngdrs = GetGirderCount();
-   Int32 ndfs = m_LLDFs.size();
+   IndexType ndfs = m_LLDFs.size();
 
    if (ndfs==0)
    {
-      for (int i=0; i<ngdrs; i++)
+      for (GirderIndexType i=0; i<ngdrs; i++)
       {
          m_LLDFs.push_back(LLDF());
       }
@@ -792,11 +792,11 @@ CSpanData::LLDF& CSpanData::GetLLDF(GirderIndexType igs) const
    {
       // More girders than factors - move exterior to last girder and use last interior for new interiors
       LLDF exterior = m_LLDFs.back();
-      int inter_idx = ndfs-2>0 ? ndfs-2 : 0; // one-girder bridges could otherwise give us trouble
+      GirderIndexType inter_idx = ndfs-2>0 ? ndfs-2 : 0; // one-girder bridges could otherwise give us trouble
       LLDF interior = m_LLDFs[inter_idx];
 
       m_LLDFs[ndfs-1] = interior;
-      for (int i=ndfs; i<ngdrs; i++)
+      for (GirderIndexType i=ndfs; i<ngdrs; i++)
       {
          if (i != ngdrs-1)
          {

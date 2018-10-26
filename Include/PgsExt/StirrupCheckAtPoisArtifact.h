@@ -452,10 +452,10 @@ public:
    bool Is5_8_4_1_4Applicable() const;
    Float64 GetAvOverSMin() const;
    void SetAvOverSMin(Float64 fmin);
-   Uint32 GetNumLegs() const;
-   void SetNumLegs(Uint32 legs);
-   Uint32 GetNumLegsReqd() const;
-   void SetNumLegsReqd(Uint32 legs);
+   CollectionIndexType GetNumLegs() const;
+   void SetNumLegs(CollectionIndexType legs);
+   CollectionIndexType GetNumLegsReqd() const;
+   void SetNumLegsReqd(CollectionIndexType legs);
    Float64 GetVsAvg() const;   // average shear strength
    void SetVsAvg(Float64 vsavg);
    Float64 GetVsLimit() const; // max shear strength at which 5.8.4.1-4 is not applicable
@@ -527,8 +527,8 @@ private:
    Float64 m_Sall;
    Float64 m_Fy;
    Float64 m_AvOverSMin;
-   Uint32  m_NumLegs;
-   Uint32  m_NumLegsReqd;
+   CollectionIndexType  m_NumLegs;
+   CollectionIndexType  m_NumLegsReqd;
    Float64 m_VsAvg;   // average shear strength
    Float64 m_VsLimit; // max shear strength at which 5.8.4.1-4 is not applicable
 

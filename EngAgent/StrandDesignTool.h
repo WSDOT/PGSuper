@@ -40,7 +40,7 @@
 // LOCAL INCLUDES
 //
 
-typedef Int16 DebondLevelType; 
+typedef Int32 DebondLevelType; // want this to be a signed type!
 
 inline static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
 {
@@ -51,7 +51,7 @@ inline static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rv
    }
 
    std::_tstring str(os.str());
-   DebondLevelType n = str.size();
+   DebondLevelType n = (DebondLevelType)str.size();
    if (0 < n)
       str.erase(n-2,2); // get rid of trailing ", "
 
@@ -115,7 +115,7 @@ public:
    // Default constructor
    pgsStrandDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(IBroker* pBroker, long statusGroupID, pgsDesignArtifact* pArtifact);
+   void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci);
 
@@ -164,7 +164,7 @@ public:
 
    Float64 GetPrestressForceMz(pgsTypes::Stage stage,const pgsPointOfInterest& poi);
 
-   // if Uint32_Max, cannot handle force
+   // if INVALID_INDEX, cannot handle force
    StrandIndexType ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,Float64 force);
 
    Float64 ComputeEccentricity(const pgsPointOfInterest& poi, pgsTypes::Stage eccStage);
@@ -356,7 +356,7 @@ private:
 
 
    IBroker* m_pBroker;
-   long m_StatusGroupID;
+   StatusGroupIDType m_StatusGroupID;
 
    Float64 m_ConcreteAccuracy; // 100 PSI
 

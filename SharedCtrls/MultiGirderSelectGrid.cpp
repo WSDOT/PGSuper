@@ -160,8 +160,8 @@ void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirder
       max_gdrs = max( max_gdrs, (GirderIndexType)spanGirderCollection[is].size());
    }
 
-   const ROWCOL num_rows = max_gdrs;
-   const ROWCOL num_cols = num_spans;
+   const ROWCOL num_rows = (ROWCOL)max_gdrs;
+   const ROWCOL num_cols = (ROWCOL)num_spans;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -194,7 +194,7 @@ void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirder
       CString lbl;
       lbl.Format(_T("Span %d"), LABEL_SPAN(is));
 
-	   SetStyleRange(CGXRange(0,is+1), CGXStyle()
+	   SetStyleRange(CGXRange(0,ROWCOL(is+1)), CGXStyle()
             .SetWrapText(TRUE)
 			   .SetEnabled(FALSE)          // disables usage as current cell
             .SetHorizontalAlignment(DT_CENTER)
@@ -209,7 +209,7 @@ void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirder
       CString lbl;
       lbl.Format(_T("Girder %s"), LABEL_GIRDER(ig));
 
-	   SetStyleRange(CGXRange(ig+1,0), CGXStyle()
+	   SetStyleRange(CGXRange(ROWCOL(ig+1),0), CGXStyle()
             .SetWrapText(TRUE)
 			   .SetEnabled(FALSE)          // disables usage as current cell
             .SetHorizontalAlignment(DT_CENTER)
@@ -225,8 +225,8 @@ void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirder
 
       for (GirderIndexType ig=0; ig<max_gdrs; ig++)
       {
-         ROWCOL nCol = is+1;
-         ROWCOL nRow = ig+1;
+         ROWCOL nCol = ROWCOL(is+1);
+         ROWCOL nRow = ROWCOL(ig+1);
 
          if (ig<ng)
          {

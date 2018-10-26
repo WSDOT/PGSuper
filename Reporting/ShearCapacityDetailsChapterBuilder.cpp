@@ -2346,7 +2346,7 @@ void write_bar_spacing_table(IBroker* pBroker,
 
    (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
-   long nLegs = 2;
+   CollectionIndexType nLegs = 2;
 
    GET_IFACE2(pBroker,IShear,pShear);
    CShearData shearData = pShear->GetShearData(span,gdr);

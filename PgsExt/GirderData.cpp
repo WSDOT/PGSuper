@@ -816,7 +816,7 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("SymmetricDebond"),CComVariant(bSymmetricDebond));
 
    pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
-   long nDebondInfo = Debond[pgsTypes::Straight].size();
+   CollectionIndexType nDebondInfo = Debond[pgsTypes::Straight].size();
    pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
    std::vector<CDebondInfo>::iterator iter;
    for ( iter = Debond[pgsTypes::Straight].begin(); iter != Debond[pgsTypes::Straight].end(); iter++ )

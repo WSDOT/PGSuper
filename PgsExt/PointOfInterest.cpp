@@ -43,14 +43,14 @@ CLASS
 //======================== LIFECYCLE  =======================================
 pgsPointOfInterest::pgsPointOfInterest()
 {
-   m_ID = -1;
-   m_Span = INVALID_INDEX;
+   m_ID     = INVALID_ID;
+   m_Span   = INVALID_INDEX;
    m_Girder = INVALID_INDEX;
    m_DistFromStart = 0;
 }
 
 pgsPointOfInterest::pgsPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) :
-m_ID(-1),
+m_ID(INVALID_ID),
 m_Span(span),
 m_Girder(gdr),
 m_DistFromStart(distFromStart)
@@ -60,7 +60,7 @@ m_DistFromStart(distFromStart)
    ASSERTVALID;
 }
 pgsPointOfInterest::pgsPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
-m_ID(-1),
+m_ID(INVALID_ID),
 m_Span(span),
 m_Girder(gdr),
 m_DistFromStart(distFromStart)
@@ -73,7 +73,7 @@ m_DistFromStart(distFromStart)
 }
 
 pgsPointOfInterest::pgsPointOfInterest(const std::vector<pgsTypes::Stage>& stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
-m_ID(-1),
+m_ID(INVALID_ID),
 m_Span(span),
 m_Girder(gdr),
 m_DistFromStart(distFromStart)

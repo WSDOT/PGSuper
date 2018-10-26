@@ -129,15 +129,15 @@ bool CBridgeSectionView::GetSelectedGirder(SpanIndexType* pSpanIdx,GirderIndexTy
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
    // girder IDs are positive values
-   long ID = pDO->GetID();
-   if ( ID < 0 )
+   IDType ID = pDO->GetID();
+   if ( ID == INVALID_ID )
       return false;
 
    // do a reverse search in the map (look for values to get the key)
-   std::map<SpanGirderHashType,long>::iterator iter;
+   std::map<SpanGirderHashType,IDType>::iterator iter;
    for ( iter = m_GirderIDs.begin(); iter != m_GirderIDs.end(); iter++ )
    {
-      std::pair<SpanGirderHashType,long> map = *iter;
+      std::pair<SpanGirderHashType,IDType> map = *iter;
       if ( map.second == ID )
       {
          // ID found,  get the key, unhash it
@@ -164,7 +164,7 @@ bool CBridgeSectionView::IsDeckSelected()
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
-   long ID = pDO->GetID();
+   IDType ID = pDO->GetID();
    if ( ID == DECK_ID )
       return true;
 
@@ -195,14 +195,14 @@ void CBridgeSectionView::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrI
    GetDisplayMgr(&dispMgr);
 
    SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-   std::map<SpanGirderHashType,long>::iterator found = m_GirderIDs.find(hash);
+   std::map<SpanGirderHashType,IDType>::iterator found = m_GirderIDs.find(hash);
    if ( found == m_GirderIDs.end() )
    {
       dispMgr->ClearSelectedObjects();
       return;
    }
 
-   long ID = (*found).second;
+   IDType ID = (*found).second;
 
    CComPtr<iDisplayObject> pDO;
    dispMgr->FindDisplayObject(ID,GIRDER_DISPLAY_LIST,atByID,&pDO);
@@ -443,8 +443,8 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   std::map<Uint32,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
-   std::map<Uint32,IBridgeSectionViewEventCallback*>::iterator iter;
+   std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
+   std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
    for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
    {
       IBridgeSectionViewEventCallback* callback = iter->second;
@@ -518,11 +518,11 @@ void CBridgeSectionView::UpdateGirderTooltips()
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-      std::map<SpanGirderHashType,long>::iterator found = m_GirderIDs.find(hash);
+      std::map<SpanGirderHashType,IDType>::iterator found = m_GirderIDs.find(hash);
       if ( found == m_GirderIDs.end() )
          continue;
 
-      long ID = (*found).second;
+      IDType ID = (*found).second;
 
       CComPtr<iDisplayObject> pDO;
       girder_list->FindDisplayObject(ID,&pDO);
@@ -767,7 +767,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       dispObj->SetSelectionType(stAll);
 
       SpanGirderHashType hash = HashSpanGirder(spanIndex,gdrIndex);
-      long ID = m_NextGirderID++;
+      IDType ID = m_NextGirderID++;
       m_GirderIDs.insert( std::make_pair(hash,ID) );
 
       dispObj->SetID(ID);
@@ -1223,12 +1223,12 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       CComPtr<iDisplayObject> doGirder;
 
       SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-      std::map<SpanGirderHashType,long>::iterator found = m_GirderIDs.find(hash);
+      std::map<SpanGirderHashType,IDType>::iterator found = m_GirderIDs.find(hash);
 
       if ( found == m_GirderIDs.end() )
          continue;
 
-      long ID = (*found).second;
+      IDType ID = (*found).second;
 
       girder_list->FindDisplayObject(ID,&doGirder);
 
@@ -1299,7 +1299,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
          GirderIndexType firstGdrIdx = spacingData.firstGdrIdx;
          GirderIndexType lastGdrIdx  = spacingData.lastGdrIdx;
       
-         long nSpacesInGroup = lastGdrIdx - firstGdrIdx;
+         IndexType nSpacesInGroup = lastGdrIdx - firstGdrIdx;
 
          double total = spacing*nSpacesInGroup;
 
@@ -1313,17 +1313,17 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
          SpanGirderHashType firstHash = HashSpanGirder(spanIdx,firstGdrIdx);
          SpanGirderHashType lastHash  = HashSpanGirder(spanIdx,lastGdrIdx);
    
-         std::map<SpanGirderHashType,long>::iterator found = m_GirderIDs.find(firstHash);
+         std::map<SpanGirderHashType,IDType>::iterator found = m_GirderIDs.find(firstHash);
          if ( found == m_GirderIDs.end() )
             continue;
 
-         long firstID = (*found).second;
+         IDType firstID = (*found).second;
 
          found = m_GirderIDs.find(lastHash);
          if ( found == m_GirderIDs.end() )
             continue;
 
-         long lastID  = (*found).second;
+         IDType lastID  = (*found).second;
 
          girder_list->FindDisplayObject(firstID,&do1);
          girder_list->FindDisplayObject(lastID, &do2);

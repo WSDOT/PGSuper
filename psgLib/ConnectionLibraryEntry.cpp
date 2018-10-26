@@ -415,7 +415,7 @@ bool ConnectionLibraryEntry::Edit(bool allowEditing)
    dlg.m_DiaphragmLoadLocation = this->m_DiaphragmLoadLocation;
    dlg.m_SupportWidth = GetSupportWidth();
 
-   int i = dlg.DoModal();
+   INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       this->SetGirderEndDistance(dlg.m_GirderEndDistance);

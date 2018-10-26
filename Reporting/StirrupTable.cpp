@@ -91,7 +91,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    // bottom flange confinement steel
    size = pStirrupGeometry->GetConfinementBarSize(span,girder);
-   Uint32 lz = pStirrupGeometry->GetNumConfinementZones(span,girder);
+   ZoneIndexType lz = pStirrupGeometry->GetNumConfinementZones(span,girder);
    if (lz != 0 && size != matRebar::bsNone)
       *pPara <<_T("Bottom flange confinement stirrups are ")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" ending in Zone ")<<lz<<rptNewLine;
    else
@@ -110,8 +110,8 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*p_table)(0,7) << _T("# Horz") << rptNewLine << _T("Bars");
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   Uint32 nz = pStirrupGeometry->GetNumZones(span,girder);
-   for (Uint32 iz=0; iz<nz; iz++)
+   ZoneIndexType nz = pStirrupGeometry->GetNumZones(span,girder);
+   for (ZoneIndexType iz=0; iz<nz; iz++)
    {
       (*p_table)(row,0) << pStirrupGeometry->GetZoneId(span,girder,iz);
       (*p_table)(row,1) << loc.SetValue(pStirrupGeometry->GetZoneStart(span,girder,iz));

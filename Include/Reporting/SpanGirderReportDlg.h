@@ -46,8 +46,8 @@ public:
 // Dialog Data
 	enum { IDD = IDD_SPANGIRDERREPORT };
 
-   int m_Span;
-   int m_Girder;
+   SpanIndexType m_Span;
+   GirderIndexType m_Girder;
    std::vector<std::_tstring> m_ChapterList;
 
 protected:

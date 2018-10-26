@@ -466,7 +466,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    plldf->rightSlabOverhang = RoundOff(plldf->rightSlabOverhang,0.0001);
 
    std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetIntermediateDiaphragms(pgsTypes::BridgeSite1,span,gdr);
-   Uint16 nDiaphragms = diaphragms.size();
+   std::vector<IntermedateDiaphragm>::size_type nDiaphragms = diaphragms.size();
 
    bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) ); 
 

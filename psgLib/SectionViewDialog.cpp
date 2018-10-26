@@ -53,7 +53,7 @@ static char THIS_FILE[] = __FILE__;
 
 #define BORDER 7
 
-#define DUMMY_AGENT_ID -1
+#define DUMMY_AGENT_ID INVALID_ID
 
 /////////////////////////////////////////////////////////////////////////////
 // CSectionViewDialog dialog
@@ -90,9 +90,9 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
 
    CComQIPtr<IConfigureStrandMover> config(strand_mover);
 
-   long num_shapes;
+   IndexType num_shapes;
    config->get_NumRegions(&num_shapes);
-   for (long is=0; is<num_shapes; is++)
+   for (IndexType is=0; is<num_shapes; is++)
    {
       CComPtr<IShape> rshape;
       double slope;
@@ -184,8 +184,8 @@ void CSectionViewDialog::OnPaint()
    CBrush shape_brush(HS_FDIAGONAL, RGB(255,0,0));
    CBrush* pOldBrush = dc.SelectObject(&shape_brush);
 
-   long cnt = m_RegionShapes.size();
-   for (long ir=0; ir<cnt; ir++)
+   CollectionIndexType cnt = m_RegionShapes.size();
+   for (CollectionIndexType ir=0; ir<cnt; ir++)
    {
       DrawShape(&dc,mapper,m_RegionShapes[ir]);
    }
@@ -262,7 +262,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pSh
    polypoints->get__Enum(&enum_points);
 
    ULONG nFetched;
-   enum_points->Next(nPoints,points,&nFetched);
+   enum_points->Next((ULONG)nPoints,points,&nFetched);
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
@@ -275,7 +275,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pSh
       points[i]->Release();
    }
 
-   pDC->Polygon(dev_points,nPoints);
+   pDC->Polygon(dev_points,(int)nPoints);
 
    delete[] points;
    delete[] dev_points;

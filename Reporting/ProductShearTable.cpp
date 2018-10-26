@@ -175,21 +175,21 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
       std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
 
-      std::vector<long> dummyTruck;
-      std::vector<long> minDesignLLtruck;
-      std::vector<long> maxDesignLLtruck;
-      std::vector<long> minFatigueLLtruck;
-      std::vector<long> maxFatigueLLtruck;
-      std::vector<long> minPermitLLtruck;
-      std::vector<long> maxPermitLLtruck;
-      std::vector<long> minLegalRoutineLLtruck;
-      std::vector<long> maxLegalRoutineLLtruck;
-      std::vector<long> minLegalSpecialLLtruck;
-      std::vector<long> maxLegalSpecialLLtruck;
-      std::vector<long> minPermitRoutineLLtruck;
-      std::vector<long> maxPermitRoutineLLtruck;
-      std::vector<long> minPermitSpecialLLtruck;
-      std::vector<long> maxPermitSpecialLLtruck;
+      std::vector<VehicleIndexType> dummyTruck;
+      std::vector<VehicleIndexType> minDesignLLtruck;
+      std::vector<VehicleIndexType> maxDesignLLtruck;
+      std::vector<VehicleIndexType> minFatigueLLtruck;
+      std::vector<VehicleIndexType> maxFatigueLLtruck;
+      std::vector<VehicleIndexType> minPermitLLtruck;
+      std::vector<VehicleIndexType> maxPermitLLtruck;
+      std::vector<VehicleIndexType> minLegalRoutineLLtruck;
+      std::vector<VehicleIndexType> maxLegalRoutineLLtruck;
+      std::vector<VehicleIndexType> minLegalSpecialLLtruck;
+      std::vector<VehicleIndexType> maxLegalSpecialLLtruck;
+      std::vector<VehicleIndexType> minPermitRoutineLLtruck;
+      std::vector<VehicleIndexType> maxPermitRoutineLLtruck;
+      std::vector<VehicleIndexType> minPermitSpecialLLtruck;
+      std::vector<VehicleIndexType> maxPermitSpecialLLtruck;
       
       if (analysisType == pgsTypes::Envelope)
       {

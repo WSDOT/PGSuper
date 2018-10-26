@@ -96,14 +96,14 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	//according to a strict predefined format.             		
 
 	CString default_name = "CADexport.txt",initial_filespec, initial_dir;
-	int		stf = IDOK;
+	INT_PTR		stf = IDOK;
 	TCHAR	strFilter[] = {_T("CAD Export Files (*.txt)|*.txt||")};
 
    GET_IFACE2(pBroker,ISelection,pSelection);
    SpanIndexType spanIdx = pSelection->GetSpanIdx();
-   spanIdx = spanIdx<0 ? 0 : spanIdx; // default to 0
+   spanIdx = spanIdx == ALL_SPANS ? 0 : spanIdx; // default to 0
    GirderIndexType gdrIdx = pSelection->GetGirderIdx();
-   gdrIdx = gdrIdx<0 ? 0 : gdrIdx;
+   gdrIdx = gdrIdx == ALL_GIRDERS ? 0 : gdrIdx;
 
    SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
    std::vector<SpanGirderHashType> gdrlist;
@@ -167,7 +167,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          CEAFAutoProgress ap(pProgress,0,mask); 
 
          if (multi)
-            pProgress->Init(0,gdrlist.size(),1);  // and for multi-girders, a gauge.
+            pProgress->Init(0,(short)gdrlist.size(),1);  // and for multi-girders, a gauge.
 
 		   /* Open/create the specified text file */
       	FILE	*fp = NULL;

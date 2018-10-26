@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 // some usefull Free functions
 static HRESULT GetNextNumStrands(StrandIndexType currNum, ILongArray* array, StrandIndexType* nextNum)
 {
-   if (currNum<0 || currNum == INVALID_INDEX)
+   if (currNum == INVALID_INDEX)
    {
       return E_INVALIDARG;
    }
@@ -47,10 +47,10 @@ static HRESULT GetNextNumStrands(StrandIndexType currNum, ILongArray* array, Str
    array->get_Count(&size);
    for (CollectionIndexType ip = 0; ip < size && running_cnt <= currNum; ip++)
    {
-      StrandIndexType val;
+      IDType val;
       array->get_Item(ip, &val);
 
-      running_cnt += val;
+      running_cnt += (StrandIndexType)val;
    }
    
    if (currNum < running_cnt)
@@ -87,10 +87,10 @@ static HRESULT GetPrevNumStrands(StrandIndexType currNum, ILongArray* array, Str
       {
          StrandIndexType prev_cnt = running_cnt;
 
-         StrandIndexType val;
+         IDType val;
          array->get_Item(ip,&val);
 
-         running_cnt += val;
+         running_cnt += (StrandIndexType)val;
 
          if (currNum <= running_cnt)
          {
@@ -314,7 +314,7 @@ HRESULT CContinuousStandFiller::ComputeStraightStrandFill(IPrecastGirder* girder
       array->get_Count(&size);
       for (CollectionIndexType ip = 0; ip < size; ip++)
       {
-         Int32 val;
+         IDType val;
          array->get_Item(ip, &val);
 
          m_TempArray->Add(val);
@@ -366,7 +366,7 @@ HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, 
       array->get_Count(&size);
       for (CollectionIndexType ip = 0; ip < size; ip++)
       {
-         Int32 val;
+         IDType val;
          array->get_Item(ip, &val);
 
          m_TempArray->Add(val);
@@ -433,7 +433,7 @@ HRESULT CContinuousStandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girde
       array->get_Count(&size);
       for (CollectionIndexType ip = 0; ip < size; ip++)
       {
-         Int32 val;
+         IDType val;
          array->get_Item(ip, &val);
 
          m_TempArray->Add(val);
@@ -501,7 +501,7 @@ HRESULT CContinuousStandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* gir
    girder->get_AllowOddNumberOfHarpedStrands(&allow);
    if (allow == VARIANT_TRUE)
    {
-      Int32 val;
+      IDType val;
       array->get_Item(0,&val);
       if (val == 2)
       {
@@ -586,7 +586,7 @@ HRESULT CContinuousStandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder*
    girder->get_AllowOddNumberOfHarpedStrands(&allow);
    if (allow == VARIANT_TRUE)
    {
-      Int32 val;
+      IDType val;
       array->get_Item(0,&val);
       if (val == 2)
       {

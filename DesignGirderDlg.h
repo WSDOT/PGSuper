@@ -46,8 +46,8 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CDesignGirderDlg)
 	enum { IDD = IDD_DESIGN_GIRDER };
-	int		m_Girder;
-	int		m_Span;
+	GirderIndexType		m_Girder;
+	SpanIndexType   		m_Span;
 	BOOL	m_DesignForFlexure;
 	BOOL	m_DesignForShear;
 	//}}AFX_DATA

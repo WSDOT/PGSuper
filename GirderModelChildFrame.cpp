@@ -373,7 +373,7 @@ void CGirderModelChildFrame::UpdateBar()
       }
    }
 
-   int idx = pspan_ctrl->SetCurSel(m_CurrentSpanIdx);
+   int idx = pspan_ctrl->SetCurSel((int)m_CurrentSpanIdx);
    if (idx==CB_ERR)
    {
       // Default to span 0 if not safe
@@ -392,7 +392,7 @@ void CGirderModelChildFrame::UpdateBar()
       pgirder_ctrl->AddString(csv);
    }
 
-   idx = pgirder_ctrl->SetCurSel(m_CurrentGirderIdx);
+   idx = pgirder_ctrl->SetCurSel((int)m_CurrentGirderIdx);
    if (idx==CB_ERR)
    {
       // Default to girder 0 if not safe
@@ -429,7 +429,7 @@ void CGirderModelChildFrame::UpdateBar()
       std::vector<pgsPointOfInterest> poi;
       std::vector<pgsPointOfInterest>::iterator iter;
       poi = pPoi->GetPointsOfInterest(m_CurrentSpanIdx,m_CurrentGirderIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
-      int nPoi = poi.size();
+      CollectionIndexType nPoi = poi.size();
       ASSERT(0 < nPoi && nPoi <3);
       iter = poi.begin();
       pgsPointOfInterest left_hp_poi = *iter++;
@@ -538,7 +538,7 @@ void CGirderModelChildFrame::ShowCutDlg()
 
    CSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if (st==IDOK)
    {
       m_CurrentCutLocation = dlg.GetValue();
@@ -611,7 +611,7 @@ void CGirderModelChildFrame::CutAtLocation()
 
    CSectionCutDlg dlg(val,0.0,high,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
 
-   int st = dlg.DoModal();
+   INT_PTR st = dlg.DoModal();
    if (st==IDOK)
    {
       val = ::ConvertToSysUnits(dlg.GetValue(),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);

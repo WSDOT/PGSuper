@@ -152,13 +152,13 @@ void CSpanConnectionsPage::InitializeComboBoxes()
 
 
    SpanIndexType spanIdx = pParent->m_pSpanData->GetSpanIndex();
-   long prevPierIdx = spanIdx;
-   long nextPierIdx = spanIdx+1;
+   PierIndexType prevPierIdx = spanIdx;
+   PierIndexType nextPierIdx = spanIdx+1;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   long nPiers = pBridge->GetPierCount();
+   PierIndexType nPiers = pBridge->GetPierCount();
 
    FillWithBoundaryConditions(pcbAheadBoundaryConditions,prevPierIdx == 0 ? false : true);
    FillWithBoundaryConditions(pcbBackBoundaryConditions, nextPierIdx == nPiers-1 ? false : true);
@@ -168,8 +168,8 @@ void CSpanConnectionsPage::LabelGroupBoxes()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   long prevPierIdx = pParent->m_pPrevPier->GetPierIndex();
-   long nextPierIdx = pParent->m_pNextPier->GetPierIndex();
+   PierIndexType prevPierIdx = pParent->m_pPrevPier->GetPierIndex();
+   PierIndexType nextPierIdx = pParent->m_pNextPier->GetPierIndex();
 
    CString strAhead;
    strAhead.Format(_T("%s %d"),

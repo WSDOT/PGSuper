@@ -43,7 +43,7 @@ pgsStirrupCheckAtZonesArtifactKey::pgsStirrupCheckAtZonesArtifactKey()
 {
 }
 
-pgsStirrupCheckAtZonesArtifactKey::pgsStirrupCheckAtZonesArtifactKey(Uint32 zoneNum)
+pgsStirrupCheckAtZonesArtifactKey::pgsStirrupCheckAtZonesArtifactKey(ZoneIndexType zoneNum)
 {
    m_ZoneNum = zoneNum;
 }

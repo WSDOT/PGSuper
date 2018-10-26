@@ -198,7 +198,7 @@ bool CDeckDescription::operator != (const CDeckDescription& rOther) const
 }
 
 //======================== OPERATIONS =======================================
-HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pgsTypes::SlabOffsetType* pSlabOffsetType,double* pSlabOffset)
+HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pgsTypes::SlabOffsetType* pSlabOffsetType,Float64* pSlabOffset)
 {
    USES_CONVERSION;
 
@@ -207,7 +207,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
    try
    {
       hr = pStrLoad->BeginUnit(_T("Deck"));
-      double version;
+      Float64 version;
       hr = pStrLoad->get_Version(&version);
 
       CComVariant var;
@@ -231,16 +231,16 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          var.Clear();
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("LeftOverhang"), &var );
-         double LeftOverhang = var.dblVal;
+         Float64 LeftOverhang = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("RightOverhang"), &var );
-         double RightOverhang = var.dblVal;
+         Float64 RightOverhang = var.dblVal;
 
          // make this into a deck edge point
-         long nGirders  = m_pBridgeDesc->GetSpan(0)->GetGirderCount();
-         double spacing = m_pBridgeDesc->GetSpan(0)->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(0);
+         GirderIndexType nGirders  = m_pBridgeDesc->GetSpan(0)->GetGirderCount();
+         Float64 spacing = m_pBridgeDesc->GetSpan(0)->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(0);
          CDeckPoint point;
          point.LeftEdge  = LeftOverhang  + (nGirders-1)*spacing/2;
          point.RightEdge = RightOverhang + (nGirders-1)*spacing/2;

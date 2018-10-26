@@ -84,7 +84,7 @@ void CLibraryEntryConflict::OnRenameEntry()
    bool done=false;
    while (!done)
    {
-      int st = dlg.DoModal();
+      INT_PTR st = dlg.DoModal();
       if (st==IDOK)
       {
          if (dlg.m_EntryName.IsEmpty())

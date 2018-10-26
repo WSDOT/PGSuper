@@ -195,12 +195,12 @@ void write_cracked_section_table(IBroker* pBroker,
    table->SetNumberOfHeaderRows(2);
 
    table->SetRowSpan(0,0,2);
-   table->SetRowSpan(1,0,-1);
+   table->SetRowSpan(1,0,SKIP_CELL);
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table->SetColumnSpan(0,1,3);
-   table->SetColumnSpan(0,2,-1);
-   table->SetColumnSpan(0,3,-1);
+   table->SetColumnSpan(0,2,SKIP_CELL);
+   table->SetColumnSpan(0,3,SKIP_CELL);
    (*table)(0,1) << _T("Positive Moment");
    (*table)(1,col++) << COLHDR(Sub2(_T("Y"),_T("t")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(1,col++) << COLHDR(Sub2(_T("Y"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -209,8 +209,8 @@ void write_cracked_section_table(IBroker* pBroker,
    if ( bIncludeNegMoment )
    {
       table->SetColumnSpan(0,4,3);
-      table->SetColumnSpan(0,5,-1);
-      table->SetColumnSpan(0,6,-1);
+      table->SetColumnSpan(0,5,SKIP_CELL);
+      table->SetColumnSpan(0,6,SKIP_CELL);
       (*table)(0,4) << _T("Negative Moment");
       (*table)(1,col++) << COLHDR(Sub2(_T("Y"),_T("t")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*table)(1,col++) << COLHDR(Sub2(_T("Y"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );

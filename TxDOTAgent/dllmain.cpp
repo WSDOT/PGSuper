@@ -53,11 +53,19 @@ BOOL CTxDOTAgentApp::InitInstance()
    // Deal with help file name
    CString strHelpFile(m_pszHelpFilePath);
 #if defined _DEBUG
-   strHelpFile.Replace(_T("RegFreeCOM\\Debug\\"),_T("TxDOTAgent\\"));
+#if defined _WIN64
+   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T("TxDOTAgent\\"));
+#else
+   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T("TxDOTAgent\\"));
+#endif
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
-   strHelpFile.Replace(_T("RegFreeCOM\\Release\\"),_T("TxDOTAgent\\"));
+#if defined _WIN64
+   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T("TxDOTAgent\\"));
+#else
+   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T("TxDOTAgent\\"));
+#endif
 #endif
    
    // rename the file itself

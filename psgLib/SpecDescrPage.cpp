@@ -157,7 +157,7 @@ void CSpecDescrPage::OnSpecificationChanged()
 {
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx = pSpec->GetCurSel();
-   DWORD id = pSpec->GetItemData(idx);
+   DWORD_PTR id = pSpec->GetItemData(idx);
 
    BOOL enable_si = TRUE;
    if (id > (DWORD)lrfdVersionMgr::ThirdEditionWith2006Interims)

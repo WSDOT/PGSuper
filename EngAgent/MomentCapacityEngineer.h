@@ -179,7 +179,7 @@ private:
    void ComputeCrackingMoment(Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd);
 
 
-   void BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,std::map<long,Float64>* pBondFactors);
+   void BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,std::map<StrandIndexType,Float64>* pBondFactors);
    // GROUP: INQUIRY
 
 public:

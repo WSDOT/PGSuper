@@ -274,7 +274,7 @@ Float64 CSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirder)
    GET_IFACE(IPointOfInterest,pPOI);
 
    pgsPointOfInterest poi = pPOI->GetPointOfInterest(pgsTypes::CastingYard,m_SpanIdx,m_GirderIdx,distFromStartOfGirder);
-   if ( poi.GetID() < 0 )
+   if ( poi.GetID() == INVALID_ID )
       poi.SetDistFromStart(distFromStartOfGirder);
 
    Float64 gdrHeight = pGirder->GetHeight(poi);
@@ -451,12 +451,12 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(
       CDisplayView* pView = pDispMgr->GetView();
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
-      std::map<Uint32,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
       if ( callbacks.size() == 0 )
          return false;
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      std::map<Uint32,IBridgePlanViewEventCallback*>::iterator iter;
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgePlanViewEventCallback* callback = iter->second;

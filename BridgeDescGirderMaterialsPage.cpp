@@ -189,7 +189,7 @@ void CGirderDescGeneralPage::OnCopyMaterial()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	CCopyConcreteEntry dlg(true, this);
-   int result = dlg.DoModal();
+   INT_PTR result = dlg.DoModal();
 
    if ( result < 0 )
    {

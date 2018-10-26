@@ -35,14 +35,14 @@ public:
 
    bool LoadPlugins();
    void UnloadPlugins();
-   Uint32 GetImporterCount();
-   Uint32 GetExporterCount();
-   void GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperDataImporter** ppImporter);
-   void GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperDataExporter** ppExporter);
-   UINT GetPGSuperImporterCommand(Uint32 idx);
-   UINT GetPGSuperExporterCommand(Uint32 idx);
-   const CBitmap* GetPGSuperImporterBitmap(Uint32 idx);
-   const CBitmap* GetPGSuperExporterBitmap(Uint32 idx);
+   CollectionIndexType GetImporterCount();
+   CollectionIndexType GetExporterCount();
+   void GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSuperDataImporter** ppImporter);
+   void GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSuperDataExporter** ppExporter);
+   UINT GetPGSuperImporterCommand(CollectionIndexType idx);
+   UINT GetPGSuperExporterCommand(CollectionIndexType idx);
+   const CBitmap* GetPGSuperImporterBitmap(CollectionIndexType idx);
+   const CBitmap* GetPGSuperExporterBitmap(CollectionIndexType idx);
 
 private:
    template <class T> 

@@ -951,12 +951,12 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
 
 ROWCOL CBridgeDescFramingGrid::GetSpanRow(SpanIndexType spanIdx)
 {
-   return spanIdx*2 + 2;
+   return ROWCOL(spanIdx*2 + 2);
 }
 
 ROWCOL CBridgeDescFramingGrid::GetPierRow(PierIndexType pierIdx)
 {
-   return pierIdx*2 + 1;
+   return ROWCOL(pierIdx*2 + 1);
 }
 
 SpanIndexType CBridgeDescFramingGrid::GetSpanIndex(ROWCOL nRow)

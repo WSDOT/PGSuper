@@ -182,7 +182,7 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
    pStrSave->put_Property(_T("BarGrade"),     CComVariant(BarGrade));
    pStrSave->put_Property(_T("BarType"),      CComVariant(BarType));
 
-   long count = RebarRows.size();
+   CollectionIndexType count = RebarRows.size();
    pStrSave->put_Property(_T("RebarRowCount"),CComVariant(count));
    std::vector<RebarRow>::iterator iter;
    for ( iter = RebarRows.begin(); iter != RebarRows.end(); iter++ )

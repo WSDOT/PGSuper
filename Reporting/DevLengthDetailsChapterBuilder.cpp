@@ -165,23 +165,23 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          pTable->SetNumberOfHeaderRows(2);
          pTable->SetRowSpan(0,0,2);
-         pTable->SetRowSpan(1,0,-1);
+         pTable->SetRowSpan(1,0,SKIP_CELL);
          (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
          pTable->SetColumnSpan(0,1, 6);
-         pTable->SetColumnSpan(0,2,-1);
-         pTable->SetColumnSpan(0,3,-1);
-         pTable->SetColumnSpan(0,4,-1);
-         pTable->SetColumnSpan(0,5,-1);
-         pTable->SetColumnSpan(0,6,-1);
+         pTable->SetColumnSpan(0,2,SKIP_CELL);
+         pTable->SetColumnSpan(0,3,SKIP_CELL);
+         pTable->SetColumnSpan(0,4,SKIP_CELL);
+         pTable->SetColumnSpan(0,5,SKIP_CELL);
+         pTable->SetColumnSpan(0,6,SKIP_CELL);
          (*pTable)(0,1) << _T("Bonded Strands ")   << symbol(kappa) << _T(" = ") << bonded_details.k;
 
          pTable->SetColumnSpan(0,7, 6);
-         pTable->SetColumnSpan(0,8,-1);
-         pTable->SetColumnSpan(0,9,-1);
-         pTable->SetColumnSpan(0,10,-1);
-         pTable->SetColumnSpan(0,11,-1);
-         pTable->SetColumnSpan(0,12,-1);
+         pTable->SetColumnSpan(0,8,SKIP_CELL);
+         pTable->SetColumnSpan(0,9,SKIP_CELL);
+         pTable->SetColumnSpan(0,10,SKIP_CELL);
+         pTable->SetColumnSpan(0,11,SKIP_CELL);
+         pTable->SetColumnSpan(0,12,SKIP_CELL);
          (*pTable)(0,7) << _T("Debonded Strands ") << symbol(kappa) << _T(" = ") << debonded_details.k;
 
          (*pTable)(1,1) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

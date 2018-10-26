@@ -72,11 +72,11 @@ LOG
 class PGSEXTCLASS CShearZoneData
 {
 public:
-   Uint32  ZoneNum;
+   ZoneIndexType  ZoneNum;
    matRebar::Size VertBarSize, HorzBarSize;
    Float64 BarSpacing;
    Float64 ZoneLength;
-   Uint32 nVertBars, nHorzBars;
+   CollectionIndexType nVertBars, nHorzBars;
 
    // GROUP: LIFECYCLE
 

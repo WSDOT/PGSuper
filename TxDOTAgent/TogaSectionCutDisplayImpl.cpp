@@ -272,7 +272,7 @@ Float64 CTogaSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirde
    GET_IFACE(IPointOfInterest,pPOI);
 
    pgsPointOfInterest poi = pPOI->GetPointOfInterest(pgsTypes::CastingYard,m_SpanIdx,m_GirderIdx,distFromStartOfGirder);
-   if ( poi.GetID() < 0 )
+   if ( poi.GetID() == INVALID_ID )
       poi.SetDistFromStart(distFromStartOfGirder);
 
    Float64 gdrHeight = pGirder->GetHeight(poi);

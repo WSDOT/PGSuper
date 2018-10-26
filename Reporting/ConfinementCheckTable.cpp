@@ -64,7 +64,7 @@ rptRcTable* CConfinementCheckTable::Build(IBroker* pBroker,SpanIndexType span,Gi
 {
    GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);
    // no table if no stirrup zones
-   Uint32 nz = pStirrupGeometry->GetNumZones(span,girder);
+   ZoneIndexType nz = pStirrupGeometry->GetNumZones(span,girder);
    if (nz==0)
       return 0;
 

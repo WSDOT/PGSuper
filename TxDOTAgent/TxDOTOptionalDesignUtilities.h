@@ -147,7 +147,7 @@ inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
    sysTokenizer tokenizer(_T(","));
    tokenizer.push_back(line);
 
-   int nitems = tokenizer.size();
+   sysTokenizer::size_type nitems = tokenizer.size();
    if (nitems<4) // Don't limit to allow new items to be added
    {
       CString msg;

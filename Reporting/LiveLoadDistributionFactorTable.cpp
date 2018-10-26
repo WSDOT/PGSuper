@@ -116,7 +116,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       pTable->SetNumberOfHeaderRows(2);
       pTable->SetRowSpan(0,0,2);
       (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      pTable->SetRowSpan(1,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,4);
       (*pTable)(0,1) << _T("Strength/Service");
@@ -124,12 +124,12 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       pTable->SetColumnSpan(0,2,4);
       (*pTable)(0,2) << _T("Fatigue/One Lane");
 
-      pTable->SetColumnSpan(0,3,-1);
-      pTable->SetColumnSpan(0,4,-1);
-      pTable->SetColumnSpan(0,5,-1);
-      pTable->SetColumnSpan(0,6,-1);
-      pTable->SetColumnSpan(0,7,-1);
-      pTable->SetColumnSpan(0,8,-1);
+      pTable->SetColumnSpan(0,3,SKIP_CELL);
+      pTable->SetColumnSpan(0,4,SKIP_CELL);
+      pTable->SetColumnSpan(0,5,SKIP_CELL);
+      pTable->SetColumnSpan(0,6,SKIP_CELL);
+      pTable->SetColumnSpan(0,7,SKIP_CELL);
+      pTable->SetColumnSpan(0,8,SKIP_CELL);
 
       (*pTable)(1,1) << _T("+M");
       (*pTable)(1,2) << _T("-M");

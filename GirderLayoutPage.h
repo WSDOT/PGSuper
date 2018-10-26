@@ -142,7 +142,7 @@ protected:
    long m_CacheGirderSpacingMeasure[2];
    CGirderSpacingGridData m_GirderSpacingCache[2];
 
-   long m_CacheRefGirderIdx[2];
+   GirderIndexType m_CacheRefGirderIdx[2];
    double m_CacheRefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_CacheRefGirderOffsetType[2];
 

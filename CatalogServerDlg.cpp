@@ -143,8 +143,8 @@ void CCatalogServerDlg::UpdateServerList()
 
    pLB->ResetContent();
 
-   long nServers = m_Servers.GetServerCount();
-   for ( long i = 0; i < nServers; i++ )
+   CollectionIndexType nServers = m_Servers.GetServerCount();
+   for ( CollectionIndexType i = 0; i < nServers; i++ )
    {
       const CPGSuperCatalogServer* server = m_Servers.GetServer(i);
       pLB->AddString( server->GetServerName() );
@@ -158,7 +158,7 @@ void CCatalogServerDlg::UpdateServerList()
 
 void CCatalogServerDlg::UpdateButtonState()
 {
-   long nServers = m_Servers.GetServerCount();
+   CollectionIndexType nServers = m_Servers.GetServerCount();
    if ( nServers <= 1 )
    {
       GetDlgItem(IDC_DELETE)->EnableWindow(FALSE);

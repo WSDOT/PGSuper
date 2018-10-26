@@ -475,11 +475,11 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
    Float64 Width        = pGirderEntry->GetDimension(_T("W"));
    Float64 VoidSpacing  = pGirderEntry->GetDimension(_T("Void_Spacing"));
    Float64 VoidDiameter = pGirderEntry->GetDimension(_T("Void_Diameter"));
-   Int16 nVoids         = (Int16)pGirderEntry->GetDimension(_T("Number_of_Voids"));
+   IndexType nVoids     = (IndexType)pGirderEntry->GetDimension(_T("Number_of_Voids"));
 
    // thickness of exterior _T("web")
    Float64 t_ext;
-   if (nVoids>0)
+   if (1 <= nVoids)
    {
       t_ext = (Width - (nVoids-1)*(VoidSpacing) - VoidDiameter)/2;
    }
@@ -576,7 +576,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
       Sum_s_over_t += (s_int/t_ext);
 
       // between voids
-      for ( long i = 0; i < nVoids-1; i++ )
+      for ( IndexType i = 0; i < nVoids-1; i++ )
       {
          Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_int,t_int));
          Sum_s_over_t += (s_int/t_int);

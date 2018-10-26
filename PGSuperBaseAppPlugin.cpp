@@ -326,7 +326,7 @@ void CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
       CString              original_publisher = m_Publisher;
       CPGSuperCatalogServers original_servers = m_CatalogServers;
 
-      int result = dlg.DoModal();
+      INT_PTR result = dlg.DoModal();
 
       if ( result == IDOK )
       {

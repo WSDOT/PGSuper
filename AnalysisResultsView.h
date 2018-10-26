@@ -103,10 +103,10 @@ private:
    void ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI);
    void PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI);
 
-   void InitializeGraph(int graphIdx,ActionType action,Uint32* pDataSeriesID,BridgeAnalysisType* pBAT,Uint16* pAnalysisTypeCount);
-   void AddGraphPoints(Uint32 series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
-   void AddGraphPoints(Uint32 series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals);
-   void AddGraphPoint(Uint32 series, Float64 xval, Float64 yval);
+   void InitializeGraph(int graphIdx,ActionType action,IndexType* pDataSeriesID,BridgeAnalysisType* pBAT,Uint16* pAnalysisTypeCount);
+   void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
+   void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals);
+   void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
 	void DrawBeam(CDC* pDC);
    void Update();
    void DoUpdateNow();

@@ -192,7 +192,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    p_table->SetNumberOfHeaderRows(2);
    p_table->SetRowSpan(0,0,2);
-   p_table->SetRowSpan(1,0,-1);
+   p_table->SetRowSpan(1,0,SKIP_CELL);
    (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    p_table->SetColumnSpan(0,1,4);
@@ -201,12 +201,12 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    p_table->SetColumnSpan(0,2,4);
    (*p_table)(0,2) << _T("Bottom Stress ") << RPT_FBOT;
 
-   p_table->SetColumnSpan(0,3,-1);
-   p_table->SetColumnSpan(0,4,-1);
-   p_table->SetColumnSpan(0,5,-1);
-   p_table->SetColumnSpan(0,6,-1);
-   p_table->SetColumnSpan(0,7,-1);
-   p_table->SetColumnSpan(0,8,-1);
+   p_table->SetColumnSpan(0,3,SKIP_CELL);
+   p_table->SetColumnSpan(0,4,SKIP_CELL);
+   p_table->SetColumnSpan(0,5,SKIP_CELL);
+   p_table->SetColumnSpan(0,6,SKIP_CELL);
+   p_table->SetColumnSpan(0,7,SKIP_CELL);
+   p_table->SetColumnSpan(0,8,SKIP_CELL);
 
    (*p_table)(1,1) << COLHDR(_T("Prestress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(1,2) << COLHDR(_T("Impact") << rptNewLine << _T("Up"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );

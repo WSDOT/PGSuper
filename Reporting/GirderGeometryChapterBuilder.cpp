@@ -140,8 +140,8 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
       (*pTable)(0,0)  << _T("Girder");
       pTable->SetRowSpan(0,0,3);  // span 3 rows
-      pTable->SetRowSpan(1,0,-1);
-      pTable->SetRowSpan(2,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
+      pTable->SetRowSpan(2,0,SKIP_CELL);
 
       (*pTable)(0,1)  << _T("Start of Girder");
       pTable->SetColumnSpan(0,1,9);
@@ -151,7 +151,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
       ColumnIndexType i;
       for ( i = 3; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(0,i,-1);
+         pTable->SetColumnSpan(0,i,SKIP_CELL);
 
 
       (*pTable)(1,1) << _T("CL Pier");
@@ -173,7 +173,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       pTable->SetColumnSpan(1,6,3);
 
       for ( i = 7; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(1,i,-1);
+         pTable->SetColumnSpan(1,i,SKIP_CELL);
 
       (*pTable)(2,1)  << _T("East") << rptNewLine << _T("(X)");
       (*pTable)(2,2)  << _T("North") << rptNewLine << _T("(Y)");
@@ -204,14 +204,14 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
          (*pTable)(row,0) << LABEL_GIRDER(gdr);
 
-         double x,y;
+         Float64 x,y;
 
          pntPier1->get_X(&x);
          pntPier1->get_Y(&y);
          (*pTable)(row,1) << cogoPoint.SetValue(x);
          (*pTable)(row,2) << cogoPoint.SetValue(y);
 
-         double station, offset, elev;
+         Float64 station, offset, elev;
          pAlignment->GetStationAndOffset(pntPier1,&station,&offset);
          elev = pAlignment->GetElevation(station,offset);
          (*pTable)(row,3) << cogoPoint.SetValue(elev);
@@ -294,8 +294,8 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
 
       (*pTable)(0,0)  << _T("Girder");
       pTable->SetRowSpan(0,0,3);  // span 3 rows
-      pTable->SetRowSpan(1,0,-1);
-      pTable->SetRowSpan(2,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
+      pTable->SetRowSpan(2,0,SKIP_CELL);
 
       (*pTable)(0,1)  << _T("Start of Girder");
       pTable->SetColumnSpan(0,1,9);
@@ -305,7 +305,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
 
       ColumnIndexType i;
       for ( i = 3; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(0,i,-1);
+         pTable->SetColumnSpan(0,i,SKIP_CELL);
 
 
       (*pTable)(1,1) << _T("CL Pier");
@@ -327,7 +327,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
       pTable->SetColumnSpan(1,6,3);
 
       for ( i = 7; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(1,i,-1);
+         pTable->SetColumnSpan(1,i,SKIP_CELL);
 
       (*pTable)(2,1)  << _T("Station");
       (*pTable)(2,2)  << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
@@ -348,7 +348,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
       (*pTable)(2,17) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
       (*pTable)(2,18) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
 
-      int row = pTable->GetNumberOfHeaderRows();
+      RowIndexType row = pTable->GetNumberOfHeaderRows();
 
       GirderIndexType nGdrs = pBridge->GetGirderCount(span);
       for ( GirderIndexType gdr = 0; gdr < nGdrs; gdr++ )
@@ -358,8 +358,8 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
 
          (*pTable)(row,0) << LABEL_GIRDER(gdr);
 
-         double x,y;
-         double station, offset, elev;
+         Float64 x,y;
+         Float64 station, offset, elev;
 
          pAlignment->GetStationAndOffset(pntPier1,&station,&offset);
          elev = pAlignment->GetElevation(station,offset);
@@ -465,39 +465,39 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
       (*pPara) << pTable << rptNewLine;
 
       pTable->SetRowSpan(0,0,2);
-      pTable->SetRowSpan(1,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
       (*pTable)(0,0) << _T("Girder");
 
       pTable->SetRowSpan(0,1,2);
-      pTable->SetRowSpan(1,1,-1);
+      pTable->SetRowSpan(1,1,SKIP_CELL);
       (*pTable)(0,1) << COLHDR(_T("C-C Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetRowSpan(0,2,2);
-      pTable->SetRowSpan(1,2,-1);
+      pTable->SetRowSpan(1,2,SKIP_CELL);
       (*pTable)(0,2) << COLHDR(_T("C-C Bearing") << rptNewLine << Sub2(_T("L"),_T("s")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetColumnSpan(0,3,2);
-      pTable->SetColumnSpan(0,4,-1);
+      pTable->SetColumnSpan(0,4,SKIP_CELL);
       (*pTable)(0,3) << _T("Girder Length");
       (*pTable)(1,3) << COLHDR(_T("Horizontal") << rptNewLine << Sub2(_T("L"),_T("g")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*pTable)(1,4) << COLHDR(_T("Along")    << rptNewLine << _T("Grade"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetRowSpan(0,5,2);
-      pTable->SetRowSpan(1,5,-1);
+      pTable->SetRowSpan(1,5,SKIP_CELL);
       (*pTable)(0,5) << _T("Girder") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
 
       pTable->SetRowSpan(0,6,2);
-      pTable->SetRowSpan(1,6,-1);
+      pTable->SetRowSpan(1,6,SKIP_CELL);
       (*pTable)(0,6) << _T("Direction");
 
-      int row = pTable->GetNumberOfHeaderRows();
+      RowIndexType row = pTable->GetNumberOfHeaderRows();
 
       GirderIndexType nGdrs = pBridge->GetGirderCount(span);
       for ( GirderIndexType gdr = 0; gdr < nGdrs; gdr++ )
       {
          (*pTable)(row,0) << LABEL_GIRDER(gdr);
 
-         double L = pBridge->GetCCPierLength(span,gdr);
+         Float64 L = pBridge->GetCCPierLength(span,gdr);
          (*pTable)(row,1) << length.SetValue(L);
 
          L = pBridge->GetSpanLength(span,gdr);
@@ -509,12 +509,12 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
          L = pBridge->GetGirderPlanLength(span,gdr);
          (*pTable)(row,4) << length.SetValue(L);
 
-         double slope = pBridge->GetGirderSlope(span,gdr);
+         Float64 slope = pBridge->GetGirderSlope(span,gdr);
          (*pTable)(row,5) << scalar.SetValue(slope);
 
          CComPtr<IDirection> gdr_bearing;
          pBridge->GetGirderBearing(span,gdr,&gdr_bearing);
-         double gdr_bearing_value;
+         Float64 gdr_bearing_value;
          gdr_bearing->get_Value(&gdr_bearing_value);
 
          CComBSTR bstrBearing;
@@ -561,8 +561,8 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
       (*pTable)(0,0)  << _T("Girder");
       pTable->SetRowSpan(0,0,3);  // span 3 rows
-      pTable->SetRowSpan(1,0,-1);
-      pTable->SetRowSpan(2,0,-1);
+      pTable->SetRowSpan(1,0,SKIP_CELL);
+      pTable->SetRowSpan(2,0,SKIP_CELL);
 
       (*pTable)(0,1)  << _T("Start of Girder");
       pTable->SetColumnSpan(0,1,5);
@@ -572,7 +572,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
       ColumnIndexType i;
       for ( i = 3; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(0,i,-1);
+         pTable->SetColumnSpan(0,i,SKIP_CELL);
 
 
       (*pTable)(1,1) << _T("Spacing at CL Pier");
@@ -594,26 +594,26 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       pTable->SetRowSpan(1,6,2);
 
       for ( i = 7; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(1,i,-1);
+         pTable->SetColumnSpan(1,i,SKIP_CELL);
 
       (*pTable)(2,1)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,2)  << COLHDR(_T("Along CL Pier"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,3)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,4)  << COLHDR(_T("Along CL Brg"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
-      pTable->SetRowSpan(2,5,-1);
+      pTable->SetRowSpan(2,5,SKIP_CELL);
 
       (*pTable)(2,6)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,7)  << COLHDR(_T("Along CL Brg"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,8)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,9)  << COLHDR(_T("Along CL Pier"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
-      pTable->SetRowSpan(2,10,-1);
+      pTable->SetRowSpan(2,10,SKIP_CELL);
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
       PierIndexType prevPierIdx = span;
       PierIndexType nextPierIdx = span+1;
 
-      std::vector<double> spacing[8];
+      std::vector<Float64> spacing[8];
       spacing[0] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlinePier,    pgsTypes::NormalToItem);
       spacing[1] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlinePier,    pgsTypes::AlongItem);
       spacing[2] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
@@ -639,7 +639,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          pBridge->GetGirderAngle(span,gdr,pgsTypes::Ahead,&startAngle);
          pBridge->GetGirderAngle(span,gdr,pgsTypes::Back, &endAngle);
 
-         double angle;
+         Float64 angle;
          startAngle->get_Value(&angle);
          if ( M_PI <= angle )
             angle -= M_PI;
@@ -722,8 +722,8 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
       ColumnIndexType col2 = 0;
 
       pTable->SetRowSpan(0,col0,3);
-      pTable->SetRowSpan(1,col1,-1);
-      pTable->SetRowSpan(2,col2,-1);
+      pTable->SetRowSpan(1,col1,SKIP_CELL);
+      pTable->SetRowSpan(2,col2,SKIP_CELL);
       (*pTable)(0,col0++) << _T("Girder");
 
       pTable->SetColumnSpan(0,col0,5);
@@ -734,7 +734,7 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
 
       ColumnIndexType i;
       for ( i = col0; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(0,i,-1);
+         pTable->SetColumnSpan(0,i,SKIP_CELL);
 
       col1++;
       col2++;
@@ -750,7 +750,7 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
       (*pTable)(2,col2++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetRowSpan(1,col1,2);
-      pTable->SetRowSpan(2,col2++,-1);
+      pTable->SetRowSpan(2,col2++,SKIP_CELL);
       (*pTable)(1,col1++)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
 
@@ -765,11 +765,11 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
       (*pTable)(2,col2++)<< COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetRowSpan(1,col1,2);
-      pTable->SetRowSpan(2,col2++,-1);
+      pTable->SetRowSpan(2,col2++,SKIP_CELL);
       (*pTable)(1,col1++)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       for ( i = col1; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(1,i,-1);
+         pTable->SetColumnSpan(1,i,SKIP_CELL);
 
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();

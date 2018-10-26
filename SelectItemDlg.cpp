@@ -53,7 +53,7 @@ void CSelectItemDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CSelectItemDlg)
 	DDX_Control(pDX, IDC_LIST, m_cbList);
 	DDX_Control(pDX, IDC_LABEL, m_Label);
-	DDX_CBIndex(pDX, IDC_LIST, m_ItemIdx);
+	DDX_CBIndex(pDX, IDC_LIST, (int&)m_ItemIdx);
 	//}}AFX_DATA_MAP
 }
 
@@ -81,7 +81,7 @@ BOOL CSelectItemDlg::OnInitDialog()
       m_cbList.AddString(strItem.c_str());
    }
 
-   if ( m_cbList.SetCurSel(m_ItemIdx) == CB_ERR )
+   if ( m_cbList.SetCurSel((int)m_ItemIdx) == CB_ERR )
       m_cbList.SetCurSel(0);
 
    SetWindowText(m_strTitle);

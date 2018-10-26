@@ -1049,14 +1049,14 @@ void pgsLiftingAnalysisArtifact::GetMinMaxLiftingStresses(MaxLiftingStressCollec
 {
    PRECONDITION(m_LiftingStressAnalysisArtifacts.size()>0);
 
-   Int32 size = m_LiftingStressAnalysisArtifacts.size();
-   Int32 psiz = m_LiftingPois.size();
+   IndexType size = m_LiftingStressAnalysisArtifacts.size();
+   IndexType psiz = m_LiftingPois.size();
    PRECONDITION(m_LiftingStressAnalysisArtifacts.size()==psiz);
 
    rMaxStresses.clear();
    rMaxStresses.reserve(size);
 
-   Int16 idx=0;
+   IndexType idx=0;
    for (std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin(); 
         is!=m_LiftingStressAnalysisArtifacts.end(); is++)
    {

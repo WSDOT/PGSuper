@@ -90,12 +90,12 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,SpanIndexType span,
 
    // Set up table headings
    p_table->SetRowSpan(0,0,2);
-   p_table->SetRowSpan(1,0,-1);
+   p_table->SetRowSpan(1,0,SKIP_CELL);
    (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION,        rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    
    p_table->SetColumnSpan(0,1,2);
    (*p_table)(0,1) << _T("Girder");
-   p_table->SetColumnSpan(0,2,-1);
+   p_table->SetColumnSpan(0,2,SKIP_CELL);
 
    (*p_table)(1,1) << COLHDR(_T("Moment"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*p_table)(1,2) << COLHDR(_T("Shear"),  rptForceUnitTag, pDisplayUnits->GetShearUnit() );

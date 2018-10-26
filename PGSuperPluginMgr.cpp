@@ -166,17 +166,17 @@ void CPGSuperPluginMgr::UnloadPlugins()
    m_ExporterPlugins.clear();
 }
 
-Uint32 CPGSuperPluginMgr::GetImporterCount()
+CollectionIndexType CPGSuperPluginMgr::GetImporterCount()
 {
    return m_ImporterPlugins.size();
 }
 
-Uint32 CPGSuperPluginMgr::GetExporterCount()
+CollectionIndexType CPGSuperPluginMgr::GetExporterCount()
 {
    return m_ExporterPlugins.size();
 }
 
-void CPGSuperPluginMgr::GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperDataImporter** ppImporter)
+void CPGSuperPluginMgr::GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSuperDataImporter** ppImporter)
 {
    if ( bByIndex )
    {
@@ -198,7 +198,7 @@ void CPGSuperPluginMgr::GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperData
    }
 }
 
-void CPGSuperPluginMgr::GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperDataExporter** ppExporter)
+void CPGSuperPluginMgr::GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSuperDataExporter** ppExporter)
 {
    if ( bByIndex )
    {
@@ -220,22 +220,22 @@ void CPGSuperPluginMgr::GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperData
    }
 }
 
-UINT CPGSuperPluginMgr::GetPGSuperImporterCommand(Uint32 idx)
+UINT CPGSuperPluginMgr::GetPGSuperImporterCommand(CollectionIndexType idx)
 {
    return m_ImporterPlugins[idx].commandID;
 }
 
-UINT CPGSuperPluginMgr::GetPGSuperExporterCommand(Uint32 idx)
+UINT CPGSuperPluginMgr::GetPGSuperExporterCommand(CollectionIndexType idx)
 {
    return m_ExporterPlugins[idx].commandID;
 }
 
-const CBitmap* CPGSuperPluginMgr::GetPGSuperImporterBitmap(Uint32 idx)
+const CBitmap* CPGSuperPluginMgr::GetPGSuperImporterBitmap(CollectionIndexType idx)
 {
    return &m_ImporterPlugins[idx].Bitmap;
 }
 
-const CBitmap* CPGSuperPluginMgr::GetPGSuperExporterBitmap(Uint32 idx)
+const CBitmap* CPGSuperPluginMgr::GetPGSuperExporterBitmap(CollectionIndexType idx)
 {
    return &m_ExporterPlugins[idx].Bitmap;
 }

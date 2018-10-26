@@ -378,7 +378,7 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
       std::_tostringstream os;
       os<< min_spc<<_T("-")<<max_spc;
 
-      ROWCOL row = dlg->m_VariableAxleIndex + 1;
+      ROWCOL row = ROWCOL(dlg->m_VariableAxleIndex + 1);
 
       SetValueRange(CGXRange(row, 2), os.str().c_str());
    }

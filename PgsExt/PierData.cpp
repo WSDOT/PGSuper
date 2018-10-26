@@ -859,7 +859,7 @@ CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
    GirderIndexType ngdrs = GetLldfGirderCount();
    ATLASSERT(ngdrs>0);
 
-   Int32 ndfs = m_LLDFs.size();
+   IndexType ndfs = m_LLDFs.size();
 
    if (m_DistributionFactorsFromOlderVersion)
    {
@@ -891,7 +891,7 @@ CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
 
    if (ndfs==0)
    {
-      for (int i=0; i<ngdrs; i++)
+      for (GirderIndexType i=0; i<ngdrs; i++)
       {
          m_LLDFs.push_back(LLDF());
       }
@@ -900,11 +900,11 @@ CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
    {
       // More girders than factors - move exterior to last girder and use last interior for new interiors
       LLDF exterior = m_LLDFs.back();
-      int inter_idx = ngdrs-2>0 ? ngdrs-2 : 0; // one-girder bridges could otherwise give us trouble
+      GirderIndexType inter_idx = ngdrs-2>0 ? ngdrs-2 : 0; // one-girder bridges could otherwise give us trouble
       LLDF interior = m_LLDFs[inter_idx];
 
       m_LLDFs[ndfs-1] = interior;
-      for (int i=ndfs; i<ngdrs; i++)
+      for (GirderIndexType i=ndfs; i<ngdrs; i++)
       {
          if (i != ngdrs-1)
          {

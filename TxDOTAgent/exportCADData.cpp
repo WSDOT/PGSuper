@@ -182,7 +182,7 @@ void exportCADData::OnSelchangeSpan()
 
    girder = min(girder, cGirder-1); // don't allow out of bounds if ng decreases between spans
 
-   pGdrBox->SetCurSel(girder);
+   pGdrBox->SetCurSel((int)girder);
 	
 }
 

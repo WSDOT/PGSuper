@@ -780,8 +780,8 @@ bool CBridgeAgentImp::ValidateConcrete()
          {
             std::_tostringstream os;
             os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(girderIdx) << _T(": Ec (") 
-               << FormatDimension(m_pGdrConc[key]->GetE(), pDisplayUnits->GetModEUnit()) << _T(") is less that Eci (")
-               << FormatDimension(m_pGdrReleaseConc[key]->GetE(),pDisplayUnits->GetModEUnit()) << _T(")");
+               << FormatDimension(m_pGdrConc[key]->GetE(), pDisplayUnits->GetModEUnit()).GetBuffer() << _T(") is less than Eci (")
+               << FormatDimension(m_pGdrReleaseConc[key]->GetE(),pDisplayUnits->GetModEUnit()).GetBuffer() << _T(")");
 
             strMsg = os.str();
 
@@ -856,8 +856,8 @@ void CBridgeAgentImp::ValidatePointLoads()
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE( IUserDefinedLoadData, pUdl );
 
-   Uint32 num_pl = pUdl->GetPointLoadCount();
-   for(Uint32 ipl=0; ipl<num_pl; ipl++)
+   CollectionIndexType num_pl = pUdl->GetPointLoadCount();
+   for(CollectionIndexType ipl=0; ipl<num_pl; ipl++)
    {
       const CPointLoadData& rpl = pUdl->GetPointLoad(ipl);
 
@@ -1001,8 +1001,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE( IUserDefinedLoadData, pUdl );
 
-   Uint32 num_pl = pUdl->GetDistributedLoadCount();
-   for(Uint32 ipl=0; ipl<num_pl; ipl++)
+   CollectionIndexType num_pl = pUdl->GetDistributedLoadCount();
+   for(CollectionIndexType ipl=0; ipl<num_pl; ipl++)
    {
       const CDistributedLoadData& rpl = pUdl->GetDistributedLoad(ipl);
 
@@ -1177,8 +1177,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE( IUserDefinedLoadData, pUdl );
 
-   Uint32 num_pl = pUdl->GetMomentLoadCount();
-   for(Uint32 ipl=0; ipl<num_pl; ipl++)
+   CollectionIndexType num_pl = pUdl->GetMomentLoadCount();
+   for(CollectionIndexType ipl=0; ipl<num_pl; ipl++)
    {
       const CMomentLoadData& rpl = pUdl->GetMomentLoad(ipl);
 
@@ -1416,7 +1416,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
    CComPtr<ICogoInfo> cogoinfo;
    m_Bridge->get_CogoInfo(&cogoinfo);
-   long alignment_key;
+   CogoElementKey alignment_key;
    cogoinfo->get_AlignmentKey(&alignment_key);
 
    CComPtr<IPath> path;
@@ -2399,7 +2399,7 @@ void CBridgeAgentImp::NoDeckEdgePoint(SpanIndexType spanIdx,PierIndexType pierId
    normal->IncrementBy(CComVariant(PI_OVER_2));
 
    PositionType position = (spanIdx == pierIdx ? qcbAfter : qcbBefore);
-   long id;
+   CogoElementKey id;
    cogoInfo->get_PierGirderIntersectionPointID(pierIdx,gdrIdx,position,&id);
    HRESULT hr = points->get_Item(id,&point_on_girder);
    ATLASSERT(SUCCEEDED(hr));
@@ -2839,7 +2839,7 @@ bool CBridgeAgentImp::LayoutTrafficBarrier(const CBridgeDescription* pBridgeDesc
 
 bool CBridgeAgentImp::BuildGirder()
 {
-   UpdatePrestressing(-1,-1);
+   UpdatePrestressing(ALL_SPANS,ALL_GIRDERS);
    return true;
 }
 
@@ -2950,7 +2950,7 @@ void CBridgeAgentImp::UpdatePrestressing(SpanIndexType spanIdx,GirderIndexType g
             girder->DebondStraightStrandByGridIndex(db_idx,debond_info.Length1,debond_info.Length2);
 
 #if defined _DEBUG
-            if ( 0 <= debond_info.idxStrand2 )
+            if ( debond_info.idxStrand2 != INVALID_INDEX )
             {
                // idxStrand2 is a legacy value ... confirm that everything was converted correctly
                GridIndexType db_idx2;
@@ -3509,6 +3509,14 @@ void CBridgeAgentImp::LayoutPoiForShear(SpanIndexType span,GirderIndexType gdr)
    Float64 left_end_size  = GetGirderStartConnectionLength(span,gdr);
    Float64 right_end_size = GetGirderEndConnectionLength(span,gdr);
 
+   // If "H" from the end of the girder is at the point of bearing
+   // make sure there isn't any "noise" in the data
+   if ( IsEqual(hgLeft,left_end_size) )
+      hgLeft = left_end_size;
+
+   if ( IsEqual(hgRight,right_end_size) )
+      hgRight = right_end_size;
+
    Float64 left_support_width   = GetGirderStartSupportWidth(span,gdr);
    Float64 right_support_width  = GetGirderEndSupportWidth(span,gdr);
 
@@ -3603,8 +3611,8 @@ void CBridgeAgentImp::LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType 
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckRebarData& rebarData = pBridgeDesc->GetDeckDescription()->DeckRebarData;
 
-   long prev_pier = span;
-   long next_pier = prev_pier + 1;
+   PierIndexType prev_pier = (PierIndexType)span;
+   PierIndexType next_pier = prev_pier + 1;
 
    Float64 gdr_length = GetGirderLength(span,gdr);
 
@@ -4539,7 +4547,8 @@ Float64 CBridgeAgentImp::GetCCPierLength(SpanIndexType span,GirderIndexType gdr)
 {
    CComPtr<ICogoInfo> cogoInfo;
    m_Bridge->get_CogoInfo(&cogoInfo);
-   long id1,id2;
+   
+   CogoElementKey id1,id2;
 
    cogoInfo->get_PierGirderIntersectionPointID(span,  gdr,qcbAfter,&id1);
    cogoInfo->get_PierGirderIntersectionPointID(span+1,gdr,qcbBefore,&id2);
@@ -4901,7 +4910,7 @@ GDRCONFIG CBridgeAgentImp::GetGirderConfiguration(SpanIndexType span,GirderIndex
 
          config.Debond[i].push_back(di);
 
-         if ( 0 < debond_info.idxStrand2 )
+         if ( debond_info.idxStrand2 != INVALID_INDEX )
          {
             di.strandIdx         = debond_info.idxStrand2;
             di.LeftDebondLength  = debond_info.Length1;
@@ -6103,7 +6112,7 @@ void CBridgeAgentImp::GetPierPoints(PierIndexType pier,IPoint2d** left,IPoint2d*
    CComPtr<IPointCollection> points;
    cogoModel->get_Points(&points);
 
-   long id;
+   CogoElementKey id;
    cogoInfo->get_PierPointID(pier,pptLeft,&id);
    points->get_Item(id,left);
 
@@ -7305,9 +7314,9 @@ ZoneIndexType CBridgeAgentImp::GetNumZones(SpanIndexType span,GirderIndexType gd
 }
 
 
-Uint32 CBridgeAgentImp::GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
+IDType CBridgeAgentImp::GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
 {
-   return GetZoneIndex(span,gdr,zone)+1;
+   return (IDType)(GetZoneIndex(span,gdr,zone)+1);
 }
 
 ZoneIndexType CBridgeAgentImp::GetZoneIndex(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
@@ -7395,7 +7404,7 @@ void CBridgeAgentImp::GetAv(SpanIndexType span,GirderIndexType gdr,Float64 start
       if ( pVertBar )
       {
          Float64 Abar   = pVertBar->GetNominalArea();
-         Uint32 nbars   = GetVertStirrupBarCount(span,gdr,zone);
+         CollectionIndexType nbars   = GetVertStirrupBarCount(span,gdr,zone);
 
          // area of stirrups per unit length for this zone
          // (assume stirrups are smeared out along zone)
@@ -7407,7 +7416,7 @@ void CBridgeAgentImp::GetAv(SpanIndexType span,GirderIndexType gdr,Float64 start
       if ( pHorzBar )
       {
          Float64 Abar   = pHorzBar->GetNominalArea();
-         Uint32 nbars   = GetHorzStirrupBarCount(span,gdr,zone);
+         CollectionIndexType nbars   = GetHorzStirrupBarCount(span,gdr,zone);
 
          // area of stirrups per unit length for this zone
          // (assume stirrups are smeared out along zone)
@@ -7537,7 +7546,7 @@ matRebar::Size CBridgeAgentImp::GetHorzStirrupBarSize(SpanIndexType span,GirderI
    return pRebar->GetSize();
 }
 
-Uint32 CBridgeAgentImp::GetVertStirrupBarCount(const pgsPointOfInterest& poi)
+CollectionIndexType CBridgeAgentImp::GetVertStirrupBarCount(const pgsPointOfInterest& poi)
 {
    ZoneIndexType zone;
    if (GetShearZoneAtPoi(&zone, poi))
@@ -7546,7 +7555,7 @@ Uint32 CBridgeAgentImp::GetVertStirrupBarCount(const pgsPointOfInterest& poi)
       return 0;
 }
 
-Uint32 CBridgeAgentImp::GetHorzStirrupBarCount(const pgsPointOfInterest& poi)
+CollectionIndexType CBridgeAgentImp::GetHorzStirrupBarCount(const pgsPointOfInterest& poi)
 {
    ZoneIndexType zone;
    if (GetShearZoneAtPoi(&zone, poi))
@@ -7555,7 +7564,7 @@ Uint32 CBridgeAgentImp::GetHorzStirrupBarCount(const pgsPointOfInterest& poi)
       return 0;
 }
 
-Uint32 CBridgeAgentImp::GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
+CollectionIndexType CBridgeAgentImp::GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
 {
    if (GetVertStirrupRebar(span,gdr,zone)!=0)
    {
@@ -7568,7 +7577,7 @@ Uint32 CBridgeAgentImp::GetVertStirrupBarCount(SpanIndexType span,GirderIndexTyp
       return 0;
 }
 
-Uint32 CBridgeAgentImp::GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
+CollectionIndexType CBridgeAgentImp::GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
 {
    if (GetHorzStirrupRebar(span,gdr,zone)!=0)
    {
@@ -7967,7 +7976,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, Float6
             }
          }
 
-         num_eff_strands = num_bonded_strands;
+         num_eff_strands = (Float64)num_bonded_strands;
       }
       else if (IsEqual(dist,girder_length))
       {
@@ -7984,7 +7993,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, Float6
             }
          }
 
-         num_eff_strands = num_bonded_strands;
+         num_eff_strands = (Float64)num_bonded_strands;
       }
       else
       {
@@ -8266,7 +8275,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const 
       for (DebondInfoConstIterator idb=rdebonds.begin(); idb!=rdebonds.end(); idb++)
       {
          const DEBONDINFO& dbinfo = *idb;
-         if (dbinfo.strandIdx<Ns)
+         if ( dbinfo.strandIdx < Ns)
          {
             debond_map[dbinfo.strandIdx] = dbinc; 
          }
@@ -8684,7 +8693,7 @@ StrandIndexType CBridgeAgentImp::GetMaxStrands(LPCTSTR strGirderName,pgsTypes::S
 
 Float64 CBridgeAgentImp::GetStrandArea(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type)
 {
-   long Ns = GetNumStrands(span,gdr,type);
+   StrandIndexType Ns = GetNumStrands(span,gdr,type);
    const matPsStrand* pStrand = GetStrand(span,gdr,type);
 
    Float64 aps = pStrand->GetNominalArea();
@@ -9660,9 +9669,9 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span
    array->get_Count(&nItems);
    for ( CollectionIndexType i = 0; i < nItems; i++ )
    {
-      StrandIndexType strandIdx;
+      IDType strandIdx;
       array->get_Item(i,&strandIdx);
-      strandIdxs.push_back(strandIdx);
+      strandIdxs.push_back((StrandIndexType)strandIdx);
    }
 
    return strandIdxs;
@@ -11619,12 +11628,12 @@ Float64 CBridgeAgentImp::GetTopFlangeSpacing(const pgsPointOfInterest& poi,Flang
 
 Float64 CBridgeAgentImp::GetTopFlangeWidth(const pgsPointOfInterest& poi)
 {
-   Uint32 nWebs = GetNumberOfMatingSurfaces(poi.GetSpan(),poi.GetGirder());
+   MatingSurfaceIndexType nMS = GetNumberOfMatingSurfaces(poi.GetSpan(),poi.GetGirder());
    Float64 wtf = 0;
-   for ( Uint32 web = 0; web < nWebs; web++ )
+   for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMS; msIdx++ )
    {
       Float64 msw;
-      msw = GetMatingSurfaceWidth(poi,web);
+      msw = GetMatingSurfaceWidth(poi,msIdx);
       wtf += msw;
 }
 
@@ -11842,9 +11851,9 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi)
 
       SpanIndexType span  = poi.GetSpan();
       GirderIndexType gdr = poi.GetGirder();
-      Uint32 nMatingSurfaces = GetNumberOfMatingSurfaces(span,gdr);
+      MatingSurfaceIndexType nMatingSurfaces = GetNumberOfMatingSurfaces(span,gdr);
       Float64 panel_support = pDeck->PanelSupport;
-      for ( Uint32 i = 0; i < nMatingSurfaces; i++ )
+      for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
       {
          if ( IsExteriorGirder(span,gdr) && 
               ((gdr == 0 && i == 0) || // Left exterior girder
@@ -12361,7 +12370,7 @@ void CBridgeAgentImp::GetAlignment(IAlignment** ppAlignment)
    CComPtr<ICogoInfo> cogoinfo;
    m_Bridge->get_CogoInfo(&cogoinfo);
 
-   long alignmentkey;
+   CogoElementKey alignmentkey;
    cogoinfo->get_AlignmentKey(&alignmentkey);
 
    CComPtr<IPath> path;
@@ -12586,7 +12595,7 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(pgsTypes::Stage 
    }
 
    // don't store if not a real POI
-   if ( poi.GetID() < 0 )
+   if ( poi.GetID() == INVALID_ID )
       return props;
 
    // Store the properties
