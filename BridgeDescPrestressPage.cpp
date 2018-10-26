@@ -528,16 +528,16 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    if(m_bAreHarpedStrandsForcedStraight)
    {
       pCB->AddString(_T("Number of Straight and Number of Straight-Web"));
-      GetDlgItem(IDC_VERT_GROUP)->SetWindowTextW(_T("Vertical Location of Straight-Web Strands"));
-      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowTextW(_T("Along Girder"));
+      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Straight-Web Strands"));
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder"));
 
       DisappearHpOffsetControls();
    }
    else
    {
       pCB->AddString(_T("Number of Straight and Number of Harped"));
-      GetDlgItem(IDC_VERT_GROUP)->SetWindowTextW(_T("Vertical Location of Harped Strands"));
-      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowTextW(_T("Girder Ends"));
+      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Harped Strands"));
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Girder Ends"));
    }
 
    pCB->AddString(_T("Direct Selection of Strand Locations"));

@@ -92,11 +92,11 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
    PierIndexType nPiers = pBridge->GetPierCount();
 
    PierIndexType startPier = (span == ALL_SPANS ? 0 : span);
-   PierIndexType endPier   = (span == ALL_SPANS ? nPiers : startPier+2 );
+   PierIndexType endPier   = (span == ALL_SPANS ? nPiers-1 : startPier+1 );
 
    pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
    PierIndexType pier;
-   for ( pier = startPier; pier < endPier; pier++ )
+   for ( pier = startPier; pier <= endPier; pier++ )
    {
       pgsTypes::Stage left_stage, right_stage;
       pBridge->GetContinuityStage(pier,&left_stage,&right_stage);
@@ -162,7 +162,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,IProductForces,pForces);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( pier = startPier; pier < endPier; pier++ )
+   for ( pier = startPier; pier <= endPier; pier++ )
    {
       col = 0;
       pgsPointOfInterest& poi = vPoi[pier-startPier];

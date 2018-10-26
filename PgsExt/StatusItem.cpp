@@ -148,7 +148,6 @@ eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity()
 
 void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsInstallationErrorStatusItem* pItem = dynamic_cast<pgsInstallationErrorStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
@@ -306,8 +305,6 @@ eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity()
 
 void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    pgsGirderDescriptionStatusItem* pItem = dynamic_cast<pgsGirderDescriptionStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
@@ -358,7 +355,6 @@ eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverit
 
 void pgsStructuralAnalysisTypeStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    AfxMessageBox(pStatusItem->GetDescription().c_str(),MB_OK);
 }
 
@@ -430,7 +426,6 @@ eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity()
 
 void pgsLldfWarningStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsLldfWarningStatusItem* pItem = dynamic_cast<pgsLldfWarningStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
@@ -455,8 +450,6 @@ CEAFStatusItem(statusGroupID,callbackID,strDescription)
 bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    // we only want one of these in the status center
-   SetID(INVALID_ID);
-
    pgsEffectiveFlangeWidthStatusItem* other = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pOther);
    if ( !other )
       return false;
@@ -478,7 +471,6 @@ eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity(
 
 void pgsEffectiveFlangeWidthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsEffectiveFlangeWidthStatusItem* pItem = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 

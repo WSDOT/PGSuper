@@ -1641,6 +1641,9 @@ CChapterBuilder* CLoadingDetailsChapterBuilder::Clone() const
 
 static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType)
 {
+   if ( slabLoads.size() == 0 )
+      return true;
+
    bool is_panel = deckType==pgsTypes::sdtCompositeSIP ? true : false;
 
    std::vector<SlabLoad>::const_iterator i1,i2;
@@ -1667,6 +1670,9 @@ static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::
 
 static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
 {
+   if ( overlayLoads.size() == 0 )
+      return true;
+
    std::vector<OverlayLoad>::const_iterator i1,i2;
    i1 = overlayLoads.begin();
    i2 = overlayLoads.begin()+1;
@@ -1688,6 +1694,9 @@ static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
 
 static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 {
+   if ( loads.size() == 0 )
+      return true;
+
    std::vector<ShearKeyLoad>::const_iterator i1,i2;
    i1 = loads.begin();
    i2 = loads.begin()+1;
@@ -1712,6 +1721,9 @@ static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 
 static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads)
 {
+   if ( loads.size() == 0 )
+      return true;
+
    std::vector<ConstructionLoad>::const_iterator i1,i2;
    i1 = loads.begin();
    i2 = loads.begin()+1;

@@ -246,6 +246,12 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(pgsTypes::CastingYard,spanIdx,gdrIdx);
          bool bIsPrismatic_Final       = pGirder->IsPrismatic(pgsTypes::BridgeSite3,spanIdx,gdrIdx);
 
+         // a little fake out here... if we have a no deck bridge and there is a sacrifical depth to
+         // be worn off the girder themselves, the bridge site stage 3 properties are different from
+         // the rest of the properties. This is the same as if there is a composite deck and the bridge
+         // site stage 3 properties are different because there is a composite deck in the section
+         if ( pBridge->GetDeckType() == pgsTypes::sdtNone && 0 < pBridge->GetSacrificalDepth() )
+            bComposite = true;
 
          if ( bIsPrismatic_CastingYard && bIsPrismatic_Final )
          {
@@ -271,7 +277,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spanIdx,gdrIdx,pgsTypes::CastingYard,pDisplayUnits);
             *pPara << pTable << rptNewLine;
 
-            if ( pBridge->GetDeckType() != pgsTypes::sdtNone ) // if there isn't a deck, no need to report duplicate properties
+            if ( bComposite )
             {
                pTable = CSectionPropertiesTable2().Build(pBroker,spanIdx,gdrIdx,pgsTypes::BridgeSite3,pDisplayUnits);
                *pPara << pTable << rptNewLine;

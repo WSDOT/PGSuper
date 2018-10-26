@@ -584,11 +584,16 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderI
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)               ? poi.IsAtH(stage)                     : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(stage)                   : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(stage,POI_PSXFER) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSDEV)           ? poi.HasAttribute(stage,POI_PSDEV) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DEBOND)          ? poi.HasAttribute(stage,POI_DEBOND) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DECKBARCUTOFF)   ? poi.HasAttribute(stage,POI_DECKBARCUTOFF) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARCUTOFF)       ? poi.HasAttribute(stage,POI_BARCUTOFF) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARDEVELOP)      ? poi.HasAttribute(stage,POI_BARDEVELOP) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE) ? poi.HasAttribute(stage,POI_SECTCHANGE_RIGHTFACE) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE) ? poi.HasAttribute(stage,POI_SECTCHANGE_LEFTFACE) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION) ? poi.HasAttribute(stage,POI_SECTCHANGE_TRANSITION) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(stage,POI_FACEOFSUPPORT) : true)
-      )
+       )
    {
       // This poi matches the selection criteria. Add it to the vector
       return true;
@@ -679,13 +684,17 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIn
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_GRAPHICAL)       ? poi.IsGraphical(stage)               : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)               ? poi.IsAtH(stage)                     : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(stage)                   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DEBOND)          ? poi.HasAttribute(stage,POI_DEBOND) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(stage,POI_PSXFER) : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSDEV)          ? poi.HasAttribute(stage,POI_PSDEV) : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DEBOND)          ? poi.HasAttribute(stage,POI_DEBOND) : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DECKBARCUTOFF)  ? poi.HasAttribute(stage,POI_DECKBARCUTOFF) : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARCUTOFF)      ? poi.HasAttribute(stage,POI_BARCUTOFF) : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARDEVELOP)     ? poi.HasAttribute(stage,POI_BARDEVELOP) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE)      ? poi.HasAttribute(stage,POI_SECTCHANGE_RIGHTFACE) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE)      ? poi.HasAttribute(stage,POI_SECTCHANGE_LEFTFACE) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION)      ? poi.HasAttribute(stage,POI_SECTCHANGE_TRANSITION) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(stage,POI_FACEOFSUPPORT) : false)
-      )
+       )
 
       {
          // This poi matches the selection criteria. Add it to the vector

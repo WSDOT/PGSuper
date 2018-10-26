@@ -897,7 +897,7 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
          pPierData->SetBearingOffset(pgsTypes::Back,dlg.GetBearingOffset(pgsTypes::Back),dlg.GetBearingOffsetMeasurementType(pgsTypes::Back));
          pPierData->SetSupportWidth(pgsTypes::Back,dlg.GetSupportWidth(pgsTypes::Back));
          pPierData->SetDiaphragmHeight(pgsTypes::Back,dlg.GetDiaphragmHeight(pgsTypes::Back));
-         pPierData->SetDiaphragmWidth(pgsTypes::Back,dlg.GetDiaphragmHeight(pgsTypes::Back));
+         pPierData->SetDiaphragmWidth(pgsTypes::Back,dlg.GetDiaphragmWidth(pgsTypes::Back));
          pPierData->SetDiaphragmLoadType(pgsTypes::Back,dlg.GetDiaphragmLoadType(pgsTypes::Back));
          pPierData->SetDiaphragmLoadLocation(pgsTypes::Back,dlg.GetDiaphragmLoadLocation(pgsTypes::Back));
       }
@@ -908,7 +908,7 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
          pPierData->SetBearingOffset(pgsTypes::Ahead,dlg.GetBearingOffset(pgsTypes::Ahead),dlg.GetBearingOffsetMeasurementType(pgsTypes::Ahead));
          pPierData->SetSupportWidth(pgsTypes::Ahead,dlg.GetSupportWidth(pgsTypes::Ahead));
          pPierData->SetDiaphragmHeight(pgsTypes::Ahead,dlg.GetDiaphragmHeight(pgsTypes::Ahead));
-         pPierData->SetDiaphragmWidth(pgsTypes::Ahead,dlg.GetDiaphragmHeight(pgsTypes::Ahead));
+         pPierData->SetDiaphragmWidth(pgsTypes::Ahead,dlg.GetDiaphragmWidth(pgsTypes::Ahead));
          pPierData->SetDiaphragmLoadType(pgsTypes::Ahead,dlg.GetDiaphragmLoadType(pgsTypes::Ahead));
          pPierData->SetDiaphragmLoadLocation(pgsTypes::Ahead,dlg.GetDiaphragmLoadLocation(pgsTypes::Ahead));
       }

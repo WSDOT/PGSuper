@@ -2803,7 +2803,7 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetLiftingDesignPointsOfInt
    return vPoi2;
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode)
+std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode)
 {
    Float64 left_bunk_point_loc = leftOverhang;
    bool do_add_left = true;

@@ -28,7 +28,7 @@
 #include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <IFace\AnalysisResults.h>
 
 class lrfdLosses;

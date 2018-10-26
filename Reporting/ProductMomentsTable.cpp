@@ -345,7 +345,8 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+   bool bFutureOverlay = pBridge->IsFutureOverlay();
+   pgsTypes::Stage overlay_stage = bFutureOverlay ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    SpanIndexType startSpan, nSpans;
@@ -363,7 +364,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,
+   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,
                                                                                            bPermit,bRating,analysisType,continuity_stage,
                                                                                            pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    // Get the results

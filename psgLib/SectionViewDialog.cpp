@@ -524,7 +524,7 @@ BOOL CSectionViewDialog::OnInitDialog()
    CString hlbl;
    hlbl.Format(_T("%s Strands"), LABEL_HARP_TYPE(m_pGirderEntry->IsForceHarpedStrandsStraight()));
    CWnd* pWnd = GetDlgItem(IDC_HS);
-   pWnd->SetWindowTextW(hlbl);
+   pWnd->SetWindowText(hlbl);
 
    CStatic* pShapeProps = (CStatic*)GetDlgItem(IDC_SECTION_PROPERTIES);
    CString strProps;

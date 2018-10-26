@@ -388,7 +388,8 @@ void CAnalysisResultsChildFrame::Update(LPARAM lHint)
    if ( 
         lHint == HINT_LIVELOADCHANGED || 
         lHint == HINT_BRIDGECHANGED   ||   // traffic barrier changed
-        lHint == HINT_SPECCHANGED
+        lHint == HINT_SPECCHANGED     ||
+        lHint == HINT_RATINGSPECCHANGED
       )
    {
       CreateGraphDefinitions();

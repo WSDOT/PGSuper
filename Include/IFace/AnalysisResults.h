@@ -79,8 +79,10 @@ enum ProductForceType
 enum LoadingCombination
 { 
    lcDC, 
-   lcDW,
-   lcDWRating
+   lcDW, // Total DW loading
+   lcDWRating, // DW load used in load rating
+   lcDWp, // DW due to permanent dead loads
+   lcDWf  // DW due to future dead loads
 };
 
 enum CombinationType 
@@ -639,7 +641,7 @@ interface IBearingDesign : IUnknown
 {
    // Determine if bearing reactions are available for the span in question. Function will return true if span has a
    // simply supported interior connection. Passed-in bools will be true for simple-supported ends.
-   virtual bool AreBearingReactionsAvailable(SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright)=0;
+   virtual bool AreBearingReactionsAvailable(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright)=0;
 
    // From IProductForces
    virtual void GetBearingProductReaction(pgsTypes::Stage stage,ProductForceType type,SpanIndexType span,GirderIndexType gdr,

@@ -30,6 +30,7 @@
 #include <Reporting\VehicularLoadResultsTable.h>
 #include <Reporting\VehicularLoadReactionTable.h>
 #include <Reporting\CombinedReactionTable.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -85,16 +86,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    GET_IFACE2(pBroker,IBearingDesign,pBearing);
 
-   // Don't create report if no simple span ends
+   // Don't create much of report if no simple span ends
    bool doStartPier, doEndPier;
-   pBearing->AreBearingReactionsAvailable(span, girder, &doStartPier, &doEndPier);
-   if( !(doStartPier || doEndPier) )
-   {
-      rptParagraph* p = new rptParagraph;
-      *p << _T("Bearing Reactions are not available if neither end of girder is simply supported") << rptNewLine;
-      *pChapter << p;
-      return pChapter;
-   }
+   pBearing->AreBearingReactionsAvailable(pgsTypes::BridgeSite3,span, girder, &doStartPier, &doEndPier);
+   bool doFinalLoads = doStartPier || doEndPier;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
@@ -104,12 +99,22 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Reactions
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),CProductReactionTable::BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
 
-   *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
+   if( doFinalLoads )
+   {
+      *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
-   if (bPedestrian)
-      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+      if (bPedestrian)
+         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+   }
+   else
+   {
+      rptParagraph* p = new rptParagraph;
+      *p << _T("Final Bearing Reactions are not available if neither end of girder is simply supported") << rptNewLine;
+      *pChapter << p;
+      return pChapter;
+   }
 
    *p << rptNewLine;
 
@@ -143,7 +148,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (are_user_loads)
    {
-      *p << CUserReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),CUserReactionTable::BearingReactionsTable,pDisplayUnits) << rptNewLine;
+      *p << CUserReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),BearingReactionsTable,pDisplayUnits) << rptNewLine;
    }
 
    // Combined reactions
@@ -221,9 +226,19 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_SECTCHANGE,POIFIND_OR);
    ATLASSERT( 2 <= vPoi.size() );
 
+   // TRICKY: use adapter class to get correct reaction interfaces
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, pgsTypes::BridgeSite3, span, girder) );
+
    PierIndexType pier = 0;
-   for ( pier = startPier; pier < endPier; pier++ )
+   for ( pier = startPier; pier <= endPier; pier++ )
    {
+      if (!pForces->DoReportAtPier(pier, girder))
+      {
+         // Don't report pier if information is not available
+         continue;
+      }      
+      
       ColumnIndexType col = 0;
 
       pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
@@ -406,8 +421,14 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    row = pTable->GetNumberOfHeaderRows();
 
-   for ( pier = startPier; pier < endPier; pier++ )
+   for ( pier = startPier; pier <= endPier; pier++ )
    {
+      if (!pForces->DoReportAtPier(pier, girder))
+      {
+         // Don't report pier if information is not available
+         continue;
+      }      
+
       ColumnIndexType col = 0;
 
       pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );

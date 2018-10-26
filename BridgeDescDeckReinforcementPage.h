@@ -81,8 +81,11 @@ protected:
    CString m_strTip;
 
 public:
-   CDeckRebarData m_RebarData;
    CBridgeDescDeckRebarGrid m_Grid;
+
+private:
+   CDeckRebarData m_RebarData;
+   friend CBridgeDescDeckRebarGrid;
 };
 
 //{{AFX_INSERT_LOCATION}}

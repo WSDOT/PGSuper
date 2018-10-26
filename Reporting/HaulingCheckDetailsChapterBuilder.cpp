@@ -74,13 +74,22 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   // Artifact does heavy lifting
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
-   const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
+   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   if (!pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
+   {
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
+   }
+   else
+   {
+      // Artifact does heavy lifting
+      GET_IFACE2(pBroker,IArtifact,pArtifacts);
+      const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
+      const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
 
-   pHaulArtifact->BuildHaulingDetailsReport(span, girder, pChapter, pBroker, pDisplayUnits);
-
+      pHaulArtifact->BuildHaulingDetailsReport(span, girder, pChapter, pBroker, pDisplayUnits);
+   }
 
    return pChapter;
 }

@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include <Reporting\PGSuperTitlePageBuilder.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\LibraryUsageParagraph.h>
 #include <Reporting\GirderSeedDataComparisonParagraph.h>

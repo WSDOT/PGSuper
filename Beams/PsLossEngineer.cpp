@@ -35,7 +35,7 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderData.h>
@@ -2193,6 +2193,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
                             pProdForces->GetMoment( pgsTypes::BridgeSite1, pftShearKey,  poi, bat )) + 
                 K_userdc1 * pProdForces->GetMoment( pgsTypes::BridgeSite1, pftUserDC,    poi, bat ) +
                 K_userdw1 * pProdForces->GetMoment( pgsTypes::BridgeSite1, pftUserDW,    poi, bat );
+
+      if ( pDeck->DeckType == pgsTypes::sdtCompositeSIP )
+      {
+         *pMadlg += K_slab * pProdForces->GetMoment( pgsTypes::BridgeSite1, pftSlabPanel, poi, bat );
+      }
    }
 
    if ( m_bComputingLossesForDesign )

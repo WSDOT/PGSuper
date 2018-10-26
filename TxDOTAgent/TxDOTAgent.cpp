@@ -73,6 +73,7 @@
 #include <IFace\Test1250.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Allowables.h>
+#include <IFace\EditByUI.h>
 
 #include "TxDOTOptionalDesignData.h"
 #include "TogaSupportDrawStrategy.h"

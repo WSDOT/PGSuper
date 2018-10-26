@@ -84,7 +84,7 @@ public:
                       SpanIndexType span,GirderIndexType girder,
                       IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
-                      bool bDesign=true,bool bRating=true) const;
+                      bool bDesign,bool bRating) const;
 
 
 
@@ -162,10 +162,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
    ColumnIndexType nDesignCols = 0;
    if ( bDesign )
    {
-      nDesignCols += (bMoment ? 6 : 5); // Service I, Service IA or Fatigue I, Strength I min/max
-
-      if ( analysisType == pgsTypes::Envelope )
-         nDesignCols += 3; // min/max for Service I, Service III, ServiceIA/FatigueI
+      nDesignCols += (bMoment ? 9 : 8);
 
       if ( bPermit )
          nDesignCols += (bMoment ? 3 : 2); // Strength II min/max
@@ -217,240 +214,91 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
       (*pTable)(0,0) << _T("");
 
 
-   if ( analysisType == pgsTypes::Envelope )
+   if ( bDesign )
    {
-      if ( bDesign )
+      pTable->SetColumnSpan(ll_title_row,ll_title_col,nCols-1);
+      (*pTable)(ll_title_row,ll_title_col++) << _T("Design");
+
+      for ( ColumnIndexType i = 0; i < nDesignCols-1; i++ )
       {
-         pTable->SetColumnSpan(ll_title_row,ll_title_col,nCols-1);
-         (*pTable)(ll_title_row,ll_title_col++) << _T("Design");
-
-         for ( ColumnIndexType i = 0; i < nDesignCols-1; i++ )
-         {
-            pTable->SetColumnSpan(ll_title_row,ll_title_col++,SKIP_CELL);
-         }
-
-         pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
-         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI));
-         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
-           (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceIA));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-         }
-
-         pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
-         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceIII));
-         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
-           (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::FatigueI));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-         }
-
-         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI));
-         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-         if ( bMoment )
-         {
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-         }
-
-         if (bPermit)
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++)<< COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++)<< COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
-         }
+         pTable->SetColumnSpan(ll_title_row,ll_title_col++,SKIP_CELL);
       }
 
-      if ( bRating )
+      pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
+      (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI));
+      pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+      (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+
+      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
-         pTable->SetColumnSpan(ll_title_row,ll_title_col,nRatingCols);
-         (*pTable)(ll_title_row,ll_title_col++) << _T("Rating");
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
+        (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceIA));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
 
-         for ( ColumnIndexType i = 0; i < nRatingCols-1; i++ )
-            pTable->SetColumnSpan(ll_title_row,ll_title_col++,SKIP_CELL);
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+      }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+      pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
+      (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceIII));
+      pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+      (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
+        (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::FatigueI));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+      }
+
+      pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
+      (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI));
+      pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+      (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+      if ( bMoment )
+      {
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+      }
+
+      if (bPermit)
+      {
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++)<< COLHDR(_T("Min"), M, unitT );
+
+         if ( bMoment )
          {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_Inventory));
+            (*pTable)(min_max_row,min_max_col++)<< COLHDR(_T("* Deck"), M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_Operating));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_LegalRoutine));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_LegalSpecial));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI_PermitRoutine));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII_PermitRoutine));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI_PermitSpecial));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII_PermitSpecial));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
          }
       }
    }
-   else
+
+   if ( bRating )
    {
-      if ( bDesign )
+      pTable->SetColumnSpan(ll_title_row,ll_title_col,nRatingCols);
+      (*pTable)(ll_title_row,ll_title_col++) << _T("Rating");
+
+      for ( ColumnIndexType i = 0; i < nRatingCols-1; i++ )
+         pTable->SetColumnSpan(ll_title_row,ll_title_col++,SKIP_CELL);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
       {
-         ColumnIndexType nCol = (bMoment ? 6 : 5);
-         if ( bPermit )
-            nCol += (bMoment ? 3 : 2);
-
-         pTable->SetColumnSpan(ll_title_row,ll_title_col,nCol);
-         (*pTable)(ll_title_row,ll_title_col++) << _T("Design");
-
-         for ( ColumnIndexType i = 0; i < nDesignCols-1; i++ )
-         {
-            pTable->SetColumnSpan(ll_title_row,ll_title_col++,SKIP_CELL);
-         }
-
-         pTable->SetRowSpan(ls_title_row,ls_title_col,2);
-         pTable->SetRowSpan(min_max_row,min_max_col++,SKIP_CELL);
-         (*pTable)(ls_title_row,ls_title_col++) << COLHDR(OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI)), M, unitT );
-
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-         {
-            pTable->SetRowSpan(ls_title_row,ls_title_col,2);
-            pTable->SetRowSpan(min_max_row,min_max_col++,SKIP_CELL);
-            (*pTable)(ls_title_row,ls_title_col++) << COLHDR(OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceIA)), M, unitT );
-         }
-         
-         pTable->SetRowSpan(ls_title_row,ls_title_col,2);
-         pTable->SetRowSpan(min_max_row,min_max_col++,SKIP_CELL);
-         (*pTable)(ls_title_row,ls_title_col++) << COLHDR(OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceIII)), M, unitT );
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            pTable->SetRowSpan(ls_title_row,ls_title_col,2);
-            pTable->SetRowSpan(min_max_row,min_max_col++,SKIP_CELL);
-            (*pTable)(ls_title_row,ls_title_col++) << COLHDR(OLE2T(pStageMap->GetLimitStateName(pgsTypes::FatigueI)), M, unitT );
-         }
-
-         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3: 2);
-         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_Inventory));
          pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
 
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
@@ -461,140 +309,99 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
             (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
          }
+      }
 
-         if (bPermit)
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+      {
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_Operating));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+
+         if ( bMoment )
          {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII));
+            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
          }
       }
 
-      if ( bRating )
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         pTable->SetColumnSpan(ll_title_row,ll_title_col,nRatingCols);
-         (*pTable)(ll_title_row,ll_title_col++) << _T("Rating");
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_LegalRoutine));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
 
-         for ( ColumnIndexType i = 0; i < nRatingCols-1; i++ )
-            pTable->SetColumnSpan(ll_title_row,ll_title_col++,SKIP_CELL);
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+         if ( bMoment )
          {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_Inventory));
+            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
          }
+      }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      {
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_LegalSpecial));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+
+         if ( bMoment )
          {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_Operating));
+            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
          }
+      }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+      {
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI_PermitRoutine));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII_PermitRoutine));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+
+         if ( bMoment )
          {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_LegalRoutine));
+            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
          }
+      }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+      {
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI_PermitSpecial));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+
+         pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
+         (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII_PermitSpecial));
+         pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
+
+         if ( bMoment )
          {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI_LegalSpecial));
+            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI_PermitRoutine));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII_PermitRoutine));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-         {
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI_PermitSpecial));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3 : 2);
-            (*pTable)(ls_title_row,ls_title_col++) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII_PermitSpecial));
-            pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
-
-            if ( bMoment )
-            {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
-               pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
-            }
          }
       }
    }
@@ -635,7 +442,17 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       nCols = 6;
 
       if ( analysisType == pgsTypes::Envelope && continuityStage == pgsTypes::BridgeSite1 )
+      {
          nCols += 5;
+
+         if(bRating)
+            nCols += 6;
+      }
+      else
+      {
+         if(bRating)
+            nCols += 2;
+      }
 
       pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
 
@@ -660,6 +477,14 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
 
+         if (bRating)
+         {
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << _T("DW") << rptNewLine << _T("Rating");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+         }
+
          pTable->SetColumnSpan(0,col1,2);
          (*pTable)(0,col1++) << symbol(SUM) << _T("DC");
          (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
@@ -669,6 +494,14 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(0,col1++) << symbol(SUM) << _T("DW");
          (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+
+         if (bRating)
+         {
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << symbol(SUM) << _T("DW") << rptNewLine << _T("Rating");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+         }
 
          pTable->SetColumnSpan(0,col1,2);
          (*pTable)(0,col1++) << _T("Service I");
@@ -684,8 +517,16 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
 
          (*pTable)(0,col1++) << COLHDR(_T("DC"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(_T("DW"),          M, unitT );
+         if (bRating)
+         {
+            (*pTable)(0,col1++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          M, unitT );
+         }
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
+         if (bRating)
+         {
+            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW") << rptNewLine << _T("Rating"),          M, unitT );
+         }
          (*pTable)(0,col1++) << COLHDR(_T("Service I"), M, unitT );
 
          nRows = 1;
@@ -695,7 +536,17 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
    {
       nCols = 6;
       if ( analysisType == pgsTypes::Envelope )
+      {
          nCols += 5;
+
+         if(bRating)
+            nCols += 4;
+      }
+      else
+      {
+         if(bRating)
+            nCols += 2;
+      }
 
       col1 = 0;
       col2 = 0;
@@ -722,6 +573,14 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
 
+         if(bRating)
+         {
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << _T("DW Rating");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+         }
+
          pTable->SetColumnSpan(0,col1,2);
          (*pTable)(0,col1++) << symbol(SUM) << _T("DC");
          (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
@@ -731,6 +590,14 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(0,col1++) << symbol(SUM) << _T("DW");
          (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+
+         if(bRating)
+         {
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << symbol(SUM) << _T("DW Rating");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+         }
 
          pTable->SetColumnSpan(0,col1,2);
          (*pTable)(0,col1++) << _T("Service I");
@@ -748,8 +615,16 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
 
          (*pTable)(0,col1++) << COLHDR(_T("DC"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(_T("DW"),          M, unitT );
+         if(bRating)
+         {
+            (*pTable)(0,col1++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          M, unitT );
+         }
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
+         if(bRating)
+         {
+            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW") << rptNewLine << _T("Rating"),          M, unitT );
+         }
          (*pTable)(0,col1++) << COLHDR(_T("Service I"), M, unitT );
          
          nRows = 1;
@@ -760,7 +635,17 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       nCols = 5;
 
       if ( analysisType == pgsTypes::Envelope )
+      {
          nCols += 4; // DC, DW, sum DC, sum DW min/max
+
+         if (bRating)
+            nCols += 4;
+      }
+      else
+      {
+         if (bRating)
+            nCols += 2;
+      }
 
       col1 = 0;
       col2 = 0;
@@ -787,6 +672,14 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
 
+         if(bRating)
+         {
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << _T("DW") << rptNewLine << _T("Rating");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+         }
+
          pTable->SetColumnSpan(0,col1,2);
          (*pTable)(0,col1++) << symbol(SUM) << _T("DC");
          (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
@@ -796,6 +689,14 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(0,col1++) << symbol(SUM) << _T("DW");
          (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+
+         if(bRating)
+         {
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << symbol(SUM) << _T("DW") << rptNewLine << _T("Rating");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+         }
       }
       else
       {
@@ -807,6 +708,13 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          pTable->SetRowSpan(1,col2++,SKIP_CELL);
          (*pTable)(0,col1++) << COLHDR(_T("DW"),          M, unitT );
 
+         if(bRating)
+         {
+            pTable->SetRowSpan(0,col1,2);
+            pTable->SetRowSpan(1,col2++,SKIP_CELL);
+            (*pTable)(0,col1++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          M, unitT );
+         }
+
          pTable->SetRowSpan(0,col1,2);
          pTable->SetRowSpan(1,col2++,SKIP_CELL);
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          M, unitT );
@@ -814,6 +722,13 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          pTable->SetRowSpan(0,col1,2);
          pTable->SetRowSpan(1,col2++,SKIP_CELL);
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
+
+         if(bRating)
+         {
+            pTable->SetRowSpan(0,col1,2);
+            pTable->SetRowSpan(1,col2++,SKIP_CELL);
+            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW") << rptNewLine << _T("Rating"),          M, unitT );
+         }
       }
 
       nRows = 2;

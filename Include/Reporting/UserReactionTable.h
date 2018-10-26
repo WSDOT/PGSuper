@@ -25,6 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 interface IEAFDisplayUnits;
 
@@ -53,7 +54,6 @@ class REPORTINGCLASS CUserReactionTable
 public:
    // This class serves Float64 duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
-   enum TableType { PierReactionsTable, BearingReactionsTable};
 
    // GROUP: LIFECYCLE
 
@@ -79,7 +79,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             TableType tableType,IEAFDisplayUnits* pDisplayUnits) const;
+                             ReactionTableType tableType,IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

@@ -220,7 +220,7 @@ void CDistributedLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,CO
    pDC->LineTo(lx_end,ly_end);
 
    // spacing of verticals
-   Uint32 num_spcs = Uint32(max( Round(m_LoadLength/m_ArrowSpacing), 1));
+   Uint32 num_spcs = Uint32(max( Round(m_LoadLength/m_ArrowSpacing), 1.0));
    Float64 increment = Float64(lx_end-lx_start)/num_spcs; // use Float64 to preserve numerical accuracy
 
    // arrow size
@@ -469,7 +469,7 @@ void CDistributedLoadDrawStrategyImpl::GetTLoadHeight(iCoordinateMap* pMap, long
    }
 
    // don't allow loads to shrink out of sight
-   long min_hgt = Round(SSIZE/10);
+   long min_hgt = Round(SSIZE/10.0);
    if (abs(*endHgt) < min_hgt && abs(*startHgt) < min_hgt)
    {
       *startHgt = ::BinarySign(*startHgt)*min_hgt;

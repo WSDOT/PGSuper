@@ -659,6 +659,7 @@ void CBridgeDescription::Clear()
    m_Spans.clear();
 
    m_Deck.DeckEdgePoints.clear();
+   m_Deck.DeckRebarData.NegMomentRebar.clear();
 }
 
 void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpanData* pFirstSpan,const CPierData* pNextPier)
@@ -925,6 +926,15 @@ void CBridgeDescription::UpdateConnectionDimensions(CPierData* pPier)
    pPier->SetGirderEndDistance(pgsTypes::Ahead,endDist[pgsTypes::Ahead],endDistMeasure[pgsTypes::Ahead]);
 }
 
+class RemoveNegMomentRebar
+{
+public:
+   RemoveNegMomentRebar(PierIndexType pierIdx) { m_PierIdx = pierIdx; }
+   bool operator()(CDeckRebarData::NegMomentRebarData& rebarData) { return rebarData.PierIdx == m_PierIdx; }
+private:
+   PierIndexType m_PierIdx;
+};
+
 void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
    CSpanData* pPrevSpan = GetSpan(spanIdx-1);
@@ -936,6 +946,8 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
 
    Float64 span_length = pSpan->GetSpanLength();
    PierIndexType removePierIdx;
+
+   PierIndexType nPiers = m_Piers.size(); // number of piers before removal
 
    if ( rmPierType == pgsTypes::PrevPier )
    {
@@ -953,6 +965,26 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
       delete pSpan;
       delete pNextPier;
    }
+
+   // Remove negative rebar data at the pier that is being removed
+   PierIndexType rebarRemovePierIdx(removePierIdx);
+   if ( rebarRemovePierIdx == 0 )
+   {
+      // if the first pier is removed, the next pier becomes the first pier and it can't have neg moment
+      // rebar so remove the rebar from that pier;
+      rebarRemovePierIdx++;
+   }
+   else if ( rebarRemovePierIdx == nPiers-1 )
+   {
+      // if the last pier is removed, the next to last pier becomes the last pier and it can't have neg moment
+      // rebar so remove the rebar from that pier
+      rebarRemovePierIdx--;
+   }
+
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(rebarRemovePierIdx));
+   m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
 
    RenumberSpans();
 
@@ -1265,13 +1297,16 @@ void CBridgeDescription::SetSlabOffset(Float64 slabOffset)
 
 Float64 CBridgeDescription::GetSlabOffset() const
 {
+   if ( m_Deck.DeckType == pgsTypes::sdtNone)
+      return 0;
+
    return m_SlabOffset;
 }
 
 Float64 CBridgeDescription::GetMaxSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
-      return m_SlabOffset;
+      return GetSlabOffset();
 
    const CSpanData* pSpan = GetSpan(0);
    Float64 maxSlabOffset = 0;

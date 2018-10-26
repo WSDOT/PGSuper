@@ -153,32 +153,57 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
          nCols += 5;
 
+      if(bRating)
+         nCols +=2;
+
       col = 0;
 
       p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Deck and Diaphragm Placement (Bridge Site 1)"));
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*p_table)(0,col++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,col++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      if(bRating)
+      {
+         (*p_table)(0,col++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      if(bRating)
+      {
+         (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DW")<< rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
       (*p_table)(0,col++) << COLHDR(_T("Service I"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else if ( stage == pgsTypes::BridgeSite2)
    {
       nCols = 6;
 
+      if(bRating)
+         nCols +=2;
+
       col = 0;
       p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Superimposed Dead Loads (Bridge Site 2)"));
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*p_table)(0,col++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,col++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      if(bRating)
+      {
+         (*p_table)(0,col++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      if(bRating)
+      {
+         (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DW")<< rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
       (*p_table)(0,col++) << COLHDR(_T("Service I"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else if ( stage == pgsTypes::BridgeSite3 )
    {
       nCols = 5;
+
+      if(bRating)
+         nCols +=4;
 
       col = 0;
       ColumnIndexType col2 = 0;
@@ -200,6 +225,13 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
+      if(bRating)
+      {
+         p_table->SetRowSpan(0,col,2);
+         p_table->SetRowSpan(1,col2++,SKIP_CELL);
+         (*p_table)(0,col++) << COLHDR(_T("DW")<< rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
+
       p_table->SetRowSpan(0,col,2);
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -208,6 +240,12 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
+      if(bRating)
+      {
+         p_table->SetRowSpan(0,col,2);
+         p_table->SetRowSpan(1,col2++,SKIP_CELL);
+         (*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DW")<< rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
 
       for ( ColumnIndexType i = col; i < nCols; i++ )
          p_table->SetColumnSpan(0,i,SKIP_CELL);
@@ -243,8 +281,10 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
    std::vector<Float64> fTopDCinc, fBotDCinc;
    std::vector<Float64> fTopDWinc, fBotDWinc;
+   std::vector<Float64> fTopDWRatinginc, fBotDWRatinginc;
    std::vector<Float64> fTopDCcum, fBotDCcum;
    std::vector<Float64> fTopDWcum, fBotDWcum;
+   std::vector<Float64> fTopDWRatingcum, fBotDWRatingcum;
    std::vector<Float64> fTopMinServiceI, fBotMinServiceI;
    std::vector<Float64> fTopMaxServiceI, fBotMaxServiceI;
 
@@ -257,9 +297,17 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    else if ( stage == pgsTypes::BridgeSite1 )
    {
       pForces2->GetStress( lcDC, stage, vPoi, ctIncremental, bat, &fTopDCinc, &fBotDCinc);
-      pForces2->GetStress( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
+      pForces2->GetStress( lcDW, stage, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
+      if(bRating)
+      {
+         pForces2->GetStress( lcDWRating, stage, vPoi, ctIncremental, bat, &fTopDWRatinginc, &fBotDWRatinginc);
+      }
       pForces2->GetStress( lcDC, stage, vPoi, ctCummulative, bat, &fTopDCcum, &fBotDCcum);
-      pForces2->GetStress( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
+      pForces2->GetStress( lcDW, stage, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
+      if(bRating)
+      {
+         pForces2->GetStress( lcDWRating, stage, vPoi, ctCummulative, bat, &fTopDWRatingcum, &fBotDWRatingcum);
+      }
 
       pLsForces2->GetStress( pgsTypes::ServiceI, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI,&fTopMaxServiceI);
       pLsForces2->GetStress( pgsTypes::ServiceI, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI,&fBotMaxServiceI);
@@ -267,9 +315,17 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    else if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3)
    {
       pForces2->GetStress( lcDC, stage, vPoi, ctIncremental, bat, &fTopDCinc, &fBotDCinc);
-      pForces2->GetStress( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
+      pForces2->GetStress( lcDW, stage, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
+      if(bRating)
+      {
+         pForces2->GetStress( lcDWRating, stage, vPoi, ctIncremental, bat, &fTopDWRatinginc, &fBotDWRatinginc);
+      }
       pForces2->GetStress( lcDC, stage, vPoi, ctCummulative, bat, &fTopDCcum, &fBotDCcum);
-      pForces2->GetStress( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
+      pForces2->GetStress( lcDW, stage, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
+      if(bRating)
+      {
+         pForces2->GetStress( lcDWRating, stage, vPoi, ctCummulative, bat, &fTopDWRatingcum, &fBotDWRatingcum);
+      }
 
       if ( stage == pgsTypes::BridgeSite2 )
       {
@@ -310,11 +366,23 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
          (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWinc[index]) << rptNewLine;
          (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWinc[index]);
 
+         if(bRating)
+         {
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWRatinginc[index]) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWRatinginc[index]);
+         }
+
          (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCcum[index]) << rptNewLine;
          (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCcum[index]);
 
          (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWcum[index]) << rptNewLine;
          (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWcum[index]);
+
+         if(bRating)
+         {
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWRatingcum[index]) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWRatingcum[index]);
+         }
 
          (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceI[index]) << rptNewLine;
          (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceI[index]);
@@ -327,12 +395,23 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
          (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWinc[index]) << rptNewLine;
          (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWinc[index]);
 
+         if(bRating)
+         {
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWRatinginc[index]) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWRatinginc[index]);
+         }
+
          (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCcum[index]) << rptNewLine;
          (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCcum[index]);
 
          (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWcum[index]) << rptNewLine;
          (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWcum[index]);
 
+         if(bRating)
+         {
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWRatingcum[index]) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWRatingcum[index]);
+         }
 
          if ( stage == pgsTypes::BridgeSite2 )
          {

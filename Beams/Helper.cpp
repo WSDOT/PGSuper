@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include <Beams\Helper.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

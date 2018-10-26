@@ -94,8 +94,14 @@ typedef Uint64 PoiAttributeType;
 
 #define POI_TENTH_POINTS POI_0L | POI_1L | POI_2L | POI_3L | POI_4L | POI_5L | POI_6L | POI_7L | POI_8L | POI_9L | POI_10L
 
-// 0x0000 0000 0000 0800 - Unused
-// 0x0000 0000 0000 1000 - Unused
+// The following POI attributes are undefined/unused.
+// If a new attribute is needed, take it from this list
+// starting with the highest value.
+// **** NOTE ****
+// If a new POI is defined, don't forget to update pgsPoiMgr::AndFind and pgsPoiMgr::OrFind
+// **** NOTE ****
+// #define POI_UNDEFINED2 0x0000000000000800
+// #define POI_UNDEFINED1 0x0000000000001000
 
 /*****************************************************************************
 CLASS 

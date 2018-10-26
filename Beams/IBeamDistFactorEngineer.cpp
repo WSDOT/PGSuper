@@ -30,7 +30,7 @@
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -436,27 +436,38 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
    pDistFactors->VerifyDistributionFactorRequirements(poi);
 
-   plldf->ts    = pBridge->GetStructuralSlabDepth(poi);
-
-   if ( fcgdr < 0 )
-   {
-      plldf->n     = pMaterial->GetEcGdr(span,gdr) / pMaterial->GetEcSlab();
-   }
-   else
-   {
-      Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
-                                          pMaterial->GetStrDensityGdr(span,gdr),
-                                          pMaterial->GetEccK1Gdr(span,gdr),
-                                          pMaterial->GetEccK2Gdr(span,gdr)
-                                          );
-
-      plldf->n     = Ecgdr / pMaterial->GetEcSlab();
-   }
-
    plldf->I     = pSectProp2->GetIx(pgsTypes::BridgeSite1,poi);
    plldf->A     = pSectProp2->GetAg(pgsTypes::BridgeSite1,poi);
    plldf->Yt    = pSectProp2->GetYtGirder(pgsTypes::BridgeSite1,poi);
-   plldf->eg    = plldf->Yt + plldf->ts/2;
+
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   {
+      // no deck so modular ratio is 1.0 (Eg/Eg)
+      plldf->n = 1.0;
+      plldf->ts = pGdr->GetMinTopFlangeThickness(poi);
+      plldf->eg = plldf->Yt - plldf->ts/2; // measure eg to the center of the top flange
+   }
+   else
+   {
+      plldf->ts    = pBridge->GetStructuralSlabDepth(poi);
+
+      if ( fcgdr < 0 )
+      {
+         plldf->n     = pMaterial->GetEcGdr(span,gdr) / pMaterial->GetEcSlab();
+      }
+      else
+      {
+         Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
+                                             pMaterial->GetStrDensityGdr(span,gdr),
+                                             pMaterial->GetEccK1Gdr(span,gdr),
+                                             pMaterial->GetEccK2Gdr(span,gdr)
+                                             );
+
+         plldf->n     = Ecgdr / pMaterial->GetEcSlab();
+      }
+
+      plldf->eg    = plldf->Yt + plldf->ts/2;
+   }
 
    plldf->L = GetEffectiveSpanLength(spanOrPier,gdr,dfType);
 

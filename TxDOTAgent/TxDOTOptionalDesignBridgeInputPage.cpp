@@ -78,7 +78,7 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX, IDC_SPAN_NO, m_SpanNo);
    DDX_Text(pDX, IDC_BEAM_NO, m_BeamNo);
 
-   DDX_CBString(pDX, IDC_BEAM_TYPE, m_BeamType);
+   DDX_CBStringExactCase(pDX, IDC_BEAM_TYPE, m_BeamType);
 
    DDX_UnitValueAndTag( pDX, IDC_BEAM_SPACING,   IDC_BEAM_SPACING_UNITS,  m_BeamSpacing, pDisplayUnits->GetSpanLengthUnit() );
    DDV_UnitValueGreaterThanZero( pDX, IDC_BEAM_SPACING,m_BeamSpacing, pDisplayUnits->GetSpanLengthUnit() );
@@ -88,7 +88,7 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag( pDX, IDC_SPAN_LENGTH,   IDC_SPAN_LENGTH_UNITS,  m_SpanLength, pDisplayUnits->GetSpanLengthUnit() );
    DDV_UnitValueLimitOrMore( pDX, IDC_SPAN_LENGTH,m_SpanLength, min_span_length, pDisplayUnits->GetSpanLengthUnit() );
 
-   Float64 min_slab_thickness = ::ConvertToSysUnits(4.0,  unitMeasure::Inch);
+   Float64 min_slab_thickness = 0.0; // lower limit of 4.0 will be checked for spread beams at model generation time
    Float64 max_slab_thickness = ::ConvertToSysUnits(24.0, unitMeasure::Inch);
 
    DDX_UnitValueAndTag( pDX, IDC_SLAB_THICKNESS,   IDC_SLAB_THICKNESS_UNITS,  m_SlabThickness, pDisplayUnits->GetComponentDimUnit() );
@@ -141,7 +141,7 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag( pDX, IDC_W_COMP_DW,   IDC_W_COMP_DW_UNITS,  m_WCompDw, pDisplayUnits->GetForcePerLengthUnit() );
    DDV_UnitValueZeroOrMore( pDX, IDC_W_COMP_DW,m_WCompDw, pDisplayUnits->GetForcePerLengthUnit() );
 
-   DDX_CBString(pDX, IDC_PROJECT_CRITERIA, m_SelectedProjectCriteriaLibrary);
+   DDX_CBStringExactCase(pDX, IDC_PROJECT_CRITERIA, m_SelectedProjectCriteriaLibrary);
 
    // Error checking that library entries exist for the selected girder type
    bool st = CheckLibraryData(); // function will message the problem

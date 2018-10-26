@@ -921,7 +921,7 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
       const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
-      if ( !pSpan->IsInteriorGirder(gdr) )
+      if ( pSpan->IsInteriorGirder(gdr) )
       {
          Float64 M,V;
          M = pSpan->GetLLDFPosMoment(gdr,ls);

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ShearCheckTable.h>
@@ -29,6 +29,7 @@
 #include <Reporting\OptionalDeflectionCheck.h>
 #include <Reporting\LongReinfShearCheck.h>
 #include <Reporting\GirderDetailingCheck.h>
+#include <Reporting\DebondCheckTable.h>
 #include "TexasShearChapterBuilder.h"
 
 #include <PgsExt\PointOfInterest.h>
@@ -126,6 +127,13 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    // Girder Detailing
    CGirderDetailingCheck(true).Build(pChapter,pBroker,span,girder,pDisplayUnits);
+
+   // Debonding check if applicable
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   if ( pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight) )
+   {
+      CDebondCheckTable().Build(pChapter, pBroker,span,girder,pgsTypes::Straight, pDisplayUnits);
+   }
 
    return pChapter;
 }

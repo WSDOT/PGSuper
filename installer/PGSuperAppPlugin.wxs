@@ -748,6 +748,8 @@
 
          <ComponentRef Id="LibraryEditor"/>
 
+         <ComponentRef Id="Images"/>
+
          <ComponentRef Id="AnalysisAgent"/>
          <ComponentRef Id="BridgeAgent"/>
          <ComponentRef Id="EngAgent"/>

@@ -171,6 +171,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
       std::vector<Float64> minDCcum, maxDCcum;
       std::vector<Float64> minDWinc, maxDWinc;
       std::vector<Float64> minDWcum, maxDWcum;
+      std::vector<Float64> minDWRatinginc, maxDWRatinginc;
+      std::vector<Float64> minDWRatingcum, maxDWRatingcum;
 
       if ( stage == pgsTypes::CastingYard || stage == pgsTypes::GirderPlacement || stage == pgsTypes::TemporaryStrandRemoval )
       {
@@ -183,12 +185,22 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
          {
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            if (bRating)
+            {
+               maxDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+               minDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            }
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            if (bRating)
+            {
+               maxDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+               minDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            }
 
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
@@ -196,9 +208,17 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
          else
          {
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, SimpleSpan );
-            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, SimpleSpan );
+            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, SimpleSpan );
+            if (bRating)
+            {
+               maxDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, SimpleSpan );
+            }
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, SimpleSpan );
-            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, SimpleSpan );
+            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, SimpleSpan );
+            if (bRating)
+            {
+               maxDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, SimpleSpan );
+            }
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, SimpleSpan, &minServiceI, &maxServiceI );
          }
       }
@@ -208,12 +228,22 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
          {
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            if(bRating)
+            {
+               maxDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+               minDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            }
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            if(bRating)
+            {
+               maxDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+               minDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            }
 
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
@@ -222,9 +252,14 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
          {
             BridgeAnalysisType bat = ( analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, bat );
-            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, bat );
-            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat );
+            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, bat );
+            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, bat );
+            if(bRating)
+            {
+               maxDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, bat );
+               maxDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, bat );
+            }
 
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, bat, &minServiceI, &maxServiceI );
          }
@@ -236,20 +271,35 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
          {
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            if(bRating)
+            {
+               maxDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+               minDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            }
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            if(bRating)
+            {
+               maxDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+               minDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            }
          }
          else
          {
             BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, bat );
-            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, bat );
-            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat );
+            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, bat );
+            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, bat );
+            if(bRating)
+            {
+               maxDWRatinginc = pForces2->GetMoment( lcDWRating, stage, vPoi, ctIncremental, bat );
+               maxDWRatingcum = pForces2->GetMoment( lcDWRating, stage, vPoi, ctCummulative, bat );
+            }
          }
       }
 
@@ -280,10 +330,20 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
                (*p_table)(row,col++) << moment.SetValue( minDCinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
                (*p_table)(row,col++) << moment.SetValue( minDWinc[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatinginc[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minDWRatinginc[index] );
+               }
                (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( minDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
                (*p_table)(row,col++) << moment.SetValue( minDWcum[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatingcum[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minDWRatingcum[index] );
+               }
 
                (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
                (*p_table)(row,col++) << moment.SetValue( minServiceI[index] );
@@ -292,8 +352,16 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
             {
                (*p_table)(row,col++) << moment.SetValue( maxDCinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatinginc[index] );
+               }
                (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatingcum[index] );
+               }
 
                (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
             }
@@ -306,10 +374,20 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
                (*p_table)(row,col++) << moment.SetValue( minDCinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
                (*p_table)(row,col++) << moment.SetValue( minDWinc[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatinginc[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minDWRatinginc[index] );
+               }
                (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( minDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
                (*p_table)(row,col++) << moment.SetValue( minDWcum[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatingcum[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minDWRatingcum[index] );
+               }
 
                (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
                (*p_table)(row,col++) << moment.SetValue( minServiceI[index] );
@@ -318,8 +396,16 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
             {
                (*p_table)(row,col++) << moment.SetValue( maxDCinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatinginc[index] );
+               }
                (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatingcum[index] );
+               }
 
                (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
             }
@@ -334,17 +420,35 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
                (*p_table)(row,col++) << moment.SetValue( minDCinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
                (*p_table)(row,col++) << moment.SetValue( minDWinc[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatinginc[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minDWRatinginc[index] );
+               }
                (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( minDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
                (*p_table)(row,col++) << moment.SetValue( minDWcum[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatingcum[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minDWRatingcum[index] );
+               }
             }
             else
             {
                (*p_table)(row,col++) << moment.SetValue( maxDCinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatinginc[index] );
+               }
                (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
+               if(bRating)
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDWRatingcum[index] );
+               }
             }
          }
 
@@ -413,6 +517,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
 
    // Fill up the table
+   RowIndexType    row = Nhrows;
    for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
       std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, stage, POI_ALL, POIFIND_OR);
@@ -555,7 +660,6 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
       std::vector<pgsPointOfInterest>::const_iterator i;
       long index = 0;
       ColumnIndexType col = 0;
-      RowIndexType    row = Nhrows;
       for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
       {
          const pgsPointOfInterest& poi = *i;
@@ -956,162 +1060,84 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
 
          (*p_table2)(row2,col++) << location.SetValue( stage, poi, end_size );
 
-         if ( analysisType == pgsTypes::Envelope )
+         if ( bDesign )
          {
-            if ( bDesign )
+            (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
+            (*p_table2)(row2,col++) << moment.SetValue( minServiceI[index] );
+
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
             {
-               (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
-               (*p_table2)(row2,col++) << moment.SetValue( minServiceI[index] );
-
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( minServiceIA[index] );
-               }
-
-               (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
-               (*p_table2)(row2,col++) << moment.SetValue( minServiceIII[index] );
-
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( minFatigueI[index] );
-               }
-
-               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
-               (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
-               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI[index] );
-
-               if ( bPermit )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII[index] );
-               }
+               (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( minServiceIA[index] );
             }
 
-            if ( bRating )
+            (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
+            (*p_table2)(row2,col++) << moment.SetValue( minServiceIII[index] );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Inventory[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Inventory[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Inventory[index]);
-               }
+               (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( minFatigueI[index] );
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Operating[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Operating[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Operating[index]);
-               }
+            (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
+            (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
+            (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI[index] );
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Routine[index]);
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Special[index]);
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceI_Permit_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minServiceI_Permit_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII_Permit_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthII_Permit_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Routine[index]);
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceI_Permit_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minServiceI_Permit_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII_Permit_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthII_Permit_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Special[index]);
-               }
+            if ( bPermit )
+            {
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII[index] );
             }
          }
-         else
+
+         if ( bRating )
          {
-            if ( bDesign )
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
             {
-               (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
-
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
-               
-               (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
-
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-                  (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
-
-               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
-               (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
-               (*p_table2)(row2,col++) << moment.SetValue( slabStrengthI[index] );
-
-               if ( bPermit )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( slabStrengthII[index] );
-               }
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Inventory[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Inventory[index]);
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Inventory[index]);
             }
 
-            if ( bRating )
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
             {
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Inventory[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Inventory[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Inventory[index]);
-               }
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Operating[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Operating[index]);
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Operating[index]);
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Operating[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Operating[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Operating[index]);
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Routine[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Routine[index]);
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Routine[index]);
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Routine[index]);
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Special[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Special[index]);
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Special[index]);
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Special[index]);
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               (*p_table2)(row2,col++) << moment.SetValue( maxServiceI_Permit_Routine[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( minServiceI_Permit_Routine[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII_Permit_Routine[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthII_Permit_Routine[index]);
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Routine[index]);
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue(maxServiceI_Permit_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(minServiceI_Permit_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(maxStrengthII_Permit_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(minStrengthII_Permit_Routine[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Routine[index]);
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue(maxServiceI_Permit_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(minServiceI_Permit_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(maxStrengthII_Permit_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(minStrengthII_Permit_Special[index]);
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Special[index]);
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               (*p_table2)(row2,col++) << moment.SetValue( maxServiceI_Permit_Special[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( minServiceI_Permit_Special[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII_Permit_Special[index]);
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthII_Permit_Special[index]);
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Special[index]);
             }
          }
 

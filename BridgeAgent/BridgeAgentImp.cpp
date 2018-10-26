@@ -32,6 +32,8 @@
 #include "StatusItems.h"
 #include "PGSuperUnits.h"
 
+#include <IFace\EditByUI.h>
+
 #include <PsgLib\LibraryManager.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\ConnectionLibraryEntry.h>
@@ -99,7 +101,7 @@ DECLARE_LOGFILE;
 #define CAPPROB_CMP_INT   0x0002
 #define CAPPROB_CMP_EXT   0x0004
 
-#define USERLOADPOI_ATTR POI_FLEXURESTRESS | POI_SHEAR | POI_FLEXURECAPACITY | POI_TABULAR | POI_GRAPHICAL | POI_CONCLOAD
+#define USERLOADPOI_ATTR POI_FLEXURESTRESS | POI_SHEAR | POI_FLEXURECAPACITY | POI_TABULAR | POI_GRAPHICAL
 
 
 #define VALIDATE(x) {if ( !Validate((x)) ) THROW_SHUTDOWN(_T("Fatal Error in Bridge Agent"),XREASON_AGENTVALIDATIONFAILURE,true);}
@@ -619,39 +621,43 @@ bool CBridgeAgentImp::ValidateConcrete()
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
 
-   // Create slab concrete
    Float64 modE;
-   if ( pDeck->SlabUserEc )
-   {
-      modE = pDeck->SlabEc;
-   }
-   else
-   {
-      modE = lrfdConcreteUtil::ModE(pDeck->SlabFc, 
-                                    pDeck->SlabStrengthDensity, 
-                                    false /* ignore LRFD range checks */ );
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   // Create slab concrete
+   if ( pDeck->DeckType != pgsTypes::sdtNone )
+   {
+      if ( pDeck->SlabUserEc )
       {
-         modE *= (pDeck->SlabEcK1*pDeck->SlabEcK2);
+         modE = pDeck->SlabEc;
       }
-   }
-   m_pSlabConc = std::auto_ptr<matConcreteEx>(new matConcreteEx( _T("Slab Concrete"),
-                                                                 pDeck->SlabFc,
-                                                                 pDeck->SlabStrengthDensity,
-                                                                 pDeck->SlabWeightDensity,
-                                                                 modE) );
-   m_pSlabConc->SetMaxAggregateSize(pDeck->SlabMaxAggregateSize);
-   m_pSlabConc->SetType((matConcrete::Type)pDeck->SlabConcreteType);
-   m_pSlabConc->HasAggSplittingStrength(pDeck->SlabHasFct);
-   m_pSlabConc->SetAggSplittingStrength(pDeck->SlabFct);
+      else
+      {
+         modE = lrfdConcreteUtil::ModE(pDeck->SlabFc, 
+                                       pDeck->SlabStrengthDensity, 
+                                       false /* ignore LRFD range checks */ );
 
-   m_SlabEcK1        = pDeck->SlabEcK1;
-   m_SlabEcK2        = pDeck->SlabEcK2;
-   m_SlabCreepK1     = pDeck->SlabCreepK1;
-   m_SlabCreepK2     = pDeck->SlabCreepK2;
-   m_SlabShrinkageK1 = pDeck->SlabShrinkageK1;
-   m_SlabShrinkageK2 = pDeck->SlabShrinkageK2;
+         if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            modE *= (pDeck->SlabEcK1*pDeck->SlabEcK2);
+         }
+      }
+      m_pSlabConc = std::auto_ptr<matConcreteEx>(new matConcreteEx( _T("Slab Concrete"),
+                                                                    pDeck->SlabFc,
+                                                                    pDeck->SlabStrengthDensity,
+                                                                    pDeck->SlabWeightDensity,
+                                                                    modE) );
+      m_pSlabConc->SetMaxAggregateSize(pDeck->SlabMaxAggregateSize);
+      m_pSlabConc->SetType((matConcrete::Type)pDeck->SlabConcreteType);
+      m_pSlabConc->HasAggSplittingStrength(pDeck->SlabHasFct);
+      m_pSlabConc->SetAggSplittingStrength(pDeck->SlabFct);
+
+      m_SlabEcK1        = pDeck->SlabEcK1;
+      m_SlabEcK2        = pDeck->SlabEcK2;
+      m_SlabCreepK1     = pDeck->SlabCreepK1;
+      m_SlabCreepK2     = pDeck->SlabCreepK2;
+      m_SlabShrinkageK1 = pDeck->SlabShrinkageK1;
+      m_SlabShrinkageK2 = pDeck->SlabShrinkageK2;
+   }
 
 
    // Create railing concrete
@@ -826,82 +832,86 @@ bool CBridgeAgentImp::ValidateConcrete()
    }
 
    // Check slab concrete
-   if ( m_pSlabConc->GetFc() < fcMin && !IsEqual(m_pSlabConc->GetFc(),fcMin) )
+   if ( pDeck->DeckType != pgsTypes::sdtNone )
    {
-      std::_tstring strMsg;
-      strMsg = bSI ? _T("Slab concrete cannot be less than 28 MPa per LRFD 5.4.2.1") 
-                   : _T("Slab concrete cannot be less than 4 KSI per LRFD 5.4.2.1");
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-      //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
-      //THROW_UNWIND(strMsg.c_str(),-1);
-   }
+      if ( m_pSlabConc->GetFc() < fcMin && !IsEqual(m_pSlabConc->GetFc(),fcMin) )
+      {
+         std::_tstring strMsg;
+         strMsg = bSI ? _T("Slab concrete cannot be less than 28 MPa per LRFD 5.4.2.1") 
+                      : _T("Slab concrete cannot be less than 4 KSI per LRFD 5.4.2.1");
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+         //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
+         //THROW_UNWIND(strMsg.c_str(),-1);
+      }
 
-   pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)m_pSlabConc->GetType();
-   Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
-   if (  max_slab_fc < m_pSlabConc->GetFc() && !IsEqual(max_slab_fc,m_pSlabConc->GetFc()) )
-   {
-      Float64 fcMax = ::ConvertFromSysUnits(max_slab_fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
-      std::_tostringstream os;
-      os << _T("Slab concrete strength exceeds the normal value of ") << fcMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
-
+      pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)m_pSlabConc->GetType();
+      Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
+      if (  max_slab_fc < m_pSlabConc->GetFc() && !IsEqual(max_slab_fc,m_pSlabConc->GetFc()) )
+      {
+         Float64 fcMax = ::ConvertFromSysUnits(max_slab_fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+         std::_tostringstream os;
+         os << _T("Slab concrete strength exceeds the normal value of ") << fcMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
+   
+            std::_tstring strMsg = os.str();
+   
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+   
+      Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
+      Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
+   
+      if ( max_wc < m_pSlabConc->GetDensity() && !IsEqual(max_wc,m_pSlabConc->GetDensity(),0.0001) )
+      {
+         std::_tostringstream os;
+         os << _T("Slab concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+   
          std::_tstring strMsg = os.str();
-
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-   }
-
-   Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
-   Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
-
-   if ( max_wc < m_pSlabConc->GetDensity() && !IsEqual(max_wc,m_pSlabConc->GetDensity(),0.0001) )
-   {
-      std::_tostringstream os;
-      os << _T("Slab concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
-
-      std::_tstring strMsg = os.str();
-
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-   }
-
-   if ( max_wc < m_pSlabConc->GetDensityForWeight() && !IsEqual(max_wc,m_pSlabConc->GetDensityForWeight(),0.0001) )
-   {
-      std::_tostringstream os;
-      os << _T("Slab concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
-
-      std::_tstring strMsg = os.str();
-
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::DensityForWeight,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-   }
-
-   if ( !IsConcreteDensityInRange(m_pSlabConc->GetDensity(), (pgsTypes::ConcreteType)m_pSlabConc->GetType()) )
-   {
-      std::_tostringstream os;
-      if ( m_pSlabConc->GetType() == pgsTypes::Normal )
-         os << _T("Slab concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
-      else
-         os << _T("Slab concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
-
-      std::_tstring strMsg = os.str();
-
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-   }
-
-   Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(slabConcreteType);
-   Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-   if ( max_agg_size < m_pSlabConc->GetMaxAggregateSize() && !IsEqual(max_agg_size,m_pSlabConc->GetMaxAggregateSize()))
-   {
-      std::_tostringstream os;
-      os << _T("Slab concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
-
-      std::_tstring strMsg = os.str();
-
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::AggSize,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
+   
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+   
+      if ( max_wc < m_pSlabConc->GetDensityForWeight() && !IsEqual(max_wc,m_pSlabConc->GetDensityForWeight(),0.0001) )
+      {
+         std::_tostringstream os;
+         os << _T("Slab concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+   
+         std::_tstring strMsg = os.str();
+   
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::DensityForWeight,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+   
+      if ( !IsConcreteDensityInRange(m_pSlabConc->GetDensity(), (pgsTypes::ConcreteType)m_pSlabConc->GetType()) )
+      {
+         std::_tostringstream os;
+         if ( m_pSlabConc->GetType() == pgsTypes::Normal )
+            os << _T("Slab concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+         else
+            os << _T("Slab concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+   
+         std::_tstring strMsg = os.str();
+   
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+   
+      Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(slabConcreteType);
+      Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   
+      if ( max_agg_size < m_pSlabConc->GetMaxAggregateSize() && !IsEqual(max_agg_size,m_pSlabConc->GetMaxAggregateSize()))
+      {
+         std::_tostringstream os;
+         os << _T("Slab concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
+   
+         std::_tstring strMsg = os.str();
+   
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::AggSize,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+   
+      }
    }
 
 
@@ -925,6 +935,7 @@ bool CBridgeAgentImp::ValidateConcrete()
          pgsTypes::ConcreteType gdrConcreteType = (pgsTypes::ConcreteType)m_pGdrConc[key]->GetType();
 
          Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(gdrConcreteType);
+         Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
 
          Float64 max_girder_fci = pLimits->GetMaxGirderFci(gdrConcreteType);
          Float64 fciGirderMax = ::ConvertFromSysUnits(max_girder_fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
@@ -1219,10 +1230,10 @@ void CBridgeAgentImp::ValidatePointLoads()
             // add a point of interest at this load location
             Float64 loc = upl.m_Location + GetGirderStartConnectionLength(span,girder);
             pgsPointOfInterest poi(span,girder,loc);
-            poi.AddStage(pgsTypes::CastingYard,USERLOADPOI_ATTR);
-            poi.AddStage(pgsTypes::BridgeSite1,USERLOADPOI_ATTR);
-            poi.AddStage(pgsTypes::BridgeSite2,USERLOADPOI_ATTR);
-            poi.AddStage(pgsTypes::BridgeSite3,USERLOADPOI_ATTR);
+            poi.AddStage(pgsTypes::CastingYard,USERLOADPOI_ATTR | POI_CONCLOAD);
+            poi.AddStage(pgsTypes::BridgeSite1,USERLOADPOI_ATTR | POI_CONCLOAD);
+            poi.AddStage(pgsTypes::BridgeSite2,USERLOADPOI_ATTR | POI_CONCLOAD);
+            poi.AddStage(pgsTypes::BridgeSite3,USERLOADPOI_ATTR | POI_CONCLOAD);
             m_PoiMgr.AddPointOfInterest( poi );
 
             // put load into our collection
@@ -1402,6 +1413,22 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                }
             }
 
+            Float64 loc = upl.m_StartLocation + GetGirderStartConnectionLength(span,girder);
+            pgsPointOfInterest poiStart(span,girder,loc);
+            poiStart.AddStage(pgsTypes::CastingYard,USERLOADPOI_ATTR);
+            poiStart.AddStage(pgsTypes::BridgeSite1,USERLOADPOI_ATTR);
+            poiStart.AddStage(pgsTypes::BridgeSite2,USERLOADPOI_ATTR);
+            poiStart.AddStage(pgsTypes::BridgeSite3,USERLOADPOI_ATTR);
+            m_PoiMgr.AddPointOfInterest( poiStart );
+
+            loc = upl.m_EndLocation + GetGirderStartConnectionLength(span,girder);
+            pgsPointOfInterest poiEnd(span,girder,loc);
+            poiEnd.AddStage(pgsTypes::CastingYard,USERLOADPOI_ATTR);
+            poiEnd.AddStage(pgsTypes::BridgeSite1,USERLOADPOI_ATTR);
+            poiEnd.AddStage(pgsTypes::BridgeSite2,USERLOADPOI_ATTR);
+            poiEnd.AddStage(pgsTypes::BridgeSite3,USERLOADPOI_ATTR);
+            m_PoiMgr.AddPointOfInterest( poiEnd );
+
             SpanGirderHashType hashval = HashSpanGirder(span, girder);
             DistributedLoadCollection& plc = m_DistributedLoads[(int)rpl.m_Stage];
 
@@ -1540,9 +1567,9 @@ void CBridgeAgentImp::ValidateMomentLoads()
             // add a point of interest at this load location
             Float64 loc = upl.m_Location + GetGirderStartConnectionLength(span,girder);
             pgsPointOfInterest poi(span, girder, loc);
-            poi.AddStage(pgsTypes::BridgeSite1, USERLOADPOI_ATTR);
-            poi.AddStage(pgsTypes::BridgeSite2, USERLOADPOI_ATTR);
-            poi.AddStage(pgsTypes::BridgeSite3, USERLOADPOI_ATTR);
+            poi.AddStage(pgsTypes::BridgeSite1, USERLOADPOI_ATTR | POI_CONCLOAD);
+            poi.AddStage(pgsTypes::BridgeSite2, USERLOADPOI_ATTR | POI_CONCLOAD);
+            poi.AddStage(pgsTypes::BridgeSite3, USERLOADPOI_ATTR | POI_CONCLOAD);
             m_PoiMgr.AddPointOfInterest( poi );
 
             // put load into our collection
@@ -1895,12 +1922,30 @@ bool CBridgeAgentImp::BuildCogoModel()
                }
             }
 
-            alignment->AddEx(hc);
-
             // determine the station of the ST point because this point will serve
             // as the next point on back tangent
             Float64 L;
-            hc->get_TotalLength(&L);
+            hr = hc->get_TotalLength(&L);
+            if ( FAILED(hr) )
+            {
+               std::_tostringstream os;
+               if ( hr == COGO_E_SPIRALSOVERLAP )
+                  os << _T("The description of horizontal curve ") << curveID << _T(" is invalid. The entry and exit spirals overlap.");
+               else
+                  os << _T("An unknown error occured while modeling horizontal curve ") << curveID << _T(".");
+
+               os << std::endl;
+               os << _T("The horizontal curve was ignored.");
+
+               std::_tstring strMsg = os.str();
+               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
+               GET_IFACE(IEAFStatusCenter,pStatusCenter);
+               pStatusCenter->Add(p_status_item);
+
+               continue;
+            }
+
+            alignment->AddEx(hc);
 
             back_tangent = fwd_tangent;
             pbt.Release();
@@ -2596,6 +2641,16 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription* pBridgeDesc)
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
    pgsTypes::SupportedDeckType deckType = pDeck->DeckType;
 
+   // put the wearing surface into the generic bridge model
+   if ( pDeck->WearingSurface == pgsTypes::wstSacrificialDepth || pDeck->WearingSurface == pgsTypes::wstFutureOverlay)
+   {
+      m_Bridge->put_SacrificialDepth(pDeck->SacrificialDepth);
+   }
+   else
+   {
+      m_Bridge->put_SacrificialDepth(0);
+   }
+
    CComPtr<IBridgeDeck> deck;
 
    if ( IsAdjustableWidthDeck(deckType) )
@@ -2612,6 +2667,7 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription* pBridgeDesc)
 
    if ( deck )
    {
+
       deck->put_ConstructionStage(GetStageName(pgsTypes::BridgeSite1));
       deck->put_CompositeStage(GetStageName(pgsTypes::BridgeSite2));
 
@@ -2699,6 +2755,7 @@ void CBridgeAgentImp::NoDeckEdgePoint(SpanIndexType spanIdx,PierIndexType pierId
    return;
 }
 
+
 bool CBridgeAgentImp::LayoutNoDeck(const CBridgeDescription* pBridgeDesc,IBridgeDeck** ppDeck)
 {
       // There isn't an explicit deck in this case, so layout of the composite slab must be done
@@ -2709,65 +2766,22 @@ bool CBridgeAgentImp::LayoutNoDeck(const CBridgeDescription* pBridgeDesc,IBridge
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
    pgsTypes::SupportedDeckType deckType = pDeck->DeckType;
 
-   ATLASSERT( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone );
+   if ( deckType == pgsTypes::sdtNone )
+   {
+      (*ppDeck) = NULL;
+      return true;
+   }
+
+   ATLASSERT( deckType == pgsTypes::sdtCompositeOverlay );
 
    CComPtr<IOverlaySlab> slab;
    slab.CoCreateInstance(CLSID_OverlaySlab);
 
-   if ( deckType == pgsTypes::sdtCompositeOverlay )
-   {
-      slab->put_GrossDepth(pDeck->GrossDepth);
-      if ( pDeck->WearingSurface == pgsTypes::wstSacrificialDepth || pDeck->WearingSurface == pgsTypes::wstFutureOverlay)
-      {
-         slab->put_SacrificialDepth(pDeck->SacrificialDepth);
-      }
-      else
-      {
-         slab->put_SacrificialDepth(0);
-      }
-   }
-   else
-   {
-      // use a dummy zero-depth deck because there is no deck
-      slab->put_GrossDepth(0);
-      slab->put_SacrificialDepth(0);
-   }
+   slab->put_GrossDepth(pDeck->GrossDepth);
 
    // create deck edge strategy
    CComPtr<IPath> left_path, right_path;
-   left_path.CoCreateInstance(CLSID_Path);
-   right_path.CoCreateInstance(CLSID_Path);
-
-   // Build  path along exterior girders
-   CComPtr<ISpanCollection> spans;
-   m_Bridge->get_Spans(&spans);
-   SpanIndexType nSpans;
-   spans->get_Count(&nSpans);
-
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
-   {
-      CComPtr<IPoint2d> point_on_edge;
-
-      // left edge - start of span
-      PierIndexType pierIdx = spanIdx;
-      NoDeckEdgePoint(spanIdx,pierIdx,qcbLeft,&point_on_edge);
-      left_path->AddEx(point_on_edge);
-
-      // left edge - end of span
-      point_on_edge.Release();
-      NoDeckEdgePoint(spanIdx,pierIdx+1,qcbLeft,&point_on_edge);
-      left_path->AddEx(point_on_edge);
-
-      // right edge - start of span
-      point_on_edge.Release();
-      NoDeckEdgePoint(spanIdx,pierIdx,qcbRight,&point_on_edge);
-      right_path->AddEx(point_on_edge);
-
-      // right edge - end of span
-      point_on_edge.Release();
-      NoDeckEdgePoint(spanIdx,pierIdx+1,qcbRight,&point_on_edge);
-      right_path->AddEx(point_on_edge);
-   }
+   CreateCompositeOverlayEdgePaths(&left_path,&right_path);
 
    CComPtr<IEdgePathStrategy> left_path_strategy,right_path_strategy;
    left_path_strategy.CoCreateInstance(CLSID_EdgePathStrategy);
@@ -2784,7 +2798,7 @@ bool CBridgeAgentImp::LayoutNoDeck(const CBridgeDescription* pBridgeDesc,IBridge
 
    slab.QueryInterface(ppDeck);
 
-   (*ppDeck)->put_Composite( deckType == pgsTypes::sdtCompositeOverlay ? VARIANT_TRUE : VARIANT_FALSE );
+   (*ppDeck)->put_Composite( VARIANT_TRUE );
 
    CComPtr<ICogoModel> cogo_model;
    m_Bridge->get_CogoModel(&cogo_model);
@@ -2930,15 +2944,6 @@ bool CBridgeAgentImp::LayoutCompositeCIPDeck(const CDeckDescription* pDeck,IOver
    slab->put_Fillet(pDeck->Fillet);
    slab->put_GrossDepth(pDeck->GrossDepth);
 
-   if ( pDeck->WearingSurface == pgsTypes::wstSacrificialDepth || pDeck->WearingSurface == pgsTypes::wstFutureOverlay)
-   {
-      slab->put_SacrificialDepth(pDeck->SacrificialDepth);
-   }
-   else
-   {
-      slab->put_SacrificialDepth(0);
-   }
-
    slab->putref_LeftOverhangPathStrategy(pLeftOverhangStrategy);
    slab->putref_RightOverhangPathStrategy(pRightOverhangStrategy);
 
@@ -2963,15 +2968,6 @@ bool CBridgeAgentImp::LayoutCompositeSIPDeck(const CDeckDescription* pDeck,IOver
    slab->put_OverhangDepth(pDeck->OverhangEdgeDepth);
    slab->put_OverhangTaper((DeckOverhangTaper)pDeck->OverhangTaper);
 
-   if ( pDeck->WearingSurface == pgsTypes::wstSacrificialDepth || pDeck->WearingSurface == pgsTypes::wstFutureOverlay)
-   {
-      slab->put_SacrificialDepth(pDeck->SacrificialDepth);
-   }
-   else
-   {
-      slab->put_SacrificialDepth(0);
-   }
-
    slab->putref_LeftOverhangPathStrategy(pLeftOverhangStrategy);
    slab->putref_RightOverhangPathStrategy(pRightOverhangStrategy);
 
@@ -2992,6 +2988,38 @@ bool CBridgeAgentImp::LayoutTrafficBarriers(const CBridgeDescription* pBridgeDes
    const CRailingSystem* pRightRailingSystem = pBridgeDesc->GetRightRailingSystem();
    LayoutTrafficBarrier(pBridgeDesc,pRightRailingSystem,pgsTypes::tboRight,&rb);
    m_Bridge->putref_RightBarrier(rb);
+
+   CComPtr<IPath> leftPath, rightPath;
+   if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+   {
+      CreateCompositeOverlayEdgePaths(&leftPath,&rightPath);
+   }
+   else
+   {
+      CComPtr<IBridgeDeck> deck;
+      m_Bridge->get_Deck(&deck);
+      CComQIPtr<ICastSlab>    cip(deck);
+      CComQIPtr<IPrecastSlab> sip(deck);
+      CComQIPtr<IOverlaySlab> overlay(deck);
+
+      if ( cip != NULL )
+      {
+         cip->get_LeftOverhangPath(&leftPath);
+         cip->get_RightOverhangPath(&rightPath);
+      }
+      else if ( sip != NULL )
+      {
+         sip->get_LeftOverhangPath(&leftPath);
+         sip->get_RightOverhangPath(&rightPath);
+      }
+      else if ( overlay != NULL )
+      {
+         overlay->get_LeftOverhangPath(&leftPath);
+         overlay->get_RightOverhangPath(&rightPath);
+      }
+   }
+   lb->put_Path(leftPath);
+   rb->put_Path(rightPath);
 
    return true;
 }
@@ -3792,7 +3820,7 @@ void CBridgeAgentImp::LayoutPoiForDiaphragmLoads(SpanIndexType span,GirderIndexT
    {
       IntermedateDiaphragm& diaphragm = *iter;
 
-      pgsPointOfInterest poi( stages, span, gdr, diaphragm.Location, POI_FLEXURESTRESS | POI_TABULAR | POI_GRAPHICAL );
+      pgsPointOfInterest poi( stages, span, gdr, diaphragm.Location, POI_FLEXURESTRESS | POI_CONCLOAD | POI_SHEAR | POI_TABULAR | POI_GRAPHICAL );
       m_PoiMgr.AddPointOfInterest( poi );
    }
 
@@ -3814,7 +3842,7 @@ void CBridgeAgentImp::LayoutPoiForDiaphragmLoads(SpanIndexType span,GirderIndexT
       IntermedateDiaphragm& diaphragm = *iter;
 
       Float64 location = ForceIntoRange(end_size,diaphragm.Location,end_size+span_length);
-      pgsPointOfInterest poi( stages, span, gdr, location, POI_TABULAR | POI_GRAPHICAL );
+      pgsPointOfInterest poi( stages, span, gdr, location, POI_CONCLOAD | POI_SHEAR | POI_TABULAR | POI_GRAPHICAL );
       m_PoiMgr.AddPointOfInterest( poi );
    }
 }
@@ -4026,6 +4054,8 @@ void CBridgeAgentImp::LayoutPoiForGirderBarCutoffs(SpanIndexType span,GirderInde
    stages.push_back(pgsTypes::CastingYard); // need camber for neg moment capacity model (camber starts in casting yard)
    stages.push_back(pgsTypes::Lifting);
    stages.push_back(pgsTypes::Hauling);
+   stages.push_back(pgsTypes::BridgeSite1);
+   stages.push_back(pgsTypes::BridgeSite2);
    stages.push_back(pgsTypes::BridgeSite3);
 
    const PoiAttributeType cut_attribute = POI_FLEXURESTRESS | POI_FLEXURECAPACITY | POI_SHEAR | POI_GRAPHICAL | POI_TABULAR | POI_BARCUTOFF;
@@ -5953,6 +5983,18 @@ Float64 CBridgeAgentImp::GetOverlayDepth()
    return depth;
 }
 
+Float64 CBridgeAgentImp::GetSacrificalDepth()
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
+
+   if ( HasOverlay() && !IsFutureOverlay() )
+      return 0.0;
+
+   return pDeck->SacrificialDepth;
+}
+
 Float64 CBridgeAgentImp::GetFillet()
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -6118,11 +6160,8 @@ Float64 CBridgeAgentImp::GetLeftSlabOverhang(PierIndexType pier)
       return 0.0;
 
    Float64 pier_station = GetPierStation(pier);
-//   CComPtr<IDirection> dir;
-//   GetPierDirection(pier,&dir);
    
    Float64 overhang;
-//   HRESULT hr = m_BridgeGeometryTool->DeckOverhang(m_Bridge,pier_station,dir,qcbLeft,&overhang);
    HRESULT hr = m_BridgeGeometryTool->DeckOverhang(m_Bridge,pier_station,NULL,qcbLeft,&overhang);
    ATLASSERT( SUCCEEDED(hr) );
 
@@ -6137,11 +6176,8 @@ Float64 CBridgeAgentImp::GetRightSlabOverhang(PierIndexType pier)
       return 0.0;
 
    Float64 pier_station = GetPierStation(pier);
-//   CComPtr<IDirection> dir;
-//   GetPierDirection(pier,&dir);
    
    Float64 overhang;
-//   HRESULT hr = m_BridgeGeometryTool->DeckOverhang(m_Bridge,pier_station,dir,qcbRight,&overhang);
    HRESULT hr = m_BridgeGeometryTool->DeckOverhang(m_Bridge,pier_station,NULL,qcbRight,&overhang);
    ATLASSERT( SUCCEEDED(hr) );
 
@@ -6766,7 +6802,7 @@ void CBridgeAgentImp::IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* 
    pPierData->IsIntegral(pbLeft,pbRight);
 }
 
-void CBridgeAgentImp::GetContinuityStage(PierIndexType pierIdx,pgsTypes::Stage* pLeft,pgsTypes::Stage* pRight)
+void CBridgeAgentImp::GetContinuityStage(PierIndexType pierIdx,pgsTypes::Stage* pBack,pgsTypes::Stage* pAhead)
 {
    VALIDATE( BRIDGE );
 
@@ -6775,8 +6811,30 @@ void CBridgeAgentImp::GetContinuityStage(PierIndexType pierIdx,pgsTypes::Stage* 
    const CPierData* pPierData = pBridgeDesc->GetPier(pierIdx);
    ATLASSERT( pPierData );
 
-   *pLeft  = (pPierData->GetConnectionType() == pgsTypes::ContinuousBeforeDeck || pPierData->GetConnectionType() == pgsTypes::IntegralBeforeDeck)  ? pgsTypes::BridgeSite1 : pgsTypes::BridgeSite2;
-   *pRight = *pLeft;
+   pgsTypes::PierConnectionType cType = pPierData->GetConnectionType();
+
+   if ( cType==pgsTypes::ContinuousBeforeDeck || cType==pgsTypes::IntegralBeforeDeck )
+   {
+      *pBack  = pgsTypes::BridgeSite1;
+      *pAhead = pgsTypes::BridgeSite1;
+   }
+   else if ( cType==pgsTypes::IntegralBeforeDeckHingeBack )
+   {
+      *pBack  = pgsTypes::BridgeSite2;
+      *pAhead = pgsTypes::BridgeSite1;
+   }
+   else if ( cType==pgsTypes::IntegralBeforeDeckHingeAhead )
+   {
+      *pBack  = pgsTypes::BridgeSite1;
+      *pAhead = pgsTypes::BridgeSite2;
+   }
+   else //  ContinuousAfterDeck, IntegralAfterDeck, 
+        // IntegralAfterDeckHingeAhead, IntegralAfterDeckHingeBack
+        // Hinged, Roller
+   {
+      *pBack  = pgsTypes::BridgeSite2;
+      *pAhead = pgsTypes::BridgeSite2;
+   }
 }
 
 bool CBridgeAgentImp::GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew)
@@ -6920,7 +6978,10 @@ Float64 CBridgeAgentImp::GetK1Gdr(SpanIndexType span,GirderIndexType gdr)
 Float64 CBridgeAgentImp::GetEcSlab()
 {
    VALIDATE( CONCRETE );
-   return m_pSlabConc->GetE();
+   if ( m_pSlabConc.get() != NULL )
+      return m_pSlabConc->GetE();
+   else
+      return 0.0;
 }
 
 Float64 CBridgeAgentImp::GetK1Slab()
@@ -6938,7 +6999,10 @@ Float64 CBridgeAgentImp::GetK1Slab()
 Float64 CBridgeAgentImp::GetFcSlab()
 {
    VALIDATE( CONCRETE );
-   return m_pSlabConc->GetFc();
+   if ( m_pSlabConc.get() != NULL )
+      return m_pSlabConc->GetFc();
+   else
+      return 0.0;
 }
 
 Float64 CBridgeAgentImp::GetStrDensityGdr(SpanIndexType span,GirderIndexType gdr)
@@ -6958,19 +7022,28 @@ Float64 CBridgeAgentImp::GetWgtDensityGdr(SpanIndexType span,GirderIndexType gdr
 Float64 CBridgeAgentImp::GetStrDensitySlab()
 {
    VALIDATE( CONCRETE );
-   return m_pSlabConc->GetDensity();
+   if ( m_pSlabConc.get() != NULL )
+      return m_pSlabConc->GetDensity();
+   else
+      return 0.0;
 }
 
 Float64 CBridgeAgentImp::GetWgtDensitySlab()
 {
    VALIDATE( CONCRETE );
-   return m_pSlabConc->GetDensityForWeight();
+   if ( m_pSlabConc.get() != NULL )
+      return m_pSlabConc->GetDensityForWeight();
+   else
+      return 0.0;
 }
 
 Float64 CBridgeAgentImp::GetMaxAggrSizeSlab()
 {
    VALIDATE( CONCRETE );
-   return m_pSlabConc->GetMaxAggregateSize();
+   if ( m_pSlabConc.get() != NULL )
+      return m_pSlabConc->GetMaxAggregateSize();
+   else
+      return 0.0;
 }
 
 Float64 CBridgeAgentImp::GetDensityRailing(pgsTypes::TrafficBarrierOrientation orientation)
@@ -7062,15 +7135,29 @@ Float64 CBridgeAgentImp::GetFriGdr(SpanIndexType span,GirderIndexType gdr)
 Float64 CBridgeAgentImp::GetFlexureFrSlab()
 {
    VALIDATE( CONCRETE );
-   pgsTypes::ConcreteType type = GetSlabConcreteType();
-   return lrfdConcreteUtil::ModRupture( m_pSlabConc->GetFc(), lrfdConcreteUtil::DensityType(type), GetFlexureFrCoefficient(type) );
+   if ( m_pSlabConc.get() != NULL )
+   {
+      pgsTypes::ConcreteType type = GetSlabConcreteType();
+      return lrfdConcreteUtil::ModRupture( m_pSlabConc->GetFc(), lrfdConcreteUtil::DensityType(type), GetFlexureFrCoefficient(type) );
+   }
+   else
+   {
+      return 0.0;
+   }
 }
 
 Float64 CBridgeAgentImp::GetShearFrSlab()
 {
    VALIDATE( CONCRETE );
-   pgsTypes::ConcreteType type = GetSlabConcreteType();
-   return lrfdConcreteUtil::ModRupture( m_pSlabConc->GetFc(), lrfdConcreteUtil::DensityType(type), GetShearFrCoefficient(type) );
+   if ( m_pSlabConc.get() != NULL )
+   {
+      pgsTypes::ConcreteType type = GetSlabConcreteType();
+      return lrfdConcreteUtil::ModRupture( m_pSlabConc->GetFc(), lrfdConcreteUtil::DensityType(type), GetShearFrCoefficient(type) );
+   }
+   else
+   {
+      return 0.0;
+   }
 }
 
 void CBridgeAgentImp::GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy,Float64* pFu)
@@ -7193,19 +7280,28 @@ Float64 CBridgeAgentImp::GetGdrConcreteAggSplittingStrength(SpanIndexType spanId
 pgsTypes::ConcreteType CBridgeAgentImp::GetSlabConcreteType()
 {
    VALIDATE( CONCRETE );
-   return (pgsTypes::ConcreteType)m_pSlabConc->GetType();
+   if ( m_pSlabConc.get() != NULL )
+      return (pgsTypes::ConcreteType)m_pSlabConc->GetType();
+   else
+      return pgsTypes::Normal;
 }
 
 bool CBridgeAgentImp::DoesSlabConcreteHaveAggSplittingStrength()
 {
    VALIDATE( CONCRETE );
-   return m_pSlabConc->HasAggSplittingStrength();
+   if ( m_pSlabConc.get() != NULL )
+      return m_pSlabConc->HasAggSplittingStrength();
+   else
+      return 0.0;
 }
 
 Float64 CBridgeAgentImp::GetSlabConcreteAggSplittingStrength()
 {
    VALIDATE( CONCRETE );
-   return m_pSlabConc->GetAggSplittingStrength();
+   if ( m_pSlabConc.get() != NULL )
+      return m_pSlabConc->GetAggSplittingStrength();
+   else
+      return 0.0;
 }
 
 Float64 CBridgeAgentImp::GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type)
@@ -7639,7 +7735,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi)
    Float64 As = GetAsDeckTopHalf(poi,false);
 
    if ( pSpecEntry->IncludeRebarForMoment() )
-   As += GetAsGirderTopHalf(poi,false);
+      As += GetAsGirderTopHalf(poi,false);
 
    Float64 Aps = GetApsTopHalf(poi,dlaNone);
 
@@ -7673,7 +7769,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCO
    Float64 As = GetAsDeckTopHalf(poi,false);
 
    if ( pSpecEntry->IncludeRebarForMoment() )
-   As += GetAsGirderTopHalf(poi,false);
+      As += GetAsGirderTopHalf(poi,false);
 
    Float64 Aps = GetApsTopHalf(poi,config,dlaNone);
 
@@ -7706,7 +7802,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi)
 
    Float64 As = 0;
    if ( pSpecEntry->IncludeRebarForMoment() )
-   As = GetAsBottomHalf(poi,false);
+      As = GetAsBottomHalf(poi,false);
 
    Float64 Aps = GetApsBottomHalf(poi,dlaNone);
 
@@ -7739,7 +7835,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
 
    Float64 As = 0;
    if ( pSpecEntry->IncludeRebarForMoment() )
-   As = GetAsBottomHalf(poi,false);
+      As = GetAsBottomHalf(poi,false);
 
    Float64 Aps = GetApsBottomHalf(poi,config,dlaNone);
 
@@ -7930,61 +8026,6 @@ void CBridgeAgentImp::GetRebarLayout(SpanIndexType span,GirderIndexType gdr, IRe
 
    CComPtr<IRebarLayout> rebar_layout;
    girder->get_RebarLayout(rebarLayout);
-}
-
-std::vector<RowIndexType> CBridgeAgentImp::CheckLongRebarGeometry(SpanIndexType spanIdx,GirderIndexType gdrIdx)
-{
-   std::vector<RowIndexType> rowVec;
-
-   CComPtr<IRebarLayout> rebarLayout;
-   GetRebarLayout(spanIdx, gdrIdx, &rebarLayout);
-
-   CollectionIndexType rbCnt; // Same as rows in input
-   rebarLayout->get_Count(&rbCnt);
-   for (CollectionIndexType irb=0; irb<rbCnt; irb++)
-   {
-      CComPtr<IRebarLayoutItem> layoutItem;
-      rebarLayout->get_Item(irb, &layoutItem);
-
-      // check at section at mid-length of bar
-      Float64 startLoc, barLength2;
-      layoutItem->get_Start(&startLoc);
-      layoutItem->get_Length(&barLength2);
-      barLength2 /= 2.0;
-
-      pgsPointOfInterest poi(spanIdx, gdrIdx, startLoc+barLength2);
-
-      CComPtr<IGirderSection> gdrSection;
-      this->GetGirderSection(poi, &gdrSection);
-
-      CComQIPtr<IShape> girderShape(gdrSection);
-
-      CollectionIndexType patCnt;
-      layoutItem->get_Count(&patCnt);
-      for (CollectionIndexType ipat=0; ipat<patCnt; ipat++)
-      {
-         CComPtr<IRebarPattern> rebarPattern;
-         layoutItem->get_Item(ipat, &rebarPattern);
-
-         CollectionIndexType barCnt;
-         rebarPattern->get_Count(&barCnt);
-         for (CollectionIndexType ibar=0; ibar<barCnt; ibar++)
-         {
-            CComPtr<IPoint2d> location;
-            rebarPattern->get_Location(barLength2, ibar, &location);
-
-            VARIANT_BOOL isIn;
-            girderShape->PointInShape(location, &isIn);
-            if(isIn != VARIANT_TRUE)
-            {
-               rowVec.push_back(irb);
-               break; // Only need one fail for a row
-            }
-         }
-      }
-   }
-
-   return rowVec;
 }
 
 
@@ -12803,7 +12844,7 @@ Float64 CBridgeAgentImp::GetSt(pgsTypes::Stage stage,const pgsPointOfInterest& p
 
    Float64 St = -ixx/yt;
 
-   if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 && IsCompositeDeck() )
+   if ( (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3) && IsCompositeDeck() )
    {
       // if there is a composite deck and the deck is on, return St (Stop deck) in terms of deck material
       Float64 Eg = GetEcGdr(poi.GetSpan(),poi.GetGirder());
@@ -13048,7 +13089,7 @@ Float64 CBridgeAgentImp::GetSt(pgsTypes::Stage stage,const pgsPointOfInterest& p
 
    Float64 St = -ixx/yt;
 
-   if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 && IsCompositeDeck() )
+   if ( (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3) && IsCompositeDeck() )
    {
       // if there is a composite deck and the deck is on, return St (Stop deck) in terms of deck material
       Float64 Eg = E;
@@ -13347,9 +13388,9 @@ Float64 CBridgeAgentImp::GetBridgeEIyy(Float64 distFromStart)
    return EIyy;
 }
 
-void CBridgeAgentImp::GetGirderShape(const pgsPointOfInterest& poi,bool bOrient,IShape** ppShape)
+void CBridgeAgentImp::GetGirderShape(const pgsPointOfInterest& poi,pgsTypes::Stage stage,bool bOrient,IShape** ppShape)
 {
-   SectProp& props = GetSectionProperties(pgsTypes::CastingYard,poi);
+   SectProp& props = GetSectionProperties(stage,poi);
 
 #pragma Reminder("UPDATE: Assuming section is a Composite section and beam is exactly the first piece")
    CComQIPtr<ICompositeSection> cmpsection(props.Section);
@@ -14618,6 +14659,25 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetLiftingDesignPointsOfInteres
    pgsPoiMgr poiMgr;
    LayoutHandlingPoi(pgsTypes::Lifting,span,gdr,10,overhang,overhang,attrib,POI_PICKPOINT,&poiMgr);
 
+   // add pois at harping points if harped is possible
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+   const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+
+   StrandIndexType nhm = pGirderEntry->GetMaxHarpedStrands();
+   if(nhm>0)
+   {
+      CComPtr<IPrecastGirder> girder;
+      GetGirder(span,gdr,&girder);
+
+      Float64 hp1, hp2;
+      girder->GetHarpingPointLocations( &hp1, &hp2 );
+
+      poiMgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::Hauling,span,gdr,hp1,attrib) );
+      poiMgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::Hauling,span,gdr,hp2,attrib) );
+   }
+
    Uint32 mgrMode = (mode == POIFIND_AND ? POIMGR_AND : POIMGR_OR);
    std::vector<pgsPointOfInterest> poi;
    poiMgr.GetPointsOfInterest( span, gdr, pgsTypes::Lifting, attrib, mgrMode, &poi );
@@ -14637,11 +14697,30 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetHaulingPointsOfInterest(Span
    return poi;
 }
 
-std::vector<pgsPointOfInterest> CBridgeAgentImp::GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode)
+std::vector<pgsPointOfInterest> CBridgeAgentImp::GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode)
 {
    // Generates points of interest for the supplied overhang.
    pgsPoiMgr poiMgr;
-   LayoutHandlingPoi(pgsTypes::Hauling,span,gdr,10,leftOverhang,rightOverhang,attrib,POI_BUNKPOINT,&poiMgr);
+   LayoutHandlingPoi(pgsTypes::Hauling,span,gdr,nPnts,leftOverhang,rightOverhang,attrib,POI_BUNKPOINT,&poiMgr);
+
+   // add pois at harping points if harped is possible
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+   const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+
+   StrandIndexType nhm = pGirderEntry->GetMaxHarpedStrands();
+   if(nhm>0)
+   {
+      CComPtr<IPrecastGirder> girder;
+      GetGirder(span,gdr,&girder);
+
+      Float64 hp1, hp2;
+      girder->GetHarpingPointLocations( &hp1, &hp2 );
+
+      poiMgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::Hauling,span,gdr,hp1,attrib) );
+      poiMgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::Hauling,span,gdr,hp2,attrib) );
+   }
 
    Uint32 mgrMode = (mode == POIFIND_AND ? POIMGR_AND : POIMGR_OR);
    std::vector<pgsPointOfInterest> poi;
@@ -15327,6 +15406,8 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    CLongitudinalRebarData lrd = pLongRebar->GetLongitudinalRebarData(span,gdr);
 
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+
    const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = lrd.RebarRows;
    if ( 0 < rebar_rows.size() )
    {
@@ -15373,6 +15454,10 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
 
       CComPtr<IUnitConvert> unit_convert;
       unitServer->get_UnitConvert(&unit_convert);
+
+
+      // need this for clear spacing validation below
+      Float64 max_aggregate_size = GetMaxAggrSizeGdr(span,gdr);
 
       for ( RowIndexType idx = 0; idx < rebar_rows.size(); idx++ )
       {
@@ -15425,6 +15510,47 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
 
             Float64 db;
             rebar->get_NominalDiameter(&db);
+
+            // validate bar spacing within the row
+            // LRFD 5.10.3.1.2 - clear distance between parallel bars in a layer shall not be less than:
+            // * nominal diameter of bar
+            // * 1.33 times the maximum size of the coarse aggregate
+            // * 1.0 inch
+            // clear spacing is bar spacing minus nominal diameter of bar
+            if ( 1 < info.NumberOfBars ) // only have to validate spacing between bars if there is more than one bar
+            {
+               Float64 clear = info.BarSpacing - db;
+               if ( clear < db )
+               {
+                  std::_tostringstream os;
+                  os << _T("Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(gdr)
+                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than the nominal diameter of the bar (See LRFD 5.10.3.1.2)") << std::endl;
+
+                  pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
+
+                  pStatusCenter->Add(pStatusItem);
+               }
+               else if ( clear < 1.33*max_aggregate_size )
+               {
+                  std::_tostringstream os;
+                  os << _T("Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(gdr)
+                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than 1.33 times the maximum size of the coarse aggregate (See LRFD 5.10.3.1.2)") << std::endl;
+
+                  pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
+
+                  pStatusCenter->Add(pStatusItem);
+               }
+               else if ( clear < ::ConvertToSysUnits(1.0,unitMeasure::Inch) )
+               {
+                  std::_tostringstream os;
+                  os << _T("Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(gdr)
+                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than 1.0 inch (See LRFD 5.10.3.1.2)") << std::endl;
+
+                  pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
+
+                  pStatusCenter->Add(pStatusItem);
+               }
+            }
 
             CComPtr<IRebarRowPattern> row_pattern;
             row_pattern.CoCreateInstance(CLSID_RebarRowPattern);
@@ -15522,22 +15648,6 @@ void CBridgeAgentImp::CheckBridge()
             {
                CString strMsg;
                strMsg.Format(_T("Span %d Girder %s, Temporary strands are not in the top half of the girder"),LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx));
-               pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,strMsg);
-               pStatusCenter->Add(pStatusItem);
-            }
-         }
-
-         // Check that longitudinal rebars are located within section bounds
-         std::vector<RowIndexType> outBoundRows = CheckLongRebarGeometry(spanIdx, gdrIdx);
-         if (!outBoundRows.empty())
-         {
-            // We have bars out of bounds.
-            for(std::vector<RowIndexType>::iterator it=outBoundRows.begin(); it!=outBoundRows.end(); it++)
-            {
-               RowIndexType row = *it + 1; // UI has one-based index
-
-               CString strMsg;
-               strMsg.Format(_T("Span %d Girder %s: Longitudinal rebar row %d contains one or more bars located outside of the girder section."),LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx),row);
                pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,strMsg);
                pStatusCenter->Add(pStatusItem);
             }
@@ -16453,8 +16563,12 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
          if ( (bTopMat    && (nmRebarData.Mat == CDeckRebarData::TopMat)) ||
               (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat)) )
          {
-            if ( ( nmRebarData.PierIdx == prev_pier && IsLE(dist_from_cl_prev_pier,nmRebarData.RightCutoff) ) ||
-                 ( nmRebarData.PierIdx == next_pier && IsLE(dist_to_cl_next_pier,  nmRebarData.LeftCutoff)  ) )
+            bool bAddRebarForPrevPier = ( nmRebarData.PierIdx == prev_pier && IsLE(dist_from_cl_prev_pier,nmRebarData.RightCutoff) );
+            bool bAddRebarForNextPier = ( nmRebarData.PierIdx == next_pier && IsLE(dist_to_cl_next_pier,  nmRebarData.LeftCutoff ) );
+            pgsTypes::PierConnectionType connectionType = pBridgeDesc->GetPier(nmRebarData.PierIdx)->GetConnectionType();
+            bool bIsContinuous = !(connectionType == pgsTypes::Hinged || connectionType == pgsTypes::Roller);
+            
+            if ( (bAddRebarForPrevPier || bAddRebarForNextPier) && bIsContinuous )
             {
                if ( nmRebarData.RebarSize != matRebar::bsNone )
                {
@@ -16565,6 +16679,47 @@ void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,Di
 
    (*point) = pnt3d;
    (*point)->AddRef();
+}
+
+void CBridgeAgentImp::CreateCompositeOverlayEdgePaths(IPath** ppLeftPath,IPath** ppRightPath)
+{
+   CComPtr<IPath> left_path, right_path;
+   left_path.CoCreateInstance(CLSID_Path);
+   right_path.CoCreateInstance(CLSID_Path);
+
+   // Build  path along exterior girders
+   CComPtr<ISpanCollection> spans;
+   m_Bridge->get_Spans(&spans);
+   SpanIndexType nSpans;
+   spans->get_Count(&nSpans);
+
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   {
+      CComPtr<IPoint2d> point_on_edge;
+
+      // left edge - start of span
+      PierIndexType pierIdx = spanIdx;
+      NoDeckEdgePoint(spanIdx,pierIdx,qcbLeft,&point_on_edge);
+      left_path->AddEx(point_on_edge);
+
+      // left edge - end of span
+      point_on_edge.Release();
+      NoDeckEdgePoint(spanIdx,pierIdx+1,qcbLeft,&point_on_edge);
+      left_path->AddEx(point_on_edge);
+
+      // right edge - start of span
+      point_on_edge.Release();
+      NoDeckEdgePoint(spanIdx,pierIdx,qcbRight,&point_on_edge);
+      right_path->AddEx(point_on_edge);
+
+      // right edge - end of span
+      point_on_edge.Release();
+      NoDeckEdgePoint(spanIdx,pierIdx+1,qcbRight,&point_on_edge);
+      right_path->AddEx(point_on_edge);
+   }
+
+   left_path.CopyTo(ppLeftPath);
+   right_path.CopyTo(ppRightPath);
 }
 
 /// Strand filler-related functions

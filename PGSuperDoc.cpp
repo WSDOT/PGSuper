@@ -143,7 +143,7 @@
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\StatusItem.h>
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 
 // Transactions
 #include "EditAlignment.h"

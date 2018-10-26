@@ -15,6 +15,7 @@ CTxDOTOptionalDesignNonStandardFillDlg::CTxDOTOptionalDesignNonStandardFillDlg(C
 	: CDialog(CTxDOTOptionalDesignNonStandardFillDlg::IDD, pParent),
    m_pGirderData(NULL),
    m_pBrokerRetriever(NULL),
+   m_UseDepressed(true),
    m_bFirstActive(true)
 {
 
@@ -28,7 +29,6 @@ void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData
 {
    m_pGirderData = pGirderData;
    m_pBrokerRetriever = pBrokerRetriever;
-   m_UseDepressed = m_pGirderData->GetUseDepressedStrands();
 
    // compute ybottom
    GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
@@ -117,7 +117,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed())
+      if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed() && pGdrEntry->GetMaxHarpedStrands()>0)
       {
          CString msg;
          msg.Format(_T("The girder entry with name: \"%s\" has harped strands with different locations at the ends and C.L. Cannot continue"),girder_name);

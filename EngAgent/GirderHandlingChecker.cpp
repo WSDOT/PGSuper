@@ -275,7 +275,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    {
       // Clip shape to determine concrete tension area
       CComPtr<IShape> shape;
-      m_pSectProp2->GetGirderShape(poi,false,&shape);
+      m_pSectProp2->GetGirderShape(poi,pgsTypes::CastingYard,false,&shape);
 
       CComQIPtr<IXYPosition> position(shape);
       CComPtr<IPoint2d> bc;
@@ -489,7 +489,7 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
 //       Yna = (IsZero(fBot) ? 0 : H - (fTop*H/(fTop-fBot)) );
 
        CComPtr<IShape> shape;
-       pSectProp2->GetGirderShape(poi,false,&shape);
+       pSectProp2->GetGirderShape(poi,pgsTypes::CastingYard,false,&shape);
 
        CComQIPtr<IXYPosition> position(shape);
        CComPtr<IPoint2d> tc,bc;

@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "ReportAgent_i.h"
 #include "ReporterImp.h"
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\PGSuperTitlePageBuilder.h>
 #include <Reporting\BrokerReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>

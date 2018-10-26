@@ -526,7 +526,7 @@ GirderIndexType CSpanGirderLayoutPage::GetMinGirderCount()
 void CSpanGirderLayoutPage::UpdateGirderSpacingState()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   BOOL bEnable = TRUE;
+   BOOL bEnable = m_SpacingGrid[pgsTypes::Ahead].InputSpacing();
 
    if ( m_nGirders == 1 || IsBridgeSpacing(m_GirderSpacingType) )
    {
@@ -536,12 +536,29 @@ void CSpanGirderLayoutPage::UpdateGirderSpacingState()
    }
 
    // Prev Pier
-   GetDlgItem(IDC_COPY_TO_END)->EnableWindow(bEnable);
    GetDlgItem(IDC_PREV_PIER_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_MEASURE)->EnableWindow(bEnable);
    m_SpacingGrid[pgsTypes::metStart].Enable(bEnable);
 
+   // Next Pier
+   GetDlgItem(IDC_NEXT_PIER_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE)->EnableWindow(bEnable);
+   m_SpacingGrid[pgsTypes::metEnd].Enable(bEnable);
+
+   if ( m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
+      GetDlgItem(IDC_GIRDER_SPACING_NOTE)->EnableWindow(FALSE);
+   else
+      GetDlgItem(IDC_GIRDER_SPACING_NOTE)->EnableWindow(m_nGirders == 1 ? FALSE : TRUE);
+
+
+   if ( ::IsBridgeSpacing(m_GirderSpacingType) )
+      bEnable = FALSE;
+   else
+      bEnable = TRUE;
+
+   GetDlgItem(IDC_COPY_TO_END)->EnableWindow(bEnable);
    GetDlgItem(IDC_PREV_REF_GIRDER_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_PREV_REF_GIRDER)->EnableWindow(bEnable);
    GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET)->EnableWindow(bEnable);
@@ -549,24 +566,13 @@ void CSpanGirderLayoutPage::UpdateGirderSpacingState()
    GetDlgItem(IDC_PREV_REF_GIRDER_FROM)->EnableWindow(bEnable);
    GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
 
-   // Next Pier
    GetDlgItem(IDC_COPY_TO_START)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_PIER_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE)->EnableWindow(bEnable);
-   m_SpacingGrid[pgsTypes::metEnd].Enable(bEnable);
-
    GetDlgItem(IDC_NEXT_REF_GIRDER_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_NEXT_REF_GIRDER)->EnableWindow(bEnable);
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->EnableWindow(bEnable);
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnable);
    GetDlgItem(IDC_NEXT_REF_GIRDER_FROM)->EnableWindow(bEnable);
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
-
-   if ( m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
-      GetDlgItem(IDC_GIRDER_SPACING_NOTE)->EnableWindow(FALSE);
-   else
-      GetDlgItem(IDC_GIRDER_SPACING_NOTE)->EnableWindow(m_nGirders == 1 ? FALSE : TRUE);
 }
 
 LRESULT CSpanGirderLayoutPage::OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM lParam)

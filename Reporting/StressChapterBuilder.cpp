@@ -172,12 +172,12 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       p->SetName(_T("Combined Stresses - Casting Yard Stage"));
-      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard, analysisType);
+      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard, analysisType, bDesign, bRating);
 
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       p->SetName(_T("Combined Stresses - Girder Placement"));
-      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, analysisType);
+      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, analysisType, bDesign, bRating);
 
       GET_IFACE2(pBroker,IProductLoads,pLoads);
       pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(span,girder);
@@ -186,18 +186,18 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << p;
          p->SetName(_T("Combined Stresses - Temporary Strand Removal Stage"));
-         CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
+         CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType, bDesign, bRating);
       }
 
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       p->SetName(_T("Combined Stresses - Deck and Diaphragm Placement (Bridge Site 1)"));
-      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType);
+      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType, bDesign, bRating);
       
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       p->SetName(_T("Combined Stresses - Superimposed Dead Loads (Bridge Site 2)"));
-      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType);
+      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType, bDesign, bRating);
    }
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());

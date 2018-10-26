@@ -23,7 +23,6 @@
 #include "StdAfx.h"
 #include <Reporting\UserReactionTable.h>
 #include <Reporting\UserMomentsTable.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -70,7 +69,7 @@ CUserReactionTable& CUserReactionTable::operator= (const CUserReactionTable& rOt
 
 //======================== OPERATIONS =======================================
 rptRcTable* CUserReactionTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                                      TableType tableType, IEAFDisplayUnits* pDisplayUnits) const
+                                      ReactionTableType tableType, IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -85,63 +84,109 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,SpanIndexType span,Girder
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   PierIndexType nPiers = pBridge->GetPierCount();
-
-   PierIndexType startPier = (span == ALL_SPANS ? 0 : span);
-   PierIndexType endPier   = (span == ALL_SPANS ? nPiers : startPier+2 );
-
+   // TRICKY: use adapter class to get correct reaction interfaces
+   std::auto_ptr<IProductReactionAdapter> pForces;
+   if( tableType==PierReactionsTable )
+   {
+      pForces =  std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces,span, girder));
+   }
+   else
+   {
+      pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, pgsTypes::GirderPlacement, span, girder) );
+   }
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( PierIndexType pier = startPier; pier < endPier; pier++ )
+
+   // User iterator to walk locations
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+
+   for (iter.First(); !iter.IsDone(); iter.Next())
    {
-      // TRICKY: use adapter class to get correct reaction interfaces
-      SpanIndexType spanIdx = (pier == nPiers-1 ? pier-1 : pier);
-      std::auto_ptr<IProductReactionAdapter> pForces;
-      if( tableType==PierReactionsTable )
-      {
-         pForces =  std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces));
-      }
-      else
-      {
-         pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, spanIdx) );
-      }
-
-      if (!pForces->DoReportAtPier(pier, girder))
-      {
-         continue; // don't report if no bearing
-      }
-
       ColumnIndexType col = 0;
 
-      if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
-         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
-      else
-         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+      const ReactionLocation& rct_locn = iter.CurrentItem();
 
+      (*p_table)(row,col++) << rct_locn.PierLabel;
+
+      // Use reaction decider tool to determine when to report stages
+      ReactionDecider rctdr(tableType, rct_locn, pBridge);
 
       if ( analysisType == pgsTypes::Envelope )
       {
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftUserDC,         pier, girder, MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftUserDC,         pier, girder, MinSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftUserDW,         pier, girder, MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftUserDW,         pier, girder, MinSimpleContinuousEnvelope ) );
+         if (rctdr.DoReport(pgsTypes::BridgeSite1 ))
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, rct_locn, pftUserDC,       MaxSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, rct_locn, pftUserDC,       MinSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, rct_locn, pftUserDW,       MaxSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, rct_locn, pftUserDW,       MinSimpleContinuousEnvelope ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
 
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftUserDC,         pier, girder, MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftUserDC,         pier, girder, MinSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftUserDW,         pier, girder, MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftUserDW,         pier, girder, MinSimpleContinuousEnvelope ) );
+         if (rctdr.DoReport(pgsTypes::BridgeSite2 ))
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, rct_locn, pftUserDC,       MaxSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, rct_locn, pftUserDC,       MinSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, rct_locn, pftUserDW,       MaxSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, rct_locn, pftUserDW,       MinSimpleContinuousEnvelope ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
          
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite3, pftUserLLIM,      pier, girder, MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite3, pftUserLLIM,      pier, girder, MinSimpleContinuousEnvelope ) );
+         if (rctdr.DoReport(pgsTypes::BridgeSite3 ))
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite3, rct_locn, pftUserLLIM,    MaxSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite3, rct_locn, pftUserLLIM,    MinSimpleContinuousEnvelope ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
       }
       else
       {
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftUserDC,         pier, girder, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftUserDW,         pier, girder, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftUserDC,         pier, girder, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftUserDW,         pier, girder, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite3, pftUserLLIM,      pier, girder, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         if (rctdr.DoReport(pgsTypes::BridgeSite1 ))
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, rct_locn, pftUserDC,       analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, rct_locn, pftUserDW,       analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
+
+         if (rctdr.DoReport(pgsTypes::BridgeSite3 ))
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, rct_locn, pftUserDC,       analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, rct_locn, pftUserDW,       analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
+
+         if (rctdr.DoReport(pgsTypes::BridgeSite3 ))
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite3, rct_locn, pftUserLLIM,     analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+         }
       }
 
       row++;

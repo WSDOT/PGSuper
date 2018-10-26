@@ -23,6 +23,9 @@
 #ifndef INCLUDED_TEXASIBNSPARAGRAPHBUILDER_H_
 #define INCLUDED_TEXASIBNSPARAGRAPHBUILDER_H_
 
+#include <PgsExt\DebondUtil.h>
+#include "TxDOTOptionalDesignUtilities.h"
+
 interface IEAFDisplayUnits;
 
 /*****************************************************************************
@@ -94,5 +97,20 @@ private:
 
 // EXTERNAL REFERENCES
 //
+
+/****************************************************************************
+CLASS	TxDOTIBNSDebondWriter
+   Writes debond table to reports
+****************************************************************************/
+
+class TxDOTIBNSDebondWriter : public TxDOTDebondTool
+{
+public:
+   TxDOTIBNSDebondWriter(SpanIndexType span, GirderIndexType gdr, Float64 girderLength, IStrandGeometry* pStrandGeometry):
+   TxDOTDebondTool(span, gdr, girderLength, pStrandGeometry)
+   {;}
+
+   void WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName);
+};
 
 #endif // INCLUDED_TEXASIBNSParagraphBUILDER_H_

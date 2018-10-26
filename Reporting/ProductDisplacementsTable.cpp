@@ -83,7 +83,8 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+   bool bFutureOverlay = pBridge->IsFutureOverlay();
+   pgsTypes::Stage overlay_stage = bFutureOverlay ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    SpanIndexType startSpan, nSpans;
@@ -101,7 +102,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

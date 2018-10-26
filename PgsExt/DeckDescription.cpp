@@ -198,6 +198,15 @@ bool CDeckDescription::operator != (const CDeckDescription& rOther) const
 }
 
 //======================== OPERATIONS =======================================
+
+// this global and free function are used to clean up neg moment rebar data
+// during load. See information at bottom of Load method
+PierIndexType g_NumPiers;
+bool MaxPierIdx(CDeckRebarData::NegMomentRebarData& rebarData)
+{
+   return g_NumPiers <= rebarData.PierIdx;
+}
+
 HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pgsTypes::SlabOffsetType* pSlabOffsetType,Float64* pSlabOffset)
 {
    USES_CONVERSION;
@@ -368,7 +377,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       // there was a bug in the PGSuper interface that allowed the sacrifical depth to
       // be greater than the gross/cast depth of the slab. Obviously this is incorrect.
       // If this is encountered in the input, fix it.
-      if ( GrossDepth <= SacrificialDepth )
+      if ( DeckType != pgsTypes::sdtNone && GrossDepth <= SacrificialDepth )
          SacrificialDepth = GrossDepth/2;
 
       if ( version < 6 )
@@ -526,6 +535,15 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
    {
       ATLASSERT(0);
    }
+
+   // Not sure how this happened, but at least on regression test file (UserSelect.pgs) has negative
+   // moment rebar data for a pier that doesn't exist. If it happened for that file, it is likely
+   // to have happened for other files as well. When this data is encountered in other places in 
+   // the software it causes a crash. This code block removes deck rebar data at piers that 
+   // don't exist.
+   g_NumPiers = m_pBridgeDesc->GetPierCount();
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator new_end = std::remove_if(DeckRebarData.NegMomentRebar.begin(),DeckRebarData.NegMomentRebar.end(),MaxPierIdx);
+   DeckRebarData.NegMomentRebar.erase(new_end,DeckRebarData.NegMomentRebar.end());
 
    return hr;
 }

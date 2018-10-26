@@ -167,7 +167,7 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexT
       Fc = haulConfig.GdrConfig.Fc;
       concType = haulConfig.GdrConfig.ConcType;
 
-      poi_vec = pPOId->GetHaulingDesignPointsOfInterest(span,gdr,Loh,Roh,POI_FLEXURESTRESS);
+      poi_vec = pPOId->GetHaulingDesignPointsOfInterest(span,gdr,2,Loh,Roh,POI_FLEXURESTRESS);
    }
    else
    {

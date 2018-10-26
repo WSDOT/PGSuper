@@ -226,11 +226,11 @@ void CGirderHarpedStrandPage::UpdateHpAdjust()
 
    if(DoUseHarpedWebStrands())
    {
-      pbut->SetWindowTextW(_T("At Harping Points"));
+      pbut->SetWindowText(_T("At Harping Points"));
    }
    else
    {
-      pbut->SetWindowTextW(_T("Along Girder"));
+      pbut->SetWindowText(_T("Along Girder"));
    }
 
    BOOL enable = pbut->GetCheck()==0 ? FALSE : TRUE;
@@ -363,16 +363,16 @@ void CGirderHarpedStrandPage::OnCbnSelchangeWebStrandTypeCombo()
    CString msg;
    msg.Format(_T("Coerce Odd Number of %s Strands"),LABEL_HARP_TYPE(!use_harped));
    pw = (CWnd*)GetDlgItem(IDC_ODD_STRANDS);
-   pw->SetWindowTextW(msg);
+   pw->SetWindowText(msg);
 
    pw = (CWnd*)GetDlgItem(IDC_STATIC_HP);
    if (use_harped)
    {
-      pw->SetWindowTextW(_T("Strand Locations at Harping Points Measured from Bottom C.L. of Girder"));
+      pw->SetWindowText(_T("Strand Locations at Harping Points Measured from Bottom C.L. of Girder"));
    }
    else
    {
-      pw->SetWindowTextW(_T("Strand Locations Along Girder Measured from Bottom C.L. of Girder"));
+      pw->SetWindowText(_T("Strand Locations Along Girder Measured from Bottom C.L. of Girder"));
    }
    
    pw = (CWnd*)GetDlgItem(IDC_STATIC_END);
@@ -383,7 +383,7 @@ void CGirderHarpedStrandPage::OnCbnSelchangeWebStrandTypeCombo()
 
    msg.Format(_T("Vertical Adjustment of %s Strands"),LABEL_HARP_TYPE(!use_harped));
    pw = (CWnd*)GetDlgItem(IDC_VERT_ADJUST_GROUP);
-   pw->SetWindowTextW(msg);
+   pw->SetWindowText(msg);
 
    UpdateHpAdjust();
    UpdateEndAdjust();

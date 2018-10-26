@@ -885,6 +885,9 @@ Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndTy
    else
    {
       ATLASSERT(gdrIdx != INVALID_INDEX);
+      if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         return 0;
+
       return m_SlabOffset[end][gdrIdx];
    }
 }
@@ -898,6 +901,9 @@ Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndTy
    else
    {
       ATLASSERT(gdrIdx != INVALID_INDEX);
+      if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         return 0;
+
       return m_SlabOffset[end][gdrIdx];
    }
 }

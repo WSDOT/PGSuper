@@ -322,7 +322,6 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Splitting zone checks failed.
 Girder Dimension Detailing check failed
-Rebars are located outside of the girder section. Rebar geometry check failed
 Lifting checks failed
 Hauling checks failed
 
@@ -345,7 +344,6 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Splitting zone checks failed.
 Girder Dimension Detailing check failed
-Rebars are located outside of the girder section. Rebar geometry check failed
 Lifting checks failed
 Hauling checks failed
 
@@ -369,7 +367,6 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Splitting zone checks failed.
 Girder Dimension Detailing check failed
-Rebars are located outside of the girder section. Rebar geometry check failed
 Lifting checks failed
 Hauling checks failed
 

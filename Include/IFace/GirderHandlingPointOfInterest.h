@@ -97,7 +97,7 @@ DESCRIPTION
 interface IGirderHaulingDesignPointsOfInterest
 {
    // locations of points of interest
-   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
+   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
 };
 
 // {E6A0E250-E5F4-11d2-AD3D-00105A9AF985}

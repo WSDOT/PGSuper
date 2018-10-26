@@ -272,7 +272,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDoc* pDoc,IBrok
    doPnt->SetDrawingStrategy(strategy);
 
    CComPtr<IShape> shape;
-   pSectProp->GetGirderShape(poi,false,&shape);
+   pSectProp->GetGirderShape(poi,pgsTypes::CastingYard,false,&shape);
 
    // Girder shape is positioned at its real coordiantes in the cross section
    // The strands (see BuildStrandDisplayObjects) are position relative to the bottom

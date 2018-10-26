@@ -23,7 +23,7 @@
 #include "stdafx.h"
 #include <Reporting\LibraryUsageParagraph.h>
 #include <Reporting\LibraryUsageTable.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <IFace\Project.h>
 
 #ifdef _DEBUG

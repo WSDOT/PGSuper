@@ -23,7 +23,6 @@
 #include "StdAfx.h"
 #include <Reporting\LiveLoadReactionTable.h>
 #include <Reporting\ReportNotes.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -72,34 +71,51 @@ CLiveLoadReactionTable& CLiveLoadReactionTable::operator= (const CLiveLoadReacti
 //======================== OPERATIONS =======================================
 void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                           SpanIndexType span,GirderIndexType girder,
-                                          IEAFDisplayUnits* pDisplayUnits, TableType tableType,
+                                          IEAFDisplayUnits* pDisplayUnits, ReactionTableType tableType,
                                           pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
+   // Get the interface pointers we need
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ICombinedForces,pCmbForces);
+   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+
+   std::auto_ptr<ICmbLsReactionAdapter> pForces;
+   if(  tableType==PierReactionsTable )
+   {
+      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pCmbForces,pLsForces,span,girder));
+   }
+
+   else
+   {
+      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, pgsTypes::BridgeSite3, span ,girder) );
+   }
+
+   // Use iterator to walk locations
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
 
    bool bPermit = false;
+   bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+
+   // Use first location to determine if ped load is applied
+   iter.First();
+   const ReactionLocation& first_locn = iter.CurrentItem();
+
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(first_locn.Pier,first_locn.Girder);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    rptRcTable* p_table=0;
 
-   PierIndexType nPiers = pBridge->GetPierCount();
-
-   PierIndexType startPier = (span == ALL_SPANS ? 0 : span);
-   PierIndexType endPier   = (span == ALL_SPANS ? nPiers : startPier+2 );
-
    ColumnIndexType nCols;
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
-
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bPedLoading = pProductLoads->HasPedestrianLoad(startPier,girder);
 
 	if ( analysisType == pgsTypes::Envelope )
 		nCols = 9;
@@ -185,120 +201,96 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
    *p << p_table;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
-
-   // Get the interface pointers we need
-   GET_IFACE2(pBroker,ICombinedForces,pCmbForces);
-   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-
-   std::auto_ptr<ICmbLsReactionAdapter> pForces;
-   if(  tableType==PierReactionsTable )
-   {
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pCmbForces,pLsForces));
-   }
-
-   else
-   {
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, span) );
-   }
-
    (*p_table)(0,0) << _T("");
 
    // Fill up the table
    Float64 min, max;
    RowIndexType row = 2;
-   for ( PierIndexType pier = startPier; pier < endPier; pier++ )
+   for (iter.First(); !iter.IsDone(); iter.Next())
    {
-      if (! pForces->DoReportAtPier(pier, girder) )
-      {
-         continue; // don't report piers that have no bearing information
-      }
+      const ReactionLocation& rct_locn = iter.CurrentItem();
 
+      ColumnIndexType col = 1;
 
-      if (pier == 0 || pier == pBridge->GetPierCount()-1 )
-         (*p_table)(row,0) << _T("Abutment ") << LABEL_PIER(pier);
-      else
-         (*p_table)(row,0) << _T("Pier ") << LABEL_PIER(pier);
-
-     ColumnIndexType col = 1;
+     (*p_table)(row,col++) << rct_locn.PierLabel;
 
      if ( analysisType == pgsTypes::Envelope )
      {
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, stage, pier, girder, ctCummulative, MaxSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, stage, pier, girder, ctCummulative, MinSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, stage, pier, girder, ctCummulative, MaxSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, stage, pier, girder, ctCummulative, MinSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, stage, rct_locn, ctCummulative, MaxSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, stage, rct_locn, ctCummulative, MinSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, stage, rct_locn, ctCummulative, MaxSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, stage, rct_locn, ctCummulative, MinSimpleContinuousEnvelope ) );
 
         if ( bPedLoading )
         {
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, rct_locn, MaxSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
 
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, rct_locn, MinSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
+        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, rct_locn, MaxSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
 
-        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
+        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, rct_locn, MinSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, rct_locn, MaxSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
 
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, rct_locn, MinSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
+        pForces->GetReaction( pgsTypes::StrengthI, stage, rct_locn, MaxSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
 
-        pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
+        pForces->GetReaction( pgsTypes::StrengthI, stage, rct_locn, MinSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetReaction( pgsTypes::StrengthII, stage, rct_locn, MaxSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
 
-           pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetReaction( pgsTypes::StrengthII, stage, rct_locn, MinSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
      }
      else
      {
         BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, stage, pier, girder, ctCummulative, bat ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, stage, pier, girder, ctCummulative, bat ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, stage, rct_locn, ctCummulative, bat ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, stage, rct_locn, ctCummulative, bat ) );
 
         if ( bPedLoading )
         {
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, girder, bat, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, rct_locn, bat, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, bat, false, &min, &max );
+        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, rct_locn, bat, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, girder, bat, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, rct_locn, bat, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, bat, false, &min, &max );
+        pForces->GetReaction( pgsTypes::StrengthI, stage, rct_locn, bat, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, bat, false, &min, &max );
+           pForces->GetReaction( pgsTypes::StrengthII, stage, rct_locn, bat, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }

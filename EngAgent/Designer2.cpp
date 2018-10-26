@@ -418,8 +418,17 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
          // slope of the line connecting the two exterior mating surfaces
          ATLASSERT( 2 <= nMatingSurfaces );
 
+         // this is at CL mating surface... we need out to out
          Float64 left_mating_surface_offset  = pGdr->GetMatingSurfaceLocation(poi,0);
          Float64 right_mating_surface_offset = pGdr->GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
+
+         // width of mating surface
+         Float64 left_mating_surface_width  = pGdr->GetMatingSurfaceWidth(poi,0);
+         Float64 right_mating_surface_width = pGdr->GetMatingSurfaceWidth(poi,nMatingSurfaces-1);
+
+         // add half the width to get the offset to the outside edge of the top of the section
+         left_mating_surface_offset  += ::BinarySign(left_mating_surface_offset) * left_mating_surface_width/2;
+         right_mating_surface_offset += ::BinarySign(right_mating_surface_offset)* right_mating_surface_width/2;
 
          Float64 ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
          Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
@@ -2588,12 +2597,12 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,const s
    // First try to get them from our list of POI's
    std::vector<pgsPointOfInterest> csPoi;
    PoiAttributeType attrib = (ls == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
-   std::vector<pgsPointOfInterest>::const_iterator its = VPoi.begin();
-   std::vector<pgsPointOfInterest>::const_iterator ite = VPoi.end();
+   std::vector<pgsPointOfInterest>::const_iterator its( VPoi.begin() );
+   std::vector<pgsPointOfInterest>::const_iterator ite( VPoi.end() );
    while(its != ite)
    {
       const pgsPointOfInterest& rpoi = *its;
-      if (rpoi.HasAttribute(pgsTypes::BridgeSite3, attrib))
+      if (rpoi.HasAttribute(pgsTypes::BridgeSite3, attrib) && rpoi.GetSpan() == span && rpoi.GetGirder() == gdr)
       {
          csPoi.push_back(rpoi);
       }
@@ -3218,17 +3227,6 @@ void pgsDesigner2::CheckConstructability(SpanIndexType span,GirderIndexType gdr,
          pArtifact->SetGlobalGirderStabilityParameters(Wbottom1,Ybottom1,orientation);
       }
    }
-
-   ///////////////////////////////////////////////////////////////
-   //
-   // Check if any longitudinal rebars are located outside 
-   // of the girder cross section.
-   //
-   ///////////////////////////////////////////////////////////////
-   GET_IFACE(ILongRebarGeometry,pLongRebarGeometry);
-   std::vector<RowIndexType> outBoundRows = pLongRebarGeometry->CheckLongRebarGeometry(span, gdr);
-   pArtifact->SetRebarRowsOutsideOfSection(outBoundRows);
-
 }
 
 void pgsDesigner2::CheckDebonding(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType,pgsDebondArtifact* pArtifact)
@@ -6784,7 +6782,7 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
       pgsShearDesignTool::ShearDesignOutcome sdo = m_ShearDesignTool.DesignStirrups(m_LeftCS.GetDistFromStart(), m_RightCS.GetDistFromStart());
       if (sdo == pgsShearDesignTool::sdRestartWithAdditionalLongRebar)
       {
-         // Additional rebar is needed for long reinf for shear. Add #5 bars, if possible
+         // Additional rebar is needed for long reinf for shear. Add bars, if possible
          Float64 av_add = m_ShearDesignTool.GetRequiredAsForLongReinfShear();
 
          GET_IFACE(IBridgeMaterial,pMaterial);
@@ -6794,28 +6792,69 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
          ATLASSERT(pool != NULL);
 
-         const matRebar* pRebar = pool->GetRebar(barType,barGrade,matRebar::bs5);
-         Float64 av_onebar = pRebar->GetNominalArea();
+         Float64 max_agg_size = pMaterial->GetMaxAggrSizeGdr(span,gdr); // for 1.33 max agg size for bar spacing
 
-         Float64 nbars = av_add/av_onebar;
-         nbars = CeilOff(nbars, 2.0); // round up to next two-bar increment
-
-         // Make sure spacing fits in girder
          GET_IFACE(IGirder,pGirder);
          Float64 wFlange = pGirder->GetBottomWidth(pgsPointOfInterest(span, gdr, 0.0));
-         wFlange -= 2*one_inch; // some cover
-         Float64 dspacing = wFlange/(nbars-1);
-         Float64 spacing = FloorOff(dspacing, one_inch); // try for a reasonable spacing
-         if (spacing == 0.0)
+         Float64 spacing_width = wFlange - 2*one_inch; // this is the c-c width of the two outer-most bars
+                                                       // this will equal (nbars-1)*spacing
+
+         Float64 nbars = 0;
+         Float64 spacing = 0;
+         matRebar::Size barSize;
+         bool bBarSpacingOK = false;
+         matRebar::Size barSizes[] = {matRebar::bs5,matRebar::bs6,matRebar::bs7};
+         int nBarSizes = sizeof(barSizes)/sizeof(matRebar::Size);
+         for ( int i = 0; i < nBarSizes; i++ )
          {
-            spacing = dspacing; // take any old spacing
+            barSize = barSizes[i];
+            const matRebar* pRebar = pool->GetRebar(barType,barGrade,barSize);
+            Float64 av_onebar = pRebar->GetNominalArea();
+            Float64 db = pRebar->GetNominalDimension();
+
+            // min clear spacing per 5.10.3.1.2.
+            Float64 min_clear = Max3(one_inch,1.33*max_agg_size,db);
+            Float64 min_bar_spacing = min_clear + db;
+
+            nbars = av_add/av_onebar;
+            nbars = CeilOff(nbars, 1.0); // round up to next bar increment
+
+            // Make sure spacing fits in girder
+            if ( nbars == 1 )
+            {
+               spacing = 0;
+               bBarSpacingOK = true;
+               break;
+            }
+            else
+            {
+               Float64 dspacing = spacing_width/(nbars-1);
+               spacing = FloorOff(dspacing, one_inch/4); // try for a reasonable spacing
+               if (spacing == 0.0)
+               {
+                  spacing = dspacing; // take any old spacing
+               }
+
+               if ( min_bar_spacing < spacing )
+               {
+                  bBarSpacingOK = true;
+                  break; // we have a spacing that works or there is only one bar so spacing is irrelevant
+               }
+            }
+         }
+
+         if ( !bBarSpacingOK )
+         {
+            // could not find a bar spacing that works
+            pArtifact->SetOutcome(pgsDesignArtifact::TooManyBarsForLongReinfShear);
+            m_DesignerOutcome.AbortDesign();
          }
 
          // Add row of bars
          CLongitudinalRebarData& rebar_data = pArtifact->GetLongitudinalRebarData();
 
          CLongitudinalRebarData::RebarRow row;
-         row.BarSize = matRebar::bs5;
+         row.BarSize = barSize;
          row.Cover = 2.0*one_inch;
          row.Face = pgsTypes::GirderBottom;
          row.NumberOfBars = (Int32)nbars;

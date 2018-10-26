@@ -318,7 +318,7 @@ public:
    virtual void GetContraflexurePoints(SpanIndexType span,GirderIndexType gdr,Float64* cfPoints,Uint32* nPoints);
 
 // IBearingDesign
-   virtual bool AreBearingReactionsAvailable(SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright);
+   virtual bool AreBearingReactionsAvailable(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright);
 
    virtual void GetBearingProductReaction(pgsTypes::Stage stage,ProductForceType type,SpanIndexType span,GirderIndexType gdr,
                                           CombinationType cmbtype, BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd);

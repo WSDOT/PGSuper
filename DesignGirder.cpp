@@ -185,15 +185,15 @@ void txnDesignGirder::DoExecute(int i)
 
       if (design_options.doDesignForShear)
       {
-         GET_IFACE2(pBroker,IShear,pShear);
-         pShear->SetShearData(rdata.m_ShearData[i], span, gdr);
-
          if (design_options.doDesignForFlexure==dtNoDesign)
          {
             // Need to set girder data in order to pick up long reinf for shear design
             // and possible increase in concrete strength for shear stress
             pGirderData->SetGirderData(rdata.m_GirderData[i], span, gdr);
          }
+
+         GET_IFACE2(pBroker,IShear,pShear);
+         pShear->SetShearData(rdata.m_ShearData[i], span, gdr);
       }
    }
 

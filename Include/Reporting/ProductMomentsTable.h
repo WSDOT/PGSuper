@@ -96,7 +96,7 @@ protected:
 };
 
 template <class M,class T>
-RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,
+RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bIsFutureOverlay,
                                      bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,pgsTypes::Stage continuityStage,
                                      IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
@@ -220,7 +220,14 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
       (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
 
       p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << _T("Overlay");
+      if (bIsFutureOverlay)
+      {
+         (*p_table)(0,row1col++) << _T("Future") << rptNewLine << _T("Overlay");
+      }
+      else
+      {
+         (*p_table)(0,row1col++) << _T("Overlay");
+      }
       (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
       (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
    }
@@ -239,7 +246,14 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
 
       p_table->SetRowSpan(0,row1col,2);
       p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(_T("Overlay"), M, unitT );
+      if (bIsFutureOverlay)
+      {
+         (*p_table)(0,row1col++) << _T("Future") << rptNewLine << _T("Overlay");
+      }
+      else
+      {
+         (*p_table)(0,row1col++) << COLHDR(_T("Overlay"), M, unitT );
+      }
    }
 
    if ( bPedLoading )

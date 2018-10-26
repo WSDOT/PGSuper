@@ -24,6 +24,7 @@
 #define INCLUDED_COMBINEDREACTIONTABLE_H_
 
 #include <Reporting\ReportingExp.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 interface IEAFDisplayUnits;
 
@@ -50,9 +51,8 @@ LOG
 class REPORTINGCLASS CCombinedReactionTable
 {
 public:
-   // This class serves Float64 duty. It can report pier reactions or girder bearing reactions.
+   // This class serves dual duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
-   enum TableType { PierReactionsTable, BearingReactionsTable};
 
    // GROUP: LIFECYCLE
 
@@ -81,8 +81,8 @@ public:
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder, 
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, TableType tableType,
-                      bool bDesign=true,bool bRating=true) const;
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+                      bool bDesign,bool bRating) const;
 
    //------------------------------------------------------------------------
    // Builds the live load results table
@@ -90,8 +90,8 @@ public:
    virtual void BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder, 
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType, TableType tableType,
-                      bool includeImpact, bool bDesign=true,bool bRating=true) const;
+                      pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+                      bool includeImpact, bool bDesign,bool bRating) const;
 
    //------------------------------------------------------------------------
    // Builds tables for bearing design
@@ -111,13 +111,13 @@ protected:
    virtual void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder, 
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, TableType tableType,
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
                       bool bDesign=true,bool bRating=true) const;
 
    virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder, bool includeImpact,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType, TableType tableType,
+                      pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
                       bool bDesign=true,bool bRating=true) const;
 
    //------------------------------------------------------------------------

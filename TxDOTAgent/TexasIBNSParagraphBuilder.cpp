@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #include "TexasIBNSParagraphBuilder.h"
@@ -30,7 +30,6 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderData.h>
 #include <PgsExt\BridgeDescription.h>
-#include <PgsExt\DebondUtil.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\GirderLibraryEntry.h>
@@ -42,8 +41,6 @@
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
-
-#include "TxDOTOptionalDesignUtilities.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,21 +69,10 @@ static void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisp
 
 
 /****************************************************************************
-CLASS	CTexasIBNSParagraphBuilder
+CLASS	TxDOTIBNSDebondWriter
 ****************************************************************************/
 
-
-class TxDOTIBNSDebondWriter : public TxDOTDebondTool
-{
-public:
-   TxDOTIBNSDebondWriter(SpanIndexType span, GirderIndexType gdr, Float64 girderLength, IStrandGeometry* pStrandGeometry):
-   TxDOTDebondTool(span, gdr, girderLength, pStrandGeometry)
-   {;}
-
-   void WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
-};
-
-void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits)
+void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName)
 {
    *pPara<<rptNewLine; // make some space
 
@@ -94,11 +80,19 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
    Compute();
 
    StrandIndexType nss = m_pStrandGeometry->GetNumStrands(m_Span,m_Girder,pgsTypes::Straight);
+   bool is_optional = optionalName.size() > 0;
 
    // see if we have an error condition - don't build table if so
    if (nss==0 || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
    {
-      *pPara <<bold(ON)<< _T("Debonding Information for Span ") << LABEL_SPAN(m_Span) << _T(" Girder ") << LABEL_GIRDER(m_Girder) << bold(OFF) << rptNewLine;
+      if (is_optional)
+      {
+         *pPara <<bold(ON)<< _T("Debonding Information for ") << optionalName << bold(OFF) << rptNewLine;
+      }
+      else
+      {
+         *pPara <<bold(ON)<< _T("Debonding Information for Span ") << LABEL_SPAN(m_Span) << _T(" Girder ") << LABEL_GIRDER(m_Girder) << bold(OFF) << rptNewLine;
+      }
 
       if(nss==0)
       {
@@ -131,7 +125,14 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
 
       const ColumnIndexType num_cols=13;
       std::_tostringstream os;
-      os <<_T("Debonded Strand Pattern for Span ")<<LABEL_SPAN(m_Span)<<_T(" Girder ")<<LABEL_GIRDER(m_Girder);
+      if (is_optional)
+      {
+         os << _T("NS Direct-Fill Strand Pattern for ") << optionalName;
+      }
+      else
+      {
+         os <<_T("Debonded Strand Pattern for Span ")<<LABEL_SPAN(m_Span)<<_T(" Girder ")<<LABEL_GIRDER(m_Girder);
+      }
 
       rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(num_cols,os.str());
       *pPara << p_table;
@@ -171,7 +172,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          loc_inc++;
       }
 
-      if (m_NumDebonded == 0)
+      if (m_NumDebonded == 0 && !is_optional)
       {
          // no debonded strands, just write one row
          row++;
@@ -210,7 +211,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          {
             const RowData& rowdata = *riter;
 
-            if( !rowdata.m_Sections.empty()) // Only write row if it has debonding
+            if( !rowdata.m_Sections.empty() || is_optional) // Only write row if it has debonding, or we are writing optional design
             {
                row++; // table 
 
@@ -260,6 +261,10 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
       }
    }
 }
+
+/****************************************************************************
+CLASS	CTexasIBNSParagraphBuilder
+****************************************************************************/
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -478,9 +483,7 @@ void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* 
    // Need compute tool to decipher debond data
    TxDOTIBNSDebondWriter tx_writer(span, girder, girder_length, pStrandGeometry);
 
-   tx_writer.WriteDebondData(pPara,pDisplayUnits);
-
-
+   tx_writer.WriteDebondData(pPara, pDisplayUnits, std::_tstring());
 }
 
 void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,

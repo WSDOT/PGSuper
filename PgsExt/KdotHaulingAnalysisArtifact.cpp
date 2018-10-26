@@ -31,7 +31,7 @@
 #include <IFace\Project.h>
 
 #include <Reporting\ReportNotes.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <EAF\EAFDisplayUnits.h>
 
 
@@ -482,6 +482,16 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(SpanIndexType span,
    Float64 toh = this->GetTrailingOverhang();
    Float64 min_oh = min(loh, toh);
 
+   *p <<_T("The current hauling bunk point location is ")<<slen_u.SetValue(min_oh)<<_T(" - ");
+   if(this->Passed())
+   {
+      *p << RPT_PASS <<rptNewLine<<rptNewLine;
+   }
+   else
+   {
+      *p << RPT_FAIL << rptNewLine<<rptNewLine;
+   }
+
    Float64 hard_limit, soft_limit;
    this->GetOverhangLimits(&hard_limit, &soft_limit);
 
@@ -495,7 +505,6 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(SpanIndexType span,
          <<_T(", but is less than the recommended minimum allowable of ")<<slen_u.SetValue(soft_limit)<<_T(". Hence, a note should be made in the plan set.")<<color(Black)<<rptNewLine;
    }
 
-   *p <<_T("The current hauling bunk point location is ")<<slen_u.SetValue(min_oh)<<_T(".")<<rptNewLine;
    DesignOutcome outcome = this->GetDesignOutcome();
    if(outcome==doNoDesignDone)
    {
@@ -510,16 +519,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(SpanIndexType span,
    {
       Float64 desloc = this->GetDesignOverhang();
 
-      *p<<_T(" - The maximum location for the spec check to pass is ")<<slen_u.SetValue(desloc)<<_T(".");
-
-      if(outcome==doSuccessInSoftZone)
-      {
-         *p<<_T(" - However, this is less than the recommended minimum location of ")<<slen_u.SetValue(soft_limit)<<rptNewLine;
-      }
-      else
-      {
-         *p<<rptNewLine;
-      }
+      *p<<_T(" - The maximum location for the spec check to pass is ")<<slen_u.SetValue(desloc)<<_T("."<<rptNewLine);
    }
    else
    {

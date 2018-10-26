@@ -7,7 +7,7 @@
    <Product Id="*" 
             Name="$(var.ProductName) ($(var.Platform))" 
             Language="1033" 
-            Version="2.8.0.2" 
+            Version="$(var.PGSuperVersion)" 
             Manufacturer="WSDOT" 
             UpgradeCode="$(var.UpgradeCode)">
 		<Package Id="*" 
@@ -20,7 +20,13 @@
                Platform="$(var.Platform)"
                InstallScope="perMachine" />
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MajorUpgrade 
+         DowngradeErrorMessage="A newer version of [ProductName] is already installed." 
+         Schedule="afterInstallValidate"/> 
+
+      <Upgrade Id="$(var.UpgradeCode)">
+         <UpgradeVersion OnlyDetect="no" Property='PREVIOUSFOUND' Minimum="0.0.0.0" IncludeMinimum="yes" Maximum="$(var.PGSuperVersion)" IncludeMaximum="yes"/>
+      </Upgrade>
 
       <Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
 

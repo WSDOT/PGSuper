@@ -2616,6 +2616,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ReportStyleHolder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ShearRatingArtifact.cpp"
 				>
 			</File>
@@ -3252,6 +3256,10 @@
 			</File>
 			<File
 				RelativePath=".\RefinedAnalysisOptionsDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ReportStyleHolder.h"
 				>
 			</File>
 			<File

@@ -831,11 +831,19 @@ void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Fl
       }
       else
       {
-         GET_IFACE(IBridgeMaterial,pMaterials);
-         Float64 E,fy,fu;
-         pMaterials->GetDeckRebarProperties(&E,&fy,&fu);
+         GET_IFACE(IBridge,pBridge);
+         if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+         {
+            *pG3 = 1.0; // prestress concrete (no deck, so all we have is the beam)
+         }
+         else
+         {
+            GET_IFACE(IBridgeMaterial,pMaterials);
+            Float64 E,fy,fu;
+            pMaterials->GetDeckRebarProperties(&E,&fy,&fu);
 
-         *pG3 = fy/fu;
+            *pG3 = fy/fu;
+         }
       }
    }
    else
@@ -934,34 +942,44 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage
 
 Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(const pgsPointOfInterest& poi,bool bPositiveMoment)
 {
-   GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(IBridgeMaterial,pMaterial);
-   GET_IFACE(ISectProp2,pSectProp2);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
 
    Float64 fr;   // Rupture stress
    // Compute modulus of rupture
    if ( bPositiveMoment )
+   {
       fr = pMaterial->GetFlexureFrGdr(poi.GetSpan(),poi.GetGirder());
+   }
    else
-      fr = pMaterial->GetFlexureFrSlab();
+   {
+      GET_IFACE(IBridge,pBridge);
+      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+         fr = pMaterial->GetFlexureFrGdr(poi.GetSpan(),poi.GetGirder());
+      else
+         fr = pMaterial->GetFlexureFrSlab();
+   }
 
    return fr;
 }
 
 Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(const GDRCONFIG& config,bool bPositiveMoment)
 {
-   GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(IBridgeMaterialEx,pMaterial);
-   GET_IFACE(ISectProp2,pSectProp2);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
 
    Float64 fr;   // Rupture stress
    // Compute modulus of rupture
    if ( bPositiveMoment )
+   {
       fr = pMaterial->GetFlexureModRupture(config.Fc,config.ConcType);
+   }
    else
-      fr = pMaterial->GetFlexureFrSlab();
+   {
+      GET_IFACE(IBridge,pBridge);
+      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+         fr = pMaterial->GetFlexureModRupture(config.Fc,config.ConcType);
+      else
+         fr = pMaterial->GetFlexureFrSlab();
+   }
 
    return fr;
 }
@@ -1245,8 +1263,13 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
 
    
    // beam shape
+   // if there is no deck, get the final shape of the girder
+   // if there is a deck, get the basic shape and we'll add the deck below
    CComPtr<IShape> shapeBeam;
-   pSectProp->GetGirderShape(poi,false,&shapeBeam);
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      pSectProp->GetGirderShape(poi,pgsTypes::BridgeSite3,false,&shapeBeam);
+   else
+      pSectProp->GetGirderShape(poi,pgsTypes::CastingYard,false,&shapeBeam);
    
    // the shape is positioned relative to the bridge cross section
    // move the beam such that it's bottom center is at (0,0)

@@ -25,6 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 interface IEAFDisplayUnits;
 
@@ -56,7 +57,6 @@ class REPORTINGCLASS CLiveLoadReactionTable
 public:
    // This class serves Float64 duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
-   enum TableType { PierReactionsTable, BearingReactionsTable};
 
    // GROUP: LIFECYCLE
 
@@ -83,7 +83,7 @@ public:
    // Builds the strand eccentricity table.
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder,
-                      IEAFDisplayUnits* pDisplayUnits, TableType tableType,
+                      IEAFDisplayUnits* pDisplayUnits, ReactionTableType tableType,
                       pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

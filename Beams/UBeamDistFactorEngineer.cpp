@@ -30,7 +30,7 @@
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -1023,7 +1023,7 @@ std::_tstring CUBeamDistFactorEngineer::GetComputationDescription(SpanIndexType 
 
    if ( lldfMethod == LLDF_WSDOT )
    {
-      descr += std::_tstring(_T("WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999"));
+      descr += std::_tstring(_T("WSDOT Method per Bridge Design Manual Section 3.9.4"));
    }
    else if ( lldfMethod == LLDF_TXDOT )
    {

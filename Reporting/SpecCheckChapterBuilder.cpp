@@ -367,9 +367,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Global Stability Check
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,span,girder,pDisplayUnits);
 
-   // Longitudinal rebar geometry check
-   CConstructabilityCheckTable().BuildLongitudinalRebarGeometryCheck(pChapter,pBroker,span,girder,pDisplayUnits);
-
    // Load rating
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    if ( !pRatingSpec->AlwaysLoadRate() )

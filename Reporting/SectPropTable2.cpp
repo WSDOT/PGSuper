@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright c 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,17 +67,28 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
    os << _T("Stage: ") << OLE2T(pStageMap->GetStageName(stage)) << _T(", ");
 
    if ( StageCompare(stage,pgsTypes::BridgeSite2) < 0 )
+   {
       os << _T("Section: Non-composite") << std::endl;
+   }
    else
-      os << _T("Section: Composite") << std::endl;
+   {
+      if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+      {
+         os << _T("Section: Composite") << std::endl;
+      }
+   }
+
+   bool bIsCompositeDeck = pBridge->IsCompositeDeck();
 
    Uint16 nCol;
    if ( stage == pgsTypes::CastingYard || stage == pgsTypes::BridgeSite1 )
       nCol = 12;
-   else if ( (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3) && pBridge->IsCompositeDeck() )
+   else if ( (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3) && bIsCompositeDeck )
       nCol = 15;
+   else if ( stage == pgsTypes::BridgeSite2 )
+      nCol = 12; // BS2 and noncomposite deck
    else
-      nCol = 12; // BS2 or BS3 and noncomposite deck
+      nCol = 9; // BS3, no kern points
 
    rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(nCol,os.str().c_str());
 
@@ -100,25 +111,29 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
    (*xs_table)(0,col++) << COLHDR(RPT_IY,   rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_YTOP, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
 
-   if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
+   if ( pgsTypes::BridgeSite2 <= stage && bIsCompositeDeck )
       (*xs_table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("t")) << _T("") << rptNewLine << _T("Girder"), rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    
    (*xs_table)(0,col++) << COLHDR(RPT_YBOT, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_STOP, rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
    
-   if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
+   if ( pgsTypes::BridgeSite2 <= stage && bIsCompositeDeck )
       (*xs_table)(0,col++) << COLHDR(Sub2(_T("S"),_T("t")) << _T("") << rptNewLine << _T("Girder"), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
 
    (*xs_table)(0,col++) << COLHDR(RPT_SBOT, rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
-   (*xs_table)(0,col++) << Sub2(_T("k"),_T("t")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Top") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
-   (*xs_table)(0,col++) << Sub2(_T("k"),_T("b"))  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Bottom") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
 
-   if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
+   if ( stage < pgsTypes::BridgeSite3 )
+   {
+      (*xs_table)(0,col++) << Sub2(_T("k"),_T("t")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Top") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
+      (*xs_table)(0,col++) << Sub2(_T("k"),_T("b"))  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Bottom") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
+   }
+
+   if ( pgsTypes::BridgeSite2 <= stage && bIsCompositeDeck )
    {
       (*xs_table)(0,col++) << COLHDR(Sub2(_T("Q"),_T("slab")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
       (*xs_table)(0,col++) << COLHDR(_T("Effective") << rptNewLine << _T("Flange") << rptNewLine << _T("Width"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
-   else
+   else if ( stage < pgsTypes::BridgeSite3 )
    {
       (*xs_table)(0,col++) << COLHDR(_T("Perimeter"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
@@ -162,25 +177,29 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
       (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetIy(stage,poi));
       (*xs_table)(row,col++) << l1.SetValue(Yt);
 
-      if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
+      if ( pgsTypes::BridgeSite2 <= stage && bIsCompositeDeck )
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetYtGirder(stage,poi));
 
       (*xs_table)(row,col++) << l1.SetValue(Yb);
       (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetSt(stage,poi));
 
-      if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
+      if ( pgsTypes::BridgeSite2 <= stage && bIsCompositeDeck )
          (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetStGirder(stage,poi));
 
       (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetSb(stage,poi));
-      (*xs_table)(row,col++) << l1.SetValue(fabs(pSectProp->GetKt(poi)));
-      (*xs_table)(row,col++) << l1.SetValue(fabs(pSectProp->GetKb(poi)));
 
-      if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
+      if ( stage < pgsTypes::BridgeSite3 )
+      {
+         (*xs_table)(row,col++) << l1.SetValue(fabs(pSectProp->GetKt(poi)));
+         (*xs_table)(row,col++) << l1.SetValue(fabs(pSectProp->GetKb(poi)));
+      }
+
+      if ( pgsTypes::BridgeSite2 <= stage && bIsCompositeDeck )
       {
          (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetQSlab(poi));
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));
       }
-      else
+      else if ( stage < pgsTypes::BridgeSite3 )
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetPerimeter(poi));
       }

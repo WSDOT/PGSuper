@@ -78,7 +78,7 @@ public:
                       SpanIndexType span,GirderIndexType girder,
                       IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
-                      bool bDesign=true,bool bRating=true) const;
+                      bool bDesign,bool bRating) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

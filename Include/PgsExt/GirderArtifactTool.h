@@ -365,11 +365,6 @@ inline void list_various_failures(IBroker* pBroker,FailureList& rFailures,SpanIn
       rFailures.push_back(_T("Global Girder Stability check failed"));
    }
 
-   if ( !pConstruct->RebarGeometryCheckPassed() )
-   {
-      rFailures.push_back(_T("Rebars are located outside of the girder section. Rebar geometry check failed"));
-   }
-
    // Lifting
    const pgsLiftingAnalysisArtifact* pLifting = pArtifact->GetLiftingAnalysisArtifact();
    if (pLifting!=NULL && !pLifting->Passed() )

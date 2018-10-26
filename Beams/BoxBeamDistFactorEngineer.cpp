@@ -28,7 +28,7 @@
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\BridgeDescription.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
 #include <IFace\Bridge.h>

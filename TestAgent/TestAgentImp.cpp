@@ -61,7 +61,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define QUITE(_x_) (IsZero(_x_,0.00005) ? 0 : _x_)
+//#define QUITE(_x_) (IsZero(_x_,0.00005) ? 0 : _x_)
+#define QUITE(_x_) (RoundOff(_x_,0.001))
+#define DISPLACEMENT(_x_) RoundOff(_x_,1.0)
 
 /////////////////////////////////////////////////////////////////////////////
 // CTestAgentImp
@@ -626,15 +628,15 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32091, ")<<loc<<_T(", ")<< QUITE(nm) <<_T(", 7, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32092, ")<<loc<<_T(", ")<< QUITE(ps) <<_T(", 7, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32093, ")<<loc<<_T(", ")<< QUITE(ns) <<_T(", 7, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32094, ")<<loc<<_T(", ")<< QUITE(-nd) <<_T(", 7, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32095, ")<<loc<<_T(", ")<< QUITE(-pd) <<_T(", 7, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32094, ")<<loc<<_T(", ")<< DISPLACEMENT(-nd) <<_T(", 7, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32095, ")<<loc<<_T(", ")<< DISPLACEMENT(-pd) <<_T(", 7, ")<<gdr<<std::endl;
 
       // deflection truck with full width stiffness
       pForce->GetDeflLiveLoadDisplacement( IProductForces::DesignTruckAlone, rpoi, &nd, &pd );
       pd = ::ConvertFromSysUnits(pd, unitMeasure::Millimeter);
       nd = ::ConvertFromSysUnits(nd, unitMeasure::Millimeter);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32200, ")<<loc<<_T(", ")<< QUITE(-nd) <<_T(", 7, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32201, ")<<loc<<_T(", ")<< QUITE(-pd) <<_T(", 7, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32200, ")<<loc<<_T(", ")<< DISPLACEMENT(-nd) <<_T(", 7, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32201, ")<<loc<<_T(", ")<< DISPLACEMENT(-pd) <<_T(", 7, ")<<gdr<<std::endl;
 
    }
    return true;
@@ -713,68 +715,68 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       // girder 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30000, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( girderLoadStage, pftGirder, poi, bat ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( girderLoadStage, pftGirder, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( girderLoadStage, pftGirder, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30002, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( girderLoadStage, pftGirder, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30200, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( girderLoadStage, pftGirder, span, gdr, bat) , unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // diaphragm
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30009, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftDiaphragm,poi, bat ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30010, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftDiaphragm, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30011, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftDiaphragm, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30011, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftDiaphragm, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30209, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftDiaphragm, span, gdr, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // ShearKey
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30070, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftShearKey,poi, bat ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30071, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftShearKey, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30072, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30072, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30270, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftShearKey, span, gdr, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
        
       // slab + slab pad
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30012, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftSlab,poi, bat )         + pForce->GetMoment( pgsTypes::BridgeSite1, pftSlabPad,poi, bat ),         unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftSlab, poi, bat ).Left()  + pForce->GetShear( pgsTypes::BridgeSite1, pftSlabPad, poi, bat ).Left(),  unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, poi, bat )  + pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, poi, bat ),  unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30014, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, poi, bat )  + pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, poi, bat ),  unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftSlab, span, gdr, bat) + pForce->GetReaction( pgsTypes::BridgeSite1, pftSlabPad, span, gdr, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // DC - BSS1
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30036, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment( lcDC, pgsTypes::BridgeSite1, poi, ctCummulative, bat ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30037, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDC, pgsTypes::BridgeSite1, poi, ctCummulative, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30038, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetDisplacement( lcDC, pgsTypes::BridgeSite1, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30038, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDC, pgsTypes::BridgeSite1, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30236, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetReaction( lcDC, pgsTypes::BridgeSite1, span, gdr, ctCummulative, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // DW - BSS1
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30039, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment( lcDW, pgsTypes::BridgeSite1, poi, ctCummulative, bat ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30040, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDW, pgsTypes::BridgeSite1, poi, ctCummulative, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30041, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, pgsTypes::BridgeSite1, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30041, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, pgsTypes::BridgeSite1, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
 
       // overlay
       pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30042, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( overlay_stage, pftOverlay,poi, bat ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlay_stage, pftOverlay, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30044, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( overlay_stage, pftOverlay, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30044, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( overlay_stage, pftOverlay, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30242, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( overlay_stage, pftOverlay, span, gdr, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // barrier
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30045, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite2, pftTrafficBarrier,poi, bat ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30046, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30047, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30047, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30245, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite2, pftTrafficBarrier, span, gdr, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // sidewalk
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30048, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite2, pftSidewalk,poi, bat ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30049, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite2, pftSidewalk, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30050, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite2, pftSidewalk, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30050, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite2, pftSidewalk, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30248, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite2, pftSidewalk, span, gdr, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // DC - BSS3
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30057, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment( lcDC, pgsTypes::BridgeSite3, poi, ctCummulative, bat ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30058, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDC, pgsTypes::BridgeSite3, poi, ctCummulative, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30059, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetDisplacement( lcDC, pgsTypes::BridgeSite3, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30059, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDC, pgsTypes::BridgeSite3, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30257, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetReaction( lcDC, pgsTypes::BridgeSite3, span, gdr, ctCummulative, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // DW - BSS3
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30060, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment( lcDW, pgsTypes::BridgeSite3, poi, ctCummulative, bat ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30061, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDW, pgsTypes::BridgeSite3, poi, ctCummulative, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30062, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, pgsTypes::BridgeSite3, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30062, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, pgsTypes::BridgeSite3, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30260, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetReaction( lcDW, pgsTypes::BridgeSite3, span, gdr, ctCummulative, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // user loads - Moment
@@ -790,10 +792,10 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122107, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite2, pftUserDC, poi, bat ).Left(), unitMeasure::Newton)) <<_T(", 1, ")<<gdr<<std::endl;
 
       // user loads - Displacement
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122108, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftUserDW, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122109, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftUserDC, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122110, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite2, pftUserDW, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122111, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite2, pftUserDC, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122108, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftUserDW, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122109, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftUserDC, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122110, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite2, pftUserDW, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122111, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite2, pftUserDC, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
 
       // user loads - Reaction
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122112, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftUserDW, span, gdr, bat ), unitMeasure::Newton)) <<_T(", 1, ")<<gdr<<std::endl;
@@ -804,7 +806,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       // user live load
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122116, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftUserLLIM, poi, bat ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122117, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftUserLLIM, poi, bat ).Left(), unitMeasure::Newton)) <<_T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122118, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftUserLLIM, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122118, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftUserLLIM, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122119, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftUserLLIM, span, gdr, bat ), unitMeasure::Newton)) <<_T(", 1, ")<<gdr<<std::endl;
 
    }
@@ -812,7 +814,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    // Girder bearing reactions
    GET_IFACE(IBearingDesign,pBearingDesign);
    bool bleft, bright;
-   if(pBearingDesign->AreBearingReactionsAvailable(span,gdr,&bleft,&bright))
+   if(pBearingDesign->AreBearingReactionsAvailable(pgsTypes::BridgeSite3,span,gdr,&bleft,&bright))
    {
       Float64 lftReact, rgtReact;
       // girder
@@ -933,8 +935,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          pLsForces->GetDisplacement( pgsTypes::StrengthI, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, &dummy, &max );
          pLsForces->GetDisplacement( pgsTypes::StrengthI, pgsTypes::BridgeSite3, poi, MinSimpleContinuousEnvelope, &min, &dummy );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
 
          // Service I
          pLsForces->GetMoment( pgsTypes::ServiceI, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, &dummy, &max );
@@ -949,8 +951,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          pLsForces->GetDisplacement( pgsTypes::ServiceI, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, &dummy, &max );
          pLsForces->GetDisplacement( pgsTypes::ServiceI, pgsTypes::BridgeSite3, poi, MinSimpleContinuousEnvelope, &min, &dummy );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
 
          // Service III
          pLsForces->GetMoment( pgsTypes::ServiceIII, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, &dummy, &max );
@@ -965,8 +967,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          pLsForces->GetDisplacement( pgsTypes::ServiceIII, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, &dummy, &max );
          pLsForces->GetDisplacement( pgsTypes::ServiceIII, pgsTypes::BridgeSite3, poi, MinSimpleContinuousEnvelope, &min, &dummy );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
       }
       else
       {
@@ -981,8 +983,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34003, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<gdr<<std::endl;
 
          pLsForces->GetDisplacement( pgsTypes::StrengthI, pgsTypes::BridgeSite3, poi, bat, &min, &max );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
 
          // Service I
          pLsForces->GetMoment( pgsTypes::ServiceI, pgsTypes::BridgeSite3, poi, bat, &min, &max );
@@ -994,8 +996,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34023, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<gdr<<std::endl;
 
          pLsForces->GetDisplacement( pgsTypes::ServiceI, pgsTypes::BridgeSite3, poi, bat, &min, &max );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
 
          // Service III
          pLsForces->GetMoment( pgsTypes::ServiceIII, pgsTypes::BridgeSite3, poi, bat, &min, &max );
@@ -1007,8 +1009,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34035, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<gdr<<std::endl;
 
          pLsForces->GetDisplacement( pgsTypes::ServiceIII, pgsTypes::BridgeSite3, poi, bat, &min, &max );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdr<<std::endl;
       }
    }
 
@@ -1051,7 +1053,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<gdr<<std::endl;
 
       bool isLeft, isRight;
-      pBearingDesign->AreBearingReactionsAvailable(span, gdr, &isLeft, &isRight);
+      pBearingDesign->AreBearingReactionsAvailable(pgsTypes::BridgeSite3,span, gdr, &isLeft, &isRight);
       if (isLeft || isRight)
       {
          Float64 leftVal, rightVal;
@@ -1102,7 +1104,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34043, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<gdr<<std::endl;
 
       bool isLeft, isRight;
-      pBearingDesign->AreBearingReactionsAvailable(span, gdr, &isLeft, &isRight);
+      pBearingDesign->AreBearingReactionsAvailable(pgsTypes::BridgeSite3,span, gdr, &isLeft, &isRight);
       if (isLeft || isRight)
       {
          Float64 leftMinVal, rightMinVal, leftMaxVal, rightMaxVal;
@@ -1260,8 +1262,8 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       // eff flange width
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSp2->GetEffectiveFlangeWidth(poi), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
 
-      if ( poi.IsFlexureStress(pgsTypes::BridgeSite3) )
-      {
+      //if ( poi.IsFlexureStress(pgsTypes::BridgeSite3) )
+      //{
          // force and stress in prestressing strands
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterXfer), unitMeasure::MPa)) <<         _T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50003, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterXfer), unitMeasure::Newton)) <<       _T(",15, ")<<gdr<<std::endl;
@@ -1314,10 +1316,10 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 56023, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::BottomGirder), unitMeasure::MPa)) <<         _T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 56024, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::TopGirder), unitMeasure::MPa)) <<         _T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 56025, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::BottomGirder), unitMeasure::MPa)) <<         _T(",15, ")<<gdr<<std::endl;
-      }
+      //}
 
-      if ( poi.IsFlexureCapacity(pgsTypes::BridgeSite3) || poi.IsShear(pgsTypes::BridgeSite3) )
-      {
+      //if ( poi.IsFlexureCapacity(pgsTypes::BridgeSite3) || poi.IsShear(pgsTypes::BridgeSite3) )
+      //{
          // positive moment capacity
          CRACKINGMOMENTDETAILS cmd;
          pMomentCapacity->GetCrackingMomentDetails(pgsTypes::BridgeSite3,poi,true,&cmd);
@@ -1435,7 +1437,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100213, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetDemand(), unitMeasure::Newton)) <<  _T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100214, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetCapacity(), unitMeasure::Newton)) <<  _T(",15, ")<<gdr<<std::endl;
          }
-      }
+      //}
 
       // pass/fail cases
 /*      if (pArtifact->IsApplicable())*/
@@ -1872,6 +1874,8 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
 
 bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, GirderIndexType gdr)
 {
+   USES_CONVERSION;
+
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
@@ -1898,19 +1902,38 @@ bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstr
          if ( pArtifact == NULL )
             continue;
 
-         Float64 RF = pArtifact->GetMomentRatingFactor(true);
-	      resultsFile << bridgeId << _T(", ") << pid << _T(", 881001, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+         CComBSTR bstrRatingType = ::GetLiveLoadTypeName(ratingType);
+         std::_tstring strTruckName = pProductLoads->GetLiveLoadName(llType,vehIdx);
+         resultsFile << OLE2T(bstrRatingType) << _T(", ") << strTruckName << std::endl;
+
+         const pgsMomentRatingArtifact* pMomentArtifact = NULL;
+         Float64 RF = pArtifact->GetMomentRatingFactorEx(true,&pMomentArtifact);
+         if ( pMomentArtifact )
+         {
+            resultsFile << bridgeId << _T(", ") << pid << _T(", 881001, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+            resultsFile << bridgeId << _T(", ") << pid << _T(", 881001a, ") << QUITE(pMomentArtifact->GetPointOfInterest().GetDistFromStart()) << _T(", ") << gdr << std::endl;
+         }
 
          if ( bNegMoments )
          {
-            RF = pArtifact->GetMomentRatingFactor(false);
-	         resultsFile << bridgeId << _T(", ") << pid << _T(", 881002, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+            pMomentArtifact = NULL;
+            RF = pArtifact->GetMomentRatingFactorEx(false,&pMomentArtifact);
+            if ( pMomentArtifact )
+            {
+	            resultsFile << bridgeId << _T(", ") << pid << _T(", 881002, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+               resultsFile << bridgeId << _T(", ") << pid << _T(", 881002a, ") << QUITE(pMomentArtifact->GetPointOfInterest().GetDistFromStart()) << _T(", ") << gdr << std::endl;
+            }
          }
          
          if ( pRatingSpec->RateForShear(ratingType) )
          {
-            RF = pArtifact->GetShearRatingFactor();
-	         resultsFile << bridgeId << _T(", ") << pid << _T(", 881003, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+            const pgsShearRatingArtifact* pShearArtifact;
+            RF = pArtifact->GetShearRatingFactorEx(&pShearArtifact);
+            if ( pShearArtifact )
+            {
+               resultsFile << bridgeId << _T(", ") << pid << _T(", 881003, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+               resultsFile << bridgeId << _T(", ") << pid << _T(", 881003a, ") << QUITE(pShearArtifact->GetPointOfInterest().GetDistFromStart()) << _T(", ") << gdr << std::endl;
+            }
          }
 
          if ( pRatingSpec->RateForStress(ratingType) )

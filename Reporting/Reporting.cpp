@@ -64,7 +64,7 @@
 #include <WBFLGenericBridge_i.c>
 #include <WBFLGenericBridgeTools_i.c>
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 
 //
 //TODO: If this DLL is dynamically linked against the MFC DLLs,

@@ -129,11 +129,15 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
       // slab material
       ExchangeConcreteData(pDX);
+   }
 
-      DDX_UnitValueAndTag( pDX, IDC_SACDEPTH,      IDC_SACDEPTH_UNIT,     pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
+   // sacrificial depth
+   DDX_UnitValueAndTag( pDX, IDC_SACDEPTH,      IDC_SACDEPTH_UNIT,     pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
+   if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   {
       if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
          DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit(), _T("Please enter a sacrificial depth that is less than %f %s") );
-      else
+      else // all others
          DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit(), _T("Please enter a sacrificial depth that is less than %f %s") );
    }
 
@@ -163,7 +167,10 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       if ( pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface == pgsTypes::wstSacrificialDepth )
       {
          DDV_UnitValueZeroOrMore( pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
-         DDV_UnitValueLessThanLimit( pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
+         if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+         {
+            DDV_UnitValueLessThanLimit( pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
+         }
       }
       else
       {
@@ -364,11 +371,8 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    // wearing surface types
    pCB = (CComboBox*)GetDlgItem(IDC_WEARINGSURFACETYPE);
 
-   if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-   {
-      idx = pCB->AddString(_T("Sacrificial Depth of Concrete Deck"));
-      pCB->SetItemData(idx,(DWORD)pgsTypes::wstSacrificialDepth);
-   }
+   idx = pCB->AddString(_T("Sacrificial Depth"));
+   pCB->SetItemData(idx,(DWORD)pgsTypes::wstSacrificialDepth);
 
    idx = pCB->AddString(_T("Overlay"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::wstOverlay);
@@ -486,7 +490,6 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
       GetDlgItem(IDC_OVERHANG_DEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));
       GetDlgItem(IDC_ADIM)->SetWindowText(_T(""));
-      GetDlgItem(IDC_SACDEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_PANEL_DEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_PANEL_SUPPORT)->SetWindowText(_T(""));
       GetDlgItem(IDC_SLAB_FC)->SetWindowText(_T(""));
@@ -577,21 +580,17 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
 
    int iOption = GetCheckedRadioButton(IDC_OLAY_WEIGHT_LABEL,IDC_OLAY_DEPTH_LABEL);
 
-   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
-   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
-
    pgsTypes::WearingSurfaceType ws = (pgsTypes::WearingSurfaceType)(pCB->GetItemData(idx));
    if ( ws == pgsTypes::wstSacrificialDepth )
    {
-      bSacDepth               = deckType == pgsTypes::sdtNone ? FALSE : TRUE;
+      bSacDepth               = TRUE;
       bOverlayLabel           = FALSE;
       bOverlayWeight          = FALSE;
       bOverlayDepthAndDensity = FALSE;
    }
    else if ( ws == pgsTypes::wstFutureOverlay )
    {
-      bSacDepth               = deckType == pgsTypes::sdtNone ? FALSE : TRUE;
+      bSacDepth               = TRUE;
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);

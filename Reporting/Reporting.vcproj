@@ -963,15 +963,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ReactionInterfaceAdapters.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Reporting.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Reporting.def"
-				>
-			</File>
-			<File
-				RelativePath=".\ReportStyleHolder.cpp"
 				>
 			</File>
 			<File
@@ -1552,10 +1552,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\ReportNotes.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\ReportStyleHolder.h"
 				>
 			</File>
 			<File

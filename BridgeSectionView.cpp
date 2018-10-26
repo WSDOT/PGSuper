@@ -754,7 +754,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
       CComPtr<IShape> shape;
-      pSectProp->GetGirderShape(poi,true,&shape);
+      pSectProp->GetGirderShape(poi,pgsTypes::CastingYard,true,&shape);
 
       CComQIPtr<IXYPosition> position(shape);
       CComPtr<IPoint2d> topCenter;

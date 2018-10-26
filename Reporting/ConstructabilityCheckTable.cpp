@@ -230,35 +230,6 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    *pBody << pTable;
 }
 
-void CConstructabilityCheckTable::BuildLongitudinalRebarGeometryCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits) const
-{
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
-   
-   if ( !pArtifact->RebarGeometryCheckPassed() )
-   {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-      *pChapter << pTitle;
-      *pTitle << _T("Longitudinal rebars exist outside of the girder section - ") << RPT_FAIL;
-
-      rptParagraph* pBody = new rptParagraph;
-      *pChapter << pBody;
-
-      std::vector<RowIndexType> rows = pArtifact->GetRebarRowsOutsideOfSection();
-
-      *pBody << _T("Bars are located outside of the section in the following rows: ");
-
-       CollectionIndexType nr = rows.size();
-      for (CollectionIndexType ir=0; ir<nr; ir++)
-      {
-         CollectionIndexType row = rows.at(ir);
-         *pBody << row+1;
-         if (ir!=nr-1)
-            *pBody << _T(", ");
-      }
-   }
-}
 
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================

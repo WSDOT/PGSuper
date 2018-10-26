@@ -126,11 +126,6 @@ public:
    Float64 GetMaxGirderIncline() const;
    bool GlobalGirderStabilityPassed() const;
 
-   // Vector containing rows that have rebars outside of the girder section
-   void SetRebarRowsOutsideOfSection(const std::vector<RowIndexType>& rows);
-   std::vector<RowIndexType> GetRebarRowsOutsideOfSection() const;
-   bool RebarGeometryCheckPassed() const; // fails if there are rebars in space
-
    bool Pass() const;
 
    // GROUP: INQUIRY
@@ -160,9 +155,6 @@ private:
    Float64 m_Wbottom;
    Float64 m_Ybottom;
    Float64 m_Orientation;
-
-   // Rebar rows with bars outside of girder section
-   std::vector<RowIndexType> m_RebarRowsOutsideSection;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

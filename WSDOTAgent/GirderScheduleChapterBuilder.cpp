@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include "GirderScheduleChapterBuilder.h"
 #include <PGSuperTypes.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\BridgeDescription.h>
@@ -630,14 +630,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       p = new rptParagraph;
       *pChapter << p;
 
-      *p << color(Red) << Bold(_T("WARNING: Screen Camber, C, is less than the camber at time of deck casting, D. The girder will end up with a sag.")) << color(Black) << rptNewLine;
+      *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is less than the camber at time of deck casting, D. The girder will end up with a sag.")) << color(Black) << rptNewLine;
    }
    else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
    {
       p = new rptParagraph;
       *pChapter << p;
 
-      *p << color(Red) << Bold(_T("WARNING: Screen Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+      *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
    }
 
 

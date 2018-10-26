@@ -85,73 +85,11 @@ DECLARE_LOGFILE;
 // NOTE: If a new product load is added don't forget to change
 // GetDesignStress() so that it is included in the design process
 
-// Analysis Model Load Case ID's for Product Loads
-const LoadCaseIDType g_lcidGirder              =   1;
-const LoadCaseIDType g_lcidConstruction        =   2;
-const LoadCaseIDType g_lcidSlab                =   3;
-const LoadCaseIDType g_lcidDiaphragm           =   4;
-const LoadCaseIDType g_lcidSidewalk            =   5;
-const LoadCaseIDType g_lcidTrafficBarrier      =   6;
-const LoadCaseIDType g_lcidOverlay             =   7;
-const LoadCaseIDType g_lcidOverlayRating       =   8;
-const LoadCaseIDType g_lcidMinDesignTruck      =   9;
-const LoadCaseIDType g_lcidMaxDesignTruck      =  10;
-const LoadCaseIDType g_lcidMinDesignTandem     =  11;
-const LoadCaseIDType g_lcidMaxDesignTandem     =  12;
-const LoadCaseIDType g_lcidMinLiveLoad         =  13;
-const LoadCaseIDType g_lcidMaxLiveLoad         =  14;
-
-const LoadCaseIDType g_lcidMinDeflDesignTruck  =  15;
-const LoadCaseIDType g_lcidMaxDeflDesignTruck  =  16;
-const LoadCaseIDType g_lcidMinDefl25DesignTruck=  17;
-const LoadCaseIDType g_lcidMaxDefl25DesignTruck=  18;
-const LoadCaseIDType g_lcidMinDeflLiveLoad     =  19;
-const LoadCaseIDType g_lcidMaxDeflLiveLoad     =  20;
-
-const LoadCaseIDType g_lcidStraightStrand      =  21;
-const LoadCaseIDType g_lcidHarpedStrand        =  22;
-const LoadCaseIDType g_lcidTemporaryStrand     =  23;
-const LoadCaseIDType g_lcidShearKey            =  24;
-
-const LoadGroupIDType g_lcidDCInc           = 100; // incremental DC loading
-const LoadGroupIDType g_lcidDWInc           = 101; // incremental DW loading
-const LoadGroupIDType g_lcidDC              = 102; // DC loading summed over stages
-const LoadGroupIDType g_lcidDW              = 103; // DW loading summed over stages
-const LoadGroupIDType g_lcidLLIM_Min        = 104;
-const LoadGroupIDType g_lcidLLIM_Max        = 105;
-
-const LoadCombinationIDType g_lcidServiceI_MzMin    = 200;
-const LoadCombinationIDType g_lcidServiceI_MzMax    = 201;
-const LoadCombinationIDType g_lcidServiceIA_MzMin   = 202;
-const LoadCombinationIDType g_lcidServiceIA_MzMax   = 203;
-const LoadCombinationIDType g_lcidServiceIII_MzMin  = 204;
-const LoadCombinationIDType g_lcidServiceIII_MzMax  = 205;
-const LoadCombinationIDType g_lcidStrengthI_MzMin   = 206;
-const LoadCombinationIDType g_lcidStrengthI_MzMax   = 207;
-const LoadCombinationIDType g_lcidStrengthII_MzMin  = 208;
-const LoadCombinationIDType g_lcidStrengthII_MzMax  = 209;
-const LoadCombinationIDType g_lcidFatigueI_MzMin    = 210;
-const LoadCombinationIDType g_lcidFatigueI_MzMax    = 211;
-
-const LoadCombinationIDType g_lcidServiceI_FyMin    = 300;
-const LoadCombinationIDType g_lcidServiceI_FyMax    = 301;
-const LoadCombinationIDType g_lcidServiceIA_FyMin   = 302;
-const LoadCombinationIDType g_lcidServiceIA_FyMax   = 303;
-const LoadCombinationIDType g_lcidServiceIII_FyMin  = 304;
-const LoadCombinationIDType g_lcidServiceIII_FyMax  = 305;
-const LoadCombinationIDType g_lcidStrengthI_FyMin   = 306;
-const LoadCombinationIDType g_lcidStrengthI_FyMax   = 307;
-const LoadCombinationIDType g_lcidStrengthII_FyMin  = 308;
-const LoadCombinationIDType g_lcidStrengthII_FyMax  = 309;
-const LoadCombinationIDType g_lcidFatigueI_FyMin    = 310;
-const LoadCombinationIDType g_lcidFatigueI_FyMax    = 311;
-
-// Stress Point ID's
-const Int32 g_BottomGirder       = (Int32)pgsTypes::BottomGirder;
-const Int32 g_TopGirder          = (Int32)pgsTypes::TopGirder;
-const Int32 g_TopSlab            = (Int32)pgsTypes::TopSlab;
-
-const Float64 TOL=1.0e-04;
+// FEM2D Analysis Model Load Case ID's
+const LoadCaseIDType g_lcidGirder              =  1;
+const LoadCaseIDType g_lcidStraightStrand      =  2;
+const LoadCaseIDType g_lcidHarpedStrand        =  3;
+const LoadCaseIDType g_lcidTemporaryStrand     =  4;
 
 // This list is ordered like pgsTypes::LiveLoadType
 const LiveLoadModelType g_LiveLoadModelType[] = 
@@ -477,6 +415,14 @@ CComBSTR CAnalysisAgentImp::GetLoadCaseName(LoadingCombination combo)
          bstrLoadCase = "DW";
       break;
 
+      case lcDWp:
+         bstrLoadCase = "DWp";
+      break;
+
+      case lcDWf:
+         bstrLoadCase = "DWf";
+      break;
+
       case lcDWRating:
          bstrLoadCase = "DW_Rating";
       break;
@@ -503,6 +449,16 @@ bool GetLoadCaseTypeFromName(const CComBSTR& name, LoadingCombination* pCombo)
    else if (CComBSTR("DW_Rating") == name )
    {
       *pCombo = lcDWRating;
+      return true;
+   }
+   else if (CComBSTR("DWp") == name )
+   {
+      *pCombo = lcDWp;
+      return true;
+   }
+   else if (CComBSTR("DWf") == name )
+   {
+      *pCombo = lcDWf;
       return true;
    }
    else
@@ -3080,21 +3036,10 @@ void CAnalysisAgentImp::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pg
    ATLASSERT( llType != pgsTypes::lltPedestrian ); // we don't want to add HL-93 to the pedestrian live load model
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
-   VARIANT_BOOL bUseNegativeMomentLiveLoad = VARIANT_FALSE;
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
-   if ( 1 < nSpans )
-   {
-      for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
-      {
-         if ( pBridge->ProcessNegativeMoments(spanIdx) )
-         {
-            bUseNegativeMomentLiveLoad = VARIANT_TRUE;
-            break;
-         }
-      }
-  }
-  m_LBAMUtility->ConfigureDesignLiveLoad(pModel,llmt,IMtruck,IMlane,bUseNegativeMomentLiveLoad,bUseNegativeMomentLiveLoad,units,m_UnitServer);
+   VARIANT_BOOL bUseDualTruckTrains = (1 < nSpans ? VARIANT_TRUE : VARIANT_FALSE); // always use dual truck trains if more than one span (needed for reactions at intermediate piers)
+  m_LBAMUtility->ConfigureDesignLiveLoad(pModel,llmt,IMtruck,IMlane,bUseDualTruckTrains,bUseDualTruckTrains,units,m_UnitServer);
 }
 
 void CAnalysisAgentImp::AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane)
@@ -3552,6 +3497,9 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    AddLoadCase(loadcases, CComBSTR("DW_Rating"), CComBSTR("Wearing Surfaces and Utilities (for Load Rating)"));
    AddLoadCase(loadcases, CComBSTR("LL_IM"), CComBSTR("User defined live load"));
 
+   AddLoadCase(loadcases, CComBSTR("DWp"), CComBSTR("DW for permanent loads")); // User DW + Overlay
+   AddLoadCase(loadcases, CComBSTR("DWf"), CComBSTR("DW for future loads")); // Future Overlay
+
    // add load combinations
    CComPtr<ILoadCombinations> loadcombos;
    hr = pModel->get_LoadCombinations(&loadcombos) ;
@@ -3572,7 +3520,8 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    }
 
    hr = strength1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::StrengthI],   pLoadFactors->DCmax[pgsTypes::StrengthI]);
-   hr = strength1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::StrengthI],   pLoadFactors->DWmax[pgsTypes::StrengthI]);
+   hr = strength1->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::StrengthI],   pLoadFactors->DWmax[pgsTypes::StrengthI]);
+   hr = strength1->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::StrengthI]);
    hr = strength1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::StrengthI], pLoadFactors->LLIMmax[pgsTypes::StrengthI]);
 
    hr = loadcombos->Add(strength1) ;
@@ -3592,7 +3541,8 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    }
 
    hr = strength2->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::StrengthII],   pLoadFactors->DCmax[pgsTypes::StrengthII]);
-   hr = strength2->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::StrengthII],   pLoadFactors->DWmax[pgsTypes::StrengthII]);
+   hr = strength2->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::StrengthII],   pLoadFactors->DWmax[pgsTypes::StrengthII]);
+   hr = strength2->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::StrengthII]);
    hr = strength2->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::StrengthII], pLoadFactors->LLIMmax[pgsTypes::StrengthII]);
 
    hr = loadcombos->Add(strength2) ;
@@ -3604,7 +3554,6 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service1->put_LoadCombinationType(lctService) ;
    hr = service1->put_LiveLoadFactor(pLoadFactors->LLIMmax[pgsTypes::ServiceI] ) ;
    hr = service1->AddLiveLoadModel(lltDesign) ;
-   hr = service1->AddLiveLoadModel(lltPedestrian) ;
 
    if (design_ped_type != ILiveLoads::PedDontApply)
    {
@@ -3613,7 +3562,8 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    }
 
    hr = service1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceI],   pLoadFactors->DCmax[pgsTypes::ServiceI]);
-   hr = service1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceI],   pLoadFactors->DWmax[pgsTypes::ServiceI]);
+   hr = service1->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::ServiceI],   pLoadFactors->DWmax[pgsTypes::ServiceI]);
+   hr = service1->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceI], pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
 
    hr = loadcombos->Add(service1) ;
@@ -3633,7 +3583,8 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    }
 
    hr = service3->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceIII],   pLoadFactors->DCmax[pgsTypes::ServiceIII]);
-   hr = service3->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceIII],   pLoadFactors->DWmax[pgsTypes::ServiceIII]);
+   hr = service3->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::ServiceIII],   pLoadFactors->DWmax[pgsTypes::ServiceIII]);
+   hr = service3->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::ServiceIII]);
    hr = service3->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceIII], pLoadFactors->LLIMmax[pgsTypes::ServiceIII]);
 
    hr = loadcombos->Add(service3) ;
@@ -3653,7 +3604,8 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    }
 
    hr = service1a->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceIA],   pLoadFactors->DCmax[pgsTypes::ServiceIA]);
-   hr = service1a->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceIA],   pLoadFactors->DWmax[pgsTypes::ServiceIA]);
+   hr = service1a->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::ServiceIA],   pLoadFactors->DWmax[pgsTypes::ServiceIA]);
+   hr = service1a->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::ServiceIA]);
    hr = service1a->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceIA], pLoadFactors->LLIMmax[pgsTypes::ServiceIA]);
 
    loadcombos->Add(service1a);
@@ -3673,7 +3625,8 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    }
 
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::FatigueI],   pLoadFactors->DCmax[pgsTypes::FatigueI]);
-   hr = fatigue1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::FatigueI],   pLoadFactors->DWmax[pgsTypes::FatigueI]);
+   hr = fatigue1->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::FatigueI],   pLoadFactors->DWmax[pgsTypes::FatigueI]);
+   hr = fatigue1->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::FatigueI], pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
 
    loadcombos->Add(fatigue1);
@@ -4066,15 +4019,28 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftShearKey));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftUserDC));
 
+   GET_IFACE(IBridge,pBridge);
+   bool bFutureOverlay = pBridge->IsFutureOverlay();
+
    CComPtr<ILoadCase> load_case_dw;
    load_cases->Find(CComBSTR("DW"),&load_case_dw);
    load_case_dw->AddLoadGroup(GetLoadGroupName(pftOverlay));
    load_case_dw->AddLoadGroup(GetLoadGroupName(pftUserDW));
 
+   CComPtr<ILoadCase> load_case_dwp;
+   load_cases->Find(CComBSTR("DWp"),&load_case_dwp);
+   load_case_dwp->AddLoadGroup(GetLoadGroupName(pftUserDW));
+   if ( !bFutureOverlay )
+      load_case_dwp->AddLoadGroup(GetLoadGroupName(pftOverlay));
+
+   CComPtr<ILoadCase> load_case_dwf;
+   load_cases->Find(CComBSTR("DWf"),&load_case_dwf);
+   if ( bFutureOverlay )
+      load_case_dwf->AddLoadGroup(GetLoadGroupName(pftOverlay));
+
    CComPtr<ILoadCase> load_case_dw_rating;
    load_cases->Find(CComBSTR("DW_Rating"),&load_case_dw_rating);
-   GET_IFACE(IBridge,pBridge);
-   if ( !pBridge->IsFutureOverlay() )
+   if ( !bFutureOverlay )
    {
       load_case_dw_rating->AddLoadGroup(GetLoadGroupName(pftOverlayRating));
    }
@@ -4391,6 +4357,7 @@ void CAnalysisAgentImp::AddPoiStressPoints(const pgsPointOfInterest& poi,IStage*
 {
    GET_IFACE(ISectProp2,pSectProp2);
    GET_IFACE(IStageMap,pStageMap);
+   GET_IFACE(IBridge,pBridge);
 
    CComBSTR bstrStage;
    pStage->get_Name(&bstrStage);
@@ -4431,7 +4398,7 @@ void CAnalysisAgentImp::AddPoiStressPoints(const pgsPointOfInterest& poi,IStage*
    rightStressPoints->Add(spTopGirder);
 
    // Top of Slab
-   if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
+   if ( (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3) && pBridge->IsCompositeDeck() )
    {
       Sa = 1/pSectProp2->GetAg(stage,poi);
       Sm = 1/pSectProp2->GetSt(stage,poi);
@@ -5624,9 +5591,14 @@ void CAnalysisAgentImp::GetMainSpanShearKeyLoad(SpanIndexType span,GirderIndexTy
    Float64 unif_area, joint_area;
    pGirder->GetShearKeyAreas(span, gdrIdx, spacingType, &unif_area, &joint_area);
 
-   Float64 slab_unitw = pBridgeMaterial->GetWgtDensitySlab()* unitSysUnitsMgr::GetGravitationalAcceleration();
-   Float64 unif_wt      = unif_area  * slab_unitw;
-   Float64 joint_wt_per = joint_area * slab_unitw;
+   Float64 unit_weight;
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      unit_weight = pBridgeMaterial->GetWgtDensityGdr(span,gdrIdx)*unitSysUnitsMgr::GetGravitationalAcceleration();
+   else
+      unit_weight = pBridgeMaterial->GetWgtDensitySlab()*unitSysUnitsMgr::GetGravitationalAcceleration();
+
+   Float64 unif_wt      = unif_area  * unit_weight;
+   Float64 joint_wt_per = joint_area * unit_weight;
 
    // See if we need to go further
    bool is_joint_spacing = ::IsJointSpacing(spacingType);
@@ -5720,9 +5692,16 @@ void CAnalysisAgentImp::GetIntermediateDiaphragmLoads(pgsTypes::Stage stage, Spa
 
    Float64 density;
    if ( stage == pgsTypes::CastingYard )
+   {
       density = pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx); // cast with girder, using girder concrete
+   }
    else
-      density = pMaterial->GetWgtDensitySlab(); // cast with slab, using slab concrete
+   {
+      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+         density = pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx); // no deck, using girder concrete
+      else
+         density = pMaterial->GetWgtDensitySlab(); // cast with slab, using slab concrete
+   }
 
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
 
@@ -5768,7 +5747,7 @@ void CAnalysisAgentImp::GetEndDiaphragmLoads(SpanIndexType span,GirderIndexType 
 
    Float64 H;
    Float64 W;
-   Float64 Density = pMat->GetWgtDensitySlab();
+   Float64 Density = (pBridge->GetDeckType() == pgsTypes::sdtNone ? pMat->GetWgtDensityGdr(span,gdrIdx) : pMat->GetWgtDensitySlab());
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
    Float64 brg_offset;
    Float64 moment_arm;
@@ -10581,7 +10560,7 @@ Float64 CAnalysisAgentImp::GetSidlDeflection(const pgsPointOfInterest& poi,const
    }
    else
    {
-      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screen camber
+      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screed camber
       if ( deckType == pgsTypes::sdtCompositeSIP )
          delta_diaphragm = 0;
 
@@ -10720,7 +10699,7 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
    }
    else
    {
-      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screen camber
+      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screed camber
       if ( deckType == pgsTypes::sdtCompositeSIP )
       {
          Ddiaphragm = 0;
@@ -12484,7 +12463,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pier,GirderInd
 /////////////////////////////////////////////////
 // IBearingDesign
 
-bool CAnalysisAgentImp::AreBearingReactionsAvailable(SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright)
+bool CAnalysisAgentImp::AreBearingReactionsAvailable(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright)
 {
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ISpecification,pSpec);
@@ -12503,10 +12482,9 @@ bool CAnalysisAgentImp::AreBearingReactionsAvailable(SpanIndexType span,GirderIn
    {
       if (span==ALL_SPANS)
       {
-         *pBleft  = false;
-         *pBright = false;
-
-         return false;
+         *pBleft  = true;
+         *pBright = true;
+         return true;
       }
       else
       {
@@ -12524,6 +12502,26 @@ bool CAnalysisAgentImp::AreBearingReactionsAvailable(SpanIndexType span,GirderIn
          bool bSimpleOnLeft, bSimpleOnRight;
          bSimpleOnLeft  = !bContinuousOnLeft  && !bIntegralOnLeft;
          bSimpleOnRight = !bContinuousOnRight && !bIntegralOnRight;
+
+         // Finally check if stage is before continuity
+         pgsTypes::Stage left_continuity_stage, right_continuity_stage;
+         if (! bSimpleOnLeft)
+         {
+            pBridge->GetContinuityStage(span, &left_continuity_stage, &right_continuity_stage);
+            if (-1 == StageCompare(stage, right_continuity_stage))
+            {
+               bSimpleOnLeft = true;
+            }
+         }
+
+         if (! bSimpleOnRight)
+         {
+            pBridge->GetContinuityStage(span+1, &left_continuity_stage, &right_continuity_stage);
+            if (-1 == StageCompare(stage, left_continuity_stage))
+            {
+               bSimpleOnRight = true;
+            }
+         }
 
          *pBleft  = bSimpleOnLeft;
          *pBright = bSimpleOnRight;

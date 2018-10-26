@@ -208,6 +208,7 @@ public:
    virtual bool IsFutureOverlay();
    virtual Float64 GetOverlayWeight();
    virtual Float64 GetOverlayDepth();
+   virtual Float64 GetSacrificalDepth();
    virtual Float64 GetFillet();
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi);
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi);
@@ -353,7 +354,6 @@ public:
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void CBridgeAgentImp::GetRebarLayout(SpanIndexType span,GirderIndexType gdr, IRebarLayout** rebarLayout);
    virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
-   virtual std::vector<RowIndexType> CheckLongRebarGeometry(SpanIndexType span,GirderIndexType gdr);
 
 // IStirrupGeometry
 public:
@@ -601,7 +601,7 @@ public:
    virtual Float64 GetVolume(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetBridgeEIxx(Float64 distFromStart);
    virtual Float64 GetBridgeEIyy(Float64 distFromStart);
-   virtual void GetGirderShape(const pgsPointOfInterest& poi,bool bOrient,IShape** ppShape);
+   virtual void GetGirderShape(const pgsPointOfInterest& poi,pgsTypes::Stage stage,bool bOrient,IShape** ppShape);
    virtual void GetSlabShape(Float64 station,IShape** ppShape);
    virtual void GetLeftTrafficBarrierShape(Float64 station,IShape** ppShape);
    virtual void GetRightTrafficBarrierShape(Float64 station,IShape** ppShape);
@@ -676,7 +676,7 @@ public:
 // IGirderHaulingPointsOfInterest
 public:
    virtual std::vector<pgsPointOfInterest> GetHaulingPointsOfInterest(SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
-   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
+   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
    virtual Float64 GetMinimumOverhang(SpanIndexType span,GirderIndexType gdr);
 
 // IBridgeDescriptionEventSink
@@ -916,6 +916,7 @@ private:
 
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point);
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
+   void CreateCompositeOverlayEdgePaths(IPath** ppLeftPath,IPath** ppRightPath);
 
    REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
 };

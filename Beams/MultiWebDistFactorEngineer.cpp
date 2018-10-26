@@ -31,7 +31,7 @@
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
@@ -484,18 +484,25 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    pgsTypes::TrafficBarrierOrientation side = pBarriers->GetNearestBarrier(span,gdr);
    plldf->CurbOffset = pBarriers->GetInterfaceWidth(side);
 
-   if ( fcgdr < 0 )
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
    {
-      plldf->n     = pMaterial->GetEcGdr(span,gdr) / pMaterial->GetEcSlab();
+      plldf->n = 1.0;
    }
    else
    {
-      Float64 Ecgdr = pMaterialEx->GetEconc(fcgdr,
-                                             pMaterial->GetStrDensityGdr(span,gdr),
-                                             pMaterialEx->GetEccK1Gdr(span,gdr),
-                                             pMaterialEx->GetEccK2Gdr(span,gdr));
+      if ( fcgdr < 0 )
+      {
+         plldf->n     = pMaterial->GetEcGdr(span,gdr) / pMaterial->GetEcSlab();
+      }
+      else
+      {
+         Float64 Ecgdr = pMaterialEx->GetEconc(fcgdr,
+                                                pMaterial->GetStrDensityGdr(span,gdr),
+                                                pMaterialEx->GetEccK1Gdr(span,gdr),
+                                                pMaterialEx->GetEccK2Gdr(span,gdr));
 
-      plldf->n     = Ecgdr / pMaterial->GetEcSlab();
+         plldf->n     = Ecgdr / pMaterial->GetEcSlab();
+      }
    }
 
    // compute de (inside edge of barrier to CL of exterior web)
@@ -531,13 +538,21 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    plldf->Ig = pSectProp2->GetIx(pgsTypes::CastingYard,poi);
 
    // Assume slab thickness includes top flange
-   Float64 ts = pBridge->GetStructuralSlabDepth(poi);
-   Float64 tf =  pGirder->GetMinTopFlangeThickness(poi);
-   plldf->ts = ts + tf;
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   {
+      plldf->ts = pGirder->GetMinTopFlangeThickness(poi);
+      plldf->eg = plldf->Yt - plldf->ts/2;
+   }
+   else
+   {
+      Float64 ts = pBridge->GetStructuralSlabDepth(poi);
+      Float64 tf =  pGirder->GetMinTopFlangeThickness(poi);
+      plldf->ts = ts + tf;
 
-   // location of cg of combined slab wrt top of girder
-   Float64 tscg = (ts*ts/2.0 - tf*tf/2.0)/(ts+tf);
-   plldf->eg    = plldf->Yt + tscg;
+      // location of cg of combined slab wrt top of girder
+      Float64 tscg = (ts*ts/2.0 - tf*tf/2.0)/(ts+tf);
+      plldf->eg    = plldf->Yt + tscg;
+   }
 
    WebIndexType nWebs = pGirder->GetNumberOfWebs(span,gdr);
    plldf->connectedAsUnit = ( pDeck->TransverseConnectivity == pgsTypes::atcConnectedAsUnit ? true : false);

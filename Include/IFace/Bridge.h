@@ -185,6 +185,7 @@ interface IBridge : IUnknown
    virtual bool IsFutureOverlay() = 0;
    virtual Float64 GetOverlayWeight() = 0;
    virtual Float64 GetOverlayDepth() = 0;
+   virtual Float64 GetSacrificalDepth() = 0;
    virtual Float64 GetFillet() = 0;
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) = 0;
@@ -418,9 +419,6 @@ interface ILongRebarGeometry : IUnknown
    virtual void GetRebarLayout(SpanIndexType span,GirderIndexType gdr, IRebarLayout** rebarLayout) = 0;
 
    virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) = 0;
-   //Return index of any rebar rows that have bars outside of the girder section. An empty vector means PASS
-   virtual std::vector<RowIndexType> CheckLongRebarGeometry(SpanIndexType span,GirderIndexType gdr) = 0;
-
 };
 
 /*****************************************************************************
@@ -763,7 +761,7 @@ interface ISectProp2 : IUnknown
    virtual Float64 GetBridgeEIxx(Float64 distFromStart) = 0;
    virtual Float64 GetBridgeEIyy(Float64 distFromStart) = 0;
 
-   virtual void GetGirderShape(const pgsPointOfInterest& poi,bool bOrient,IShape** ppShape) = 0;
+   virtual void GetGirderShape(const pgsPointOfInterest& poi,pgsTypes::Stage stage,bool bOrient,IShape** ppShape) = 0;
    virtual void GetSlabShape(Float64 station,IShape** ppShape) = 0;
    virtual void GetLeftTrafficBarrierShape(Float64 station,IShape** ppShape) = 0;
    virtual void GetRightTrafficBarrierShape(Float64 station,IShape** ppShape) = 0;

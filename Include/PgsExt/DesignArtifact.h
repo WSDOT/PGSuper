@@ -99,6 +99,7 @@ public:
       TooManyStirrupsReqdForHorizontalInterfaceShear,
       TooManyStirrupsReqdForSplitting,
       ConflictWithLongReinforcementShearSpec,
+      TooManyBarsForLongReinfShear,
       TooMuchStrandsForLongReinfShear,
       StrandsReqdForLongReinfShearAndFlexureTurnedOff,
       NoDevelopmentLengthForLongReinfShear,
