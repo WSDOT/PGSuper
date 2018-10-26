@@ -102,16 +102,16 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
    }
 
    // get all the cross section changes
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE);
-   pPOI->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT,POI_CANTILEVER);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> xsPOI = pPoi->GetPointsOfInterest(segmentKey,POI_SECTCHANGE);
+   pPoi->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT,POI_CANTILEVER);
 
    // sometimes we loose the released segment POI at 0L and 1.0L in the call to RemovePointsOfInterest above
    // these are key POI so include them here so we are guarenteed to have them.
-   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_START_FACE);
+   std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE);
    ATLASSERT(vPoi.size() == 1);
    xsPOI.push_back(vPoi.front());
-   vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_END_FACE);
+   vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_END_FACE);
    ATLASSERT(vPoi.size() == 1);
    xsPOI.push_back(vPoi.front());
 
@@ -207,6 +207,17 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
    // create members
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
+   // for consistancy with all structural analysis models, sections properties are based on the mid-span location of segments
+   std::vector<pgsPointOfInterest> vMyPoi( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_5L) );
+   ATLASSERT( vMyPoi.size() == 1 );
+   pgsPointOfInterest spPoi = vMyPoi.front();
+   ATLASSERT(spPoi.IsMidSpan(POI_RELEASED_SEGMENT));
+
+   Float64 Ix = pSectProp->GetIx(intervalIdx,spPoi);
+   Float64 Ag = pSectProp->GetAg(intervalIdx,spPoi);
+   Float64 EI = E*Ix;
+   Float64 EA = E*Ag;
+
    CComPtr<IFem2dMemberCollection> members;
    (*ppModel)->get_Members(&members);
 
@@ -229,15 +240,6 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
          // the cantilevers... next member
          continue;
       }
-
-      Float64 prevEI = E*pSectProp->GetIx(intervalIdx,prevPoi);
-      Float64 prevEA = E*pSectProp->GetAg(intervalIdx,prevPoi);
-
-      Float64 currEI = E*pSectProp->GetIx(intervalIdx,poi);
-      Float64 currEA = E*pSectProp->GetAg(intervalIdx,poi);
-
-      Float64 EI = (prevEI + currEI)/2;
-      Float64 EA = (prevEA + currEA)/2;
 
       CComPtr<IFem2dMember> member;
       members->Create(mbrID++,prevJntID,jntID,EA,EI,&member);
@@ -777,6 +779,27 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
       Float64 end = slabLoad.Loc;
       Float64 wslabEnd = slabLoad.MainSlabLoad + slabLoad.PanelLoad;
       Float64 wslabPadEnd = slabLoad.PadLoad;
+
+
+      if ( !bModelLeftCantilever && ::IsLT(start,leftSupportLoc) )
+      {
+         // this load segment begins before the left support and we are ignoring loads out there
+  
+         // compute load intensity at the left support
+         wslabStart = ::LinInterp(leftSupportLoc,wslabStart,wslabEnd,end-start);
+         wslabPadStart = ::LinInterp(leftSupportLoc,wslabPadStart,wslabPadEnd,end-start);
+         start = leftSupportLoc;
+      }
+
+      if ( !bModelRightCantilever && ::IsLT(rightSupportLoc,end) )
+      {
+         // this load segment ends after the right support and we are ignoring loads out there
+
+         // compute load intensity at the right support
+         wslabEnd = ::LinInterp(rightSupportLoc-start,wslabStart,wslabEnd,end-start);
+         wslabPadEnd = ::LinInterp(rightSupportLoc-start,wslabPadStart,wslabPadEnd,end-start);
+         end = rightSupportLoc;
+      }
 
       // apply the loading
       MemberIDType mbrIDStart; // member ID at the start of the load

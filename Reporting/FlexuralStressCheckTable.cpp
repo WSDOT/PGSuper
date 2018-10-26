@@ -127,7 +127,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,
    else
    {
       // all girder segments are connected... report as a single girder
-      Build(pChapter,pBroker,pGirderArtifact,ALL_SEGMENTS,pDisplayUnits,intervalIdx,limitState, bGirderStresses);
+      Build(pChapter,pBroker,pGirderArtifact,nSegments == 1 ? 0 : ALL_SEGMENTS,pDisplayUnits,intervalIdx,limitState, bGirderStresses);
    }
 }
 
@@ -574,6 +574,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
          pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Compression),
          pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension)
             );
+
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
          ColumnIndexType col = 0;

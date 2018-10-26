@@ -142,17 +142,17 @@ LPCTSTR GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasureme
       }
       else
       {
-         return _T("Measured From CL Bearing along Girder Centerline");
+         return _T("Measured From CL Bearing along Girder");
       }
 
    case ConnectionLibraryEntry::FromBearingNormalToPier:
       if ( bAbbreviation )
       {
-         return bAbutment ? _T("FCLB-NA") : _T("FCLB-NP");
+         return _T("FCLB-NCLB");
       }
       else
       {
-         return bAbutment ? _T("Measured From CL Bearing and Normal to Abutment Line") : _T("Measured From CL Bearing and Normal to Pier Line");
+         return _T("Measured From and Normal to CL Bearing");
       }
 
    case ConnectionLibraryEntry::FromPierAlongGirder:

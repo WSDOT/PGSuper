@@ -66,11 +66,6 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    m_bIsPGSuper = pDocType->IsPGSuperDocument();
 
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   bool bTimeStepMethod = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
-
-
-
    // reset everything
    m_CastDeckIntervalIdx      = INVALID_INDEX;
    m_CompositeDeckIntervalIdx = INVALID_INDEX;
@@ -109,12 +104,12 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
 
       ProcessStep1(eventIdx,pTimelineEvent);
       ProcessStep2(eventIdx,pTimelineEvent);
-      ProcessStep3(eventIdx,pTimelineEvent,bTimeStepMethod);
+      ProcessStep3(eventIdx,pTimelineEvent);
       ProcessStep4(eventIdx,pTimelineEvent);
-      ProcessStep5(eventIdx,pTimelineEvent,bTimeStepMethod);
+      ProcessStep5(eventIdx,pTimelineEvent);
    } // next event
    
-   // If we aren't doing type step analysis, this is a PGSuper project
+   // If we aren't doing time step analysis, this is a PGSuper project
    // Append the old Bridge Site names to the interval descriptions for
    // continuity with previous versions
    ATLASSERT(0 < m_Intervals.size());
@@ -122,7 +117,15 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
    {
       m_Intervals[m_ReleaseIntervals.begin()->second].Description += _T(" (Casting Yard)");
       m_Intervals[m_CastDeckIntervalIdx].Description              += _T(" (Bridge Site 1)");
-      m_Intervals[m_RailingSystemIntervalIdx].Description         += _T(" (Bridge Site 2)");
+      if ( m_OverlayIntervalIdx == INVALID_INDEX )
+      {
+         // no overlay case
+         m_Intervals[m_RailingSystemIntervalIdx].Description      += _T(" (Bridge Site 2)");
+      }
+      else
+      {
+         m_Intervals[m_OverlayIntervalIdx].Description            += _T(" (Bridge Site 2)");
+      }
       m_Intervals[m_LiveLoadIntervalIdx].Description              += _T(" (Bridge Site 3)");
    }
 
@@ -953,7 +956,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
 #define SEGMENT 1
 #define DECK 2
 #define CLOSURE 3
-void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod)
+void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent)
 {
    // Step 3: Create curing duration intervals
    const CConstructSegmentActivity& constructSegmentActivity = pTimelineEvent->GetConstructSegmentsActivity();
@@ -1089,7 +1092,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
       {
          CInterval cureDeckInterval;
          ATLASSERT(IsEqual(duration,castDeckActivity.GetConcreteAgeAtContinuity()));
-         if ( bTimeStepMethod && 0 < duration )
+         if ( 0 < duration )
          {
             // only model deck curing if we are doing a time-step analysis
             ATLASSERT(m_CastDeckIntervalIdx != INVALID_INDEX); // deck must have been previously cast
@@ -1163,6 +1166,14 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    else
    {
       intervalIdx = m_Intervals.size();
+      if ( m_CompositeDeckIntervalIdx+1 == intervalIdx )
+      {
+         // loads are being applied in the same interval the deck becomes composite.
+         // the deck becoming composite is a zero duration interval and so is this loading
+         // interval. put the loading in the composite deck interval
+         intervalIdx = m_CompositeDeckIntervalIdx;
+         bNeedNewInterval = false;
+      }
    }
    
    std::vector<CString> strDescriptions;
@@ -1372,48 +1383,42 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
       interval.Description = strDescription;
       StoreInterval(interval);
    }
+   else
+   {
+      m_Intervals.back().Description += _T(", ") + strDescription;
+   }
 }
 
-void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod)
+void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent)
 {
    // At the end of every event, create a general time step
    // that goes from the end of last interval for the current event
    // to the start of the next event
    EventIndexType nEvents = pTimelineEvent->GetTimelineManager()->GetEventCount();
-   if ( bTimeStepMethod )
+   if ( eventIdx == nEvents-1 && pTimelineEvent->GetDuration() == 0 )
    {
-      CInterval timeStepInterval;
-      timeStepInterval.StartEventIdx = eventIdx;
-      timeStepInterval.EndEventIdx   = eventIdx;
-      timeStepInterval.Start = (m_Intervals.size() == 0 ? pTimelineEvent->GetDay() : m_Intervals.back().End);
-      if ( eventIdx < nEvents-1 )
-      {
-         timeStepInterval.EndEventIdx++; // this time step ends at the start of the next event unless this is the last event
-      }
-      timeStepInterval.End = pTimelineEvent->GetTimelineManager()->GetStart(timeStepInterval.EndEventIdx); // ends at the start of the next event
+      // don't need to create a zero duration time step at the end of the timeline
+      return;
+   }
 
-      timeStepInterval.Duration = timeStepInterval.End - timeStepInterval.Start;
-      timeStepInterval.Middle = 0.5*(timeStepInterval.Start + timeStepInterval.End);
-      timeStepInterval.Description = _T("Time Step");
+   CInterval timeStepInterval;
+   timeStepInterval.StartEventIdx = eventIdx;
+   timeStepInterval.EndEventIdx   = eventIdx;
+   timeStepInterval.Start = (m_Intervals.size() == 0 ? pTimelineEvent->GetDay() : m_Intervals.back().End);
+   if ( eventIdx < nEvents-1 )
+   {
+      timeStepInterval.EndEventIdx++; // this time step ends at the start of the next event unless this is the last event
+   }
+   timeStepInterval.End = pTimelineEvent->GetTimelineManager()->GetStart(timeStepInterval.EndEventIdx); // ends at the start of the next event
+
+   timeStepInterval.Duration = timeStepInterval.End - timeStepInterval.Start;
+   timeStepInterval.Middle = 0.5*(timeStepInterval.Start + timeStepInterval.End);
+   timeStepInterval.Description = _T("Time Step");
+
+   if ( 0 < timeStepInterval.Duration )
+   {
       StoreInterval(timeStepInterval);
    }
-   else
-   {
-      // not doing time step, so end this event with the start of the next event
-      // this provides continuity in the time intervals
-      if ( eventIdx < nEvents-1 )
-      {
-         m_Intervals.back().End = pTimelineEvent->GetTimelineManager()->GetStart(eventIdx+1);
-         m_Intervals.back().Duration = m_Intervals.back().End - m_Intervals.back().Start;
-         m_Intervals.back().Middle = 0.5*(m_Intervals.back().Start + m_Intervals.back().End);
-      }
-      else
-      {
-         m_Intervals.back().End = m_Intervals.back().Start;
-         m_Intervals.back().Middle = m_Intervals.back().Start;
-         m_Intervals.back().Duration = 0;
-      }
-   } // if bTimeStep
 }
 
 std::vector<CClosureKey> CIntervalManager::GetClosureJoints(const CTimelineEvent* pTimelineEvent)

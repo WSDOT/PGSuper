@@ -715,6 +715,12 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
             m_DiaphragmWidth[pgsTypes::Back]               = pConnEntry->GetDiaphragmWidth();
             m_DiaphragmLoadType[pgsTypes::Back]            = pConnEntry->GetDiaphragmLoadType();
             m_DiaphragmLoadLocation[pgsTypes::Back]        = pConnEntry->GetDiaphragmLoadLocation();
+
+            if ( m_pNextSpan == NULL )
+            {
+               m_EndDistanceMeasurementType[pgsTypes::Ahead] = m_EndDistanceMeasurementType[pgsTypes::Back];
+               m_BearingOffsetMeasurementType[pgsTypes::Ahead] = m_BearingOffsetMeasurementType[pgsTypes::Back];
+            }
          }
 
          if ( m_pBridgeDesc == NULL || m_pBridgeDesc && m_pNextSpan )
@@ -730,6 +736,12 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
             m_DiaphragmWidth[pgsTypes::Ahead]               = pConnEntry->GetDiaphragmWidth();
             m_DiaphragmLoadType[pgsTypes::Ahead]            = pConnEntry->GetDiaphragmLoadType();
             m_DiaphragmLoadLocation[pgsTypes::Ahead]        = pConnEntry->GetDiaphragmLoadLocation();
+
+            if ( m_pPrevSpan == NULL )
+            {
+               m_EndDistanceMeasurementType[pgsTypes::Back] = m_EndDistanceMeasurementType[pgsTypes::Ahead];
+               m_BearingOffsetMeasurementType[pgsTypes::Back] = m_BearingOffsetMeasurementType[pgsTypes::Ahead];
+            }
          }
       }
 

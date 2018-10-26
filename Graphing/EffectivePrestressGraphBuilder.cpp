@@ -35,6 +35,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\DocumentType.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -156,8 +157,11 @@ void CEffectivePrestressGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Gir
    CString strGraphSubTitle;
    if ( ductIdx == INVALID_INDEX )
    {
+      GET_IFACE(IDocumentType,pDocType);
+      CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
+
       bool bPermanent = ((CEffectivePrestressGraphController*)m_pGraphController)->IsPermanentStrands();
-      strGraphSubTitle.Format(_T("Group %d Girder %s %s Strands"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),(bPermanent ? _T("Permanent") : _T("Temporary")));
+      strGraphSubTitle.Format(_T("%s %d Girder %s %s Strands"),strGroupLabel,LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),(bPermanent ? _T("Permanent") : _T("Temporary")));
    }
    else
    {

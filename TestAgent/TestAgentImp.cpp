@@ -1866,7 +1866,14 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
                resultsFile<<bridgeId<<", "<<pid<<", 50064, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetAvsMin(), unitMeasure::Millimeter2)) <<",15, "<<gdrIdx<<std::endl;
                resultsFile<<bridgeId<<", "<<pid<<", 50065, "<<loc<<", "<< QUITE(scd.Vn/scd.Vu) <<", 15 "<<gdrIdx<<std::endl;
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100205, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetS(), unitMeasure::Millimeter)) <<_T(",15, ")<<gdrIdx<<std::endl;
-               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100206, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetVuLimit(), unitMeasure::Newton)) <<_T(",15, ")<<gdrIdx<<std::endl;
+               if ( pSDArtifact->GetAfter1999() )
+               {
+                  resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100206, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetVuLimit(), unitMeasure::Newton)) <<_T(",15, ")<<gdrIdx<<std::endl;
+               }
+               else
+               {
+                  resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100206, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetvuLimit(), unitMeasure::MPa)) <<_T(",15, ")<<gdrIdx<<std::endl;
+               }
 
                pAHsrtifact = psArtifact->GetHorizontalShearArtifact();
                resultsFile<<bridgeId<<", "<<pid<<", 50067, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetCapacity()*pAHsrtifact->GetPhi(), unitMeasure::Newton)) <<",15, "<<gdrIdx<<std::endl;

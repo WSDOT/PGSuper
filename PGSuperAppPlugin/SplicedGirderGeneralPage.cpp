@@ -283,11 +283,11 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_CB_SLABOFFSET);
    if ( m_SlabOffsetTypeOriginal == pgsTypes::sotPier )
    {
-      pcbSlabOffsetType->AddString(_T("A unique Slab Offset is used at each Pier"));
+      pcbSlabOffsetType->AddString(_T("A unique Slab Offset (\"A\" Dimension) is used at each Pier"));
    }
    else
    {
-      pcbSlabOffsetType->AddString(_T("A single Slab Offset is used for the entire bridge"));
+      pcbSlabOffsetType->AddString(_T("A single Slab Offset (\"A\" Dimension) is used for the entire bridge"));
    }
    pcbSlabOffsetType->AddString(_T("Slab Offsets are defined girder by girder"));
    pcbSlabOffsetType->SetCurSel(m_SlabOffsetTypeOriginal==pgsTypes::sotGirder ? 1:0);

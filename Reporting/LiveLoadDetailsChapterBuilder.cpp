@@ -241,6 +241,11 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          user_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
 
+         if (user_loads.empty())
+         {
+            *pPara<<_T("No live loads were defined for this load rating") << rptNewLine;
+         }
+
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
             std::_tstring& load_name = *it;
@@ -267,6 +272,11 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pChapter << pPara;
 
          user_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
+
+         if (user_loads.empty())
+         {
+            *pPara<<_T("No live loads were defined for this load rating") << rptNewLine;
+         }
 
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
@@ -296,6 +306,11 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          user_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
 
+         if (user_loads.empty())
+         {
+            *pPara<<_T("No live loads were defined for this load rating") << rptNewLine;
+         }
+
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
             std::_tstring& load_name = *it;
@@ -324,6 +339,11 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          user_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Routine);
 
+         if (user_loads.empty())
+         {
+            *pPara<<_T("No live loads were defined for this load rating") << rptNewLine;
+         }
+
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
             std::_tstring& load_name = *it;
@@ -350,6 +370,11 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pChapter << pPara;
 
          user_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
+
+         if (user_loads.empty())
+         {
+            *pPara<<_T("No live loads were defined for this load rating") << rptNewLine;
+         }
 
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {

@@ -1,19 +1,19 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     1    Tx62-          66  1/2  270  21.84  13.47   8.00   8.00                                              12  58.5 12.5  5.400  6.100   3.799    -3.931     9567   0.630  0.814   3.858 -2.128  0.000 -0.176 -2.305 185.48  501.71    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     1    Tx62-          66  1/2  270  21.84  13.47   8.00   8.00                                              12  58.5 12.5  5.400  6.100   3.799    -3.931     9567   0.630  0.814   3.788 -2.128  0.000 -0.176 -2.305 185.48  501.48    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 7 Remove temporary strands
+Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     2    Tx62-          70  1/2  270  21.32  12.18   8.00   8.00                                              16  56.5 16.5  5.500  6.500   3.926    -4.076     9843   0.630  0.814   3.959 -2.433  0.000 -0.169 -2.602 206.10  545.10    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     2    Tx62-          70  1/2  270  21.32  12.18   8.00   8.00                                              16  56.5 16.5  5.500  6.500   3.926    -4.076     9843   0.630  0.814   3.894 -2.433  0.000 -0.169 -2.602 206.10  544.88    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 7 Remove temporary strands
+Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

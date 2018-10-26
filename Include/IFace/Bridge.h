@@ -520,7 +520,6 @@ interface IBridge : IUnknown
    virtual void GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right) = 0;
    virtual void IsContinuousAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight) = 0;
    virtual void IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight) = 0;
-   virtual void GetContinuityEventIndex(PierIndexType pierIdx,EventIndexType* pBack,EventIndexType* pAhead) = 0;
 
    // Returns the connection boundary condition at a pier (only valid if IsBoundaryPier returns true)
    virtual pgsTypes::BoundaryConditionType GetBoundaryConditionType(PierIndexType pierIdx) = 0;

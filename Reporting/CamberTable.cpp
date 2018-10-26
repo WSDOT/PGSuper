@@ -329,12 +329,12 @@ void CCamberTable::Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey,
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
       Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,storagePoi,bat,rtCumulative,false);
       Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,erectedPoi,bat,rtCumulative,false);
       Float64 dgdrErected = pExtLoading->GetDeflection(erectionIntervalIdx,_T("Girder_Incremental"),erectedPoi,bat,rtCumulative,false);
 

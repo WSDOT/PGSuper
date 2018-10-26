@@ -35,7 +35,7 @@
 #include <Graphing\StressHistoryGraphBuilder.h>
 #include <Graphing\GirderPropertiesGraphBuilder.h>
 #include <Graphing\ConcretePropertyGraphBuilder.h>
-
+#include <Graphing\DeflectionHistoryGraphBuilder.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -53,6 +53,7 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
 }
 
 STDMETHODIMP CGrapherBase::SetBroker(IBroker* pBroker)

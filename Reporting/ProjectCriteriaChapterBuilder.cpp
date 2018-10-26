@@ -212,7 +212,9 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

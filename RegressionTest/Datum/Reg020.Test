@@ -7,12 +7,12 @@ The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Compression stress check failed for Service IA Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, User Defined Loading Applied, Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service IA Limit State in Interval 13 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -31,11 +31,11 @@ The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Compression stress check failed for Service IA Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, User Defined Loading Applied, Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service IA Limit State in Interval 13 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic (Bridge Site 3)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed

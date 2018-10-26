@@ -7,8 +7,8 @@ The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System (Bridge Site 2)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed
@@ -24,8 +24,8 @@ The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System (Bridge Site 2)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed

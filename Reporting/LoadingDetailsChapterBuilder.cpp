@@ -153,7 +153,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : Min(girderKey.girderIndex,nGirders-1));
       GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
@@ -305,7 +305,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : Min(girderKey.girderIndex,nGirders-1));
       GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
@@ -1384,65 +1384,65 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 
-   RowIndexType row = 0;
+   //RowIndexType row = 0;
 
-   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   *pChapter << pPara;
-   *pPara<< _T("Limit States")<<rptNewLine;
+   //rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   //*pChapter << pPara;
+   //*pPara<< _T("Limit States")<<rptNewLine;
 
-   pPara = new rptParagraph;
-   *pChapter << pPara;
+   //pPara = new rptParagraph;
+   //*pChapter << pPara;
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2);
-   *pPara << p_table;
+   //rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2);
+   //*pPara << p_table;
 
-   p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   //p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   //p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   p_table->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   p_table->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   //p_table->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   //p_table->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   (*p_table)(row,0) << _T("Stage");
-   (*p_table)(row,1) << _T("Load Case");
-   row++;
+   //(*p_table)(row,0) << _T("Stage");
+   //(*p_table)(row,1) << _T("Load Case");
+   //row++;
 
-   std::_tstring strDC;
-   if (one_girder_has_shear_key)
-   {
-      strDC = _T("DC = Girder + Diaphragms + Shear Key + Construction + Deck");
-   }
-   else
-   {
-      strDC = _T("DC = Girder + Diaphragms + Construction + Deck");
-   }
+   //std::_tstring strDC;
+   //if (one_girder_has_shear_key)
+   //{
+   //   strDC = _T("DC = Girder + Diaphragms + Shear Key + Construction + Deck");
+   //}
+   //else
+   //{
+   //   strDC = _T("DC = Girder + Diaphragms + Construction + Deck");
+   //}
 
-   if ( bDesign )
-   {
-      (*p_table)(row,0) << _T("Casting Yard");
-      (*p_table)(row,1) << _T("DC = Girder");
-      row++;
+   //if ( bDesign )
+   //{
+   //   (*p_table)(row,0) << _T("Casting Yard");
+   //   (*p_table)(row,1) << _T("DC = Girder");
+   //   row++;
 
 
-      (*p_table)(row,0) << _T("Deck and Diaphragm Placement (Bridge Site 1)");
-      (*p_table)(row,1) << strDC;
-      row++;
+   //   (*p_table)(row,0) << _T("Deck and Diaphragm Placement (Bridge Site 1)");
+   //   (*p_table)(row,1) << strDC;
+   //   row++;
 
-      (*p_table)(row,0) << _T("Final without Live Load (Bridge Site 2)");
-      (*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
-                      << _T("DW = Overlay");
-      row++;
-   }
+   //   (*p_table)(row,0) << _T("Final without Live Load (Bridge Site 2)");
+   //   (*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
+   //                   << _T("DW = Overlay");
+   //   row++;
+   //}
 
-   (*p_table)(row,0) << _T("Final with Live Load (Bridge Site 3)");
-   (*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
-                   << _T("DW = Future Overlay")<< rptNewLine
-                   << _T("LL+IM = Live Load + Impact") << rptNewLine
-                   << _T("PL = Pedestrian Live Load") << rptNewLine;
-   row++;
+   //(*p_table)(row,0) << _T("Final with Live Load (Bridge Site 3)");
+   //(*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
+   //                << _T("DW = Future Overlay")<< rptNewLine
+   //                << _T("LL+IM = Live Load + Impact") << rptNewLine
+   //                << _T("PL = Pedestrian Live Load") << rptNewLine;
+   //row++;
 
 
    // LRFD Limit States Load Factors
-   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< _T("Limit State Load Factors")<<rptNewLine;
 
@@ -1455,7 +1455,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       nColumns = 7;
    }
 
-   p_table = rptStyleManager::CreateDefaultTable(nColumns);
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nColumns);
    p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    *pPara << p_table;
@@ -1473,7 +1473,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       (*p_table)(0,col++) << Sub2(symbol(gamma),_T("PS"));
    }
    
-   row = 1;
+   RowIndexType row = 1;
 
    if ( bDesign )
    {

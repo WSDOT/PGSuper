@@ -294,6 +294,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
          firstPTIntervalIdx = Min(firstPTIntervalIdx,ptIntervalIdx);
       }
    }
+
    std::sort(vPTIntervals.begin(),vPTIntervals.end());
    for ( IntervalIndexType intervalIdx = firstPTIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
@@ -734,7 +735,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
 
    // Demand and Allowable
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Demand (Design)"),     pgsTypes::ServiceI,  graphDemand,    vAllIntervals,ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Allowable (Design)"),  pgsTypes::ServiceI,  graphAllowable, vAllIntervals) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Allowable (Design)"),  pgsTypes::ServiceI,  graphAllowable, vSpecCheckIntervals) );
    
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
@@ -1102,12 +1103,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
 
       for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(groupIdx,gdrIdx));
+         GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
+         GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
+         CGirderKey thisGirderKey(groupIdx,girderIdx);
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
          if ( 1 < nSegments )
          {
             for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
             {
-               CClosureKey closureKey(groupIdx,gdrIdx,segIdx);
+               CClosureKey closureKey(thisGirderKey,segIdx);
                if ( pIntervals->GetCompositeClosureJointInterval(closureKey) <= intervalIdx )
                {
                   bSimpleSpanSegments = false;
@@ -1135,7 +1139,9 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    IntervalIndexType firstSegmentErectionIntervalIdx = INVALID_INDEX;
    for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
    {
-      CGirderKey thisGirderKey(groupIdx,gdrIdx);
+      GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
+      GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
+      CGirderKey thisGirderKey(groupIdx,girderIdx);
       firstSegmentErectionIntervalIdx = Min(firstSegmentErectionIntervalIdx,pIntervals->GetFirstSegmentErectionInterval(thisGirderKey));
    }
 
@@ -1311,7 +1317,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
          } // next graph
       } // next segment
 
-      Float64 Lg = pBridge->GetGirderLayoutLength(girderKey);
+      Float64 Lg = pBridge->GetGirderLayoutLength(thisGirderKey);
       m_GroupOffset += Lg;
    } // next group
 }
@@ -3162,7 +3168,8 @@ void CAnalysisResultsGraphBuilder::CyStressCapacityGraph(IndexType graphIdx,cons
    // First get pois using same request as spec check report
    GET_IFACE(IArtifact,pIArtifact);
 
-   Float64 cap_prev, x_prev; // tension capacity can jump at a location. we must capture this
+   Float64 cap_prev = 0;
+   Float64 x_prev = xVals.front(); // tension capacity can jump at a location. we must capture this
    bool first(true);
    std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());

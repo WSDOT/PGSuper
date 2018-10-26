@@ -130,16 +130,20 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             *pChapter << pPara;
             StrandIndexType Ns = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Straight);
             StrandIndexType Nh = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Harped);
-            *pPara << _T("Number of straight strands (N") << Sub(_T("s")) << _T(") = ") << Ns << _T(" ") 
-               << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)) << _T(")") << rptNewLine;
-            *pPara << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" strands (N") << Sub(_T("h")) << _T(") = ") << Nh << _T(" ") 
-               << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(")") << rptNewLine;
+            *pPara << _T("Straight strands: ") << Sub2(_T("N"),_T("s")) << _T(" = ") << Ns << _T(", ") 
+               << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)) << _T(", ")
+               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Straight)) << rptNewLine;
+            *pPara << LABEL_HARP_TYPE(harpedAreStraight) <<_T(" strands: ") << Sub2(_T("N"),_T("h")) << _T(" = ") << Nh << _T(", ") 
+               << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(", ")
+               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Harped)) << rptNewLine;
 
             if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary ) )
             {
-               *pPara << _T("Number of temporary strands (N") << Sub(_T("t")) << _T(") = ") << pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Temporary) << _T(" ") 
-                  << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Temporary)) << _T(")") << rptNewLine;
+               *pPara << _T("Temporary strands: ") << Sub2(_T("N"),_T("t")) << _T(" = ") << pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Temporary) << _T(", ") 
+                  << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Temporary)) << _T(", ")   
+                  << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Temporary)) << rptNewLine;
 
+               *pPara << rptNewLine;
                   
                switch(pStrands->GetTemporaryStrandUsage())
                {
@@ -160,12 +164,12 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
                   break;
                }
 
-               *pPara << _T("Total permanent strands (N) = ") << Ns+Nh << _T(" ") 
-                  << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)+pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(")") << rptNewLine;
+               *pPara << _T("Total permanent strands, N = ") << Ns+Nh << _T(", ") 
+                  << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)+pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(", ")
+                  << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Permanent)) << rptNewLine;
 
-               *pPara << _T("Permanent Strands: ") << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Permanent)) << rptNewLine;
-               *pPara << _T("Temporary Strands: ") << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Temporary)) << rptNewLine;
-               *pPara << _T("Total Strand Area: ") << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetAreaPrestressStrands(thisSegmentKey,releaseIntervalIdx,true)) << rptNewLine;
+               *pPara << rptNewLine;
+
                *pPara << _T("Prestress Transfer Length (Permanent) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
                *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Temporary) ) << rptNewLine;
             }

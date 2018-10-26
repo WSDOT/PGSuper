@@ -153,19 +153,16 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(loadRatingIntervalIdx);
    }
 
-   // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest( segmentKey, POI_SPAN ) );
-   std::vector<pgsPointOfInterest> vMiscPoi( pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER,POIFIND_OR) );
-   vPoi.insert(vPoi.begin(),vMiscPoi.begin(),vMiscPoi.end());
-
-   // don't want to report at these locations since the are off segment
-   // and don't have stresses due to pre-tensioning.
-   pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-   pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
-
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi2( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi3( pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND,POIFIND_OR) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    std::sort(vPoi.begin(),vPoi.end());
    vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+   pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
    GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
    GET_IFACE2(pBroker,IPretensionForce,pForce);
@@ -181,7 +178,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       {
          (*p_table)(row,col++) << rptReleasePoi.SetValue( POI_RELEASED_SEGMENT, poi );
       }
-      (*p_table)(row,col++) << rptErectedPoi.SetValue( POI_SPAN, poi  );
+      (*p_table)(row,col++) << rptErectedPoi.SetValue( POI_ERECTED_SEGMENT, poi  );
 
       if ( bDesign )
       {

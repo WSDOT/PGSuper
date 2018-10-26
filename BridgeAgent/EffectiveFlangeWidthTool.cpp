@@ -74,7 +74,7 @@ HRESULT CEffectiveFlangeWidthTool::FinalConstruct()
    m_bUseTribWidth = VARIANT_FALSE;
 
 
-   bMaxSkewAngleComputed = false;
+   m_bMaxSkewAngleComputed = false;
    m_MaxSkewAngle = 0;
 
 
@@ -467,7 +467,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	
          // check overhang spacing if it is a CIP or SIP deck
 	      // overlay decks don't have overhangs
-	      if ( pBridge->GetDeckType() != pgsTypes::sdtCompositeOverlay )
+	      if ( bIsExteriorGirder && pBridge->GetDeckType() != pgsTypes::sdtCompositeOverlay )
 	      {
             CSegmentKey leftSegmentKey(segmentKey);
             CSegmentKey rightSegmentKey(segmentKey);
@@ -523,7 +523,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
             // is the angle of a bearing line measured relative to a normal to
             // the cneterline of a longitudial component
-            if ( !bMaxSkewAngleComputed )
+            if ( !m_bMaxSkewAngleComputed )
             {
                // the max skew angle for the BRIDGE SYSTEM only needs to be
                // computed once. Compute it and cache it
@@ -566,7 +566,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	                  maxSkew = Max(maxSkew,angle_value);
 	               }
 	            }
-               bMaxSkewAngleComputed = true;
+               m_bMaxSkewAngleComputed = true;
                m_MaxSkewAngle = maxSkew;
             }
    	

@@ -83,10 +83,13 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : firstGroupIdx);
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,girderKey.girderIndex));
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
          Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
          Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
          std::remove_if(vShearPoi.begin(), vShearPoi.end(), PoiIsOutsideOfBearings(segmentKey,endDist,endDist+segmentSpanLength));
@@ -1567,16 +1570,16 @@ void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pInte
       Float64 Xspan;
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
-      EventIndexType start,end,dummy;
       PierIndexType prevPierIdx = spanKey.spanIndex;
       PierIndexType nextPierIdx = prevPierIdx + 1;
 
-      pBridge->GetContinuityEventIndex(prevPierIdx,&dummy,&start);
-      pBridge->GetContinuityEventIndex(nextPierIdx,&end,&dummy);
+      IntervalIndexType start,end,dummy;
+      pIntervals->GetContinuityInterval(prevPierIdx,&dummy,&start);
+      pIntervals->GetContinuityInterval(nextPierIdx,&end,&dummy);
 
       IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval();
-      IntervalIndexType startPierContinuityIntervalIdx = pIntervals->GetInterval(start);
-      IntervalIndexType endPierContinuityIntervalIdx   = pIntervals->GetInterval(end);
+      IntervalIndexType startPierContinuityIntervalIdx = start;
+      IntervalIndexType endPierContinuityIntervalIdx   = end;
 
       if ( startPierContinuityIntervalIdx == compositeDeckIntervalIdx && 
            endPierContinuityIntervalIdx   == compositeDeckIntervalIdx )

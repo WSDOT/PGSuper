@@ -54,7 +54,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CIntervalChapterBuilder::GetName() const
 {
-   return TEXT("Time Step Intervals");
+   return TEXT("Analysis Intervals");
 }
 
 rptChapter* CIntervalChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -73,7 +73,7 @@ rptChapter* CIntervalChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pIntervalTable = rptStyleManager::CreateDefaultTable(8,_T("Intervals"));
+   rptRcTable* pIntervalTable = rptStyleManager::CreateDefaultTable(8);
    *pPara << pIntervalTable << rptNewLine;
 
    pIntervalTable->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));

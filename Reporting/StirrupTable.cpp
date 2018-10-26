@@ -89,8 +89,8 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*p_table)(0,2) << COLHDR(_T("Zone End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*p_table)(0,3) << _T("Bar Size");
    (*p_table)(0,4) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,5) << _T("# of")<< rptNewLine<<_T("Vertical Legs");
-   (*p_table)(0,6) << _T("# Legs")<<rptNewLine<<_T("Extended") << rptNewLine << _T("into Deck*");
+   (*p_table)(0,5) << _T("# of") << rptNewLine << _T("Vertical") << rptNewLine << _T("Legs");
+   (*p_table)(0,6) << _T("# Legs") << rptNewLine << _T("Extended") << rptNewLine << _T("into Deck*");
    (*p_table)(0,7) << _T("Confinement") << rptNewLine << _T("Bar Size");
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();

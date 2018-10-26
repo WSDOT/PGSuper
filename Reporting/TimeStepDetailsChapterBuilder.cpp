@@ -1791,6 +1791,20 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
 
 void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
 {
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   (*pChapter) << pPara;
+   (*pPara) << _T("Creep coefficient details") << rptNewLine;
+   pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
+
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   if ( pLossParams->IgnoreCreepEffects() )
+   {
+      (*pPara) << _T("Creep effects where ignored") << rptNewLine;
+      return;
+   }
+
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -1815,15 +1829,8 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
    std::_tstring strCuring[] = {_T("Moist"),_T("Steam") };
 
-   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Creep coefficient details") << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
-
    ColumnIndexType nColumns = 7; // This Interval (i), Previous Intervals (j), tj, tb, te, ..., Y(ib,jm), Y(ie,jm)
 
-   GET_IFACE2(pBroker,ILossParameters, pLossParams);
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
    if ( model == pgsTypes::tdmAASHTO )
    {
@@ -2177,6 +2184,19 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
 void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
 {
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   (*pChapter) << pPara;
+   (*pPara) << _T("Concrete shrinkage details") << rptNewLine;
+   pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   if ( pLossParams->IgnoreShrinkageEffects() )
+   {
+      (*pPara) << _T("Shrinkage effects were ignored") << rptNewLine;
+      return;
+   }
+
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -2199,15 +2219,8 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
-   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Concrete shrinkage details") << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
-
    ColumnIndexType nColumns = 6; // Interval, tb, te, ..... , esh(tb), esh(te), Desh
 
-   GET_IFACE2(pBroker,ILossParameters, pLossParams);
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
    if ( model == pgsTypes::tdmAASHTO )
    {
@@ -2536,7 +2549,19 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
 
 void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
 {
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   (*pChapter) << pPara;
+   (*pPara) << _T("Strand relaxation details") << rptNewLine;
+   pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   if ( pLossParams->IgnoreRelaxationEffects() )
+   {
+      (*pPara) << _T("Relaxation effects where ignored") << rptNewLine;
+      return;
+   }
+
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -2548,12 +2573,6 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
-
-   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Strand relaxation details") << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
 
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
    const matPsStrand* pPermanentStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent);

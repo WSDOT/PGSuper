@@ -189,16 +189,16 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
             if ( pLayoutTable )
             {
-               (*pLayoutTable)(0,0) << CCastingYardStressTable().Build(pBroker,segmentKey,releaseIntervalIdx,_T("At Release"),pDisplayUnits) << rptNewLine;
-               (*pLayoutTable)(0,1) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,_T("During Storage"),pDisplayUnits) << rptNewLine;
+               (*pLayoutTable)(0,0) << CCastingYardStressTable().Build(pBroker,segmentKey,releaseIntervalIdx,POI_RELEASED_SEGMENT,_T("At Release"),pDisplayUnits) << rptNewLine;
+               (*pLayoutTable)(0,1) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,POI_STORAGE_SEGMENT,_T("During Storage"),pDisplayUnits) << rptNewLine;
             }
             else
             {
                CString strTableTitle;
                strTableTitle.Format(_T("Segment %d"),LABEL_SEGMENT(segIdx));
 
-               (*pReleaseLayoutTable)(0,segIdx) << CCastingYardStressTable().Build(pBroker,segmentKey,releaseIntervalIdx,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
-               (*pStorageLayoutTable)(0,segIdx) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
+               (*pReleaseLayoutTable)(0,segIdx) << CCastingYardStressTable().Build(pBroker,segmentKey,releaseIntervalIdx,POI_RELEASED_SEGMENT,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
+               (*pStorageLayoutTable)(0,segIdx) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,POI_STORAGE_SEGMENT,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
             }
          }
       }

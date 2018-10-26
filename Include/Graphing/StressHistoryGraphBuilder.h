@@ -49,6 +49,8 @@ public:
    virtual CEAFGraphControlWindow* GetGraphControlWindow();
 
 protected:
+   void Init();
+
    CStressHistoryGraphController* m_pGraphController;
 
    afx_msg void OnShowGrid();
@@ -61,7 +63,8 @@ protected:
 
    CComPtr<IBroker> m_pBroker;
 
-   unitmgtScalar m_Scalar;
+   unitmgtScalar m_Time;
+   unitmgtScalar m_Interval;
    arvPhysicalConverter* m_pTimeFormat;
    arvPhysicalConverter* m_pIntervalFormat;
    arvPhysicalConverter* m_pYFormat;
@@ -79,6 +82,6 @@ protected:
    void UpdateGraphTitle(const pgsPointOfInterest& poi);
    void UpdateGraphData(const pgsPointOfInterest& poi);
    Float64 GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IIntervals* pIntervals);
-   void PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,ICombinedForces* pCombinedForces,ILimitStateForces* pLimitStateForces);
+   void PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,ICombinedForces* pCombinedForces,ILimitStateForces* pLimitStateForces);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
 };

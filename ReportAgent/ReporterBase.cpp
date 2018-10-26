@@ -36,6 +36,7 @@
 
 #include <Reporting\BridgeDescChapterBuilder.h>
 #include <Reporting\BridgeDescDetailsChapterBuilder.h>
+#include <Reporting\IntervalChapterBuilder.h>
 #include <Reporting\SectPropChapterBuilder.h>
 #include <Reporting\SpanDataChapterBuilder.h>
 #include <Reporting\MVRChapterBuilder.h>
@@ -165,6 +166,7 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );

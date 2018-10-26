@@ -1,15 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    W62BT    *     36  0.6  270  30.18  16.01  12.25  12.25                                              10  58.0  3.0  7.100  7.900   4.315    -5.324     8175   0.545  0.671   5.222 -1.849 -0.166 -0.237 -2.251 167.12  257.29    1.75    5.00    5.00 
-
-
-The Specification Check was Not Successful
-Splitting zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     2    W62BT    *     36  0.6  270  30.18  16.01  12.25  12.25                                              10  58.0  3.0  7.100  7.900   4.294    -5.297     8207   0.543  0.671   5.364 -1.823 -0.166 -0.237 -2.226 168.28  252.83    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     1    W62BT    *     36  0.6  270  30.18  16.01  12.50  12.50                                              10  58.0  3.0  7.100  7.900   4.340    -5.353     8208   0.545  0.671   5.415 -1.880 -0.166 -0.237 -2.283 168.28  250.20    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
@@ -17,7 +8,16 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     3    W62BT    *     36  0.6  270  30.18  16.01  12.25  12.25                                              10  58.0  3.0  7.100  7.900   4.294    -5.297     8207   0.543  0.671   5.364 -1.823 -0.166 -0.237 -2.226 168.28  252.83    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     2    W62BT    *     35  0.6  270  30.17  16.94  12.00  12.00                                               9  58.0  3.0  7.000  7.900   4.273    -5.272     8042   0.543  0.671   5.278 -1.795 -0.166 -0.237 -2.198 159.42  241.99    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     1     3    W62BT    *     36  0.6  270  30.18  16.01  12.25  12.25                                              10  58.0  3.0  7.100  7.900   4.294    -5.297     8207   0.543  0.671   5.385 -1.823 -0.166 -0.237 -2.226 168.28  252.83    1.75    5.00    5.00 
 
 
 The Specification Check was Successful

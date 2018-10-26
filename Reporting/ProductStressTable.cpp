@@ -128,21 +128,19 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   EventIndexType continuityEventIdx = MAX_INDEX;
+   IntervalIndexType continuityIntervalIdx = MAX_INDEX;
    PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(startGroup);
    PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(endGroup);
    for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
-         EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-         pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-         continuityEventIdx = Min(continuityEventIdx,leftContinuityEventIdx);
-         continuityEventIdx = Min(continuityEventIdx,rightContinuityEventIdx);
+         IntervalIndexType leftContinuityIntervalIdx, rightContinuityIntervalIdx;
+         pIntervals->GetContinuityInterval(pierIdx,&leftContinuityIntervalIdx,&rightContinuityIntervalIdx);
+         continuityIntervalIdx = Min(continuityIntervalIdx,leftContinuityIntervalIdx);
+         continuityIntervalIdx = Min(continuityIntervalIdx,rightContinuityIntervalIdx);
       }
    }
-
-   IntervalIndexType continuityIntervalIdx    = pIntervals->GetInterval(continuityEventIdx);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);

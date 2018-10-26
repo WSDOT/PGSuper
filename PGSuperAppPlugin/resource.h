@@ -57,7 +57,6 @@
 #define IDD_COPY_GIRDER_PROPERTIES      179
 #define IDD_GIRDER_ELEVATION_BAR        180
 #define IDD_SECTION_CUT_DIALOG          182
-#define IDD_ANALYSIS_RESULTS_BAR        183
 #define IDD_SECTION_CUT_DIALOG_EX       188
 #define IDI_WSDOT                       190
 #define IDI_BSS                         191

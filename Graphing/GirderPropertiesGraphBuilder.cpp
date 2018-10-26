@@ -35,6 +35,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\DocumentType.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -121,17 +122,16 @@ bool CGirderPropertiesGraphBuilder::UpdateNow()
    CGirderGraphBuilderBase::UpdateNow();
 
    // Update graph properties
-   GroupIndexType    grpIdx      = m_pGraphController->GetGirderGroup();
-   GirderIndexType   gdrIdx      = m_pGraphController->GetGirder();
+   CGirderKey girderKey = m_pGraphController->GetGirderKey();
    IntervalIndexType intervalIdx = ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
    PropertyType propertyType = ((CGirderPropertiesGraphController*)m_pGraphController)->GetPropertyType();
    pgsTypes::SectionPropertyType sectionPropertyType = ((CGirderPropertiesGraphController*)m_pGraphController)->GetSectionPropertyType();
 
    UpdateYAxisUnits(propertyType);
 
-   UpdateGraphTitle(grpIdx,gdrIdx,intervalIdx,propertyType);
+   UpdateGraphTitle(girderKey,intervalIdx,propertyType);
 
-   UpdateGraphData(grpIdx,gdrIdx,intervalIdx,propertyType,sectionPropertyType);
+   UpdateGraphData(girderKey,intervalIdx,propertyType,sectionPropertyType);
 
    return true;
 }
@@ -261,34 +261,46 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
    }
 }
 
-void CGirderPropertiesGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertyType)
+void CGirderPropertiesGraphBuilder::UpdateGraphTitle(const CGirderKey& girderKey,IntervalIndexType intervalIdx,PropertyType propertyType)
 {
    GET_IFACE(IIntervals,pIntervals);
    CString strInterval( pIntervals->GetDescription(intervalIdx) );
 
    CString strGraphTitle;
-   if ( grpIdx == ALL_GROUPS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      strGraphTitle.Format(_T("Girder %s - %s - Interval %d: %s"),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
+      strGraphTitle.Format(_T("Girder Line %s - %s - Interval %d: %s"),LABEL_GIRDER(girderKey.girderIndex),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
    }
    else
    {
-      strGraphTitle.Format(_T("Group %d Girder %s - %s - Interval %d: %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
+      GET_IFACE(IDocumentType,pDocType);
+      CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
+      strGraphTitle.Format(_T("%s %d Girder %s - %s - Interval %d: %s"),strGroupLabel,LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
    }
    
    m_Graph.SetTitle(strGraphTitle);
 }
 
-void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertyType,pgsTypes::SectionPropertyType sectPropType)
+void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,IntervalIndexType intervalIdx,PropertyType propertyType,pgsTypes::SectionPropertyType sectPropType)
 {
    // clear graph
    m_Graph.ClearData();
 
    // Get the points of interest we need.
-   GET_IFACE(IPointOfInterest,pIPoi);
-   CGirderKey girderKey(grpIdx,gdrIdx);
-   CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi;
+   GET_IFACE(IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx = (girderKey.groupIndex== ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
+      std::vector<pgsPointOfInterest> vSegmentPoi(pPoi->GetPointsOfInterest(segmentKey));
+      vPoi.insert(vPoi.end(),vSegmentPoi.begin(),vSegmentPoi.end());
+   }
 
    // Map POI coordinates to X-values for the graph
    std::vector<Float64> xVals;

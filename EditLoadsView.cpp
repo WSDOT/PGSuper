@@ -147,7 +147,7 @@ void CEditLoadsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       if ( lHint == HINT_GIRDERCHANGED )
       {
          CGirderHint* pGirderHint = (CGirderHint*)pHint;
-         if ( pGirderHint->lHint == GCH_LOADING_ADDED || pGirderHint->lHint == GCH_LOADING_REMOVED )
+         if ( pGirderHint->lHint == GCH_LOADING_ADDED || pGirderHint->lHint == GCH_LOADING_REMOVED || pGirderHint->lHint == GCH_LOADING_CHANGED )
          {
             InsertData();
             Sort(m_SortColIdx,false);

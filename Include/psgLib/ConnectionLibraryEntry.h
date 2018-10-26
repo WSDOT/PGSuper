@@ -97,7 +97,7 @@ public:
    enum EndDistanceMeasurementType
    {
       FromBearingAlongGirder = 0,
-      FromBearingNormalToPier = 1,
+      FromBearingNormalToPier = 1, // this is really From and Normal to CL Bearing (don't want to change it because too many things depend on this name)
       FromPierAlongGirder = 2,
       FromPierNormalToPier = 3
    };

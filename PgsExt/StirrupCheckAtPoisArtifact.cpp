@@ -1155,7 +1155,24 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsStirrupDetailArtifact::pgsStirrupDetailArtifact()
+pgsStirrupDetailArtifact::pgsStirrupDetailArtifact():
+m_After1999(true),
+m_Fy(0),
+m_Fc(0),
+m_AvsMin(0),
+m_Avs(0),
+m_SMax(0),
+m_SMin(0),
+m_BarSize(matRebar::bsNone),
+m_S(0),
+m_Bv(0),
+m_Dv(0),
+m_Vu(0),
+m_VuLimit(0),
+m_vu(0),
+m_vuLimit(0),
+m_IsApplicable(false),
+m_IsInCritialSectionZone(false)
 {
 }
 
@@ -1228,6 +1245,7 @@ void pgsStirrupDetailArtifact::Dump(dbgDumpContext& os) const
 //======================== OPERATIONS =======================================
 void pgsStirrupDetailArtifact::MakeCopy(const pgsStirrupDetailArtifact& rOther)
 {
+   m_After1999 = rOther.m_After1999;
    m_Fy = rOther.m_Fy;
    m_Fc = rOther.m_Fc;
    m_AvsMin = rOther.m_AvsMin;
@@ -1240,6 +1258,8 @@ void pgsStirrupDetailArtifact::MakeCopy(const pgsStirrupDetailArtifact& rOther)
    m_Dv = rOther.m_Dv;
    m_Vu = rOther.m_Vu;
    m_VuLimit = rOther.m_VuLimit;
+   m_vu = rOther.m_vu;
+   m_vuLimit = rOther.m_vuLimit;
    m_IsApplicable = rOther.m_IsApplicable;
    m_IsInCritialSectionZone = rOther.m_IsInCritialSectionZone;
 }

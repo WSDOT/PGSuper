@@ -1,4 +1,4 @@
-Slab Offset ("A" Dimension) {#tg_slab_offset}
+Slab Offset ("A" Dimension, AKA "X" Dimension) {#tg_slab_offset}
 ======================================
 The slab offset is the vertical distance from the top of slab to the top of girder measured at the intersection of the girder and bearing centerlines. The slab offset defines the depth of the haunch at those locations as shown in figure below for an I-Beam. 
 
@@ -114,7 +114,7 @@ The required slab offset is the sum of the effects described above.
 
 ![](SlabOffsetEqn.png)
 
-The slab offset is rounded to the tolerance specified in the Project Criteria.
+The required slab offset is **rounded up to the nearest 1/4 inch (or 5 mm)** before reporting and comparison with the user-input slab offset.
 
 The minimum value of the slab offset is
 
@@ -139,3 +139,9 @@ These computations are also limited to a single span. A different slab haunches 
 Stirrup Length and Precast Deck Panel Leveling Bolt Considerations
 --------------------------------------------------------------------
 For bridges on sharp crown vertical curves, the slab haunch depth at the centerline of span can become excessive to the point where projecting girder stirrups are too short to properly engage the deck reinforcement to form a composite section. Similarly the length of leveling bolts in precast deck panels may need adjustment. A warning will be added to the slab haunch specification check when the required build-up at mid-span exceeds the slab offset by 2".
+
+TxDOT Conventions
+------------
+Many agencies have their own nomenclature for slab offset dimensions and TxDOT is no exception. The figure below illustrates TxDOT's "X", "Y" and "Z" dimensions. These are reported in the TxDOT Summary and Girder Schedule reports. **Note that reported values for  "X", "Y" and "Z" are rounded up to the nearest 1/8".**
+
+![](TxDOT_SlabOffset.png)

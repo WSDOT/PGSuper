@@ -3076,8 +3076,6 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE(IBridge,pBridge);
-
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());

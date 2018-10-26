@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,55
- PRODUCTVERSION 3,0,0,55
+ FILEVERSION 3,0,0,56
+ PRODUCTVERSION 3,0,0,56
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Graphing"
-            VALUE "FileVersion", "3.0.0.55"
+            VALUE "FileVersion", "3.0.0.56"
             VALUE "InternalName", "Graphing"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperGraphing.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.55"
+            VALUE "ProductVersion", "3.0.0.56"
         END
     END
     BLOCK "VarFileInfo"
@@ -130,7 +130,7 @@ BEGIN
     CONTROL         "Bottom Deck",IDC_BOTTOM_DECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,73,341,56,10
     CONTROL         "Include Elevation Adjustments",IDC_ELEV_ADJUSTMENT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,364,113,10
-    GROUPBOX        "Analysis Type",IDC_ANALYSISTYPE,6,391,142,48,WS_GROUP
+    GROUPBOX        "Structural Analysis Method",IDC_ANALYSISTYPE,6,391,142,48,WS_GROUP
     CONTROL         "Simple Span",IDC_SIMPLE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,401,97,10
     CONTROL         "Simple Spans made Continuous",IDC_SIMPLE2,"Button",BS_AUTORADIOBUTTON,13,412,119,10
     CONTROL         "Simple/Continuous Envelope",IDC_SIMPLE3,"Button",BS_AUTORADIOBUTTON,13,423,107,10

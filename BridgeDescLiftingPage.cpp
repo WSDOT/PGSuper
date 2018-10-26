@@ -130,9 +130,6 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 
    Float64 clearspan = segmentLength - pSegment->HandlingData.LeadingSupportPoint - pSegment->HandlingData.TrailingSupportPoint;
    DDV_UnitValueZeroOrMore( pDX, IDC_LEADINGOVERHANG, clearspan, pDisplayUnits->GetSpanLengthUnit() );
-#pragma Reminder("STATUS ITEM: If leading overhang exceeds max, post status item")
-//    // this should be done in an agent
-//   // let the user exceed the maximum so as not to limit the program
 
    DDX_CBStringExactCase(pDX,IDC_HAUL_TRUCKS,pSegment->HandlingData.HaulTruckName);
 }
@@ -164,6 +161,8 @@ BOOL CGirderDescLiftingPage::OnInitDialog()
    CWnd* pWnd = GetParent();
    if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderDescDlg)) )
    {
+      // always assume support is at end of girder for regular prestressed girders
+      // disable input so it can't be changed
       GetDlgItem(IDC_RELEASE_LOCATION)->EnableWindow(FALSE);
    }
    else if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderSegmentDlg)) )
@@ -192,17 +191,12 @@ BOOL CGirderDescLiftingPage::OnSetActive()
       int cntrls[] = {IDC_STATIC_LLE,IDC_LIFTING_LOOP_LOCATION,
                       IDC_LIFTING_LOOP_LOCATION_UNITS};
 
-      int ic=0;
-      while(true)
+      int nCtrls = sizeof(cntrls)/sizeof(int);
+      for ( int ic = 0; ic < nCtrls; ic++ )
       {
          CWnd* pwnd = GetDlgItem(cntrls[ic]);
          ASSERT(pwnd);
          pwnd->EnableWindow(FALSE);
-
-         if (cntrls[ic++] == IDC_LIFTING_LOOP_LOCATION_UNITS)
-         {
-            break;
-         }
       }
    }
    
@@ -210,20 +204,15 @@ BOOL CGirderDescLiftingPage::OnSetActive()
    {
       int cntrls[] = {IDC_HAULINGOVERHANGS,IDC_STATIC_TLSO,IDC_TRAILINGOVERHANG,IDC_TRAILINGOVERHANG_UNITS,
                       IDC_STATIC_SLLO,IDC_LEADINGOVERHANG,IDC_LEADINGOVERHANG_UNITS,IDC_STATICSLGL,
-                      IDC_GIRDERLENGTH,IDC_GIRDERLENGTH_UNIT
+                      IDC_GIRDERLENGTH,IDC_GIRDERLENGTH_UNIT,IDC_HAUL_TRUCKS
                       };
 
-      int ic=0;
-      while(true)
+      int nCtrls = sizeof(cntrls)/sizeof(int);
+      for ( int ic = 0; ic < nCtrls; ic++ )
       {
          CWnd* pwnd = GetDlgItem(cntrls[ic]);
          ASSERT(pwnd);
          pwnd->EnableWindow(FALSE);
-
-         if (cntrls[ic++] == IDC_GIRDERLENGTH_UNIT)
-         {
-            break;
-         }
       }
    }
 

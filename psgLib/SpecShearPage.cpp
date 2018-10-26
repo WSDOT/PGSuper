@@ -80,6 +80,11 @@ void CSpecShearPage::OnHelp()
 BOOL CSpecShearPage::OnInitDialog() 
 {
    FillShearMethodList();
+
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SHEAR_FLOW_METHOD);
+   pCB->AddString(_T("using the LRFD simplified method: vui = Vu/(Wtf dv)"));
+   pCB->AddString(_T("using the classical shear flow method: vui = (Vu Q)/(I Wtf)"));
+
 	CPropertyPage::OnInitDialog();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

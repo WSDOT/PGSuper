@@ -113,6 +113,15 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
 
             p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << p;
+            GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+            if ( pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross )
+            {
+               *p << _T("Eccentricities are based on the gross non-composite girder section") << rptNewLine;
+            }
+            else
+            {
+               *p << _T("Eccentricities are based on the net non-composite girder section") << rptNewLine;
+            }
             *p << _T("Eccentricities measured from neutral axis of non-composite section based on material properties at time of prestress release") << rptNewLine;
             *p << _T("Positive values indicate strands are below the neutral axis") << rptNewLine;
             *p << rptNewLine;

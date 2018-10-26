@@ -43,8 +43,7 @@ class ATL_NO_VTABLE CPGSuperGrapherImp :
 	public CComCoClass<CPGSuperGrapherImp, &CLSID_PGSuperGraphingAgent>,
 	public IConnectionPointContainerImpl<CPGSuperGrapherImp>,
    public CGrapherBase,
-   public IAgentEx,
-   public ISpecificationEventSink
+   public IAgentEx
 {
 public:
 	CPGSuperGrapherImp()
@@ -57,7 +56,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPER_GRAPHER)
 BEGIN_COM_MAP(CPGSuperGrapherImp)
 	COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
-   COM_INTERFACE_ENTRY(ISpecificationEventSink)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -75,14 +73,8 @@ public:
    STDMETHOD(Init2)();
    STDMETHOD(GetClassID)(CLSID* pCLSID);
 
-// ISpecificationEventSink
-public:
-   virtual HRESULT OnSpecificationChanged();
-   virtual HRESULT OnAnalysisTypeChanged();
-
 private:
    DECLARE_EAF_AGENT_DATA;
 
    HRESULT InitGraphBuilders();
-   DWORD m_dwSpecCookie;
 };

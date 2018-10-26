@@ -214,6 +214,10 @@ public:
    bool GetDoPrimaryBarsProvideSplittingCapacity() const;
    bool GetBarsActAsConfinement() const;
    GirderLibraryEntry::LongShearCapacityIncreaseMethod GetLongShearCapacityIncreaseMethod() const;
+   // We can run into a case where LRS fails and cannot easily be remedied by adding long steel. Another
+   // way to deal with this is to tighten stirrup spacing at the ends of the girder
+   void SetLongShearCapacityRequiresStirrupTightening(bool req);
+   bool GetLongShearCapacityRequiresStirrupTightening() const;
 private:
    // GROUP: INQUIRY
    void DumpDesignParameters();
@@ -308,6 +312,7 @@ private:
    bool m_DoBarsActAsConfinement;
    GirderLibraryEntry::LongShearCapacityIncreaseMethod m_LongShearCapacityIncreaseMethod;
    bool m_bIsLongShearCapacityIncreaseMethodProblem; // can have issue in spec library where rebar is solution, but can't be used
+   bool m_bLongShearCapacityRequiresStirrupTightening; // LRS design calls for tightening stirrup spacing
 
    // Transient values for each design iteration
    // -------------------------------------------

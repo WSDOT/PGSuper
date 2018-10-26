@@ -336,7 +336,10 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
       GET_IFACE(IBridge,pBridge);
       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-      CGirderKey thisGirderKey(girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : girderKey.groupIndex,girderKey.girderIndex);
+      GroupIndexType grpIdx = girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : girderKey.groupIndex;
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       CSegmentKey thisSegmentKey(thisGirderKey,nSegments-1);
       Float64 Ls = pBridge->GetSegmentLength(thisSegmentKey);

@@ -647,7 +647,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\BaseCommandLineInfo.cpp"
+				RelativePath=".\BaseCommandLineInfo.cpp"
 				>
 			</File>
 			<File
@@ -1928,6 +1928,10 @@
 			</File>
 			<File
 				RelativePath=".\InsertDeleteLoad.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IntervalTool.cpp"
 				>
 			</File>
 			<File
@@ -3505,6 +3509,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\InsertDeleteLoad.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\IntervalTool.h"
 				>
 			</File>
 			<File

@@ -125,6 +125,9 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,strTitle);
 
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
 
    // Set up table headings
    ColumnIndexType col = 0;
@@ -169,10 +172,12 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
    std::vector<pgsPointOfInterest> vPoi;
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,girderKey.girderIndex));
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
          std::vector<pgsPointOfInterest> segPoi1(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND));
          std::vector<pgsPointOfInterest> segPoi2(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND));
          ATLASSERT(segPoi1.size() == 1);
@@ -182,16 +187,16 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       }
    }
 
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IReactions,pReactions);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( PierIndexType pier = startPierIdx; pier <= endPierIdx; pier++ )
    {
       CGirderKey thisGirderKey(girderKey);
+      const CPierData2* pPier = pIBridgeDesc->GetPier(pier);
       if ( girderKey.groupIndex == ALL_GROUPS )
       {
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-         const CPierData2* pPier = pIBridgeDesc->GetPier(pier);
          if ( pier < endPierIdx )
          {
             thisGirderKey.groupIndex = pPier->GetNextGirderGroup()->GetIndex();
@@ -207,7 +212,14 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       col = 0;
       pgsPointOfInterest& poi = vPoi[pier-startPierIdx];
 
-      (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+      if ( pPier->IsAbutment() )
+      {
+         (*p_table)(row,col++) << _T("Abut ") << LABEL_PIER(pier);
+      }
+      else
+      {
+         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+      }
 
       if ( analysisType == pgsTypes::Envelope )
       {

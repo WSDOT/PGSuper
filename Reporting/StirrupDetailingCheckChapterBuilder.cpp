@@ -367,16 +367,16 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    pSpecEntry->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
 
    if ( bAfter1999 )
-      (*petable)(1,0) << Sub2(_T("v"),_T("u"))<<_T(" < 0.125") << RPT_FC;
+      (*petable)(1,0) <<  RPT_vu <<_T(" < 0.125") << RPT_FC;
    else
-      (*petable)(1,0) << Sub2(_T("V"),_T("u"))<<_T(" < 0.1") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"));
+      (*petable)(1,0) << RPT_Vu <<_T(" < 0.1") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"));
 
    (*petable)(1,1) << Sub2(_T("S"),_T("max"))<<_T("= min(") << k1 << Sub2(_T("d"),_T("v"))<<_T(", ")<<dim.SetValue(s1)<<dim.GetUnitTag()<<_T(")");
    
    if ( bAfter1999 )
-      (*petable)(2,0) << Sub2(_T("v"),_T("u"))<< _T(" ") << symbol(GTE) << _T(" 0.125") << RPT_FC;
+      (*petable)(2,0) << RPT_vu << _T(" ") << symbol(GTE) << _T(" 0.125") << RPT_FC;
    else
-      (*petable)(2,0) << Sub2(_T("V"),_T("u"))<< _T(" ") << symbol(GTE) <<_T(" 0.1") << RPT_FC <<Sub2(_T("b"),_T("v"))<<Sub2(_T("d"),_T("v"));
+      (*petable)(2,0) << RPT_vu << _T(" ") << symbol(GTE) <<_T(" 0.1") << RPT_FC <<Sub2(_T("b"),_T("v"))<<Sub2(_T("d"),_T("v"));
 
    (*petable)(2,1) << Sub2(_T("S"),_T("max"))<<_T("= min(") << k2 << Sub2(_T("d"),_T("v"))<<_T(", ")<<dim.SetValue(s2)<<dim.GetUnitTag()<<_T(")");
 
@@ -386,7 +386,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    if ( bAfter1999 )
    {
-      (*table)(0,1)  << COLHDR(Sub2(_T("v"),_T("u")),   rptStressUnitTag,  pDisplayUnits->GetStressUnit() );
+      (*table)(0,1)  << COLHDR(RPT_vu, rptStressUnitTag,  pDisplayUnits->GetStressUnit() );
       (*table)(0,2)  << COLHDR(_T("0.125") << RPT_FC,  rptStressUnitTag,  pDisplayUnits->GetStressUnit() );
    }
    else
@@ -438,9 +438,8 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
          (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          if ( bAfter1999 )
          {
-            Float64 bvdv = pArtifact->GetBv()*pArtifact->GetDv();
-            (*table)(row,1) << stress.SetValue(pArtifact->GetVu()/bvdv);
-            (*table)(row,2) << stress.SetValue(pArtifact->GetVuLimit()/bvdv);
+            (*table)(row,1) << stress.SetValue(pArtifact->Getvu());
+            (*table)(row,2) << stress.SetValue(pArtifact->GetvuLimit());
          }
          else
          {

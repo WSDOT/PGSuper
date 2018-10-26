@@ -269,7 +269,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             pgsTypes::MemberEndType endType = pgsTypes::MemberEndType(i);
             GroupIndexType nGroups = m_GirderSpacing[endType].GetSpacingGroupCount();
-            if ( m_nGirders <= m_GirderSpacing[endType].m_SpacingGroups[nGroups-1].second )
+            if ( 0 < nGroups && m_nGirders <= m_GirderSpacing[endType].m_SpacingGroups[nGroups-1].second )
             {
                // there is bad data
 

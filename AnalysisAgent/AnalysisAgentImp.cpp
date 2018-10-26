@@ -876,8 +876,10 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
    pProductLoads->GetDesignMainSpanSlabLoadAdjustment(segmentKey, config.SlabOffset[pgsTypes::metStart], config.SlabOffset[pgsTypes::metEnd], config.Fillet, &slabLoads);
 
    // model autogenerates loadings for delta (design) slab and haunch
+   bool bModelLeftCantilever,bModelRightCantilever;
+   pBridge->ModelCantilevers(segmentKey,&bModelLeftCantilever,&bModelRightCantilever);
    pgsDesignHaunchLoadGirderModelFactory factory(slabLoads, g_lcidDesignSlab, g_lcidDesignSlabPad);
-   factory.CreateGirderModel(m_pBroker,castDeckIntervalIdx,segmentKey,left_support_loc,right_support_loc,E,g_lcidGirder,true,true,vPOI,&pModelData->Model,&pModelData->PoiMap);
+   factory.CreateGirderModel(m_pBroker,castDeckIntervalIdx,segmentKey,left_support_loc,right_support_loc,E,g_lcidGirder,bModelLeftCantilever,bModelRightCantilever,vPOI,&pModelData->Model,&pModelData->PoiMap);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1161,7 +1163,7 @@ LPCTSTR CAnalysisAgentImp::GetProductLoadName(pgsTypes::ProductForceType pfType)
       _T("Girder"),
       _T("Construction"),
       _T("Slab"),
-      _T("Slab Pad"),
+      _T("Haunch"),
       _T("Slab Panel"),
       _T("Diaphragm"),
       _T("Overlay"),
@@ -1201,7 +1203,7 @@ LPCTSTR CAnalysisAgentImp::GetProductLoadName(pgsTypes::ProductForceType pfType)
       break;
 
    case pgsTypes::pftSlabPad:
-      strName = _T("Slab Pad");
+      strName = _T("Haunch");
       break;
 
    case pgsTypes::pftSlabPanel:
@@ -4289,6 +4291,72 @@ void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::Li
          std::transform(pMax->begin(),pMax->end(),vDreMax.begin(),pMax->begin(),std::plus<Float64>());
       }
    }
+   else
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
+      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+      IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+
+      GET_IFACE(IBridge,pBridge);
+      pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
+      pgsTypes::PrestressDeflectionDatum supportDatum;
+      std::vector<ICamber::CreepPeriod> vCreepPeriods;
+      if ( intervalIdx < storageIntervalIdx )
+      {
+         // creep has not yet occured
+      }
+      else if ( storageIntervalIdx < intervalIdx && intervalIdx < erectionIntervalIdx )
+      {
+         vCreepPeriods.push_back(ICamber::cpReleaseToDiaphragm);
+         supportDatum = (intervalIdx == haulingIntervalIdx ? pgsTypes::pddHauling : pgsTypes::pddStorage);
+      }
+      else if ( erectionIntervalIdx <= intervalIdx && intervalIdx < castDeckIntervalIdx-1 )
+      {
+         if ( deckType == pgsTypes::sdtNone )
+         {
+            vCreepPeriods.push_back(ICamber::cpReleaseToFinal);
+         }
+         else
+         {
+            vCreepPeriods.push_back(ICamber::cpReleaseToDiaphragm);
+         }
+         supportDatum = pgsTypes::pddErected;
+      }
+      else if ( castDeckIntervalIdx-1 <= intervalIdx )
+      {
+         if ( deckType == pgsTypes::sdtNone )
+         {
+            vCreepPeriods.push_back(ICamber::cpReleaseToFinal);
+            vCreepPeriods.push_back(ICamber::cpDiaphragmToFinal);
+            vCreepPeriods.push_back(ICamber::cpDeckToFinal);
+         }
+         else
+         {
+            vCreepPeriods.push_back(ICamber::cpReleaseToDiaphragm);
+            vCreepPeriods.push_back(ICamber::cpDiaphragmToDeck);
+         }
+         supportDatum = pgsTypes::pddErected;
+      }
+
+      int i = 0;
+      BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
+      {
+         std::vector<ICamber::CreepPeriod>::iterator iter(vCreepPeriods.begin());
+         std::vector<ICamber::CreepPeriod>::iterator end(vCreepPeriods.end());
+         for ( ; iter != end; iter++ )
+         {
+            ICamber::CreepPeriod creepPeriod = *iter;
+            Float64 Dcr = GetCreepDeflection(poi,creepPeriod,CREEP_MAXTIME,supportDatum);
+            (*pMin)[i] += Dcr;
+            (*pMax)[i] += Dcr;
+         }
+         i++;
+      }
+   }
 
    if ( bIncludeElevationAdjustment )
    {
@@ -6351,21 +6419,21 @@ void CAnalysisAgentImp::GetConstructionLoadDeflection(const pgsPointOfInterest& 
 void CAnalysisAgentImp::GetDiaphragmDeflection(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
 {
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
    pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   *pDy = GetDeflection(castDeckIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental, false);
-   *pRz = GetRotation(  castDeckIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental, false);
+   *pDy = GetDeflection(intervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental, false);
+   *pRz = GetRotation(  intervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental, false);
 }
 
 void CAnalysisAgentImp::GetDiaphragmDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64* pDy,Float64* pRz)
 {
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
    GetDiaphragmDeflection(poi,pDy,pRz);
-   Float64 k = GetDeflectionAdjustmentFactor(poi,config,castDeckIntervalIdx);
+   Float64 k = GetDeflectionAdjustmentFactor(poi,config,intervalIdx);
    (*pDy) *= k;
    (*pRz) *= k;
 }
@@ -8308,8 +8376,8 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 
    IntervalIndexType continuity_interval[2];
 
-   EventIndexType leftContinuityEventIndex, rightContinuityEventIndex;
-   pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIndex,&rightContinuityEventIndex);
+   IntervalIndexType leftContinuityIntervalIndex, rightContinuityIntervalIndex;
+   pIntervals->GetContinuityInterval(pierIdx,&leftContinuityIntervalIndex,&rightContinuityIntervalIndex);
 
 
    // get poi at cl bearing at end of prev group
@@ -8320,7 +8388,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
       std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(thisSegmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND));
       ATLASSERT(vPoi.size() == 1);
       vPOI[nPOI] = vPoi.front();
-      continuity_interval[nPOI] = pIntervals->GetInterval(leftContinuityEventIndex);
+      continuity_interval[nPOI] = leftContinuityIntervalIndex;
       nPOI++;
    }
 
@@ -8331,7 +8399,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
       std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(thisSegmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND));
       ATLASSERT(vPoi.size() == 1);
       vPOI[nPOI] = vPoi.front();
-      continuity_interval[nPOI] = pIntervals->GetInterval(rightContinuityEventIndex);
+      continuity_interval[nPOI] = rightContinuityIntervalIndex;
       nPOI++;
    }
 
@@ -8885,6 +8953,7 @@ std::vector<PierIndexType> CAnalysisAgentImp::GetBearingReactionPiers(IntervalIn
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
+   GET_IFACE_NOCHECK(IIntervals,pIntervals); // not always used, but don't want to get it in a loop
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    PierIndexType nPiers = pBridge->GetPierCount();
@@ -8910,11 +8979,9 @@ std::vector<PierIndexType> CAnalysisAgentImp::GetBearingReactionPiers(IntervalIn
             // we have a boundary pier without final bearing reactions...
             // if the interval in questions is before continuity is made, then
             // we can assume there is some type of bearing
-            GET_IFACE(IIntervals,pIntervals);
-            EventIndexType leftEventIdx, rightEventIdx;
-            pBridge->GetContinuityEventIndex(pierIdx,&leftEventIdx,&rightEventIdx);
-            EventIndexType eventIdx = (pierIdx == startPierIdx ? rightEventIdx : leftEventIdx);
-            IntervalIndexType continuityIntervalIdx = pIntervals->GetInterval(eventIdx);
+            IntervalIndexType leftIntervalIdx, rightIntervalIdx;
+            pIntervals->GetContinuityInterval(pierIdx,&leftIntervalIdx,&rightIntervalIdx);
+            IntervalIndexType continuityIntervalIdx = (pierIdx == startPierIdx ? rightIntervalIdx : leftIntervalIdx);
             if ( intervalIdx < continuityIntervalIdx )
             {
                vPiers.push_back(pierIdx);
@@ -8945,8 +9012,6 @@ std::vector<PierIndexType> CAnalysisAgentImp::GetBearingReactionPiers(IntervalIn
             const CTemporarySupportData* pTS = pClosure->GetTemporarySupport();
             ATLASSERT(pTS->GetConnectionType() == pgsTypes::tsctClosureJoint);
 
-
-            GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(pTS->GetIndex());
             if ( intervalIdx < tsRemovalIntervalIdx )
             {

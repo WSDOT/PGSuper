@@ -330,7 +330,9 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
 
@@ -387,7 +389,6 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
 
          pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pParagraph;
-         GET_IFACE2(pBroker,IProductLoads,pProductLoads);
          *pParagraph << GetLimitStateString(ls) << rptNewLine;
 
          // tables of details

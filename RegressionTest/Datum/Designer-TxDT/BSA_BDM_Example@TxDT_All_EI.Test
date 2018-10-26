@@ -1,27 +1,30 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    6   6.50                     1     1    WF74G    *     42  0.6  270  32.42  17.66  12.00  12.00                                              10  70.0  4.0  5.200  6.300   4.176    -3.987    11388   0.629  0.755   4.787 -1.703 -0.152 -0.161 -2.016 181.94  329.97    3.00    6.17    6.17 
+ 38.00    6   6.50                     1     1    WF74G    *     41  0.6  270  32.44  18.73  11.75  11.75                                               9  70.0  4.0  5.200  6.300   4.155    -3.967    11202   0.629  0.755   4.688 -1.675 -0.152 -0.161 -1.988 172.83  315.40    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    6   6.50                     1     2    WF74G    *     40  0.6  270  32.46  16.96  11.75  11.75                                              10  70.0  4.0  4.900  6.000   3.997    -3.823    10891   0.573  0.756   4.465 -1.654 -0.155 -0.164 -1.972 167.83  314.62    3.00    6.17    6.17 
+ 38.00    6   6.50                     1     2    WF74G    *     39  0.6  270  32.48  18.07  11.50  11.50                                               9  70.0  4.0  4.900  6.000   3.979    -3.807    10705   0.573  0.756   4.387 -1.630 -0.155 -0.164 -1.949 158.92  299.72    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    6   6.50                     1     4    WF74G    *     40  0.6  270  32.46  16.96  11.75  11.75                                              10  70.0  4.0  4.900  6.000   3.997    -3.823    10891   0.573  0.756   4.465 -1.654 -0.155 -0.164 -1.972 167.83  314.62    3.00    6.17    6.17 
+ 38.00    6   6.50                     1     4    WF74G    *     39  0.6  270  32.48  18.07  11.50  11.50                                               9  70.0  4.0  4.900  6.000   3.979    -3.807    10705   0.573  0.756   4.387 -1.630 -0.155 -0.164 -1.949 158.92  299.72    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Confinement zone check failed.
 
 

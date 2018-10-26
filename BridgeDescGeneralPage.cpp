@@ -1079,6 +1079,8 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
 {
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
+   pgsTypes::SupportedBeamSpacing old_spacing_type = m_GirderSpacingType;
+
    CComboBox* pcbSpacingType = (CComboBox*)GetDlgItem(IDC_GIRDER_SPACING_TYPE);
    int curSel = pcbSpacingType->GetCurSel();
    m_GirderSpacingType = (pgsTypes::SupportedBeamSpacing)(pcbSpacingType->GetItemData(curSel));
@@ -1165,8 +1167,18 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             m_CacheGirderSpacingMeasureIdx = curSel;
          }
 
-         
-         pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
+         if (m_GirderSpacingType==pgsTypes::sbsGeneralAdjacent && old_spacing_type==pgsTypes::sbsGeneral)
+         {
+            // oddball case changing from general spread to general adjacent. Need to change spacing values to 
+            // something reasonable
+            m_GirderSpacing = m_MaxGirderSpacing; // get some spread since we a coming from that world
+            pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
+            pParent->m_BridgeDesc.CopyDown(false,false,true,false,false);
+         }
+         else
+         {
+            pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
+         }
 
       break;
 
@@ -1336,12 +1348,6 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
 {
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
-   if ( IsSpanSpacing(m_GirderSpacingType) )
-   {
-      GetDlgItem(IDC_ALLOWABLE_SPACING)->SetWindowText(_T(""));
-      return FALSE; // girder spacing isn't input in this dialog
-   }
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge,       pBridge);
@@ -1420,6 +1426,12 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    BOOL specify_spacing = !IsEqual(m_MinGirderSpacing,m_MaxGirderSpacing) ? TRUE : FALSE;
 
    ATLASSERT( m_MinGirderSpacing <= m_MaxGirderSpacing );
+
+   if ( IsSpanSpacing(m_GirderSpacingType) )
+   {
+      GetDlgItem(IDC_ALLOWABLE_SPACING)->SetWindowText(_T(""));
+      return FALSE; // girder spacing isn't input in this dialog
+   }
 
    // label for beam spacing
    if ( IsGirderSpacing(m_GirderSpacingType) )

@@ -581,9 +581,11 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
 
    std::_tstring strMsg;
 
-   Float64 time = pConcrete->GetTimeAtCasting() + 28.0;
-   Float64 fc28 = pConcrete->GetFc(time);
-   Float64 fci  = pConcrete->GetFc(pConcrete->GetCureTime());
+   Float64 time_at_casting = pConcrete->GetTimeAtCasting();
+   Float64 fci_time = time_at_casting + pConcrete->GetCureTime();
+   Float64 fc_time  = time_at_casting + 28.0;
+   Float64 fci  = pConcrete->GetFc(fci_time);
+   Float64 fc28 = pConcrete->GetFc(fc_time);
    if (fc28 < fcMin )
    {
       std::_tostringstream os;
@@ -672,8 +674,8 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
 
    // There are certain combinations of input, when Ec or Eci is user input and the other value
    // is computed where Ec could be less than Eci. Trap this error.
-   Float64 Ec28 = pConcrete->GetEc(time);
-   Float64 Eci  = pConcrete->GetEc(pConcrete->GetCureTime());
+   Float64 Eci  = pConcrete->GetEc(fci_time);
+   Float64 Ec28 = pConcrete->GetEc(fc_time);
    if ( Ec28 < Eci )
    {
       std::_tostringstream os;

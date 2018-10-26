@@ -78,6 +78,7 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+   analysisType = (analysisType == pgsTypes::Envelope ? pgsTypes::Continuous : analysisType);
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
@@ -103,6 +104,11 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
       nCols += 4; // min/max for fatigue live load reactions
+   }
+
+   if ( bPedLoading )
+   {
+      nCols += 4; // min/max for pedestrian live load reactions
    }
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T(""));
@@ -192,6 +198,30 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
       }
    }
 
+   if ( bPedLoading )
+   {
+      p_table->SetColumnSpan(0,col,2);
+      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
+      (*p_table)(0,col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Fx");
+      (*p_table)(1,col) << _T("Max");
+      (*p_table)(1,col+1) << _T("Min");
+      col += 2;
+
+      p_table->SetColumnSpan(0,col,2);
+      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
+      (*p_table)(0,col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Fy");
+      (*p_table)(1,col) << _T("Max");
+      (*p_table)(1,col+1) << _T("Min");
+      col += 2;
+
+      p_table->SetColumnSpan(0,col,2);
+      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
+      (*p_table)(0,col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Mz");
+      (*p_table)(1,col) << _T("Max");
+      (*p_table)(1,col+1) << _T("Min");
+      col += 2;
+   }
+
    p_table->SetColumnSpan(0,col,2);
    p_table->SetColumnSpan(0,col+1,SKIP_CELL);
    (*p_table)(0,col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fx");
@@ -278,6 +308,8 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
       vOverlayReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftOverlay,bat,rtCumulative);
    }
 
+   std::vector<REACTION> vMinPedLLReactions[3], vMaxPedLLReactions[3];
+   std::vector<VehicleIndexType> vMinPedLLVehicle[3], vMaxPedLLVehicle[3];
    std::vector<REACTION> vMinLLReactions[3], vMaxLLReactions[3];
    std::vector<VehicleIndexType> vMinLLVehicle[3], vMaxLLVehicle[3];
    std::vector<REACTION> vMinFatigueReactions[3], vMaxFatigueReactions[3];
@@ -290,6 +322,11 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
          pReactions->GetLiveLoadReaction(intervalIdx,pgsTypes::lltFatigue,vPiers,girderKey,bat,true,false,fetPrimary,&vMinFatigueReactions[fetPrimary],&vMaxFatigueReactions[fetPrimary],&vMinFatigueVehicle[fetPrimary],&vMaxFatigueVehicle[fetPrimary]);
+      }
+
+      if ( bPedLoading )
+      {
+         pReactions->GetLiveLoadReaction(intervalIdx,pgsTypes::lltPedestrian,vPiers,girderKey,bat,true,false,fetPrimary,&vMinPedLLReactions[fetPrimary],&vMaxPedLLReactions[fetPrimary],&vMinPedLLVehicle[fetPrimary],&vMaxPedLLVehicle[fetPrimary]);
       }
    }
 
@@ -395,44 +432,69 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
          col++;
       }
 
+      ColumnIndexType startCol = col;
       for ( int i = 0; i < 3; i++ )
       {
          pgsTypes::ForceEffectType fetPrimary = (pgsTypes::ForceEffectType)i;
+         
+         col = startCol + 2*i;
+         ColumnIndexType colOffset = 0;
+         if ( bPedLoading )
+         {
+            reaction = vMaxPedLLReactions[fetPrimary][pierIdx];
+            (*p_table)(row,col)   << force.SetValue(reaction.Fx);
+            (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
+            (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
+            col++;
+
+            reaction = vMinPedLLReactions[fetPrimary][pierIdx];
+            (*p_table)(row,col)   << force.SetValue(reaction.Fx);
+            (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
+            (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
+            col++;
+
+            colOffset += 4;
+         }
+
          reaction = vMaxLLReactions[fetPrimary][pierIdx];
-         (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-         (*p_table)(row,col)   << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMaxLLVehicle[fetPrimary][pierIdx] << _T(")");
-         (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-         (*p_table)(row+1,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMaxLLVehicle[fetPrimary][pierIdx] << _T(")");
-         (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-         (*p_table)(row+2,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMaxLLVehicle[fetPrimary][pierIdx] << _T(")");
+         (*p_table)(row,col+colOffset)   << force.SetValue(reaction.Fx);
+         (*p_table)(row,col+colOffset)   << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMaxLLVehicle[fetPrimary][pierIdx] << _T(")");
+         (*p_table)(row+1,col+colOffset) << force.SetValue(reaction.Fy);
+         (*p_table)(row+1,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMaxLLVehicle[fetPrimary][pierIdx] << _T(")");
+         (*p_table)(row+2,col+colOffset) << moment.SetValue(reaction.Mz);
+         (*p_table)(row+2,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMaxLLVehicle[fetPrimary][pierIdx] << _T(")");
          col++;
 
          reaction = vMinLLReactions[fetPrimary][pierIdx];
-         (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-         (*p_table)(row,col)   << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMinLLVehicle[fetPrimary][pierIdx] << _T(")");
-         (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-         (*p_table)(row+1,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMinLLVehicle[fetPrimary][pierIdx] << _T(")");
-         (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-         (*p_table)(row+2,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMinLLVehicle[fetPrimary][pierIdx] << _T(")");
+         (*p_table)(row,col+colOffset)   << force.SetValue(reaction.Fx);
+         (*p_table)(row,col+colOffset)   << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMinLLVehicle[fetPrimary][pierIdx] << _T(")");
+         (*p_table)(row+1,col+colOffset) << force.SetValue(reaction.Fy);
+         (*p_table)(row+1,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMinLLVehicle[fetPrimary][pierIdx] << _T(")");
+         (*p_table)(row+2,col+colOffset) << moment.SetValue(reaction.Mz);
+         (*p_table)(row+2,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << vMinLLVehicle[fetPrimary][pierIdx] << _T(")");
          col++;
+
+         colOffset += 4;
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
             reaction = vMaxFatigueReactions[fetPrimary][pierIdx];
-            (*p_table)(row,col+4)   << force.SetValue(reaction.Fx);
-            (*p_table)(row,col+4)   << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMaxFatigueVehicle[fetPrimary][pierIdx] << _T(")");
-            (*p_table)(row+1,col+4) << force.SetValue(reaction.Fy);
-            (*p_table)(row+1,col+4) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMaxFatigueVehicle[fetPrimary][pierIdx] << _T(")");
-            (*p_table)(row+2,col+4) << moment.SetValue(reaction.Mz);
-            (*p_table)(row+2,col+4) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMaxFatigueVehicle[fetPrimary][pierIdx] << _T(")");
+            (*p_table)(row,col+colOffset)   << force.SetValue(reaction.Fx);
+            (*p_table)(row,col+colOffset)   << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMaxFatigueVehicle[fetPrimary][pierIdx] << _T(")");
+            (*p_table)(row+1,col+colOffset) << force.SetValue(reaction.Fy);
+            (*p_table)(row+1,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMaxFatigueVehicle[fetPrimary][pierIdx] << _T(")");
+            (*p_table)(row+2,col+colOffset) << moment.SetValue(reaction.Mz);
+            (*p_table)(row+2,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMaxFatigueVehicle[fetPrimary][pierIdx] << _T(")");
+            col++;
 
             reaction = vMinFatigueReactions[fetPrimary][pierIdx];
-            (*p_table)(row,col+5)   << force.SetValue(reaction.Fx);
-            (*p_table)(row,col+5)   << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMinFatigueVehicle[fetPrimary][pierIdx] << _T(")");
-            (*p_table)(row+1,col+5) << force.SetValue(reaction.Fy);
-            (*p_table)(row+1,col+5) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMinFatigueVehicle[fetPrimary][pierIdx] << _T(")");
-            (*p_table)(row+2,col+5) << moment.SetValue(reaction.Mz);
-            (*p_table)(row+2,col+5) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMinFatigueVehicle[fetPrimary][pierIdx] << _T(")");
+            (*p_table)(row,col+colOffset)   << force.SetValue(reaction.Fx);
+            (*p_table)(row,col+colOffset)   << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMinFatigueVehicle[fetPrimary][pierIdx] << _T(")");
+            (*p_table)(row+1,col+colOffset) << force.SetValue(reaction.Fy);
+            (*p_table)(row+1,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMinFatigueVehicle[fetPrimary][pierIdx] << _T(")");
+            (*p_table)(row+2,col+colOffset) << moment.SetValue(reaction.Mz);
+            (*p_table)(row+2,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << vMinFatigueVehicle[fetPrimary][pierIdx] << _T(")");
+            col++;
          }
       }
    }

@@ -29,6 +29,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
 #include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <PgsExt\IntervalTool.h>
 
 #include <PgsExt\ClosureJointData.h>
 
@@ -68,14 +69,9 @@ CEAFAutoCalcGraphBuilder(),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pTimeFormat(0),
 m_pIntervalFormat(0),
-m_pYFormat(0),
-m_XAxisType(X_AXIS_TIME_LOG)
+m_pYFormat(0)
 {
    Init();
-
-   SetName(_T("Concrete Properties"));
-
-   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_CONCRETE_PROPERTIES);
 }
 
 CConcretePropertyGraphBuilder::CConcretePropertyGraphBuilder(const CConcretePropertyGraphBuilder& other) :
@@ -83,19 +79,28 @@ CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pTimeFormat(0),
 m_pIntervalFormat(0),
-m_pYFormat(0),
-m_XAxisType(X_AXIS_TIME_LOG)
+m_pYFormat(0)
 {
    Init();
 }
 
 void CConcretePropertyGraphBuilder::Init()
 {
+   m_XAxisType = X_AXIS_TIME_LOG;
+
+   SetName(_T("Concrete Properties"));
+
+   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_CONCRETE_PROPERTIES);
+
    m_pGraphController = new CConcretePropertyGraphController;
 
-   m_Scalar.Width = 7;
-   m_Scalar.Precision = 0;
-   m_Scalar.Format = sysNumericFormatTool::Fixed;
+   m_Time.Width = 7;
+   m_Time.Precision = 0;
+   m_Time.Format = sysNumericFormatTool::Fixed;
+
+   m_Interval.Width = 7;
+   m_Interval.Precision = 1;
+   m_Interval.Format = sysNumericFormatTool::Fixed;
 
    m_StrainScalar.Width = 5;
    m_StrainScalar.Precision = 0;
@@ -168,8 +173,8 @@ int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    // x axis
-   m_pTimeFormat = new ScalarTool(m_Scalar);
-   m_pIntervalFormat = new ScalarTool(m_Scalar);
+   m_pTimeFormat = new ScalarTool(m_Time);
+   m_pIntervalFormat = new IntervalTool(m_Interval);
    m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
    m_pGraphController->CheckDlgButton(IDC_AGE_LOG,BST_CHECKED);
@@ -277,7 +282,7 @@ void CConcretePropertyGraphBuilder::UpdateXAxis()
    }
    else
    {
-      m_Graph.SetXAxisScale(grAxisXY::INTEGRAL);
+      m_Graph.SetXAxisScale(grAxisXY::LINEAR);
       m_Graph.SetXAxisTitle(_T("Interval"));
       m_Graph.SetXAxisNiceRange(false);
       m_Graph.SetXAxisNumberOfMinorTics(0);
@@ -389,7 +394,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
 {
    // clear graph
    m_Graph.ClearData();
-   m_Graph.SetMinimumSize(0,1,0,1);
+   m_Graph.SetMinimumSize(m_XAxisType == X_AXIS_INTERVAL ? 1 : 0,1,0,1);
 
    int penWeight = GRAPH_PEN_WEIGHT;
 
@@ -405,7 +410,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    else if ( m_GraphType == GRAPH_TYPE_SH )
    {
       strLabel = _T("e");
-      m_Graph.SetMinimumSize(0,1,0,0);
+      m_Graph.SetMinimumSize(m_XAxisType == X_AXIS_INTERVAL ? 1 : 0,1,0,0);
    }
    else if ( m_GraphType == GRAPH_TYPE_CR )
    {
@@ -415,22 +420,24 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    GET_IFACE(IMaterials,pMaterials);
    GET_IFACE(IIntervals,pIntervals);
 
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+   Float64 releaseTime = pIntervals->GetTime(releaseIntervalIdx,pgsTypes::Start);
+   GET_IFACE(ILossParameters,pLossParams);
+   bool bIsTimeStep = pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false;
+
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType startIntervalIdx = 0;
-   if ( m_XAxisType == X_AXIS_AGE_LINEAR || m_XAxisType == X_AXIS_AGE_LOG || m_XAxisType == X_AXIS_TIME_LOG )
+   if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
    {
-      if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
-      {
-         startIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-      }
-      else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
-      {
-         startIntervalIdx = pIntervals->GetCompositeClosureJointInterval(m_ClosureKey);
-      }
-      else
-      {
-         startIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      }
+      startIntervalIdx = releaseIntervalIdx;
+   }
+   else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
+   {
+      startIntervalIdx = pIntervals->GetCompositeClosureJointInterval(m_ClosureKey);
+   }
+   else
+   {
+      startIntervalIdx = pIntervals->GetCompositeDeckInterval();
    }
 
    std::vector<IntervalIndexType> vIntervals;
@@ -445,6 +452,13 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    }
 
    grGraphColor graphColor(vIntervals.size());
+
+   if ( m_XAxisType == X_AXIS_INTERVAL )
+   {
+      m_Graph.SetXAxisForcedRange((Float64)LABEL_INTERVAL(startIntervalIdx),(Float64)LABEL_INTERVAL(nIntervals),0.5);
+      IntervalTool* pIntervalTool = dynamic_cast<IntervalTool*>(m_pIntervalFormat);
+      pIntervalTool->SetLastValue((Float64)LABEL_INTERVAL(nIntervals));
+   }
 
    BOOST_FOREACH(IntervalIndexType iIdx,vIntervals)
    {
@@ -462,7 +476,9 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
 
       for ( IntervalIndexType intervalIdx = iIdx; intervalIdx < nIntervals; intervalIdx++ )
       {
+         bool bConcreteStep = false;
          Float64 xStart;
+         Float64 xStep;
          Float64 xMiddle;
          Float64 xEnd;
          if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
@@ -494,28 +510,42 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
          }
          else
          {
-            xStart  = (Float64)LABEL_INTERVAL(intervalIdx-1);
-            xStart  = (intervalIdx == INVALID_INDEX ? 0 : xStart);
-            xMiddle = (Float64)LABEL_INTERVAL(intervalIdx);
+            xStart  = (Float64)LABEL_INTERVAL(intervalIdx);
+            xMiddle = (Float64)LABEL_INTERVAL(intervalIdx) + 0.5;
             xEnd    = (Float64)LABEL_INTERVAL(intervalIdx+1);
-            xEnd    = (nIntervals <= xEnd ? nIntervals-1 : xEnd);
          }
+
+         if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT && !bIsTimeStep && (m_GraphType == GRAPH_TYPE_FC || m_GraphType == GRAPH_TYPE_EC) && xStart <= releaseTime && releaseTime + 28.0 <= xEnd )
+         {
+            xStep = releaseTime + 28.0;
+            xMiddle = xStep;
+            bConcreteStep = true;
+         }
+
 
          // this is value at middle of interval...
          Float64 startValue;
-         Float64 middleValue;
+         Float64 middleValue,stepValue;
          Float64 endValue;
          if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
          {
             if ( m_GraphType == GRAPH_TYPE_FC )
             {
                startValue  = pMaterials->GetSegmentFc(m_SegmentKey,intervalIdx,pgsTypes::Start);
+               if ( bConcreteStep )
+               {
+                  stepValue = startValue;
+               }
                middleValue = pMaterials->GetSegmentFc(m_SegmentKey,intervalIdx,pgsTypes::Middle);
                endValue    = pMaterials->GetSegmentFc(m_SegmentKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_EC )
             {
                startValue  = pMaterials->GetSegmentEc(m_SegmentKey,intervalIdx,pgsTypes::Start);
+               if ( bConcreteStep )
+               {
+                  stepValue = startValue;
+               }
                middleValue = pMaterials->GetSegmentEc(m_SegmentKey,intervalIdx,pgsTypes::Middle);
                endValue    = pMaterials->GetSegmentEc(m_SegmentKey,intervalIdx,pgsTypes::End);
             }
@@ -613,6 +643,10 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
             }
          }
          AddGraphPoint(dataSeries,xStart, startValue);
+         if ( bConcreteStep )
+         {
+            AddGraphPoint(dataSeries,xStep, stepValue);
+         }
          AddGraphPoint(dataSeries,xMiddle,middleValue);
          AddGraphPoint(dataSeries,xEnd,   endValue);
       }

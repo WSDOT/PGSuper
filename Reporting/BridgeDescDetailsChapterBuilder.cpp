@@ -32,6 +32,7 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\BeamFactory.h>
+#include <IFace\Intervals.h>
 
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PsgLib\ConcreteLibraryEntry.h>
@@ -59,44 +60,6 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
 void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
 void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
 void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
-
-std::_tstring get_bearing_measure_string(ConnectionLibraryEntry::BearingOffsetMeasurementType type)
-{
-   switch( type )
-   {
-   case ConnectionLibraryEntry::AlongGirder:
-      return _T("Measured From Pier Centerline and Along Girder Centerline");
-
-   case ConnectionLibraryEntry::NormalToPier:
-      return _T("Measured From and Normal to Pier Centerline");
-
-   default:
-      ATLASSERT(false);
-      return _T("");
-   }
-}
-
-inline std::_tstring get_end_distance_measure_string(ConnectionLibraryEntry::EndDistanceMeasurementType type)
-{
-   switch( type )
-   {
-   case ConnectionLibraryEntry::FromBearingAlongGirder:
-      return _T("Measured From Bearing along Girder Centerline");
-
-   case ConnectionLibraryEntry::FromBearingNormalToPier:
-      return _T("Measured From Bearing and Normal to Pier Centerline");
-
-   case ConnectionLibraryEntry::FromPierAlongGirder:
-      return _T("Measured From Pier Centerline and Along Girder Centerline");
-
-   case ConnectionLibraryEntry::FromPierNormalToPier:
-      return _T("Measured From and Normal to Pier Centerline");
-
-   default:
-      ATLASSERT(false);
-      return _T("");
-   }
-}
 
 
 /****************************************************************************
@@ -400,35 +363,51 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
 
    CamberMultipliers cm = pGdrEntry->GetCamberMultipliers();
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Camber Deflection Multipliers")<<rptNewLine;
+   *pPara<<_T("Deflection Multipliers")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << _T("The factors below are multiplied by the specified load case's deflections when computing excess camber") << rptNewLine;
+   *pPara << _T("The factors below are multiplied by the specified load case's deflections when computing deflections and excess camber") << rptNewLine;
 
-   rptRcTable* pTable1 = rptStyleManager::CreateDefaultTable(2);
-   *pPara << pTable1;
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2);
+   *pPara << pTable;
 
-   (*pTable1)(0,0) << _T("Load Cases");
-   (*pTable1)(0,1) << _T("Factor");
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   (*pTable)(0,0) << _T("Load Cases");
+   (*pTable)(0,1) << _T("Factor");
 
    ColumnIndexType row = 1;
-   (*pTable1)(row,0) << _T("Erection (Girder, Prestress)");
-   (*pTable1)(row++,1) << scalar.SetValue(cm.ErectionFactor);
-   (*pTable1)(row,0) << _T("Creep");
-   (*pTable1)(row++,1) << scalar.SetValue(cm.CreepFactor);
-   (*pTable1)(row,0) << _T("Diaphragm, Construction, Shear key");
-   (*pTable1)(row++,1) << scalar.SetValue(cm.DiaphragmFactor);
-   (*pTable1)(row,0) << _T("Deck Panels");
-   (*pTable1)(row++,1) << scalar.SetValue(cm.DeckPanelFactor);
-   (*pTable1)(row,0) << _T("Slab, User Bridge Site 1");
-   (*pTable1)(row++,1) << scalar.SetValue(cm.CreepFactor);
-   (*pTable1)(row,0) << _T("Haunch");
-   (*pTable1)(row++,1) << scalar.SetValue(cm.SlabPadLoadFactor);
-   (*pTable1)(row,0) << _T("Barrier, Sidewalk, Railing, Overlay, User Bridge Site 2");
-   (*pTable1)(row++,1) << scalar.SetValue(cm.BarrierSwOverlayUser2Factor);
+   (*pTable)(row,0) << _T("Erection (Girder, Prestress)");
+   (*pTable)(row++,1) << scalar.SetValue(cm.ErectionFactor);
+
+   (*pTable)(row,0) << _T("Creep");
+   (*pTable)(row++,1) << scalar.SetValue(cm.CreepFactor);
+
+   (*pTable)(row,0) << _T("Diaphragm, Construction, Shear key");
+   (*pTable)(row++,1) << scalar.SetValue(cm.DiaphragmFactor);
+
+   (*pTable)(row,0) << _T("Deck Panels");
+   (*pTable)(row++,1) << scalar.SetValue(cm.DeckPanelFactor);
+
+   CString strLabel;
+   strLabel.Format(_T("Slab, User Defined Loads at %s"),pIntervals->GetDescription(castDeckIntervalIdx));
+   (*pTable)(row,0) << strLabel;
+   (*pTable)(row++,1) << scalar.SetValue(cm.CreepFactor);
+
+   (*pTable)(row,0) << _T("Haunch");
+   (*pTable)(row++,1) << scalar.SetValue(cm.SlabPadLoadFactor);
+
+   strLabel.Format(_T("Railing System (Traffic Barrier, Sidewalks), Overlay, User Defined Loads at %s"),pIntervals->GetDescription(railingSystemIntervalIdx));
+   (*pTable)(row,0) << strLabel;
+   (*pTable)(row++,1) << scalar.SetValue(cm.BarrierSwOverlayUser2Factor);
 }
 
 void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
@@ -590,11 +569,16 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
       }
 
       if ( rule.MeasureType == GirderLibraryEntry::mtAbsoluteDistance )
+      {
          *pParagraph << _T("Diaphragm Location: ") << locdim.SetValue(rule.Location) << rptNewLine;
+      }
       else
+      {
          *pParagraph << _T("Diaphragm Location: ") << rule.Location << rptNewLine;
-   }
+      }
 
+      *pParagraph << rptNewLine;
+   }
 }
 
 void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry)

@@ -657,6 +657,8 @@ public:
 
 
    // GROUP: OPERATIONS
+   void SetAfter1999(bool val) {m_After1999=val;}
+   bool GetAfter1999() const {return m_After1999;}
    void SetFy(Float64 fy) { m_Fy = fy; }
    Float64 GetFy() const { return m_Fy; }
    void SetFc(Float64 fc) { m_Fc = fc; }
@@ -677,10 +679,18 @@ public:
    Float64 GetBv() const {return m_Bv;}
    void SetDv(Float64 dv) {m_Dv = dv;}
    Float64 GetDv() const {return m_Dv;}
-   void SetVu(Float64 vu) {m_Vu = vu;}
-   Float64 GetVu() const {return m_Vu;}
-   void SetVuLimit(Float64 vu) {m_VuLimit = vu;}
-   Float64 GetVuLimit() const {return m_VuLimit;}
+
+   // Prior to 1999 Vu is a force
+   void SetVu(Float64 Vu) {m_Vu = Vu;}
+   Float64 GetVu() const {/*ATLASSERT(!m_After1999)*/; return m_Vu;}
+   void SetVuLimit(Float64 Vu) {m_VuLimit = Vu;}
+   Float64 GetVuLimit() const {/*ATLASSERT(!m_After1999)*/; return m_VuLimit;}
+   // 1999 and later vu is stress
+   void Setvu(Float64 vu) {/*ATLASSERT(m_After1999)*/; m_vu = vu;}
+   Float64 Getvu() const {/*ATLASSERT(m_After1999)*/; return m_vu;}
+   void SetvuLimit(Float64 vu) {/*ATLASSERT(m_After1999)*/; m_vuLimit = vu;}
+   Float64 GetvuLimit() const {/*ATLASSERT(m_After1999)*/; return m_vuLimit;}
+
    void SetApplicability(bool isApp) {m_IsApplicable=isApp;}
    bool IsApplicable() const {return m_IsApplicable;};
    void SetIsInCriticalSectionZone(bool isApp) {m_IsInCritialSectionZone=isApp;}
@@ -717,6 +727,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool m_After1999; // after 1999 spec
    Float64 m_Fy;
    Float64 m_Fc;
    Float64 m_AvsMin;
@@ -727,8 +738,10 @@ private:
    Float64 m_S;
    Float64 m_Bv;
    Float64 m_Dv;
-   Float64 m_Vu;
+   Float64 m_Vu; // 1999 and earlier used shear force for comparison
    Float64 m_VuLimit;
+   Float64 m_vu; // post 1999 we use shear stress per 5.8.9.2
+   Float64 m_vuLimit;
    bool m_IsApplicable;
    bool m_IsInCritialSectionZone;
    // GROUP: LIFECYCLE

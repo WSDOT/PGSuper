@@ -26,6 +26,7 @@
 #include "DeflectionHistoryGraphController.h"
 
 #include "GraphColor.h"
+#include <PgsExt\IntervalTool.h>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -65,18 +66,9 @@ CEAFAutoCalcGraphBuilder(),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pTimeFormat(0),
 m_pIntervalFormat(0),
-m_pYFormat(0),
-m_XAxisType(X_AXIS_TIME_LOG)
+m_pYFormat(0)
 {
-   m_pGraphController = new CDeflectionHistoryGraphController;
-
-   SetName(_T("Deflection History"));
-
-   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_DEFLECTION_HISTORY);
-
-   m_Scalar.Width = 7;
-   m_Scalar.Precision = 0;
-   m_Scalar.Format = sysNumericFormatTool::Fixed;
+   Init();
 }
 
 CDeflectionHistoryGraphBuilder::CDeflectionHistoryGraphBuilder(const CDeflectionHistoryGraphBuilder& other) :
@@ -84,14 +76,28 @@ CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pTimeFormat(0),
 m_pIntervalFormat(0),
-m_pYFormat(0),
-m_XAxisType(X_AXIS_TIME_LOG)
+m_pYFormat(0)
 {
+   Init();
+}
+
+void CDeflectionHistoryGraphBuilder::Init()
+{
+   m_XAxisType = X_AXIS_TIME_LOG;
+
    m_pGraphController = new CDeflectionHistoryGraphController;
 
-   m_Scalar.Width = 7;
-   m_Scalar.Precision = 0;
-   m_Scalar.Format = sysNumericFormatTool::Fixed;
+   SetName(_T("Deflection History"));
+
+   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_DEFLECTION_HISTORY);
+
+   m_Time.Width = 7;
+   m_Time.Precision = 0;
+   m_Time.Format = sysNumericFormatTool::Fixed;
+
+   m_Interval.Width = 7;
+   m_Interval.Precision = 1;
+   m_Interval.Format = sysNumericFormatTool::Fixed;
 }
 
 CDeflectionHistoryGraphBuilder::~CDeflectionHistoryGraphBuilder()
@@ -243,6 +249,7 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
 
    // clear graph
    m_Graph.ClearData();
+   m_Graph.SetMinimumSize(m_XAxisType == X_AXIS_INTERVAL ? 1 : 0,1,0,1);
 
    COLORREF color = BLUE;
 
@@ -259,21 +266,25 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
    IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
-   Float64 x = GetX(segmentKey,startIntervalIdx,pgsTypes::Start,pIntervals);
-   PlotDeflection(x,poi,startIntervalIdx,dataSeries,bat,pLimitStateForces);
+   if ( m_XAxisType == X_AXIS_INTERVAL )
+   {
+      m_Graph.SetXAxisForcedRange((Float64)LABEL_INTERVAL(startIntervalIdx),(Float64)LABEL_INTERVAL(nIntervals),0.5);
+      IntervalTool* pIntervalTool = dynamic_cast<IntervalTool*>(m_pIntervalFormat);
+      pIntervalTool->SetLastValue((Float64)LABEL_INTERVAL(nIntervals));
 
-   IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
-   IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+      Float64 x = GetX(segmentKey,startIntervalIdx,pgsTypes::Start,pIntervals);
+      PlotDeflection(x,poi,startIntervalIdx,dataSeries,bat,pLimitStateForces);
+   }
 
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
-      if ( intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx )
+      if ( m_XAxisType == X_AXIS_INTERVAL )
       {
-         // these intervals cause the graph to have unwanted spikes.
-         continue;
+         Float64 x = GetX(segmentKey,intervalIdx,pgsTypes::Middle,pIntervals);
+         PlotDeflection(x,poi,intervalIdx,dataSeries,bat,pLimitStateForces);
       }
 
-      x = GetX(segmentKey,intervalIdx,pgsTypes::End,pIntervals);
+      Float64 x = GetX(segmentKey,intervalIdx,pgsTypes::End,pIntervals);
       PlotDeflection(x,poi,intervalIdx,dataSeries,bat,pLimitStateForces);
    }
 }
@@ -288,6 +299,14 @@ Float64 CDeflectionHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,Inter
    else
    {
       x = (Float64)LABEL_INTERVAL(intervalIdx);
+      if ( timeType == pgsTypes::Middle )
+      {
+         x += 0.5;
+      }
+      else if ( timeType == pgsTypes::End )
+      {
+         x += 1.0;
+      }
    }
 
    if ( m_XAxisType == X_AXIS_TIME_LOG && IsZero(x) )
@@ -305,9 +324,9 @@ void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfIn
    bool bIncludeLiveLoad  = false;
    bool bIncludeElevationAdjustment = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeElevationAdjustment();
 
-   Float64 y;
-   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&y,  &y);
-   AddGraphPoint(dataSeries, x, y);
+   Float64 Ymin, Ymax;
+   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&Ymin,&Ymax);
+   AddGraphPoint(dataSeries, x, Ymin);
 }
 
 void CDeflectionHistoryGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
@@ -345,8 +364,8 @@ void CDeflectionHistoryGraphBuilder::UpdateXAxis()
    delete m_pTimeFormat;
    delete m_pIntervalFormat;
 
-   m_pTimeFormat = new ScalarTool(m_Scalar);
-   m_pIntervalFormat = new ScalarTool(m_Scalar);
+   m_pTimeFormat = new ScalarTool(m_Time);
+   m_pIntervalFormat = new IntervalTool(m_Interval);
    m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
 
@@ -368,7 +387,7 @@ void CDeflectionHistoryGraphBuilder::UpdateXAxis()
    }
    else
    {
-      m_Graph.SetXAxisScale(grAxisXY::INTEGRAL);
+      m_Graph.SetXAxisScale(grAxisXY::LINEAR);
       m_Graph.SetXAxisTitle(_T("Interval"));
       m_Graph.SetXAxisNiceRange(false);
       m_Graph.SetXAxisNumberOfMinorTics(0);

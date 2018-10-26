@@ -148,7 +148,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN) );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(startSpanIdx != endSpanIdx);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 

@@ -369,7 +369,6 @@ public:
    virtual void GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right);
    virtual void IsContinuousAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight);
    virtual void IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight);
-   virtual void GetContinuityEventIndex(PierIndexType pierIdx,EventIndexType* pLeft,EventIndexType* pRight);
    virtual bool GetPierLocation(PierIndexType pierIdx,const CSegmentKey& segmentKey,Float64* pXs);
    virtual bool GetPierLocation(const CGirderKey& girderKey,PierIndexType pierIdx,Float64* pXgp);
    virtual bool GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew);
@@ -1091,7 +1090,7 @@ public:
    virtual IntervalIndexType GetCompositeClosureJointInterval(const CClosureKey& closureKey);
    virtual IntervalIndexType GetFirstCompositeClosureJointInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetLastCompositeClosureJointInterval(const CGirderKey& girderKey);
-   virtual void GetContinuityInterval(const CGirderKey& girderKey,PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead);
+   virtual void GetContinuityInterval(PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead);
    virtual IntervalIndexType GetCastDeckInterval();
    virtual IntervalIndexType GetCompositeDeckInterval();
    virtual IntervalIndexType GetLiveLoadInterval();

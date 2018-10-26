@@ -183,7 +183,8 @@ struct SHEARCAPACITYDETAILS
    bool ShearInRange; // If this is true, the applied shear was in range so
                       // shear capacity could be calculated. Otherwise all
                       // values below to Vn1 are not defined.
-   Float64 vfc;
+   Float64 vu;  // Shear stress per 5.8.9.2
+   Float64 vufc; // Shear stress / f'c
    Float64 ex;
    Float64 Fe;  // -1 if not applicable
    Float64 Beta;

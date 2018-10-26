@@ -153,9 +153,9 @@ private:
    static PoiIDType ms_NextID;
    Float64 m_Tolerance;
 
-   std::map<CGirderKey,std::vector<pgsPointOfInterest>*> m_PoiData;
-   std::vector<std::vector<pgsPointOfInterest>*> GetPoiContainer(const CGirderKey& girderKey);
-   std::vector<const std::vector<pgsPointOfInterest>*> GetPoiContainer(const CGirderKey& girderKey) const;
+   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*> m_PoiData;
+   std::vector<std::vector<pgsPointOfInterest>*> GetPoiContainer(const CSegmentKey& segmentKey);
+   std::vector<const std::vector<pgsPointOfInterest>*> GetPoiContainer(const CSegmentKey& segmentKey) const;
 
 
    void AndFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;

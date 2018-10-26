@@ -1002,10 +1002,12 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, IB
 
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      CGirderKey thisGirderKey(girderKey);
-      thisGirderKey.groupIndex = grpIdx;
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
       const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -1116,20 +1118,21 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
   
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      CGirderKey gdrKey(girderKey);
-      gdrKey.groupIndex = grpIdx;
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       Float64 running_segment_length = 0;
 
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrKey.girderIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          SegmentIDType segID = pSegment->GetID();
 
-         CSegmentKey segmentKey(gdrKey.groupIndex,gdrKey.girderIndex,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(segmentKey);
          running_segment_length += segment_layout_length;
@@ -1201,7 +1204,11 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       Float64 running_segment_length = 0;
 
@@ -1261,7 +1268,7 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
          }
       } // next closure
 
-      Float64 last_segment_layout_length = pBridge->GetSegmentLayoutLength(CSegmentKey(grpIdx,girderKey.girderIndex,nClosures));
+      Float64 last_segment_layout_length = pBridge->GetSegmentLayoutLength(CSegmentKey(thisGirderKey,nClosures));
       running_segment_length += last_segment_layout_length;
       group_offset += running_segment_length;
    } // group loop
@@ -1295,12 +1302,16 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
    for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       Float64 running_segment_length = 0; // sum of the segment lengths from segIdx = 0 to current segment
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          Float64 segment_length        = pBridge->GetSegmentLength(segmentKey);
          Float64 start_brg_offset      = pBridge->GetSegmentStartBearingOffset(segmentKey);
@@ -1545,12 +1556,16 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
    for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       Float64 running_segment_length = 0; // sum of the segment lengths from segIdx = 0 to current segment
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -1700,9 +1715,10 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
-      CGirderKey thisGirderKey(girderKey);
-      thisGirderKey.groupIndex = grpIdx;
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       const CSplicedGirderData* pThisGirder = pIBridgeDesc->GetGirder(thisGirderKey);
       GirderIDType thisGirderID = pThisGirder->GetID();
@@ -1796,11 +1812,15 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
       Float64 running_segment_length = 0;
 
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
 #pragma Reminder("UPDATE: need to include closure joint rebar")
          Float64 start_brg_offset      = pBridge->GetSegmentStartBearingOffset(segmentKey);
@@ -1974,8 +1994,10 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
                continue;
             }
 
-            CSpanKey spanKey(spanIdx,girderKey.girderIndex);
             GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
+            GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+            GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+            CSpanKey spanKey(spanIdx,gdrIdx);
 
             Float64 cantilever_length = pBridge->GetCantileverLength(spanKey.spanIndex,spanKey.girderIndex,(spanKey.spanIndex == 0 ? pgsTypes::metStart : pgsTypes::metEnd));
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
@@ -2105,7 +2127,10 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
                continue;
             }
 
-            CSpanKey spanKey(spanIdx,girderKey.girderIndex);
+            GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
+            GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+            GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+            CSpanKey spanKey(spanIdx,gdrIdx);
 
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
@@ -2260,8 +2285,10 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
                continue;
             }
 
-            CSpanKey spanKey(spanIdx,girderKey.girderIndex);
             GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
+            GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+            GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+            CSpanKey spanKey(spanIdx,gdrIdx);
 
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
@@ -2414,16 +2441,17 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
    Float64 Hg;
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      CGirderKey gdrKey(girderKey);
-      gdrKey.groupIndex = grpIdx;
-
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrKey.girderIndex);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
 
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(gdrKey,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
          Float64 segment_length  = pBridge->GetSegmentLength(segmentKey); // end to end length of segment
 
          // Use the real POI rather than ones created on the fly. It is faster to get section information
@@ -2444,16 +2472,18 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
    Float64 group_offset = 0;
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      CGirderKey gdrKey(girderKey);
-      gdrKey.groupIndex = grpIdx;
-
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrKey.girderIndex);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
 
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(gdrKey,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          Float64 segment_length = pBridge->GetSegmentLength(segmentKey);       // end to end length of segment
 
@@ -2697,7 +2727,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
       if ( 1 < nSegments )
       {
          // Overall length along the top
-         CSegmentKey segmentKey(gdrKey,0);
+         CSegmentKey segmentKey(thisGirderKey,0);
          poiStart = pPoi->GetPointOfInterest(segmentKey,0.0);
 
          segmentKey.segmentIndex = nSegments-1;
@@ -2749,7 +2779,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
       }
 
       // Update the offset for starting the dimensions lines in the next group
-      Float64 group_length = pBridge->GetGirderLayoutLength(gdrKey);
+      Float64 group_length = pBridge->GetGirderLayoutLength(thisGirderKey);
       group_offset += group_length;
    } // next group
 
@@ -2863,7 +2893,11 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       Float64 running_segment_length = 0; // sum of the segment lengths from segIdx = 0 to current segment
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -2872,7 +2906,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          SegmentIDType segID = pSegment->GetID();
 
-         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          Float64 segment_length        = pBridge->GetSegmentLength(segmentKey);
          Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(segmentKey);
@@ -2927,7 +2961,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
                   Float64 slack = zone_length - nSpacesInZone*spacing; // Amount of extra space outside of stirrups
                   if (slack < 0.0)
                   {
-                     ATLASSERT(slack>-1.0e-6); 
+                     ATLASSERT(-1.0e-6<slack); 
                      slack = 0.0;
                   }
 

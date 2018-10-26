@@ -173,9 +173,9 @@ protected:
    IntervalIndexType StoreInterval(CInterval& interval);
    void ProcessStep1(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
    void ProcessStep2(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
-   void ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
+   void ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
    void ProcessStep4(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
-   void ProcessStep5(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
+   void ProcessStep5(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
 
    // returns a list of closure joints that are casting during the timeline event
    std::vector<CClosureKey> GetClosureJoints(const CTimelineEvent* pTimelineEvent);

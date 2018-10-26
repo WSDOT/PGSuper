@@ -32,6 +32,7 @@
 #include <EAF\EAFAutoProgress.h>
 #include <UnitMgt\UnitValueNumericalFormatTools.h>
 #include <PgsExt\LoadFactors.h>
+#include <PgsExt\IntervalTool.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -73,20 +74,7 @@ m_pIntervalFormat(0),
 m_pYFormat(0),
 m_XAxisType(X_AXIS_TIME_LOG)
 {
-   for ( int i = 0; i < 4; i++ )
-   {
-      m_bPlot[i] = false;
-   }
-
-   m_pGraphController = new CStressHistoryGraphController;
-
-   SetName(_T("Stress History"));
-   
-   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_STRESS_HISTORY);
-
-   m_Scalar.Width = 7;
-   m_Scalar.Precision = 0;
-   m_Scalar.Format = sysNumericFormatTool::Fixed;
+   Init();
 }
 
 CStressHistoryGraphBuilder::CStressHistoryGraphBuilder(const CStressHistoryGraphBuilder& other) :
@@ -94,19 +82,13 @@ CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pTimeFormat(0),
 m_pIntervalFormat(0),
-m_pYFormat(0),
-m_XAxisType(X_AXIS_TIME_LOG)
+m_pYFormat(0)
 {
+   Init();
    for ( int i = 0; i < 4; i++ )
    {
       m_bPlot[i] = other.m_bPlot[i];
    }
-
-   m_pGraphController = new CStressHistoryGraphController;
-
-   m_Scalar.Width = 7;
-   m_Scalar.Precision = 0;
-   m_Scalar.Format = sysNumericFormatTool::Fixed;
 }
 
 CStressHistoryGraphBuilder::~CStressHistoryGraphBuilder()
@@ -135,6 +117,30 @@ CStressHistoryGraphBuilder::~CStressHistoryGraphBuilder()
       m_pYFormat = NULL;
    }
 
+}
+
+void CStressHistoryGraphBuilder::Init()
+{
+   m_XAxisType = X_AXIS_TIME_LOG;
+
+   for ( int i = 0; i < 4; i++ )
+   {
+      m_bPlot[i] = false;
+   }
+
+   m_pGraphController = new CStressHistoryGraphController;
+
+   SetName(_T("Stress History"));
+   
+   InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_STRESS_HISTORY);
+
+   m_Time.Width = 7;
+   m_Time.Precision = 0;
+   m_Time.Format = sysNumericFormatTool::Fixed;
+
+   m_Interval.Width = 7;
+   m_Interval.Precision = 1;
+   m_Interval.Format = sysNumericFormatTool::Fixed;
 }
 
 CEAFGraphControlWindow* CStressHistoryGraphBuilder::GetGraphControlWindow()
@@ -171,8 +177,8 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
    m_pGraphController->CheckDlgButton(IDC_TIME_LOG,BST_CHECKED);
 
    // x axis
-   m_pTimeFormat = new ScalarTool(m_Scalar);
-   m_pIntervalFormat = new ScalarTool(m_Scalar);
+   m_pTimeFormat = new ScalarTool(m_Time);
+   m_pIntervalFormat = new IntervalTool(m_Interval);
    m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
    m_XAxisType = X_AXIS_TIME_LOG;
@@ -287,18 +293,16 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
    std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
    if ( strAttributes.size() == 0 )
    {
-      strSubtitle.Format(_T("Group %d Girder %s Span %d (%s)"),
-         LABEL_GROUP(segmentKey.groupIndex),
-         LABEL_GIRDER(segmentKey.girderIndex),
+      strSubtitle.Format(_T("Span %d Girder %s, %s"),
          LABEL_SPAN(spanKey.spanIndex),
+         LABEL_GIRDER(segmentKey.girderIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
    }
    else
    {
-      strSubtitle.Format(_T("Group %d Girder %s Span %d, (%s (%s))"),
-         LABEL_GROUP(segmentKey.groupIndex),
-         LABEL_GIRDER(segmentKey.girderIndex),
+      strSubtitle.Format(_T("Span %d Girder %s, %s (%s)"),
          LABEL_SPAN(spanKey.spanIndex),
+         LABEL_GIRDER(segmentKey.girderIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),
          strAttributes.c_str());
    }
@@ -310,6 +314,7 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
 {
    // clear graph
    m_Graph.ClearData();
+   m_Graph.SetMinimumSize(m_XAxisType == X_AXIS_INTERVAL ? 1 : 0,1,0,0);
 
    int penWeight = GRAPH_PEN_WEIGHT;
 
@@ -323,6 +328,9 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
    GET_IFACE_NOCHECK(ILimitStateForces,pLimitStateForces); // only used if a stress location is checked
    GET_IFACE_NOCHECK(ICombinedForces,pCombinedForces);
 
+   GET_IFACE(ILossParameters,pLossParams);
+   bool bTimeStep = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+
    pgsTypes::LimitState limitState = GetLimitState();
    GET_IFACE(ILoadFactors,pLoadFactors);
    Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmin[limitState];
@@ -334,29 +342,44 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType startIntervalIdx = 0;
+   IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   // Plot points at start of first interval, then at the end of all the intervals
+   if ( m_XAxisType == X_AXIS_INTERVAL )
+   {
+      m_Graph.SetXAxisForcedRange((Float64)LABEL_INTERVAL(startIntervalIdx),(Float64)LABEL_INTERVAL(nIntervals),0.5);
+      IntervalTool* pIntervalTool = dynamic_cast<IntervalTool*>(m_pIntervalFormat);
+      pIntervalTool->SetLastValue((Float64)LABEL_INTERVAL(nIntervals));
+   }
+
+   // Plot points at start of first interval
    Float64 x = GetX(segmentKey,startIntervalIdx,pgsTypes::Start,pIntervals);
    for ( int i = 0; i < 4; i++ )
    {
       if ( m_bPlot[i] )
       {
          pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
-         PlotStressPoints(x,poi,stressLocation,startIntervalIdx,dataSeries[i],limitState,bat,gLL,liveLoadIntervalIdx,pCombinedForces,pLimitStateForces);
+         PlotStressPoints(x,poi,stressLocation,startIntervalIdx,pgsTypes::Start,dataSeries[i],limitState,bat,gLL,liveLoadIntervalIdx,pCombinedForces,pLimitStateForces);
       }
    }
 
    // now plot points at the end of all the intervals
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
-      Float64 x = GetX(segmentKey,intervalIdx,pgsTypes::End,pIntervals);
+      Float64 xb = GetX(segmentKey,intervalIdx,pgsTypes::Start, pIntervals);
+      Float64 xm = GetX(segmentKey,intervalIdx,pgsTypes::Middle,pIntervals);
+      Float64 xe = GetX(segmentKey,intervalIdx,pgsTypes::End,   pIntervals);
       for ( int i = 0; i < 4; i++ )
       {
          if ( m_bPlot[i] )
          {
             pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
-            PlotStressPoints(x,poi,stressLocation,intervalIdx,dataSeries[i],limitState,bat,gLL,liveLoadIntervalIdx,pCombinedForces,pLimitStateForces);
+
+            if ( !bTimeStep )
+            {
+               PlotStressPoints(xb,poi,stressLocation,intervalIdx,pgsTypes::Start, dataSeries[i],limitState,bat,gLL,liveLoadIntervalIdx,pCombinedForces,pLimitStateForces);
+               PlotStressPoints(xm,poi,stressLocation,intervalIdx,pgsTypes::Middle,dataSeries[i],limitState,bat,gLL,liveLoadIntervalIdx,pCombinedForces,pLimitStateForces);
+            }
+            PlotStressPoints(xe,poi,stressLocation,intervalIdx,pgsTypes::End,   dataSeries[i],limitState,bat,gLL,liveLoadIntervalIdx,pCombinedForces,pLimitStateForces);
          }
       }
    }
@@ -372,6 +395,14 @@ Float64 CStressHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalI
    else
    {
       x = (Float64)LABEL_INTERVAL(intervalIdx);
+      if ( timeType == pgsTypes::Middle )
+      {
+         x += 0.5;
+      }
+      else if ( timeType == pgsTypes::End )
+      {
+         x += 1.0;
+      }
    }
 
    if ( m_XAxisType == X_AXIS_TIME_LOG && IsZero(x) )
@@ -383,7 +414,7 @@ Float64 CStressHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalI
    return x;
 }
 
-void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,ICombinedForces* pCombinedForces,ILimitStateForces* pLimitStateForces)
+void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,ICombinedForces* pCombinedForces,ILimitStateForces* pLimitStateForces)
 {
    bool bIncludePrestress = true;
 
@@ -457,7 +488,7 @@ void CStressHistoryGraphBuilder::UpdateXAxis()
    }
    else
    {
-      m_Graph.SetXAxisScale(grAxisXY::INTEGRAL);
+      m_Graph.SetXAxisScale(grAxisXY::LINEAR);
       m_Graph.SetXAxisTitle(_T("Interval"));
       m_Graph.SetXAxisNiceRange(false);
       m_Graph.SetXAxisNumberOfMinorTics(0);

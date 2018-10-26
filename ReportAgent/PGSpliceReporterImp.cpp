@@ -26,7 +26,6 @@
 #include "PGSpliceReporterImp.h"
 #include <Reporting\PGSpliceTitlePageBuilder.h>
 
-#include <Reporting\IntervalChapterBuilder.h>
 #include <Reporting\TendonGeometryChapterBuilder.h>
 #include <Reporting\ShrinkageStrainChapterBuilder.h>
 
@@ -73,7 +72,6 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 
    // Update details report to contain a couple of extra chapters
    boost::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
-   VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder),TEXT("Bridge Description")));
    VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder),TEXT("Section Properties")));
    VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
 

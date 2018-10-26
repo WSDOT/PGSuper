@@ -523,8 +523,15 @@ SpacingIndexType CGirderSpacingData::GetSpacingCount() const
 
 Float64 CGirderSpacingData::GetGirderSpacing(SpacingIndexType spacingIdx) const
 {
-   _ASSERT( 0 <= spacingIdx && spacingIdx < (SpacingIndexType)m_GirderSpacing.size() );
-   return m_GirderSpacing[spacingIdx];
+   if ( m_GirderSpacing.size() == 0 )
+   {
+      return 0;
+   }
+   else
+   {
+      _ASSERT( 0 <= spacingIdx && spacingIdx < (SpacingIndexType)m_GirderSpacing.size() );
+      return m_GirderSpacing[spacingIdx];
+   }
 }
 
 void CGirderSpacingData::AddGirders(GirderIndexType nGirders)

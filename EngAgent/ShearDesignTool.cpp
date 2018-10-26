@@ -376,6 +376,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
    m_LongShearCapacityIncreaseMethod = pGirderEntry->GetLongShearCapacityIncreaseMethod();
    m_bIsLongShearCapacityIncreaseMethodProblem = m_LongShearCapacityIncreaseMethod==GirderLibraryEntry::isAddingRebar &&
                                                  !pSpecEntry->IncludeRebarForShear();
+   m_bLongShearCapacityRequiresStirrupTightening = false;
 
    // Compute maximum possible bar spacing for design
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
@@ -575,6 +576,16 @@ GirderLibraryEntry::LongShearCapacityIncreaseMethod pgsShearDesignTool::GetLongS
    return m_LongShearCapacityIncreaseMethod;
 }
 
+void pgsShearDesignTool::SetLongShearCapacityRequiresStirrupTightening(bool req)
+{
+   m_bLongShearCapacityRequiresStirrupTightening = req;
+}
+
+bool pgsShearDesignTool::GetLongShearCapacityRequiresStirrupTightening() const
+{
+   return m_bLongShearCapacityRequiresStirrupTightening;
+}
+
 void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfInterest>& pois)
 {
    // POI's are managed locally
@@ -769,7 +780,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             SHEARCAPACITYDETAILS scd;
             pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthI, liveLoadIntervalIdx, poi, config, &scd );
 
-            Float64 fcreq = fabs(scd.vfc * config.Fc / 0.18); // LRFD 5.8.3.2
+            Float64 fcreq = fabs(scd.vufc * config.Fc / 0.18); // LRFD 5.8.3.2
 
             // FUDGE: Give concrete strength a small bump up. Found some regression tests that were missing
             //        by just a smidge...
@@ -796,7 +807,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             SHEARCAPACITYDETAILS scd;
             pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthII, liveLoadIntervalIdx, poi, config, &scd );
 
-            Float64 fcreq = fabs(scd.vfc * config.Fc / 0.18); // LRFD 5.8.3.2
+            Float64 fcreq = fabs(scd.vufc * config.Fc / 0.18); // LRFD 5.8.3.2
 
             FcRequiredForStrutTieStress = Max(FcRequiredForStrutTieStress, fcreq);
 
@@ -1368,6 +1379,14 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
                   // Create splitting zone
                   L_zone_min = Max(L_zone_min, m_StartSplittingZl, m_EndSplittingZl);
                }
+            }
+
+            // Longitudinal reinforcement for shear can also require stirrup tightening in the first zone in odd cases.
+            // It is intractible to determine what stirrup spacing to use, so let's just use the tightest
+            // Layout algorithm will create a smoothly feathered spacing layout
+            if ( GetLongShearCapacityRequiresStirrupTightening() )
+            {
+               S_reqd = m_AvailableBarSpacings.front(); 
             }
 
             S_max_next = ComputeMaxNextSpacing(S_reqd);
@@ -2192,6 +2211,8 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
 
 pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear()
 {
+   LOG(_T("*** Entering pgsShearDesignTool::DesignLongReinfShear **"));
+
    // The method here is to perform a check on the current design and use check
    // results to compute if additional long reinf is needed
    GDRCONFIG config = this->GetSegmentConfiguration(); // current design
@@ -2239,6 +2260,8 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    Float64 As=0.0;
    for(Int32 ils=0; ils<nls; ils++)
    {
+      LOG(_T("Checking LRS (failures reported only) at ")<<vPoi.size()<<_T(" Pois, ils = ")<<ils);
+
       BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
       {
          Float64 location = poi.GetDistFromStart();
@@ -2259,7 +2282,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                {
                   Float64 demand = l_artifact.GetDemandForce();
                   Float64 capacity = l_artifact.GetCapacityForce();
-   
+
                   // compute area of rebar or strands required to remedy
                   if(m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingRebar)
                   {
@@ -2287,6 +2310,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                         ATLASSERT(false);
                      }
    
+                     LOG(_T("location = ")<< ::ConvertFromSysUnits(location,unitMeasure::Feet)<<_T(" demand = ")<< ::ConvertFromSysUnits(demand,unitMeasure::Kip)<<_T(", capacity = ")<< ::ConvertFromSysUnits(capacity,unitMeasure::Kip)<<_T(", as rebar = ")<< ::ConvertFromSysUnits(as,unitMeasure::Inch2));
                      As = Max(As, as);
                   }
                   else if(m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingStrands)
@@ -2307,6 +2331,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      }
    
                      Float64 as = (demand-capacity)/fps;
+                     LOG(_T("location = ")<< ::ConvertFromSysUnits(location,unitMeasure::Feet)<<_T(" demand = ")<< ::ConvertFromSysUnits(demand,unitMeasure::Kip)<<_T(", capacity = ")<< ::ConvertFromSysUnits(capacity,unitMeasure::Kip)<<_T(", as strand = ")<< ::ConvertFromSysUnits(as,unitMeasure::Inch2));
                      As = Max(As, as);
                   }
                   else
@@ -2319,22 +2344,25 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
        }
    }
 
-   if (0.0 < As)
+   if (TOLERANCE < As)
    {
       if (m_bIsLongShearCapacityIncreaseMethodProblem)
       {
          // Can't increase rebar because project criteria won't use it
          m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::ConflictWithLongReinforcementShearSpec);
+         LOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - sdFail **"));
          return sdFail;
       }
       else
       {
          m_LongReinfShearAs = As;
+         LOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - As =")<<  ::ConvertFromSysUnits(m_LongReinfShearAs,unitMeasure::Inch2));
          return (m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingRebar) ? sdRestartWithAdditionalLongRebar : sdRestartWithAdditionalStrands;
       }
    }
    else
    {
+      LOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - sdSuccess **"));
       return sdSuccess;
    }
 }

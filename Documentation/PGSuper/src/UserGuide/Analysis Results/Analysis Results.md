@@ -53,16 +53,19 @@ Interval | Name | Description
  
 Graphical Results
 -----------------
-Many graphical results options are available. Select *View > Graphs > graph type* to view graphical results. The available graph types are:
+Many graphical results options are available. Select *View > Graphs > graph* to view graphical results. The available graphs are:
 
-Graph Type | Description
+Graph | Description
 -----------|------------
-Analysis Results | Traditional engineering graphs for moment, shear, deflection, rotation, stress, and reactions
-Concrete Properties | Graphical representation of various concrete properties
-Effective Prestress | Changes in effective prestress by position and time
-Girder Properties | Graphical representation of various girder properties such as area, moment of inertia, and section modulus
-Girder Stability | Graphs stability factors of safety as a function of support location for lifting and hauling
-Stress History | Change in stress at a point over time
+@subpage ug_analysis_results_graph | Traditional engineering graphs for moment, shear, deflection, rotation, stress, and reactions
+@subpage ug_concrete_properties_graph | Graphical representation of various concrete properties
+@subpage ug_deflection_history_graph | Change in deflection at a point over time
+@subpage ug_effective_prestress_graph | Changes in effective prestress by position and time
+@subpage ug_girder_properties_graph | Graphical representation of various girder properties such as area, moment of inertia, and section modulus
+@subpage ug_girder_stability_graph | Graphs stability factors of safety as a function of support location for lifting and hauling
+@subpage ug_stress_history_graph | Change in stress at a point over time
+
+> NOTE: Extensions can add more graph types. Refer to extension documentation for more specific information.
 
 Reporting Results
 ------------------

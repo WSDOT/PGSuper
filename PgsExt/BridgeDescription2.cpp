@@ -539,6 +539,28 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
       hr = pStrLoad->EndUnit(); // BridgeDescription
 
+      // Sometime in the past, the bearing offset and end distance measurement types were inadvertantly allowed to be
+      // unequal values between the back and ahead faces of the pier. The UI forces them to be the same.
+      // Here we will check the values and make corrections as needed
+      BOOST_FOREACH(CPierData2* pPier,m_Piers)
+      {
+         if ( pPier->GetPrevSpan() == NULL )
+         {
+            // this is the first pier so the back side needs to be set equal to the ahead side
+            pPier->m_EndDistanceMeasurementType[pgsTypes::Back] = pPier->m_EndDistanceMeasurementType[pgsTypes::Ahead];
+            pPier->m_BearingOffsetMeasurementType[pgsTypes::Back] = pPier->m_BearingOffsetMeasurementType[pgsTypes::Ahead];
+         }
+         else if ( pPier->GetNextSpan() == NULL )
+         {
+            // this is the last pier so the ahead side needs to be set equal to the back side
+            pPier->m_EndDistanceMeasurementType[pgsTypes::Ahead] = pPier->m_EndDistanceMeasurementType[pgsTypes::Back];
+            pPier->m_BearingOffsetMeasurementType[pgsTypes::Ahead] = pPier->m_BearingOffsetMeasurementType[pgsTypes::Back];
+         }
+
+         ATLASSERT(pPier->m_EndDistanceMeasurementType[pgsTypes::Ahead] == pPier->m_EndDistanceMeasurementType[pgsTypes::Back]);
+         ATLASSERT(pPier->m_BearingOffsetMeasurementType[pgsTypes::Ahead] == pPier->m_BearingOffsetMeasurementType[pgsTypes::Back]);
+      }
+
       if ( ::IsBridgeSpacing(m_GirderSpacingType) )
       {
          // If the spacing type is for the entire bridge, the temporary support objects

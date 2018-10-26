@@ -1076,7 +1076,8 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
       if (shear_in_range)
       {
          pscd->ShearInRange = true;
-         pscd->vfc          = data.vfc;
+         pscd->vu            = data.vu;
+         pscd->vufc          = data.vufc;
          pscd->ex           = data.ex;
          pscd->Fe           = data.Fe;
          pscd->Beta         = data.Beta;
@@ -1087,7 +1088,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          pscd->Theta        = data.Theta;
          pscd->Equation     = data.Eqn;
          pscd->ex_tbl       = data.ex_tbl;
-         pscd->vfc_tbl      = data.vfc_tbl;
+         pscd->vfc_tbl     = data.vufc_tbl;
 
          Float64 Beta  = data.Beta;
          Float64 Theta = data.Theta;
@@ -1174,7 +1175,8 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          // capacity calculation could not be done - section is too small
          // pick up the shreds
          pscd->ShearInRange = false;
-         pscd->vfc  = data.vfc;
+         pscd->vu   = data.vu;
+         pscd->vufc = data.vufc;
          pscd->ex   = 0.0;
          pscd->Beta = 0.0;
          pscd->Theta = 0.0;

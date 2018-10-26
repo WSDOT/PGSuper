@@ -98,7 +98,7 @@ private:
    StatusCallbackIDType m_scidEffectiveFlangeWidthInfo;
 
    // Max skew angle check
-   bool bMaxSkewAngleComputed;
+   bool m_bMaxSkewAngleComputed;
    Float64 m_MaxSkewAngle;
 
    // container for tributary width

@@ -95,9 +95,13 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       INIT_UV_PROTOTYPE( rptLengthUnitValue,  ecc,         pDisplayUnits->GetComponentDimUnit(),    true );
 
       if ( spMode == pgsTypes::spmGross )
+      {
          *pParagraph << rptRcImage(strImagePath + _T("Delta_FpES_Gross.png")) << rptNewLine;
+      }
       else
+      {
          *pParagraph << rptRcImage(strImagePath + _T("Delta_FpES_Transformed.png")) << rptNewLine;
+      }
 
       *pParagraph << _T("Note: Elastic Shortening considered constant along girder length. All parameters taken at mid-span of girder.") << rptNewLine << rptNewLine;
       *pParagraph << Sub2(_T("E"),_T("p")) << _T(" = ") << mod_e.SetValue(Epp) << rptNewLine;
@@ -405,7 +409,9 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       {
          *pParagraph << Sub2(_T("e"),_T("p")) << _T(" = eccentricty of permanent prestressing strands") << rptNewLine;
          if ( bTemporaryStrands )
+         {
             *pParagraph << Sub2(_T("e"),_T("t")) << _T(" = eccentricty of temporary prestressing strands") << rptNewLine;
+         }
    
          *pParagraph << Sub2(_T("e"),_T("ps")) << _T(" = eccentricty of all prestressing strands") << rptNewLine;
       }
@@ -413,7 +419,9 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       {
          *pParagraph << Sub2(_T("e"),_T("pt")) << _T(" = eccentricty of permanent prestressing strands") << rptNewLine;
          if ( bTemporaryStrands )
+         {
             *pParagraph << Sub2(_T("e"),_T("tt")) << _T(" = eccentricty of temporary prestressing strands") << rptNewLine;
+         }
    
          *pParagraph << Sub2(_T("e"),_T("pst")) << _T(" = eccentricty of all prestressing strands") << rptNewLine;
       }

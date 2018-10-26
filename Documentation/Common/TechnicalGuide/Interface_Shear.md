@@ -22,5 +22,7 @@ For CIP deck systems, P<sub>c</sub> is computed using the tributary width of the
 
 For SIP deck systems, P<sub>c</sub> is computed using only the amount of cast in place deck concrete directly above the area of the top flange not supporting the precast panels. This reduced area is assumed to be the only area participating in the shear transfer.  
 
-## Shear Stress at Deck/Slab Interface
-The shear stress at the deck slab interface can be computed by either the LRFD approximate equation v = V/bd or by the classical shear flow equation v = VQ/Ib.
+## Shear Stress at Slab/Girder Interface
+The shear stress at the slab/girder interface can be computed by either the LRFD approximate equation v<sub>ui</sub> = V<sub>u</sub>/(W<sub>tf</sub>d<sub>v</sub>) or by the classical shear flow equation v<sub>ui</sub> = (V<sub>u</sub>Q)/(I<sub>x</sub>W<sub>tf</sub>).
+
+W<sub>tf</sub> is the width of the girder top flange.

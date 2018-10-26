@@ -48,6 +48,8 @@ public:
    virtual CEAFGraphControlWindow* GetGraphControlWindow();
 
 protected:
+   void Init();
+
    CDeflectionHistoryGraphController* m_pGraphController;
 
    afx_msg void OnShowGrid();
@@ -56,7 +58,8 @@ protected:
 
    CComPtr<IBroker> m_pBroker;
 
-   unitmgtScalar m_Scalar;
+   unitmgtScalar m_Time;
+   unitmgtScalar m_Interval;
    arvPhysicalConverter* m_pTimeFormat;
    arvPhysicalConverter* m_pIntervalFormat;
    arvPhysicalConverter* m_pYFormat;

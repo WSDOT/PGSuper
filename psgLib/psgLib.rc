@@ -10,6 +10,7 @@
 #include "afxres.h"
 #include "EAF\EAFResources.h"
 #include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -68,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,55
- PRODUCTVERSION 3,0,0,55
+ FILEVERSION 3,0,0,56
+ PRODUCTVERSION 3,0,0,56
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -87,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.55"
+            VALUE "FileVersion", "3.0.0.56"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.55"
+            VALUE "ProductVersion", "3.0.0.56"
         END
     END
     BLOCK "VarFileInfo"
@@ -1054,7 +1055,7 @@ BEGIN
     LTEXT           "Confinement Reinforcement (5.10.10.2)",IDC_STATIC,25,97,124,8
     CONTROL         "Check",IDC_CHECK_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,97,37,8
     CONTROL         "Design",IDC_DESIGN_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,199,97,37,8
-    GROUPBOX        "Lifting Check/Design Options",IDC_STATIC,12,120,462,54
+    GROUPBOX        "Lifting Check/Design Options",IDC_STATIC,12,120,462,50
     CONTROL         "Check",IDC_CHECK_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,135,37,8
     CONTROL         "Design",IDC_DESIGN_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,135,37,8
     LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,23,150,140,8
@@ -1084,13 +1085,13 @@ BEGIN
     CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,201,261,37,8
     LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,23,279,100,8
     CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,278,45,10
-    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,195,279,82,8
+    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,201,279,82,8
     EDITTEXT        IDC_DEFLECTION_LIMIT,281,276,40,14,ES_AUTOHSCROLL
-    LTEXT           "Bottom Flange Clearance",IDC_STATIC,25,296,80,8
+    LTEXT           "Bottom Flange Clearance",IDC_STATIC,23,296,80,8
     CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,296,37,10
-    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,202,296,48,8
-    EDITTEXT        IDC_CLEARANCE,255,293,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_CLEARANCE_UNIT,303,296,19,8
+    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,201,296,48,8
+    EDITTEXT        IDC_CLEARANCE,253,293,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CLEARANCE_UNIT,298,296,19,8
     GROUPBOX        "Harped Strand Design",IDC_STATIC,12,320,462,44
     CONTROL         "Add Strands Using the Permanent Strand Fill Order",IDC_RADIO_FILL_PERMANENT,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,336,193,10
@@ -1153,7 +1154,7 @@ BEGIN
     CONTROL         "Include girder longitudinal mild reinforcement in capacity calculations",IDC_INCLUDE_REBAR_SHEAR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,293,230,10
     GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,312,427,61
-    LTEXT           "Compute shear stress at girder/deck interface",IDC_STATIC,17,327,144,8
+    LTEXT           "Compute shear stress at slab/girder interface",IDC_STATIC,17,327,141,8
     COMBOBOX        IDC_SHEAR_FLOW_METHOD,165,325,212,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "LRFD 5.8.4.2 Spacing of interface shear connectors shall not exceed",IDC_STATIC,17,346,219,8
     EDITTEXT        IDC_SMAX,240,342,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -2269,15 +2270,6 @@ BEGIN
 0x6f43, 0x706d, 0x7475, 0x2065, 0x6e69, 0x6120, 0x6363, 0x726f, 0x6164, 
 0x636e, 0x2065, 0x6977, 0x6874, 0x4c20, 0x4652, 0x2044, 0x2e35, 0x2e38, 
 0x2e33, 0x0035, 
-    IDC_SHEAR_FLOW_METHOD, 0x403, 48, 0
-0x7375, 0x6e69, 0x2067, 0x6874, 0x2065, 0x524c, 0x4446, 0x7320, 0x6d69, 
-0x6c70, 0x6669, 0x6569, 0x2064, 0x656d, 0x6874, 0x646f, 0x203a, 0x5620, 
-0x6975, 0x3d20, 0x5620, 0x2f20, 0x6220, 0x0064, 
-    IDC_SHEAR_FLOW_METHOD, 0x403, 63, 0
-0x7375, 0x6e69, 0x2067, 0x6874, 0x2065, 0x6c63, 0x7361, 0x6973, 0x6163, 
-0x206c, 0x6873, 0x6165, 0x2072, 0x6c66, 0x776f, 0x6620, 0x726f, 0x756d, 
-0x616c, 0x203a, 0x5620, 0x6975, 0x3d20, 0x2820, 0x7556, 0x5120, 0x2029, 
-0x202f, 0x4928, 0x6220, 0x2029, "\000" 
     0
 END
 
@@ -2608,6 +2600,7 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid\gxres.rc"               // Objective Grid resources
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

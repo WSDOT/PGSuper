@@ -143,11 +143,10 @@ ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, 
       GroupIndexType backGroupIdx,aheadGroupIdx;
       pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
 
-      CGirderKey thisGirderKey(aheadGroupIdx,girderKey.girderIndex);
-      if ( aheadGroupIdx == INVALID_INDEX )
-      {
-         thisGirderKey.groupIndex = backGroupIdx;
-      }
+      GroupIndexType grpIdx = (aheadGroupIdx == INVALID_INDEX ? backGroupIdx : aheadGroupIdx);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+
+      CGirderKey thisGirderKey(grpIdx,Min(girderKey.girderIndex,nGirders-1));
 
       PierReactionFaceType face;
       if ( pierIdx == startPierIdx )
@@ -416,11 +415,8 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
       {
          m_bAlwaysReport = false; // when we report is based on stage when BC becomes continuous
 
-         EventIndexType back_continunity_event, ahead_continuity_event;
-         pBridge->GetContinuityEventIndex(location.PierIdx,&back_continunity_event,&ahead_continuity_event);
-
-         IntervalIndexType back_continuity_interval  = pIntervals->GetInterval(back_continunity_event);
-         IntervalIndexType ahead_continuity_interval = pIntervals->GetInterval(ahead_continuity_event);
+         IntervalIndexType back_continuity_interval, ahead_continuity_interval;
+         pIntervals->GetContinuityInterval(location.PierIdx,&back_continuity_interval,&ahead_continuity_interval);
 
          m_ThresholdInterval = (location.Face == rftBack ? back_continuity_interval : ahead_continuity_interval);
       }

@@ -107,7 +107,7 @@ void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
       pBut->SetCheck(BST_CHECKED);
       GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(false);
 
-      if ( m_FromSelection.Type == CSelection::Girder || m_FromSelection.TemporarySupport == CSelection::Segment )
+      if ( m_FromSelection.Type == CSelection::Girder || m_FromSelection.Type == CSelection::Segment )
       {
          m_FromGroup.SetCurSel((int)m_FromSelection.GroupIdx);
          OnFromGroupChanged();
@@ -145,11 +145,17 @@ BOOL CCopyGirderDlg::OnInitDialog()
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
    SetIcon(hIcon,FALSE);
 
-	CDialog::OnInitDialog();
    CEAFDocument* pDoc = EAFGetDocument();
 
-   FillComboBoxes(m_FromGroup,m_FromGirder,false,false);
-   FillComboBoxes(m_ToGroup,  m_ToGirder,  pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? false : true, true );
+   CComboBox* pcbFromGroup = (CComboBox*)GetDlgItem(IDC_FROM_SPAN);
+   CComboBox* pcbFromGirder = (CComboBox*)GetDlgItem(IDC_FROM_GIRDER);
+   CComboBox* pcbToGroup = (CComboBox*)GetDlgItem(IDC_TO_SPAN);
+   CComboBox* pcbToGirder = (CComboBox*)GetDlgItem(IDC_TO_GIRDER);
+   FillComboBoxes(*pcbFromGroup,*pcbFromGirder,false,false);
+   FillComboBoxes(*pcbToGroup,  *pcbToGirder,  pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? false : true, true );
+
+   CDialog::OnInitDialog();
+
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
    {
       // in PGSplice, copying can only happen within a group

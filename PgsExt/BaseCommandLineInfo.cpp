@@ -25,7 +25,7 @@ CLASS
    CPGSBaseCommandLineInfo
 ****************************************************************************/
 #include <PgsExt\PgsExtLib.h>
-#include "BaseCommandLineInfo.h"
+#include <PgsExt\BaseCommandLineInfo.h>
 #include <Iface\Test1250.h>
 
 #include <system\tokenizer.h>

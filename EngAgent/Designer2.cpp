@@ -375,11 +375,17 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
    std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(spanKey,POI_SPAN | POI_TENTH_POINTS) );
    ATLASSERT(vPoi.size() > 0);
 
+#if defined _DEBUG
+   std::vector<CSegmentKey> vSegmentKeys = pPoi->GetSegmentKeys(vPoi);
+   ATLASSERT(vSegmentKeys.size() == 1); // POIs should be all for the same segment
+#endif
+
    //
    // Profile Effects and Girder Orientation Effects
    //
 
    pgsPointOfInterest& firstPoi = vPoi.front();
+   const CSegmentKey& segmentKey( firstPoi.GetSegmentKey() );
 
    // get station and offset of first poi
    Float64 station,offset;
@@ -388,6 +394,12 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
 
    // the profile chord reference line passes through the deck at this station and offset
    Float64 Y_girder_ref_line_left_bearing = pAlignment->GetElevation(station,offset);
+
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+
+   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
+
+   Float64 girder_orientation = pGdr->GetOrientation(segmentKey);
 
    Float64 max_tslab_and_fillet = 0;
 
@@ -405,14 +417,6 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
    for ( ; iter != iterEnd; iter++ )
    {
       pgsPointOfInterest& poi = *iter;
-
-      const CSegmentKey& segmentKey(poi.GetSegmentKey());
-
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
-      MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
-
-      Float64 girder_orientation = pGdr->GetOrientation(segmentKey);
 
       Float64 slab_offset = (bUseConfig ? pBridge->GetSlabOffset(poi,config) : pBridge->GetSlabOffset(poi));
 
@@ -497,8 +501,8 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
       max_tslab_and_fillet = Max(max_tslab_and_fillet,tSlab + fillet);
 
       // store min and max haunch depths
-      min_haunch = min(min_haunch, haunch.TopSlabToTopGirder-tSlab);
-      max_haunch = max(max_haunch, haunch.TopSlabToTopGirder-tSlab);
+      min_haunch = Min(min_haunch, haunch.TopSlabToTopGirder-tSlab);
+      max_haunch = Max(max_haunch, haunch.TopSlabToTopGirder-tSlab);
 
    } // next POI
 
@@ -732,8 +736,8 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
 
       std::vector<pgsPointOfInterest> spanPois( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
 
-      // get all special POI, except for the closure joints... we'll get them later if applicable
-      std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL & ~POI_CLOSURE,POIFIND_OR));
+      // get all some special POI related to flexure
+      std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT | POI_DIAPHRAGM | POI_CONCLOAD | POI_PSXFER | POI_DEBOND, POIFIND_OR));
       releasePois.insert(releasePois.end(),vOtherPoi.begin(),vOtherPoi.end());
       storagePois.insert(storagePois.end(),vOtherPoi.begin(),vOtherPoi.end());
       erectedPois.insert(erectedPois.end(),vOtherPoi.begin(),vOtherPoi.end());
@@ -1171,7 +1175,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       pProgress->UpdateMessage(os.str().c_str());
 
 
-      // initialize lifting and hauling to corrent values
+      // initialize lifting and hauling to current values
       GET_IFACE(ISegmentLifting,pSegmentLifting);
       Float64 Loh = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
       Float64 Roh = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
@@ -1756,7 +1760,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
       {
          pgsPointOfInterest& poi(*iter);
          Float64 minWebWidth = pGirder->GetWebThicknessAtDuct(poi,ductIdx);
-         tWebMin = min(tWebMin,minWebWidth);
+         tWebMin = Min(tWebMin,minWebWidth);
       }
 
       pgsDuctSizeArtifact artifact;
@@ -3092,12 +3096,10 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(ISectionProperties,pSectProp);
    GET_IFACE(IGirder,pGdr);
    GET_IFACE(IMaterials,pMaterial);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // determine shear demand
@@ -3107,6 +3109,7 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
 
    if ( pInterfaceShear->GetShearFlowMethod() == sfmClassical )
    {
+      GET_IFACE(ISectionProperties,pSectProp);
       Float64 Qslab = pSectProp->GetQSlab(poi); // Note: A possible problem here - QSlab is slightly dependent on fcGdr
       ATLASSERT(Qslab!=0);
 
@@ -3126,27 +3129,24 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    }
    else
    {
-      Float64 nEffStrands;
-      Float64 ecc;
-      Float64 Yt;
+      // dv is the distance between the centroid of the compression force, taken to be at the mid-height of the deck and the centroid of the tension steel.
+      // since the steel on the tension side varies because of harped strand position, estimate by considering straight strands only
+      GET_IFACE(IMomentCapacity,pMomentCap);
+      MOMENTCAPACITYDETAILS mcd;
       if (pConfig == NULL)
       {
-         GET_IFACE(IStrandGeometry,pStrandGeom);
-         ecc = pStrandGeom->GetEccentricity(castDeckIntervalIdx,poi,pgsTypes::Permanent,&nEffStrands); // based on non-composite cg
-         Yt = pSectProp->GetY(castDeckIntervalIdx,poi,pgsTypes::TopGirder); // non-composite girder
+         pMomentCap->GetMomentCapacityDetails(liveLoadIntervalIdx,poi,true/*positive moment*/,&mcd);
       }
       else
       {
-         GET_IFACE(IStrandGeometry,pStrandGeom);
-         ecc = pStrandGeom->GetEccentricity(castDeckIntervalIdx,poi,*pConfig,pgsTypes::Permanent,&nEffStrands); // based on non-composite cg
-         Yt = pSectProp->GetY(castDeckIntervalIdx,poi,pgsTypes::TopGirder,pConfig->Fc); // non-composite girder
+         pMomentCap->GetMomentCapacityDetails(liveLoadIntervalIdx,poi,*pConfig,true/*positive moment*/,&mcd);
       }
 
   
       GET_IFACE(IBridge,pBridge);
       Float64 tSlab = pBridge->GetStructuralSlabDepth(poi);
 
-      Float64 dv = ecc + Yt + tSlab/2;
+      Float64 dv = mcd.de_shear - tSlab/2;
 
       Vuh  = vu / dv;
 
@@ -3442,11 +3442,19 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
 void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi, 
                                             const pgsVerticalShearArtifact& vertArtifact,
                                             const SHEARCAPACITYDETAILS& scd,
-                                            const Float64 vu,
+                                            const Float64 Vu,
                                             Float64 fcGdr, Float64 fy,
                                             const STIRRUPCONFIG* pConfig,
                                             pgsStirrupDetailArtifact* pArtifact )
 {
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
+
+   pArtifact->SetAfter1999(bAfter1999);
+
    // need bv and dv
    Float64 bv = scd.bv;
    Float64 dv = scd.dv;
@@ -3500,33 +3508,47 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    }
    pArtifact->SetAvsMin(avs_min);
 
-   // applied shear force
-   pArtifact->SetVu(vu);
-
    // max bar spacing
    Float64 s_max;
    Float64 s_under, s_over;
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    pTransverseReinforcementSpec->GetMaxStirrupSpacing(dv,&s_under, &s_over);
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
-
-   Float64 x = (bAfter1999 ? 0.125 : 0.100);
-
-   Float64 vu_limit = x * fcGdr * bv * dv; // 5.8.2.7
-   pArtifact->SetVuLimit(vu_limit);
-   if (vu < vu_limit)
+   if (bAfter1999)
    {
-      s_max = s_under;
+      // applied shear stress
+      Float64 vu = lrfdShear::ComputeShearStress(Vu, scd.Vp, scd.Phi, scd.bv, scd.dv);
+      pArtifact->Setvu(vu);
+
+      Float64 vu_limit = 0.125 * fcGdr; // 5.8.2.7
+      pArtifact->SetvuLimit(vu_limit);
+      if (vu < vu_limit)
+      {
+         s_max = s_under;
+      }
+      else
+      {
+         s_max = s_over;
+      }
+      pArtifact->SetSMax(s_max);
    }
    else
    {
-      s_max = s_over;
+      // applied shear force
+      pArtifact->SetVu(Vu);
+
+      Float64 Vu_limit = 0.1 * fcGdr * bv * dv; // 5.8.2.7
+      pArtifact->SetVuLimit(Vu_limit);
+      if (Vu < Vu_limit)
+      {
+         s_max = s_under;
+      }
+      else
+      {
+         s_max = s_over;
+      }
+      pArtifact->SetSMax(s_max);
    }
-   pArtifact->SetSMax(s_max);
 
    // min bar spacing
    Float64 s_min = 0.0;
@@ -4219,7 +4241,7 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
       }
 
       // NOTE: scd.vfc is v/f'c. Since v is divided by f'c, 0.18f'c divided by f'c is simply 0.18
-      csIter->second = (0.18 < scd.vfc && !bIntegral);
+      csIter->second = (0.18 < scd.vufc && !bIntegral);
    }
 }
 
@@ -4999,7 +5021,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
             Float64 haunchstrt = startSlabOffset - tSlab;
             Float64 haunchend  = endSlabOffset   - tSlab;
-            artifact.SetProvidedHaunchAtBearingCLs( min(haunchstrt,haunchend) );
+            artifact.SetProvidedHaunchAtBearingCLs( Min(haunchstrt,haunchend) );
          }
       }
 
@@ -5064,8 +5086,8 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
             Float64 L = pBridge->GetSegmentLength(segmentKey);
             pBridge->GetBottomFlangeClearance(pgsPointOfInterest(segmentKey,L),&CleftEnd,&CrightEnd);
 
-            Float64 Cleft  = min(CleftStart, CleftEnd);
-            Float64 Cright = min(CrightStart,CrightEnd);
+            Float64 Cleft  = Min(CleftStart, CleftEnd);
+            Float64 Cright = Min(CrightStart,CrightEnd);
 
             Float64 CthisSegment = 0;
             if ( 0 < Cleft && 0 < Cright )
@@ -6333,7 +6355,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
       if ( IsZero( AoldStart - Anew, tolerance ) && IsZero( AoldEnd - Anew, tolerance ))
       {
          Float64 a;
-         a = RoundSlabOffset(Max(AoldStart,AoldEnd,Anew));
+         a = CeilOff(Max(AoldStart,AoldEnd,Anew),tolerance );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metStart, a );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metEnd,   a );
 
@@ -6666,7 +6688,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
          LOG(_T("Required concrete strength = [") << ::ConvertFromSysUnits(controllingParams.fmin,unitMeasure::KSI) << _T(" + (") << k << _T(")(") << ::ConvertFromSysUnits(fpre,unitMeasure::KSI) << _T(")] / ") << -c << _T(" = ") << ::ConvertFromSysUnits(fc,unitMeasure::KSI) << _T(" KSI"));
 
          Float64 fc_min = m_StrandDesignTool.GetMinimumConcreteStrength();
-         fc = _cpp_max(fc,fc_min);
+         fc = Max(fc,fc_min);
 
          LOG(_T("Required concrete strength (adjusting for minimum allowed value) = ") << ::ConvertFromSysUnits(fc,unitMeasure::KSI) << _T(" KSI"));
          LOG(_T(""));
@@ -6784,7 +6806,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
                      if (fc_curr-fci_curr > fc_2k)
                      {
                         Float64 fci_max  = m_StrandDesignTool.GetMaximumReleaseStrength();
-                        Float64 fci = min(fci_max, fci_curr+fc_2k);
+                        Float64 fci = Min(fci_max, fci_curr+fc_2k);
                         LOG(_T("  Release strength was more than 2 ksi smaller than final, bump release as well"));
                         m_StrandDesignTool.UpdateReleaseStrength(fci, strength_result, pTensionDesignParameters->intervalIdx,pTensionDesignParameters->limit_state,pTensionDesignParameters->stress_type,pTensionDesignParameters->stress_location);
                         m_DesignerOutcome.SetOutcome(pgsDesignCodes::FciChanged);
@@ -9158,221 +9180,248 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
-   // Initialize shear design tool using flexure design pois
-   m_ShearDesignTool.ResetDesign( m_StrandDesignTool.GetDesignPoi(intervalIdx,0) );
+   // We only iterate on shear design if Long Reinf for Shear design runs into the case where
+   // stirrup tightening is a remedy.
+   m_ShearDesignTool.SetLongShearCapacityRequiresStirrupTightening(false);
 
-   // First step here is to perform a shear spec check. We will use the results later for
-   // design if needed
-   GET_IFACE(IShear,pShear);
-   CShearData2 shear_data( *pShear->GetSegmentShearData(segmentKey) );
-   if (bDoStartFromScratch)
+   bool bIter = true;
+   while(bIter)
    {
-      // From-scratch stirrup layout - do initial check with minimal stirrups
-      // Minimal stirrups are needed so we don't use equations for Beta for less than min stirrup configuration
-      CShearData2 default_data; // Use defaults from constructor to create no-stirrup condition
-      shear_data.ShearZones = default_data.ShearZones;
-      shear_data.ShearZones.front().VertBarSize = matRebar::bs5;
-      shear_data.ShearZones.front().BarSpacing  = 24.0 * one_inch;
-      shear_data.ShearZones.front().nVertBars   = 2;
-      shear_data.HorizontalInterfaceZones = default_data.HorizontalInterfaceZones;
+      // Initialize shear design tool using flexure design pois
+      m_ShearDesignTool.ResetDesign( m_StrandDesignTool.GetDesignPoi(intervalIdx,0) );
 
-      shear_data.bIsRoughenedSurface = m_ShearDesignTool.GetIsTopFlangeRoughened();
-      shear_data.bUsePrimaryForSplitting = m_ShearDesignTool.GetDoPrimaryBarsProvideSplittingCapacity();
-   }
-
-   pArtifact->SetShearData(shear_data);
-
-   // Get data needed for check
-   GDRCONFIG config = pArtifact->GetSegmentConfiguration();
-
-   // Use check artifact in design tool
-   pgsStirrupCheckArtifact* pstirrup_check_artif = m_ShearDesignTool.GetStirrupCheckArtifact();
-
-   // Do the Check
-   CheckShear(true, segmentKey, intervalIdx, pgsTypes::StrengthI, &config, pstirrup_check_artif);
-
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   if (pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit))
-   {
-      CheckShear(true, segmentKey, intervalIdx, pgsTypes::StrengthII, &config, pstirrup_check_artif);
-   }
-
-   if (!bDoStartFromScratch && pstirrup_check_artif->Passed())
-   {
-      // Performed spec check on existing input stirrup layout and it passed. 
-      // No need to do new design
-      pArtifact->SetNumberOfStirrupZonesDesigned( shear_data.ShearZones.size() );
-      pArtifact->SetShearData(shear_data);
-      pArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnExistingShearDesignPassedSpecCheck);
-   }
-   else
-   {
-      // We are designing...
-      ATLASSERT(m_CriticalSections.size() == 2);
-      const pgsPointOfInterest& leftCS(m_CriticalSections.front().first.GetPointOfInterest());
-      const pgsPointOfInterest& rightCS(m_CriticalSections.back().first.GetPointOfInterest());
-      ATLASSERT(leftCS.GetID() != INVALID_ID);
-      ATLASSERT(rightCS.GetID() != INVALID_ID);
-      pgsShearDesignTool::ShearDesignOutcome sdo = m_ShearDesignTool.DesignStirrups(leftCS.GetDistFromStart(), rightCS.GetDistFromStart());
-      if (sdo == pgsShearDesignTool::sdRestartWithAdditionalLongRebar)
+      // First step here is to perform a shear spec check. We will use the results later for
+      // design if needed
+      GET_IFACE(IShear,pShear);
+      CShearData2 shear_data( *pShear->GetSegmentShearData(segmentKey) );
+      if (bDoStartFromScratch)
       {
-         // Additional rebar is needed for long reinf for shear. Add bars, if possible
-         Float64 av_add = m_ShearDesignTool.GetRequiredAsForLongReinfShear();
+         // From-scratch stirrup layout - do initial check with minimal stirrups
+         // Minimal stirrups are needed so we don't use equations for Beta for less than min stirrup configuration
+         CShearData2 default_data; // Use defaults from constructor to create no-stirrup condition
+         shear_data.ShearZones = default_data.ShearZones;
+         shear_data.ShearZones.front().VertBarSize = matRebar::bs5;
+         shear_data.ShearZones.front().BarSpacing  = 24.0 * one_inch;
+         shear_data.ShearZones.front().nVertBars   = 2;
+         shear_data.HorizontalInterfaceZones = default_data.HorizontalInterfaceZones;
 
-         GET_IFACE(IMaterials,pMaterial);
-         matRebar::Grade barGrade;
-         matRebar::Type barType;
-         pMaterial->GetSegmentTransverseRebarMaterial(segmentKey,&barType,&barGrade);
-         lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-         ATLASSERT(pool != NULL);
-
-         Float64 max_agg_size = pMaterial->GetSegmentMaxAggrSize(segmentKey); // for 1.33 max agg size for bar spacing
-
-         GET_IFACE(IGirder,pGirder);
-         Float64 wFlange = pGirder->GetBottomWidth(pgsPointOfInterest(segmentKey, 0.0));
-         Float64 spacing_width = wFlange - 2*one_inch; // this is the c-c width of the two outer-most bars
-                                                       // this will equal (nbars-1)*spacing
-
-         Float64 nbars = 0;
-         Float64 spacing = 0;
-         matRebar::Size barSize;
-         bool bBarSpacingOK = false;
-         matRebar::Size barSizes[] = {matRebar::bs5,matRebar::bs6,matRebar::bs7};
-         int nBarSizes = sizeof(barSizes)/sizeof(matRebar::Size);
-         for ( int i = 0; i < nBarSizes; i++ )
-         {
-            barSize = barSizes[i];
-            const matRebar* pRebar = pool->GetRebar(barType,barGrade,barSize);
-            Float64 av_onebar = pRebar->GetNominalArea();
-            Float64 db = pRebar->GetNominalDimension();
-
-            // min clear spacing per 5.10.3.1.2.
-            Float64 min_clear = Max(one_inch,1.33*max_agg_size,db);
-            Float64 min_bar_spacing = min_clear + db;
-
-            nbars = av_add/av_onebar;
-            nbars = CeilOff(nbars, 1.0); // round up to next bar increment
-
-            // Make sure spacing fits in girder
-            if ( nbars == 1 )
-            {
-               spacing = 0;
-               bBarSpacingOK = true;
-               break;
-            }
-            else
-            {
-               Float64 dspacing = spacing_width/(nbars-1);
-               spacing = FloorOff(dspacing, one_inch/4); // try for a reasonable spacing
-               if (spacing == 0.0)
-               {
-                  spacing = dspacing; // take any old spacing
-               }
-
-               if ( min_bar_spacing < spacing )
-               {
-                  bBarSpacingOK = true;
-                  break; // we have a spacing that works or there is only one bar so spacing is irrelevant
-               }
-            }
-         }
-
-         if ( !bBarSpacingOK )
-         {
-            // could not find a bar spacing that works
-            pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooManyBarsForLongReinfShear);
-            m_DesignerOutcome.AbortDesign();
-         }
-
-         // Add row of bars
-         CLongitudinalRebarData& rebar_data = pArtifact->GetLongitudinalRebarData();
-
-         CLongitudinalRebarData::RebarRow row;
-         row.BarSize = barSize;
-         row.Cover = 2.0*one_inch;
-         row.Face = pgsTypes::BottomFace;
-         row.NumberOfBars = (Int32)nbars;
-         row.BarSpacing = spacing;
-
-         rebar_data.RebarRows.push_back(row);
-
-         pArtifact->SetWasLongitudinalRebarForShearDesigned(true);
+         shear_data.bIsRoughenedSurface = m_ShearDesignTool.GetIsTopFlangeRoughened();
+         shear_data.bUsePrimaryForSplitting = m_ShearDesignTool.GetDoPrimaryBarsProvideSplittingCapacity();
       }
-      else if (sdo == pgsShearDesignTool::sdRestartWithAdditionalStrands)
+
+      pArtifact->SetShearData(shear_data);
+
+      // Get data needed for check
+      GDRCONFIG config = pArtifact->GetSegmentConfiguration();
+
+      // Use check artifact in design tool
+      pgsStirrupCheckArtifact* pstirrup_check_artif = m_ShearDesignTool.GetStirrupCheckArtifact();
+
+      // Do the Check
+      CheckShear(true, segmentKey, intervalIdx, pgsTypes::StrengthI, &config, pstirrup_check_artif);
+
+      GET_IFACE(ILiveLoads,pLiveLoads);
+      if (pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit))
       {
-         // Additional strands are needed for long reinf for shear.
-         // We can only make this adjustment if flexure design is turned on (no use in adding strands
-         // if concrete strengths can't be adjusted).
-         if (!bDoDesignFlexure)
+         CheckShear(true, segmentKey, intervalIdx, pgsTypes::StrengthII, &config, pstirrup_check_artif);
+      }
+
+      if (!bDoStartFromScratch && pstirrup_check_artif->Passed())
+      {
+         // Performed spec check on existing input stirrup layout and it passed. 
+         // No need to do new design
+         pArtifact->SetNumberOfStirrupZonesDesigned( shear_data.ShearZones.size() );
+         pArtifact->SetShearData(shear_data);
+         pArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnExistingShearDesignPassedSpecCheck);
+      }
+      else
+      {
+         // We are designing...
+         ATLASSERT(m_CriticalSections.size() == 2);
+         const pgsPointOfInterest& leftCS(m_CriticalSections.front().first.GetPointOfInterest());
+         const pgsPointOfInterest& rightCS(m_CriticalSections.back().first.GetPointOfInterest());
+         ATLASSERT(leftCS.GetID() != INVALID_ID);
+         ATLASSERT(rightCS.GetID() != INVALID_ID);
+
+         pgsShearDesignTool::ShearDesignOutcome sdo = m_ShearDesignTool.DesignStirrups(leftCS.GetDistFromStart(), rightCS.GetDistFromStart());
+
+         if (sdo == pgsShearDesignTool::sdRestartWithAdditionalLongRebar)
          {
-            pArtifact->SetOutcome(pgsSegmentDesignArtifact::StrandsReqdForLongReinfShearAndFlexureTurnedOff);
-            m_DesignerOutcome.AbortDesign();
-         }
-         else
-         {
-            // We can add strands?
-            // Find area of current strands, attempt to add required
+            // Additional rebar is needed for long reinf for shear. Add bars, if possible
             Float64 av_add = m_ShearDesignTool.GetRequiredAsForLongReinfShear();
 
             GET_IFACE(IMaterials,pMaterial);
-            Float64 aone_strand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetNominalArea();
+            matRebar::Grade barGrade;
+            matRebar::Type barType;
+            pMaterial->GetSegmentTransverseRebarMaterial(segmentKey,&barType,&barGrade);
+            lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+            ATLASSERT(pool != NULL);
 
-            Float64 nstrands = av_add/aone_strand; // Additional strands needed
-            nstrands = CeilOff(nstrands, 1.0);
+            Float64 max_agg_size = pMaterial->GetSegmentMaxAggrSize(segmentKey); // for 1.33 max agg size for bar spacing
 
-            StrandIndexType numNp = m_StrandDesignTool.GetNumPermanentStrands();
-            StrandIndexType minNp = numNp + (StrandIndexType)nstrands - 1;
-            StrandIndexType nextNp = m_StrandDesignTool.GetNextNumPermanentStrands(minNp);
-            bool it_worked=true;
-            if ( 0 < nextNp)
+            GET_IFACE(IGirder,pGirder);
+            Float64 wFlange = pGirder->GetBottomWidth(pgsPointOfInterest(segmentKey, 0.0));
+            Float64 spacing_width = wFlange - 2*one_inch; // this is the c-c width of the two outer-most bars
+                                                          // this will equal (nbars-1)*spacing
+
+            Float64 nbars = 0;
+            Float64 spacing = 0;
+            matRebar::Size barSize;
+            bool bBarSpacingOK = false;
+            matRebar::Size barSizes[] = {matRebar::bs5,matRebar::bs6,matRebar::bs7};
+            int nBarSizes = sizeof(barSizes)/sizeof(matRebar::Size);
+            for ( int i = 0; i < nBarSizes; i++ )
             {
-               if (m_StrandDesignTool.SetNumPermanentStrands(nextNp))
+               barSize = barSizes[i];
+               const matRebar* pRebar = pool->GetRebar(barType,barGrade,barSize);
+               Float64 av_onebar = pRebar->GetNominalArea();
+               Float64 db = pRebar->GetNominalDimension();
+
+               // min clear spacing per 5.10.3.1.2.
+               Float64 min_clear = Max(one_inch,1.33*max_agg_size,db);
+               Float64 min_bar_spacing = min_clear + db;
+
+               nbars = av_add/av_onebar;
+               nbars = CeilOff(nbars, 1.0); // round up to next bar increment
+
+               // Make sure spacing fits in girder
+               if ( nbars == 1 )
                {
-                  LOG(_T("Minimum number of strands set to control long reinf shear = ")<<nextNp);
-                  m_StrandDesignTool.SetMinimumPermanentStrands(nextNp);
+                  spacing = 0;
+                  bBarSpacingOK = true;
+                  break;
+               }
+               else
+               {
+                  Float64 dspacing = spacing_width/(nbars-1);
+                  spacing = FloorOff(dspacing, one_inch/4); // try for a reasonable spacing
+                  if (spacing == 0.0)
+                  {
+                     spacing = dspacing; // take any old spacing
+                  }
+
+                  if ( min_bar_spacing < spacing )
+                  {
+                     bBarSpacingOK = true;
+                     break; // we have a spacing that works or there is only one bar so spacing is irrelevant
+                  }
+               }
+            }
+
+            if ( !bBarSpacingOK )
+            {
+               // could not find a bar spacing that works
+               pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooManyBarsForLongReinfShear);
+               m_DesignerOutcome.AbortDesign();
+            }
+
+            // Add row of bars
+            CLongitudinalRebarData& rebar_data = pArtifact->GetLongitudinalRebarData();
+
+            CLongitudinalRebarData::RebarRow row;
+            row.BarSize = barSize;
+            row.Cover = 2.0*one_inch;
+            row.Face = pgsTypes::BottomFace;
+            row.NumberOfBars = (Int32)nbars;
+            row.BarSpacing = spacing;
+
+            rebar_data.RebarRows.push_back(row);
+
+            pArtifact->SetWasLongitudinalRebarForShearDesigned(true);
+         }
+         else if (sdo == pgsShearDesignTool::sdRestartWithAdditionalStrands)
+         {
+            // Additional strands are needed for long reinf for shear.
+            // We can only make this adjustment if flexure design is turned on (no use in adding strands
+            // if concrete strengths can't be adjusted).
+            if (!bDoDesignFlexure)
+            {
+               pArtifact->SetOutcome(pgsSegmentDesignArtifact::StrandsReqdForLongReinfShearAndFlexureTurnedOff);
+               m_DesignerOutcome.AbortDesign();
+            }
+            else
+            {
+               // We can add strands?
+               // Find area of current strands, attempt to add required
+               Float64 av_add = m_ShearDesignTool.GetRequiredAsForLongReinfShear();
+
+               GET_IFACE(IMaterials,pMaterial);
+               Float64 aone_strand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetNominalArea();
+
+               Float64 nstrands = av_add/aone_strand; // Additional strands needed
+               nstrands = CeilOff(nstrands, 1.0);
+
+               StrandIndexType numNp = m_StrandDesignTool.GetNumPermanentStrands();
+               StrandIndexType minNp = numNp + (StrandIndexType)nstrands - 1;
+               StrandIndexType nextNp = m_StrandDesignTool.GetNextNumPermanentStrands(minNp);
+
+               // Tricky:
+               // Experience has shown that adding more than 10% additional strands for LRS is likely to end in failure,
+               // or at least a lousy flexural design. If this is the first time, let's try tightening up the stirrup 
+               // layout before we do stirrup layout instead. This only works for from-scratch designs
+               // This will require another trip through the shear algorithm
+               if (nextNp > 1.1*numNp && !m_ShearDesignTool.GetLongShearCapacityRequiresStirrupTightening() && bDoStartFromScratch)
+               {
+                  m_ShearDesignTool.SetLongShearCapacityRequiresStirrupTightening(true); // Tell algorithm to tighten layout next time through
+                  pArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnStirrupsTightendedForLongReinfShear); // give user a note
+                  continue; // cycle back through shear design
+               }
+
+               bool it_worked=true;
+               if ( 0 < nextNp)
+               {
+                  if (m_StrandDesignTool.SetNumPermanentStrands(nextNp))
+                  {
+                     LOG(_T("Minimum number of strands set to control long reinf shear = ")<<nextNp);
+                     m_StrandDesignTool.SetMinimumPermanentStrands(nextNp);
+                  }
+                  else
+                  {
+                     it_worked = false;
+                  }
                }
                else
                {
                   it_worked = false;
                }
+
+               if (!it_worked)
+               {
+                  m_DesignerOutcome.AbortDesign();
+                  pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooMuchStrandsForLongReinfShear);
+               }
+               else
+               {
+                  m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
+                  pArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnStrandsAddedForLongReinfShear); // give user a note
+               }
+            }
+         }
+         else if (sdo == pgsShearDesignTool::sdDesignFailedFromShearStress)
+         {
+            // Strut and tie required - see if we can find a f'c that will work
+            Float64 fcreqd = m_ShearDesignTool.GetFcRequiredForShearStress();
+
+            if (fcreqd < m_StrandDesignTool.GetMaximumConcreteStrength())
+            {
+               m_StrandDesignTool.UpdateConcreteStrengthForShear(fcreqd, intervalIdx, pgsTypes::StrengthI);
+               pArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnConcreteStrengthIncreasedForShearStress);
             }
             else
             {
-               it_worked = false;
-            }
-
-            if (!it_worked)
-            {
-               m_DesignerOutcome.AbortDesign();
-               pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooMuchStrandsForLongReinfShear);
-            }
-            else
-            {
-               m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
-               pArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnStrandsAddedForLongReinfShear); // give user a note
+               // We can't increase concrete strength enough. Just issue message
+               pArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnShearRequiresStrutAndTie);
             }
          }
-      }
-      else if (sdo == pgsShearDesignTool::sdDesignFailedFromShearStress)
-      {
-         // Strut and tie required - see if we can find a f'c that will work
-         Float64 fcreqd = m_ShearDesignTool.GetFcRequiredForShearStress();
-
-         if (fcreqd < m_StrandDesignTool.GetMaximumConcreteStrength())
+         else if (sdo != pgsShearDesignTool::sdSuccess)
          {
-            m_StrandDesignTool.UpdateConcreteStrengthForShear(fcreqd, intervalIdx, pgsTypes::StrengthI);
-         }
-         else
-         {
-            // We can't increase concrete strength enough. Just issue message
-            pArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnShearRequiresStrutAndTie);
+            ATLASSERT(false);
+            m_DesignerOutcome.AbortDesign();
          }
       }
-      else if (sdo != pgsShearDesignTool::sdSuccess)
-      {
-         ATLASSERT(false);
-         m_DesignerOutcome.AbortDesign();
-      }
+
+      // Design is done;
+      bIter = false;
    }
 }
 

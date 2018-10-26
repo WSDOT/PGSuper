@@ -199,7 +199,6 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    *pbDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
    *pbPermit     = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -229,27 +228,28 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    }
 
    // determine continuity stage
-   EventIndexType continuityEventIdx = MAX_INDEX;
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType continuityIntervalIdx = MAX_INDEX;
    PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(*pStartGroup);
    PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(*pEndGroup);
    for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
-         EventIndexType left_event_index, right_event_index;
-         pBridge->GetContinuityEventIndex(pierIdx,&left_event_index,&right_event_index);
-         continuityEventIdx = Min(continuityEventIdx,left_event_index);
-         continuityEventIdx = Min(continuityEventIdx,right_event_index);
+         IntervalIndexType left_interval_index, right_interval_index;
+         pIntervals->GetContinuityInterval(pierIdx,&left_interval_index,&right_interval_index);
+         continuityIntervalIdx = Min(continuityIntervalIdx,left_interval_index);
+         continuityIntervalIdx = Min(continuityIntervalIdx,right_interval_index);
       }
    }
 
-   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
-   *pbContinuousBeforeDeckCasting = (continuityEventIdx <= castDeckEventIdx) ? true : false;
+   *pbContinuousBeforeDeckCasting = (continuityIntervalIdx <= castDeckIntervalIdx) ? true : false;
 
    if ( *pbConstruction )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityEventIdx == castDeckEventIdx)
+      if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx)
       {
          nCols += 2;
       }
@@ -261,7 +261,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
 
    if ( *pbDeckPanels )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityEventIdx == castDeckEventIdx)
+      if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx)
       {
          nCols += 2;
       }
@@ -271,7 +271,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
       }
    }
 
-   if ( analysisType == pgsTypes::Envelope && continuityEventIdx == castDeckEventIdx )
+   if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
    {
       nCols += 2; // add one more each for min/max slab and min/max slab pad
    }
@@ -423,6 +423,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    }
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
    RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,
                                                                                            bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,
@@ -447,7 +448,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
       IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
 
       CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,poiRefAttribute) );
 
       std::vector<Float64> segment;
       std::vector<Float64> girder;
@@ -602,7 +603,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
 
          ColumnIndexType col = 0;
 
-         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
          if ( bSegments )
          {
             (*p_table)(row,col++) << moment.SetValue( segment[index] );

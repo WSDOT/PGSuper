@@ -1,4 +1,4 @@
-Camber {#tg_camber}
+﻿Camber {#tg_camber}
 ======================================
 Several elements make up the camber calculations. Each one is detailed in this section. Refer to Chapter 5 of the WSDOT Bridge Design Manual for a further discussion of camber. The following schematic shows the camber history for a point in a girder with a cast in place deck and temporary strands.
 
@@ -57,7 +57,7 @@ Camber is notoriously difficult to predict, so a practical approach is to use a 
 
 To compute the lower bound camber, a Camber Variability (C<sub>v</sub>) factor is applied to the upper bound camber. C<sub>v</sub> is entered as a percentage reduction of the upper bound camber.
 
-> TIP: A warning will be issued if the computed lower bound camber is less than the screed camber to alarm users that the girder has the potential to sag if camber ends up at the lower estimate. Note that this is not an absolute predication that sag will occur: It's just a warning that a worst case scenario may end up with sag, and engineers should take steps to mitigate problems.
+> NOTE: A warning will be issued if the computed excess camber is less than, or within 0.25" if greater than, the screed camber to alert you that the girder has the potential to sag if actual excess camber is less than the computed value. Note that this is not an absolute predication that sag will occur: It's just a warning that a worst case scenario may end up with sag, and engineers should take steps to mitigate problems. The slab haunch loading does not account for sag in the girder.
 
 The lower bound camber is an attempt to reflect natural variations in camber. When WSDOT reviewed camber data, they found most all measured cambers were enveloped between the upper bound value and 50% of the upper bound camber. This is consistent with the findings in Reference 1, and use of the 50% value is WSDOT's standard practice.
 

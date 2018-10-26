@@ -84,9 +84,8 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    pPara = new rptParagraph();
    (*pChapter) << pPara;
-   *pPara << Bold(_T("Notes")) << rptNewLine;
-   *pPara << _T("Web Offsets are measured from and normal to the centerline girder") << rptNewLine;
-   *pPara << _T("Station, normal offset, and deck elevations are given for 10th points between bearings") << rptNewLine;
+   *pPara << _T("Web Offset is measured from and normal to the centerline girder") << rptNewLine;
+   *pPara << _T("Station, Offset, and Elev are given for 10th points between bearings along the girder webs") << rptNewLine;
 
    //
    // Bridge Elevation Table

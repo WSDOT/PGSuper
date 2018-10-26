@@ -72,7 +72,7 @@ CCastingYardStressTable& CCastingYardStressTable::operator= (const CCastingYardS
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strTableTitle,
+rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,PoiAttributeType poiRefAttribute,LPCTSTR strTableTitle,
                                             IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -100,9 +100,12 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    (*p_table)(0,2) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    // Get the interface pointers we need
-   PoiAttributeType poiAttribute = (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_STORAGE_SEGMENT);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiAttribute) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND,POIFIND_OR) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
@@ -117,7 +120,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      (*p_table)(row,0) << location.SetValue( poiAttribute, poi );
+      (*p_table)(row,0) << location.SetValue( poiRefAttribute, poi );
 
       Float64 fTop, fBot;
       pProductForces->GetStress(intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);

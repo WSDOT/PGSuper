@@ -1057,6 +1057,10 @@ std::_tstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
       return std::_tstring(_T("The number of strands was controlled by longitudinal reinforcement for shear requirements."));
       break;
 
+   case pgsSegmentDesignArtifact::dnStirrupsTightendedForLongReinfShear:
+      return std::_tstring(_T("The stirrup layout spacing was tightened for longitudinal reinforcement for shear requirements."));
+      break;
+
    case pgsSegmentDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionCy:
       return std::_tstring(_T("Refer to the release \"Allowable Tension Reinforcement Requirements\" sections in the Details report for more information about required longitudinal reinforcement."));
       break;
@@ -1067,6 +1071,10 @@ std::_tstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
 
    case pgsSegmentDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionHauling:
       return std::_tstring(_T("Refer to the hauling \"Allowable Tension Reinforcement Requirements\" sections in the Details report for more information about required longitudinal reinforcement."));
+      break;
+
+   case pgsSegmentDesignArtifact::dnConcreteStrengthIncreasedForShearStress:
+      return std::_tstring(_T("Final concrete strength was increased to alleviate shear stress requirements."));
       break;
 
    default:

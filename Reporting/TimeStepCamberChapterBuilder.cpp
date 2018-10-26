@@ -94,12 +94,15 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker*
       IntervalIndexType storageIntervalIdx  = pIntervals->GetStorageInterval(segmentKey);
       IntervalIndexType haulingIntervalIdx  = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-      pLayoutTable->SetColumnSpan(rowIdx,0,nCols);
-      for ( ColumnIndexType c = 1; c < nCols; c++ )
+      if ( 1 < nSegments )
       {
-         pLayoutTable->SetColumnSpan(rowIdx,c,SKIP_CELL);
+         pLayoutTable->SetColumnSpan(rowIdx,0,nCols);
+         for ( ColumnIndexType c = 1; c < nCols; c++ )
+         {
+            pLayoutTable->SetColumnSpan(rowIdx,c,SKIP_CELL);
+         }
+         (*pLayoutTable)(rowIdx++,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
       }
-      (*pLayoutTable)(rowIdx++,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
 
       ColumnIndexType colIdx = 0;
 
@@ -154,20 +157,23 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IB
       {
          CSegmentKey segmentKey(girderKey,segIdx);
 
-         if ( layoutTableColIdx == 0 )
+         if ( 1 < nSegments )
          {
-            // put segment name in segment label row
-            pLayoutTable->SetColumnSpan(rowIdx,0,nCols);
-            for ( ColumnIndexType c = 1; c < nCols; c++ )
+            if ( layoutTableColIdx == 0 )
             {
-               pLayoutTable->SetColumnSpan(rowIdx,c,SKIP_CELL);
+               // put segment name in segment label row
+               pLayoutTable->SetColumnSpan(rowIdx,0,nCols);
+               for ( ColumnIndexType c = 1; c < nCols; c++ )
+               {
+                  pLayoutTable->SetColumnSpan(rowIdx,c,SKIP_CELL);
+               }
+               (*pLayoutTable)(rowIdx++,layoutTableColIdx) << _T("Segment ") << LABEL_SEGMENT(segIdx);
             }
-            (*pLayoutTable)(rowIdx++,layoutTableColIdx) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-         }
-         else
-         {
-            // skip over the segment label row
-            rowIdx++;
+            else
+            {
+               // skip over the segment label row
+               rowIdx++;
+            }
          }
 
          IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -221,11 +227,15 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
 
    std::vector<pgsTypes::ProductForceType> vProductForces;
    vProductForces.push_back(pgsTypes::pftGirder);
+   vProductForces.push_back(pgsTypes::pftPretension);
    //vProductForces.push_back(pgsTypes::pftConstruction);
    //vProductForces.push_back(pgsTypes::pftSlab);
    //vProductForces.push_back(pgsTypes::pftSlabPad);
    //vProductForces.push_back(pgsTypes::pftSlabPanel);
-   //vProductForces.push_back(pgsTypes::pftDiaphragm); 
+   if ( erectionIntervalIdx <= intervalIdx )
+   {
+      vProductForces.push_back(pgsTypes::pftDiaphragm);
+   }
    //vProductForces.push_back(pgsTypes::pftOverlay);
    //vProductForces.push_back(pgsTypes::pftSidewalk);
    //vProductForces.push_back(pgsTypes::pftTrafficBarrier);
@@ -246,7 +256,6 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
    //vProductForces.push_back(pgsTypes::pftShearKey);
    //vProductForces.push_back(pgsTypes::pftSecondaryEffects);
    //vProductForces.push_back(pgsTypes::pftPostTensioning);
-   vProductForces.push_back(pgsTypes::pftPretension);
 
    if ( storageIntervalIdx < intervalIdx )
    {
@@ -465,6 +474,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 
    std::vector<pgsTypes::ProductForceType> vProductForces;
    vProductForces.push_back(pgsTypes::pftGirder);
+   vProductForces.push_back(pgsTypes::pftPretension);
 
    if ( !IsZero(pUserLoadData->GetConstructionLoad()) )
    {
@@ -515,8 +525,6 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    {
       vProductForces.push_back(pgsTypes::pftShearKey);
    }
-
-   vProductForces.push_back(pgsTypes::pftPretension);
 
    if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
    {
@@ -630,10 +638,13 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
+   
    std::vector<Float64> vDmin,vDmax;
    pLimitStateForces->GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,vPoi,bat,true,false,false,&vDmin,&vDmax);
+   
    std::vector<Float64> vExcessMin,vExcessMax;
    pLimitStateForces->GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,false,&vExcessMin,&vExcessMax);
+   
    std::vector<Float64> vC;
    std::transform(vExcessMin.begin(),vExcessMin.end(),vDmin.begin(),std::back_inserter(vC),std::minus<Float64>());
 

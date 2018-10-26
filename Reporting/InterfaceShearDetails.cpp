@@ -204,17 +204,17 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
       CSegmentKey segmentKey(girderKey,segIdx);
 
-      *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << p_first_artifact[segIdx]->GetFrictionFactor() << rptTab
-             << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetCohesionFactor()) << rptTab;
+      *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << p_first_artifact[segIdx]->GetFrictionFactor() << _T(", ")
+             << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetCohesionFactor()) << _T(", ");
 
       if ( spec2007OrOlder )
       {
-         *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << p_first_artifact[segIdx]->GetK1() << rptTab
-                << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetK2()) << rptTab;
+         *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << p_first_artifact[segIdx]->GetK1() << _T(", ")
+                << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetK2()) << _T(", ");
       }
 
-      *pPara << symbol(phi) << _T(" = ") << p_first_artifact[segIdx]->GetPhi() << rptTab
-             << RPT_FC << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFc()) << rptTab
+      *pPara << symbol(phi) << _T(" = ") << p_first_artifact[segIdx]->GetPhi() << _T(", ")
+             << RPT_FC << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFc()) << _T(", ")
              << RPT_FY << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFy());
 
       if ( p_first_artifact[segIdx]->WasFyLimited() )
@@ -235,18 +235,19 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          const pgsHorizontalShearArtifact* pHorizShearArtifact = pStirrupAtPoiArtifact->GetHorizontalShearArtifact();
          ATLASSERT(pHorizShearArtifact->IsApplicable());
 
-         *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << pHorizShearArtifact->GetFrictionFactor() << rptTab
-                << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetCohesionFactor()) << rptTab;
+         *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << pHorizShearArtifact->GetFrictionFactor() << _T(", ")
+                << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetCohesionFactor()) << _T(", ");
 
          if ( spec2007OrOlder )
          {
-            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << pHorizShearArtifact->GetK1() << rptTab
-                   << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetK2()) << rptTab;
+            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << pHorizShearArtifact->GetK1() << _T(", ")
+                   << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetK2()) << _T(", ");
          }
 
-         *pPara << symbol(phi) << _T(" = ") << pHorizShearArtifact->GetPhi() << rptTab
-                << RPT_FC << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetFc()) << rptTab
+         *pPara << symbol(phi) << _T(" = ") << pHorizShearArtifact->GetPhi() << _T(", ")
+                << RPT_FC << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetFc()) << _T(", ")
                 << RPT_FY << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetFy());
+
          if ( pHorizShearArtifact->WasFyLimited() )
          {
             *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD 5.8.4.1)");

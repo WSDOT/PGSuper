@@ -160,11 +160,14 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    // Fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;
       std::vector<Float64> minServiceI, maxServiceI;
@@ -407,13 +410,16 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    // Fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,&vPoi,&poiRefAttribute);
+      poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;
       std::vector<Float64> minPedestrianLL,    maxPedestrianLL;
@@ -494,7 +500,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
       std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       IndexType index = 0;
       ColumnIndexType col = 0;
-
+      RowIndexType row2 = row;
       for ( ; i != end; i++, index++ )
       {
          const pgsPointOfInterest& poi = *i;
@@ -599,36 +605,39 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
          {
             col = recCol;
 
-            (*p_table)(row,col++) << axial.SetValue( maxDesignLL[index] );
-            (*p_table)(row,col++) << axial.SetValue( minDesignLL[index] );
+            (*p_table)(row2,col++) << axial.SetValue( maxDesignLL[index] );
+            (*p_table)(row2,col++) << axial.SetValue( minDesignLL[index] );
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               (*p_table)(row,col++) << axial.SetValue( maxFatigueLL[index] );
-               (*p_table)(row,col++) << axial.SetValue( minFatigueLL[index] );
+               (*p_table)(row2,col++) << axial.SetValue( maxFatigueLL[index] );
+               (*p_table)(row2,col++) << axial.SetValue( minFatigueLL[index] );
             }
 
             if ( bPermit )
             {
-               (*p_table)(row,col++) << axial.SetValue( maxPermitLL[index] );
-               (*p_table)(row,col++) << axial.SetValue( minPermitLL[index] );
+               (*p_table)(row2,col++) << axial.SetValue( maxPermitLL[index] );
+               (*p_table)(row2,col++) << axial.SetValue( minPermitLL[index] );
             }
 
-            row++;
+            row2++;
          }
 
          // footnotes for pedestrian loads
-         int lnum=1;
-         *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( grpIdx == startGroupIdx )
          {
-            *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
-         }
+            int lnum=1;
+            *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
 
-         if ( bPermit )
-         {
-            *pNote << lnum++ << PedestrianFootnote(PermitPedLoad) << rptNewLine;
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
+            }
+
+            if ( bPermit )
+            {
+               *pNote << lnum++ << PedestrianFootnote(PermitPedLoad) << rptNewLine;
+            }
          }
       }
 
@@ -695,11 +704,14 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    // Fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;
       std::vector<Float64> minServiceI,   maxServiceI;

@@ -144,13 +144,16 @@ void CStabilityGraphController::FillGirderCtrl()
       pcbGirder->AddString(strLabel);
    }
 
-   if ( curSel != CB_ERR && curSel < pcbGirder->GetCount() )
+   if ( curSel == CB_ERR )
    {
-      pcbGirder->SetCurSel(curSel);
+      pcbGirder->SetCurSel(0);
+      m_SegmentKey.girderIndex = 0;
    }
    else
    {
-      pcbGirder->SetCurSel(0);
+      curSel = Min(curSel,(int)(nGirders-1));
+      pcbGirder->SetCurSel(curSel);
+      m_SegmentKey.girderIndex = (GirderIndexType)curSel;
    }
 }
 

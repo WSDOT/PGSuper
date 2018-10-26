@@ -744,8 +744,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
    GET_IFACE(ISectionProperties,pSectProps);
-   GET_IFACE_NOCHECK(ILossParameters,pLossParams);
-   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross || pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
    Float64 fpe = GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,NULL,bIncludeElasticEffects);
 
    Float64 aps = pStrand->GetNominalArea();
@@ -765,8 +764,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
    GET_IFACE(ISectionProperties,pSectProps);
-   GET_IFACE_NOCHECK(ILossParameters,pLossParams);
-   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross || pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
    Float64 fpe = GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,&config,bIncludeElasticEffects);
 
    Float64 aps = pStrand->GetNominalArea();
@@ -830,8 +828,7 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
    GET_IFACE(ISectionProperties,pSectProps);
-   GET_IFACE_NOCHECK(ILossParameters,pLossParams);
-   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross || pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
    Float64 fpe = GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,pConfig,bIncludeElasticEffects);
 
    Float64 aps = pStrand->GetNominalArea();

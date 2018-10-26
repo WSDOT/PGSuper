@@ -1,28 +1,30 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     1    WF83G    *     47  0.6  270  36.41  22.60  11.75  11.75                                               9  78.6  3.0  6.000  7.200   4.612    -4.397    14427   0.540  0.671   4.561 -2.118 -0.185 -0.218 -2.521 182.00  328.79    2.75   14.50   14.50 
+ 34.25    6   6.00                     1     1    WF83G    *     47  0.6  270  36.41  22.60  12.00  12.00                                               9  78.6  3.0  6.000  7.200   4.637    -4.419    14427   0.540  0.671   4.592 -2.154 -0.185 -0.218 -2.557 182.00  327.09    2.75   14.50   14.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     2    WF83G    *     47  0.6  270  36.41  22.60  11.50  11.50                                               9  78.6  3.0  6.200  7.200   4.621    -4.404    14489   0.538  0.671   4.356 -2.129 -0.185 -0.218 -2.532 179.65  319.84    2.50   14.50   14.50 
+ 34.25    6   6.00                     1     2    WF83G    *     45  0.6  270  36.52  22.11  11.25  11.25                                               9  78.6  3.0  6.100  7.000   4.586    -4.379    14052   0.537  0.671   4.275 -2.127 -0.187 -0.220 -2.534 166.18  290.07    3.00   14.50   14.50 
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     4    WF83G    *     47  0.6  270  36.41  22.60  11.50  11.50                                               9  78.6  3.0  6.200  7.200   4.621    -4.404    14489   0.538  0.671   4.356 -2.129 -0.185 -0.218 -2.532 179.65  319.84    2.50   14.50   14.50 
+ 34.25    6   6.00                     1     4    WF83G    *     46  0.6  270  36.53  20.96  11.50  11.50                                              10  78.6  3.0  6.100  7.000   4.608    -4.399    14279   0.537  0.671   4.407 -2.159 -0.187 -0.220 -2.566 174.65  302.88    3.75   14.50   14.50 
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Confinement zone check failed.
 
 

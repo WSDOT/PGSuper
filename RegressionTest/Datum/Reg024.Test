@@ -5,8 +5,8 @@
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed
@@ -20,8 +20,8 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed

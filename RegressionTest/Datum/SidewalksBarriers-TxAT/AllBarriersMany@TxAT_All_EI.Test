@@ -5,8 +5,8 @@
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

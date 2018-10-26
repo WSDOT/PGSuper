@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic (Bridge Site 3)
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -21,8 +21,8 @@ The Specification Check was Successful
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

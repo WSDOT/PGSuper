@@ -90,6 +90,26 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
 
    UpdateElementControls();
 
+   GET_IFACE(ISelection,pSelection);
+   CSelection selection = pSelection->GetSelection();
+
+   if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
+   {
+      CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
+      pcbGroup->SetCurSel((int)selection.GroupIdx);
+
+      CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+      pcbGirder->SetCurSel((int)selection.GirderIdx);
+   }
+
+   GET_IFACE(ILossParameters,pLossParams);
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   {
+      GetDlgItem(IDC_SH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_CR)->ShowWindow(SW_HIDE);
+   }
+
+
    return TRUE;
 }
 
@@ -192,13 +212,16 @@ void CConcretePropertyGraphController::FillGroupControl()
    int curSel = pcbGroup->GetCurSel();
    pcbGroup->ResetContent();
 
+   GET_IFACE(IDocumentType,pDocType);
+   CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridge = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString strGroup;
-      strGroup.Format(_T("Group %d"),LABEL_GROUP(grpIdx));
+      strGroup.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
       pcbGroup->AddString(strGroup);
    }
 
@@ -226,9 +249,14 @@ void CConcretePropertyGraphController::FillGirderControl()
       pcbGirder->AddString(strGirder);
    }
 
-   if ( pcbGirder->SetCurSel(curSel) == CB_ERR ) 
+   if ( curSel == CB_ERR )
    {
       pcbGirder->SetCurSel(0);
+   }
+   else
+   {
+      curSel = Min(curSel,(int)(nGirders-1));
+      pcbGirder->SetCurSel(curSel);
    }
 }
 
@@ -252,9 +280,20 @@ void CConcretePropertyGraphController::FillSegmentControl()
       pcbSegment->AddString(strSegment);
    }
 
-   if ( pcbSegment->SetCurSel(curSel) == CB_ERR )
+   if ( curSel == CB_ERR )
    {
       pcbSegment->SetCurSel(0);
+   }
+   else
+   {
+      curSel = Min(curSel,(int)(nSegments-1));
+      pcbSegment->SetCurSel(curSel);
+   }
+
+   GET_IFACE(IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      pcbSegment->ShowWindow(SW_HIDE);
    }
 }
 
@@ -412,7 +451,7 @@ int CConcretePropertyGraphController::GetXAxisType()
       break;
 
    case IDC_INTERVALS:
-      axisType = X_AXIS_INTEGER;
+      axisType = X_AXIS_INTERVAL;
       break;
 
    default:

@@ -222,7 +222,6 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [5.8.3.5]");
 
    rptParagraph* pBody = new rptParagraph;

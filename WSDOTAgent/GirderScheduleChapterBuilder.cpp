@@ -209,6 +209,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    pgsPointOfInterest poiMidSpan(pmid.front());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
 
    rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2);
    *p << pTable;
@@ -622,6 +623,24 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
+   const pgsHaulingAnalysisArtifact* pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
+   if ( pHaulingArtifact != NULL )
+   {
+      const stbHaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
+      bool bDirectCamber;
+      Float64 camber;
+      pHaulProblem->GetCamber(&bDirectCamber,&camber);
+      (*pTable)(++row,0) << _T("Maximum midspan vertical deflection, shipping");
+      if ( bDirectCamber )
+      {
+         (*pTable)(row,  1) << gdim.SetValue(camber);
+      }
+      else
+      {
+         (*pTable)(row,  1) << _T("");
+      }
+   }
+
    const stbLiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
    if (pLiftArtifact!=NULL)
    {
@@ -631,7 +650,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row  ,1) << glength.SetValue(L);
    }
 
-   const pgsHaulingAnalysisArtifact* pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
    if ( pHaulingArtifact != NULL )
    {
       GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -650,19 +668,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       
       (*pTable)(++row,0) << _T("Location of Trailing Shipping Support, ") << Sub2(_T("L"),_T("2"));
       (*pTable)(row  ,1) << glength.SetValue(trailingOverhang);
-
-      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,poiMidSpan,bat,rtCumulative,false);
-      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,poiMidSpan,bat,rtCumulative,false);
-      Float64 Di = DpsRelease + DgdrRelease;
-      (*pTable)(++row,0) << _T("Camber at release");
-      (*pTable)(row,  1) << gdim.SetValue(Di);
-
-      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,poiMidSpan,bat,rtCumulative,false);
-      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poiMidSpan,bat,rtCumulative,false);
-      Float64 Dcreep1a   = pCamber->GetCreepDeflection( poiMidSpan, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage );
-      Float64 Des = DpsStorage + DgdrStorage + Dcreep1a; // camber at end of storage
-      (*pTable)(++row,0) << _T("Camber at shipping");
-      (*pTable)(row,  1) << gdim.SetValue(Des);
 
       (*pTable)(++row,0) << _T("Minimum shipping support rotational spring constant, ") << Sub2(_T("K"),symbol(theta));
       if ( pSegment->HandlingData.pHaulTruckLibraryEntry )

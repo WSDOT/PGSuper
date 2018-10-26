@@ -544,7 +544,10 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Casting Yard Stresses (At Release)"));
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,pIntervals->GetDescription(releaseIntervalIdx));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -571,9 +574,6 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
    StrandIndexType NhMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Harped);
 
    // Get std::vector<pgsPointOfInterest>
@@ -582,8 +582,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    //    PS Xfer from end of segment
    vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_PSXFER);
-   pgsPointOfInterest psxfer_left( vPoi.front() );
-   pgsPointOfInterest psxfer_right( vPoi.back() );
+   pgsPointOfInterest PSXFR_left( vPoi.front() );
+   pgsPointOfInterest PSXFR_right( vPoi.back() );
 
    //   Harping points
    pgsPointOfInterest hp_left;
@@ -615,7 +615,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,psxfer_left.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,PSXFR_left.GetID());
    fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
    fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
@@ -641,7 +641,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
    row++;
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,psxfer_left.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,PSXFR_left.GetID());
 
    fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
    fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
@@ -797,7 +797,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
    }
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,psxfer_right.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,PSXFR_right.GetID());
    fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
    fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
@@ -823,7 +823,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
    row++;
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,psxfer_right.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,PSXFR_right.GetID());
 
    fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
    fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
@@ -859,7 +859,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Deck and Diaphragm Placement Stage Stresses (Bridge Site 1)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,pIntervals->GetDescription(castDeckIntervalIdx));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -889,11 +889,11 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    std::vector<pgsPointOfInterest> vPoi;
    std::vector<pgsPointOfInterest>::iterator iter;
 
-   //    H from end of segment
+   // PSXFR from end of segment (used to be at H)
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    pgsPointOfInterest h_left;
    pgsPointOfInterest h_right;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_H);
+   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_PSXFER);
    if ( 0 < vPoi.size() )
    {
       iter = vPoi.begin();
@@ -936,7 +936,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
       fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
-      (*pTable)(row,0) << _T("Top of girder at H from left end");
+      (*pTable)(row,0) << _T("Top of girder at PSXFR from left end");
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllowTop );
@@ -953,7 +953,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
-      (*pTable)(row,0) << _T("Bottom of girder at H from left end");
+      (*pTable)(row,0) << _T("Bottom of girder at PSXFR from left end");
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1008,7 +1008,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
       fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
-      (*pTable)(row,0) << _T("Top of girder at H from right end");
+      (*pTable)(row,0) << _T("Top of girder at PSXFR from right end");
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllowTop );
@@ -1025,7 +1025,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
-      (*pTable)(row,0) << _T("Bottom of girder at H from right end");
+      (*pTable)(row,0) << _T("Bottom of girder at PSXFR from right end");
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1049,7 +1049,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Final without Live Load Stage Stresses (Bridge Site 2)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,pIntervals->GetDescription(railingSystemIntervalIdx));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -1079,11 +1079,11 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    std::vector<pgsPointOfInterest> vPoi;
    std::vector<pgsPointOfInterest>::iterator iter;
 
-   //    H from end of segment
+   // PSXFR from end of segment (used to be H)
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    pgsPointOfInterest h_left;
    pgsPointOfInterest h_right;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_H);
+   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_PSXFER);
    if ( 0 < vPoi.size() )
    {
       iter = vPoi.begin();
@@ -1124,7 +1124,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(railingSystemIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
-      (*pTable)(row,0) << _T("Bottom of girder at H from left end");
+      (*pTable)(row,0) << _T("Bottom of girder at PSXFR from left end");
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1182,7 +1182,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(railingSystemIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
-      (*pTable)(row,0) << _T("Bottom of girder at H from right end");
+      (*pTable)(row,0) << _T("Bottom of girder at PSXFR from right end");
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1201,12 +1201,12 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Final with Live Load Stage Stresses (Bridge Site 3)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,pIntervals->GetDescription(liveLoadIntervalIdx));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -1236,11 +1236,11 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    std::vector<pgsPointOfInterest> vPoi;
    std::vector<pgsPointOfInterest>::iterator iter;
 
-   //    H from end of segment
+   // PSXFR from end of segment (used to be H)
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    pgsPointOfInterest h_left;
    pgsPointOfInterest h_right;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_H);
+   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_PSXFER);
    if ( 0 < vPoi.size() )
    {
       iter = vPoi.begin();
@@ -1280,10 +1280,10 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if ( h_left.GetID() != INVALID_ID )
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
-      (*pTable)(row,0) << _T("Bottom of girder at H from left end");
+      (*pTable)(row,0) << _T("Bottom of girder at PSXFR from left end");
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1299,10 +1299,10 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
-         pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,h_left.GetID());
+         pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,h_left.GetID());
          fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
          fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
-         (*pTable)(row,0) << _T("Bottom of girder at H from left end");
+         (*pTable)(row,0) << _T("Bottom of girder at PSXFR from left end");
          (*pTable)(row,1) << _T("Service IA");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1318,10 +1318,10 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
       else
       {
-         pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,h_left.GetID());
+         pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,h_left.GetID());
          fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
          fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
-         (*pTable)(row,0) << _T("Bottom of girder at H from left end");
+         (*pTable)(row,0) << _T("Bottom of girder at PSXFR from left end");
          (*pTable)(row,1) << _T("Fatigue I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1337,7 +1337,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
    }
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetID());
    fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
    fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
    (*pTable)(row,0) << _T("Top of girder at mid-span");
@@ -1356,7 +1356,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,cl.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,cl.GetID());
       fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
       fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
       (*pTable)(row,0) << _T("Top of girder at mid-span");
@@ -1375,7 +1375,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
    else
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,cl.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,cl.GetID());
       fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
       fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
       (*pTable)(row,0) << _T("Top of girder at mid-span");
@@ -1393,7 +1393,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       row++;
    }
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,cl.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,cl.GetID());
    fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
    fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
    (*pTable)(row,0) << _T("Bottom of girder at mid-span");
@@ -1412,11 +1412,11 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if ( h_right.GetID() != INVALID_ID )
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
 
-      (*pTable)(row,0) << _T("Bottom of girder at H from right end");
+      (*pTable)(row,0) << _T("Bottom of girder at PSXFR from right end");
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1432,11 +1432,11 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
-         pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,h_right.GetID());
+         pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,h_right.GetID());
          fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
          fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
 
-         (*pTable)(row,0) << _T("Bottom of girder at H from right end");
+         (*pTable)(row,0) << _T("Bottom of girder at PSXFR from right end");
          (*pTable)(row,1) << _T("Service IA");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllowBot );
@@ -1452,11 +1452,11 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
       else
       {
-         pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(lastIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,h_right.GetID());
+         pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,h_right.GetID());
          fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
          fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
 
-         (*pTable)(row,0) << _T("Bottom of girder at H from right end");
+         (*pTable)(row,0) << _T("Bottom of girder at PSXFR from right end");
          (*pTable)(row,1) << _T("Fatigue I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllowBot );

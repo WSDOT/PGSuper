@@ -163,13 +163,17 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
+      GirderIndexType firstGirderIdx = girderKey.girderIndex == ALL_GIRDERS ? 0 : Min(girderKey.girderIndex,nGirders-1);
       GirderIndexType lastGirderIdx  = girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx;
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
          CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-         std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
+         std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+         std::vector<pgsPointOfInterest> vOtherPOI(pPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_STIRRUP_ZONE | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD | POI_PSXFER | POI_PSDEV | POI_DEBOND | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_H | POI_15H | POI_FACEOFSUPPORT,POIFIND_OR));
+         vPOI.insert(vPOI.end(),vOtherPOI.begin(),vOtherPOI.end());
+         std::sort(vPOI.begin(),vPOI.end());
+         vPOI.erase(std::unique(vPOI.begin(),vPOI.end()),vPOI.end());
          ATLASSERT( vPOI.size() != 0 );
          pgsPointOfInterest dummy_poi( vPOI[0] );
 
@@ -184,30 +188,46 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          if ( bonded_details.ltDetails.bMinuteValue )
          {
-            *pParagraph_h << _T("Zero Transfer Length Selected in Project Criteria") << rptNewLine;
-            *pParagraph << _T("Actual length used ")<< Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.lt) << rptNewLine;
+            (*pParagraph_h) << _T("Zero Transfer Length Selected in Project Criteria") << rptNewLine;
+            (*pParagraph) << _T("Actual length used ")<< Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.lt) << rptNewLine;
          }
          else
          {
             if ( bonded_details.ltDetails.bEpoxy )
             {
-               *pParagraph_h << _T("Transfer Length") << rptNewLine;
-               *pParagraph << _T("See \"Guidelines for the use of Epoxy-Coated Strand\", Section 5.5.2, PCI Journal, July-August 1993") << rptNewLine;
+               (*pParagraph_h) << _T("Transfer Length") << rptNewLine;
+               (*pParagraph) << _T("See \"Guidelines for the use of Epoxy-Coated Strand\", Section 5.5.2, PCI Journal, July-August 1993") << rptNewLine;
             }
             else
             {
-               *pParagraph_h << _T("Transfer Length [5.11.4.1]") << rptNewLine;
+               (*pParagraph_h) << _T("Transfer Length [5.11.4.1]") << rptNewLine;
             }
-            *pParagraph << Sub2(_T("l"),_T("t")) << _T(" = ") << bonded_details.ltDetails.ndb << Sub2(_T("d"),_T("b")) << rptNewLine;
-            *pParagraph << Sub2(_T("d"),_T("b")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.db) << rptNewLine;
-            *pParagraph << Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.lt) << rptNewLine;
+            (*pParagraph) << Sub2(_T("l"),_T("t")) << _T(" = ") << bonded_details.ltDetails.ndb << Sub2(_T("d"),_T("b")) << rptNewLine;
+            (*pParagraph) << Sub2(_T("d"),_T("b")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.db) << rptNewLine;
+            (*pParagraph) << Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.lt) << rptNewLine;
          }
 
          // Development Length
+         pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter << pParagraph;
+         (*pParagraph) << _T("Development Length [5.11.4.2]") << rptNewLine;
+
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
 
-         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(13,_T("Development Length [5.11.4.2]"));
+         if ( IS_US_UNITS(pDisplayUnits) )
+         {
+            (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_US.png")) << rptNewLine;
+         }
+         else
+         {
+            (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_SI.png")) << rptNewLine;
+         }
+
+         (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLengthReduction.png")) << rptNewLine;
+         (*pParagraph) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps")) << _T(" = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)") << rptNewLine;
+
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(13);
          (*pParagraph) << pTable << rptNewLine;
 
 
@@ -216,18 +236,6 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
             pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
          }
-
-         if ( IS_US_UNITS(pDisplayUnits) )
-         {
-            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_US.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_SI.png")) << rptNewLine;
-         }
-
-
-         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLengthReduction.png")) << rptNewLine;
 
          pTable->SetNumberOfHeaderRows(2);
          pTable->SetRowSpan(0,0,2);
@@ -340,10 +348,6 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             row++;
          } // next poi
 
-         pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
-         (*pChapter) << pParagraph;
-         (*pParagraph) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps")) << _T(" = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)") << rptNewLine;
-
          ////////////////////////////////////////////////////////////
          // Development of longitudinal rebar in segments
          SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
@@ -354,8 +358,8 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             *pChapter << pParagraph;
 
 #pragma Reminder("UPDATE: update heading so that it works for both PGSuper and PGSplice")
-            *pParagraph << _T("Development Length of Longitudinal Rebar [5.11.2.1]") << rptNewLine;
-            *pParagraph << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            (*pParagraph) << _T("Development Length of Longitudinal Rebar [5.11.2.1]") << rptNewLine;
+            (*pParagraph) << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
 
             pParagraph = new rptParagraph;
             *pChapter << pParagraph;
@@ -368,27 +372,27 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             rebarLayout->get_Count(&nRebars);
             if (nRebars == 0)
             {
-               *pParagraph << _T("No longitudinal rebar exists in girder") << rptNewLine;
+               (*pParagraph) << _T("No longitudinal rebar exists in girder") << rptNewLine;
             }
             else
             {
 	            if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
 	            {
-	               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
+	               (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
 	            }
 	            else if ( lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion() )
 	            {
-	               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
+	               (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
 	            }
 	            else
 	            {
 	               if ( IS_US_UNITS(pDisplayUnits) )
 	               {
-	                  *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
+	                  (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
 	               }
 	               else
 	               {
-	                  *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
+	                  (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
 	               }
 	            }
 
@@ -446,20 +450,20 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Development Length of Longitudinal Rebar [5.11.2.1] in Deck Slab") << rptNewLine;
+   (*pParagraph) << _T("Development Length of Longitudinal Rebar [5.11.2.1] in Deck Slab") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << _T("Full-length deck bars are considered to be developed along entire length of girder.") << rptNewLine;
+   (*pParagraph) << _T("Full-length deck bars are considered to be developed along entire length of girder.") << rptNewLine;
 
    const std::vector<CDeckRebarData::NegMomentRebarData> negMomRebarColl = pDeck->DeckRebarData.NegMomentRebar;
    if ( pDeck->DeckType == pgsTypes::sdtNone || negMomRebarColl.empty() )
    {
-      *pParagraph << _T("No partial-length longitudinal rebar exists in deck.") << rptNewLine;
+      (*pParagraph) << _T("No partial-length longitudinal rebar exists in deck.") << rptNewLine;
    }
    else
    {
-      *pParagraph << _T("Partial-length longitudinal rebar specified using ")<<Sub2(_T("A"),_T("s")) << _T(" are considered to be developed along entire specified bar length.") << rptNewLine;
+      (*pParagraph) << _T("Partial-length longitudinal rebar specified using ")<<Sub2(_T("A"),_T("s")) << _T(" are considered to be developed along entire specified bar length.") << rptNewLine;
 
       rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
       (*pParagraph) << pTable << rptNewLine;

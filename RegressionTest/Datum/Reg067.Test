@@ -4,14 +4,15 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
-Tension stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Tension stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
 
@@ -22,14 +23,15 @@ Hauling checks failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 7 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
-Tension stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Tension stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
 

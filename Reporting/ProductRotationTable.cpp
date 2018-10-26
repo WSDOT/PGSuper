@@ -99,31 +99,37 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T("Rotations"));
    RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bSegments,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
    // get poi where pier rotations occur
    std::vector<pgsPointOfInterest> vPoi;
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+
       PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(grpIdx);
       PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(grpIdx);
       for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
       {
          if ( pierIdx == startPierIdx )
          {
-            CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,0);
+            CSegmentKey segmentKey(grpIdx,gdrIdx,0);
             std::vector<pgsPointOfInterest> segPoi(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND));
             vPoi.push_back(segPoi.front());
          }
          else if ( pierIdx == endPierIdx )
          {
-            SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,girderKey.girderIndex));
-            CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,nSegments-1);
+            SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+            CSegmentKey segmentKey(grpIdx,gdrIdx,nSegments-1);
             std::vector<pgsPointOfInterest> segPoi(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L, POIFIND_AND));
             vPoi.push_back(segPoi.front());
          }
          else
          {
             Float64 Xgp;
-            CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+            CGirderKey thisGirderKey(grpIdx,gdrIdx);
             VERIFY(pBridge->GetPierLocation(thisGirderKey,pierIdx,&Xgp));
             pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey,Xgp);
             vPoi.push_back(poi);

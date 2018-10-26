@@ -1,45 +1,27 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     1    BT-72           0  1/2  270   0.00   0.00  12.25  12.25                                               0   0.0  0.0  5.800  6.500   3.874    -4.437     9430   0.733  0.733  -3.017 -1.695 -0.184 -0.092 -1.971   0.00    0.00    4.00   14.00   14.00 
+ 48.00    6   9.00                     1     1    BT-72    *     48  1/2  270  28.29  16.38   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.869    -3.567     9186   0.733  0.733   4.845 -1.280 -0.172 -0.086 -1.538 138.09  291.05    4.00   14.00   14.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     2    BT-72    *     48  1/2  270  28.29  16.38  12.25  12.25                                              12  70.0 20.0  5.800  6.500   3.921    -4.175     9676   0.731  0.884   4.799 -1.792 -0.163 -0.082 -2.036 138.09  257.72    4.00   14.00   14.00 
+ 48.00    6   9.00                     1     2    BT-72    *     48  1/2  270  28.29  16.38   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.973    -3.729     9307   0.731  0.884   4.845 -1.521 -0.163 -0.082 -1.766 138.09  280.09    4.00   14.00   14.00 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     4    BT-72           0  1/2  270   0.00   0.00  12.25  12.25                                               0   0.0  0.0  5.800  6.500   3.976    -4.585     9676   0.731  0.884  -3.017 -1.899 -0.175 -0.088 -2.162   0.00    0.00    4.00   14.00   14.00 
+ 48.00    6   9.00                     1     4    BT-72    *     48  1/2  270  28.29  16.38   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.973    -3.729     9307   0.731  0.884   4.845 -1.521 -0.163 -0.082 -1.766 138.09  280.09    4.00   14.00   14.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Confinement zone check failed.
 
 

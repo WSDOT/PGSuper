@@ -212,7 +212,7 @@ pgsTypes::AdjustableStrandType pgsSegmentDesignArtifact::GetAdjustableStrandType
    }
    else
    {
-      ATLASSERT(false);
+      ATLASSERT(m_DesignOptions.doDesignForFlexure==dtNoDesign); // This can happen during a pure shear design. Otherwise we have a new design type?
       return pgsTypes::asStraight;
    }
 }

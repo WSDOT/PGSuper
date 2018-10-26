@@ -141,7 +141,7 @@ interface IIntervals : IUnknown
    virtual IntervalIndexType GetLastCompositeClosureJointInterval(const CGirderKey& girderKey) = 0;
 
    // returns the interval when continuity occurs at a pier
-   virtual void GetContinuityInterval(const CGirderKey& girderKey,PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead) = 0;
+   virtual void GetContinuityInterval(PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead) = 0;
 
    // returns the index of the interval when the deck and diaphragms are cast
    // this is the replacement for pgsTypes::BridgeSite1

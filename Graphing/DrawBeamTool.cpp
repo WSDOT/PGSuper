@@ -439,14 +439,13 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    }
 
    // Draw support at end of segment
-   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType liftingIntervalIdx  = pIntervals->GetLiftSegmentInterval(segmentKey);
    IntervalIndexType storageIntervalIdx  = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType haulingIntervalIdx  = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
    PoiAttributeType poiReference;
-   if ( releaseIntervalIdx <= intervalIdx && intervalIdx < liftingIntervalIdx )
+   if ( intervalIdx < liftingIntervalIdx )
    {
       poiReference = POI_RELEASED_SEGMENT;
    }
@@ -639,12 +638,8 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
       IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(m_GirderKey);
 
-      GET_IFACE(IBridge,pBridge);
-      EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-      pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-
-      IntervalIndexType leftContinuityIntervalIdx  = pIntervals->GetInterval(leftContinuityEventIdx);
-      IntervalIndexType rightContinuityIntervalIdx = pIntervals->GetInterval(rightContinuityEventIdx);
+      IntervalIndexType leftContinuityIntervalIdx, rightContinuityIntervalIdx;
+      pIntervals->GetContinuityInterval(pierIdx,&leftContinuityIntervalIdx,&rightContinuityIntervalIdx);
 
       if ( intervalIdx == erectFirstSegmentIntervalIdx )
       {

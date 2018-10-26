@@ -3,22 +3,27 @@
  27.83    5   6.00                     1     1    WF66G    *     34  0.6  270  28.74  15.80  14.25  14.25                                               8  62.0  4.0  4.300  5.000   3.178    -3.488     8535   0.548  0.671   7.922 -2.670 -0.242 -0.513 -3.425 198.25  294.86    3.00    5.50    5.50 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     2    WF66G    *     34  0.6  270  28.74  15.80  13.75  13.75                                               8  62.0  4.0  4.300  5.000   3.130    -3.444     8455   0.548  0.671   7.862 -2.557 -0.242 -0.513 -3.311 198.25  299.72    3.00    5.50    5.50 
+ 27.83    5   6.00                     1     2    WF66G    *     33  0.6  270  28.77  17.02  13.50  13.50                                               7  62.0  4.0  4.300  5.000   3.115    -3.429     8429   0.548  0.671   7.653 -2.521 -0.242 -0.513 -3.276 186.46  282.30    3.00    5.50    5.50 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     3    WF66G    *     34  0.6  270  28.74  15.80  13.75  13.75                                               8  62.0  4.0  4.300  5.000   3.130    -3.444     8455   0.548  0.671   7.862 -2.557 -0.242 -0.513 -3.311 198.25  299.72    3.00    5.50    5.50 
+ 27.83    5   6.00                     1     3    WF66G    *     33  0.6  270  28.77  17.02  13.50  13.50                                               7  62.0  4.0  4.300  5.000   3.115    -3.429     8429   0.548  0.671   7.653 -2.521 -0.242 -0.513 -3.276 186.46  282.30    3.00    5.50    5.50 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Stirrup detailing checks failed for the Strength I Limit State.
 
 

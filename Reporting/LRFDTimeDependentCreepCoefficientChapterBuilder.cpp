@@ -79,6 +79,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn.png")) << rptNewLine;
+      *pPara << Bold(_T("for which:")) << rptNewLine;
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
       *pPara << rptNewLine;
@@ -94,6 +95,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2005.png")) << rptNewLine;
       }
       
+      *pPara << Bold(_T("for which:")) << rptNewLine;
+
       if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
       {
          *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
@@ -178,7 +181,6 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
       CSegmentKey segmentKey(girderKey,segIdx);
       const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
       const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-
 
       (*pTable)(rowIdx,colIdx++) << _T("Segment ") << LABEL_SEGMENT(segIdx);
       (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
@@ -292,7 +294,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   nColumns = 6*nSegments+1;
+   nColumns = 8*nSegments + 1; // four for each segment + four for the deck + 1 for the interval
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
@@ -309,7 +311,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
    rowIdx = 0;
    colIdx = 0;
 
-   ColumnIndexType colSpan = 3;
+   ColumnIndexType colSpan = 4;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
       colSpan++;
@@ -334,7 +336,9 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("c"));
       }
 
+      (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("td"));
       (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
+
       if ( segIdx != nSegments-1 )
       {
          pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
@@ -351,6 +355,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
             (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("c"));
          }
 
+         (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("td"));
          (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
       }
    }
@@ -368,6 +373,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
       (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("c"));
    }
 
+   (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("td"));
    (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -403,7 +409,12 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
             {
                (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
             }
-            (*pTable)(rowIdx,colIdx++) << pMaterials->GetSegmentCreepCoefficient(segmentKey,releaseIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+
+            boost::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetSegmentCreepCoefficientDetails(segmentKey,releaseIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+            lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
+
+            (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
+            (*pTable)(rowIdx,colIdx++) << pDetails->Ct;
          }
          else
          {
@@ -413,6 +424,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
             {
                (*pTable)(rowIdx,colIdx++) << _T("");
             }
+            (*pTable)(rowIdx,colIdx++) << _T("");
             (*pTable)(rowIdx,colIdx++) << _T("");
          }
 
@@ -439,7 +451,12 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
                {
                   (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
                }
-               (*pTable)(rowIdx,colIdx++) << pMaterials->GetClosureJointCreepCoefficient(closureKey,compositeClosureIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+
+               boost::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetClosureJointCreepCoefficientDetails(closureKey,compositeClosureIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+               lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
+
+               (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
+               (*pTable)(rowIdx,colIdx++) << pDetails->Ct;
             }
             else
             {
@@ -449,6 +466,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
                {
                   (*pTable)(rowIdx,colIdx++) << _T("");
                }
+               (*pTable)(rowIdx,colIdx++) << _T("");
                (*pTable)(rowIdx,colIdx++) << _T("");
             }
          }
@@ -474,7 +492,12 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          {
             (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
          }
-         (*pTable)(rowIdx,colIdx++) << pMaterials->GetDeckCreepCoefficient(compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+
+         boost::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetDeckCreepCoefficientDetails(compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+         lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
+
+         (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
+         (*pTable)(rowIdx,colIdx++) << pDetails->Ct;
       }
       else
       {
@@ -484,6 +507,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          {
             (*pTable)(rowIdx,colIdx++) << _T("");
          }
+         (*pTable)(rowIdx,colIdx++) << _T("");
          (*pTable)(rowIdx,colIdx++) << _T("");
       }
    }

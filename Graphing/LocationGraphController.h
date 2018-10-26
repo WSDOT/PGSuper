@@ -27,7 +27,7 @@
 // X-Axis Display Type
 #define X_AXIS_TIME_LINEAR  0
 #define X_AXIS_TIME_LOG     1
-#define X_AXIS_INTEGER      4
+#define X_AXIS_INTERVAL      4
 
 class CLocationGraphController : public CEAFGraphControlWindow
 {
@@ -60,8 +60,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-   void FillGroupCtrl();
-   void FillGirderCtrl();
+   void FillGroupCtrl(bool bInit=false);
+   void FillGirderCtrl(bool bInit=false);
    void FillLocationCtrl();
 
    CComPtr<IBroker> m_pBroker;

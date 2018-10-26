@@ -340,6 +340,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
             }
             else if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
             {
+               write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
                write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
                write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
                write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
@@ -581,7 +582,6 @@ void write_shear_stress_table(IBroker* pBroker,
 
    ColumnIndexType nColumns = (nDucts == 0 ? 7 : 9);
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strTitle;
    strTitle.Format(_T("Factored Shear Stresses for %s"),GetLimitStateString(ls));
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,strTitle);
@@ -649,7 +649,7 @@ void write_shear_stress_table(IBroker* pBroker,
       (*table)(row,col++) << force.SetValue( scd.Vp );
       (*table)(row,col++) << dim.SetValue( scd.dv );
       (*table)(row,col++) << dim.SetValue( scd.bv );
-      (*table)(row,col++) << stress.SetValue( (scd.vfc * scd.fc) );
+      (*table)(row,col++) << stress.SetValue( (scd.vu) );
 
       row++;
    }
@@ -678,7 +678,6 @@ void write_fpc_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    if ( shear_capacity_method == scmVciVcw )
    {
       *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn 5.8.3.4.3-3] - ") << GetLimitStateString(ls) << rptNewLine;
@@ -814,7 +813,6 @@ void write_fpce_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    *pParagraph << Sub2(_T("M"),_T("cre")) << GetLimitStateString(ls) << _T(" [Eqn 5.8.3.4.3-2]") << rptNewLine;
 
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mcre.png")) << rptNewLine;
@@ -989,7 +987,7 @@ void write_fpo_table(IBroker* pBroker,
             if ( pStrand->GetType() == matPsStrand::LowRelaxation )
             {
                Kps = 0.75;
-               *pParagraph << italic(ON) << Sub2(_T("f"),_T("po")) << _T(" = 0.75") << Sub2(_T("f"),_T("pu")) << italic(OFF) << _T(" (PCI BDM 8.4.1.1.4)");
+               *pParagraph << italic(ON) << Sub2(_T("f"),_T("po")) << _T(" = 0.75") << Sub2(_T("f"),_T("pu")) << italic(OFF) << _T(" (See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.1.4)");
             }
             else
             {
@@ -1008,7 +1006,7 @@ void write_fpo_table(IBroker* pBroker,
             if ( pTendon->GetType() == matPsStrand::LowRelaxation )
             {
                Kpt = 0.75;
-               *pParagraph << italic(ON) << Sub2(_T("f"),_T("po pt")) << _T(" = 0.75") << Sub2(_T("f"),_T("pu")) << italic(OFF) << _T(" (PCI BDM 8.4.1.1.4)");
+               *pParagraph << italic(ON) << Sub2(_T("f"),_T("po pt")) << _T(" = 0.75") << Sub2(_T("f"),_T("pu")) << italic(OFF) << _T(" (See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.1.4)");
             }
             else
             {
@@ -1740,7 +1738,15 @@ void write_btsummary_table(IBroker* pBroker,
       (*table)(0,col++) << COLHDR( _T("s")<< Sub(_T("xe")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
 
-   (*table)(0,col++) << _T("v") << _T("/") << RPT_FC;
+   if(bAfter1999)
+   {
+      (*table)(0,col++) << RPT_vu << _T("/") << RPT_FC;
+   }
+   else
+   {
+      (*table)(0,col++) << _T("v") << _T("/") << RPT_FC;
+   }
+
    (*table)(0,col++) << symbol(epsilon) << Sub(_T("x")) << _T(" x 1000");
    (*table)(0,col++) << symbol(beta);
    (*table)(0,col++) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
@@ -1812,7 +1818,7 @@ void write_btsummary_table(IBroker* pBroker,
          // Don't print vfc if sxe method was used
          if (bSufficientTransverseReinforcement)
          {
-            (*table)(row,col) << scalar.SetValue( scd.vfc );
+            (*table)(row,col) << scalar.SetValue( scd.vufc );
             (*table)(row,col++) << _T(" ") << symbol(LTE) << _T(" ") << scalar.SetValue(scd.vfc_tbl);
          }
          else
@@ -1822,11 +1828,11 @@ void write_btsummary_table(IBroker* pBroker,
       }
       else if ( shear_capacity_method != scmBTEquations && shear_capacity_method != scmWSDOT2007 )
       {
-         (*table)(row,col++) << scalar.SetValue( scd.vfc );
+         (*table)(row,col++) << scalar.SetValue( scd.vufc );
       }
       else
       {
-         (*table)(row,col++) << scalar.SetValue( scd.vfc );
+         (*table)(row,col++) << scalar.SetValue( scd.vufc );
       }
 
       if (scd.ShearInRange)

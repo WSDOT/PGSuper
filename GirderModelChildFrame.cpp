@@ -317,7 +317,15 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    }
 
    UpdateMaxCutLocation();
-   m_CurrentCutLocation = m_MaxCutLocation/2;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS)));
+
+   IndexType pos = vPoi.size()/2; // default is mid-span
+   pgsPointOfInterest poi(vPoi.at(pos));
+   m_CurrentCutLocation = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
    FillEventComboBox();
    UpdateBar();
@@ -348,6 +356,7 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
    }
    else if ( lHint == HINT_BRIDGECHANGED || lHint == HINT_UNITSCHANGED )
    {
+      FillEventComboBox();
       UpdateBar();
    }
 
@@ -506,14 +515,17 @@ void CGirderModelChildFrame::UpdateMaxCutLocation()
       m_MaxCutLocation = 0;
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
-         Float64 lg = pBridge->GetGirderLayoutLength(CGirderKey(grpIdx,m_GirderKey.girderIndex));
+         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+         GirderIndexType gdrIdx = Min(m_GirderKey.girderIndex,nGirders-1);
+         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+         Float64 lg = pBridge->GetGirderLayoutLength(thisGirderKey);
 
          // if this is the first group, deduct the distance from the pier line to the end of the girder
          // from the girder layout length (basically coverting from
          // girder path length to girder length)
          if ( grpIdx == 0 )
          {
-            CSegmentKey segmentKey(grpIdx,m_GirderKey.girderIndex,0);
+            CSegmentKey segmentKey(thisGirderKey,0);
             Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
             Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
             Float64 start_offset = brgOffset - endDist;
@@ -525,8 +537,8 @@ void CGirderModelChildFrame::UpdateMaxCutLocation()
          // girder path length to girder length)
          if ( grpIdx == nGroups-1 )
          {
-            SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,m_GirderKey.girderIndex));
-            CSegmentKey segmentKey(grpIdx,m_GirderKey.girderIndex,nSegments-1);
+            SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+            CSegmentKey segmentKey(thisGirderKey,nSegments-1);
             Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(segmentKey);
             Float64 endDist   = pBridge->GetSegmentEndEndDistance(segmentKey);
             Float64 end_offset = brgOffset - endDist;
@@ -663,16 +675,7 @@ void CGirderModelChildFrame::CutAtNext()
    pgsPointOfInterest poi = pPoi->GetNextPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
    if ( poi.GetID() != INVALID_ID )
    {
-      Float64 Xgl;
-      if ( m_GirderKey.groupIndex == ALL_GROUPS )
-      {
-         Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
-      }
-      else
-      {
-         Xgl = pPoi->ConvertPoiToGirderCoordinate(poi);
-      }
-      CutAt(Xgl);
+      UpdateCutLocation(poi);
    }
 }
 
@@ -685,16 +688,7 @@ void CGirderModelChildFrame::CutAtPrev()
    pgsPointOfInterest poi = pPoi->GetPrevPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
    if ( poi.GetID() != INVALID_ID )
    {
-      Float64 Xgl;
-      if ( m_GirderKey.groupIndex == ALL_GROUPS )
-      {
-         Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
-      }
-      else
-      {
-         Xgl = pPoi->ConvertPoiToGirderCoordinate(poi);
-      }
-      CutAt(Xgl);
+      UpdateCutLocation(poi);
    }
 }
 
@@ -935,6 +929,7 @@ void CGirderModelChildFrame::FillEventComboBox()
    CComboBox* pcbEvents = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SELEVENT);
 
    int sel = pcbEvents->GetCurSel();
+   EventIndexType currentEvent = (sel == CB_ERR ? INVALID_INDEX : (EventIndexType)(pcbEvents->GetItemData(sel)));
    pcbEvents->ResetContent();
 
    CComPtr<IBroker> pBroker;
@@ -945,6 +940,7 @@ void CGirderModelChildFrame::FillEventComboBox()
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
    EventIndexType firstEventIdx = pTimelineMgr->GetFirstSegmentErectionEventIndex();
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   currentEvent = (nEvents <= currentEvent && currentEvent != INVALID_INDEX ? nEvents-1 : currentEvent);
    for ( EventIndexType eventIdx = firstEventIdx; eventIdx < nEvents; eventIdx++ )
    {
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
@@ -952,7 +948,16 @@ void CGirderModelChildFrame::FillEventComboBox()
       strLabel.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
       int idx = pcbEvents->AddString(strLabel);
       pcbEvents->SetItemData(idx,(DWORD_PTR)eventIdx);
+      if ( eventIdx == currentEvent )
+      {
+         pcbEvents->SetCurSel(idx);
+      }
    }
-   pcbEvents->SetCurSel( sel == CB_ERR ? 0 : sel );
+
+   sel = pcbEvents->GetCurSel();
+   if ( sel == CB_ERR )
+   {
+      pcbEvents->SetCurSel(0);
+   }
    m_EventIndex = (EventIndexType)pcbEvents->GetItemData(pcbEvents->GetCurSel());
 }

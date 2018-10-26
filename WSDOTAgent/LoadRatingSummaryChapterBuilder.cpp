@@ -189,7 +189,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    if ( !bIsWSDOTRating )
    {
       (*pPara) << _T("The selected load rating options do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
-      (*pPara) << _T("Select Project | Load Rating Options to change the load rating options to the required settings given below.") << rptNewLine;
+      (*pPara) << _T("Select ") << Bold(_T("Project > Load Rating Options")) << _T(" to change the load rating options to the required settings given below.") << rptNewLine;
 
 	   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,_T("Required Load Rating Options"));
 
@@ -242,7 +242,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       (*pTable)(row,0) << Bold(_T("Design"));
       row++;
 
-      (*pTable)(row,0) << _T("Design Load Rating: Live Loads for Design") << rptNewLine << _T("(This setting found in Loads > Live Loads...)");
+      (*pTable)(row,0) << _T("Design Load Rating: Live Loads for Design") << rptNewLine << _T("(Select ") << Bold(_T("Loads > Live Loads...")) << _T(" for this setting)");
       std::vector<std::_tstring>::iterator nameIter(design_permit_loads.begin());
       std::vector<std::_tstring>::iterator nameIterEnd(design_permit_loads.end());
       for ( ; nameIter != nameIterEnd; nameIter++ )

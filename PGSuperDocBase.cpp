@@ -3001,13 +3001,7 @@ void CPGSDocBase::ClearSelection(BOOL bNotify)
 
 void CPGSDocBase::OnCopyGirderProps() 
 {
-#pragma Reminder("UPDATE: need to make OnCopyGirderProps work for spliced girders")
-   // This may be a case when OnCopyGirderProps needs to move to the CPGSuperDoc and CPGSpliceDoc
-   // classes.
-
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   // dialog takes care of transactions. This might make pgsplice's implementation worse
    CCopyGirderDlg dlg(m_pBroker,m_CopyGirderPropertiesCallbacks);
    dlg.DoModal();
 }

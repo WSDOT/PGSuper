@@ -99,9 +99,11 @@ public:
       dnExistingShearDesignPassedSpecCheck,
       dnShearRequiresStrutAndTie,
       dnStrandsAddedForLongReinfShear,
+      dnStirrupsTightendedForLongReinfShear,
       dnLongitudinalBarsNeeded4FlexuralTensionCy,
       dnLongitudinalBarsNeeded4FlexuralTensionLifting,
-      dnLongitudinalBarsNeeded4FlexuralTensionHauling
+      dnLongitudinalBarsNeeded4FlexuralTensionHauling,
+      dnConcreteStrengthIncreasedForShearStress
    };
 
 

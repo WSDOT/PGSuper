@@ -35,6 +35,9 @@
 #include <Reporting\IntervalChapterBuilder.h> // for testing
 #endif
 
+#include <Reporting\ShrinkageStrainChapterBuilder.h>
+
+
 // Interfaces
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -244,6 +247,20 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
          pRptBuilder->Hidden(bHidden);
       }
    }
+
+   // Add time-step chapters the details report
+   
+   // Update details report to contain a couple of extra chapters
+   boost::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
+   }
+   else
+   {
+      pRptBuilder->RemoveChapterBuilder(_T("Shrinkage Strain Details"));
+   }
+
 
    return S_OK;
 }

@@ -45,7 +45,7 @@
 #define X_AXIS_TIME_LOG     1
 #define X_AXIS_AGE_LINEAR   2
 #define X_AXIS_AGE_LOG      3
-#define X_AXIS_INTEGER      4
+#define X_AXIS_INTERVAL      4
 
 
 class CConcretePropertyGraphController;
@@ -75,7 +75,8 @@ protected:
 
    CComPtr<IBroker> m_pBroker;
 
-   unitmgtScalar m_Scalar;
+   unitmgtScalar m_Time;
+   unitmgtScalar m_Interval;
    unitmgtScalar m_StrainScalar;
    unitmgtScalar m_CreepScalar;
    arvPhysicalConverter* m_pTimeFormat;

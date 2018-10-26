@@ -149,20 +149,19 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
 
-   EventIndexType continuityEventIndex = MAX_INDEX;
+   IntervalIndexType continuityIntervalIndex = MAX_INDEX;
    PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(firstGroupIdx);
    PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(lastGroupIdx);
    for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
-         EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-         pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-         continuityEventIndex = Min(continuityEventIndex,leftContinuityEventIdx);
-         continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
+         IntervalIndexType leftContinuityIntervalIdx, rightContinuityIntervalIdx;
+         pIntervals->GetContinuityInterval(pierIdx,&leftContinuityIntervalIdx,&rightContinuityIntervalIdx);
+         continuityIntervalIndex = Min(continuityIntervalIndex,leftContinuityIntervalIdx);
+         continuityIntervalIndex = Min(continuityIntervalIndex,rightContinuityIntervalIdx);
       }
    }
-   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
 
    // Set up table headings
    ColumnIndexType nCols = (bTimeStepMethod ? 13 : 5);
@@ -242,6 +241,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       pForces2->GetStress( intervalIdx, lcDC, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopDCinc, &fBotDCinc);
       pForces2->GetStress( intervalIdx, lcDW, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopDWinc, &fBotDWinc);
@@ -419,6 +419,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,&vPoi,&poiRefAttribute);
+      poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> fTopMinPedestrianLL,   fBotMinPedestrianLL;
       std::vector<Float64> fTopMaxPedestrianLL,   fBotMaxPedestrianLL;
@@ -815,6 +816,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       if ( bDesign )
       {

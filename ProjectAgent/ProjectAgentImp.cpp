@@ -10348,10 +10348,10 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    // NOTE: The actual timing doesn't matter since we aren't doing a true time-step analysis
    // We will just use reasonable times so the sequence is correct
 
-   // Casting yard stage... starts at day 1 when strands are stressed
+   // Casting yard stage... starts at day 0 when strands are stressed
    // The activities in this stage includes prestress release, lifting and storage
    CTimelineEvent* pTimelineEvent = new CTimelineEvent;
-   pTimelineEvent->SetDay(1);
+   pTimelineEvent->SetDay(0);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
    pTimelineEvent->GetConstructSegmentsActivity().SetAgeAtRelease(  ::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
@@ -10390,24 +10390,44 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Cast Deck (Bridge Site 1)"));
    pTimelineEvent->GetCastDeckActivity().Enable();
-   pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity( 1.0 ); // 1 day
-   pTimelineEvent->GetCastDeckActivity().SetCuringDuration(0.0); // day
+   pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(28.0); // day
+   pTimelineEvent->GetCastDeckActivity().SetCuringDuration(28.0); // day
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // traffic barrier/superimposed dead loads
    pTimelineEvent = new CTimelineEvent;
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + 1.0;
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + 28.0;
    day = Max(day,30.0);
    pTimelineEvent->SetDay( day ); // deck is continuous
-   pTimelineEvent->SetDescription(_T("Final without Live Load (Bridge Site 2)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad(true);
 
-   if ( m_BridgeDescription.GetDeckDescription()->WearingSurface != pgsTypes::wstSacrificialDepth )
+   pgsTypes::WearingSurfaceType wearingSurface = m_BridgeDescription.GetDeckDescription()->WearingSurface;
+   if (  wearingSurface == pgsTypes::wstSacrificialDepth || wearingSurface == pgsTypes::wstOverlay )
    {
-      pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(true);
+      pTimelineEvent->SetDescription(_T("Final without Live Load (Bridge Site 2)"));
+      if ( wearingSurface == pgsTypes::wstOverlay )
+      {
+         pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(true);
+      }
+   }
+   else
+   {
+      pTimelineEvent->SetDescription(_T("Install Railing System"));
    }
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
+
+   if ( wearingSurface == pgsTypes::wstFutureOverlay )
+   {
+      pTimelineEvent = new CTimelineEvent;
+      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day);
+      day = Max(day,30.0);
+      pTimelineEvent->SetDay( day ); 
+      pTimelineEvent->SetDescription(_T("Final without Live Load (Bridge Site 2)"));
+      pTimelineEvent->GetApplyLoadActivity().Enable();
+      pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(true);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
+   }
 
    // live load
    pTimelineEvent = new CTimelineEvent;

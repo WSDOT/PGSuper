@@ -73,7 +73,7 @@ BOOL CGirderGraphControllerBase::OnInitDialog()
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
    if ( pcbGroup )
    {
-      pcbGroup->SetCurSel( selection.GroupIdx == ALL_GROUPS ? 0 : (int)selection.GroupIdx+1);
+      pcbGroup->SetCurSel( selection.GroupIdx == ALL_GROUPS ? 0 : (int)selection.GroupIdx + (m_bAllGroups ? 1:0));
       int curSel = pcbGroup->GetCurSel();
       DWORD_PTR itemData = pcbGroup->GetItemData(curSel);
       m_GroupIdx  = (GroupIndexType)(itemData);
@@ -238,13 +238,13 @@ void CGirderGraphControllerBase::FillGirderCtrl()
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GirderIndexType nGirders = ALL_GIRDERS;
+   GirderIndexType nGirders = 0;
    if ( grpIdx == ALL_GROUPS )
    {
       GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
       for ( GroupIndexType gIdx = 0; gIdx < nGroups; gIdx++ )
       {
-         nGirders = Min(nGirders,pBridgeDesc->GetGirderGroup(gIdx)->GetGirderCount());
+         nGirders = Max(nGirders,pBridgeDesc->GetGirderGroup(gIdx)->GetGirderCount());
       }
    }
    else
@@ -260,13 +260,16 @@ void CGirderGraphControllerBase::FillGirderCtrl()
       pcbGirder->AddString(strGirder);
    }
 
-   if ( curSel != CB_ERR && curSel < (int)nGirders)
+   if ( curSel == CB_ERR )
    {
-      pcbGirder->SetCurSel(curSel);
+      pcbGirder->SetCurSel(0);
+      m_GirderIdx = 0;
    }
    else
    {
-      pcbGirder->SetCurSel(0);
+      curSel = Min(curSel,(int)(nGirders-1));
+      pcbGirder->SetCurSel(curSel);
+      m_GirderIdx = (GirderIndexType)curSel;
    }
 }
 

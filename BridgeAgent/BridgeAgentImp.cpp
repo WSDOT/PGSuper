@@ -4469,7 +4469,7 @@ void CBridgeAgentImp::LayoutSpanPoi(const CSpanKey& spanKey,Uint16 nPnts)
       Float64 Xspan = span_length * ((Float64)i / (Float64)nPnts); // distance from CL Brg
 
       pgsPointOfInterest poi = ConvertSpanPointToPoi(spanKey,Xspan);
-      if ( poi.GetID() != INVALID_ID && poi.GetReferencedAttributes(POI_SPAN) != 0)
+      if ( poi.GetID() != INVALID_ID && poi.GetReferencedAttributes(POI_SPAN) != 0 )
       {
          // if the poi has an ID and it is a span attribute then it is
          // a common POI in an adjacent span. don't merge this poi
@@ -10442,88 +10442,6 @@ void CBridgeAgentImp::IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* 
    ATLASSERT( pPierData );
 
    pPierData->IsIntegral(pbLeft,pbRight);
-}
-
-void CBridgeAgentImp::GetContinuityEventIndex(PierIndexType pierIdx,EventIndexType* pBack,EventIndexType* pAhead)
-{
-   VALIDATE( BRIDGE );
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
-   EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
-
-   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-   if ( pPier->IsBoundaryPier() )
-   {
-      pgsTypes::BoundaryConditionType cType = pPier->GetBoundaryConditionType();
-
-      if ( cType == pgsTypes::bctContinuousBeforeDeck || cType == pgsTypes::bctIntegralBeforeDeck )
-      {
-         *pBack  = castDeckEventIdx;
-         *pAhead = castDeckEventIdx;
-      }
-      else if ( cType == pgsTypes::bctIntegralBeforeDeckHingeBack )
-      {
-         *pBack  = castDeckEventIdx+1;
-         *pAhead = castDeckEventIdx;
-      }
-      else if ( cType == pgsTypes::bctIntegralBeforeDeckHingeAhead )
-      {
-         *pBack  = castDeckEventIdx;
-         *pAhead = castDeckEventIdx+1;
-      }
-      else // ContinuousAfterDeck, IntegralAfterDeck, 
-           // IntegralAfterDeckHingeAhead, IntegralAfterDeckHingeBack
-           // Hinged, Roller
-      {
-         *pBack  = castDeckEventIdx+1;
-         *pAhead = castDeckEventIdx+1;
-      }
-   }
-   else
-   {
-      pgsTypes::PierSegmentConnectionType cType = pPier->GetSegmentConnectionType();
-      if ( cType == pgsTypes::psctContinousClosureJoint || cType == pgsTypes::psctIntegralClosureJoint )
-      {
-         const CClosureJointData* pClosure = pPier->GetClosureJoint(0);
-         EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
-         *pBack  = castClosureEventIdx+1;
-         *pAhead = castClosureEventIdx+1;
-      }
-      else if ( cType == pgsTypes::psctContinuousSegment || cType == pgsTypes::psctIntegralSegment )
-      {
-         // which segment is continuous over this pier?
-         GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-         for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-         {
-            const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-            const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
-            SegmentIndexType nSegments = pGirder->GetSegmentCount();
-            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-            {
-               const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-               const CSpanData2* pStartSpan = pSegment->GetSpan(pgsTypes::metStart);
-               const CSpanData2* pEndSpan   = pSegment->GetSpan(pgsTypes::metEnd);
-               PierIndexType leftPierIdx = pStartSpan->GetNextPier()->GetIndex();
-               PierIndexType rightPierIdx = pEndSpan->GetPrevPier()->GetIndex();
-               if ( leftPierIdx <= pierIdx && pierIdx <= rightPierIdx )
-               {
-                  // we found the segment
-                  EventIndexType erectSegmentIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
-                  *pBack  = erectSegmentIdx;
-                  *pAhead = erectSegmentIdx;
-                  return; // we found the answer
-               }
-            }
-         }
-         ATLASSERT(false); // if we got this far, the segment was not found and it should have been
-      }
-      else
-      {
-         ATLASSERT(false); // is there a new connection type?
-      }
-   }
 }
 
 bool CBridgeAgentImp::GetPierLocation(PierIndexType pierIdx,const CSegmentKey& segmentKey,Float64* pXs)
@@ -24533,15 +24451,86 @@ IntervalIndexType CBridgeAgentImp::GetLastCompositeClosureJointInterval(const CG
    return intervalIdx;
 }
 
-void CBridgeAgentImp::GetContinuityInterval(const CGirderKey& girderKey,PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead)
+void CBridgeAgentImp::GetContinuityInterval(PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead)
 {
-   // Get the events when continuity is achieved
-   EventIndexType backContinuityEventIdx, aheadContinuityEventIdx;
-   GetContinuityEventIndex(pierIdx,&backContinuityEventIdx,&aheadContinuityEventIdx);
+   VALIDATE( BRIDGE );
 
-   // Get the interval that corresponds to those events
-   *pBack  = GetInterval(backContinuityEventIdx);
-   *pAhead = GetInterval(aheadContinuityEventIdx);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   IntervalIndexType castDeckIntervalIdx = GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+
+   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
+   if ( pPier->IsBoundaryPier() )
+   {
+      pgsTypes::BoundaryConditionType cType = pPier->GetBoundaryConditionType();
+
+      if ( cType == pgsTypes::bctContinuousBeforeDeck || cType == pgsTypes::bctIntegralBeforeDeck )
+      {
+         *pBack  = castDeckIntervalIdx;
+         *pAhead = castDeckIntervalIdx;
+      }
+      else if ( cType == pgsTypes::bctIntegralBeforeDeckHingeBack )
+      {
+         *pBack  = compositeDeckIntervalIdx;
+         *pAhead = castDeckIntervalIdx;
+      }
+      else if ( cType == pgsTypes::bctIntegralBeforeDeckHingeAhead )
+      {
+         *pBack  = castDeckIntervalIdx;
+         *pAhead = compositeDeckIntervalIdx;
+      }
+      else // ContinuousAfterDeck, IntegralAfterDeck, 
+           // IntegralAfterDeckHingeAhead, IntegralAfterDeckHingeBack
+           // Hinged, Roller
+      {
+         *pBack  = compositeDeckIntervalIdx;
+         *pAhead = compositeDeckIntervalIdx;
+      }
+   }
+   else
+   {
+      pgsTypes::PierSegmentConnectionType cType = pPier->GetSegmentConnectionType();
+      if ( cType == pgsTypes::psctContinousClosureJoint || cType == pgsTypes::psctIntegralClosureJoint )
+      {
+         const CClosureJointData* pClosure = pPier->GetClosureJoint(0);
+         IntervalIndexType compositeClosureIntervalIdx = GetCompositeClosureJointInterval(pClosure->GetClosureKey());
+         *pBack  = compositeClosureIntervalIdx;
+         *pAhead = compositeClosureIntervalIdx;
+      }
+      else if ( cType == pgsTypes::psctContinuousSegment || cType == pgsTypes::psctIntegralSegment )
+      {
+         // which segment is continuous over this pier?
+         GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+         for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+         {
+            const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+            const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            {
+               const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               const CSpanData2* pStartSpan = pSegment->GetSpan(pgsTypes::metStart);
+               const CSpanData2* pEndSpan   = pSegment->GetSpan(pgsTypes::metEnd);
+               PierIndexType leftPierIdx = pStartSpan->GetNextPier()->GetIndex();
+               PierIndexType rightPierIdx = pEndSpan->GetPrevPier()->GetIndex();
+               if ( leftPierIdx <= pierIdx && pierIdx <= rightPierIdx )
+               {
+                  // we found the segment
+                  IntervalIndexType erectSegmentIntervalIdx = GetErectSegmentInterval(pSegment->GetSegmentKey());
+                  *pBack  = erectSegmentIntervalIdx;
+                  *pAhead = erectSegmentIntervalIdx;
+                  return; // we found the answer
+               }
+            }
+         }
+         ATLASSERT(false); // if we got this far, the segment was not found and it should have been
+      }
+      else
+      {
+         ATLASSERT(false); // is there a new connection type?
+      }
+   }
 }
 
 IntervalIndexType CBridgeAgentImp::GetCastDeckInterval()
@@ -25014,7 +25003,7 @@ std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGir
 
       // Spec check intervals for basic segment events
       GirderIndexType nGirders = GetGirderCount(grpIdx);
-      GirderIndexType startGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType startGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : Min(nGirders-1,girderKey.girderIndex));
       GirderIndexType endGirderIdx   = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : startGirderIdx);
       for ( GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++ )
       {
