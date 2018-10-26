@@ -21,14 +21,10 @@ xcopy /Y /d %REGFREECOM%\x64\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.ico		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
-xcopy /Y /d TxDOTAgent\Documentation\doc\html\*         %BINTARGET%\Extensions\TxDOT\Docs\
-xcopy /Y /d TxDOTAgent\Documentation\TOGA.dm            %BINTARGET%\Extensions\TxDOT\Docs\
 
 REM - KDOT
 xcopy /Y /d %REGFREECOM%\Win32\Release\KDOTExport.dll   %BINTARGET%\Extensions\KDOT\Win32\
 xcopy /Y /d %REGFREECOM%\x64\Release\KDOTExport.dll	%BINTARGET%\Extensions\KDOT\x64\
-xcopy /Y /d KDOTExport\Documentation\doc\html\*         %BINTARGET%\Extensions\KDOT\Docs\
-xcopy /Y /d KDOTExport\Documentation\KDOT.dm            %BINTARGET%\Extensions\KDOT\Docs\
 
 REM - Image files
 xcopy /Y /d images\*.gif				%BINTARGET%\images\
@@ -42,12 +38,6 @@ xcopy /Y /d %REGFREECOM%\x64\Release\MakePgz.exe  	%BINTARGET%\App\x64\
 xcopy /Y /d PGSuper.tip				%BINTARGET%\App\
 xcopy /Y /d License.txt				%BINTARGET%\App\
 xcopy /Y /d Trucks.pgs				%BINTARGET%\App\
-xcopy /Y /d Documentation\PGSuper\doc\html\*    %BINTARGET%\App\Docs\PGSuper\
-xcopy /Y /d Documentation\PGSplice\doc\html\*   %BINTARGET%\App\Docs\PGSplice\
-xcopy /Y /d Documentation\PGSLibrary\doc\html\*    %BINTARGET%\App\Docs\PGSLibrary\
-xcopy /Y /d Documentation\PGSuper.dm 			%BINTARGET%\App\Docs\PGSuper\
-xcopy /Y /d Documentation\PGSplice.dm 			%BINTARGET%\App\Docs\PGSplice\
-xcopy /Y /d Documentation\PGSLibrary.dm 			%BINTARGET%\App\Docs\PGSLibrary\
 
 REM - Configuration Files
 xcopy /Y /d Configurations\WSDOT.lbr				%BINTARGET%\Configurations\

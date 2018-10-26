@@ -249,7 +249,7 @@ void CConcreteManager::ValidateConcrete()
    //
    //////////////////////////////////////////////////////////////////////////////
    PierIndexType nPiers = m_pBridgeDesc->GetPierCount();
-   for ( PierIndexType pierIdx = 1; pierIdx < nPiers-1; pierIdx++ )
+   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
       if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical )

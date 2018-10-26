@@ -39,7 +39,8 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CBridgeEditorProfileSettingsPage)
 	enum { IDD = IDD_BRIDGE_EDITOR_PROFILE_PAGE };
-	BOOL  m_DrawBridge;
+	BOOL m_DrawBridge;
+   BOOL m_ShowSchematic;
 	//}}AFX_DATA
 
 

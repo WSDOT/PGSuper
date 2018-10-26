@@ -19,6 +19,8 @@
 
 #include "TimelineEventDlg.h"
 
+#include <EAF\EAFDocument.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -32,7 +34,7 @@ IMPLEMENT_DYNAMIC(CGirderSegmentGeneralPage, CPropertyPage)
 CGirderSegmentGeneralPage::CGirderSegmentGeneralPage()
 	: CPropertyPage(CGirderSegmentGeneralPage::IDD)
 {
-
+   m_bWasEventCreated = false;
 }
 
 CGirderSegmentGeneralPage::~CGirderSegmentGeneralPage()
@@ -188,6 +190,7 @@ BEGIN_MESSAGE_MAP(CGirderSegmentGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_FC1, &CGirderSegmentGeneralPage::OnConcreteStrength)
    ON_BN_CLICKED(IDC_FC2, &CGirderSegmentGeneralPage::OnConcreteStrength)
    ON_BN_CLICKED(IDC_BOTTOM_FLANGE_DEPTH, &CGirderSegmentGeneralPage::OnBnClickedBottomFlangeDepth)
+   ON_COMMAND(ID_HELP, &CGirderSegmentGeneralPage::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -218,15 +221,15 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
 
-   EventIndexType constructionEventIdx = pParent->m_TimelineMgr.GetSegmentConstructionEventIndex(pParent->m_SegmentID);
-   m_AgeAtRelease = pParent->m_TimelineMgr.GetEventByIndex(constructionEventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+   EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_SegmentID);
+   m_AgeAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetAgeAtRelease();
 
-   EventIndexType erectionEventIdx = pParent->m_TimelineMgr.GetSegmentErectionEventIndex(pParent->m_SegmentID);
+   EventIDType erectionEventID = pParent->m_TimelineMgr.GetSegmentErectionEventID(pParent->m_SegmentID);
 
    // initialize the event combo boxes
    CDataExchange dx(this,FALSE);
-   DDX_CBItemData(&dx,IDC_CONSTRUCTION_EVENT,constructionEventIdx);
-   DDX_CBItemData(&dx,IDC_ERECTION_EVENT,erectionEventIdx);
+   DDX_CBItemData(&dx,IDC_CONSTRUCTION_EVENT,constructionEventID);
+   DDX_CBItemData(&dx,IDC_ERECTION_EVENT,erectionEventID);
 
    if ( m_strUserEc == _T("") )
    {
@@ -1263,6 +1266,9 @@ void CGirderSegmentGeneralPage::FillEventList()
    int constructIdx = pcbConstruct->GetCurSel();
    int erectIdx = pcbErect->GetCurSel();
 
+   EventIDType constructEventID = (EventIDType)pcbConstruct->GetItemData(constructIdx);
+   EventIDType erectionEventID  = (EventIDType)pcbConstruct->GetItemData(erectIdx);
+
    pcbConstruct->ResetContent();
    pcbErect->ResetContent();
 
@@ -1271,32 +1277,36 @@ void CGirderSegmentGeneralPage::FillEventList()
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
    {
       const CTimelineEvent* pTimelineEvent = pParent->m_TimelineMgr.GetEventByIndex(eventIdx);
+      EventIDType eventID = pTimelineEvent->GetID();
 
       CString label;
       label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
 
-      pcbConstruct->SetItemData(pcbConstruct->AddString(label),eventIdx);
-      pcbErect->SetItemData(pcbErect->AddString(label),eventIdx);
+      int idx = pcbConstruct->AddString(label);
+      pcbConstruct->SetItemData(idx,eventID);
+      if ( eventID == constructEventID )
+      {
+         pcbConstruct->SetCurSel(idx);
+      }
+
+      idx = pcbErect->AddString(label);
+      pcbErect->SetItemData(idx,eventID);
+      if ( eventID == erectionEventID )
+      {
+         pcbErect->SetCurSel(idx);
+      }
    }
 
    CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
    pcbConstruct->SetItemData(pcbConstruct->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
    pcbErect->SetItemData(pcbErect->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
-   if ( constructIdx != CB_ERR )
-   {
-      pcbConstruct->SetCurSel(constructIdx);
-   }
-   else
+   if ( pcbConstruct->GetCurSel() == CB_ERR )
    {
       pcbConstruct->SetCurSel(0);
    }
 
-   if ( erectIdx != CB_ERR )
-   {
-      pcbErect->SetCurSel(erectIdx);
-   }
-   else
+   if ( pcbErect->GetCurSel() == CB_ERR )
    {
       pcbErect->SetCurSel(0);
    }
@@ -1312,11 +1322,11 @@ void CGirderSegmentGeneralPage::OnConstructionEventChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CONSTRUCTION_EVENT);
    int curSel = pCB->GetCurSel();
-   EventIndexType eventIdx = (IndexType)pCB->GetItemData(curSel);
-   if ( eventIdx == CREATE_TIMELINE_EVENT )
+   EventIDType eventID = (EventIDType)pCB->GetItemData(curSel);
+   if ( eventID == CREATE_TIMELINE_EVENT )
    {
-      eventIdx = CreateEvent();
-      if ( eventIdx == INVALID_INDEX )
+      eventID = CreateEvent();
+      if ( eventID == INVALID_ID )
       {
          pCB->SetCurSel(m_PrevConstructionEventIdx);
          return;
@@ -1328,9 +1338,10 @@ void CGirderSegmentGeneralPage::OnConstructionEventChanged()
    }
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   pParent->m_TimelineMgr.SetSegmentConstructionEventByIndex(pParent->m_SegmentID,eventIdx);
+   pParent->m_TimelineMgr.SetSegmentConstructionEventByID(pParent->m_SegmentID,eventID);
 
-   pCB->SetCurSel((int)eventIdx);
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_CONSTRUCTION_EVENT,eventID);
 }
    
 void CGirderSegmentGeneralPage::OnErectionEventChanging()
@@ -1343,11 +1354,11 @@ void CGirderSegmentGeneralPage::OnErectionEventChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
    int curSel = pCB->GetCurSel();
-   EventIndexType eventIdx = (IndexType)pCB->GetItemData(curSel);
-   if ( eventIdx == CREATE_TIMELINE_EVENT )
+   EventIDType eventID = (EventIDType)pCB->GetItemData(curSel);
+   if ( eventID == CREATE_TIMELINE_EVENT )
    {
-      eventIdx = CreateEvent();
-      if ( eventIdx == INVALID_INDEX )
+      eventID = CreateEvent();
+      if ( eventID == INVALID_ID )
       {
          pCB->SetCurSel(m_PrevErectionEventIdx);
          return;
@@ -1359,12 +1370,13 @@ void CGirderSegmentGeneralPage::OnErectionEventChanged()
    }
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   pParent->m_TimelineMgr.SetSegmentErectionEventByIndex(pParent->m_SegmentID,eventIdx);
+   pParent->m_TimelineMgr.SetSegmentErectionEventByID(pParent->m_SegmentID,eventID);
 
-   pCB->SetCurSel((int)eventIdx);
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_ERECTION_EVENT,eventID);
 }
 
-EventIndexType CGirderSegmentGeneralPage::CreateEvent()
+EventIDType CGirderSegmentGeneralPage::CreateEvent()
 {
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CTimelineEventDlg dlg(pParent->m_TimelineMgr,INVALID_INDEX,FALSE);
@@ -1372,10 +1384,12 @@ EventIndexType CGirderSegmentGeneralPage::CreateEvent()
    {
       EventIndexType eventIdx;
       pParent->m_TimelineMgr.AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
-      return eventIdx;
+      EventIDType eventID = pParent->m_TimelineMgr.GetEventByIndex(eventIdx)->GetID();
+      m_bWasEventCreated = true;
+      return eventID;
   }
 
-   return INVALID_INDEX;
+   return INVALID_ID;
 }
 
 void CGirderSegmentGeneralPage::OnConcreteStrength()
@@ -1491,4 +1505,9 @@ void CGirderSegmentGeneralPage::OnBnClickedBottomFlangeDepth()
    GetDlgItem( IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT )->EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::sztRightPrismatic]);
 
    pSegment->EnableVariableBottomFlangeDepth(bChecked == TRUE ? true : false);
+}
+
+void CGirderSegmentGeneralPage::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_SEGMENTDETAILS_GENERAL);
 }

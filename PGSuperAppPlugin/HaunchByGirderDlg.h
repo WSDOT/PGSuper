@@ -35,7 +35,7 @@ public:
 	virtual ~CHaunchByGirderDlg();
 
    void UploadData(const HaunchInputData& rData);
-   HaunchInputData DownloadData(Float64 minA, CString& minValError, const HaunchInputData& origData, CDataExchange* pDX);
+   void DownloadData(Float64 minA, CString& minValError, HaunchInputData* pData, CDataExchange* pDX);
 
 // Dialog Data
 	enum { IDD = IDD_HAUNCH_BY_GIRDER };
@@ -49,11 +49,11 @@ private:
    CHaunchGirderGrid m_Grid;
    bool m_bFirstActive;
 
-   SpanIndexType m_NumSpans;
-   GirderIndexType m_MaxGirdersPerSpan;
+   // save original data for sizing
+   HaunchInputData m_OriginalHaunchInputData;
 
 public:
    virtual BOOL OnInitDialog();
 
-   void InitSize(SpanIndexType numSpans, GirderIndexType maxGirdersPerSpan);
+   void InitSize(const HaunchInputData& data);
 };

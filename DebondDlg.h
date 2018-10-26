@@ -73,6 +73,8 @@ protected:
    CComPtr<IIndexArray> m_Debondables;
    Float64         m_Radius;
 
+   UINT m_nHelpID;
+
    CGirderDescDebondGrid m_Grid;
 
    StrandIndexType GetStrandCount();

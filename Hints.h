@@ -26,11 +26,11 @@
 #include <IFace\Project.h> // has girder change hints
 #include <EAF\EAFHints.h>
 
-// Hint Dialog states
+// Hint Dialog states (NOTE: 0x0000, 0x0001, and 0xFFFF are defined in EAFHints)
 #define UIHINT_SAME_NUMBER_OF_GIRDERS     0x0002
 #define UIHINT_SAME_GIRDER_SPACING        0x0004
 #define UIHINT_SAME_GIRDER_NAME           0x0008
-#define UIHINT_SINGLE_SLAB_OFFSET         0x0010
+//#define UIHINT_???                     0x0001 // this hint value is unused
 #define UIHINT_FAVORITES_MENU             0x0020
 
 // This file contains all the hints sets to the views
@@ -52,20 +52,21 @@
 
 #define HINT_UNITSCHANGED             MIN_RESULTS_HINT + 1
 #define HINT_ENVCHANGED               MIN_RESULTS_HINT + 2
-#define HINT_BRIDGECHANGED            MIN_RESULTS_HINT + 3
-#define HINT_SPECCHANGED              MIN_RESULTS_HINT + 4
-#define HINT_LOADMODIFIERSCHANGED     MIN_RESULTS_HINT + 5
-#define HINT_PROJECTPROPERTIESCHANGED MIN_RESULTS_HINT + 6
-#define HINT_GIRDERFAMILYCHANGED      MIN_RESULTS_HINT + 7
-#define HINT_LIVELOADCHANGED          MIN_RESULTS_HINT + 8
-#define HINT_ANALYSISTYPECHANGED      MIN_RESULTS_HINT + 9
-#define HINT_RATINGSPECCHANGED        MIN_RESULTS_HINT + 10
-#define HINT_LOSSPARAMETERSCHANGED    MIN_RESULTS_HINT + 11
+#define HINT_SPECCHANGED              MIN_RESULTS_HINT + 3
+#define HINT_LOADMODIFIERSCHANGED     MIN_RESULTS_HINT + 4
+#define HINT_PROJECTPROPERTIESCHANGED MIN_RESULTS_HINT + 5
+#define HINT_LIVELOADCHANGED          MIN_RESULTS_HINT + 6
+#define HINT_ANALYSISTYPECHANGED      MIN_RESULTS_HINT + 7
+#define HINT_RATINGSPECCHANGED        MIN_RESULTS_HINT + 8
+#define HINT_LOSSPARAMETERSCHANGED    MIN_RESULTS_HINT + 9
 
 #define MAX_RESULTS_HINT              HINT_LOSSPARAMETERSCHANGED
 
-#define HINT_LIBRARYCHANGED           201 // Changes made to non-referenced entries only
+#define HINT_BRIDGECHANGED            200
+#define HINT_GIRDERFAMILYCHANGED      201
 #define HINT_GIRDERCHANGED            202 // Girder changes are treated individualy
+
+#define HINT_LIBRARYCHANGED           300 // Changes made to non-referenced entries only
 
 
 class CGirderHint : public CObject

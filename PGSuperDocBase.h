@@ -80,6 +80,7 @@ protected:
    virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
    virtual void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu);
    virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType);
+   virtual void ShowCustomReportDefinitionHelp();
 
 // CEAFAutoCalcDocMixin over-rides
 public:
@@ -398,6 +399,7 @@ protected:
    afx_msg void OnUpdateNow();
 	afx_msg void OnUpdateUpdateNow(CCmdUI* pCmdUI);
    afx_msg void OnLosses();
+   afx_msg void OnEditTimeline();
    //}}AFX_MSG
    afx_msg void OnViewStatusCenter(UINT nID);
    afx_msg void OnUpdateViewGraphs(CCmdUI* pCmdUI);
@@ -421,6 +423,8 @@ public:
 	afx_msg void OnViewLibraryEditor();
 	afx_msg void OnEffectiveFlangeWidth();
 	afx_msg void OnProjectSpec();
+   afx_msg void OnEditHaunch();
+   afx_msg void OnUpdateEditHaunch(CCmdUI* pCmdUI);
 
    bool LoadMasterLibrary();
    bool DoLoadMasterLibrary(const CString& rPath);

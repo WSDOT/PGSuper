@@ -87,7 +87,6 @@ protected:
    afx_msg void OnUpdateEditTemporarySupport(CCmdUI* pCmdUI);
    afx_msg void OnInsertTemporarySupport();
    afx_msg void OnDeleteTemporarySupport();
-   afx_msg void OnEditTimeline();
    //}}AFX_MSG
    afx_msg BOOL OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr);
    virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);

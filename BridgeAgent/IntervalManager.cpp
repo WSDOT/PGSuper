@@ -26,6 +26,7 @@
 #include <EAF\EAFUtilities.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\DocumentType.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
 
@@ -51,12 +52,26 @@ static char THIS_FILE[] = __FILE__;
 #define ASSERT_VALID
 #endif
 
+CIntervalManager::CIntervalManager()
+{
+   m_bIsPGSuper = false;
+}
 
-void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool bTimeStepMethod)
+void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
 {
    // this method builds the analysis interval sequence as well as defines the stage model
    // for the generic bridge model.
-   m_bTimeStepMethod = bTimeStepMethod;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   m_bIsPGSuper = pDocType->IsPGSuperDocument();
+
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   bool bTimeStepMethod = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+
+
 
    // reset everything
    m_CastDeckIntervalIdx      = INVALID_INDEX;
@@ -103,7 +118,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
    // If we aren't doing type step analysis, this is a PGSuper project
    // Append the old Bridge Site names to the interval descriptions for
    // continuity with previous versions
-   if ( !bTimeStepMethod )
+   if ( m_bIsPGSuper )
    {
       m_Intervals[m_ReleaseIntervals.begin()->second].Description += _T(" (Casting Yard)");
       m_Intervals[m_CastDeckIntervalIdx].Description              += _T(" (Bridge Site 1)");
@@ -696,7 +711,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       haulSegmentInterval.End           = haulSegmentInterval.Start;
       haulSegmentInterval.Middle        = haulSegmentInterval.Start;
       haulSegmentInterval.Duration      = 0;
-      haulSegmentInterval.Description   = _T("Haul Segments");
+      haulSegmentInterval.Description   = (m_bIsPGSuper ? _T("Haul Girders") : _T("Haul Segments"));
       IntervalIndexType haulIntervalIdx = StoreInterval(haulSegmentInterval);
 
       std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
@@ -712,7 +727,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       intervalIdx = m_Intervals.size();
 
       
-      strDescriptions.push_back(CString(_T("Erect Segments")));
+      strDescriptions.push_back(CString(m_bIsPGSuper ? _T("Erect Girders") : _T("Erect Segments")));
       IntervalIndexType erectSegmentIntervalIdx = intervalIdx;
 
       BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
@@ -961,7 +976,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
          stressStrandInterval.Duration      = remaining_duration;
          stressStrandInterval.End           = stressStrandInterval.Start + stressStrandInterval.Duration;
          stressStrandInterval.Middle        = 0.5*(stressStrandInterval.Start + stressStrandInterval.End);
-         stressStrandInterval.Description   = _T("Tension strand, cast girder segment, strand relaxation, and concrete curing");
+         stressStrandInterval.Description   = m_bIsPGSuper ? _T("Tension strand, cast girder, strand relaxation, and concrete curing") :  _T("Tension strand, cast segment, strand relaxation, and concrete curing");
          IntervalIndexType stressStrandIntervalIdx = StoreInterval(stressStrandInterval);
 
          // release prestress is a sudden loading.... zero length interval
@@ -977,7 +992,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
          liftSegmentInterval.Start = releaseInterval.End;
          liftSegmentInterval.Duration = 0;
          liftSegmentInterval.Middle = liftSegmentInterval.Start;
-         liftSegmentInterval.Description = _T("Lift segments");
+         liftSegmentInterval.Description = m_bIsPGSuper ? _T("Lift girders") : _T("Lift segments");
          IntervalIndexType liftIntervalIdx = StoreInterval(liftSegmentInterval);
 
          // placing into storage changes boundary conditions... treat as sudden change in loading
@@ -985,7 +1000,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
          storageInterval.Start = liftSegmentInterval.End;
          storageInterval.Duration = 0;
          storageInterval.Middle = storageInterval.Start;
-         storageInterval.Description = _T("Place segments into storage");
+         storageInterval.Description = m_bIsPGSuper ? _T("Place girders into storage") : _T("Place segments into storage");
          IntervalIndexType storateIntervalIdx = StoreInterval(storageInterval);
 
 
@@ -995,6 +1010,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
          {
             const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
+            ASSERT_SEGMENT_KEY(segmentKey);
 
             m_StressStrandIntervals.insert(std::make_pair(segmentKey,stressStrandIntervalIdx));
             m_ReleaseIntervals.insert(std::make_pair(segmentKey,releaseIntervalIdx));
@@ -1103,124 +1119,6 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    std::vector<CString> strDescriptions;
 
    const CBridgeDescription2* pBridgeDesc = pTimelineEvent->GetTimelineManager()->GetBridgeDescription();
-
-   //bool bRemoveTemporaryStrands = false; // need to know if there are temporary strands that are removed
-   //// if so, we will add another interval after this interval
-   //const CErectSegmentActivity& erectSegmentsActivity = pTimelineEvent->GetErectSegmentsActivity();
-   //if ( erectSegmentsActivity.IsEnabled() )
-   //{
-   //   // Segments must be hauled to the bridge site before they are erected
-   //   CInterval haulSegmentInterval;
-   //   haulSegmentInterval.StartEventIdx = eventIdx;
-   //   haulSegmentInterval.EndEventIdx   = eventIdx;
-   //   haulSegmentInterval.Start         = pTimelineEvent->GetDay();
-   //   haulSegmentInterval.End           = haulSegmentInterval.Start;
-   //   haulSegmentInterval.Middle        = haulSegmentInterval.Start;
-   //   haulSegmentInterval.Duration      = 0;
-   //   haulSegmentInterval.Description   = _T("Haul Segments");
-   //   IntervalIndexType haulIntervalIdx = StoreInterval(haulSegmentInterval);
-
-   //   std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
-   //   BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
-   //   {
-   //      const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
-   //      CSegmentKey segmentKey(pSegment->GetSegmentKey());
-   //      m_SegmentHaulingIntervals.insert(std::make_pair(segmentKey,haulIntervalIdx));
-   //   } // next segment ID
-
-   //   // update the interval index for all the other activities since it just incremented by one
-   //   // for segment hauling
-   //   intervalIdx = m_Intervals.size();
-
-   //   
-   //   strDescriptions.push_back(CString(_T("Erect Segments")));
-   //   IntervalIndexType erectSegmentIntervalIdx = intervalIdx;
-
-   //   BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
-   //   {
-   //      const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
-   //      CSegmentKey segmentKey(pSegment->GetSegmentKey());
-   //      m_SegmentErectionIntervals.insert(std::make_pair(segmentKey,erectSegmentIntervalIdx));
-
-   //      if ( 0 < pSegment->Strands.GetStrandCount(pgsTypes::Temporary) )
-   //      {
-   //         bRemoveTemporaryStrands = true;
-   //      }
-
-   //      // this is for keeping track of when the first and last segments in a girder are erected
-   //      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator found(m_SegmentErectionSequenceIntervalLimits.find(segmentKey));
-   //      if ( found == m_SegmentErectionSequenceIntervalLimits.end() )
-   //      {
-   //         // this is the first segment from the girder to be erected
-   //         m_SegmentErectionSequenceIntervalLimits.insert(std::make_pair(segmentKey,std::make_pair(erectSegmentIntervalIdx,erectSegmentIntervalIdx)));
-   //      }
-   //      else
-   //      {
-   //         // a segment from this girder has already been erected.. update the record
-   //         found->second.first  = Min(found->second.first, erectSegmentIntervalIdx);
-   //         found->second.second = Max(found->second.second,erectSegmentIntervalIdx);
-   //      }
-   //   } // next segment ID
-   //} // erect segments activity
-
-   //const CRemoveTemporarySupportsActivity& removeTemporarySupportActivity = pTimelineEvent->GetRemoveTempSupportsActivity();
-   //if ( removeTemporarySupportActivity.IsEnabled() )
-   //{
-   //   strDescriptions.push_back(CString(_T("Remove Temporary Support")));
-   //   IntervalIndexType removeTempSupportIntervalIdx = intervalIdx;
-
-   //   const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
-   //   const std::vector<SupportIDType>& tsIDs(removeTS.GetTempSupports());
-   //   BOOST_FOREACH(SupportIDType tsID,tsIDs)
-   //   {
-   //      const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
-   //      SupportIndexType tsIdx = pTS->GetIndex();
-   //      m_RemoveTemporarySupportIntervals.insert(std::make_pair(tsIdx,removeTempSupportIntervalIdx));
-   //   }
-   //}
-
-   //const CStressTendonActivity& stressTendonActivity = pTimelineEvent->GetStressTendonActivity();
-   //if ( stressTendonActivity.IsEnabled() )
-   //{
-   //   strDescriptions.push_back(CString(_T("Stress Tendons")));
-   //   IntervalIndexType stressTendonIntervalIdx = intervalIdx;
-
-   //   const std::set<CTendonKey>& tendons( stressTendonActivity.GetTendons() );
-   //   BOOST_FOREACH(CTendonKey tendonKey,tendons)
-   //   {
-   //      if ( tendonKey.girderKey.groupIndex == ALL_GROUPS )
-   //      {
-   //         // tendon key doesn't have a valid girder key, so it must have a valid girder ID
-   //         // need to get the associated girder key
-   //         ATLASSERT(tendonKey.girderID != INVALID_ID);
-   //         const CSplicedGirderData* pGirder = pBridgeDesc->FindGirder(tendonKey.girderID);
-   //         tendonKey.girderKey = pGirder->GetGirderKey();
-   //      }
-
-   //      // we need to know the number of webs in a girder, but since we are in the middle
-   //      // of validating the overall bridge model, we can't make a request throught the
-   //      // IGirder interface. Doing so would cause recursion and *crash*. 
-   //      //
-   //      // Here is an alternative method that works
-   //      const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(tendonKey.girderKey.groupIndex)->GetGirder(tendonKey.girderKey.girderIndex);
-   //      const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
-   //      CComPtr<IBeamFactory> factory;
-   //      pGdrEntry->GetBeamFactory(&factory);
-
-   //      CComPtr<IGirderSection> gdrSection;
-   //      factory->CreateGirderSection(NULL,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
-
-   //      WebIndexType nWebs;
-   //      gdrSection->get_WebCount(&nWebs);
-
-   //      for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
-   //      {
-   //         DuctIndexType thisDuctIdx = nWebs*tendonKey.ductIdx + webIdx;
-   //         CTendonKey thisTendonKey(tendonKey.girderKey,thisDuctIdx);
-   //         m_StressTendonIntervals.insert(std::make_pair(thisTendonKey,stressTendonIntervalIdx));
-   //      }
-   //   }
-   //}
 
    const CApplyLoadActivity& applyLoadActivity = pTimelineEvent->GetApplyLoadActivity();
    if ( applyLoadActivity.IsEnabled() )
@@ -1435,7 +1333,7 @@ void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent
       CInterval timeStepInterval;
       timeStepInterval.StartEventIdx = eventIdx;
       timeStepInterval.EndEventIdx   = eventIdx;
-      timeStepInterval.Start = m_Intervals.back().End;
+      timeStepInterval.Start = (m_Intervals.size() == 0 ? pTimelineEvent->GetDay() : m_Intervals.back().End);
       if ( eventIdx < nEvents-1 )
       {
          timeStepInterval.EndEventIdx++; // this time step ends at the start of the next event unless this is the last event
@@ -1457,10 +1355,14 @@ void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent
       if ( eventIdx < nEvents-1 )
       {
          m_Intervals.back().End = pTimelineEvent->GetTimelineManager()->GetStart(eventIdx+1);
+         m_Intervals.back().Duration = m_Intervals.back().End - m_Intervals.back().Start;
+         m_Intervals.back().Middle = 0.5*(m_Intervals.back().Start + m_Intervals.back().End);
       }
       else
       {
          m_Intervals.back().End = m_Intervals.back().Start;
+         m_Intervals.back().Middle = m_Intervals.back().Start;
+         m_Intervals.back().Duration = 0;
       }
    } // if bTimeStep
 }

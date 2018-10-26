@@ -123,6 +123,9 @@ CPierData2::CPierData2()
 
 CPierData2::CPierData2(const CPierData2& rOther)
 {
+   m_PierIdx = INVALID_INDEX;
+   m_PierID  = INVALID_INDEX;
+
    m_pPrevSpan = NULL;
    m_pNextSpan = NULL;
 
@@ -1581,6 +1584,7 @@ Float64 CPierData2::GetSupportWidth(pgsTypes::PierFaceType face) const
 void CPierData2::SetGirderSpacing(pgsTypes::PierFaceType pierFace,const CGirderSpacing2& spacing)
 {
    m_GirderSpacing[pierFace] = spacing;
+   m_GirderSpacing[pierFace].SetPier(this);
 }
 
 CGirderSpacing2* CPierData2::GetGirderSpacing(pgsTypes::PierFaceType pierFace)

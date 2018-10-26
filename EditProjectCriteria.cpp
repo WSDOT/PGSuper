@@ -31,13 +31,16 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditProjectCriteria::txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria,pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType)
+txnEditProjectCriteria::txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria,pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType,pgsTypes::WearingSurfaceType oldWearingSurfaceType,pgsTypes::WearingSurfaceType newWearingSurfaceType)
 {
    m_strProjectCriteria[0] = strOldCriteria;
    m_strProjectCriteria[1] = strNewCriteria;
 
    m_AnalysisType[0] = oldAnalysisType;
    m_AnalysisType[1] = newAnalysisType;
+
+   m_WearingSurfaceType[0] = oldWearingSurfaceType;
+   m_WearingSurfaceType[1] = newWearingSurfaceType;
 }
 
 txnEditProjectCriteria::~txnEditProjectCriteria()
@@ -66,12 +69,16 @@ void txnEditProjectCriteria::Execute(int i)
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
    pSpec->SetAnalysisType(m_AnalysisType[i]);
    pSpec->SetSpecification( m_strProjectCriteria[i] );
+
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   pBridgeDesc->SetWearingSurfaceType(m_WearingSurfaceType[i]);
+
    pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditProjectCriteria::CreateClone() const
 {
-   return new txnEditProjectCriteria(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str(),m_AnalysisType[0],m_AnalysisType[1]);
+   return new txnEditProjectCriteria(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str(),m_AnalysisType[0],m_AnalysisType[1],m_WearingSurfaceType[0],m_WearingSurfaceType[1]);
 }
 
 std::_tstring txnEditProjectCriteria::Name() const

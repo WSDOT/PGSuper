@@ -52,18 +52,6 @@ HRESULT CPGSAppPluginBase::OnFinalConstruct()
       return E_FAIL;
    }
 
-   // set the profile name so we read data from the registry correctly
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pMyApp = AfxGetApp();
-
-   m_strAppProfileName = pMyApp->m_pszProfileName;
-   free((void*)pMyApp->m_pszProfileName);
-   free((void*)pMyApp->m_pszAppName);
-
-   pMyApp->m_pszProfileName = _tcsdup(GetAppName());
-   pMyApp->m_pszAppName = _tcsdup(GetAppName());
-
-
    return S_OK;
 }
 
@@ -123,10 +111,8 @@ void CPGSAppPluginBase::LoadRegistryValues()
 
 void CPGSAppPluginBase::LoadSettings()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
-
-   CAutoRegistry autoReg(GetAppName());
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(GetAppName(),pApp);
 
    // The default values are read from HKEY_LOCAL_MACHINE\Software\Washington State Deparment of Transportation\PGSuper
    // If the default values are missing, the hard coded defaults found herein are used.
@@ -170,12 +156,8 @@ LPCTSTR CPGSAppPluginBase::GetWorkgroupTemplatesCacheKey()
 
 void CPGSAppPluginBase::LoadOptions()
 {
-   CEAFApp* pParentApp = EAFGetApp();
-
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
-
-   CAutoRegistry autoReg(GetAppName());
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(GetAppName(),pApp);
 
    CString strDefaultUserTemplateFolder     = pApp->GetLocalMachineString(_T("Options"),_T("UserTemplateLocation"), _T("C:\\"));
    CString strDefaultCatalogServer          = pApp->GetLocalMachineString(_T("Options"),GetCatalogServerKey(),_T("WSDOT"));
@@ -183,18 +165,18 @@ void CPGSAppPluginBase::LoadOptions()
    CString strDefaultLocalMasterLibraryFile = pApp->GetLocalMachineString(_T("Options"),_T("MasterLibraryLocal"),     GetDefaultMasterLibraryFile());
    CString strLocalWorkgroupTemplateFolder  = pApp->GetLocalMachineString(_T("Options"),_T("WorkgroupTemplatesLocal"),GetDefaultWorkgroupTemplateFolder());
 
-   CString strDefaultCompany                = pParentApp->GetLocalMachineString(_T("Options"),_T("CompanyName"), _T("Your Company"));
-   CString strDefaultEngineer               = pParentApp->GetLocalMachineString(_T("Options"),_T("EngineerName"),_T("Your Name"));
+   CString strDefaultCompany                = pApp->GetLocalMachineString(_T("Options"),_T("CompanyName"), _T("Your Company"));
+   CString strDefaultEngineer               = pApp->GetLocalMachineString(_T("Options"),_T("EngineerName"),_T("Your Name"));
 
    /////////////////////////////////
    // User Information Settings
    /////////////////////////////////
 
    // company name
-   m_CompanyName = pParentApp->GetProfileString(_T("Options"),_T("CompanyName"), strDefaultCompany);
+   m_CompanyName = pApp->GetProfileString(_T("Options"),_T("CompanyName"), strDefaultCompany);
 
    // engineer name
-   m_EngineerName = pParentApp->GetProfileString(_T("Options"),_T("EngineerName"), strDefaultEngineer);
+   m_EngineerName = pApp->GetProfileString(_T("Options"),_T("EngineerName"), strDefaultEngineer);
 
    // Internet resources
    m_CatalogServers.LoadFromRegistry(pApp);
@@ -204,7 +186,9 @@ void CPGSAppPluginBase::LoadOptions()
 
 
    // defaults
-   CString strVersion = pApp->GetVersion(true);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pMyApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CString strVersion = pMyApp->GetVersion(true);
    CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/bridge/software"));
    CString strDefaultMasterLibraryURL;
    strDefaultMasterLibraryURL.Format(_T("%s/Version_%s/WSDOT.lbr"),strFTPServer,strVersion);
@@ -1061,12 +1045,17 @@ void CPGSAppPluginBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdIn
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFBrokerDocument* pDoc = (CEAFBrokerDocument*)pFrame->GetDocument();
 
+   CDocTemplate* pTemplate = pDoc->GetDocTemplate();
+   CString strExt;
+   pTemplate->GetDocString(strExt,CDocTemplate::filterExt);
+   strExt = strExt.Left(strExt.Find(_T(";")));
+
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
    GET_IFACE2( pBroker, ITest1250, ptst );
 
    CString resultsfile, poifile, errfile;
-   if (create_test_file_names(rCmdInfo.m_strFileName,&resultsfile,&poifile,&errfile))
+   if (create_test_file_names(strExt,rCmdInfo.m_strFileName,&resultsfile,&poifile,&errfile))
    {
       try
       {
@@ -1075,12 +1064,6 @@ void CPGSAppPluginBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdIn
             CString msg = CString(_T("Error - Running test on file"))+rCmdInfo.m_strFileName;
             ::AfxMessageBox(msg);
          }
-
-// Not sure why, but someone put this code in to save regression files.
-// Sort of defeats the purpose of testing old files...
-//
-//         if ( pPgsDoc->IsModified() )
-//            pPgsDoc->DoFileSave();
       }
       catch(const sysXBase& e)
       {

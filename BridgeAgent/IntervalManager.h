@@ -34,20 +34,10 @@
 class CIntervalManager
 {
 public:
+   CIntervalManager();
+
    // creates the time step intervals from the event model
-   // if bTimeStepMethod is false, "time steps" that represent
-   // the passage of time between intervals are not created
-   // (this basically maps the PGSuper simple event model into a simple
-   // interval model)
-   void BuildIntervals(const CTimelineManager* pTimelineMgr,bool bTimeStepMethod);
-
-   //// Functions for mapping between analysis intervals and generic bridge model stages
-   //StageIndexType GetStageCount() const;
-   //StageIndexType GetStage(IntervalIndexType intervalIdx) const; // this is the IStages interface
-   //IntervalIndexType GetIntervalFromStage(girderKey,StageIndexType stageIdx) const;
-   //const std::map<IntervalIndexType,StageIndexType>& GetStageMap() const;
-   ////const std::map<StageIndexType,IntervalIndexType>& GetIntervalMap(StageIndexType stageIdx) const;
-
+   void BuildIntervals(const CTimelineManager* pTimelineMgr);
 
    IntervalIndexType GetIntervalCount() const;
    EventIndexType GetStartEvent(IntervalIndexType idx) const;
@@ -160,7 +150,7 @@ public:
    IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) const;
 
 protected:
-   bool m_bTimeStepMethod; // keeps track of the parameter used to create the intervals
+   bool m_bIsPGSuper; // used to customize labels
 
    struct CInterval
    {

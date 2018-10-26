@@ -1,7 +1,6 @@
 echo off
 
-cscript.exe \ARP\PGSuper\RegressionTest\runregression.js /VRELEASE /Px64 %1 %2
-REM cscript.exe \ARP\PGSuper\RegressionTest\runregression.js /VRELEASE /PWIN32 %1 %2
+cscript.exe \ARP\PGSuper\RegressionTest\runregression.js /APGSuper /VRELEASE /Px64 %1 %2
 
 if %errorlevel% NEQ 0 goto nopt2
 

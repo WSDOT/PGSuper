@@ -30,13 +30,11 @@
 #include <IFace\Project.h>
 
 #include <PsgLib\resource.h>
-#include <EAF\EAFDocument.h>
 
 // CBridgeDescRatingPage dialog
 
 BEGIN_MESSAGE_MAP(CShearSteelPage2, CShearSteelPage)
 	//{{AFX_MSG_MAP(CShearSteelPage)
-	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -47,9 +45,9 @@ BOOL CShearSteelPage2::OnInitDialog()
    return CShearSteelPage::OnInitDialog();
 }
 
-void CShearSteelPage2::OnHelp() 
+UINT CShearSteelPage2::GetHelpID()
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_TRANSV_REBAR );
+   return IDH_GIRDERDETAILS_TRANSV_REBAR;
 }
 
 void CShearSteelPage2::DoRestoreDefaults() 
@@ -68,7 +66,7 @@ void CShearSteelPage2::DoRestoreDefaults()
 
 void CShearSteelPage2::EnableClosureJointMode()
 {
-   int nID[] = 
+   static int nID[] = 
    {
       IDC_CHECK_SPLITTING,
 
@@ -104,13 +102,12 @@ void CShearSteelPage2::EnableClosureJointMode()
       pWnd->ShowWindow(SW_HIDE);
    }
 
-#pragma Reminder("UPDATE: this code isn't working")
-   // This code isn't working???
    // The "Confinement Bar Size" column needs to be hidded because
    // it doesn't apply to closure joints
+   int nCol = m_pGrid->GetConfinementBarColumn();
 	m_pGrid->GetParam()->EnableUndo(FALSE);
    m_pGrid->GetParam()->SetLockReadOnly(FALSE);
-   m_pGrid->SetColWidth(6,6,0);
+   m_pGrid->HideCols(nCol,nCol);
 	m_pGrid->GetParam()->EnableUndo(TRUE);
    m_pGrid->GetParam()->SetLockReadOnly(TRUE);
 }

@@ -55,6 +55,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <WBFLDManip.h>
 #include <WBFLDManipTools.h>
+#include <DManipTools\DManipTools.h>
 
 #include <Material\Material.h>
 
@@ -91,7 +92,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanView
 
-IMPLEMENT_DYNCREATE(CBridgePlanView, CDisplayView)
+IMPLEMENT_DYNCREATE(CBridgePlanView, CBridgeViewPane)
 
 CBridgePlanView::CBridgePlanView()
 {
@@ -104,18 +105,12 @@ CBridgePlanView::~CBridgePlanView()
 }
 
 
-BEGIN_MESSAGE_MAP(CBridgePlanView, CDisplayView)
+BEGIN_MESSAGE_MAP(CBridgePlanView, CBridgeViewPane)
 	//{{AFX_MSG_MAP(CBridgePlanView)
 	ON_COMMAND(ID_EDIT_DECK, OnEditDeck)
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
-	ON_WM_SIZE()
-	ON_WM_CREATE()
    ON_WM_KEYDOWN()
    ON_WM_MOUSEWHEEL()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-//   ON_COMMAND(ID_ZOOM,OnZoom)
-//   ON_COMMAND(ID_SCALETOFIT,OnScaleToFit)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -510,7 +505,14 @@ void CBridgePlanView::SelectTemporarySupport(SupportIDType tsID,bool bSelect)
 void CBridgePlanView::OnInitialUpdate() 
 {
    EnableToolTips();
+   CBridgeViewPane::OnInitialUpdate();
 
+   // Causes the child frame window to initalize the span range selection controls
+   m_pFrame->InitSpanRange();
+}
+
+void CBridgePlanView::BuildDisplayLists()
+{
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
@@ -525,7 +527,7 @@ void CBridgePlanView::OnInitialUpdate()
    dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
    dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CDisplayView::SetMappingMode(DManip::Isotropic);
+   CBridgeViewPane::SetMappingMode(DManip::Isotropic);
 
    // Setup display lists
 
@@ -606,34 +608,10 @@ void CBridgePlanView::OnInitialUpdate()
    SpanIndexType nSpans = pBridge->GetSpanCount();
    m_EndSpanIdx = nSpans-1;
 
-   CDisplayView::OnInitialUpdate();
-
    // OnInitialUpdate eventually calls OnUpdate... OnUpdate calls the
    // following two methods so there isn't any need to call them here
    //UpdateDisplayObjects();
    //UpdateDrawingScale();
-
-   // Causes the child frame window to initalize the span range selection controls
-   m_pFrame->InitSpanRange();
-}
-
-void CBridgePlanView::DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw)
-{
-   OnBeginPrinting(pDC, pInfo, rcDraw);
-   OnPrepareDC(pDC);
-   UpdateDrawingScale();
-   OnDraw(pDC);
-   OnEndPrinting(pDC, pInfo);
-}
-
-void CBridgePlanView::OnDraw(CDC* pDC)
-{
-   CDisplayView::OnDraw(pDC);
-
-   if ( CWnd::GetFocus() == this && !pDC->IsPrinting() )
-   {
-      DrawFocusRect();
-   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -643,12 +621,12 @@ void CBridgePlanView::OnDraw(CDC* pDC)
 void CBridgePlanView::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-	CDisplayView::AssertValid();
+	CBridgeViewPane::AssertValid();
 }
 
 void CBridgePlanView::Dump(CDumpContext& dc) const
 {
-	CDisplayView::Dump(dc);
+	CBridgeViewPane::Dump(dc);
 }
 #endif //_DEBUG
 
@@ -657,7 +635,7 @@ void CBridgePlanView::Dump(CDumpContext& dc) const
 
 void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
-   CDisplayView::OnUpdate(pSender,lHint,pHint);
+   CBridgeViewPane::OnUpdate(pSender,lHint,pHint);
 
 	if ( (lHint == 0)                               || 
         (lHint == HINT_BRIDGECHANGED)              || 
@@ -808,6 +786,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
       for ( GirderIndexType girderIdx = 0; girderIdx < nGirders; girderIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(girderIdx);
+         IndexType nDucts = pGirder->GetPostTensioning()->GetDuctCount();
 #if defined _DEBUG
          GirderIDType girderID = pGirder->GetID();
 #endif
@@ -838,12 +817,23 @@ void CBridgePlanView::UpdateSegmentTooltips()
             Float64 gdr_length  = pBridge->GetSegmentLength(segmentKey);
             Float64 span_length = pBridge->GetSegmentSpanLength(segmentKey);
             CString strMsg2;
-            strMsg2.Format(_T("\r\n\r\nGirder: %s\r\nGirder Length: %s\r\nSpan Length: %s\r\n\r\n%s"),
-                           pGirder->GetGirderName(),
-                           FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
-                           FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()),
-                           FormatDirection(direction)
-                           );
+            if ( nDucts == 0 )
+            {
+               strMsg2.Format(_T("\r\n\r\nGirder: %s\r\nGirder Length: %s\r\nSpan Length: %s\r\n\r\n%s"),
+                              pGirder->GetGirderName(),
+                              FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
+                              FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()),
+                              FormatDirection(direction)
+                              );
+            }
+            else
+            {
+               strMsg2.Format(_T("\r\n\r\nGirder: %s\r\nSegment Length: %s\r\n\r\n%s"),
+                              pGirder->GetGirderName(),
+                              FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
+                              FormatDirection(direction)
+                              );
+            }
 
             Float64 fc  = pSegment->Material.Concrete.Fc;
             Float64 fci = pSegment->Material.Concrete.Fci;
@@ -1016,31 +1006,6 @@ void CBridgePlanView::UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw)
    pntDO->SetPosition(point,bRedraw,FALSE);
 }
 
-void CBridgePlanView::OnSize(UINT nType, int cx, int cy) 
-{
-	CDisplayView::OnSize(nType, cx, cy);
-
-   CRect rect;
-   GetClientRect(&rect);
-   rect.DeflateRect(15,15,15,15);
-
-   CSize size = rect.Size();
-   size.cx = Max(0L,size.cx);
-   size.cy = Max(0L,size.cy);
-
-   SetLogicalViewRect(MM_TEXT,rect);
-
-   SetScrollSizes(MM_TEXT,size,CScrollView::sizeDefault,CScrollView::sizeDefault);
-
-   UpdateDrawingScale();
-}
-
-void CBridgePlanView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
-{
-   CBridgeModelViewChildFrame* pFrame = GetFrame();
-   pFrame->ClearSelection();
-}
-
 void CBridgePlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
 {
    GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
@@ -1165,7 +1130,7 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       }
    }
 
-   CDisplayView::OnKeyDown(nChar,nRepCnt,nFlags);
+   CBridgeViewPane::OnKeyDown(nChar,nRepCnt,nFlags);
 }
 
 BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
@@ -2986,7 +2951,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
    SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
    CComPtr<IPoint2dCollection> points;
-   pBridge->GetSlabPerimeter(firstSpanIdx,lastSpanIdx,30,&points);
+   pBridge->GetSlabPerimeter(firstSpanIdx,lastSpanIdx,10*(lastSpanIdx-firstSpanIdx+1),&points);
 
    CComPtr<IPolyShape> poly_shape;
    poly_shape.CoCreateInstance(CLSID_PolyShape);
@@ -3267,20 +3232,6 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
    }
 }
 
-int CBridgePlanView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
-{
-	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
-   {
-		return -1;
-   }
-	
-   m_pFrame = (CBridgeModelViewChildFrame*)GetParent()->GetParent();
-   ASSERT( m_pFrame != 0 );
-   ASSERT( m_pFrame->IsKindOf( RUNTIME_CLASS( CBridgeModelViewChildFrame ) ) );
-
-	return 0;
-}
-
 void CBridgePlanView::UpdateDrawingScale()
 {
    CComPtr<iDisplayMgr> dispMgr;
@@ -3311,11 +3262,6 @@ void CBridgePlanView::UpdateDrawingScale()
 
    title_display_list->HideDisplayObjects(false);
    na_display_list->HideDisplayObjects(false);
-}
-
-CBridgeModelViewChildFrame* CBridgePlanView::GetFrame()
-{
-   return m_pFrame;
 }
 
 void CBridgePlanView::ClearSelection()
@@ -3365,26 +3311,6 @@ DROPEFFECT CBridgePlanView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState
 void CBridgePlanView::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point)
 {
    AfxMessageBox(_T("CBridgePlanView::OnDropped"));
-}
-
-void CBridgePlanView::OnSetFocus(CWnd* pOldWnd) 
-{
-	CDisplayView::OnSetFocus(pOldWnd);
-   DrawFocusRect();
-}
-
-void CBridgePlanView::OnKillFocus(CWnd* pNewWnd) 
-{
-	CDisplayView::OnKillFocus(pNewWnd);
-   DrawFocusRect();
-}
-
-void CBridgePlanView::DrawFocusRect()
-{
-   CClientDC dc(this);
-   CRect rClient;
-   GetClientRect(&rClient);
-   dc.DrawFocusRect(rClient);
 }
 
 std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)

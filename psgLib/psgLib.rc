@@ -10,7 +10,6 @@
 #include "afxres.h"
 #include "EAF\EAFResources.h"
 #include "grid\gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -69,8 +68,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,47
- PRODUCTVERSION 3,0,0,47
+ FILEVERSION 3,0,0,48
+ PRODUCTVERSION 3,0,0,48
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +87,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.47"
+            VALUE "FileVersion", "3.0.0.48"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.47"
+            VALUE "ProductVersion", "3.0.0.48"
         END
     END
     BLOCK "VarFileInfo"
@@ -410,86 +409,86 @@ BEGIN
 END
 
 IDD_WSDOT_HAULINGD DIALOGEX 0, 0, 480, 364
-STYLE DS_SETFONT | WS_CHILD
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Factors of Safety",IDC_STATIC_GH2,9,7,160,69
-    LTEXT           "Cracking",IDC_STATIC_GH3,15,25,30,8,NOT WS_GROUP
     EDITTEXT        IDC_HE_HAULING_FS_CRACK,51,20,25,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Roll Over",IDC_STATIC_GH4,97,25,32,8,NOT WS_GROUP
     EDITTEXT        IDC_HE_HAULING_FS_ROLLOVER,132,20,25,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_FR,246,20,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,290,25,44,8
-    LTEXT           "Up",IDC_STATIC_GH6,50,98,10,8,NOT WS_GROUP
+    EDITTEXT        IDC_ALWC_FR,246,36,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_SLWC_FR,246,53,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_IMPACT_UPWARD_HAULING,65,95,27,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Down",IDC_STATIC_GH7,117,98,22,8,NOT WS_GROUP
     EDITTEXT        IDC_IMPACT_DOWNWARD_HAULING,142,95,27,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,262,466,95
-    LTEXT           "Compressive Stress",IDC_STATIC_GH9,13,278,67,8,NOT WS_GROUP
+    CONTROL         "Constant",IDC_LUMPSUM_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,130,44,10
+    EDITTEXT        IDC_ROLL_STIFFNESS,66,128,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Per Axle",IDC_PERAXLE_METHOD,"Button",BS_AUTORADIOBUTTON,17,146,42,10
+    EDITTEXT        IDC_AXLE_WEIGHT,66,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_AXLE_STIFFNESS,151,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HEIGHT_GIRDER_BOTTOM,150,166,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HEIGHT_ROLL_CENTER,150,183,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_AXLE_SPACING,150,200,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAX_HAULING_SUPPORT_LENGTH,150,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXOVERHANG,150,233,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_MIN_ROLL_STIFFNESS,247,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HE_ROADWAY_SUPERELEVATION,378,163,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_GIRDER_SWEEP_TOL,378,183,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_SUPPORT_PLACEMENT_TOLERANCE,378,200,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_CAMBER_CG_ADJUSTMENT,378,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXWGT,378,233,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_HAULING_COMPRESSION,81,275,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "f'c",IDC_STATIC_GH25,123,278,14,8,NOT WS_GROUP
-    LTEXT           "Tensile Stress",IDC_STATIC_GH10,13,295,47,8,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_TENSION,175,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_UNIT,216,310,51,8,NOT WS_GROUP
     CONTROL         "But not greater than ",IDC_CHECK_HAULING_TENSION_MAX,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,272,308,77,10
     EDITTEXT        IDC_HAULING_TENSION_MAX,354,306,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HAULING_TENSION_WITH_REBAR,174,331,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Factors of Safety",IDC_STATIC_GH2,9,7,160,69
+    LTEXT           "Cracking",IDC_STATIC_GH3,15,25,30,8,NOT WS_GROUP
+    LTEXT           "Roll Over",IDC_STATIC_GH4,97,25,32,8,NOT WS_GROUP
+    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,290,25,44,8
+    LTEXT           "Up",IDC_STATIC_GH6,50,98,10,8,NOT WS_GROUP
+    LTEXT           "Down",IDC_STATIC_GH7,117,98,22,8,NOT WS_GROUP
+    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,262,466,95
+    LTEXT           "Compressive Stress",IDC_STATIC_GH9,13,278,67,8,NOT WS_GROUP
+    LTEXT           "f'c",IDC_STATIC_GH25,123,278,14,8,NOT WS_GROUP
+    LTEXT           "Tensile Stress",IDC_STATIC_GH10,13,295,47,8,NOT WS_GROUP
+    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_UNIT,216,310,51,8,NOT WS_GROUP
     LTEXT           "MPa",IDC_HAULING_TENSION_MAX_UNIT,396,308,29,8,NOT WS_GROUP
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_GH11,13,335,152,9,NOT WS_GROUP
-    EDITTEXT        IDC_HAULING_TENSION_WITH_REBAR,174,331,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_WITH_REBAR_UNIT,216,331,45,8,NOT WS_GROUP
     GROUPBOX        "Hauling Parameters",IDC_STATIC_GH12,7,82,467,175
     LTEXT           "Roll Stiffness of Truck Trailer",IDC_STATIC_GH13,15,118,92,8,NOT WS_GROUP
-    CONTROL         "Constant",IDC_LUMPSUM_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,130,44,10
-    CONTROL         "Per Axle",IDC_PERAXLE_METHOD,"Button",BS_AUTORADIOBUTTON,17,146,42,10
-    EDITTEXT        IDC_ROLL_STIFFNESS,66,128,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "kip-in/rad",IDC_ROLL_STIFFNESS_UNITS,109,132,33,8,NOT WS_GROUP
-    EDITTEXT        IDC_AXLE_WEIGHT,66,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "kip/axle",IDC_AXLE_WEIGHT_UNITS,109,146,26,8,NOT WS_GROUP
-    EDITTEXT        IDC_AXLE_STIFFNESS,151,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "kip-in/rad/axle",IDC_AXLE_STIFFNESS_UNITS,195,146,47,8,NOT WS_GROUP
     LTEXT           "Minimum Roll Stiffness",IDC_STATIC_GH14,248,135,71,8,NOT WS_GROUP
-    EDITTEXT        IDC_MIN_ROLL_STIFFNESS,247,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "kip-in/rad",IDC_MIN_ROLL_STIFFNESS_UNITS,292,146,31,8,NOT WS_GROUP
     LTEXT           "Height of Girder Bottom Above Roadway",IDC_STATIC_GH15,15,165,129,8,NOT WS_GROUP
-    EDITTEXT        IDC_HEIGHT_GIRDER_BOTTOM,150,166,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_HEIGHT_GIRDER_BOTTOM_UNITS,194,166,25,8,NOT WS_GROUP
     LTEXT           "Height of Truck Roll Center Above Road",IDC_STATIC_GH17,15,183,129,8,NOT WS_GROUP
-    EDITTEXT        IDC_HEIGHT_ROLL_CENTER,150,183,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_HEIGHT_ROLL_CENTER_UNITS,194,183,25,8,NOT WS_GROUP
     LTEXT           "Truck Width\n(C-C distance between dual tires)",IDC_STATIC_GH19,15,198,109,17,NOT WS_GROUP
-    EDITTEXT        IDC_AXLE_SPACING,150,200,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_AXLE_SPACING_UNITS,194,200,25,8,NOT WS_GROUP
     LTEXT           "Max Distance Between Girder Supports",IDC_STATIC_GH21,15,217,129,8,NOT WS_GROUP
-    EDITTEXT        IDC_MAX_HAULING_SUPPORT_LENGTH,150,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_MAX_HAULING_SUPPORT_LENGTH_UNITS,194,217,25,8,NOT WS_GROUP
     LTEXT           "Max Leading Overhang\n(nearest truck cab)",IDC_STATIC_GH23,15,233,85,20,NOT WS_GROUP
-    EDITTEXT        IDC_MAXOVERHANG,150,233,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_MAXOVERHANG_UNITS,194,233,19,8,NOT WS_GROUP
     LTEXT           "Max. Roadway Superelevation",IDC_STATIC_GH16,234,165,98,8,NOT WS_GROUP
-    EDITTEXT        IDC_HE_ROADWAY_SUPERELEVATION,378,163,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "slope",IDC_HE_ROADWAY_SUPERELEVATION_UNITS,423,163,19,8,NOT WS_GROUP
     LTEXT           "Max Girder Sweep Tolerance",IDC_STATIC_GH18,234,183,100,8,NOT WS_GROUP
-    EDITTEXT        IDC_GIRDER_SWEEP_TOL,378,183,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "length/length",IDC_STATIC_GH26,423,183,43,8,NOT WS_GROUP
     LTEXT           "Support Placement Lateral Tolerance",IDC_STATIC_GH20,234,200,129,8,NOT WS_GROUP
-    EDITTEXT        IDC_SUPPORT_PLACEMENT_TOLERANCE,378,200,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS,423,200,25,8,NOT WS_GROUP
     LTEXT           "Increase Girder C.G. Height for Camber By",IDC_STATIC_GH22,234,217,139,8,NOT WS_GROUP
-    EDITTEXT        IDC_CAMBER_CG_ADJUSTMENT,378,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "percent",IDC_AXLE_SPACING_UNITS4,423,217,38,8,NOT WS_GROUP
     LTEXT           "Maximum Girder Weight",IDC_STATIC_GH24,234,233,90,8,NOT WS_GROUP
-    EDITTEXT        IDC_MAXWGT,378,233,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Kip",IDC_MAXWGT_UNITS,423,233,11,8,NOT WS_GROUP
     LTEXT           "%",IDC_STATIC,94,98,8,8
     LTEXT           "%",IDC_STATIC,171,98,8,8
-    LTEXT           "Normal Weight",IDC_STATIC,188,23,48,8
-    EDITTEXT        IDC_ALWC_FR,246,36,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Normal Weight",IDC_NWC_FR_TXT,188,23,48,8
     LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,290,41,44,8
-    LTEXT           "All Lightweight",IDC_STATIC,188,39,46,8
-    EDITTEXT        IDC_SLWC_FR,246,53,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "All Lightweight",IDC_ALWC_FR_TXT,188,39,46,8
     LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,290,57,44,8
-    LTEXT           "Sand Lightweight",IDC_STATIC,188,55,56,8
+    LTEXT           "Sand Lightweight",IDC_SLWC_FR_TXT,188,55,56,8
     GROUPBOX        "Modulus of Rupture for Cracking Moment",IDC_STATIC,175,7,162,69
     LTEXT           "Impact",IDC_STATIC,15,97,22,8
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,14,310,154,18
@@ -689,13 +688,13 @@ BEGIN
     EDITTEXT        IDC_FS_CY_FAIL,55,44,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_FR,223,17,30,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_FR_UNIT,257,20,41,8
-    LTEXT           "Normal Weight",IDC_STATIC,165,20,48,8
+    LTEXT           "Normal Weight",IDC_NWC_FR_TXT,165,20,48,8
     EDITTEXT        IDC_ALWC_FR,223,33,30,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,257,36,41,8
-    LTEXT           "All Lightweight",IDC_STATIC,165,36,46,8
+    LTEXT           "All Lightweight",IDC_ALWC_FR_TXT,165,36,46,8
     EDITTEXT        IDC_SLWC_FR,223,49,30,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,257,52,41,8
-    LTEXT           "Sand Lightweight",IDC_STATIC,165,52,56,8
+    LTEXT           "Sand Lightweight",IDC_SLWC_FR_TXT,165,52,56,8
     GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_ACS,7,204,406,79
     LTEXT           "Compression",IDC_STATIC_ACSCS,13,219,41,8
     EDITTEXT        IDC_LIFTING_COMPRESSION,77,216,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -739,10 +738,16 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Permanent Strands"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Strand Grid (Potential Strand Locations)",IDC_STATIC,6,68,322,196,0,WS_EX_TRANSPARENT
-    CTEXT           "Strand Locations at Harping Points Measured from Bottom C.L. of Girder",IDC_STATIC_HP,68,79,120,16
+    GROUPBOX        "Adjustable Strand Settings",IDC_STATIC,7,7,467,55
+    COMBOBOX        IDC_WEB_STRAND_TYPE_COMBO,17,19,133,33,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Adjustable strands are the strands whose position in the cross section can be altered to control tensile stresses at release.",IDC_STATIC,18,33,146,26
+    CONTROL         "Coerce Odd Number of Adjustable Strands",IDC_ODD_STRANDS,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,181,20,222,13
     CONTROL         "Use Different Harped Strand Locations at Girder Ends",IDC_USE_DIFF_GRID,
                     "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,182,34,242,14
+    LTEXT           "Note: User can over-ride adjustable strand type at design time.",IDC_ADJUSTABLE_NOTE,182,47,210,8
+    GROUPBOX        "Strand Grid (Potential Strand Locations)",IDC_STATIC,6,68,322,196,0,WS_EX_TRANSPARENT
+    CTEXT           "Strand Locations at Harping Points Measured from Bottom C.L. of Girder",IDC_STATIC_HP,68,79,120,16
     CTEXT           "Strand Locations at Girder Ends Measured from Top C.L. of Girder",IDC_STATIC_END,194,79,120,16
     CONTROL         "Custom1",IDC_HARP_STRAND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,13,100,306,124
     PUSHBUTTON      "&Insert",IDC_ADD_HARPED_STRAND,10,228,46,14
@@ -751,8 +756,8 @@ BEGIN
     PUSHBUTTON      "Delete",IDC_DEL_HARPED_STRAND,166,228,46,14
     PUSHBUTTON      "Move Up",IDC_MOVEUP_HARPED_STRAND,225,228,46,14
     PUSHBUTTON      "Move Down",IDC_MOVEDOWN_HARPED_STRAND,277,228,46,14
-    CONTROL         "Coerce Odd Number of Adjustable Strands",IDC_ODD_STRANDS,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,181,20,222,13
+    PUSHBUTTON      "Reverse Adjustable Strand Sequence",IDC_REVERSE_HARPED_STRAND_ORDER,10,246,125,14
+    PUSHBUTTON      "Generate Strand Positions",IDC_GENERATE,141,246,90,14
     GROUPBOX        "Grid Status",IDC_STATIC,335,68,139,196
     RTEXT           "# Debondable Strands = ",IDC_DB_STATUS,353,98,94,8
     RTEXT           "# of Straight Strands =  ",IDC_SS_STATUS,353,117,94,8
@@ -763,49 +768,43 @@ BEGIN
     GROUPBOX        "Vertical Adjustment of Adjustable Strands",IDC_VERT_ADJUST_GROUP,7,270,467,85,0,WS_EX_TRANSPARENT
     LTEXT           "Allow",IDC_STATIC,31,286,18,8
     LTEXT           "Design Increment",IDC_HP_INCREMENT_S,132,286,55,8
+    LTEXT           "Lower Strand Limit",IDC_END_INCREMENT_S,238,286,66,8
+    LTEXT           "Upper Strand Limit",IDC_STATIC,376,286,66,8
     CONTROL         "Harped Strands at Harping Points",IDC_ALLOW_HP_ADJUST,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,300,118,10
     EDITTEXT        IDC_HP_INCREMENT,134,300,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_HP_INCREMENT_T,171,300,18,8
-    CONTROL         "Harped Strands at Girder Ends",IDC_ALLOW_END_ADJUST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,321,112,10
-    EDITTEXT        IDC_END_INCREMENT,134,317,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_END_INCREMENT_T,171,323,18,8
-    LTEXT           "Lower Strand Limit",IDC_END_INCREMENT_S,238,286,66,8
+    LTEXT           "Static",IDC_HP_INCREMENT_T,171,303,18,8
     EDITTEXT        IDC_HP_LSL,214,300,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_HP_LSL_T,250,300,16,8
-    LTEXT           "From",IDC_HP_LSL_S,269,300,16,8
+    LTEXT           "(uu)",IDC_HP_LSL_T,250,303,16,8
+    LTEXT           "From",IDC_HP_LSL_S,269,303,16,8
     COMBOBOX        IDC_COMBO_HP_LSL,288,300,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_END_LSL,214,317,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_END_LSL_T,250,323,16,8
-    LTEXT           "From",IDC_END_LSL_S,269,323,16,8
-    COMBOBOX        IDC_COMBO_END_LSL,288,319,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Upper Strand Limit",IDC_STATIC,376,286,66,8
     EDITTEXT        IDC_HP_USL,352,300,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_HP_USL_T,388,300,16,8
-    LTEXT           "From",IDC_HP_USL_S,406,300,16,8
+    LTEXT           "(uu)",IDC_HP_USL_T,388,303,16,8
+    LTEXT           "From",IDC_HP_USL_S,406,303,16,8
     COMBOBOX        IDC_COMBO_HP_USL,426,300,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_END_USL,352,317,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_END_USL_T,388,323,16,8
-    LTEXT           "From",IDC_END_USL_S,406,323,16,8
+    CONTROL         "Harped Strands at Girder Ends",IDC_ALLOW_END_ADJUST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,319,112,10
+    EDITTEXT        IDC_END_INCREMENT,134,319,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_END_INCREMENT_T,171,322,18,8
+    EDITTEXT        IDC_END_LSL,214,319,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_END_LSL_T,250,322,16,8
+    LTEXT           "From",IDC_END_LSL_S,269,322,16,8
+    COMBOBOX        IDC_COMBO_END_LSL,288,319,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_END_USL,352,319,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_END_USL_T,388,322,16,8
+    LTEXT           "From",IDC_END_USL_S,406,322,16,8
     COMBOBOX        IDC_COMBO_END_USL,426,319,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Reverse Adjustable Strand Sequence",IDC_REVERSE_HARPED_STRAND_ORDER,10,246,125,14
-    PUSHBUTTON      "Generate Strand Positions",IDC_GENERATE,141,246,90,14
-    COMBOBOX        IDC_WEB_STRAND_TYPE_COMBO,17,19,133,33,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Adjustable Strand Settings",IDC_STATIC,7,7,467,55
-    LTEXT           "Note: User can over-ride adjustable strand type at design time.",IDC_ADJUSTABLE_NOTE,182,47,210,8
     CONTROL         "Adj. Straight Strands along Girder",IDC_ALLOW_STR_ADJUST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,340,120,10
-    EDITTEXT        IDC_STR_LSL,215,336,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_STR_LSL_T,251,341,16,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,338,120,10
+    LTEXT           "N/A",IDC_STATIC,146,338,14,8
+    EDITTEXT        IDC_STR_LSL,214,338,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_STR_LSL_T,250,341,16,8
     LTEXT           "From",IDC_STR_LSL_S,269,341,16,8
-    COMBOBOX        IDC_COMBO_STR_LSL,289,338,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_STR_USL,353,336,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_STR_USL_T,389,341,16,8
-    LTEXT           "From",IDC_STR_USL_S,407,341,16,8
-    COMBOBOX        IDC_COMBO_STR_USL,427,338,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "N/A",IDC_STATIC,146,340,14,8
-    LTEXT           "Adjustable strands are the strands whose position in the cross section can be altered to control tensile stresses at release.",IDC_STATIC,18,33,146,26
+    COMBOBOX        IDC_COMBO_STR_LSL,288,338,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_STR_USL,352,338,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_STR_USL_T,388,341,16,8
+    LTEXT           "From",IDC_STR_USL_S,406,341,16,8
+    COMBOBOX        IDC_COMBO_STR_USL,426,338,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_RENAME_LIBRARY_ENTRY DIALOG  0, 0, 187, 95
@@ -1012,7 +1011,7 @@ END
 
 IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 425
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
-CAPTION "Design and Spec Checking"
+CAPTION "Spec. Checking and Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "At Release Check/Design Options",IDC_STATIC,12,6,461,108
@@ -1161,14 +1160,14 @@ BEGIN
     EDITTEXT        IDC_FR,122,68,32,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_FR_UNIT,158,71,57,8
     LTEXT           "MPa",IDC_FR_LABEL,222,73,31,8,NOT WS_VISIBLE
-    LTEXT           "Sand lightweight concrete",IDC_SLWC_FR_TXT,36,88,83,8
-    EDITTEXT        IDC_SLWC_FR,122,84,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,158,87,57,8
-    LTEXT           "MPa",IDC_SLWC_FR_LABEL,222,89,31,8,NOT WS_VISIBLE
-    LTEXT           "All lightweight concrete",IDC_ALWC_FR_TXT,36,103,74,8
-    EDITTEXT        IDC_ALWC_FR,122,101,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,158,104,57,8
-    LTEXT           "MPa",IDC_ALWC_FR_LABEL,222,105,31,8,NOT WS_VISIBLE
+    LTEXT           "All lightweight concrete",IDC_ALWC_FR_TXT,36,89,74,8
+    EDITTEXT        IDC_ALWC_FR,122,86,32,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,158,89,57,8
+    LTEXT           "MPa",IDC_ALWC_FR_LABEL,222,90,31,8,NOT WS_VISIBLE
+    LTEXT           "Sand lightweight concrete",IDC_SLWC_FR_TXT,36,106,83,8
+    EDITTEXT        IDC_SLWC_FR,122,103,32,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,158,106,57,8
+    LTEXT           "MPa",IDC_SLWC_FR_LABEL,222,108,31,8,NOT WS_VISIBLE
     GROUPBOX        "Resistance Factor (LRFD 5.5.4.2)",IDC_PHI_GROUP,7,128,341,161
     GROUPBOX        "Conventional Construction (LRFD 5.5.4.2.1)",IDC_STATIC,12,141,327,93
     LTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER,19,155,76,8
@@ -1254,18 +1253,18 @@ BEGIN
     LTEXT           "strands , or",IDC_STATIC,109,63,36,8
     EDITTEXT        IDC_MAX_FRACTION_PER_SECTION,145,63,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(% of all debonded strands)",IDC_STATIC,191,63,86,8
-    GROUPBOX        "Critiera for Debond Distances",IDC_STATIC,7,93,452,102
-    LTEXT           "Maximum debonded length is the lesser of the half-girder length minus maximum development length (LRFD 5.11.4.3), and the  following:",IDC_STATIC,17,108,235,19
+    GROUPBOX        "Critiera for Debond Distances",IDC_DEBOND_CRITERIA_GROUP,7,93,452,102
+    LTEXT           "Maximum debonded length is the lesser of the half-girder length minus maximum development length (LRFD 5.11.4.3), and the  following:",IDC_DEBOND_CRITERIA_NOTE,17,108,235,19
     CONTROL         "",IDC_CHECK_MAX_LENGTH_FRACTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,130,10,8
     EDITTEXT        IDC_MAX_LENGTH_FRACTION,31,127,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(% of the girder length)",IDC_STATIC,77,127,71,8
+    LTEXT           "(% of the girder length)",IDC_MAX_LENGTH_FRACTION_UNIT,77,127,71,8
     CONTROL         "",IDC_CHECK_MAX_LENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,130,10,8
     EDITTEXT        IDC_MAX_LENGTH,165,127,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(units)",IDC_MAX_LENGTH_UNIT,211,127,20,8
-    LTEXT           "Minimum distance between debond sections",IDC_STATIC,16,146,140,8
+    LTEXT           "Minimum distance between debond sections",IDC_MIN_DISTANCE_LABEL,16,146,140,8
     EDITTEXT        IDC_MIN_DISTANCE,165,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(units)",IDC_MIN_DISTANCE_UNIT,211,146,20,8
-    LTEXT           "Default distance between debond sections\n(Used for locating debond sections during design)",IDC_STATIC,15,165,148,25
+    LTEXT           "Default distance between debond sections\n(Used for locating debond sections during design)",IDC_DEFAULT_DISTANCE_LABEL,15,165,148,25
     EDITTEXT        IDC_DEFAULT_DISTANCE,165,165,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(units)",IDC_DEFAULT_DISTANCE_UNIT,211,165,20,8
     GROUPBOX        "Prestressing Optimization Strategies for Automated Girder Designer",IDC_DESIGN_STRATEGY_GROUP,7,207,452,125
@@ -1505,6 +1504,7 @@ END
 
 IDD_SPEC_HAULING_ERECTIOND DIALOGEX 0, 0, 500, 392
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Hauling"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -1514,7 +1514,7 @@ BEGIN
 END
 
 IDD_KDOT_HAULINGD DIALOGEX 0, 0, 432, 186
-STYLE DS_SETFONT | WS_CHILD
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
 FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     EDITTEXT        IDC_G_OVERHANG,121,37,25,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1550,7 +1550,7 @@ BEGIN
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
     LTEXT           "Tensile Stress",IDC_STATIC,15,36,57,8
-    LTEXT           "In areas other than the precompressed tensile zone and without bounded reinforcement",IDC_STATIC,22,47,149,15
+    LTEXT           "In areas other than the precompressed tensile zone and without bonded reinforcement",IDC_STATIC,22,47,149,15
     EDITTEXT        IDC_RELEASE_TENSION,176,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,221,48,52,8
     CONTROL         "But not greater than ",IDC_CHECK_RELEASE_TENSION_MAX,
@@ -1624,7 +1624,7 @@ BEGIN
     LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,321,400,25,8
 END
 
-IDD_SPEC_LOADS DIALOGEX 0, 0, 351, 311
+IDD_SPEC_LOADS DIALOGEX 0, 0, 351, 422
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Loads"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1656,6 +1656,13 @@ BEGIN
     EDITTEXT        IDC_MIN_SIDEWALK_WIDTH,207,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_MIN_SIDEWALK_WIDTH_UNIT,249,96,32,8
     GROUPBOX        "Pedestrian Live Load (LRFD 3.6.1.6)",IDC_STATIC,7,59,336,54
+    COMBOBOX        IDC_HAUNCH_COMP_CB,29,370,301,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Allowable tolerance between user-input camber and actual camber taken at mid-span",IDC_HAUNCH_TOLER_STATIC,48,387,167,20
+    EDITTEXT        IDC_HAUNCH_TOLER,221,389,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HAUNCH_TOLER_UNIT,264,392,19,8
+    LTEXT           "Computation of distributed load due to slab haunch:",IDC_STATIC,14,355,167,8
+    GROUPBOX        "Haunch Load",IDC_STATIC,6,310,338,105
+    CTEXT           "NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch load.",IDC_STATIC,23,324,302,20,WS_BORDER
 END
 
 IDD_SPEC_CLOSURE DIALOGEX 0, 0, 428, 361
@@ -1769,9 +1776,9 @@ BEGIN
     LTEXT           "Minimum Fillet",IDC_STATIC,15,32,44,8
     LTEXT           "unit",IDC_MIN_FILLET_UNIT,113,31,33,8
     LTEXT           "unit",IDC_MIN_HAUNCH_BC_UNIT,252,55,12,8
-    LTEXT           "Excessive Haunch Depth Warning Tolderance",IDC_STATIC,15,78,148,8
+    LTEXT           "Excessive Haunch Depth Warning Tolerance",IDC_STATIC,15,78,144,8
     LTEXT           "unit",IDC_EXCESS_HAUNCH_UNIT,213,78,22,8
-    GROUPBOX        "Deflection Multipliers for Computing Excess Camber",IDC_STATIC_MULT1,7,110,429,138,WS_GROUP
+    GROUPBOX        "Deflection Multipliers for Computing Camber",IDC_STATIC_MULT1,7,110,429,138,WS_GROUP
     LTEXT           "Each factor is applied to the given camber or sum of dead load deflections. The factored, summed result is the girder excess camber which is reported in Camber reports and used to compute haunch depths.",IDC_STATIC_MULT2,24,125,348,18
     LTEXT           "Barrier + Sidewalk + Overlay + User2",IDC_STATIC_MULT9,362,149,35,34
     LTEXT           "Haunch",IDC_STATIC_MULT8,310,172,35,11
@@ -1780,7 +1787,7 @@ BEGIN
     LTEXT           "Diaphragm + Shear Key + Construction",IDC_STATIC_MULT4,158,156,41,29
     LTEXT           "Erection Camber",IDC_STATIC_MULT3,62,164,35,19
     LTEXT           "Factors",IDC_STATIC_MULT10,26,192,24,8
-    LTEXT           "User1 and User2 are deflections from user-defined loads applied in Bridge Site 1 and Bridge Site 2 stages, respectively",IDC_STATIC_MULT11,17,228,371,8
+    LTEXT           "User1 and User2 are deflections from user-defined loads applied to the non-composite and composite girder sections, respectively",IDC_STATIC_MULT11,17,228,406,8
     LTEXT           "Creep",IDC_STATIC_MULT7,107,172,41,11
 END
 
@@ -2105,7 +2112,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 344
         TOPMARGIN, 7
-        BOTTOMMARGIN, 304
+        BOTTOMMARGIN, 415
     END
 
     IDD_SPEC_CLOSURE, DIALOG
@@ -2172,22 +2179,6 @@ END
 
 IDD_GIRDER_PERMANENT_STRANDS DLGINIT
 BEGIN
-    IDC_COMBO_HP_LSL, 0x403, 4, 0
-0x6f54, 0x0070, 
-    IDC_COMBO_HP_LSL, 0x403, 7, 0
-0x6f42, 0x7474, 0x6d6f, "\000" 
-    IDC_COMBO_END_LSL, 0x403, 4, 0
-0x6f54, 0x0070, 
-    IDC_COMBO_END_LSL, 0x403, 7, 0
-0x6f42, 0x7474, 0x6d6f, "\000" 
-    IDC_COMBO_HP_USL, 0x403, 4, 0
-0x6f54, 0x0070, 
-    IDC_COMBO_HP_USL, 0x403, 7, 0
-0x6f42, 0x7474, 0x6d6f, "\000" 
-    IDC_COMBO_END_USL, 0x403, 4, 0
-0x6f54, 0x0070, 
-    IDC_COMBO_END_USL, 0x403, 7, 0
-0x6f42, 0x7474, 0x6d6f, "\000" 
     IDC_WEB_STRAND_TYPE_COMBO, 0x403, 30, 0
 0x6441, 0x756a, 0x7473, 0x6261, 0x656c, 0x5320, 0x7274, 0x6e61, 0x7364, 
 0x6120, 0x6572, 0x4820, 0x7261, 0x6570, 0x0064, 
@@ -2198,6 +2189,22 @@ BEGIN
 0x6441, 0x756a, 0x7473, 0x6261, 0x656c, 0x6320, 0x6e61, 0x6220, 0x2065, 
 0x6148, 0x7072, 0x6465, 0x6f20, 0x2072, 0x7453, 0x6172, 0x6769, 0x7468, 
 "\000" 
+    IDC_COMBO_HP_LSL, 0x403, 4, 0
+0x6f54, 0x0070, 
+    IDC_COMBO_HP_LSL, 0x403, 7, 0
+0x6f42, 0x7474, 0x6d6f, "\000" 
+    IDC_COMBO_HP_USL, 0x403, 4, 0
+0x6f54, 0x0070, 
+    IDC_COMBO_HP_USL, 0x403, 7, 0
+0x6f42, 0x7474, 0x6d6f, "\000" 
+    IDC_COMBO_END_LSL, 0x403, 4, 0
+0x6f54, 0x0070, 
+    IDC_COMBO_END_LSL, 0x403, 7, 0
+0x6f42, 0x7474, 0x6d6f, "\000" 
+    IDC_COMBO_END_USL, 0x403, 4, 0
+0x6f54, 0x0070, 
+    IDC_COMBO_END_USL, 0x403, 7, 0
+0x6f42, 0x7474, 0x6d6f, "\000" 
     IDC_COMBO_STR_LSL, 0x403, 4, 0
 0x6f54, 0x0070, 
     IDC_COMBO_STR_LSL, 0x403, 7, 0
@@ -2277,6 +2284,21 @@ BEGIN
     0
 END
 
+IDD_SPEC_LOADS DLGINIT
+BEGIN
+    IDC_HAUNCH_COMP_CB, 0x403, 44, 0
+0x7341, 0x7573, 0x656d, 0x7a20, 0x7265, 0x206f, 0x7865, 0x6563, 0x7373, 
+0x6320, 0x6d61, 0x6562, 0x2072, 0x6628, 0x616c, 0x2074, 0x6967, 0x6472, 
+0x7265, 0x7420, 0x706f, 0x0029, 
+    IDC_HAUNCH_COMP_CB, 0x403, 86, 0
+0x7341, 0x7573, 0x656d, 0x6520, 0x6378, 0x7365, 0x2073, 0x6163, 0x626d, 
+0x7265, 0x6420, 0x6665, 0x6e69, 0x6465, 0x6220, 0x2079, 0x6170, 0x6172, 
+0x6f62, 0x616c, 0x6620, 0x7469, 0x6974, 0x676e, 0x7520, 0x6573, 0x2d72, 
+0x6e69, 0x7570, 0x2074, 0x4193, 0x2094, 0x6e61, 0x2064, 0x6946, 0x6c6c, 
+0x7465, 0x6420, 0x6d69, 0x6e65, 0x6973, 0x6e6f, 0x0073, 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2293,7 +2315,7 @@ BEGIN
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "&Import from PGSuper/PGSplice Project...", ID_FILE_IMPORT
+        MENUITEM "&Import Library Entries...",  ID_FILE_IMPORT
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -2436,7 +2458,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_LIBRARYTYPE         "Library Editor\nUntitled\nPGSuper/PGSplice Library\nLibrary File (*.lbr)\n.lbr\nPGSuperLibrary.Document\nPGSuper/PGSplice Library File"
+    IDR_LIBRARYTYPE         "PGS Library Editor\nUntitled\nPGS Library Editor\nPGS Library File (*.lbr)\n.lbr\nPGSLibrary.Document\nPGS Library File"
 END
 
 STRINGTABLE 
@@ -2458,7 +2480,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_MANAGE_PLUGINS       "Manage Library Editor Plug-insanage Plug-ins"
+    ID_MANAGE_PLUGINS       "Manage Library Editor Plug-ins"
 END
 
 STRINGTABLE 
@@ -2539,7 +2561,6 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid\gxres.rc"               // Objective Grid resources
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -187,7 +187,6 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
       if ( boundaryConditionType == pgsTypes::bctContinuousBeforeDeck || boundaryConditionType == pgsTypes::bctContinuousAfterDeck )
       {
-         ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
          xSrc = 0;
       }
       else if ( boundaryConditionType == pgsTypes::bctIntegralBeforeDeck || boundaryConditionType == pgsTypes::bctIntegralAfterDeck )

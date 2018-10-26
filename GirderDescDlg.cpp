@@ -103,6 +103,8 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
    m_SegmentKey = segmentKey;
    m_SegmentID = pSegment->GetID();
 
+   m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
+
    if( m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectInput )
    {
       AddAdditionalPropertyPages( false, false );
@@ -237,6 +239,9 @@ void CGirderDescDlg::DoUpdate()
    m_General.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
    m_General.m_SlabOffset[pgsTypes::metStart] = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),m_SegmentKey.girderIndex);
    m_General.m_SlabOffset[pgsTypes::metEnd]   = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  m_SegmentKey.girderIndex);
+
+   m_General.m_FilletType = pIBridgeDesc->GetFilletType();
+   m_General.m_Fillet     =  pIBridgeDesc->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex);
 
    // shear page
    m_Shear.m_CurGrdName = pGirder->GetGirderName();

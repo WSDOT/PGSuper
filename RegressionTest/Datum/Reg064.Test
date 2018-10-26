@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek   1      1     Chain         22   0.6  270   3.45   3.45   0   2.00   16     0    0   0   0   0   0   5.000  9.000   2.986    -3.031      878   0.451  0.668   1.913 -0.244 -0.024 -0.034 -0.301  61.83  161.26    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.00    8   0.00  Chain Up Creek     1     1    Chain          22  0.6  270   3.45   3.45   8.00   8.00                                              5.000  9.000   2.993    -3.037      877   0.451  0.668   1.913 -0.245 -0.024 -0.034 -0.302  61.83  161.20    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -13,9 +13,9 @@ Hauling checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek   1      2     Chain         22   0.6  270   3.45   3.45   0   2.00   16     0    0   0   0   0   0   5.000  9.000   2.922    -2.940      878   0.407  0.736   1.913 -0.244 -0.024 -0.034 -0.301  61.83  161.26    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.00    8   0.00  Chain Up Creek     1     2    Chain          22  0.6  270   3.45   3.45   8.00   8.00                                              5.000  9.000   2.928    -2.947      877   0.407  0.736   1.913 -0.245 -0.024 -0.034 -0.302  61.83  161.20    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful

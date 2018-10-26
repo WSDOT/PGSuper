@@ -26,6 +26,7 @@
 
 // Interfaces
 #include <IGraphManager.h>
+#include <IFace\Project.h>
 
 // Graph Builders
 #include <Graphing\AnalysisResultsGraphBuilder.h>
@@ -34,7 +35,6 @@
 #include <Graphing\StressHistoryGraphBuilder.h>
 #include <Graphing\GirderPropertiesGraphBuilder.h>
 #include <Graphing\ConcretePropertyGraphBuilder.h>
-#include <Graphing\DeflectionHistoryGraphBuilder.h>
 
 
 #ifdef _DEBUG
@@ -53,7 +53,6 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
 }
 
 STDMETHODIMP CGrapherBase::SetBroker(IBroker* pBroker)

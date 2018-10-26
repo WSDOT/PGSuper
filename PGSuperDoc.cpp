@@ -25,9 +25,12 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDoc.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperBaseAppPlugin.h"
 
 #include <PgsExt\BridgeDescription2.h>
 #include <EAF\EAFAutoProgress.h>
+
+#include <MFCTools\AutoRegistry.h>
 
 // Dialogs
 #include "SelectGirderDlg.h"
@@ -35,7 +38,6 @@
 #include "DesignGirderDlg.h"
 #include "DesignOutcomeDlg.h"
 #include "StructuralAnalysisMethodDlg.h"
-#include "PGSuperAppPlugin\EditHaunchDlg.h"
 
 // Interfaces
 #include <IFace\EditByUI.h> // for EDG_GENERAL
@@ -70,14 +72,13 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CPGSDocBase)
 	ON_COMMAND(ID_EDIT_SEGMENT, OnEditGirder)
 	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
 	ON_COMMAND(ID_PROJECT_DESIGNGIRDER, OnProjectDesignGirder)
-	ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDER, OnUpdateProjectDesignGirderDirect)
    ON_COMMAND(ID_PROJECT_DESIGNGIRDERDIRECT, OnProjectDesignGirderDirect)
-   ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDERDIRECT, OnUpdateProjectDesignGirderDirect)
    ON_COMMAND(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnProjectDesignGirderDirectHoldSlabOffset)
    ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnUpdateProjectDesignGirderDirectHoldSlabOffset)
 	ON_COMMAND(ID_PROJECT_ANALYSIS, OnProjectAnalysis)
 	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
    ON_UPDATE_COMMAND_UI(ID_EDIT_HAUNCH,OnUpdateEditHaunch)
+   ON_COMMAND(ID_EDIT_TIMELINE,OnEditTimeline)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -206,6 +207,7 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       // collect up the new data
       txnEditGirderData newGirderData;
       newGirderData.m_bUseSameGirder = dlg.m_General.m_bUseSameGirderType;
+      newGirderData.m_TimelineMgr = dlg.m_TimelineMgr;
 
       // copy original girder and then modify the segment that changed
       newGirderData.m_Girder = *pGirder;
@@ -214,6 +216,9 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       newGirderData.m_SlabOffsetType = dlg.m_General.m_SlabOffsetType;
       newGirderData.m_SlabOffset[pgsTypes::metStart] = dlg.m_General.m_SlabOffset[pgsTypes::metStart];
       newGirderData.m_SlabOffset[pgsTypes::metEnd]   = dlg.m_General.m_SlabOffset[pgsTypes::metEnd];
+
+      newGirderData.m_FilletType = dlg.m_General.m_FilletType;
+      newGirderData.m_Fillet = dlg.m_General.m_Fillet;
 
       newGirderData.m_strGirderName = dlg.m_strGirderName;
 
@@ -252,6 +257,13 @@ bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,int 
 void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE( ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      AfxMessageBox(_T("Prestress losses are computed by the time-step method. Girder design is not available for this prestress loss method."),MB_OK);
+      return;
+   }
 
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
@@ -323,42 +335,12 @@ void CPGSuperDoc::OnProjectDesignGirder()
    DesignGirder(true,m_bDesignSlabOffset,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
-void CPGSuperDoc::OnUpdateProjectDesignGirderDirect(CCmdUI* pCmdUI)
-{
-   GET_IFACE(ISpecification,pSpecification);
-   std::_tstring strSpecName(pSpecification->GetSpecification());
-
-   GET_IFACE(ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
-
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      pCmdUI->Enable(FALSE); // design is not an option with time step losses
-   }
-   else
-   {
-      pCmdUI->Enable( TRUE );
-   }
-}
-
 void CPGSuperDoc::OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI)
 {
    GET_IFACE(ISpecification,pSpecification);
-   std::_tstring strSpecName(pSpecification->GetSpecification());
-
-   GET_IFACE(ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
-
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      pCmdUI->Enable(FALSE); // design is not an option with time step losses
-   }
-   else
-   {
-      GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
-      bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
-      pCmdUI->Enable( bDesignSlabOffset );
-   }
+   GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
+   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   pCmdUI->Enable( bDesignSlabOffset );
 }
 
 void CPGSuperDoc::OnProjectAnalysis() 
@@ -380,45 +362,10 @@ void CPGSuperDoc::OnProjectAnalysis()
    }
 }
 
-void CPGSuperDoc::OnEditHaunch() 
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-
-   const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   CEditHaunchDlg dlg(pOldBridgeDesc);
-   if ( dlg.DoModal() == IDOK )
-   {
-      GET_IFACE(IEnvironment, pEnvironment );
-      enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
-      Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
-      CBridgeDescription2 newBridgeDesc = *pOldBridgeDesc;
-
-      // dialog modifies descr
-      dlg.ModifyBridgeDescr(&newBridgeDesc);
-
-      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     newBridgeDesc,
-                                              oldExposureCondition, oldExposureCondition, 
-                                              oldRelHumidity,       oldRelHumidity);
-
-
-      GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
-   }
-}
-
-void CPGSuperDoc::OnUpdateEditHaunch(CCmdUI* pCmdUI)
-{
-   GET_IFACE_NOCHECK(IBridge,pBridge);
-   pCmdUI->Enable( pBridge->GetDeckType()==pgsTypes::sdtNone ? FALSE : TRUE );
-}
-
 void CPGSuperDoc::OnProjectDesignGirderDirect()
 {
    GET_IFACE(ISpecification,pSpecification);
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE_NOCHECK(IBridge,pBridge); // might not get used due to short-circuit evaluation
    bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
    m_bDesignSlabOffset = bDesignSlabOffset; // retain setting in document
 
@@ -530,8 +477,13 @@ void CPGSuperDoc::LoadDocumentSettings()
 {
    CPGSDocBase::LoadDocumentSettings();
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
 
    // Flexure and stirrup design defaults for design dialog.
    // Default is to design flexure and not shear.

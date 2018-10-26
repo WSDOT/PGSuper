@@ -102,6 +102,8 @@
 #include <System\FileStream.h>
 #include <System\StructuredLoadXmlPrs.h>
 
+#include <MFCTools\AutoRegistry.h>
+
 // Helpers
 #include <MathEx.h>
 
@@ -134,6 +136,8 @@
 #include "PGSuperAppPlugin\InsertSpanDlg.h"
 #include "PGSuperAppPlugin\LoadFactorsDlg.h"
 #include "PGSuperAppPlugin\LossParametersDlg.h"
+#include "PGSuperAppPlugin\EditTimelineDlg.h"
+#include "PGSuperAppPlugin\EditHaunchDlg.h"
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
@@ -166,6 +170,7 @@
 #include "PGSuperAppPlugin\EditLossParameters.h"
 #include "PGSuperAppPlugin\EditPrecastSegment.h"
 #include "EditProjectProperties.h"
+#include "PGSuperAppPlugin\EditTimeline.h"
 
 // Logging
 #include <iostream>
@@ -248,12 +253,15 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
 	ON_COMMAND(ID_INSERT, OnInsert)
 	ON_COMMAND(ID_OPTIONS_LABELS, OnOptionsLabels)
    ON_COMMAND(ID_PROJECT_LOSSES,OnLosses)
+   ON_COMMAND(ID_EDIT_TIMELINE,OnEditTimeline)
 
    ON_COMMAND(ID_VIEW_BRIDGEMODELEDITOR, OnViewBridgeModelEditor)
    ON_COMMAND(ID_VIEW_GIRDEREDITOR, OnViewGirderEditor)
    ON_COMMAND(ID_VIEW_LIBRARYEDITOR, OnViewLibraryEditor)
 
 	ON_COMMAND(ID_EDIT_USERLOADS, OnEditUserLoads)
+	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
+   ON_UPDATE_COMMAND_UI(ID_EDIT_HAUNCH,OnUpdateEditHaunch)
    //}}AFX_MSG_MAP
 
    // autocalc command implementations
@@ -317,6 +325,7 @@ m_bAutoCalcEnabled(true)
 
    SetCustomReportHelpID(eafTypes::crhCustomReport,IDH_CUSTOM_REPORT);
    SetCustomReportHelpID(eafTypes::crhFavoriteReport,IDH_FAVORITE_REPORT);
+   SetCustomReportDefinitionHelpID(IDH_CUSTOM_REPORT_DEFINITION);
 
 
    // Reserve a range of command IDs for extension agent commands (which are currently supported)
@@ -532,6 +541,41 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
    }
 
    return true;
+}
+
+void CPGSDocBase::OnEditHaunch() 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+
+   const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   CEditHaunchDlg dlg(pOldBridgeDesc);
+   if ( dlg.DoModal() == IDOK )
+   {
+      GET_IFACE(IEnvironment, pEnvironment );
+      enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+      Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
+      CBridgeDescription2 newBridgeDesc = *pOldBridgeDesc;
+
+      // dialog modifies descr
+      dlg.ModifyBridgeDescr(&newBridgeDesc);
+
+      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     newBridgeDesc,
+                                              oldExposureCondition, oldExposureCondition, 
+                                              oldRelHumidity,       oldRelHumidity);
+
+
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+}
+
+void CPGSDocBase::OnUpdateEditHaunch(CCmdUI* pCmdUI)
+{
+   GET_IFACE_NOCHECK(IBridge,pBridge);
+   pCmdUI->Enable( pBridge->GetDeckType()==pgsTypes::sdtNone ? FALSE : TRUE );
 }
 
 bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
@@ -1775,13 +1819,7 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
    #endif
    } // clses the bracket for if ( 1.0 < version )
 
-   hr = CEAFBrokerDocument::LoadTheDocument(pStrLoad);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   return S_OK;
+   return CEAFBrokerDocument::LoadTheDocument(pStrLoad);
 }
 
 void CPGSDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup)
@@ -2173,7 +2211,7 @@ void CPGSDocBase::OnProjectEnvironment()
 void CPGSDocBase::OnEffectiveFlangeWidth()
 {
    GET_IFACE(IEffectiveFlangeWidth,pEFW);
-   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are consider applicable for skew angles less than 75 degress, L/S less than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
+   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are consider applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
    CEAFHelpHandler helpHandler(GetDocumentationSetName(),IDH_EFFECTIVE_FLANGE_WIDTH);
@@ -2194,26 +2232,63 @@ void CPGSDocBase::OnProjectSpec()
 
 	CSpecDlg dlg;
 
-   GET_IFACE( ISpecification, pSpec );
 
+   GET_IFACE( ISpecification, pSpec );
    std::_tstring cur_spec = pSpec->GetSpecification();
    dlg.m_Spec = cur_spec;
+   GET_IFACE(ILibrary,pLib);
+   const SpecLibraryEntry* pCurrentSpecEntry = pLib->GetSpecEntry( cur_spec.c_str() );
    if ( dlg.DoModal() )
    {
       if ( dlg.m_Spec != cur_spec )
       {
-         GET_IFACE(ILibrary,pLib);
+         GET_IFACE(IBridge,pBridge);
          const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( dlg.m_Spec.c_str() );
 
          pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
          pgsTypes::AnalysisType newAnalysisType = analysisType;
-         if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && analysisType != pgsTypes::Continuous )
+         pgsTypes::WearingSurfaceType wearingSurfaceType = pBridge->GetWearingSurfaceType();
+         pgsTypes::WearingSurfaceType newWearingSurfaceType = wearingSurfaceType;
+         if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
          {
-            newAnalysisType = pgsTypes::Continuous;
-            AfxMessageBox(_T("The selected project criteria uses the time-step loss method. The analysis mode must be Continuous for the time-step loss method."));
+            if (  analysisType != pgsTypes::Continuous )
+            {
+               newAnalysisType = pgsTypes::Continuous;
+               CString strMsg;
+               strMsg.Format(_T("The \"%s\" Project Criteria uses the time-step method for computing losses. The Structural Analysis Method must be set to Continuous for the time-step loss method.\n\nWould you like to change the Structural Analysis Method and continue?"),dlg.m_Spec.c_str());
+               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDNO )
+               {
+                  return;
+               }
+            }
+
+            if ( wearingSurfaceType == pgsTypes::wstFutureOverlay )
+            {
+               newWearingSurfaceType = pgsTypes::wstOverlay;
+               CString strMsg(_T("The bridge is modeled with a future overlay wearing surface. This is not a valid wearing surface type for time-step analysis.\n\nWould you like to change the wearing surface type to Overlay and continue?"));
+               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDNO )
+               {
+                  return;
+               }
+            }
          }
 
-         txnEditProjectCriteria* pTxn = new txnEditProjectCriteria(cur_spec.c_str(),dlg.m_Spec.c_str(),analysisType,newAnalysisType);
+
+         if ( pCurrentSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP )
+         {
+            // switching from time-step to regular loss method... the timeline will be reset
+#if defined _DEBUG
+            GET_IFACE(IDocumentType,pDocType);
+            ATLASSERT(pDocType->IsPGSuperDocument()); // this will only happen in a PGSuper project
+#endif
+            CString strMsg(_T("The Construction Sequence Timeline will be reset. Would you like to continue?"));
+            if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDNO )
+            {
+               return;
+            }
+         }
+
+         txnEditProjectCriteria* pTxn = new txnEditProjectCriteria(cur_spec.c_str(),dlg.m_Spec.c_str(),analysisType,newAnalysisType,wearingSurfaceType,newWearingSurfaceType);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
       }
@@ -3727,6 +3802,24 @@ void CPGSDocBase::OnLosses()
    }
 }
 
+void CPGSDocBase::OnEditTimeline()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   CEditTimelineDlg dlg;
+   dlg.m_TimelineManager = *pBridgeDesc->GetTimelineManager();
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      txnEditTimeline* pTxn = new txnEditTimeline(*pBridgeDesc->GetTimelineManager(),dlg.m_TimelineManager);
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+}
+
 BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 
 {
     // document classes can't process ON_NOTIFY
@@ -3799,7 +3892,13 @@ void CPGSDocBase::LoadDocumentSettings()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::LoadDocumentSettings();
 
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
 
    CString strAutoCalcDefault = pApp->GetLocalMachineString(_T("Settings"),_T("AutoCalc"), _T("On"));
    CString strAutoCalc = pApp->GetProfileString(_T("Settings"),_T("AutoCalc"),strAutoCalcDefault);
@@ -3865,6 +3964,12 @@ void CPGSDocBase::SaveDocumentSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::SaveDocumentSettings();
+
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   CAutoRegistry autoReg(pPGSBase->GetAppName());
 
    CWinApp* pApp = AfxGetApp();
 
@@ -3960,10 +4065,15 @@ void CPGSDocBase::SaveToolbarState()
 CString CPGSDocBase::GetToolbarSectionName()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   CAutoRegistry autoReg(pPGSBase->GetAppName());
 
    CString strToolbarSection;
-   strToolbarSection.Format(_T("%s"),pApp->m_pszProfileName);
+   strToolbarSection.Format(_T("%s"),pPGSBase->GetAppName());
 
    return strToolbarSection;
 }
@@ -4276,4 +4386,10 @@ void CPGSDocBase::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    __super::ShowCustomReportHelp(helpType);
+}
+
+void CPGSDocBase::ShowCustomReportDefinitionHelp()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   __super::ShowCustomReportDefinitionHelp();
 }

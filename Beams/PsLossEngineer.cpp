@@ -2639,7 +2639,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    GET_IFACE( ISpecification,          pSpec);
    GET_IFACE( IBridgeDescription,      pIBridgeDesc);
    GET_IFACE( ILibrary,                pLibrary);
-   GET_IFACE( ILoadFactors,            pILoadFactors );
+   GET_IFACE_NOCHECK( ILoadFactors,            pILoadFactors );
    GET_IFACE( IIntervals,              pIntervals );
    GET_IFACE( IGirder,                 pGirder);
 
@@ -2915,10 +2915,10 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    if ( m_bComputingLossesForDesign )
    {
       // get the additional moment caused by the difference in input and design "A" dimension
-      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(config,poi);
       *pMadlg += K_slab*Mslab;
 
-      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(config,poi);
       *pMadlg += K_slabpad*Mslabpad;
    }
 
@@ -2952,11 +2952,19 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       *pMsidl += K_overlay*pProdForces->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative );
    }
    
-   Float64 Mmin, Mmax;
-   pProdForces->GetLiveLoadMoment(liveLoadIntervalIdx,pgsTypes::lltDesign,poi,bat,true,true,&Mmin,&Mmax);
-   Float64 gMaxI   = pILoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceI];
-   Float64 gMaxIII = pILoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
-   *pMllim = K_liveload*Max(gMaxI,gMaxIII)*Mmax;
+   if ( IsZero(K_liveload) )
+   {
+      // don't do the work if we don't have elastic gains from live load
+      *pMllim = 0;
+   }
+   else
+   {
+      Float64 Mmin, Mmax;
+      pProdForces->GetLiveLoadMoment(liveLoadIntervalIdx,pgsTypes::lltDesign,poi,bat,true,true,&Mmin,&Mmax);
+      Float64 gMaxI   = pILoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceI];
+      Float64 gMaxIII = pILoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
+      *pMllim = K_liveload*Max(gMaxI,gMaxIII)*Mmax;
+   }
 
    *prh = pEnv->GetRelHumidity();
 

@@ -32,6 +32,7 @@
 #include "SectionCutDrawStrategy.h"
 #include "PGSuperTypes.h"
 
+class CBridgeViewPane;
 class CBridgePlanView;
 class CBridgeSectionView;
 class CAlignmentPlanView;
@@ -98,8 +99,8 @@ public:
    CBridgeSectionView* GetBridgeSectionView();
    CAlignmentPlanView* GetAlignmentPlanView();
    CAlignmentProfileView* GetAlignmentProfileView();
-   CView* GetUpperView();
-   CView* GetLowerView();
+   CBridgeViewPane* GetUpperView();
+   CBridgeViewPane* GetLowerView();
 
    void InitSpanRange(); // call this method to initialize the span range controls
 

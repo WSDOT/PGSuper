@@ -56,7 +56,8 @@ void CSpecLoadsPage::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CSpecLoadsPage, CPropertyPage)
-	ON_BN_CLICKED(ID_HELP,OnHelp)
+   ON_BN_CLICKED(ID_HELP,OnHelp)
+   ON_CBN_SELCHANGE(IDC_HAUNCH_COMP_CB, &CSpecLoadsPage::OnCbnSelchangeHaunchCompCb)
 END_MESSAGE_MAP()
 
 
@@ -85,6 +86,8 @@ BOOL CSpecLoadsPage::OnInitDialog()
 
    m_TrafficSpin.SetRange(0,100);
 
+   OnCbnSelchangeHaunchCompCb();
+
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -92,4 +95,15 @@ BOOL CSpecLoadsPage::OnInitDialog()
 void CSpecLoadsPage::OnHelp()
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_LOADS );
+}
+
+void CSpecLoadsPage::OnCbnSelchangeHaunchCompCb()
+{
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_HAUNCH_COMP_CB);
+   int idx = pBox->GetCurSel();
+   BOOL enable = idx==(int)pgsTypes::hlcAccountForCamber;
+
+   GetDlgItem(IDC_HAUNCH_TOLER_STATIC)->EnableWindow(enable);
+   GetDlgItem(IDC_HAUNCH_TOLER_UNIT)->EnableWindow(enable);
+   GetDlgItem(IDC_HAUNCH_TOLER)->EnableWindow(enable);
 }

@@ -428,6 +428,14 @@ typedef struct pgsTypes
       sotGirder,  // the slab offset is defined at each permanent pier supporting the girder
    } SlabOffsetType;
 
+
+   typedef enum FilletType
+   {
+      fttBridge,  // a single fillet is used for the entire bridge
+      fttSpan,    // the fillet is at each span
+      fttGirder,  // the fillet is defined at each girder
+   } FilletType;
+
    // Define connectivity (per AASHTO jargon) of adjacent beams.
    // This is only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
    typedef enum AdjacentTransverseConnectivity
@@ -450,6 +458,9 @@ typedef struct pgsTypes
 
    typedef enum OverlayLoadDistributionType
    { olDistributeEvenly=0, olDistributeTributaryWidth=1 } OverlayLoadDistributionType;
+
+   typedef enum HaunchLoadComputationType
+   { hlcZeroCamber, hlcAccountForCamber } HaunchLoadComputationType;
 
    typedef enum GirderLocation
    { Interior = 0, Exterior = 1 } GirderLocation;
@@ -1112,6 +1123,7 @@ struct GDRCONFIG
    Float64 Ec;
 
    Float64 SlabOffset[2]; // slab offset at start and end of the girder (use pgsTypes::MemberEndType for array index)
+   Float64 Fillet;
 
    STIRRUPCONFIG StirrupConfig; // All of our transverse rebar information
 
@@ -1147,6 +1159,8 @@ struct GDRCONFIG
 
       if ( !IsEqual(SlabOffset[pgsTypes::metStart],other.SlabOffset[pgsTypes::metStart]) ) return false;
       if ( !IsEqual(SlabOffset[pgsTypes::metEnd],  other.SlabOffset[pgsTypes::metEnd])   ) return false;
+
+      if (!IsEqual(Fillet, other.Fillet)) return false;
 
       return true;
    }
@@ -1188,6 +1202,8 @@ void MakeCopy( const GDRCONFIG& rOther )
 
    SlabOffset[0] = rOther.SlabOffset[0];
    SlabOffset[1] = rOther.SlabOffset[1];
+
+   Fillet = rOther.Fillet;
 
    StirrupConfig = rOther.StirrupConfig;
 }

@@ -28,16 +28,15 @@
 #endif // _MSC_VER >= 1000
 // BridgeSectionView.h : header file
 //
-#include <DManip\DManip.h>
-#include <DManipTools\DManipTools.h>
-#include "BridgeModelViewChildFrame.h"
+
+#include "BridgeViewPane.h"
+#include <map>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionView view
 
-class CBridgeSectionView : public CDisplayView
+class CBridgeSectionView : public CBridgeViewPane
 {
-   friend CBridgeModelViewChildFrame;
 protected:
 	CBridgeSectionView();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CBridgeSectionView)
@@ -47,7 +46,6 @@ public:
 
 // Operations
 public:
-   void DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw);
    bool IsDeckSelected();
    void SelectPier(PierIndexType pierIdx,bool bSelect);
    void SelectSpan(PierIndexType pierIdx,bool bSelect);
@@ -67,7 +65,6 @@ public:
 	public:
 	virtual void OnInitialUpdate();
 	protected:
-	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
@@ -84,22 +81,18 @@ protected:
 	//{{AFX_MSG(CBridgeSectionView)
 	afx_msg void OnEditDeck();
 	afx_msg void OnViewSettings();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
    afx_msg BOOL OnMouseWheel(UINT nFlags,short zDelta,CPoint pt);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   virtual void HandleLButtonDown(UINT nFlags, CPoint logPoint);
 	virtual void HandleLButtonDblClk(UINT nFlags, CPoint logPoint);
    virtual void HandleContextMenu(CWnd* pWnd,CPoint logPoint);
 
-   CBridgeModelViewChildFrame* m_pFrame;
+   virtual void BuildDisplayLists();
+   virtual void UpdateDrawingScale();
+   virtual void UpdateDisplayObjects();
 
-   void UpdateDisplayObjects();
    void BuildTitleDisplayObjects();
    void BuildGirderDisplayObjects();
    void BuildDeckDisplayObjects();
@@ -107,15 +100,9 @@ protected:
    void BuildTrafficBarrierDisplayObjects();
    void BuildDimensionLineDisplayObjects();
 
-   void UpdateDrawingScale();
-
    void UpdateGirderTooltips();
 
-   void DrawFocusRect();
-
    void TrimSurface(IPoint2dCollection* pPoints,Float64 Xleft,Float64 Xright);
-
-   CBridgeModelViewChildFrame* GetFrame();
 
    typedef std::map<CGirderKey,IDType> GirderIDCollection;
    GirderIDCollection m_GirderIDs; // maps girder keys into DMANIP display object IDs

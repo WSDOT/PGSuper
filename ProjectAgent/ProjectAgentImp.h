@@ -266,12 +266,19 @@ public:
    virtual pgsTypes::MeasurementType GetMeasurementType();
    virtual void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
    virtual pgsTypes::MeasurementLocation GetMeasurementLocation();
+   virtual void SetWearingSurfaceType(pgsTypes::WearingSurfaceType wearingSurfaceType);
    virtual void SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType);
    virtual void SetSlabOffset(Float64 slabOffset);
    virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, Float64 offset);
    virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset);
    virtual Float64 GetSlabOffset(GroupIndexType grpidx, PierIndexType pierIdx, GirderIndexType gdrIdx);
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType();
+   virtual void SetFilletType(pgsTypes::FilletType offsetType);
+   virtual pgsTypes::FilletType GetFilletType();
+   virtual void SetFillet( Float64 Fillet);
+   virtual void SetFillet(SpanIndexType spanIdx, Float64 offset);
+   virtual void SetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 offset);
+   virtual Float64 GetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx);
    virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx);
    virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx);
    virtual const CTimelineManager* GetTimelineManager();
@@ -295,6 +302,10 @@ public:
    virtual void SetSegmentErectionEventByID(const CSegmentKey& segmentKey,EventIDType eventID);
    virtual EventIndexType GetSegmentErectionEventIndex(const CSegmentKey& segmentKey);
    virtual EventIDType GetSegmentErectionEventID(const CSegmentKey& segmentKey);
+   virtual void SetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType constructionEventIdx,EventIndexType erectionEventIdx);
+   virtual void SetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType constructionEventID,EventIDType erectionEventID);
+   virtual void GetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType* constructionEventIdx,EventIndexType* erectionEventIdx);
+   virtual void GetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType* constructionEventID,EventIDType* erectionEventID);
    virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx);
    virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx);
    virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx);
@@ -375,6 +386,8 @@ public:
    virtual std::vector<arDesignOptions> GetDesignOptions(const CGirderKey& girderKey);
    virtual bool IsSlabOffsetDesignEnabled();
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType();
+   virtual pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType();
+   virtual Float64 GetCamberTolerance();
 
 // IRatingSpecification
 public:

@@ -67,9 +67,9 @@ void CHaunchSpanBySpanDlg::UploadData(const HaunchInputData& rData)
    m_Grid.FillGrid(rData);
 }
 
-HaunchInputData CHaunchSpanBySpanDlg::DownloadData(Float64 minA,CString& minValError, CDataExchange* pDX)
+void CHaunchSpanBySpanDlg::DownloadData(Float64 minA, CString& minValError, HaunchInputData* pData, CDataExchange* pDX)
 {
-   return m_Grid.GetData(minA, minValError, pDX);
+   m_Grid.GetData(minA, minValError, pData, pDX);
 }
 
 

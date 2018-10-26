@@ -143,7 +143,7 @@ STDMETHODIMP CTestAgentImp::ShutDown()
 // ITest1250
 bool CTestAgentImp::RunTest(long type,
                             const std::_tstring& outputFileName,
-                            const std::_tstring poiFileName)
+                            const std::_tstring& poiFileName)
 {
    // use run unit tests with numeric labeling
    pgsAutoLabel auto_label;
@@ -333,8 +333,11 @@ bool CTestAgentImp::RunTest(long type,
 		      }
 
             GET_IFACE(ITxDOTCadExport,pTxDOTExport);
-            pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, extSegmentKey, tcxTest, true);
-            pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, intSegmentKey, tcxTest, true);
+            if ( pTxDOTExport )
+            {
+               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, extSegmentKey, tcxTest, true);
+               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, intSegmentKey, tcxTest, true);
+            }
 		      fclose (fp);
 
             return true;
@@ -348,7 +351,7 @@ bool CTestAgentImp::RunTest(long type,
 
 bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& girderList,
                             const std::_tstring& outputFileName,
-                            const std::_tstring poiFileName)
+                            const std::_tstring& poiFileName)
 {
    pgsAutoLabel auto_label;
 
@@ -542,15 +545,19 @@ std::_tstring CTestAgentImp::GetBridgeID()
    }
    else
    {
-      GET_IFACE(IEAFDocument,pDocumnet);
-      std::_tstring strPath = pDocumnet->GetFilePath();
+      GET_IFACE(IEAFDocument,pDocument);
+      std::_tstring strPath = pDocument->GetFilePath();
 
       // Filename is in the form Regxxx.pgs
       std::_tstring::size_type pos = strPath.find(_T(".pgs"));
+      if ( pos == std::_tstring::npos )
+      {
+         pos = strPath.find(_T(".spl"));
+      }
       IndexType len = strPath.length();
       if ( pos == std::_tstring::npos )
       {
-         return 0; // "Reg" was not found
+         return std::_tstring(_T("")); // "pgs" was not found
       }
 
       strID = strPath.substr(pos-3,3); // return the "xxx" number
@@ -586,17 +593,19 @@ bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream&
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   GirderIndexType gdr = segmentKey.girderIndex;
-
    GET_IFACE(IGirderHaunch,pGdrHaunch);
   
 #pragma Reminder("REVIEW: A DIMENSIONS REGRESSION TESTS")
    // haunch data is by girder. for PGSuper there is only one segment per girder
    // so this is ok, but for spliced girders... we may need to re-think this regression test
    // maybe all regression tests should be by girder and not by segment
+   GirderIndexType gdr = segmentKey.girderIndex;
+   SpanIndexType span = segmentKey.groupIndex;
+
+   CSpanKey spanKey(span,gdr);
 
    HAUNCHDETAILS haunch_details;
-   pGdrHaunch->GetHaunchDetails(segmentKey,&haunch_details);
+   pGdrHaunch->GetHaunchDetails(spanKey,&haunch_details);
 
    std::vector<SECTIONHAUNCH>::iterator iter;
    for ( iter = haunch_details.Haunch.begin(); iter != haunch_details.Haunch.end(); iter++ )
@@ -977,18 +986,36 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30041, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(pForces->GetDeflection( castDeckIntervalIdx, lcDW, poi, bat, rtCumulative, false ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
 
       // overlay
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30042, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay,poi, bat, rtIncremental ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( overlayIntervalIdx == INVALID_INDEX )
       {
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30042, ")<<loc<<_T(", ")<< 0.0 << _T(", 1, ")<<gdrIdx<<std::endl;
+         if ( poi.HasAttribute(POI_0L) )
+         {
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< 0.0 <<    _T(", 1, ")<<gdrIdx<<std::endl;
+         }
+         else
+         {
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< 0.0 <<    _T(", 1, ")<<gdrIdx<<std::endl;
+         }
+
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30044, ")<<loc<<_T(", ")<< 0.0 <<_T(", 1, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30242, ")<<loc<<_T(", ")<< 0.0 <<    _T(", 1, ")<<gdrIdx<<std::endl;
       }
       else
       {
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      }
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30042, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay,poi, bat, rtIncremental ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdrIdx<<std::endl;
+         if ( poi.HasAttribute(POI_0L) )
+         {
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+         }
+         else
+         {
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+         }
 
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30044, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(pForce->GetDeflection( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental, false ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30242, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pReactions->GetReaction(segmentKey, pierIdx, pgsTypes::stPier, overlayIntervalIdx, pgsTypes::pftOverlay, bat, rtIncremental), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30044, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(pForce->GetDeflection( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental, false ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30242, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pReactions->GetReaction(segmentKey, pierIdx, pgsTypes::stPier, overlayIntervalIdx, pgsTypes::pftOverlay, bat, rtIncremental), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
+      }
 
       // barrier
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30045, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier,poi, bat, rtIncremental ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdrIdx<<std::endl;
@@ -1103,6 +1130,11 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    {
       ReactionLocation location;
       location.Face = (pierIdx == startPierIdx ? rftAhead : rftBack);
+      if ( pBridge->IsInteriorPier(pierIdx) )
+      {
+         location.Face = rftMid;
+      }
+
       location.GirderKey = segmentKey;
       location.PierIdx = pierIdx;
 
@@ -1405,6 +1437,10 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       {
          ReactionLocation location;
          location.Face = (pierIdx == startPierIdx ? rftAhead : rftBack);
+         if ( pBridge->IsInteriorPier(pierIdx) )
+         {
+            location.Face = rftMid;
+         }
          location.GirderKey = segmentKey;
          location.PierIdx = pierIdx;
 
@@ -1458,6 +1494,10 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       {
          ReactionLocation location;
          location.Face = (pierIdx == startPierIdx ? rftAhead : rftBack);
+         if ( pBridge->IsInteriorPier(pierIdx) )
+         {
+            location.Face = rftMid;
+         }
          location.GirderKey = segmentKey;
          location.PierIdx = pierIdx;
 
@@ -1524,10 +1564,16 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100201 , ")<<loc<<_T(", ")<<(int)(pstirrup_artifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
 
    std::vector<Float64> vCSLoc(pShearCapacity->GetCriticalSections(pgsTypes::StrengthI,segmentKey));
-   ATLASSERT(vCSLoc.size() == 2); // assuming precast girder bridge
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50052, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(vCSLoc.front(), unitMeasure::Millimeter)) <<_T(", 15, ")<<gdrIdx<<std::endl;
+   BOOST_FOREACH(Float64 Xcs,vCSLoc)
+   {
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50052, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(Xcs, unitMeasure::Millimeter)) <<_T(", 15, ")<<gdrIdx<<std::endl;
+   }
 
-   const pgsConstructabilityArtifact* pConstruct =  pGdrArtifact->GetConstructabilityArtifact();
+#pragma Reminder("UPDATE: assuming precast girder bridge") // there could be more than one constructability check artifact per girder (one for each span)
+   SpanIndexType spanIdx = segmentKey.groupIndex;
+
+   const pgsConstructabilityArtifact* pConstr =  pGdrArtifact->GetConstructabilityArtifact();
+   const pgsSpanConstructabilityArtifact* pConstruct = pConstr->GetSpanArtifact(spanIdx);
    if ( pConstruct->IsSlabOffsetApplicable() )
    {
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122005, ")<<loc<<_T(", ")<<(int)(pConstruct->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
@@ -2229,8 +2275,8 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
 
 
    GET_IFACE(IArtifact,pIArtifact);
-   const pgsGirderDesignArtifact* pGirderDesignArtifact;
-   const pgsSegmentDesignArtifact* pArtifact;
+   const pgsGirderDesignArtifact* pGirderDesignArtifact = NULL;
+   const pgsSegmentDesignArtifact* pArtifact = NULL;
 
    // design is only applicable to PGSuper files... group index is the span index
    SpanIndexType spanIdx = segmentKey.groupIndex;
@@ -2240,7 +2286,10 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    try
    {
       pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey,des_options_coll);
-      pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
+      if ( pGirderDesignArtifact )
+      {
+         pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
+      }
    }
    catch(...)
    {
@@ -2346,6 +2395,13 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
 
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
+
+   GET_IFACE(ILossParameters,pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      // not doing this for time-step analysis
+      return true;
+   }
 
    // No use doing this if lifting or hauling is disabled.
    GET_IFACE(IArtifact,pArtifacts);

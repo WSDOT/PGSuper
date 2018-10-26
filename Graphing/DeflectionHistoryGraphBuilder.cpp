@@ -194,8 +194,11 @@ bool CDeflectionHistoryGraphBuilder::UpdateNow()
 
    // Update graph properties
    pgsPointOfInterest poi = m_pGraphController->GetLocation();
-   UpdateGraphTitle(poi);
-   UpdateGraphData(poi);
+   if ( poi.GetID() != INVALID_ID )
+   {
+      UpdateGraphTitle(poi);
+      UpdateGraphData(poi);
+   }
    return true;
 }
 
@@ -253,15 +256,24 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
    GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   IntervalIndexType startIntervalIdx = 0;
+   IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    Float64 x = GetX(segmentKey,startIntervalIdx,pgsTypes::Start,pIntervals);
    PlotDeflection(x,poi,startIntervalIdx,dataSeries,bat,pLimitStateForces);
 
+   IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+   IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
-      Float64 x = GetX(segmentKey,intervalIdx,pgsTypes::End,pIntervals);
+      if ( intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx )
+      {
+         // these intervals cause the graph to have unwanted spikes.
+         continue;
+      }
+
+      x = GetX(segmentKey,intervalIdx,pgsTypes::End,pIntervals);
       PlotDeflection(x,poi,intervalIdx,dataSeries,bat,pLimitStateForces);
    }
 }

@@ -159,7 +159,27 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue(_T("Duct\nType"))
+         .SetValue(_T("Type"))
+		);
+
+   nDuctGeomTypeCol = col++;
+   this->SetStyleRange(CGXRange(0,nDuctGeomTypeCol), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(_T("Shape"))
+         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
+		);
+
+   nDuctGeomEditCol = col++;
+	this->SetStyleRange(CGXRange(0,nDuctGeomEditCol), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(_T("Shape"))
+         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
 		);
 
    nNumStrandCol = col++;
@@ -169,15 +189,6 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetValue(_T("#\nStrands"))
-		);
-
-   nJackEndCol = col++;
-	this->SetStyleRange(CGXRange(0,nJackEndCol), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Jacking\nEnd"))
 		);
 
    nPjackCheckCol = col++;
@@ -213,24 +224,13 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
 		);
    this->HideCols(nPjackUserCol,nPjackUserCol);
 
-   nDuctGeomTypeCol = col++;
-   this->SetStyleRange(CGXRange(0,nDuctGeomTypeCol), CGXStyle()
+   nJackEndCol = col++;
+	this->SetStyleRange(CGXRange(0,nJackEndCol), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Type"))
-         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-		);
-
-   nDuctGeomEditCol = col++;
-	this->SetStyleRange(CGXRange(0,nDuctGeomEditCol), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Type"))
-         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
+			.SetValue(_T("Jacking\nEnd"))
 		);
 
    nEventCol = col++;
@@ -366,10 +366,10 @@ void CDuctGrid::SetRowStyle(ROWCOL row)
 
 void CDuctGrid::UpdateEventList(ROWCOL row)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)pParentPage->GetParent();
+
+   const CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
 
    CString events;
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
@@ -776,6 +776,19 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
    GetParam()->SetLockReadOnly(TRUE);
 }
 
+void CDuctGrid::EventCreated()
+{
+   // called when an event is created outside of this grid
+   // DON'T CALL THIS METHOD FOR EVENTS CREATED FROM WITHIN THIS GRID
+   ROWCOL nRows = GetRowCount();
+   for ( ROWCOL row = 0; row < nRows; row++ )
+   {
+      UpdateEventList(row);
+   }
+
+   FillGrid();
+}
+
 void CDuctGrid::FillGrid()
 {
    CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
@@ -838,12 +851,6 @@ void CDuctGrid::OnChangedSelection(const CGXRange* changedRect,BOOL bIsDragging,
 EventIndexType CDuctGrid::CreateEvent()
 {
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(GetParent()->GetParent());
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
    CTimelineEventDlg dlg(*(pParent->m_BridgeDescription.GetTimelineManager()),INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {

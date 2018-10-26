@@ -1322,6 +1322,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    pDeck->WearingSurface = pgsTypes::wstFutureOverlay;
    pDeck->bInputAsDepthAndDensity = false;
    pDeck->OverlayWeight = wl;
+   bridgeDesc.GetTimelineManager()->SetOverlayLoadEventByIndex(bridgeDesc.GetTimelineManager()->GetRailingSystemLoadEventIndex());
 
    // Set bridge data... this must be done before adding the other loads
    // because the timeline manager from bridgeDesc will replace the one 
@@ -1693,4 +1694,10 @@ void CTxDOTOptionalDesignDoc::ShowCustomReportHelp(eafTypes::CustomReportHelp he
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::ShowCustomReportHelp(helpType);
+}
+
+void CTxDOTOptionalDesignDoc::ShowCustomReportDefinitionHelp()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CEAFBrokerDocument::ShowCustomReportDefinitionHelp();
 }

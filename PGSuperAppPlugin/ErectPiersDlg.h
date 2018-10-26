@@ -17,7 +17,7 @@ class CErectPiersDlg : public CDialog
 	DECLARE_DYNAMIC(CErectPiersDlg)
 
 public:
-	CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
+	CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CErectPiersDlg();
 
 // Dialog Data
@@ -38,8 +38,11 @@ protected:
    CTimelineItemListBox m_lbSource;
    CTimelineItemListBox m_lbTarget;
 
+   BOOL m_bReadOnly;
+
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnMoveToTargetList();
    afx_msg void OnMoveToSourceList();
+   afx_msg void OnHelp();
 };

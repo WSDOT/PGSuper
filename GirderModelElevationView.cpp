@@ -1957,6 +1957,9 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
          for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
          {
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
+            GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
+
+            Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,girderKey.girderIndex,0));
 
             Float64 cantilever_length = pBridge->GetCantileverLength(spanKey.spanIndex,spanKey.girderIndex,(spanKey.spanIndex == 0 ? pgsTypes::metStart : pgsTypes::metEnd));
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
@@ -1964,13 +1967,19 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             Float64 location_from_left_end = pLoad->m_Location;
             if (pLoad->m_Fractional)
             {
-               if ( pLoad->m_bLoadOnCantilever )
+               if ( pLoad->m_bLoadOnCantilever[pgsTypes::metStart] )
                {
                   location_from_left_end *= cantilever_length;
+               }
+               else if ( pLoad->m_bLoadOnCantilever[pgsTypes::metEnd] )
+               {
+                  location_from_left_end *= cantilever_length;
+                  location_from_left_end += span_length;
                }
                else
                {
                   location_from_left_end *= span_length;
+                  location_from_left_end += start_end_distance;
                }
             }
 

@@ -108,6 +108,10 @@ protected:
 	afx_msg void OnAddMoment();
    afx_msg void OnSync();
    afx_msg void OnSetFocus(CWnd* pOldWnd);
+   afx_msg void OnUpdateDesignGirderDirect(CCmdUI* pCmdUI);
+   afx_msg void OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI);
+   afx_msg void OnDesignGirderDirect();
+   afx_msg void OnDesignGirderDirectHoldSlabOffset();
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
@@ -139,8 +143,8 @@ private:
    CToolPalette m_SettingsBar;
 
    // view variables
-   Float64 m_CurrentCutLocation;
-   Float64 m_MaxCutLocation;
+   Float64 m_CurrentCutLocation; // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
+   Float64 m_MaxCutLocation; // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
    
    EventIndexType m_EventIndex; 
 

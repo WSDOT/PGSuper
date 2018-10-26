@@ -43,6 +43,7 @@ CBridgeEditorProfileSettingsPage::CBridgeEditorProfileSettingsPage(CWnd* pParent
 {
 	//{{AFX_DATA_INIT(CBridgeEditorProfileSettingsPage)
    m_DrawBridge = FALSE;
+   m_ShowSchematic = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -52,6 +53,7 @@ void CBridgeEditorProfileSettingsPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CBridgeEditorProfileSettingsPage)
    DDX_Check(pDX, IDC_DRAW_BRIDGE, m_DrawBridge);
+   DDX_Check(pDX, IDC_SHOW_SCHEMATIC, m_ShowSchematic);
 	//}}AFX_DATA_MAP
 }
 

@@ -20,6 +20,8 @@ public:
 	CEdit	   m_ctrlFc;
 	CEdit  	m_ctrlFci;
 
+   bool m_bWasEventCreated;
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 

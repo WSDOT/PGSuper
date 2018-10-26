@@ -49,6 +49,7 @@
 #define IDA_AP_NORTH_UP         ((DWORD)0x00000001)
 #define IDA_AP_DRAW_BRIDGE      ((DWORD)0x00000002) // draw bridge on alignment
 #define IDP_AP_DRAW_BRIDGE      ((DWORD)0x00000004) // draw bridge on profile
+#define IDP_AP_DRAW_ISOTROPIC   ((DWORD)0x00000008) // draw isotroipic or anisotripc
 
 // Girder Model Editor
 // ======================================

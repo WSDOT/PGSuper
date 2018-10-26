@@ -6,7 +6,10 @@
 #include "ErectSegmentsDlg.h"
 
 #include <IFace\Project.h>
+#include <IFace\DocumentType.h>
 #include <PgsExt\BridgeDescription2.h>
+
+#include <EAF\EAFDocument.h>
 
 // CErectSegmentsDlg dialog
 
@@ -26,9 +29,10 @@
 
 IMPLEMENT_DYNAMIC(CErectSegmentsDlg, CDialog)
 
-CErectSegmentsDlg::CErectSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CErectSegmentsDlg::CErectSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CErectSegmentsDlg::IDD, pParent),
-   m_EventIndex(eventIdx)
+   m_EventIndex(eventIdx),
+   m_bReadOnly(bReadOnly)
 {
    m_TimelineMgr = timelineMgr;
    m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
@@ -75,6 +79,7 @@ void CErectSegmentsDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CErectSegmentsDlg, CDialog)
    ON_BN_CLICKED(IDC_MOVE_RIGHT, &CErectSegmentsDlg::OnMoveToTargetList)
    ON_BN_CLICKED(IDC_MOVE_LEFT, &CErectSegmentsDlg::OnMoveToSourceList)
+   ON_BN_CLICKED(ID_HELP, &CErectSegmentsDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -89,7 +94,35 @@ BOOL CErectSegmentsDlg::OnInitDialog()
 
    FillLists();
 
-   // TODO:  Add extra initialization here
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_SOURCE_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_TARGET_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_RIGHT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_LEFT)->EnableWindow(FALSE);
+
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      SetWindowText(_T("Erect Girders"));
+      GetDlgItem(IDC_SOURCE_LABEL)->SetWindowText(_T("Girders to be erected"));
+      GetDlgItem(IDC_TARGET_LABEL)->SetWindowText(_T("Girders erected during this activity"));
+      GetDlgItem(IDC_NOTE)->SetWindowText(_T("This activity includes hauling the precast girders from the storage site to the bridge site and the removal of temporary strands, if present."));
+   }
+   else
+   {
+      SetWindowText(_T("Erect Segments"));
+      GetDlgItem(IDC_SOURCE_LABEL)->SetWindowText(_T("Segments to be erected"));
+      GetDlgItem(IDC_TARGET_LABEL)->SetWindowText(_T("Segments erected during this activity"));
+      GetDlgItem(IDC_NOTE)->SetWindowText(_T("This activity includes hauling the precast segments from the storage site to the bridge site and the removal of temporary strands, if present."));
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -107,6 +140,10 @@ void CErectSegmentsDlg::OnMoveToSourceList()
 
 void CErectSegmentsDlg::FillLists()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -126,7 +163,14 @@ void CErectSegmentsDlg::FillLists()
             EventIndexType erectionEventIdx = m_TimelineMgr.GetSegmentErectionEventIndex(segmentID);
 
             CString label;
-            label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
+            if ( pDocType->IsPGSuperDocument() )
+            {
+               label.Format(_T("Span %d, Girder %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx));
+            }
+            else
+            {
+               label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
+            }
 
             if ( erectionEventIdx == m_EventIndex )
             {
@@ -142,4 +186,9 @@ void CErectSegmentsDlg::FillLists()
          } // segment loop
       } // girder loop
    } // group loop
+}
+
+void CErectSegmentsDlg::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_ERECT_SEGMENTS);
 }

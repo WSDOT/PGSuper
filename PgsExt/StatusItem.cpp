@@ -368,6 +368,7 @@ eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity()
 
 void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsGirderDescriptionStatusItem* pItem = dynamic_cast<pgsGirderDescriptionStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 

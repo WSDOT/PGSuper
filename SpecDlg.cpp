@@ -55,7 +55,31 @@ void CSpecDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSpecDlg)
 	//}}AFX_DATA_MAP
-	DDX_CBStringExactCase(pDX, IDC_SPEC, m_Spec);
+   std::_tstring strSpec = m_Spec;
+   DDX_CBStringExactCase(pDX, IDC_SPEC, strSpec);
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+
+      GET_IFACE2(pBroker, IDocumentType, pDocType);
+      bool bIsPGSplice = pDocType->IsPGSpliceDocument();
+
+      GET_IFACE2(pBroker, ILibrary, pLib);
+
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpec.c_str() );
+      if ( (bIsPGSplice && pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP) )
+      {
+         pDX->PrepareCtrl(IDC_SPEC);
+         AfxMessageBox(_T("Prestress loss method must be set to time-step in the project criteria for spliced girder analysis.\n\nSelect a different project criteria"));
+         pDX->Fail();
+      }
+      else
+      {
+         m_Spec = strSpec;
+      }
+   }
 }
 
 
@@ -76,10 +100,6 @@ BOOL CSpecDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   bool bIsPGSplice = pDocType->IsPGSpliceDocument();
-
-   GET_IFACE2(pBroker, ILibrary, pLib);
    GET_IFACE2(pBroker, ILibraryNames, pLibNames );
 
    std::vector<std::_tstring> specs;
@@ -87,12 +107,6 @@ BOOL CSpecDlg::OnInitDialog()
 
    BOOST_FOREACH(const std::_tstring& spec,specs)
    {
-      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec.c_str() );
-      if ( (bIsPGSplice && pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP) ) 
-      {
-         // only project criteria using time-step losses can be used with spliced girders
-         continue;
-      }
       pBox->AddString( spec.c_str() );
    }
 

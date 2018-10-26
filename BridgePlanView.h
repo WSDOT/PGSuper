@@ -25,19 +25,14 @@
 // BridgePlanView.h : header file
 //
 //
+#include "BridgeViewPane.h"
 #include <map>
-#include <DManip\DManip.h>
-#include <DManipTools\DManipTools.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\TemporarySupportData.h>
-#include "BridgeModelViewChildFrame.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanView view
 
-class CBridgePlanView : public CDisplayView
+class CBridgePlanView : public CBridgeViewPane
 {
-   friend CBridgeModelViewChildFrame;
 protected:
 	CBridgePlanView();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CBridgePlanView)
@@ -92,8 +87,6 @@ public:
 
 // Operations
 public:
-   void DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw);
-
    bool GetSelectedSpan(SpanIndexType* pSpanIdx);
    void SelectSpan(SpanIndexType spanIdx,bool bSelect);
    bool GetSelectedPier(PierIndexType* pPierIdx);
@@ -123,7 +116,6 @@ public:
 	public:
 	virtual void OnInitialUpdate();
 	protected:
-	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
@@ -137,27 +129,23 @@ protected:
 
 	// Generated message map functions
 protected:
-   virtual void HandleLButtonDown(UINT nFlags, CPoint logPoint);
-	virtual void HandleLButtonDblClk(UINT nFlags, CPoint logPoint);
+   virtual void HandleLButtonDblClk(UINT nFlags, CPoint logPoint);
    virtual void HandleContextMenu(CWnd* pWnd,CPoint logPoint);
 
 	//{{AFX_MSG(CBridgePlanView)
 	afx_msg void OnEditDeck();
 	afx_msg void OnViewSettings();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
    afx_msg BOOL OnMouseWheel(UINT nFlags,short zDelta,CPoint pt);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnKillFocus(CWnd* pNewWnd);
    afx_msg void OnZoom();
    afx_msg void OnScaleToFit();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CBridgeModelViewChildFrame* m_pFrame;
+   virtual void BuildDisplayLists();
+   virtual void UpdateDrawingScale();
+   virtual void UpdateDisplayObjects();
 
-   void UpdateDisplayObjects();
    void BuildTitleDisplayObjects();
    void BuildAlignmentDisplayObjects();
    void BuildPierDisplayObjects();
@@ -171,21 +159,16 @@ protected:
    void BuildNorthArrowDisplayObjects();
    void BuildDiaphragmDisplayObjects();
 
-   void UpdateDrawingScale();
    void UpdateSectionCut();
    void UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw);
 
    void UpdateSegmentTooltips();
    void UpdateClosureJointTooltips();
 
-   void DrawFocusRect();
-
    std::_tstring GetConnectionString(const CPierData2* pPier);
    std::_tstring GetFullConnectionString(const CPierData2* pPier);
    std::_tstring GetConnectionString(const CTemporarySupportData* pTS);
    std::_tstring GetFullConnectionString(const CTemporarySupportData* pTS);
-
-   CBridgeModelViewChildFrame* GetFrame();
 
    // Range of spans that will be displayed
    SpanIndexType m_StartSpanIdx;

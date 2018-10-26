@@ -10,7 +10,7 @@
 #include <PgsExt\ClosureJointData.h>
 
 #include <EAF\EAFDisplayUnits.h>
-
+#include <EAF\EAFDocument.h>
 
 bool IsTSIndex(IndexType key) { return MAX_INDEX/2 <= key ? true : false; }
 SupportIndexType EncodeTSIndex(SupportIndexType tsIdx) { return MAX_INDEX-tsIdx; }
@@ -21,11 +21,12 @@ SupportIndexType DecodeTSIndex(SupportIndexType tsIdx) { return MAX_INDEX-tsIdx;
 
 IMPLEMENT_DYNAMIC(CCastClosureJointDlg, CDialog)
 
-CCastClosureJointDlg::CCastClosureJointDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CCastClosureJointDlg::CCastClosureJointDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CCastClosureJointDlg::IDD, pParent)
 {
    m_TimelineMgr = timelineMgr;
    m_EventIndex = eventIdx;
+   m_bReadOnly = bReadOnly;
 
    m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
 
@@ -94,6 +95,7 @@ void CCastClosureJointDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CCastClosureJointDlg, CDialog)
    ON_BN_CLICKED(IDC_MOVE_RIGHT, &CCastClosureJointDlg::OnMoveToTargetList)
    ON_BN_CLICKED(IDC_MOVE_LEFT, &CCastClosureJointDlg::OnMoveToSourceList)
+   ON_BN_CLICKED(ID_HELP, &CCastClosureJointDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -108,7 +110,17 @@ BOOL CCastClosureJointDlg::OnInitDialog()
 
    FillLists();
 
-   // TODO:  Add extra initialization here
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_SOURCE_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_TARGET_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_RIGHT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_LEFT)->EnableWindow(FALSE);
+
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -185,4 +197,9 @@ void CCastClosureJointDlg::FillLists()
          }
       }
    }
+}
+
+void CCastClosureJointDlg::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_CAST_CLOSURE_JOINTS);
 }

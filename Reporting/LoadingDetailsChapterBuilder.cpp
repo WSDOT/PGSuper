@@ -432,14 +432,15 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,         comp, pDisplayUnits->GetComponentDimUnit(),     false );
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+  if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
-      *pPara<< _T("Slab Load Applied Between Bearings")<<rptNewLine;
+      *pPara<< _T("Slab Load Applied Along Girder")<<rptNewLine;
       
       pgsTypes::SupportedDeckType deck_type = pBridge->GetDeckType();
 
@@ -459,7 +460,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
       }
       else
       {
-         *pNotePara << _T("Slab Load is approximated with Linear Load Segments applied along the length of the girder");
+         *pNotePara << _T("Slab Load is approximated with Linear Load Segments applied along the length of the girder. Segments located outside of bearings are applied as point loads/moments at bearings.");
       }
 
       pPara = new rptParagraph;
@@ -490,14 +491,15 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          }
          else
          {
-            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
             *pPara << p_table;
 
             (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
             (*p_table)(0,1) << COLHDR(_T("Panel Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0,2) << COLHDR(_T("Cast Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,3) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,4) << COLHDR(_T("Total Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,3) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+            (*p_table)(0,4) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,5) << COLHDR(_T("Total Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
             RowIndexType row = p_table->GetNumberOfHeaderRows();
             for ( std::vector<SlabLoad>::iterator i = slab_loads.begin(); i != slab_loads.end(); i++ )
@@ -511,8 +513,9 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
                (*p_table)(row,0) << loc.SetValue(location);
                (*p_table)(row,1) << fpl.SetValue(-panel_load);
                (*p_table)(row,2) << fpl.SetValue(-main_load);
-               (*p_table)(row,3) << fpl.SetValue(-pad_load);
-               (*p_table)(row,4) << fpl.SetValue(-(panel_load+main_load+pad_load));
+               (*p_table)(row,3) << comp.SetValue(slab_load.HaunchDepth);
+               (*p_table)(row,4) << fpl.SetValue(-pad_load);
+               (*p_table)(row,5) << fpl.SetValue(-(panel_load+main_load+pad_load));
 
                row++;
             }
@@ -547,13 +550,14 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          }
          else
          {
-            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
             *pPara << p_table;
 
             (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
             (*p_table)(0,1) << COLHDR(_T("Main Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,2) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,3) << COLHDR(_T("Total Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,2) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+            (*p_table)(0,3) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,4) << COLHDR(_T("Total Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
             RowIndexType row = p_table->GetNumberOfHeaderRows();
             for (std::vector<SlabLoad>::iterator i = slab_loads.begin(); i!=slab_loads.end(); i++)
@@ -564,8 +568,9 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
                Float64 pad_load  = slab_load.PadLoad;
                (*p_table)(row,0) << loc.SetValue(location);
                (*p_table)(row,1) << fpl.SetValue(-main_load);
-               (*p_table)(row,2) << fpl.SetValue(-pad_load);
-               (*p_table)(row,3) << fpl.SetValue(-(main_load+pad_load));
+               (*p_table)(row,2) << comp.SetValue(slab_load.HaunchDepth);
+               (*p_table)(row,3) << fpl.SetValue(-pad_load);
+               (*p_table)(row,4) << fpl.SetValue(-(main_load+pad_load));
                row++;
             }
          }
@@ -573,7 +578,17 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
 
       if(do_report_haunch)     
       {
-         *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry but does not include a reduction for camber");
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2( pBroker, ISpecification, pSpec );
+         if (pgsTypes::hlcAccountForCamber == pSpec->GetHaunchLoadComputationType())
+         {
+            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry. Load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input Fillet dimension at mid-span.");
+         }
+         else
+         {
+            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry but does not include a reduction for camber.");
+         }
       }
 
       // the rest of the content is for the non-simplified version (full boat)

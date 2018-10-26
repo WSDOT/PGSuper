@@ -114,6 +114,11 @@ public:
    virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey);
    virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey);
    virtual Float64 GetAllowableAfterLosses(const CGirderKey& girderKey);
+   virtual Float64 GetAllowableCoefficientAtJacking(const CGirderKey& girderKey);
+   virtual Float64 GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey);
+   virtual Float64 GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey);
+   virtual Float64 GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey);
+   virtual Float64 GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey);
 
 // IAllowableConcreteStress
 public:

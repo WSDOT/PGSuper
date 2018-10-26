@@ -60,6 +60,28 @@ bool txnEditGirderline::Execute()
       CGirderGroupData* pGroup = m_BridgeDescription[1].GetGirderGroup(m_GirderKey.groupIndex);
       CSplicedGirderData* pGirder = pGroup->GetGirder(m_GirderKey.girderIndex);
 
+      // capture the events for the segments in this girder so we can apply
+      // them to the events for the segments in the other girders
+      CTimelineManager* pTimelineMgr = m_BridgeDescription[1].GetTimelineManager();
+      std::vector<std::pair<EventIndexType,EventIndexType>> vSegmentEvents;
+      std::vector<EventIndexType> vClosureEvents;
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+         SegmentIDType segmentID = pSegment->GetID();
+         EventIndexType constructEventIdx, erectEventIdx;
+         pTimelineMgr->GetSegmentEvents(segmentID,&constructEventIdx,&erectEventIdx);
+         vSegmentEvents.push_back(std::make_pair(constructEventIdx,erectEventIdx));
+
+         if ( segIdx < nSegments-1 )
+         {
+            CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosureJoint);
+            vClosureEvents.push_back(castClosureEventIdx);
+         }
+      }
+
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
@@ -72,6 +94,20 @@ bool txnEditGirderline::Execute()
          pOtherGirder->CopySplicedGirderData(pGirder);
 
          pGroup->CopySlabOffset(m_GirderKey.groupIndex,gdrIdx);
+
+         ATLASSERT(nSegments == pOtherGirder->GetSegmentCount());
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CPrecastSegmentData* pSegment = pOtherGirder->GetSegment(segIdx);
+            SegmentIDType segmentID = pSegment->GetID();
+            pTimelineMgr->SetSegmentEvents(segmentID, vSegmentEvents[segIdx].first, vSegmentEvents[segIdx].second );
+
+            if ( segIdx < nSegments-1 )
+            {
+               CClosureJointData* pClosure = pSegment->GetEndClosure();
+               pTimelineMgr->SetCastClosureJointEventByIndex(pClosure,vClosureEvents[segIdx]);
+            }
+         }
       }
       m_bGirderlineCopied = true;
    }

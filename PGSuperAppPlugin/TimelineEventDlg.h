@@ -33,7 +33,11 @@ class CTimelineEventDlg : public CDialog
 	DECLARE_DYNAMIC(CTimelineEventDlg)
 
 public:
-	CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,CWnd* pParent = NULL);   // standard constructor
+	CTimelineEventDlg(const CTimelineManager& timelineMgr,
+                     EventIndexType eventIdx, // index of event, INVALID_INDEX if creating a new event
+                     BOOL bEditEvent, // true to display the event details editing, otherwise so the list of prev. defined events for creating new events on the fly
+                     BOOL bReadOnly=FALSE,
+                     CWnd* pParent = NULL);   // standard constructor
 	virtual ~CTimelineEventDlg();
 
    bool UpdateTimelineManager(const CTimelineManager& timelineMgr);
@@ -47,6 +51,7 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+   BOOL m_bReadOnly;
    BOOL m_bEdit;
 
    CCoolButton m_btnAdd;

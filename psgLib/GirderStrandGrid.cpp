@@ -79,7 +79,7 @@ BOOL CGirderStrandGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nF
 	 // unreferenced parameters
 	 nCol, nFlags;
 
-   if (nRow>0)
+   if (0 < nRow)
    {
 	   CMenu menu;
 	   VERIFY(menu.LoadMenu(IDR_STRAIGHT_POPUP));
@@ -110,9 +110,13 @@ void CGirderStrandGrid::Insertrow()
 	// copy the current cell's coordinates
 	CGXRangeList selList;
 	if (CopyRangeList(selList, TRUE))
+   {
 		nRow = selList.GetHead()->top;
+   }
 	else
+   {
 		nRow = GetRowCount()+1;
+   }
 
 	nRow = Max((ROWCOL)1, nRow);
 
@@ -211,11 +215,11 @@ void CGirderStrandGrid::CustomInit()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-			.SetValue(_T("Fill\n#"))
+			.SetValue(_T("Fill #"))
 		);
 
    CString cv;
-   cv.Format(_T("Xt\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Xt (%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -224,7 +228,7 @@ void CGirderStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Yt\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Yt (%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -259,15 +263,17 @@ void CGirderStrandGrid::SetRowStyle(ROWCOL nRow)
 
 CString CGirderStrandGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 {
-    if (IsCurrentCell(nRow, nCol) && IsActiveCurrentCell())
-    {
-        CString s;
-        CGXControl* pControl = GetControl(nRow, nCol);
-        pControl->GetValue(s);
-        return s;
-  }
-    else
-        return GetValueRowCol(nRow, nCol);
+   if (IsCurrentCell(nRow, nCol) && IsActiveCurrentCell())
+   {
+      CString s;
+      CGXControl* pControl = GetControl(nRow, nCol);
+      pControl->GetValue(s);
+      return s;
+   }
+   else
+   {
+      return GetValueRowCol(nRow, nCol);
+   }
 }
 
 bool CGirderStrandGrid::GetRowData(ROWCOL nRow, Float64* pX, Float64* pY)
@@ -277,18 +283,26 @@ bool CGirderStrandGrid::GetRowData(ROWCOL nRow, Float64* pX, Float64* pY)
    CString s = GetCellValue(nRow, 1);
    Float64 d = _tstof(s);
    if (s.IsEmpty())
+   {
       return false;
+   }
    else if (d==0.0 && s[0]!=_T('0'))
+   {
       return false;
+   }
    
    x = d;
 
    s = GetCellValue(nRow, 2);
    d = _tstof(s);
    if (s.IsEmpty())
+   {
       return false;
+   }
    else if (d==0.0 && s[0]!=_T('0'))
+   {
       return false;
+   }
    
    y = d;
 

@@ -144,10 +144,17 @@ bool CSpanData2::operator==(const CSpanData2& rOther) const
       return false;
    }
 
-
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
       if (m_LLDFs != rOther.m_LLDFs)
+      {
+         return false;
+      }
+   }
+
+   if ( m_pBridgeDesc->GetFilletType() != pgsTypes::fttBridge )
+   {
+      if (m_Fillets != rOther.m_Fillets)
       {
          return false;
       }
@@ -326,6 +333,30 @@ HRESULT CSpanData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          pStrLoad->EndUnit(); // LLDF
       }
 
+      if (2 < version)
+      {
+         if (m_pBridgeDesc->GetFilletType() != pgsTypes::fttBridge)
+         {
+            pStrLoad->BeginUnit(_T("Fillets"));
+            Float64 fillet_version;
+            pStrLoad->get_Version(&fillet_version);
+
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("nFGirders"),&var);
+            IndexType ng = VARIANT2INDEX(var);
+
+            var.vt = VT_R8;
+            m_Fillets.clear();
+            for (IndexType ig=0; ig<ng; ig++)
+            {
+               hr = pStrLoad->get_Property(_T("Fillet"),&var);
+               m_Fillets.push_back(var.dblVal);
+            }
+
+            pStrLoad->EndUnit(); // Fillets
+         }
+      }
+
       hr = pStrLoad->EndUnit(); // span data details
    }
    catch (HRESULT)
@@ -341,7 +372,7 @@ HRESULT CSpanData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("SpanDataDetails"),2.0);
+   pStrSave->BeginUnit(_T("SpanDataDetails"),3.0);
 
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
@@ -366,6 +397,22 @@ HRESULT CSpanData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->EndUnit(); // LLDF
    }
 
+   if ( m_pBridgeDesc->GetFilletType() != pgsTypes::fttBridge )
+   {
+      pStrSave->BeginUnit(_T("Fillets"),1.0);
+      GirderIndexType ngs = GetGirderCount();
+      pStrSave->put_Property(_T("nFGirders"),CComVariant(ngs));
+
+      for (GirderIndexType igs=0; igs<ngs; igs++)
+      {
+         Float64 filval = this->GetFillet(igs);
+         pStrSave->put_Property(_T("Fillet"),CComVariant(filval));
+      }
+
+      pStrSave->EndUnit(); // Fillets
+   }
+
+
    pStrSave->EndUnit(); // span data details
 
    return hr;
@@ -380,6 +427,8 @@ void CSpanData2::MakeCopy(const CSpanData2& rOther,bool bCopyDataOnly)
 
    m_LLDFs   = rOther.m_LLDFs;
 
+   m_Fillets = rOther.m_Fillets;
+
    ASSERT_VALID;
 }
 
@@ -388,6 +437,91 @@ void CSpanData2::MakeAssignment(const CSpanData2& rOther)
    MakeCopy( rOther, false /*copy everything*/ );
 }
 
+void CSpanData2::SetFillet(Float64 fillet)
+{
+   GirderIndexType nGirders = GetGirderCount();
+   m_Fillets.assign(nGirders, fillet);
+}
+
+void CSpanData2::SetFillet(GirderIndexType gdrIdx,Float64 fillet)
+{
+   ProtectFillet();
+   ATLASSERT(gdrIdx < m_Fillets.size());
+
+   m_Fillets[gdrIdx] = fillet;
+}
+
+Float64 CSpanData2::GetFillet(GirderIndexType gdrIdx,bool bGetRawValue) const
+{
+   if (bGetRawValue)
+   {
+      ProtectFillet();
+      ATLASSERT(gdrIdx < m_Fillets.size());
+      return m_Fillets[gdrIdx];
+   }
+   else
+   {
+      pgsTypes::FilletType ftype = m_pBridgeDesc->GetFilletType();
+      if (ftype == pgsTypes::fttBridge)
+      {
+         return m_pBridgeDesc->GetFillet();
+      }
+      else
+      {
+         ProtectFillet();
+         ATLASSERT(gdrIdx < m_Fillets.size());
+         if (ftype == pgsTypes::fttSpan)
+         {
+            // use front value for span values
+            return m_Fillets.front();
+         }
+         else
+         {
+            return m_Fillets[gdrIdx];
+         }
+      }
+   }
+}
+
+void CSpanData2::CopyFillet(GirderIndexType sourceGdrIdx, GirderIndexType targetGdrIdx)
+{
+   ProtectFillet();
+   ATLASSERT(sourceGdrIdx < m_Fillets.size() && targetGdrIdx < m_Fillets.size());
+
+   m_Fillets[targetGdrIdx] = m_Fillets[sourceGdrIdx];
+}
+
+void CSpanData2::ProtectFillet() const
+{
+   // First: Compare size of our collection with current number of girders and resize if they don't match
+   GirderIndexType nGirders = GetGirderCount();
+   IndexType nFlts = m_Fillets.size();
+
+   if (nFlts == 0)
+   {
+      // probably switched from fttBridge. Get fillet value from bridge and assign as a default
+      Float64 defVal = m_pBridgeDesc->GetFillet();
+      defVal = max(0.0, defVal);
+
+      m_Fillets.assign(nGirders,defVal);
+   }
+   else if (nFlts < nGirders)
+   {
+      // More girders than data - use back value for remaining girders
+      Float64 back = m_Fillets.back();
+
+      m_Fillets.resize(nGirders); // performance
+      for (IndexType i = nFlts; i < nGirders; i++)
+      {
+         m_Fillets.push_back(back);
+      }
+    }
+   else if (nGirders < nFlts)
+   {
+      // more fillets than girders - truncate
+      m_Fillets.resize(nGirders);
+   }
+}
 
 void CSpanData2::SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM)
 {

@@ -1,15 +1,15 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                   1      1      Tx28         40   1/2  270   8.58   5.88                                               6  24.5  6.5  6.000  6.200   3.014    -3.810     2949   0.665  0.849   3.970 -1.322  0.000 -0.073 -1.395 119.83  342.97    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                     1     1     Tx28          40  1/2  270   8.58   5.88   8.00   8.00                                               6  24.5  6.5  6.000  6.200   3.014    -3.810     2949   0.665  0.849   3.970 -1.322  0.000 -0.073 -1.395 119.83  342.97    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
 Bursting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                   1      2      Tx28         42   1/2  270   8.39   5.72                                               8  22.5  8.5  6.200  6.400   3.185    -3.994     3039   0.665  0.849   4.020 -1.550  0.000 -0.070 -1.619 128.36  365.28    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                     1     2     Tx28          42  1/2  270   8.39   5.72   8.00   8.00                                               8  22.5  8.5  6.200  6.400   3.185    -3.994     3039   0.665  0.849   4.020 -1.550  0.000 -0.070 -1.619 128.36  365.28    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -17,9 +17,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 Bursting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                   1      3      Tx28         42   1/2  270   8.39   5.72                                               8  22.5  8.5  6.200  6.400   3.185    -3.994     3039   0.665  0.849   4.020 -1.550  0.000 -0.070 -1.619 128.36  365.28    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                     1     3     Tx28          42  1/2  270   8.39   5.72   8.00   8.00                                               8  22.5  8.5  6.200  6.400   3.185    -3.994     3039   0.665  0.849   4.020 -1.550  0.000 -0.070 -1.619 128.36  365.28    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

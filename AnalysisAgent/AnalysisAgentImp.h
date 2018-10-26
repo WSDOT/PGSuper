@@ -144,6 +144,8 @@ public:
    virtual void GetConstructionLoad(const CSegmentKey& segmentKey,std::vector<ConstructionLoad>* pConstructionLoads);
    virtual void GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::vector<SlabLoad>* pSlabLoads);
 
+   virtual void GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 Fillet, std::vector<SlabLoad>* pSlabLoads);
+
    virtual void GetCantileverSlabLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
    virtual void GetCantileverSlabPadLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
    virtual void GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads);
@@ -195,13 +197,12 @@ public:
 
    virtual void GetDeflLiveLoadDeflection(DeflectionLiveLoadType type, const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pDmin,Float64* pDmax);
 
-   virtual Float64 GetDesignSlabMomentAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi);
-   virtual Float64 GetDesignSlabDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi);
-   virtual void GetDesignSlabStressAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot);
+   virtual Float64 GetDesignSlabMomentAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi);
+   virtual Float64 GetDesignSlabDeflectionAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi);
+   virtual void GetDesignSlabStressAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot);
 
-   virtual Float64 GetDesignSlabPadMomentAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi);
-   virtual Float64 GetDesignSlabPadDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi);
-   virtual void GetDesignSlabPadStressAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot);
+   virtual Float64 GetDesignSlabPadMomentAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi);
+   virtual Float64 GetDesignSlabPadDeflectionAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi);
 
    virtual void DumpAnalysisModels(GirderIndexType gdrIdx);
 
@@ -275,7 +276,7 @@ public:
    virtual void GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeSlopeAdjustment,Float64* pMin,Float64* pMax);
    virtual void GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,pgsTypes::StressLocation loc,Float64* pMin,Float64* pMax);
    virtual void GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax);
-   virtual void GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax);
+   virtual void GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax);
    virtual void GetConcurrentShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax);
    virtual void GetViMmax(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pVi,Float64* pMmax);
    virtual Float64 GetSlabDesignMoment(pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat);
@@ -496,11 +497,26 @@ private:
    CamberModels m_InitialTempPrestressDeflectionModels;
    CamberModels m_ReleaseTempPrestressDeflectionModels;
 
+   GDRCONFIG m_CacheConfig;
+   CamberModelData m_CacheConfig_PrestressDeflectionModel;
+   CamberModelData m_CacheConfig_InitialTempPrestressDeflectionModels;
+   CamberModelData m_CacheConfig_ReleaseTempPrestressDeflectionModels;
+
    void ValidateCamberModels(const CSegmentKey& segmentKey);
+   void ValidateCamberModels(const GDRCONFIG& config);
    void BuildCamberModel(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,CamberModelData* pModelData);
    void BuildTempCamberModel(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,CamberModelData* pInitialModelData,CamberModelData* pReleaseModelData);
    void InvalidateCamberModels();
    CamberModelData GetPrestressDeflectionModel(const CSegmentKey& segmentKey,CamberModels& models);
+
+   GDRCONFIG m_SlabOffsetDesignCacheConfig;
+   CamberModelData m_CacheConfig_SlabOffsetDesignModel;
+
+   void InValidateSlabOffsetDesignModel();
+   void ValidateSlabOffsetDesignModel(const GDRCONFIG& config);
+   void BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey,const GDRCONFIG& config,CamberModelData* pModelData);
+   Float64 GetDesignMomentAdjustment(LoadCaseIDType lcid, const GDRCONFIG& config,const pgsPointOfInterest& poi);
+   void GetDesignDeflectionAdjustment(LoadCaseIDType lcid, const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz);
 
    std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,pgsTypes::StrandType strandType,bool bTempStrandInstallation=true);
 
@@ -559,15 +575,14 @@ private:
    void GetUserLoadDeflection(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG& config,Float64* pDy,Float64* pRz);
    void GetSlabBarrierOverlayDeflection(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz);
    void GetSlabBarrierOverlayDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64* pDy,Float64* pRz);
-   void GetDesignSlabDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz);
-   void GetDesignSlabPadDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz);
+   void GetDesignSlabDeflectionAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz);
+   void GetDesignSlabPadDeflectionAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz);
+   void GetDesignSlabPadStressAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot);
 
    Float64 GetConcreteStrengthAtTimeOfLoading(const CSegmentKey& segmentKey,LoadingEvent le);
    Float64 GetConcreteStrengthAtTimeOfLoading(const GDRCONFIG& config,LoadingEvent le);
    LoadingEvent GetLoadingEvent(CreepPeriod creepPeriod);
 
-   rkPPPartUniformLoad GetDesignSlabModel(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi);
-   rkPPPartUniformLoad GetDesignSlabPadModel(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi);
    Float64 GetDeflectionAdjustmentFactor(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx);
 
    void GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot);

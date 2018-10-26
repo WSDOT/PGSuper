@@ -57,7 +57,7 @@ BOOL CHaunchByGirderDlg::OnInitDialog()
    CDialog::OnInitDialog();
 
 	m_Grid.SubclassDlgItem(IDC_HAUNCH_GRID, this);
-   m_Grid.CustomInit(m_NumSpans,m_MaxGirdersPerSpan);
+   m_Grid.CustomInit(m_OriginalHaunchInputData);
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -68,13 +68,12 @@ void CHaunchByGirderDlg::UploadData(const HaunchInputData& rData)
    m_Grid.FillGrid(rData);
 }
 
-HaunchInputData CHaunchByGirderDlg::DownloadData(Float64 minA,CString& minValError, const HaunchInputData& origData, CDataExchange* pDX)
+void CHaunchByGirderDlg::DownloadData(Float64 minA,CString& minValError, HaunchInputData* pData, CDataExchange* pDX)
 {
-   return m_Grid.GetData(minA, minValError, origData, pDX);
+   m_Grid.GetData(minA, minValError, pData, pDX);
 }
 
-void CHaunchByGirderDlg::InitSize(SpanIndexType numSpans, GirderIndexType maxGirdersPerSpan)
+void CHaunchByGirderDlg::InitSize(const HaunchInputData& data)
 {
-   m_NumSpans = numSpans;
-   m_MaxGirdersPerSpan = maxGirdersPerSpan;
+   m_OriginalHaunchInputData = data;
 }

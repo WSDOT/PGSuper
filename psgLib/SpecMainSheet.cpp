@@ -31,6 +31,8 @@
 #include <Units\sysUnits.h>
 #include <EAF\EAFApp.h>
 
+#include <IFace\DocumentType.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -47,7 +49,7 @@ CSpecMainSheet::CSpecMainSheet( SpecLibraryEntry& rentry, UINT nIDCaption,
                                    CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage),
    m_Entry(rentry),
-   m_AllowEditing(allowEditing)
+   m_bAllowEditing(allowEditing)
 {
    Init();
 }
@@ -57,7 +59,7 @@ CSpecMainSheet::CSpecMainSheet( SpecLibraryEntry& rentry, LPCTSTR pszCaption,
                                    CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(pszCaption, pParentWnd, iSelectPage),
    m_Entry(rentry),
-   m_AllowEditing(allowEditing)
+   m_bAllowEditing(allowEditing)
 {
    Init();
 }
@@ -212,6 +214,11 @@ void CSpecMainSheet::ExchangeLoadsData(CDataExchange* pDX)
    DDV_MinMaxDouble(pDX,m_Entry.m_LLDFGirderSpacingLocation,0.0,1.0);
 
    DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
+
+   // computation of haunch load
+   DDX_CBEnum(pDX, IDC_HAUNCH_COMP_CB,m_Entry.m_HaunchLoadComputationType);
+   DDX_UnitValueAndTag(pDX, IDC_HAUNCH_TOLER, IDC_HAUNCH_TOLER_UNIT, m_Entry.m_HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim);
+   DDV_UnitValueGreaterThanZero(pDX, IDC_HAUNCH_TOLER,m_Entry.m_HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim );
 }
 
 void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
@@ -749,6 +756,20 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       ATLASSERT(0 <= rad_ord && rad_ord < map_size);
       m_Entry.m_LossMethod = map[rad_ord];
 
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      if ( pBroker )
+      {
+         CComPtr<IDocumentType> pDocType;
+         pBroker->GetInterface(IID_IDocumentType,(IUnknown**)&pDocType);
+         if ( pDocType->IsPGSpliceDocument() && m_Entry.m_LossMethod != LOSSES_TIME_STEP && 0 <  m_Entry.GetRefCount() )
+         {
+            AfxMessageBox(_T("Time-step method must be selected for spliced girder bridges"));
+            pDX->PrepareCtrl(IDC_LOSS_METHOD);
+            pDX->Fail();
+         }
+      }
+
       if (m_Entry.m_SectionPropertyMode == pgsTypes::spmGross && m_Entry.m_LossMethod == LOSSES_TIME_STEP )
       {
          int result = AfxMessageBox(_T("Time-step method can only be used with transformed section properties.\n\nWould you like to change the section properties to transformed?"),MB_YESNO);
@@ -1087,11 +1108,14 @@ BOOL CSpecMainSheet::OnInitDialog()
    GetWindowText(head);
    head += _T(" - ");
    head += m_Entry.GetName().c_str();
-	if (!m_AllowEditing)
+	if (!m_bAllowEditing)
    {
-      CWnd* pbut = GetDlgItem(IDOK);
-      ASSERT(pbut);
-      pbut->EnableWindow(m_AllowEditing);
+      CWnd* pOK = GetDlgItem(IDOK);
+      pOK->ShowWindow(SW_HIDE);
+
+      CWnd* pCancel = GetDlgItem(IDCANCEL);
+      pCancel->SetWindowText(_T("Close"));
+
       head += _T(" (Read Only)");
    }
    SetWindowText(head);

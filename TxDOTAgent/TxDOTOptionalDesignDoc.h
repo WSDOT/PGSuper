@@ -219,6 +219,7 @@ public:
    afx_msg void OnStatuscenterView();
 
    virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType);
+   virtual void ShowCustomReportDefinitionHelp();
 
 };
 

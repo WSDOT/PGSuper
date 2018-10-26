@@ -171,15 +171,24 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
 
    FillEventList();
 
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   {
+      GetDlgItem(IDC_EVENT)->EnableWindow(FALSE);
+   }
+
 	CDialog::OnInitDialog();
 	
    m_ctlDesignLL.SetCheckStyle( BS_AUTOCHECKBOX );
    m_ctlFatigueLL.SetCheckStyle( BS_AUTOCHECKBOX );
    m_ctlPermitLL.SetCheckStyle( BS_AUTOCHECKBOX );
 
-   for (std::vector< std::_tstring>::iterator it=m_AllNames.begin(); it!=m_AllNames.end(); it++)
+   BOOST_FOREACH(const std::_tstring& strName,m_AllNames)
    {
-      LPCTSTR str = it->c_str();
+      LPCTSTR str = strName.c_str();
       m_ctlDesignLL.AddString(str);
       m_ctlFatigueLL.AddString(str);
       m_ctlPermitLL.AddString(str);
@@ -259,20 +268,12 @@ void CLiveLoadSelectDlg::FillEventList()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   CEAFDocument* pDoc = EAFGetDocument();
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      GetDlgItem(IDC_EVENT_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_EVENT)->ShowWindow(SW_HIDE);
-   }
-
    CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
 
    int eventIdx = pcbEvent->GetCurSel();
 
    pcbEvent->ResetContent();
 
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
@@ -286,11 +287,8 @@ void CLiveLoadSelectDlg::FillEventList()
       pcbEvent->SetItemData(pcbEvent->AddString(label),eventIdx);
    }
 
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
-   {
-      CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
-      pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
-   }
+   CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
+   pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
    if ( eventIdx != CB_ERR )
    {
@@ -310,7 +308,6 @@ void CLiveLoadSelectDlg::OnEventChanging()
 
 void CLiveLoadSelectDlg::OnEventChanged()
 {
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
    int curSel = pCB->GetCurSel();
    EventIndexType idx = (IndexType)pCB->GetItemData(curSel);
@@ -338,7 +335,6 @@ void CLiveLoadSelectDlg::OnEventChanged()
 
 EventIndexType CLiveLoadSelectDlg::CreateEvent()
 {
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);

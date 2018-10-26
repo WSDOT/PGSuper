@@ -1,22 +1,22 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      1     W41DG         13   0.6  270  23.90  17.36   0   2.00    6     0    0   0   0   0   0   4.000  5.100   1.228    -2.123     1986   0.625  0.625   1.289 -0.004 -0.036 -0.034 -0.074  41.34  110.86    3.00    3.42    3.42 
+ 28.25    5   6.00                     1     1    W41DG          13  0.6  270  23.90  17.36                                              4.000  5.100   1.228    -2.123     1986   0.625  0.625   1.289 -0.004 -0.036 -0.034 -0.074  41.34  110.86    3.00    3.42    3.42 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      2     W41DG         10   0.6  270  23.78  17.58   0   2.00    4     0    0   0   0   0   0   4.000  5.000   0.986    -1.685     1669   0.550  0.667   0.939 -0.008 -0.036 -0.035 -0.079  23.82   76.87    3.00    3.42    3.42 
+ 28.25    5   6.00                     1     2    W41DG          10  0.6  270  23.78  17.58                                              4.000  5.000   0.986    -1.685     1669   0.550  0.667   0.939 -0.008 -0.036 -0.035 -0.079  23.82   76.87    3.00    3.42    3.42 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      3     W41DG         10   0.6  270  23.78  17.58   0   2.00    4     0    0   0   0   0   0   4.000  5.000   0.986    -1.685     1669   0.550  0.667   0.939 -0.008 -0.036 -0.035 -0.079  23.82   76.87    3.00    3.42    3.42 
+ 28.25    5   6.00                     1     3    W41DG          10  0.6  270  23.78  17.58                                              4.000  5.000   0.986    -1.685     1669   0.550  0.667   0.939 -0.008 -0.036 -0.035 -0.079  23.82   76.87    3.00    3.42    3.42 
 
 
 The Specification Check was Successful

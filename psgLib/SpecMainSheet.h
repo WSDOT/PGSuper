@@ -79,7 +79,7 @@ public:
    CSpecLoadsPage          m_SpecLoadsPage;
    CSpecGirderStressPage m_SpecGirderStressPage;
 
-   bool                m_AllowEditing;
+   bool                m_bAllowEditing;
 
    // work directly on an entry so we don't duplicate data.
    SpecLibraryEntry& m_Entry;

@@ -516,7 +516,7 @@ void CGirderSegmentSpacingPage::UpdateGirderSpacingHyperLinkText()
 
 void CGirderSegmentSpacingPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PIERDETAILS_GIRDERSPACING );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_bIsPier ? IDH_PIERDETAILS_GIRDERSPACING : IDH_TSDETAILS_SPACING );
 }
 
 bool CGirderSegmentSpacingPage::IsContinuousSegment()

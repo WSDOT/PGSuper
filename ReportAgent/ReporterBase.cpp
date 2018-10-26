@@ -89,6 +89,8 @@
 
 #include <Reporting\InternalForceChapterBuilder.h>
 
+#include <Reporting\MultiGirderHaunchGeometryChapterBuilder.h>
+
 #include <IReportManager.h>
 #include <IFace\Project.h>
 
@@ -413,6 +415,22 @@ void CReporterBase::CreatePointOfInterestReport()
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CPointOfInterestChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
+}
+
+void CReporterBase::CreateMultiHaunchGeometryReport()
+{
+   GET_IFACE(IReportManager,pRptMgr);
+
+   boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( new CMultiGirderReportSpecificationBuilder(m_pBroker) );
+
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Multi-Girder Haunch Geometry Summary"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CMultiGirderHaunchGeometryChapterBuilder(true)) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 

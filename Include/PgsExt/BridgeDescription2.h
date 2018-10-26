@@ -128,6 +128,15 @@ public:
    // returns the least slab offset defined for the bridge
    Float64 GetMinSlabOffset() const;
 
+   // set/get the Fillet type. This parameter indicates where the Fillet is measured
+   void SetFilletType(pgsTypes::FilletType FilletType);
+   pgsTypes::FilletType GetFilletType() const;
+
+   // Set/get the fillet. Has no net effect if fillet type is not sotBridge
+   // Get method returns invalid data if fillet type is not sotBridge
+   void SetFillet(Float64 Fillet);
+   Float64 GetFillet(bool bGetRawValue = false) const;
+
    // =================================================================================
    // Spans and Girder Groups
    // =================================================================================
@@ -330,7 +339,7 @@ public:
    CClosureJointData* FindClosureJoint(ClosureIDType closureID);
    const CClosureJointData* FindClosureJoint(ClosureIDType closureID) const;
 
-   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset); 
+   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bFillet); 
                     // takes all the data defined at the bridge level and copies
                     // it down to the spans and girders (only for this parameters set to true)
 
@@ -409,6 +418,9 @@ private:
 
    Float64 m_SlabOffset;
    pgsTypes::SlabOffsetType m_SlabOffsetType;
+
+   Float64 m_Fillet;
+   pgsTypes::FilletType m_FilletType;
 
    CTimelineManager m_TimelineManager;
 

@@ -44,7 +44,6 @@
 #include "PGSuperAppPlugin\InsertDeleteTemporarySupport.h"
 #include "PGSuperAppPlugin\EditGirderline.h"
 #include "PGSuperAppPlugin\EditPrecastSegment.h"
-#include "PGSuperAppPlugin\EditTimeline.h"
 #include <PgsExt\MacroTxn.h>
 
 // Interfaces
@@ -80,7 +79,6 @@ BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSDocBase)
 	ON_COMMAND(ID_DELETE, OnDeleteSelection)
 	ON_UPDATE_COMMAND_UI(ID_DELETE, OnUpdateDeleteSelection)
    ON_COMMAND(ID_DELETE_TEMPORARY_SUPPORT,OnDeleteTemporarySupport)
-   ON_COMMAND(ID_EDIT_TIMELINE,OnEditTimeline)
    //}}AFX_MSG_MAP
 
    // this doesn't work for documents... see OnCmdMsg for handling of WM_NOTIFY
@@ -481,24 +479,6 @@ void CPGSpliceDoc::OnDeleteTemporarySupport()
    if ( m_Selection.Type == CSelection::TemporarySupport )
    {
       DeleteTemporarySupport(m_Selection.tsID);
-   }
-}
-
-void CPGSpliceDoc::OnEditTimeline()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   CEditTimelineDlg dlg;
-   dlg.m_TimelineManager = *pBridgeDesc->GetTimelineManager();
-
-   if ( dlg.DoModal() == IDOK )
-   {
-      txnEditTimeline* pTxn = new txnEditTimeline(*pBridgeDesc->GetTimelineManager(),dlg.m_TimelineManager);
-      GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
    }
 }
 

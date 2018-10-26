@@ -230,13 +230,25 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
       CDisplayView* pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
 
-      CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
+      CPGSDocBase* pPGSDoc = (CPGSDocBase*)pDoc;
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
-      pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
+      if ( pPGSDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+      {
+         // PGSplice doesn't do design
+         CString strDesignGirder;
+         pMenu->GetMenuString(ID_PROJECT_DESIGNGIRDERDIRECT,strDesignGirder,MF_BYCOMMAND);
+         UINT nPos = pMenu->FindMenuItem(strDesignGirder);
+         pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,NULL); // remove the separater before "Design Girder"
+         pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECT,MF_BYCOMMAND,NULL);
+         pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET,MF_BYCOMMAND,NULL);
+      }
+
+      pPGSDoc->BuildReportMenu(pMenu,true);
+
+      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pPGSDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
       for ( ; callbackIter != callbackIterEnd; callbackIter++ )

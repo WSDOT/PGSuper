@@ -1,4 +1,4 @@
-Live Load Distribution Factors (TxDOT){#lldf_txdot}
+Live Load Distribution Factors (TxDOT){#tg_lldf_txdot}
 ======================================
 TxDOT deviates from the AASHTO LRFD Specifications for several girder types. The paragraphs below contain excerpts from the TxDOT LRFD Bridge Specifications, Revised April, 2007:
 

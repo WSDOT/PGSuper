@@ -47,12 +47,7 @@ BOOL CTxDOTAppPlugin::Init(CEAFApp* pParent)
       AfxLockTempMaps();
    }
 
-   {
-      // Grid needs local dll module state
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      ::GXInit();
-      m_DocumentationImpl.Init(this);
-   }
+   m_DocumentationImpl.Init(this);
 
    return TRUE;
 }
@@ -63,12 +58,6 @@ void CTxDOTAppPlugin::Terminate()
       AFX_MANAGE_STATE(AfxGetAppModuleState());
       // see tricky in Init
       AfxUnlockTempMaps();
-   }
-
-   {
-      // Grid needs local dll module state
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      ::GXTerminate();
    }
 }
 

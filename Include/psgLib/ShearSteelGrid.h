@@ -87,6 +87,8 @@ public:
 
    void SetSymmetry(bool isSymmetrical);
 
+   int GetConfinementBarColumn() { return 6; }
+
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);

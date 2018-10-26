@@ -40,6 +40,7 @@ SupportIndexType GetTempSupportIndex(SupportIDType tsLineID);
 
 // Returns the ID of a superstructure member in the Generic Bridge Model
 GirderIDType GetSuperstructureMemberID(GroupIndexType grpIdx,GirderIndexType gdrIdx);
+GirderIDType GetSuperstructureMemberID(const CGirderKey& girderKey);
 
 // Returns a segment key given a girder id. (reverses GetSuperstructureMemberID)
 CSegmentKey GetSegmentKey(GirderIDType gdrID);

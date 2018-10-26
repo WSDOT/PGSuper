@@ -1,4 +1,4 @@
-Lightweight Concrete {#lightweight_concrete}
+Lightweight Concrete {#tg_lightweight_concrete}
 ======================================
 Lightweight concrete was added to PGSuper Version 2.4. The features are compatible back to LRFD 1st Edition 1994. Lightweight concrete is defined by LRFD 5.2 as *concrete containing lightweight aggregate and having and air-dry unit weight not exceeding 0.120 kcf*. 
 
@@ -8,4 +8,4 @@ AASHTO defines normal weight concrete as having a unit weight between 0.135 and 
 
 > NOTE: AASHTO LRFD 7th Edition, 2016 Interim revisions change the classification of concrete to simply normal weight and lightweight.
 
-The material properties of lightweight concrete vary greatly with the aggregate source and mix design. Modulus of elasticity, creep, and shrinkage are significant material properties that generally need to account for aggregate source. Concrete material definitions include aggregate correction factors for averaging and bounding. See [Concrete Properties](@ref concrete_properties) for more information.
+The material properties of lightweight concrete vary greatly with the aggregate source and mix design. Modulus of elasticity, creep, and shrinkage are significant material properties that generally need to account for aggregate source. Concrete material definitions include aggregate correction factors for averaging and bounding. See @ref tg_concrete_properties for more information.

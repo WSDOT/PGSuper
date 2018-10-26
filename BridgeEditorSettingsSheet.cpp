@@ -150,6 +150,7 @@ void CBridgeEditorSettingsSheet::SetAlignmentEditorSettings(UINT set)
 
    // Profile
    m_BridgeEditorProfilePage.m_DrawBridge = (set&IDP_AP_DRAW_BRIDGE)!=0;
+   m_BridgeEditorProfilePage.m_ShowSchematic  = (set&IDP_AP_DRAW_ISOTROPIC)==0;
 }
 
 UINT CBridgeEditorSettingsSheet::GetAlignmentEditorSettings()const
@@ -158,14 +159,25 @@ UINT CBridgeEditorSettingsSheet::GetAlignmentEditorSettings()const
 
    // Alignment
    if (m_BridgeEditorAlignmentPage.m_DrawBridge)
+   {
       set |= IDA_AP_DRAW_BRIDGE;
+   }
 
    if(m_BridgeEditorAlignmentPage.m_NorthUp)
+   {
       set |= IDA_AP_NORTH_UP;
+   }
 
    // Profile
    if (m_BridgeEditorProfilePage.m_DrawBridge)
+   {
       set |= IDP_AP_DRAW_BRIDGE;
+   }
+
+   if (!m_BridgeEditorProfilePage.m_ShowSchematic) 
+   {
+      set |= IDP_AP_DRAW_ISOTROPIC;
+   }
 
    return set;
 }

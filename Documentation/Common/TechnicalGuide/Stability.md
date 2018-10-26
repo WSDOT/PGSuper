@@ -1,4 +1,4 @@
-Stability {#stability}
+Stability {#tg_stability}
 ======================================
 As girders become longer, lifting and hauling them becomes more and more challenging. In fact, stresses and stability during lifting and handling often become controlling conditions. This section gives a brief overview of the methods used to analyze lifting and hauling of long girders. For a full treatment on these topics, we urge you to read the references sited below.
 

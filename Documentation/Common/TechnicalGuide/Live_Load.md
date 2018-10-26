@@ -1,4 +1,4 @@
-Live Load {#live_load}
+Live Load {#tg_live_load}
 ======================================
 In addition to supporting the HL93 live load as defined in LRFD 3.6.1.3, you to apply your own live loads and envelopes of live loads. Live loads can be defined for two different load categories:
 

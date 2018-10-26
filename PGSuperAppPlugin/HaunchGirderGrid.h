@@ -64,10 +64,10 @@ protected:
 
 public:
    // custom init for grid
-   void CustomInit(SpanIndexType numSpans, GirderIndexType maxGirdersPerSpan);
+   void CustomInit(const HaunchInputData& data);
 
    void FillGrid(const HaunchInputData& haunchData);
-   HaunchInputData GetData(Float64 minA, CString& minValError, const HaunchInputData& origData, CDataExchange* pDX);
+   void GetData(Float64 minA, CString& minValError, HaunchInputData* pData, CDataExchange* pDX);
 
 
 private:
@@ -75,7 +75,7 @@ private:
 
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
-   HaunchPair GetHpAtCells(SpanIndexType span, GirderIndexType gdr, CDataExchange* pDX);
+   Float64 GetAAtCells(PierIndexType ibrg, GirderIndexType gdr, CDataExchange* pDX);
 
    const unitmgtLengthData* m_pCompUnit;
 };

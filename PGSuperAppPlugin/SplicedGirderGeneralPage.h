@@ -26,12 +26,14 @@
 #include "GirderGrid.h"
 #include "DuctGrid.h"
 #include "SlabOffsetGrid.h"
+#include "FilletGrid.h"
 #include <PgsExt\BridgeDescription2.h>
 #include <Material\PsStrand.h>
 
 #include "DrawTendonsControl.h"
 
 #include "SlabOffsetHyperLink.h"
+#include "FilletHyperLink.h"
 #include "SameGirderTypeHyperLink.h"
 
 // CSplicedGirderGeneralPage dialog
@@ -50,6 +52,7 @@ public:
    std::vector<EventIndexType> m_TendonStressingEvent; // index is duct index, value is event when tendon is stressed
 
    int GetDuctCount();
+   void EventCreated();
 
    const matPsStrand* GetStrand();
    pgsTypes::StrandInstallationType GetInstallationType();
@@ -69,6 +72,10 @@ protected:
    void UpdateSlabOffsetHyperLink();
    void UpdateSlabOffsetControls();
 
+   CFilletHyperLink m_ctrlFilletHyperLink;
+   void UpdateFilletHyperLink();
+   void UpdateFilletControls();
+
    CSameGirderTypeHyperLink m_ctrlGirderTypeHyperLink;
    void UpdateGirderTypeHyperLink();
    void UpdateGirderTypeControls();
@@ -76,6 +83,7 @@ protected:
    CGirderGrid m_GirderGrid;
    CDuctGrid   m_DuctGrid;
    CSlabOffsetGrid m_SlabOffsetGrid;
+   CFilletGrid m_FilletGrid;
    CDrawTendonsControl m_DrawTendons;
 
 	DECLARE_MESSAGE_MAP()
@@ -87,6 +95,7 @@ public:
    afx_msg void OnInstallationTypeChanged();
    afx_msg void OnConditionFactorTypeChanged();
    afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);
+   afx_msg LRESULT OnChangeFilletType(WPARAM wParam,LPARAM lParam);
    afx_msg LRESULT OnChangeGirderType(WPARAM wParam,LPARAM lParam);
 
    void OnDuctChanged();

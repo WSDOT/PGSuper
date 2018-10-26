@@ -36,6 +36,7 @@
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <DManipTools\DManipTools.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,7 +55,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CAlignmentProfileView
 
-IMPLEMENT_DYNCREATE(CAlignmentProfileView, CDisplayView)
+IMPLEMENT_DYNCREATE(CAlignmentProfileView, CBridgeViewPane)
 
 CAlignmentProfileView::CAlignmentProfileView()
 {
@@ -65,13 +66,9 @@ CAlignmentProfileView::~CAlignmentProfileView()
 }
 
 
-BEGIN_MESSAGE_MAP(CAlignmentProfileView, CDisplayView)
+BEGIN_MESSAGE_MAP(CAlignmentProfileView, CBridgeViewPane)
 	//{{AFX_MSG_MAP(CAlignmentProfileView)
-	ON_WM_CREATE()
-	ON_WM_SIZE()
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -81,7 +78,11 @@ END_MESSAGE_MAP()
 void CAlignmentProfileView::OnInitialUpdate() 
 {
    EnableToolTips();
+   CBridgeViewPane::OnInitialUpdate();
+}
 
+void CAlignmentProfileView::BuildDisplayLists()
+{
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
@@ -90,7 +91,10 @@ void CAlignmentProfileView::OnInitialUpdate()
    dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
    dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CDisplayView::SetMappingMode(DManip::Anisotropic);
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
+   UINT settings = pDoc->GetAlignmentEditorSettings();
+   DManip::MapMode mode = (settings & IDP_AP_DRAW_ISOTROPIC) ? DManip::Isotropic : DManip::Anisotropic;
+   CBridgeViewPane::SetMappingMode(mode);
 
    // Setup display lists
 
@@ -113,27 +117,6 @@ void CAlignmentProfileView::OnInitialUpdate()
    ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&profile_list);
    profile_list->SetID(PROFILE_DISPLAY_LIST);
    dispMgr->AddDisplayList(profile_list);
-
-   CDisplayView::OnInitialUpdate();
-}
-
-void CAlignmentProfileView::DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw)
-{
-   OnBeginPrinting(pDC, pInfo, rcDraw);
-   OnPrepareDC(pDC);
-   UpdateDrawingScale();
-   OnDraw(pDC);
-   OnEndPrinting(pDC, pInfo);
-}
-
-void CAlignmentProfileView::OnDraw(CDC* pDC)
-{
-   CDisplayView::OnDraw(pDC);
-
-   if ( CWnd::GetFocus() == this && !pDC->IsPrinting() )
-   {
-      DrawFocusRect();
-   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -143,12 +126,12 @@ void CAlignmentProfileView::OnDraw(CDC* pDC)
 void CAlignmentProfileView::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-	CDisplayView::AssertValid();
+	CBridgeViewPane::AssertValid();
 }
 
 void CAlignmentProfileView::Dump(CDumpContext& dc) const
 {
-	CDisplayView::Dump(dc);
+	CBridgeViewPane::Dump(dc);
 }
 #endif //_DEBUG
 
@@ -157,37 +140,11 @@ void CAlignmentProfileView::Dump(CDumpContext& dc) const
 
 void CAlignmentProfileView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
-   CDisplayView::OnUpdate(pSender,lHint,pHint);
-
+   CBridgeViewPane::OnUpdate(pSender,lHint,pHint);
    UpdateDisplayObjects();
    UpdateDrawingScale();
    Invalidate();
    UpdateWindow();
-}
-
-void CAlignmentProfileView::OnSize(UINT nType, int cx, int cy) 
-{
-	CDisplayView::OnSize(nType, cx, cy);
-
-   CRect rect;
-   GetClientRect(&rect);
-   rect.DeflateRect(15,15,15,15);
-
-   CSize size = rect.Size();
-   size.cx = Max(0L,size.cx);
-   size.cy = Max(0L,size.cy);
-
-   SetLogicalViewRect(MM_TEXT,rect);
-
-   SetScrollSizes(MM_TEXT,size,CScrollView::sizeDefault,CScrollView::sizeDefault);
-
-   UpdateDrawingScale();
-}
-
-void CAlignmentProfileView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
-{
-   CBridgeModelViewChildFrame* pFrame = GetFrame();
-   pFrame->ClearSelection();
 }
 
 void CAlignmentProfileView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
@@ -248,6 +205,11 @@ void CAlignmentProfileView::UpdateDisplayObjects()
    BuildProfileDisplayObjects();
    BuildBridgeDisplayObjects();
    BuildLabelDisplayObjects();
+
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
+   UINT settings = pDoc->GetAlignmentEditorSettings();
+   DManip::MapMode mode = (settings & IDP_AP_DRAW_ISOTROPIC) ? DManip::Isotropic : DManip::Anisotropic;
+   CBridgeViewPane::SetMappingMode(mode);
 }
 
 void CAlignmentProfileView::BuildTitleDisplayObjects()
@@ -381,15 +343,15 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IRoadway,pRoadway);
-
+   GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 start_station = pBridge->GetPierStation(0);
-   Float64 end_station = pBridge->GetPierStation(pBridge->GetPierCount()-1);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
 
-   // The bridge is represented on the screen by a poly line object
-   CComPtr<iPolyLineDisplayObject> doBridge;
-   doBridge.CoCreateInstance(CLSID_PolyLineDisplayObject);
+   CComPtr<iCompositeDisplayObject> doBridge;
+   doBridge.CoCreateInstance(CLSID_CompositeDisplayObject);
+   doBridge->SetSelectionType(stAll);
+   doBridge->SetID(BRIDGE_ID);
+   display_list->AddDisplayObject(doBridge);
 
    CComPtr<iDisplayObject> dispObj;
    doBridge->QueryInterface(IID_iDisplayObject,(void**)&dispObj);
@@ -401,29 +363,57 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
    dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
    dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
 
-   // model the profile as a series of individual points
-   long nPoints = 20;
-   Float64 station_inc = (end_station - start_station)/(nPoints-1);
-   Float64 station = start_station;
-   for ( long i = 0; i < nPoints; i++, station += station_inc)
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GirderIndexType nGirderLines = pBridge->GetGirderlineCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      Float64 y = pRoadway->GetElevation(station,0.0);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      nGirders = Min(nGirders,nGirderLines);
+      CGirderKey girderKey(grpIdx,nGirders-1);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey segmentKey(girderKey,segIdx);
 
-      CComPtr<IPoint2d> pnt;
-      pnt.CoCreateInstance(CLSID_Point2d);
-      pnt->Move(station,y);
-      doBridge->AddPoint(pnt);
+         CComPtr<IShape> segmentShape;
+         pIGirder->GetSegmentProfile( segmentKey, true/*include closures*/, &segmentShape);
+
+         CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
+         pIGirder->GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+
+         Float64 slope = pBridge->GetSegmentSlope(segmentKey);
+         Float64 angle = atan(slope);
+
+         Float64 station,offset;
+         pAlignment->GetStationAndOffset(pntEnd1,&station,&offset);
+
+         Float64 elev = pAlignment->GetElevation(station,offset);
+
+         CComQIPtr<IXYPosition> position(segmentShape);
+         CComPtr<IPoint2d> pntTopLeft;
+         position->get_LocatorPoint(lpTopLeft,&pntTopLeft);
+         position->RotateEx(pntTopLeft,angle);
+
+         Float64 x,y;
+         pntTopLeft->Location(&x,&y);
+
+         position->Offset(station-x,elev-y);
+
+
+         CComPtr<iPointDisplayObject> doSegment;
+         doSegment.CoCreateInstance(CLSID_PointDisplayObject);
+
+         CComPtr<iShapeDrawStrategy> strategy;
+         strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+         strategy->SetShape(segmentShape);
+         strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
+         strategy->SetSolidFillColor(SEGMENT_FILL_COLOR);
+         strategy->DoFill(TRUE);
+         doSegment->SetDrawingStrategy(strategy);
+
+         doBridge->AddDisplayObject(doSegment);
+      }
    }
-
-   doBridge->put_Width(BRIDGE_LINE_WEIGHT);
-   doBridge->put_Color(BRIDGE_COLOR);
-   doBridge->put_PointType(plpNone);
-   doBridge->Commit();
-
-   display_list->AddDisplayObject(dispObj);
-
-   dispObj->SetSelectionType(stAll);
-   dispObj->SetID(BRIDGE_ID);
 }
 
 void CAlignmentProfileView::BuildLabelDisplayObjects()
@@ -535,45 +525,6 @@ void CAlignmentProfileView::UpdateDrawingScale()
    ScaleToFit();
 
    title_display_list->HideDisplayObjects(false);
-}
-
-void CAlignmentProfileView::OnSetFocus(CWnd* pOldWnd) 
-{
-	CDisplayView::OnSetFocus(pOldWnd);
-   DrawFocusRect();
-}
-
-void CAlignmentProfileView::OnKillFocus(CWnd* pNewWnd) 
-{
-	CDisplayView::OnKillFocus(pNewWnd);
-   DrawFocusRect();
-}
-
-int CAlignmentProfileView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
-{
-	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
-   {
-		return -1;
-   }
-	
-   m_pFrame = (CBridgeModelViewChildFrame*)GetParent()->GetParent();
-   ASSERT( m_pFrame != 0 );
-   ASSERT( m_pFrame->IsKindOf( RUNTIME_CLASS( CBridgeModelViewChildFrame ) ) );
-
-	return 0;
-}
-
-CBridgeModelViewChildFrame* CAlignmentProfileView::GetFrame()
-{
-   return m_pFrame;
-}
-
-void CAlignmentProfileView::DrawFocusRect()
-{
-   CClientDC dc(this);
-   CRect rClient;
-   GetClientRect(&rClient);
-   dc.DrawFocusRect(rClient);
 }
 
 void CAlignmentProfileView::CreateStationLabel(iDisplayList* pDisplayList,Float64 station,LPCTSTR strBaseLabel,UINT textAlign)

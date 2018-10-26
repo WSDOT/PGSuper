@@ -414,9 +414,13 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
          if (isInitial)
          {
             if ( m_Load.m_EventIndex == castDeckEventIdx )
+            {
                pcbEvent->SetCurSel(0);
+            }
             else if ( m_Load.m_EventIndex == railingSystemEventIdx )
+            {
                pcbEvent->SetCurSel(1);
+            }
             else
             {
                pcbEvent->SetCurSel(0);

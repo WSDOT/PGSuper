@@ -858,9 +858,11 @@
 #define IDC_REVERSE_HARPED_STRAND_ORDER 1437
 #define IDC_MIN_SIDEWALK_WIDTH          1437
 #define IDC_FATIGUE_LABEL               1438
+#define IDC_HAUNCH_TOLER                1438
 #define IDC_WEIGHT_LABEL                1439
 #define IDC_MIN_SIDEWALK_WIDTH_UNIT     1439
 #define IDC_EC_LABEL                    1440
+#define IDC_HAUNCH_TOLER_UNIT           1440
 #define IDC_COMBO1                      1441
 #define IDC_USAGE                       1441
 #define IDC_STRAND_GENERATION           1441
@@ -872,6 +874,7 @@
 #define IDC_CURE_METHOD                 1441
 #define IDC_HAULING_METHOD              1441
 #define IDC_SAG_OPTIONS                 1441
+#define IDC_HAUNCH_COMP_CB              1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
@@ -1219,8 +1222,14 @@
 #define IDC_STATIC_MULT11               1631
 #define IDC_DIAPHRAGM2                  1632
 #define IDC_CREEP                       1632
+#define IDC_DEBOND_CRITERIA_GROUP       1632
+#define IDC_HAUNCH_TOLER_STATIC         1632
 #define IDC_STATIC_MULT7                1633
+#define IDC_DEBOND_CRITERIA_NOTE        1633
+#define IDC_MAX_LENGTH_FRACTION_UNIT    1634
+#define IDC_MIN_DISTANCE_LABEL          1635
 #define IDS_E_BADINSTALL                1636
+#define IDC_DEFAULT_DISTANCE_LABEL      1636
 #define IDS_E_PROBPERSISTS              1638
 #define IDS_E_INVALIDFORMAT             1640
 #define IDS_E_FILENOTFOUND              1642
@@ -1255,9 +1264,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        311
+#define _APS_NEXT_RESOURCE_VALUE        312
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1632
+#define _APS_NEXT_CONTROL_VALUE         1638
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

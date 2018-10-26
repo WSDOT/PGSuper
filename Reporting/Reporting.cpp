@@ -116,9 +116,9 @@ CReportingApp theApp;
 
 BOOL CReportingApp::InitInstance()
 {
-	CWinApp::InitInstance();
+   GXInit();
 
-   GXInit( );
+   CWinApp::InitInstance();
 
    // Initialize the report styles when the DLL loads
    pgsReportStyleHolder::InitStyles();
@@ -128,7 +128,6 @@ BOOL CReportingApp::InitInstance()
 
 int CReportingApp::ExitInstance() 
 {
-// This call performs cleanup etc
-	GXTerminate( );
+   GXForceTerminate();
 	return CWinApp::ExitInstance();
 }

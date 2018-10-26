@@ -1216,10 +1216,10 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
    Float64 Mdnc = GetNonCompositeDeadLoadMoment(intervalIdx,poi,bPositiveMoment);
 
    // add effect of different slab offset
-   Float64 deltaSlab = pProductForces->GetDesignSlabMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+   Float64 deltaSlab = pProductForces->GetDesignSlabMomentAdjustment(config,poi);
    Mdnc += deltaSlab;
 
-   Float64 deltaSlabPad = pProductForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+   Float64 deltaSlabPad = pProductForces->GetDesignSlabPadMomentAdjustment(config,poi);
    Mdnc += deltaSlabPad;
 
    return Mdnc;

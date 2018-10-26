@@ -111,6 +111,9 @@ m_bHasGirderCoordinate(false),
 m_Xg(-1),
 m_bHasGirderPathCoordinate(false),
 m_Xgp(-1),
+m_SpanIdx(INVALID_INDEX),
+m_Xspan(-1),
+m_bHasSpanPoint(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
@@ -128,6 +131,9 @@ m_bHasGirderCoordinate(false),
 m_Xg(-1),
 m_bHasGirderPathCoordinate(false),
 m_Xgp(-1),
+m_SpanIdx(INVALID_INDEX),
+m_Xspan(-1),
+m_bHasSpanPoint(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
@@ -157,6 +163,9 @@ m_bHasGirderCoordinate(true),
 m_Xg(Xg),
 m_bHasGirderPathCoordinate(true),
 m_Xgp(Xgp),
+m_SpanIdx(INVALID_INDEX),
+m_Xspan(-1),
+m_bHasSpanPoint(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
@@ -185,6 +194,9 @@ m_bHasGirderCoordinate(false),
 m_Xg(-1),
 m_bHasGirderPathCoordinate(false),
 m_Xgp(-1),
+m_SpanIdx(INVALID_INDEX),
+m_Xspan(-1),
+m_bHasSpanPoint(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
@@ -406,6 +418,25 @@ Float64 pgsPointOfInterest::GetGirderPathCoordinate() const
 bool pgsPointOfInterest::HasGirderPathCoordinate() const
 {
    return m_bHasGirderPathCoordinate;
+}
+
+void pgsPointOfInterest::SetSpanPoint(SpanIndexType spanIdx,Float64 Xspan)
+{
+   m_SpanIdx = spanIdx;
+   m_Xspan = Xspan;
+   m_bHasSpanPoint = true;
+}
+
+void pgsPointOfInterest::GetSpanPoint(SpanIndexType* pSpanIdx,Float64* pXspan) const
+{
+   ATLASSERT(m_bHasSpanPoint);
+   *pSpanIdx = m_SpanIdx;
+   *pXspan = m_Xspan;
+}
+
+bool pgsPointOfInterest::HasSpanPoint() const
+{
+   return m_bHasSpanPoint;
 }
 
 void pgsPointOfInterest::ClearAttributes()
@@ -684,8 +715,12 @@ void pgsPointOfInterest::MakeCopy(const pgsPointOfInterest& rOther)
    m_Xg                        = rOther.m_Xg;
    m_bHasGirderPathCoordinate  = rOther.m_bHasGirderPathCoordinate;
    m_Xgp                       = rOther.m_Xgp;
+   m_bHasSpanPoint             = rOther.m_bHasSpanPoint;
+   m_SpanIdx                   = rOther.m_SpanIdx;
+   m_Xspan                     = rOther.m_Xspan;
    m_bCanMerge                 = rOther.m_bCanMerge;
    m_Attributes                = rOther.m_Attributes;
+
 
    for ( int i = 0; i < 6; i++ )
    {

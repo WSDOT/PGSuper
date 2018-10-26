@@ -41,8 +41,6 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   CBridgeDescription2 m_BridgeDescription[2];
-
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
    Float64 m_SpanLength;
@@ -71,11 +69,22 @@ public:
 private:
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
+   PierIndexType m_LastPierIdx;
+
+   SpanIndexType m_DeletedSpanIdx;
    CSpanData2* m_pDeletedSpan;
+
+   PierIndexType m_DeletedPierIdx;
    CPierData2* m_pDeletedPier;
+
+   GroupIndexType m_DeletedGroupIdx;
+   CGirderGroupData* m_pDeletedGroup;
+
    Float64  m_SpanLength; // length of deleted span
-   bool m_bCreateNewGroup;
+   CGirderSpacing2 m_OldGirderSpacing; // girder spacing at the pier that is not deleted
    EventIndexType m_PierErectionEventIdx;
+   std::map<CSegmentKey,std::pair<EventIndexType,EventIndexType>> m_SegmentEvents;
+   std::map<CClosureKey,EventIndexType> m_ClosureJointEvents;
 };
 
 #endif // INCLUDED_INSERTDELETESPAN_H_

@@ -1,6 +1,6 @@
-Concrete Properties {#concrete_properties}
+Concrete Properties {#tg_concrete_properties}
 ======================================
-Concrete material properties,namely Modulus of Elasticity, Creep, and Shrinkage, are highly dependent on mix designs and the properties of local aggregates. PGSuper uses a flexible model for predicting concrete material properties. This model is based on NCHRP Report 496, Prestress Losses in Pretensioned High-Strength Concrete Bridge Girders. NCHRP Report 496 is the basis for the modulus of elasticity, creep, shrinkage, and prestress loss requires in the AASHTO LRFD Bridge Design Specifications since 2005.
+Concrete material properties, namely Modulus of Elasticity, Creep, and Shrinkage, are highly dependent on mix designs and the properties of local aggregates. The material model used is based on NCHRP Report 496, Prestress Losses in Pretensioned High-Strength Concrete Bridge Girders. NCHRP Report 496 is the basis for the modulus of elasticity, creep, shrinkage, and prestress loss requirements in the AASHTO LRFD Bridge Design Specifications since 2005.
 
 ## Modulus of Elasticity
 The modulus of elasticity is computed as

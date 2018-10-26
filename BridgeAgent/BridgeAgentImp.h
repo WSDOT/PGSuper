@@ -256,6 +256,8 @@ public:
    virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi);
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend);
+
    virtual void GetSlabOffset(const CSegmentKey& segmentKey,Float64* pStart,Float64* pEnd);
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
@@ -303,13 +305,14 @@ public:
    virtual std::vector<IntermedateDiaphragm> GetPrecastDiaphragms(const CSegmentKey& segmentKey);
    virtual std::vector<IntermedateDiaphragm> GetCastInPlaceDiaphragms(const CSpanKey& spanKey);
    virtual pgsTypes::SupportedDeckType GetDeckType();
+   virtual pgsTypes::WearingSurfaceType GetWearingSurfaceType();
    virtual bool IsCompositeDeck();
    virtual bool HasOverlay();
    virtual bool IsFutureOverlay();
    virtual Float64 GetOverlayWeight();
    virtual Float64 GetOverlayDepth();
    virtual Float64 GetSacrificalDepth();
-   virtual Float64 GetFillet();
+   virtual Float64 GetFillet(SpanIndexType spanIdx, GirderIndexType gdrIdx);
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi);
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi);
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi);
@@ -739,6 +742,7 @@ public:
    virtual bool GetPointOfInterest(const CSegmentKey& segmentKey,Float64 station,IDirection* pDirection,pgsPointOfInterest* pPoi);
    virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey);
    virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey,const GDRCONFIG& config);
+   virtual bool GetPointOfInterest(const CGirderKey& girderKey,Float64 station,IDirection* pDirection,bool bProjectSegmentEnds,pgsPointOfInterest* pPoi);
    virtual pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs);
    virtual pgsPointOfInterest GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIFIND_OR);
    virtual pgsPointOfInterest GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIFIND_OR);
@@ -838,6 +842,7 @@ public:
    virtual Float64 GetTributaryDeckArea(const pgsPointOfInterest& poi);
    virtual Float64 GetGrossDeckArea(const pgsPointOfInterest& poi);
    virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi);
+   virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend);
    virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi);
    virtual Float64 GetSegmentSurfaceArea(const CSegmentKey& segmentKey);
@@ -969,6 +974,7 @@ public:
    virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2);
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey);
    virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi);
+   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend);
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx);
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx);
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi);
@@ -1225,13 +1231,13 @@ private:
    // helper functions for building the bridge model
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);
    bool LayoutGirders(const CBridgeDescription2* pBridgeDesc);
-   void GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64* pStartHaunch,Float64* pEndHaunch);
+   void GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64* pStartHaunch,Float64* pMidHaunch,Float64* pEndHaunch,Float64* pFillet);
    bool LayoutDeck(const CBridgeDescription2* pBridgeDesc);
    bool LayoutNoDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
    bool LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
    bool LayoutFullDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
-   bool LayoutCompositeCIPDeck(const CDeckDescription2* pDeck,IDeckBoundary* pBoundary,IBridgeDeck** ppDeck);
-   bool LayoutCompositeSIPDeck(const CDeckDescription2* pDeck,IDeckBoundary* pBoundary,IBridgeDeck** ppDeck);
+   bool LayoutCompositeCIPDeck(const CBridgeDescription2* pBridgeDesc,IDeckBoundary* pBoundary,IBridgeDeck** ppDeck);
+   bool LayoutCompositeSIPDeck(const CBridgeDescription2* pBridgeDesc,IDeckBoundary* pBoundary,IBridgeDeck** ppDeck);
 
    bool LayoutTrafficBarriers(const CBridgeDescription2* pBridgeDesc);
    bool LayoutTrafficBarrier(const CBridgeDescription2* pBridgeDesc,const CRailingSystem* pRailingSystem,pgsTypes::TrafficBarrierOrientation orientation,ISidewalkBarrier** ppBarrier);
@@ -1381,9 +1387,6 @@ private:
    void GetSegmentRange(const CSegmentKey& segmentKey,Float64* pXStart,Float64* pXEnd);
 
    Float64 ConvertDuctOffsetToDuctElevation(const CGirderKey& girderKey,Float64 Xg,Float64 offset,CDuctGeometry::OffsetType offsetType);
-   mathPolynomial2d GenerateParabola1(Float64 x1,Float64 y1,Float64 x2,Float64 y2,Float64 slope);
-   mathPolynomial2d GenerateParabola2(Float64 x1,Float64 y1,Float64 x2,Float64 y2,Float64 slope);
-   void GenerateReverseParabolas(Float64 x1,Float64 y1,Float64 x2,Float64 x3,Float64 y3,mathPolynomial2d* pLeftParabola,mathPolynomial2d* pRightParabola);
    void CreateDuctCenterline(const CGirderKey& girderKey,const CLinearDuctGeometry& geometry,IPoint2dCollection** ppPoints);
    void CreateDuctCenterline(const CGirderKey& girderKey,const CParabolicDuctGeometry& geometry,IPoint2dCollection** ppPoints);
    void CreateDuctCenterline(const CGirderKey& girderKey,const COffsetDuctGeometry& geometry,IPoint2dCollection** ppPoints);

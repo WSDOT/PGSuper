@@ -115,12 +115,16 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
       pParent->m_BridgeDesc.MovePier(pParent->m_pPier->GetIndex(),m_Station,m_MovePierOption);
       pParent->m_pPier->SetOrientation(m_strOrientation.c_str());
 
-      if ( pParent->m_BridgeDesc.GetSlabOffsetType()== pgsTypes::sotBridge )
+      if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge )
       {
          if ( pParent->m_pPier->GetGirderGroup(pgsTypes::Back) )
+         {
             pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Back]);
+         }
          else
+         {
             pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Ahead]);
+         }
       }
       else if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier )
       {
@@ -210,6 +214,14 @@ BOOL CPierLocationPage::OnInitDialog()
 
    FillEventList();
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   {
+      GetDlgItem(IDC_ERECTION_EVENT)->EnableWindow(FALSE);
+   }
+
    // move options are not available until the station changes
 	CPropertyPage::OnInitDialog();
 
@@ -221,38 +233,42 @@ BOOL CPierLocationPage::OnInitDialog()
    CDataExchange dx(this,FALSE);
    DDX_CBItemData(&dx,IDC_ERECTION_EVENT,eventIdx);
 
+   m_PierFaceCount = pParent->m_pPier->IsBoundaryPier() && !pParent->m_pPier->IsAbutment() ? 2 : 1;
 
-   m_PierFaceCount = 2;
-   if ( pParent->m_pPier->IsInteriorPier() && 
-       (pParent->m_pPier->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment || pParent->m_pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment)
-      )
+   if ( pParent->m_pPier->IsAbutment() )
    {
-      m_PierFaceCount = 1;
-   }
+      ATLASSERT(m_PierFaceCount == 1);
+      if ( pParent->m_pPier->GetPrevSpan() == NULL )
+      {
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_BACK_SLAB_OFFSET)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
 
-   if ( m_PierFaceCount == 1 )
+         CRect rOffset, rUnit;
+         GetDlgItem(IDC_BACK_SLAB_OFFSET)->GetWindowRect(&rOffset);
+         GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->GetWindowRect(&rUnit);
+
+         ScreenToClient(&rOffset);
+         ScreenToClient(&rUnit);
+
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->MoveWindow(rOffset);
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->MoveWindow(rUnit);
+      }
+      else
+      {
+         GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
+      }
+   }
+   else if ( pParent->m_pPier->IsInteriorPier() )
    {
       GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->SetWindowText(_T("CL Pier"));
       GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
-   }
-
-   if ( pParent->m_pPier->IsAbutment() )
-   {
-      m_PierFaceCount = 1;
-      if ( pParent->m_pPier->GetPrevSpan() == NULL )
-      {
-         GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_BACK_SLAB_OFFSET)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
-      }
-      else
-      {
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
-      }
    }
 
    CString strPierType(pParent->m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
@@ -269,8 +285,6 @@ BOOL CPierLocationPage::OnInitDialog()
    strStationLocation.Format(_T("Station and Orientation defines the %s Line"),strPierType);
    GetDlgItem(IDC_STATION_LOCATION_LABEL)->SetWindowText(strStationLocation);
 	
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    CString fmt;
@@ -300,14 +314,22 @@ void CPierLocationPage::Init(const CPierData2* pPier)
    m_FromStation = m_Station; // keep a copy of this for the "move" note
 
    if ( m_PierIdx != 0 )
+   {
       m_PrevPierStation = pBridgeDesc->GetPier(m_PierIdx-1)->GetStation();
+   }
    else
+   {
       m_PrevPierStation = -DBL_MAX;
+   }
 
    if ( m_PierIdx != m_nSpans )
+   {
       m_NextPierStation = pBridgeDesc->GetPier(m_PierIdx+1)->GetStation();
+   }
    else
+   {
       m_NextPierStation = -DBL_MAX;
+   }
 
    m_strOrientation = pPier->GetOrientation();
 
@@ -472,7 +494,9 @@ void CPierLocationPage::UpdateMoveOptionList()
    }
    int result = pOptions->SetCurSel(curSel);
    if ( result == CB_ERR )
+   {
       pOptions->SetCurSel(0);
+   }
 
    int nShow = IsEqual(m_FromStation,toStation) ? SW_HIDE : SW_SHOW;
    GetDlgItem(IDC_MOVE_PIER)->EnableWindow(TRUE);
@@ -526,14 +550,6 @@ HBRUSH CPierLocationPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
 void CPierLocationPage::FillEventList()
 {
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   CEAFDocument* pDoc = EAFGetDocument();
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      GetDlgItem(IDC_ERECTION_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_ERECTION_EVENT)->ShowWindow(SW_HIDE);
-
-      return;
-   }
 
    CComboBox* pcbErect = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
 

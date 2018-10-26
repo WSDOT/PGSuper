@@ -237,8 +237,7 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(const CGirderKey& girderKey)
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
-   const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = GetAllowableCoefficientAtJacking(girderKey);
 
    return coeff*fpu;
 }
@@ -255,8 +254,7 @@ Float64 CSpecAgentImp::GetAllowablePriorToSeating(const CGirderKey& girderKey)
 
    Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
-   const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_PRIOR_TO_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = GetAllowableCoefficientPriorToSeating(girderKey);
 
    return coeff*fpy;
 }
@@ -268,8 +266,7 @@ Float64 CSpecAgentImp::GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& g
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
-   const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ANCHORAGES_AFTER_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = GetAllowableCoefficientAfterAnchorSetAtAnchorage(girderKey);
 
    return coeff*fpu;
 }
@@ -281,8 +278,7 @@ Float64 CSpecAgentImp::GetAllowableAfterAnchorSet(const CGirderKey& girderKey)
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
-   const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ELSEWHERE_AFTER_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = GetAllowableCoefficientAfterAnchorSet(girderKey);
 
    return coeff*fpu;
 }
@@ -294,10 +290,60 @@ Float64 CSpecAgentImp::GetAllowableAfterLosses(const CGirderKey& girderKey)
 
    Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
+   Float64 coeff = GetAllowableCoefficientAfterLosses(girderKey);
+
+   return coeff*fpy;
+}
+
+Float64 CSpecAgentImp::GetAllowableCoefficientAtJacking(const CGirderKey& girderKey)
+{
+   GET_IFACE(IMaterials,pMaterial);
+   const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
+
+   const SpecLibraryEntry* pSpec = GetSpec();
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   return coeff;
+}
+
+Float64 CSpecAgentImp::GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey)
+{
+   GET_IFACE(IMaterials,pMaterial);
+   const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
+
+   const SpecLibraryEntry* pSpec = GetSpec();
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_PRIOR_TO_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   return coeff;
+}
+
+Float64 CSpecAgentImp::GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey)
+{
+   GET_IFACE(IMaterials,pMaterial);
+   const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
+
+   const SpecLibraryEntry* pSpec = GetSpec();
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ANCHORAGES_AFTER_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   return coeff;
+}
+
+Float64 CSpecAgentImp::GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey)
+{
+   GET_IFACE(IMaterials,pMaterial);
+   const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
+
+   const SpecLibraryEntry* pSpec = GetSpec();
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ELSEWHERE_AFTER_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   return coeff;
+}
+
+Float64 CSpecAgentImp::GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey)
+{
+   GET_IFACE(IMaterials,pMaterial);
+   const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
+
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AFTER_ALL_LOSSES,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
 
-   return coeff*fpy;
+   return coeff;
 }
 
 /////////////////////////////////////////////////////////////////////////////

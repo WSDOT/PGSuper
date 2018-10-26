@@ -436,7 +436,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
          (*pPara) << Bold(_T("1 Loaded Lane - Equation")) << rptNewLine;
          (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
  
-         if ( lldf.connectedAsUnit )
+         if ( lldf.connectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
          {
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
          }
@@ -484,7 +484,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
             (*pPara) << Bold(_T("2+ Loaded Lane: Equation")) << rptNewLine;
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
 
-            if ( lldf.connectedAsUnit )
+            if ( lldf.connectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
             }
@@ -561,7 +561,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       if ( gM1.EqnData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Equations")) << rptNewLine;
-         if ( lldf.connectedAsUnit )
+         if ( lldf.connectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
          {
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
          }
@@ -599,7 +599,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
          if ( gM2.EqnData.bWasUsed )
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Equation")) << rptNewLine;
-            if ( lldf.connectedAsUnit )
+            if ( lldf.connectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
             }
@@ -1107,7 +1107,9 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
          }
       }
 
-      if ( plldf->connectedAsUnit )
+      if ( plldf->connectedAsUnit || 
+           lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion()  // sufficiently connected as unit was removed in LRFD 7th Edition 2014
+         )
       {
          lrfdLldfTypeF* pTypeF = new lrfdLldfTypeF(
                                plldf->gdrNum, // to fix this warning, clean up the LLDF data types

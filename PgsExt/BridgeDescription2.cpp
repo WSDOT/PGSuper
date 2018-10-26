@@ -60,6 +60,9 @@ CBridgeDescription2::CBridgeDescription2()
    m_SlabOffset     = ::ConvertToSysUnits( 10.0, unitMeasure::Inch );
    m_SlabOffsetType = pgsTypes::sotBridge;
 
+   m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
+   m_FilletType = pgsTypes::fttBridge;
+
    m_pGirderLibraryEntry = NULL;
 
    // Set some reasonable defaults
@@ -91,6 +94,9 @@ CBridgeDescription2::CBridgeDescription2(const CBridgeDescription2& rOther)
 
    m_SlabOffset     = ::ConvertToSysUnits( 10.0, unitMeasure::Inch );
    m_SlabOffsetType = pgsTypes::sotBridge;
+
+   m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
+   m_FilletType = pgsTypes::fttBridge;
 
    m_pGirderLibraryEntry = NULL;
 
@@ -179,6 +185,19 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
    {
       if ( !IsEqual(m_SlabOffset,rOther.m_SlabOffset) )
+      {
+         return false;
+      }
+   }
+
+   if ( m_FilletType != rOther.m_FilletType )
+   {
+      return false;
+   }
+
+   if ( m_FilletType == pgsTypes::fttBridge )
+   {
+      if ( !IsEqual(m_Fillet,rOther.m_Fillet) )
       {
          return false;
       }
@@ -409,6 +428,19 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          m_SlabOffset = var.dblVal;
       }
 
+      if ( version > 7 )
+      {
+         var.vt = VT_UI4;
+         hr = pStrLoad->get_Property(_T("FilletType"),&var);
+         m_FilletType = (pgsTypes::FilletType)(var.lVal);
+         if ( m_FilletType == pgsTypes::sotBridge )
+         {
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("Fillet"),&var);
+            m_Fillet = var.dblVal;
+         }
+      }
+
       // Events
       hr = m_TimelineManager.Load(pStrLoad,pProgress);
 
@@ -471,6 +503,13 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       // Load the deck
       hr = m_Deck.Load(pStrLoad,pProgress);
 
+      if (version < 8)
+      {
+         // In version 8 we moved fillet from deck into bridge
+         ATLASSERT(m_FilletType==pgsTypes::fttBridge);
+         m_Fillet = m_Deck.m_LegacyFillet;
+      }
+
       Float64 railing_version;
       hr = pStrLoad->BeginUnit(_T("LeftRailingSystem"));
       pStrLoad->get_Version(&railing_version);
@@ -527,7 +566,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       CopyDown(m_bSameNumberOfGirders, 
                m_bSameGirderName, 
                IsBridgeSpacing(m_GirderSpacingType),
-               m_SlabOffsetType == pgsTypes::sotBridge);
+               m_SlabOffsetType == pgsTypes::sotBridge, m_Fillet==pgsTypes::fttBridge);
    }
    catch (HRESULT)
    {
@@ -542,7 +581,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
-   pStrSave->BeginUnit(_T("BridgeDescription"),7.0);
+   pStrSave->BeginUnit(_T("BridgeDescription"),8.0);
 
    pStrSave->put_Property(_T("GirderFamilyName"),CComVariant(CComBSTR(m_strGirderFamilyName.c_str())));
    pStrSave->put_Property(_T("GirderOrientation"),CComVariant(m_GirderOrientation));
@@ -577,6 +616,12 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
    {
       hr = pStrSave->put_Property(_T("SlabOffset"),CComVariant(m_SlabOffset));
+   }
+
+   hr = pStrSave->put_Property(_T("FilletType"),CComVariant(m_FilletType)); // Added in version 8
+   if ( m_FilletType == pgsTypes::fttBridge )
+   {
+      hr = pStrSave->put_Property(_T("Fillet"),CComVariant(m_Fillet));
    }
    
    m_TimelineManager.Save(pStrSave,pProgress);
@@ -767,6 +812,36 @@ Float64 CBridgeDescription2::GetMinSlabOffset() const
    }
 
    return minSlabOffset;
+}
+
+void CBridgeDescription2::SetFilletType(pgsTypes::FilletType FilletType)
+{
+   m_FilletType = FilletType;
+}
+
+pgsTypes::FilletType CBridgeDescription2::GetFilletType() const
+{
+   return m_FilletType;
+}
+
+void CBridgeDescription2::SetFillet(Float64 Fillet)
+{
+   m_Fillet = Fillet;
+}
+
+Float64 CBridgeDescription2::GetFillet(bool bGetRawValue) const
+{
+   if ( bGetRawValue )
+   {
+      return m_Fillet;
+   }
+
+   if ( m_Deck.DeckType == pgsTypes::sdtNone )
+   {
+      return 0;
+   }
+
+   return m_Fillet;
 }
 
 void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSpanData2* pFirstSpan,const CPierData2* pNextPier,EventIndexType pierErectionEventIdx)
@@ -2059,7 +2134,7 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
          ATLASSERT( 1 <= vTS.size() );
          if ( vTS.size() == 1 || // this is only one temp support in the span
               (tsIdx == 0 && tsData.GetStation() < vTS[1]->GetStation()) || // this is the first temp support and it is still before the second TS
-              (tsIdx == vTS.size()-1 && vTS.back()->GetStation() < tsData.GetStation()) || // this is the last temp support and it is stall after the second to last TS
+              (tsIdx == vTS.size()-1 && vTS[tsIdx-1]->GetStation() < tsData.GetStation()) || // this is the last temp support and it is still after the second to last TS
               (vTS[tsIdx-1]->GetStation() < tsData.GetStation() && tsData.GetStation() < vTS[tsIdx+1]->GetStation()) // the TS is still between the same two TS
               )
          {
@@ -2160,6 +2235,21 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
    // Remove the temporary support from the spliced girders before it is actually gone
    if ( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint )
    {
+      // remove the closure joint from the timeline
+      const CClosureJointData* pClosure = pTS->GetClosureJoint(0);
+      CTimelineManager* pTimelineMgr = GetTimelineManager();
+      if ( pTimelineMgr )
+      {
+         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
+         if ( eventIdx != INVALID_INDEX )
+         {
+            ATLASSERT(pClosure->GetPier() == NULL);
+            ATLASSERT(pClosure->GetTemporarySupport());
+            CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(eventIdx);
+            pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
+         }
+      }
+
       const CSpanData2* pSpan = pTS->GetSpan();
       CGirderGroupData* pGroup = GetGirderGroup(pSpan);
       GirderIndexType nGirders = pGroup->GetGirderCount();
@@ -2419,6 +2509,8 @@ void CBridgeDescription2::SetGirderName(LPCTSTR strName)
       m_strGirderName = strName;
 
       // need to reset prestressing data
+      // need to reset longitudinal reinforcement
+      // need to reset transverse reinforcement
       std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
       std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
       for ( ; grpIter != grpIterEnd; grpIter++ )
@@ -2433,6 +2525,9 @@ void CBridgeDescription2::SetGirderName(LPCTSTR strName)
             {
                CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
                pSegment->Strands.ResetPrestressData();
+
+               pSegment->ShearData = m_pGirderLibraryEntry->GetShearData();
+               pSegment->LongitudinalRebarData.CopyGirderEntryData(*m_pGirderLibraryEntry);
             }
          }
       }
@@ -2446,7 +2541,6 @@ const GirderLibraryEntry* CBridgeDescription2::GetGirderLibraryEntry() const
 
 void CBridgeDescription2::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
 {
-   m_pGirderLibraryEntry = pEntry;
    if ( m_pGirderLibraryEntry != pEntry )
    {
       // girder entry changed...
@@ -2596,6 +2690,9 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    m_SlabOffset               = rOther.m_SlabOffset;
    m_SlabOffsetType           = rOther.m_SlabOffsetType;
 
+   m_Fillet               = rOther.m_Fillet;
+   m_FilletType           = rOther.m_FilletType;
+
    m_bSameGirderName          = rOther.m_bSameGirderName;
    m_strGirderName            = rOther.m_strGirderName;
    m_pGirderLibraryEntry      = rOther.m_pGirderLibraryEntry;
@@ -2682,7 +2779,7 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
       m_GirderGroups.push_back(pNewGroup);
    }
 
-   CopyDown(m_bSameNumberOfGirders,m_bSameGirderName,::IsBridgeSpacing(m_GirderSpacingType),m_SlabOffsetType == pgsTypes::sotBridge); 
+   CopyDown(m_bSameNumberOfGirders,m_bSameGirderName,::IsBridgeSpacing(m_GirderSpacingType),m_SlabOffsetType==pgsTypes::sotBridge,m_Fillet==pgsTypes::fttBridge); 
 
    ASSERT_VALID;
 }
@@ -2895,7 +2992,7 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
    return NULL;
 }
 
-void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset)
+void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bFillet)
 {
    std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
@@ -2928,6 +3025,23 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
          }
       }
    }// group loop
+
+   if(bFillet)
+   {
+      std::vector<CSpanData2*> m_Spans;
+      std::vector<CSpanData2*>::iterator spnIter(m_Spans.begin());
+      std::vector<CSpanData2*>::iterator spnIterEnd(m_Spans.end());
+      for ( ; spnIter != spnIterEnd; spnIter++ )
+      {
+         CSpanData2* pSpan = *spnIter;
+
+         GirderIndexType nGirders = pSpan->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            pSpan->SetFillet(gdrIdx,m_Fillet);
+         }
+      }
+   }
 
    if ( bSpacing )
    {
@@ -3000,7 +3114,6 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
          pSpacing->SetRefGirderOffset(m_RefGirderOffset);
          pSpacing->SetRefGirderOffsetType(m_RefGirderOffsetType);
       }
-      
    }
 
    ASSERT_VALID;

@@ -47,4 +47,6 @@ protected:
    afx_msg void OnHelp();
 
 	DECLARE_MESSAGE_MAP()
+public:
+   afx_msg void OnCbnSelchangeHaunchCompCb();
 };

@@ -33,6 +33,7 @@
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ClosureJointData.h>
@@ -183,6 +184,7 @@ BEGIN_MESSAGE_MAP(CClosureJointGeometryPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_CONNECTION_TYPE,        OnConnectionTypeChanged)
    ON_CBN_SELCHANGE(IDC_EVENT,                  OnInstallationStageChanged)
    ON_CBN_DROPDOWN(IDC_EVENT,                   OnInstallationStageChanging)
+	ON_COMMAND(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -702,4 +704,9 @@ CTimelineManager* CClosureJointGeometryPage::GetTimelineManager()
       pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
    }
    return pTimelineMgr;
+}
+
+void CClosureJointGeometryPage::OnHelp() 
+{
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_bIsPier ? IDH_PIERDETAILS_CONNECTIONS : IDH_TSDETAILS_CONNECTION );
 }

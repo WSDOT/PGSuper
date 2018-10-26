@@ -27,6 +27,8 @@
 #include "PGSuperAppPlugin\resource.h"
 #include "ActivityGrid.h"
 
+#include <IFace\DocumentType.h>
+
 #include <PgsExt\TimelineEvent.h>
 #include "TimelineEventDlg.h"
 #include "ConstructSegmentsDlg.h"
@@ -77,8 +79,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CActivityGrid message handlers
 
-void CActivityGrid::CustomInit()
+void CActivityGrid::CustomInit(BOOL bReadOnly)
 {
+   m_bReadOnly = bReadOnly;
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
@@ -144,6 +147,10 @@ void CActivityGrid::CustomInit()
 
 void CActivityGrid::Refresh()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
+
    CTimelineEventDlg* pParent = (CTimelineEventDlg*)GetParent();
 
    if ( 0 < GetRowCount() )
@@ -153,7 +160,14 @@ void CActivityGrid::Refresh()
 
    if ( pParent->m_pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
    {
-      AddActivity(_T("Construct Segments"),CONSTRUCT_SEGMENTS);
+      if ( pDocType->IsPGSuperDocument() )
+      {
+         AddActivity(_T("Construct Girders"),CONSTRUCT_SEGMENTS);
+      }
+      else
+      {
+         AddActivity(_T("Construct Segments"),CONSTRUCT_SEGMENTS);
+      }
    }
 
    if ( pParent->m_pTimelineEvent->GetErectPiersActivity().IsEnabled() )
@@ -168,7 +182,14 @@ void CActivityGrid::Refresh()
 
    if ( pParent->m_pTimelineEvent->GetErectSegmentsActivity().IsEnabled() )
    {
-      AddActivity(_T("Erect Segments"),ERECT_SEGMENTS);
+      if ( pDocType->IsPGSuperDocument() )
+      {
+         AddActivity(_T("Erect Girders"),ERECT_SEGMENTS);
+      }
+      else
+      {
+         AddActivity(_T("Erect Segments"),ERECT_SEGMENTS);
+      }
    }
 
    if ( pParent->m_pTimelineEvent->GetStressTendonActivity().IsEnabled() )
@@ -212,6 +233,9 @@ void CActivityGrid::AddActivity(LPCTSTR strName,int activityKey)
          .SetVerticalAlignment(DT_VCENTER)
          .SetControl(GX_IDS_CTRL_STATIC)
 			.SetValue(strName)
+         .SetEnabled(m_bReadOnly ? FALSE : TRUE)
+         .SetInterior(m_bReadOnly ? ::GetSysColor(COLOR_BTNFACE): ::GetSysColor(COLOR_WINDOW) )
+         .SetTextColor(m_bReadOnly ? ::GetSysColor(COLOR_GRAYTEXT) : ::GetSysColor(COLOR_WINDOWTEXT))
 		);
 
 	SetStyleRange(CGXRange(row,2), CGXStyle()
@@ -237,7 +261,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    GetStyleRowCol(nRow,nCol,style);
    if ( (int)style.GetItemDataPtr() == CONSTRUCT_SEGMENTS )
    {
-      CConstructSegmentsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
+      CConstructSegmentsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
@@ -245,7 +269,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == ERECT_PIERS )
    {
-      CErectPiersDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
+      CErectPiersDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
@@ -253,7 +277,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == ERECT_SEGMENTS )
    {
-      CErectSegmentsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
+      CErectSegmentsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
@@ -261,7 +285,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == STRESS_TENDONS )
    {
-      CStressTendonDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
+      CStressTendonDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
@@ -269,7 +293,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == REMOVE_TS )
    {
-      CRemoveTempSupportsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
+      CRemoveTempSupportsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
@@ -277,7 +301,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == CAST_CLOSURE_JOINTS )
    {
-      CCastClosureJointDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
+      CCastClosureJointDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
@@ -285,7 +309,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == CAST_DECK )
    {
-      CCastDeckDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
+      CCastDeckDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
@@ -293,7 +317,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == APPLY_LOADS )
    {
-      CApplyLoadsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
+      CApplyLoadsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);

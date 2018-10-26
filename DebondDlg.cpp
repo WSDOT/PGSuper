@@ -157,6 +157,8 @@ BOOL CGirderDescDebondPage::OnSetActive()
    GetDlgItem(IDC_NOTE2)->SetWindowText(note);
    GetDlgItem(IDC_NOTE)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
 
+   m_nHelpID = bCanDebond ? IDH_GIRDERDETAILS_DEBOND : IDH_GIRDERDETAILS_STRAND_EXTENSIONS;
+
    StrandIndexType nStrands = pParent->GetStraightStrandCount();
    ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
    ReconcileDebonding(strtvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight)); 
@@ -585,7 +587,7 @@ void CGirderDescDebondPage::OnSymmetricDebond()
 
 void CGirderDescDebondPage::OnHelp() 
 {
-	EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_DEBOND );
+	EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_nHelpID );
 }
 
 LPCTSTR CGirderDescDebondPage::GetGirderName()

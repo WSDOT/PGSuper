@@ -145,6 +145,7 @@ BEGIN_MESSAGE_MAP(CServerDefinitionDlg, CDialog)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_TEST_SERVER, &CServerDefinitionDlg::OnBnClickedTestServer)
    ON_CBN_SELCHANGE(IDC_SERVER_TYPE, &CServerDefinitionDlg::OnCbnSelchangeServerType)
+   ON_BN_CLICKED(ID_HELP, &CServerDefinitionDlg::OnHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -152,10 +153,6 @@ END_MESSAGE_MAP()
 
 BOOL CServerDefinitionDlg::OnInitDialog() 
 {
-   CString strText;
-   strText.Format(_T("%s Configuration Server Definition"),AfxGetApp()->m_pszProfileName);
-   SetWindowText(strText);
-
    CComboBox* ptype_ctrl = (CComboBox*)GetDlgItem(IDC_SERVER_TYPE);
    ASSERT(ptype_ctrl!=0);
    int idx = ptype_ctrl->AddString(_T("Internet FTP Server"));
@@ -272,4 +269,9 @@ void CServerDefinitionDlg::OnCbnSelchangeServerType()
    SharedResourceType type = (SharedResourceType)(ptype_ctrl->GetItemData(idx));
 
    ConfigureControls(type);
+}
+
+void CServerDefinitionDlg::OnHelp()
+{
+   EAFHelp( AfxGetApp()->m_pszProfileName, IDH_CONFIGURATION_SERVER_DEFINITION );
 }

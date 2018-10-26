@@ -184,6 +184,8 @@ void CSpanGirderLayoutPage::Init(CSpanDetailsDlg* pParent)
       m_CacheRefGirderOffsetType[end] = m_RefGirderOffsetType[end];
 
       m_GirderSpacingCache[end] = *pSpacing;
+      m_GirderSpacingCache[end].SetPier(NULL);
+      m_GirderSpacingCache[end].SetTemporarySupport(NULL);
 
       m_SpacingGrid[end].InitializeGridData( pSpacing,
                                              pParent->m_pGirderGroup,
@@ -304,9 +306,13 @@ void CSpanGirderLayoutPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult)
    else
    {
 	   if ( pNMUpDown->iDelta < 0 )
+      {
          RemoveGirders(GirderIndexType(-pNMUpDown->iDelta));
+      }
       else
+      {
          AddGirders(GirderIndexType(pNMUpDown->iDelta));
+      }
    }
 
    // Update the girder spacing cache so that it is consistent with the current
@@ -314,6 +320,11 @@ void CSpanGirderLayoutPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult)
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
    m_GirderSpacingCache[pgsTypes::metStart] = *(pParent->m_pGirderGroup->GetPier(pgsTypes::metStart)->GetGirderSpacing(pgsTypes::Ahead));
    m_GirderSpacingCache[pgsTypes::metEnd]   = *(pParent->m_pGirderGroup->GetPier(pgsTypes::metEnd  )->GetGirderSpacing(pgsTypes::Back ));
+
+   m_GirderSpacingCache[pgsTypes::metStart].SetPier(NULL);
+   m_GirderSpacingCache[pgsTypes::metStart].SetTemporarySupport(NULL);
+   m_GirderSpacingCache[pgsTypes::metEnd].SetPier(NULL);
+   m_GirderSpacingCache[pgsTypes::metEnd].SetTemporarySupport(NULL);
 
    FillRefGirderComboBox(pgsTypes::metStart);
    FillRefGirderComboBox(pgsTypes::metEnd);
@@ -574,6 +585,8 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
 
          CGirderSpacing2* pGirderSpacing = pParent->m_pSpanData->GetPier(end)->GetGirderSpacing(face);
          m_GirderSpacingCache[end] = *pGirderSpacing; // update the cache before changing values
+         m_GirderSpacingCache[end].SetPier(NULL);
+         m_GirderSpacingCache[end].SetTemporarySupport(NULL);
 
          GroupIndexType nSpacingGroups = pGirderSpacing->GetSpacingGroupCount();
          for ( GroupIndexType spaIdx = 0; spaIdx < nSpacingGroups;spaIdx++ )

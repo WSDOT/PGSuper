@@ -248,23 +248,46 @@ BOOL CPierLayoutPage::OnInitDialog()
 void CPierLayoutPage::UpdateConcreteTypeLabel()
 {
    CString strLabel;
-   switch( m_pPier->GetConcrete().Type )
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {  
+      switch( m_pPier->GetConcrete().Type )
+      {
+      case pgsTypes::Normal:
+         strLabel = _T("Normal Weight Concrete");
+         break;
+
+      case pgsTypes::AllLightweight:
+         strLabel = _T("All Lightweight Concrete");
+         break;
+
+      case pgsTypes::SandLightweight:
+         strLabel = _T("Sand Lightweight Concrete");
+         break;
+
+      default:
+         ATLASSERT(false); // should never get here
+         strLabel = _T("Concrete Type Label Error");
+      }
+   }
+   else
    {
-   case pgsTypes::Normal:
-      strLabel = _T("Normal Weight Concrete");
-      break;
+      // LRFD 2016 and later there is only normal and lightweight concrete. We
+      //use the SandLightweight enum to mean "lightweight"
+      ATLASSERT( m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight );
+      switch( m_pPier->GetConcrete().Type )
+      {
+      case pgsTypes::Normal:
+         strLabel = _T("Normal Weight Concrete");
+         break;
 
-   case pgsTypes::AllLightweight:
-      strLabel = _T("All Lightweight Concrete");
-      break;
+      case pgsTypes::SandLightweight:
+         strLabel = _T("Lightweight Concrete");
+         break;
 
-   case pgsTypes::SandLightweight:
-      strLabel = _T("Sand Lightweight Concrete");
-      break;
-
-   default:
-      ATLASSERT(false); // should never get here
-      strLabel = _T("Concrete Type Label Error");
+      default:
+         ATLASSERT(false); // should never get here
+         strLabel = _T("Concrete Type Label Error");
+      }
    }
 
    GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText(strLabel);

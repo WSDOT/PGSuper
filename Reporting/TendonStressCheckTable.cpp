@@ -28,6 +28,7 @@
 #include <PgsExt\CapacityToDemand.h>
 
 #include <IFace\Bridge.h>
+#include <IFace\Allowables.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -77,6 +78,8 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    }
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
+
+   GET_IFACE2(pBroker,IAllowableTendonStress,pAllowable);
    
    rptCapacityToDemand cap_demand;
 
@@ -87,6 +90,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
    pPara = new rptParagraph;
    *pChapter << pPara;
+   *pPara << _T("5.9.3 - Stress Limitations for Prestressing Tendons") << rptNewLine;
 
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
@@ -103,16 +107,23 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       (*p_table)(0,0) << _T("");
       if ( pTendonArtifact->IsAtJackingApplicable() )
       {
-        (*p_table)(1,0) << _T("At Jacking (") << RPT_FPJ << _T(")");
+         Float64 x = pAllowable->GetAllowableCoefficientAtJacking(girderKey);
+        (*p_table)(1,0) << _T("At Jacking, ") << RPT_FPJ << _T(" (") << x << RPT_FPU << _T(")");
       }
       else
       {
-        (*p_table)(1,0) << _T("Prior to seating - short-term ") << RPT_FPBT << _T(" may be allowed");
+         Float64 x = pAllowable->GetAllowableCoefficientPriorToSeating(girderKey);
+        (*p_table)(1,0) << _T("Prior to seating - short-term ") << RPT_FPBT << _T(" may be allowed. (") << x << RPT_FPY << _T(")");
       }
 
-      (*p_table)(2,0) << _T("At anchorages and couplers immediately after anchor set");
-      (*p_table)(3,0) << _T("Elsewhere along length of member away from anchorages and couplers immediately after anchor set");
-      (*p_table)(4,0) << _T("At service limit state after losses (") << RPT_FPE << _T(")");
+      Float64 x = pAllowable->GetAllowableCoefficientAfterAnchorSetAtAnchorage(girderKey);
+      (*p_table)(2,0) << _T("At anchorages and couplers immediately after anchor set. (") << x << RPT_FPU << _T(")");
+
+      x = pAllowable->GetAllowableCoefficientAfterAnchorSet(girderKey);
+      (*p_table)(3,0) << _T("Elsewhere along length of member away from anchorages and couplers immediately after anchor set. (") << x << RPT_FPU << _T(")");
+
+      x = pAllowable->GetAllowableCoefficientAfterLosses(girderKey);
+      (*p_table)(4,0) << _T("At service limit state after losses, ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
    
       (*p_table)(0,1) << COLHDR(_T("Allowable") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,2) << COLHDR(_T("Tendon") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

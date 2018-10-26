@@ -29,6 +29,7 @@ IMPLEMENT_DYNCREATE(CDeflectionHistoryGraphController,CLocationGraphController)
 
 CDeflectionHistoryGraphController::CDeflectionHistoryGraphController()
 {
+   AlwaysSelect(FALSE); // we don't want to start off with the location selected. If AutoCalc mode is on, this will cause a full time-step analysis. Let the user pick the location before analysis
 }
 
 BEGIN_MESSAGE_MAP(CDeflectionHistoryGraphController, CLocationGraphController)

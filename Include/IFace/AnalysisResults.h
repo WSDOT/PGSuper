@@ -103,7 +103,8 @@ typedef struct SlabLoad
    Float64 Loc;          // measured from left girder end. Location where this load is defined
    Float64 MainSlabLoad; // if used with SIP, only the cast portion of the slab
    Float64 PanelLoad;    // Weight of SIP deck panels
-   Float64 PadLoad;
+   Float64 PadLoad;      // Haunch load. Zero if negative depth
+   Float64 HaunchDepth;  // Assumed haunch depth. Will be negative if geometry makes is so
 } SlabLoad;
 
 typedef struct ShearKeyLoad
@@ -199,6 +200,10 @@ interface IProductLoads : IUnknown
    // slab loads
    virtual void GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::vector<SlabLoad>* pSlabLoads)=0;
 
+   // Returns the difference in moment between the slab moment for the current value of slab offset
+   // and the passed design input values. Adjustment is positive if the input slab offset is greater than the current value
+   virtual void GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 Fillet, std::vector<SlabLoad>* pSlabLoads)=0;
+
    // point loads due to portion of slab out on cantilever. 
    // + force is up, + moment is ccw.
    virtual void GetCantileverSlabLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2)=0;
@@ -288,27 +293,27 @@ interface IProductForces : IUnknown
 
    // returns the difference in moment between the slab moment for the current value of slab offset
    // and the input value. Adjustment is positive if the input slab offset is greater than the current value
-   virtual Float64 GetDesignSlabMomentAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetDesignSlabMomentAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi) = 0;
 
    // returns the difference in deflection between the slab deflection for the current value of slab offset
    // and the input value. Adjustment is positive if the input slab offset is greater than the current value
-   virtual Float64 GetDesignSlabDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetDesignSlabDeflectionAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi) = 0;
 
    // returns the difference in top and bottom girder stress between the stresses caused by the current slab 
    // and the input value.
-   virtual void GetDesignSlabStressAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot) = 0;
+   virtual void GetDesignSlabStressAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot) = 0;
 
    // returns the difference in moment between the slab pad moment for the current value of slab offset
    // and the input value. Adjustment is positive if the input slab offset is greater than the current value
-   virtual Float64 GetDesignSlabPadMomentAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetDesignSlabPadMomentAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi) = 0;
 
    // returns the difference in deflection between the slab pad deflection for the current value of slab offset
    // and the input value. Adjustment is positive if the input slab offset is greater than the current value
-   virtual Float64 GetDesignSlabPadDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetDesignSlabPadDeflectionAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi) = 0;
 
    // returns the difference in top and bottom girder stress between the stresses caused by the current slab pad
    // and the input value.
-   virtual void GetDesignSlabPadStressAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot) = 0;
+   virtual void GetDesignSlabPadStressAdjustment(const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot) = 0;
 
    virtual void DumpAnalysisModels(GirderIndexType gdrIdx) = 0;
 
@@ -446,7 +451,7 @@ interface ILimitStateForces : IUnknown
    virtual void GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) = 0;
    virtual void GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,pgsTypes::StressLocation stressLocation,Float64* pMin,Float64* pMax) = 0;
 
-   virtual void GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) = 0;
 
    virtual void GetConcurrentShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) = 0;
    virtual void GetViMmax(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pVi,Float64* pMmax) = 0;

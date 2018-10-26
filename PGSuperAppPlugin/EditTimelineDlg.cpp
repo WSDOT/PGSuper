@@ -27,6 +27,7 @@
 #include "EditTimelineDlg.h"
 #include "TimelineEventDlg.h"
 #include <EAF\EAFDocument.h>
+#include <IFace\Project.h>
 
 
 // CEditTimelineDlg dialog
@@ -73,12 +74,26 @@ END_MESSAGE_MAP()
 
 BOOL CEditTimelineDlg::OnInitDialog()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   BOOL bReadOnly = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? FALSE : TRUE);
+
    m_Grid.SubclassDlgItem(IDC_GRID, this);
-   m_Grid.CustomInit();
+   m_Grid.CustomInit(bReadOnly);
    
    CDialog::OnInitDialog();
 
    m_Grid.Refresh();
+
+   if ( bReadOnly )
+   {
+      GetDlgItem(IDC_ADD)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_REMOVE)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -86,7 +101,7 @@ BOOL CEditTimelineDlg::OnInitDialog()
 
 void CEditTimelineDlg::OnAddEvent()
 {
-   CTimelineEventDlg dlg(m_TimelineManager,INVALID_INDEX,TRUE);
+   CTimelineEventDlg dlg(m_TimelineManager,INVALID_INDEX/*new event*/,TRUE/*want to edit the details*/);
    if ( dlg.DoModal() == IDOK )
    {
       bool bDone = false;
@@ -104,9 +119,13 @@ void CEditTimelineDlg::OnAddEvent()
          {
             CString strProblem;
             if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
+            {
                strProblem = _T("This event begins before the activities in the previous event have completed.");
+            }
             else
+            {
                strProblem = _T("The activities in this event end after the next event begins.");
+            }
 
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 

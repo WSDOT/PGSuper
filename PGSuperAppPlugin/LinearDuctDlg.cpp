@@ -16,8 +16,8 @@ void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeomet
    if ( pDX->m_bSaveAndValidate )
    {
       DDX_CBEnum(pDX,IDC_LOCATION,measurementType);
-      ductGeometry.SetMeasurementType(measurementType);
       grid.GetData(ductGeometry);
+      ductGeometry.SetMeasurementType(measurementType);
    }
    else
    {

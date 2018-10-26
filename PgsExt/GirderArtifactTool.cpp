@@ -684,6 +684,11 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       rFailures.push_back(_T("Bottom flange clearance check failed"));
    }
 
+   if ( !pConstruct->HaunchGeometryPassed() )
+   {
+      rFailures.push_back(_T("Haunch geometry compliance check failed"));
+   }
+
    // Live Load Deflection
    SpanIndexType startSpanIdx, endSpanIdx;
    pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);

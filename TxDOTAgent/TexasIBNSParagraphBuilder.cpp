@@ -233,8 +233,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
 
                (*p_table)(row,0) << ucomp.SetValue(Hg + rowdata.m_Elevation);
 
-               StrandIndexType nsrow = m_pStrandGeometry->GetNumStrandInRow(poi,nrow,pgsTypes::Straight);
-               (*p_table)(row,1) << nsrow;
+               (*p_table)(row,1) << rowdata.m_NumTotalStrands;;
 
                Int16 ndbr = CountDebondsInRow(rowdata);
                (*p_table)(row,2) << ndbr;

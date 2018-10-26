@@ -45,6 +45,9 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ClosureJointData.h>
 
+#include <Math\MathUtils.h>
+
+
 #if defined _DEBUG
 #define VERIFY_NOT_TIME_STEP_ANALYSIS VerifyAnalysisType()
 #else
@@ -171,7 +174,6 @@ pgsTypes::LiveLoadType GetLiveLoadTypeFromModelType(LiveLoadModelType llmtype)
    return pgsTypes::lltDesign;
 }
 
-
 CGirderModelManager::CGirderModelManager(SHARED_LOGFILE lf,IBroker* pBroker,StatusGroupIDType statusGroupID) :
 LOGFILE(lf),
 m_pBroker(pBroker),
@@ -188,7 +190,7 @@ m_StatusGroupID(statusGroupID)
    ATLASSERT( SUCCEEDED(hr) );
 
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
+   m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError)); // informational with help for girder end offset error
    m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
    
    m_NextPoi = 0;
@@ -4526,17 +4528,30 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
    pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMinimize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    // the limit state contains girder deflections based on the full weight of the girder being applied at erection.
+   // (the limit state contains the load "Girder", not "Girder_Increment". We do this so the limit state definitions are consistent for all cases. The down side is that
+   // we have to make an adjustment for deflections)
    // this is not the correct deflection... the correct deflection is the deflection at storage plus the incremental
-   // deflection due to a change in support locations.
-   // get the bad girder deflection and the incremental deflection we want
+   // deflection due to a change in support locations for the erected girder segment.
    IntervalIndexType storageIntervalIdx  = pIntervals->GetFirstStorageInterval(vPoi.front().GetSegmentKey());
    IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
-   std::vector<Float64> badGirderDeflection = GetDeflection(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative); // get all of the bad deflection
-   std::vector<Float64> incGirderDeflection = GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,vPoi,bat,rtIncremental); // get the deflection increment
-   GET_IFACE(IProductForces2,pProductForces);
-   std::vector<Float64> stgGirderDeflection = pProductForces->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative,false); // get the deflection at storage
 
+   // Get the "bad" deflection we want to remove from the limit state combination
+   std::vector<Float64> badGirderDeflection = GetDeflection(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative);
+
+   // Get the deflection during storage
+   GET_IFACE(IProductForces2,pProductForces);
+   std::vector<Float64> stgGirderDeflection = pProductForces->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative,false);
+
+   // Get the sum of all the incremental deflections from erection to the interval we are interested in
+   std::vector<Float64> incGirderDeflection;
+   incGirderDeflection.resize(vPoi.size(),0.0);
+   for ( IntervalIndexType iIdx = erectionIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+   {
+      std::vector<Float64> incDefl = GetDeflection(iIdx,pgsTypes::pftGirder,vPoi,bat,rtIncremental);
+      std::transform(incDefl.begin(),incDefl.end(),incGirderDeflection.begin(),incGirderDeflection.begin(),std::plus<Float64>());
+   }
+   
    GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 DCmin = pLoadFactors->DCmin[limitState];
@@ -4559,13 +4574,13 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
       Float64 incDy = incGirderDeflection[idx];
       Float64 stgDy = stgGirderDeflection[idx];
       
-      DyMinLeft -= DCmin*badDy;
-      DyMinLeft += DCmin*incDy;
-      DyMinLeft += DCmin*stgDy;
+      DyMinLeft -= DCmin*badDy; // remove the "bad" deflection
+      DyMinLeft += DCmin*stgDy; // add the deflection at storage
+      DyMinLeft += DCmin*incDy; // add the deflection increments
       
       DyMaxLeft -= DCmax*badDy;
-      DyMaxLeft += DCmax*incDy;
       DyMaxLeft += DCmax*stgDy;
+      DyMaxLeft += DCmax*incDy;
 
       pMin->push_back( DyMinLeft );
       pMax->push_back( DyMaxLeft );
@@ -4617,16 +4632,29 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
    pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMinimize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    // the limit state contains girder rotations based on the full weight of the girder being applied at erection.
+   // (the limit state contains the load "Girder", not "Girder_Increment". We do this so the limit state definitions are consistent for all cases. The down side is that
+   // we have to make an adjustment for rotation)
    // this is not the correct rotation... the correct rotation is the rotation at storage plus the incremental
-   // rotation due to a change in support locations.
-   // get the bad girder rotation and the incremental rotation we want
+   // rotation due to a change in support locations for the erected girder segment.
    IntervalIndexType storageIntervalIdx  = pIntervals->GetFirstStorageInterval(vPoi.front().GetSegmentKey());
    IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
-   std::vector<Float64> badGirderRotation = GetRotation(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative); // get all of the bad Rotation
-   std::vector<Float64> incGirderRotation = GetRotation(erectionIntervalIdx,pgsTypes::pftGirder,vPoi,bat,rtIncremental); // get the Rotation increment
+
+   // Get the "bad" rotation we want to remove from the limit state combination
+   std::vector<Float64> badGirderRotation = GetRotation(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative);
+
+   // Get the rotation during storage
    GET_IFACE(IProductForces2,pProductForces);
    std::vector<Float64> stgGirderRotation = pProductForces->GetRotation(storageIntervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative,false); // get the Rotation at storage
+
+   // Get the sum of all the incremental deflections from erection to the interval we are interested in
+   std::vector<Float64> incGirderRotation;
+   incGirderRotation.resize(vPoi.size(),0.0);
+   for ( IntervalIndexType iIdx = erectionIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+   {
+      std::vector<Float64> incRotation = GetRotation(iIdx,pgsTypes::pftGirder,vPoi,bat,rtIncremental);
+      std::transform(incRotation.begin(),incRotation.end(),incGirderRotation.begin(),incGirderRotation.begin(),std::plus<Float64>());
+   }
 
    GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
@@ -4646,9 +4674,9 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
       Float64 RzMinLeft, RzMinRight;
       minResults->GetResult(idx,&RzMinLeft,NULL,&RzMinRight,NULL);
 
-      Float64 badRz = badGirderRotation[idx];
-      Float64 incRz = incGirderRotation[idx];
-      Float64 stgRz = stgGirderRotation[idx];
+      Float64 badRz = badGirderRotation[idx]; // remove the "bad" rotation
+      Float64 stgRz = stgGirderRotation[idx]; // add the rotation at storage
+      Float64 incRz = incGirderRotation[idx]; // add the rotation increments
       
       RzMinLeft -= DCmin*badRz;
       RzMinLeft += DCmin*incRz;
@@ -7235,6 +7263,10 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
 
          case pgsTypes::bctIntegralAfterDeck:
          case pgsTypes::bctIntegralBeforeDeck:
+         case pgsTypes::bctIntegralAfterDeckHingeBack:
+         case pgsTypes::bctIntegralBeforeDeckHingeBack:
+         case pgsTypes::bctIntegralAfterDeckHingeAhead:
+         case pgsTypes::bctIntegralBeforeDeckHingeAhead:
             bReleaseTop = VARIANT_FALSE;
             break;
 
@@ -7264,9 +7296,56 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
 
       // "per girder" is based on the average number of girders framing
       // into the pier
-      GirderIndexType nGirdersBack = pBridge->GetGirderCount(backGroupIdx);
-      GirderIndexType nGirdersAhead = pBridge->GetGirderCount(aheadGroupIdx);
-      Float64 nGirders = (nGirdersBack + nGirdersAhead)/2.0;
+      Float64 nAvgGirders;
+      IndexType nGirders;
+      CGirderKey girderKey;
+      if ( backGroupIdx == INVALID_INDEX )
+      {
+         nGirders = pBridge->GetGirderCount(aheadGroupIdx);
+         nAvgGirders = (Float64)nGirders;
+
+         if ( gdrLineIdx <= nGirders )
+         {
+            girderKey.groupIndex = aheadGroupIdx;
+            girderKey.girderIndex = gdrLineIdx;
+         }
+         else
+         {
+            girderKey = CGirderKey(aheadGroupIdx,nGirders-1);
+         }
+      }
+      else if ( aheadGroupIdx == INVALID_INDEX )
+      {
+         nGirders = pBridge->GetGirderCount(backGroupIdx);
+         nAvgGirders = (Float64)nGirders;
+
+         if ( gdrLineIdx <= nGirders )
+         {
+            girderKey.groupIndex = backGroupIdx;
+            girderKey.girderIndex = gdrLineIdx;
+         }
+         else
+         {
+            girderKey = CGirderKey(backGroupIdx,nGirders-1);
+         }
+      }
+      else
+      {
+         GirderIndexType nGirdersBack = pBridge->GetGirderCount(backGroupIdx);
+         GirderIndexType nGirdersAhead = pBridge->GetGirderCount(aheadGroupIdx);
+         nAvgGirders = (nGirdersBack + nGirdersAhead)/2.0;
+         nGirders = Min(nGirdersBack,nGirdersAhead);
+
+         if ( gdrLineIdx <= nGirders )
+         {
+            girderKey.groupIndex = backGroupIdx;
+            girderKey.girderIndex = gdrLineIdx;
+         }
+         else
+         {
+            girderKey = CGirderKey(MinIndex(nGirdersBack,nGirdersAhead) == 0 ? backGroupIdx : aheadGroupIdx,Min(nGirdersBack,nGirdersAhead)-1);
+         }
+      }
 
       // Total EA and EI is the sum of EA and EI for each column
       // Also, use the average column height as the height of the pier
@@ -7285,19 +7364,16 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
       }
 
       Float64 H = sumH/nColumns; // average height
-      Float64 A = sumA/nGirders; // area of pier columns per girder
-      Float64 I = sumI/nGirders; // moment of inertia of pier columns per girder
+      Float64 A = sumA/nAvgGirders; // area of pier columns per girder
+      Float64 I = sumI/nAvgGirders; // moment of inertia of pier columns per girder
 
+      Float64 Hdia1,Hdia2,Wdia;
+      pBridge->GetPierDiaphragmSize(pierIdx,pgsTypes::Back,&Wdia,&Hdia1);
+      pBridge->GetPierDiaphragmSize(pierIdx,pgsTypes::Ahead,&Wdia,&Hdia2);
+      Float64 superstructure_depth = Max(Hdia1,Hdia2);
+      H += superstructure_depth/2; // account for the depth of the cross beam... assume CG to be at mid-depth
       objSupport->put_Length(H);
 
-#pragma Reminder("UPDATE: Column height should be full depth of column plus superstructure depth")
-      // Right now we are just setting the column height to the height based on base of column
-      // to bottom of cross beam. Transversely, the "flexible" length goes all the way to
-      // the mid-depth of the superstructure.
-      //
-      // We could get even more fancy with the LBAM and use the column EA/EI over H and
-      // compute EA/EI for the cross beam and model the LBAM support with two segments.
-      
       GET_IFACE(IMaterials,pMaterials);
       Float64 E = pMaterials->GetPierEc28(pierIdx);
 
@@ -7317,16 +7393,6 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
       // starts when the first segment is erected... any stage before the first segment erection stage 
       // is invalid in the LBAM.
       GET_IFACE(IIntervals,pIntervals);
-      CGirderKey girderKey;
-      if ( gdrLineIdx <= Min(nGirdersBack,nGirdersAhead) )
-      {
-         girderKey.groupIndex = backGroupIdx;
-         girderKey.girderIndex = gdrLineIdx;
-      }
-      else
-      {
-         girderKey = CGirderKey(MinIndex(nGirdersBack,nGirdersAhead) == 0 ? backGroupIdx : aheadGroupIdx,Min(nGirdersBack,nGirdersAhead)-1);
-      }
       IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
 #if defined _DEBUG
       IntervalIndexType erectPierIntervalIdx = pIntervals->GetErectPierInterval(pierIdx);
@@ -13881,10 +13947,8 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
 
       // If cantilevers are not explicitly  modeled, point loads at start and end to account 
       // for the load in the overhang/cantilever. These are mostly used to make sure
-      // the dead load reactions are correct. Moments are not modeled if the length of the
-      // cantilever is less than the depth of the girder (it is considered a deep beam)
+      // the dead load reactions are correct. 
       Float64 Pstart(0.0), Pend(0.0); // point load
-      Float64 Mstart(0.0), Mend(0.0); // moment
 
       Float64 start[3],  end[3]; // start and end of load on the 3 superstructure members modeling this segment
       Float64 wStart[3], wEnd[3]; // the start/end loads
@@ -13932,7 +13996,6 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
          else
          {
             Pstart = 0.5*(load.wStart + end_load)*(end_loc - start_loc);
-            Mstart = (start_offset < HgStart) ? 0.0 : -Pstart*(end_loc - start_loc)/2;
 
             start[0]  = 0;
             end[0]    = start_offset;
@@ -13977,7 +14040,6 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
          else
          {
             Pend = 0.5*(start_load + load.wEnd)*(end_loc - start_loc);
-            Mend = (end_offset < HgEnd) ? 0.0 : Pend*(end_loc - start_loc)/2;
 
             start[2]  = 0;
             end[2]    = end_offset;
@@ -14037,32 +14099,6 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
 
       MemberIDType mainSSMbrID = IsZero(start_offset) ? ssmbrID : ssmbrID+1;
       ApplyOverhangPointLoads(segmentKey,analysisType,bstrStage,bstrLoadGroup,mainSSMbrID,Pstart,start[1],Pend,end[1],pointLoads);
-
-      if ( !IsZero(Mstart) )
-      {
-         CComPtr<IPointLoad> load;
-         load.CoCreateInstance(CLSID_PointLoad);
-         load->put_MemberType(mtSuperstructureMember);
-         load->put_MemberID(mainSSMbrID);
-         load->put_Location(0.0);
-         load->put_Mz(Mstart);
-
-         CComPtr<IPointLoadItem> loadItem;
-         pointLoads->Add(bstrStage,bstrLoadGroup,load,&loadItem);
-      }
-
-      if ( !IsZero(Mend) )
-      {
-         CComPtr<IPointLoad> load;
-         load.CoCreateInstance(CLSID_PointLoad);
-         load->put_MemberType(mtSuperstructureMember);
-         load->put_MemberID(mainSSMbrID);
-         load->put_Location(-1.0);
-         load->put_Mz(Mend);
-
-         CComPtr<IPointLoadItem> loadItem;
-         pointLoads->Add(bstrStage,bstrLoadGroup,load,&loadItem);
-      }
    } // next load
 
    // return the ID of the next superstructure member to be loaded
@@ -14109,6 +14145,13 @@ void CGirderModelManager::GetSlabLoad(const CSegmentKey& segmentKey, std::vector
 
 void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::vector<SlabLoad>* pSlabLoads)
 {
+   // not design version - gets A's and fillet from model and condenses duplicate values
+   Float64 dummyAs(0), dummyAe(0), dummyF(0);
+   GetMainSpanSlabLoadEx(segmentKey, true, false, dummyAs, dummyAe, dummyF, pSlabLoads);
+}
+
+void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 dsnAstart, Float64 dsnAend, Float64 dsnFillet,  std::vector<SlabLoad>* pSlabLoads)
+{
    ASSERT_SEGMENT_KEY(segmentKey);
 
    ATLASSERT(pSlabLoads!=0);
@@ -14119,6 +14162,7 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
    GET_IFACE(IMaterials,pMaterial);
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(ISectionProperties,pSectProp);
+   GET_IFACE( ISpecification, pSpec );
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
@@ -14126,7 +14170,6 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
    GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
    GirderIndexType gdrIdx = Min(segmentKey.girderIndex,nGirders-1);
 
-   // get slab fillet (there should be a better way to do this)
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -14136,8 +14179,6 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
    {
       return;
    }
-
-   Float64 fillet = pDeck->Fillet;
 
    Float64 panel_support_width = 0;
    if ( pDeck->DeckType == pgsTypes::sdtCompositeSIP )
@@ -14157,10 +14198,67 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
 
    bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
 
-   // Slab pad load assumes no camber... that is, the top of the girder is flat
-   // This is the worst case loading
+   // Account for girder camber
+   std::auto_ptr<mathFunction2d> camberShape;
+
+   if (pgsTypes::hlcAccountForCamber == pSpec->GetHaunchLoadComputationType())
+   {
+#pragma Reminder("UPDATE: assuming precast girder bridge - Note that time-dependent analyses only use the zero camber approach below")
+      // Shape of girder is assumed to follow the fillet dimension. Assume parabolic shape with zero at supports and
+      // average end haunch - fillet at mid-girder
+      std::vector<pgsPointOfInterest> vSupPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L | POI_5L | POI_10L) );
+      ATLASSERT(vSupPoi.size()==3); // this haunch shape only for pgsuper-type models
+      const pgsPointOfInterest& poi_left(vSupPoi.front());
+      const pgsPointOfInterest& poi_right(vSupPoi.back());
+
+      Float64 fillet;
+      Float64 Havg;
+      if (useDesignValues)
+      {
+         fillet = dsnFillet;
+
+         Float64 cast_depth             = pBridge->GetCastSlabDepth(poi_left);
+         Float64 Hlft = dsnAstart - cast_depth;
+         cast_depth             = pBridge->GetCastSlabDepth(poi_right);
+         Float64 Hrgt = dsnAend - cast_depth;
+
+         Havg = (Hlft + Hrgt)/2.0; // average haunch at ends
+      }
+      else
+      {
+         Float64 top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi_left);
+         Float64 cast_depth             = pBridge->GetCastSlabDepth(poi_left);
+         Float64 Hlft  = top_girder_to_top_slab - cast_depth;
+
+         top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi_right);
+         cast_depth             = pBridge->GetCastSlabDepth(poi_right);
+         Float64 Hrgt = top_girder_to_top_slab - cast_depth;
+
+         // Get fillet at mid-span. Big time assumption of PGSuper-type bridge here
+         const pgsPointOfInterest& poi_mid(vSupPoi[1]);
+         CSpanKey spanKey;
+         Float64 Xspan;
+         pPoi->ConvertPoiToSpanPoint(poi_mid,&spanKey,&Xspan);
+
+         fillet = pBridge->GetFillet(spanKey.spanIndex, segmentKey.girderIndex);
+
+         Havg = (Hlft + Hrgt)/2.0;
+      }
+
+      Float64 assummed_excess_camber = Havg - fillet;
+
+      // Create function with parabolic shape
+      camberShape = std::auto_ptr<mathFunction2d>( new mathPolynomial2d (GenerateParabola(poi_left.GetDistFromStart(),poi_right.GetDistFromStart(),assummed_excess_camber)));
+   }
+   else
+   {
+      // Slab pad load assumes no camber... that is, the top of the girder is flat
+      // This is the worst case loading. Return zero for camber shape
+      camberShape =  std::auto_ptr<mathFunction2d>(new ZeroFunction());
+   }
+
    // Increased/Reduced pad depth due to Sag/Crest vertical curves is accounted for
-   bool bKeepLastLoad = false;
+   bool bKeepLast = false;
    CollectionIndexType nPOI = vPoi.size();
    std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
@@ -14171,8 +14269,26 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
 
       const pgsPointOfInterest& poi = *poiIter;
 
-      Float64 top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi);
-      Float64 slab_offset            = pBridge->GetSlabOffset(poi);
+      Float64 top_girder_to_top_slab;
+      Float64 slab_offset;
+      Float64 fillet;
+      if (useDesignValues)
+      {
+         top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi,dsnAstart,dsnAend);
+         slab_offset            = pBridge->GetSlabOffset(poi,dsnAstart,dsnAend);
+         fillet = dsnFillet;
+      }
+      else
+      {
+         top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi);
+         slab_offset            = pBridge->GetSlabOffset(poi);
+
+         CSpanKey spanKey;
+         Float64 Xspan;
+         pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+         fillet = pBridge->GetFillet(spanKey.spanIndex, segmentKey.girderIndex);
+      }
+
       Float64 cast_depth             = pBridge->GetCastSlabDepth(poi);
       Float64 panel_depth            = pBridge->GetPanelDepth(poi);
       Float64 trib_slab_width        = pSectProp->GetTributaryFlangeWidth(poi);
@@ -14298,12 +14414,14 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
       ASSERT( 0 <= wslab );
       ASSERT( 0 <= wslab_panel );
 
+      // Excess camber of girder
+      Float64 camber = camberShape->Evaluate(poi.GetDistFromStart());
+
       // slab pad load
-      Float64 pad_hgt = top_girder_to_top_slab - cast_depth;
-      if ( pad_hgt < 0 )
-      {
-         pad_hgt = 0;
-      }
+      Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth - camber;
+
+      // Don't use negative haunch depth for loading
+      Float64 pad_hgt = real_pad_hgt > 0.0 ? real_pad_hgt : 0.0;
 
       // mating surface
       Float64 mating_surface_width = 0;
@@ -14335,24 +14453,63 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
       sload.MainSlabLoad = -wslab;  // + is upward
       sload.PanelLoad    = -wslab_panel;
       sload.PadLoad      = -wpad;
+      sload.HaunchDepth  = real_pad_hgt;
 
-      if ( pSlabLoads->size() < 2 )
+      if ( !doCondense || pSlabLoads->size() < 2 )
       {
          pSlabLoads->push_back(sload);
       }
       else
       {
-         if ( !bKeepLastLoad && IsEqual(pSlabLoads->back().MainSlabLoad,-wslab) && IsEqual(pSlabLoads->back().PanelLoad,-wslab_panel) && IsEqual(pSlabLoads->back().PadLoad,-wpad) )
+         SlabLoad lastLoad = pSlabLoads->back();
+         if ( IsEqual(lastLoad.MainSlabLoad,sload.MainSlabLoad) && IsEqual(lastLoad.PanelLoad,sload.PanelLoad) && IsEqual(lastLoad.PadLoad,sload.PadLoad) )
          {
-            pSlabLoads->pop_back();
+            if ( !bKeepLast )
+            {
+               pSlabLoads->pop_back();
+            }
+
             pSlabLoads->push_back(sload);
+            bKeepLast = false;
          }
          else
          {
             pSlabLoads->push_back(sload);
-            bKeepLastLoad = !bKeepLastLoad;
+            bKeepLast = true;
          }
       }
+   }
+}
+
+void  CGirderModelManager::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 Fillet, std::vector<SlabLoad>* pSlabLoads)
+{
+   // Subtract slab pad load due to design values from that due to original model.
+   Float64 fdummy(0);
+   std::vector<SlabLoad> originalSlabLoads;
+   GetMainSpanSlabLoadEx(segmentKey, false, false, fdummy, fdummy, fdummy, &originalSlabLoads);
+   GetMainSpanSlabLoadEx(segmentKey, false, true, Astart, Aend, Fillet, pSlabLoads);
+
+   ATLASSERT(originalSlabLoads.size() == pSlabLoads->size());
+
+   std::vector<SlabLoad>::iterator oit = originalSlabLoads.begin();
+   std::vector<SlabLoad>::iterator dit = pSlabLoads->begin();
+   std::vector<SlabLoad>::iterator oitend = originalSlabLoads.end();
+   std::vector<SlabLoad>::iterator ditend = pSlabLoads->end();
+
+   while(oit!=oitend && dit!=ditend)
+   {
+      SlabLoad& dsnSL = *dit;
+      SlabLoad& orgSL = *oit;
+
+      // adjusted load
+      dsnSL.HaunchDepth  = orgSL.HaunchDepth  - dsnSL.HaunchDepth;
+      dsnSL.MainSlabLoad = orgSL.MainSlabLoad - dsnSL.MainSlabLoad;
+      dsnSL.PadLoad      = orgSL.PadLoad      - dsnSL.PadLoad;
+      dsnSL.PanelLoad    = orgSL.PanelLoad    - dsnSL.PanelLoad;
+      ATLASSERT(dsnSL.Loc == orgSL.Loc);
+
+      oit++;
+      dit++;
    }
 }
 

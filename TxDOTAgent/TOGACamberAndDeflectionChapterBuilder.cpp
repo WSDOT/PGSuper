@@ -178,8 +178,16 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    delta_dl_fabr = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_fabr, bat, rtCumulative, false )
                  + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi_fabr, bat, rtCumulative, false );
 
-   delta_ol_orig = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi_orig, bat, rtCumulative, false );
-   delta_ol_fabr = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi_fabr, bat, rtCumulative, false );
+   if ( overlayIntervalIdx == INVALID_INDEX )
+   {
+      delta_ol_orig = 0;
+      delta_ol_fabr = 0;
+   }
+   else
+   {
+      delta_ol_orig = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi_orig, bat, rtCumulative, false );
+      delta_ol_fabr = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi_fabr, bat, rtCumulative, false );
+   }
 
    delta_tb_orig = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi_orig, bat, rtCumulative, false );
    delta_tb_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi_fabr, bat, rtCumulative, false );

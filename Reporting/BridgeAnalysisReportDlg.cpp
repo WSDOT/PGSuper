@@ -71,7 +71,7 @@ END_MESSAGE_MAP()
 
 void CBridgeAnalysisReportDlg::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_BRIDGEANALYSISREPORT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_REPORT );
 }
 
 BOOL CBridgeAnalysisReportDlg::OnInitDialog()

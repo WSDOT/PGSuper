@@ -74,6 +74,11 @@ int CShearSteelGrid::GetColWidth(ROWCOL nCol)
    ROWCOL numCol = GetColCount();
    int parts = 2*numCol + 1;
 
+   if ( IsColHidden(nCol) )
+   {
+      return 0;
+   }
+
    switch (nCol)
    {
    case 0:
@@ -117,9 +122,13 @@ BOOL CShearSteelGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFla
    ROWCOL nrows = GetRowCount();
 
    if (nCol==0 && (nRow!=0 && nRow!=nrows))
+   {
       pdlg->OnEnableDelete(true);
+   }
    else
+   {
       pdlg->OnEnableDelete(false);
+   }
 
    return TRUE;
 }
@@ -144,9 +153,13 @@ void CShearSteelGrid::InsertRow(bool bAppend)
 	// copy the current cell's coordinates
 	CGXRangeList selList;
 	if (CopyRangeList(selList, TRUE))
+   {
 		nRow = selList.GetHead()->top;
+   }
 	else
+   {
       nRow = bAppend ? GetRowCount()+1 : 0;
+   }
 
 	nRow = Max((ROWCOL)1, nRow);
 
@@ -430,7 +443,9 @@ matRebar::Size CShearSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
    CString s2 = s.Right(l-1);
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
+   {
       return matRebar::bsNone;
+   }
 
    switch(i)
    {
@@ -476,9 +491,13 @@ bool CShearSteelGrid::GetRowData(ROWCOL nRow, ROWCOL numRows, CShearZoneData2* p
    s = GetCellValue(nRow, 3);
    d = _tstof(s);
    if (s.IsEmpty() || (d==0.0 && s[0]!=_T('0')))
+   {
       pszi->BarSpacing = 0;
+   }
    else
+   {
       pszi->BarSpacing = d;
+   }
 
    s = GetCellValue(nRow,4);
    pszi->nVertBars = _tstof(s);
@@ -500,8 +519,10 @@ void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& rvec, bool isSym
 
    // remove all but top row
    ROWCOL rows = GetRowCount();
-   if (rows>=1)
+   if (1 <= rows)
+   {
 	   RemoveRows(1, rows);
+   }
 
    IndexType size = rvec.size();
    if (0 < size)

@@ -27,6 +27,7 @@
 #include "VoidedSlabFactory2.h"
 #include "IBeamDistFactorEngineer.h"
 #include "VoidedSlab2DistFactorEngineer.h"
+#include "UBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
 #include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
@@ -255,11 +256,33 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
 
 void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
-   CComObject<CVoidedSlab2DistFactorEngineer>* pEngineer;
-   CComObject<CVoidedSlab2DistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,statusGroupID);
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+
+   // use passed value if not null
+   pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pDeck->DeckType;
+   
+   if ( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone )
+   {
+      CComObject<CVoidedSlab2DistFactorEngineer>* pEngineer;
+      CComObject<CVoidedSlab2DistFactorEngineer>::CreateInstance(&pEngineer);
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
+   else
+   {
+      // this is a type b section... type b's are the same as type c's which are U-beams
+      ATLASSERT( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
+
+      CComObject<CUBeamDistFactorEngineer>* pEngineer;
+      CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
+      pEngineer->Init(true,true); // this is a type b cross section, and a spread slab
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
 }
 
 void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
@@ -1013,9 +1036,14 @@ pgsTypes::SupportedDeckTypes CVoidedSlab2Factory::GetSupportedDeckTypes(pgsTypes
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
    {
+   case pgsTypes::sbsUniform:
+   case pgsTypes::sbsGeneral:
+      sdt.push_back(pgsTypes::sdtCompositeCIP);
+      sdt.push_back(pgsTypes::sdtCompositeSIP);
+      break;
+
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsGeneralAdjacent:
-      sdt.push_back(pgsTypes::sdtCompositeCIP);
       sdt.push_back(pgsTypes::sdtCompositeOverlay);
       sdt.push_back(pgsTypes::sdtNone);
       break;
@@ -1031,6 +1059,8 @@ pgsTypes::SupportedBeamSpacings CVoidedSlab2Factory::GetSupportedBeamSpacings()
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniformAdjacent);
    sbs.push_back(pgsTypes::sbsGeneralAdjacent);
+   sbs.push_back(pgsTypes::sbsUniform);
+   sbs.push_back(pgsTypes::sbsGeneral);
 
    return sbs;
 }
@@ -1067,12 +1097,12 @@ void CVoidedSlab2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimension
    Float64 gw = GetDimension(dimensions,_T("W"));
    Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
-   if ( IsSupportedDeckType(sdt,sbs) )
+   if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
    {
-      if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
+      if(sbs == pgsTypes::sbsUniform || sbs == pgsTypes::sbsGeneral)
       {
          *minSpacing = gw;
-         *maxSpacing = gw+J;
+         *maxSpacing = MAX_GIRDER_SPACING;
       }
       else
       {
@@ -1081,7 +1111,22 @@ void CVoidedSlab2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimension
    }
    else
    {
-      ATLASSERT(false); // shouldn't get here
+      if (sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
+      {
+         if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
+         {
+            *minSpacing = gw;
+            *maxSpacing = gw+J;
+         }
+         else
+         {
+            ATLASSERT(false); // shouldn't get here
+         }
+      }
+      else
+      {
+         ATLASSERT(false); // shouldn't get here
+      }
    }
 }
 

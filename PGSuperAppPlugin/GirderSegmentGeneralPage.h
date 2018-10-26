@@ -38,6 +38,8 @@ public:
    virtual const CSegmentKey& GetSegmentKey() const;
    virtual SegmentIDType GetSegmentID() const;
 
+   bool m_bWasEventCreated;
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
@@ -77,7 +79,7 @@ protected:
    Float64 GetValue(UINT nIDC,const unitmgtLengthData& lengthUnit);
 
    void FillEventList();
-   EventIndexType CreateEvent();
+   EventIDType CreateEvent();
 	
    int m_PrevConstructionEventIdx;
    int m_PrevErectionEventIdx; // capture the erection stage when the combo box drops down so we can restore the value if CreateEvent fails
@@ -94,4 +96,5 @@ public:
    afx_msg void OnSegmentChanged();
    afx_msg void OnConcreteStrength();
    afx_msg void OnBnClickedBottomFlangeDepth();
+   afx_msg void OnHelp();
 };

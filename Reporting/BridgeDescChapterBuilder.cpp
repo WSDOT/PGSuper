@@ -2229,7 +2229,11 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                {
                   nHarpedAdjustments = 2;
                   vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_RELEASED_SEGMENT);
-                  vPoi.push_back(pPoi->GetPointsOfInterest(thisSegmentKey,POI_HARPINGPOINT).front());
+                  std::vector<pgsPointOfInterest> vHPPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_HARPINGPOINT);
+                  if ( vHPPoi.size() != 0 )
+                  {
+                     vPoi.push_back(vHPPoi.front());
+                  }
                }
                else
                {
@@ -2839,7 +2843,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
          }
       }
 
-      (*table)(0,0) << _T("Fillet = ") << dim.SetValue(pDeck->Fillet) << rptNewLine;
+      (*table)(0,0) << _T("Fillet = ") << dim.SetValue(pBridgeDesc->GetFillet()) << rptNewLine;
 
       if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
       {

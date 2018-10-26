@@ -49,7 +49,6 @@ CDeckDescription2::CDeckDescription2()
    TransverseConnectivity = pgsTypes::atcConnectedAsUnit; // only applicable if girder spacing is adjacent
 
    GrossDepth       = ::ConvertToSysUnits(  8.5, unitMeasure::Inch );
-   Fillet           = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
    HaunchShape      = pgsTypes::hsFilleted; // default until version 2
 
    Concrete.Type             = pgsTypes::Normal;
@@ -146,11 +145,6 @@ bool CDeckDescription2::operator == (const CDeckDescription2& rOther) const
    }
 
    if ( !IsEqual( OverhangEdgeDepth, rOther.OverhangEdgeDepth ) )
-   {
-      return false;
-   }
-
-   if ( !IsEqual( Fillet, rOther.Fillet ) )
    {
       return false;
    }
@@ -280,10 +274,14 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("OverhangTaperType"),&var);
       OverhangTaper = (pgsTypes::DeckOverhangTaper)(var.lVal);
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property(_T("Fillet"), &var );
-      Fillet = var.dblVal;
+      // Fillet was moved to bridge in version 3. Save fillet here for bridge to get later
+      if (3 > version)
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("Fillet"), &var );
+         m_LegacyFillet = var.dblVal;
+      }
 
       if (1 < version)
       {
@@ -395,7 +393,7 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("Deck"),2.0);
+   pStrSave->BeginUnit(_T("Deck"),3.0);
 
    pStrSave->put_Property(_T("SlabType"),         CComVariant(DeckType));
    pStrSave->put_Property(_T("TransverseConnectivity"), CComVariant(TransverseConnectivity)); // added for version 14.0
@@ -418,7 +416,6 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("OverhangEdgeDepth"),CComVariant(OverhangEdgeDepth));
    pStrSave->put_Property(_T("OverhangTaperType"),CComVariant(OverhangTaper));
-   pStrSave->put_Property(_T("Fillet"),           CComVariant(Fillet));
    pStrSave->put_Property(_T("HaunchShape"),      CComVariant(HaunchShape));
    pStrSave->put_Property(_T("PanelDepth"),       CComVariant(PanelDepth));
    pStrSave->put_Property(_T("PanelSupport"),     CComVariant(PanelSupport));
@@ -496,7 +493,6 @@ void CDeckDescription2::MakeCopy(const CDeckDescription2& rOther,bool bCopyDataO
    GrossDepth              = rOther.GrossDepth;
    OverhangTaper           = rOther.OverhangTaper;
    OverhangEdgeDepth       = rOther.OverhangEdgeDepth;
-   Fillet                  = rOther.Fillet;
    HaunchShape             = rOther.HaunchShape;
 	OverlayWeight           = rOther.OverlayWeight;
    OverlayDensity          = rOther.OverlayDensity;

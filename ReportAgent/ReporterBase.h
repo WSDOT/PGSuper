@@ -30,7 +30,7 @@ public:
    void SetBroker(IBroker* pBroker);
    HRESULT InitCommonReportBuilders();
 
-   HRESULT CReporterBase::OnSpecificationChanged();
+   HRESULT OnSpecificationChanged();
 
 protected:
    IBroker* m_pBroker; // weak reference
@@ -47,6 +47,7 @@ protected:
    void CreateMultiGirderSpecCheckReport();
    void CreateSpecChecReport();
    void CreateDistributionFactorSummaryReport();
+   void CreateMultiHaunchGeometryReport();
 
 #if defined _DEBUG || defined _BETA_VERSION
    void CreateDistributionFactorsReport();

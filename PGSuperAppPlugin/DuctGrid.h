@@ -47,6 +47,8 @@ public:
    void UpdatePTData();
    void FillGrid();
 
+   void EventCreated();
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CDuctGrid)

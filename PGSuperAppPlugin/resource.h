@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by PGSuperAppPlugin.rc
 //
+#define IDCANCEL2                       3
 #define ID_INDICATOR_ANALYSIS           5
 #define IDS_LWC_MESSAGE                 6
 #define IDS_GIRDER_SHEAR                7
@@ -232,9 +233,12 @@
 #define IDD_PIER_LAYOUT                 1000
 #define IDC_ALIGNMENT                   1001
 #define IDC_BULB                        1001
+#define IDD_FILLETSAME4_BRIDGE          1001
 #define IDC_VERSION                     1002
 #define IDC_BRIDGEID                    1002
+#define IDD_FILLET_SPAN_BY_SPAN         1002
 #define IDC_COPYRIGHT                   1003
+#define IDD_FILLET_BY_GIRDER            1003
 #define IDC_JOBNUMBER                   1004
 #define IDC_APPICON                     1005
 #define IDC_END_DISTANCE                1005
@@ -476,6 +480,7 @@
 #define IDC_CLEAR_ALL                   1164
 #define IDC_REMOVE_TEMP_SUPPORT         1164
 #define IDC_COPY_TO_START               1164
+#define IDC_EDIT_HAUNCH_BUTTON2         1164
 #define IDC_VIEWDETAILS                 1165
 #define IDC_COPY_MATERIAL               1166
 #define IDC_EDIT_LOAD                   1167
@@ -800,6 +805,7 @@
 #define IDC_HAUNCH_SHAPE2               1408
 #define IDC_PIER                        1409
 #define IDC_FATIGUE_PEDES_COMBO         1409
+#define IDC_FILLET_TYPE                 1409
 #define IDC_HP_COMBO_END                1410
 #define IDC_PIER_GIRDER                 1410
 #define IDC_DESIGN_PEDES_COMBO4         1410
@@ -889,6 +895,7 @@
 #define IDC_IGNORE_ROA                  1464
 #define IDC_SAMESLABOFFSET              1466
 #define IDC_SPACING_LABEL               1467
+#define IDC_FILLETTYPE                  1467
 #define IDC_ALIGNMENTOFFSET_UNIT        1468
 #define IDC_ALIGNMENTOFFSET_FMT         1469
 #define IDC_HCURVE_GRID                 1470
@@ -1165,6 +1172,7 @@
 #define IDC_SLABOFFSET_GRID             1611
 #define IDC_PIER_GIRDER_STATIC          1612
 #define IDC_LABEL                       1612
+#define IDC_SLABOFFSET_GRID2            1612
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_LABEL 1613
 #define IDC_NOTE                        1614
 #define IDC_ANCHORSET_UNIT              1614
@@ -1394,11 +1402,14 @@
 #define IDC_ADIM_START_LABEL            1714
 #define IDC_ADIM_START_UNIT             1716
 #define IDS_DEFAULT_MASTER_LIB          1717
+#define IDC_ADIM_START_UNIT2            1717
 #define IDC_ADIM_END_LABEL              1718
 #define IDS_CANT_FIND_LIBRARY_FILE      1719
 #define IDC_ADIM_END_UNIT               1720
 #define IDS_CORRUPTED_LIBRARY_FILE      1721
+#define IDC_ADIM_END_UNIT2              1721
 #define IDC_SLABOFFSET_NOTE             1722
+#define IDC_FILLET_NOTE                 1723
 #define IDS_E_EXCESSIVE_SKEW            1723
 #define IDC_COPY_SLABOFFSET             1724
 #define IDS_E_EXCESSIVE_DELTA_SKEW      1725
@@ -1532,6 +1543,7 @@
 #define IDC_END_CANTILEVER_UNIT         1793
 #define IDC_BACK_DIAPHRAGM_HEIGHT_LABEL 1793
 #define IDC_BACK_DIAPHRAGM_WIDTH_LABEL  1794
+#define IDC_FILLET_HYPERLINK            1794
 #define IDC_AHEAD_DIAPHRAGM_LABEL       1795
 #define IDC_AHEAD_DIAPHRAGM_HEIGHT_LABEL 1796
 #define IDC_AHEAD_DIAPHRAGM_WIDTH_LABEL 1797
@@ -1633,6 +1645,7 @@
 #define IDC_SLAB_OFFSET_UNITS           1876
 #define IDC_A_BOX                       1877
 #define IDC_HAUNCH_GRID                 1878
+#define IDC_FILLET_BOX                  1878
 #define IDC_CUSTOM1                     1879
 #define IDC_HAUNCH_SHAPE_LABEL          1880
 #define IDC_FILLET_TITLE                1881
@@ -1640,6 +1653,9 @@
 #define IDC_MATERIAL_GROUP              1883
 #define IDC_CAP_GROUP                   1884
 #define IDC_COLUMN_GROUP                1885
+#define IDC_SOURCE_LABEL                1886
+#define IDC_TARGET_LABEL                1887
+#define IDC_FILLET_GRID                 1888
 #define IDC_SERVICE_III_PLUS            1899
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
@@ -1660,7 +1676,7 @@
 #define ID_HELP_INET_ARP                33025
 #define ID_HELP_INET_WSDOT              33026
 #define ID_HELP_INET_PGSUPER            33027
-#define ID_SCREEN_SIZE                  33028
+#define ID_SCREEN_SIZE                  33029
 #define FIRST_DATA_IMPORTER_PLUGIN      33215
 #define LAST_DATA_IMPORTER_PLUGIN       33245
 #define FIRST_DATA_EXPORTER_PLUGIN      33250
@@ -1795,14 +1811,16 @@
 #define ID_PROJECT_PROFILE              36991
 #define ID_BUTTON36993                  36993
 #define ID_EDIT_HAUNCH                  36994
+#define ID_GIRDERVIEW_DESIGNGIRDERDIRECT 36995
+#define ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET 36996
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        372
-#define _APS_NEXT_COMMAND_VALUE         36994
-#define _APS_NEXT_CONTROL_VALUE         1886
+#define _APS_NEXT_COMMAND_VALUE         36997
+#define _APS_NEXT_CONTROL_VALUE         1888
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

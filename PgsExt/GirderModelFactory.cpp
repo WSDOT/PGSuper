@@ -694,3 +694,141 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmen
       }
    }
 }
+
+/////////////////////////////////////////////////////////////////////
+/////////// class pgsDesignHaunchLoadGirderModelFactory //////////////////
+/////////////////////////////////////////////////////////////////////
+pgsDesignHaunchLoadGirderModelFactory::pgsDesignHaunchLoadGirderModelFactory( const std::vector<SlabLoad>& slabLoads, LoadCaseIDType slabLoadCase, LoadCaseIDType slabPadLoadCase):
+m_SlabLoads(slabLoads), m_SlabLoadCase(slabLoadCase), m_SlabPadLoadCase(slabPadLoadCase)
+{
+}
+
+pgsDesignHaunchLoadGirderModelFactory::~pgsDesignHaunchLoadGirderModelFactory(void)
+{
+}
+
+void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
+                                                  Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
+                                                  LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
+                                                  const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+{
+   // apply  loads
+   // We dont need girder self weight, so don't use it
+   CComPtr<IFem2dLoadingCollection> loadings;
+   (*ppModel)->get_Loadings(&loadings);
+
+   CComPtr<IFem2dLoading> slabPadLoading, slabLoading;
+
+   loadings->Create(m_SlabLoadCase,   &slabLoading);
+   loadings->Create(m_SlabPadLoadCase,&slabPadLoading);
+
+   CComPtr<IFem2dMemberCollection> members;
+   (*ppModel)->get_Members(&members);
+
+   CComPtr<IFem2dJointCollection> joints;
+   (*ppModel)->get_Joints(&joints);
+
+   CComPtr<IFem2dDistributedLoadCollection> slabDistributedLoads, slabPadDistributedLoads;
+   slabLoading->get_DistributedLoads(&slabDistributedLoads);
+   slabPadLoading->get_DistributedLoads(&slabPadDistributedLoads);
+   
+   MemberIDType mbrID = 0;
+   LoadIDType loadID = 0;
+
+   std::vector<SlabLoad>::iterator slabLoadIter(m_SlabLoads.begin());
+   std::vector<SlabLoad>::iterator slabLoadIterEnd(m_SlabLoads.end());
+
+   // load information is at individual locations. Need to get get first value to get ball rolling
+   SlabLoad& startSlabLoad = *slabLoadIter;
+   Float64 start = startSlabLoad.Loc;
+   Float64 wslabStart = startSlabLoad.MainSlabLoad + startSlabLoad.PanelLoad;
+   Float64 wslabPadStart = startSlabLoad.PadLoad;
+   slabLoadIter++;
+
+   for ( ; slabLoadIter != slabLoadIterEnd; slabLoadIter++ )
+   {
+      SlabLoad& slabLoad = *slabLoadIter;
+
+      Float64 end = slabLoad.Loc;
+      Float64 wslabEnd = slabLoad.MainSlabLoad + slabLoad.PanelLoad;
+      Float64 wslabPadEnd = slabLoad.PadLoad;
+
+      // apply the loading
+      MemberIDType mbrIDStart; // member ID at the start of the load
+      MemberIDType mbrIDEnd;   // member ID at the end of the load
+      Float64 xStart; // distance from start of member mbrIDStart to the start of the load
+      Float64 xEnd;   // distance from start of member mbrIDEnd to end of the load
+      FindMember(*ppModel,start,&mbrIDStart,&xStart);
+      FindMember(*ppModel,end,  &mbrIDEnd,  &xEnd);
+
+      if ( mbrIDStart == mbrIDEnd )
+      {
+         // load is contained on a single member and is all interior
+         CComPtr<IFem2dDistributedLoad> slabDistLoad, slabPadDistLoad;
+         slabDistributedLoads->Create(   loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wslabStart,   wslabEnd,   lotMember,&slabDistLoad);
+         slabPadDistributedLoads->Create(loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wslabPadStart,wslabPadEnd,lotMember,&slabPadDistLoad);
+      }
+      else
+      {
+         // load straddles two or more members
+         for ( MemberIDType mbrID = mbrIDStart; mbrID <= mbrIDEnd; mbrID++ )
+         {
+            Float64 wsl1, wsl2, wsp1, wsp2; // start and end load intensity of slab and slab pad on this member
+            Float64 x1,x2; // start and end load location from the start of this member
+
+            Float64 Lmbr;
+            CComPtr<IFem2dMember> mbr;
+            members->Find(mbrID,&mbr);
+            mbr->get_Length(&Lmbr); 
+
+            JointIDType jntIDStart,jntIDEnd;
+            mbr->get_StartJoint(&jntIDStart);
+            mbr->get_EndJoint(&jntIDEnd);
+
+            CComPtr<IFem2dJoint> jntStart, jntEnd;
+            joints->Find(jntIDStart,&jntStart);
+            joints->Find(jntIDEnd,  &jntEnd);
+
+            Float64 xMbrStart, xMbrEnd;
+            jntStart->get_X(&xMbrStart);
+            jntEnd->get_X(&xMbrEnd);
+
+            if ( mbrID == mbrIDStart )
+            {
+               wsl1 = wslabStart;
+               wsp1 = wslabPadStart;
+               x1 = xStart;
+            }
+            else
+            {
+               wsl1 = ::LinInterp(xMbrStart,wslabStart,   wslabEnd,   end-start);
+               wsp1 = ::LinInterp(xMbrStart,wslabPadStart,wslabPadEnd,end-start);
+               x1 = 0; // start of member
+            }
+
+            if (mbrID == mbrIDEnd )
+            {
+               wsl2 = wslabEnd;
+               wsp2 = wslabPadEnd;
+               x2 = xEnd;
+            }
+            else
+            {
+               wsl2 = ::LinInterp(xMbrEnd,wslabStart,   wslabEnd,   end-start);
+               wsp2 = ::LinInterp(xMbrEnd,wslabPadStart,wslabPadEnd,end-start);
+               x2 = Lmbr; // end of member
+            }
+
+
+            CComPtr<IFem2dDistributedLoad> slabDistLoad, slabPadDistLoad;
+            slabDistributedLoads->Create(   loadID++,mbrID,loadDirFy,x1,x2,wsl1,wsl2,lotMember,&slabDistLoad);
+            slabPadDistributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,wsp1,wsp2,lotMember,&slabPadDistLoad);
+         }
+      }
+
+      // cycle
+      start = end;
+      wslabStart = wslabEnd;
+      wslabPadStart = wslabPadEnd;
+   }
+}

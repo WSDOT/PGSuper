@@ -41,6 +41,11 @@ public:
    pgsPointOfInterest GetLocation();
    int GetXAxisType();
 
+   // if set to TRUE, the location control is always selected to a valid value
+   // otherwise and unselected state is acceptable
+   void AlwaysSelect(BOOL bAlwaysSelect);
+   BOOL AlwaysSelect() const;
+
 protected:
    virtual BOOL OnInitDialog();
 
@@ -63,6 +68,7 @@ protected:
 
    CGirderKey m_GirderKey;
    pgsPointOfInterest m_Poi;
+   BOOL m_bAlwaysSelect;
 
 #ifdef _DEBUG
 public:

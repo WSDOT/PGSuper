@@ -146,6 +146,14 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
    {
+      // PGSplice doesn't do design
+      CString strDesignGirder;
+      pMenu->GetMenuString(ID_GIRDERVIEW_DESIGNGIRDERDIRECT,strDesignGirder,MF_BYCOMMAND);
+      UINT nPos = pMenu->FindMenuItem(strDesignGirder);
+      pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,NULL); // remove the separater before "Design Girder"
+      pMenu->RemoveMenu(ID_GIRDERVIEW_DESIGNGIRDERDIRECT,MF_BYCOMMAND,NULL);
+      pMenu->RemoveMenu(ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET,MF_BYCOMMAND,NULL);
+
       // PGSplice does not use moment loads
       pMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,NULL);
 

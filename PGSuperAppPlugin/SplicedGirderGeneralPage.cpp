@@ -105,6 +105,19 @@ void DDX_SlabOffsetGrid(CDataExchange* pDX,INT nIDC)
    }
 }
 
+void DDX_FilletGrid(CDataExchange* pDX,INT nIDC)
+{
+   CFilletGrid* pGrid = (CFilletGrid*)pDX->m_pDlgWnd->GetDlgItem(nIDC);
+   if ( pDX->m_bSaveAndValidate )
+   {
+      pGrid->UpdateFilletData();
+   }
+   else
+   {
+      pGrid->FillGrid();
+   }
+}
+
 IMPLEMENT_DYNAMIC(CSplicedGirderGeneralPage, CPropertyPage)
 
 CSplicedGirderGeneralPage::CSplicedGirderGeneralPage()
@@ -121,6 +134,7 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 
    DDX_Control(pDX, IDC_SLABOFFSET_HYPERLINK, m_ctrlSlabOffsetHyperLink);
+   DDX_Control(pDX, IDC_FILLET_HYPERLINK, m_ctrlFilletHyperLink);
    DDX_Control(pDX, IDC_GIRDERTYPE_HYPERLINK, m_ctrlGirderTypeHyperLink);
 
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
@@ -137,6 +151,8 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Strand(pDX,IDC_STRAND,&pParent->m_pGirder->GetPostTensioning()->pStrand);
 
    DDX_SlabOffsetGrid(pDX,IDC_SLABOFFSET_GRID);
+
+   DDX_FilletGrid(pDX,IDC_FILLET_GRID);
 
    Float64 conditionFactor;
    pgsTypes::ConditionFactorType conditionFactorType;
@@ -206,8 +222,9 @@ BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_STRAND, &CSplicedGirderGeneralPage::OnStrandChanged)
    ON_CBN_SELCHANGE(IDC_INSTALLATION_TYPE, &CSplicedGirderGeneralPage::OnInstallationTypeChanged)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
-   ON_BN_CLICKED(IDHELP, &CSplicedGirderGeneralPage::OnHelp)
+   ON_COMMAND(ID_HELP, &CSplicedGirderGeneralPage::OnHelp)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
+   ON_REGISTERED_MESSAGE(MsgChangeFilletType,OnChangeFilletType)
    ON_REGISTERED_MESSAGE(MsgChangeSameGirderType,OnChangeGirderType)
 END_MESSAGE_MAP()
 
@@ -232,12 +249,15 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    m_SlabOffsetGrid.SubclassDlgItem(IDC_SLABOFFSET_GRID,this);
    m_SlabOffsetGrid.CustomInit(pParent->m_pGirder);
 
+   // initialize Fillet grid
+   m_FilletGrid.SubclassDlgItem(IDC_FILLET_GRID,this);
+   m_FilletGrid.CustomInit(pParent->m_pGirder);
+
    // subclass the schematic drawing of the tendons
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS,this);
    m_DrawTendons.CustomInit(pParent->m_GirderKey,pParent->m_pGirder);
 
    const CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
-
    DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
@@ -270,11 +290,29 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    UpdateSlabOffsetHyperLink();
    UpdateSlabOffsetControls();
 
+   UpdateFilletHyperLink();
+   UpdateFilletControls();
+
    UpdateGirderTypeHyperLink();
    UpdateGirderTypeControls();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CSplicedGirderGeneralPage::EventCreated()
+{
+   m_TendonStressingEvent.clear();
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   const CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
+   DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pParent->m_GirderID,ductIdx);
+      m_TendonStressingEvent.push_back(eventIdx);
+   }
+
+   m_DuctGrid.EventCreated();
 }
 
 void CSplicedGirderGeneralPage::OnConditionFactorTypeChanged()
@@ -579,6 +617,60 @@ void CSplicedGirderGeneralPage::UpdateSlabOffsetControls()
 
    BOOL bEnable = ( pBridge->GetSlabOffsetType() == pgsTypes::sotGirder ? TRUE : FALSE );
    m_SlabOffsetGrid.EnableWindow(bEnable);
+}
+
+LRESULT CSplicedGirderGeneralPage::OnChangeFilletType(WPARAM wParam,LPARAM lParam)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+
+   if ( pBridge->GetFilletType() == pgsTypes::fttBridge || pBridge->GetFilletType() == pgsTypes::fttSpan )
+   {
+      pBridge->SetFilletType(pgsTypes::fttGirder);
+   }
+   else
+   {
+      pBridge->SetFilletType(pgsTypes::fttBridge);
+   }
+
+   UpdateFilletHyperLink();
+   UpdateFilletControls();
+
+   return 0;
+}
+
+void CSplicedGirderGeneralPage::UpdateFilletHyperLink()
+{
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+
+   if ( pBridge->GetFilletType() == pgsTypes::fttGirder )
+   {
+      // slab offset is by girder
+      m_ctrlFilletHyperLink.SetWindowText(_T("Fillets are defined girder by girder"));
+      m_ctrlFilletHyperLink.SetURL(_T("Click to use this Fillet for the entire bridge"));
+   }
+   else if ( pBridge->GetFilletType() == pgsTypes::fttBridge )
+   {
+      m_ctrlFilletHyperLink.SetWindowText(_T("A single Fillet is used for the entire bridge"));
+      m_ctrlFilletHyperLink.SetURL(_T("Click to define Fillets by girder"));
+   }
+   else
+   {
+      m_ctrlFilletHyperLink.SetWindowText(_T("A unique Fillet is used at each Span"));
+      m_ctrlFilletHyperLink.SetURL(_T("Click to define Fillets by girder"));
+   }
+}
+
+void CSplicedGirderGeneralPage::UpdateFilletControls()
+{
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+
+   BOOL bEnable = ( pBridge->GetFilletType() == pgsTypes::fttGirder ? TRUE : FALSE );
+   m_FilletGrid.EnableWindow(bEnable);
 }
 
 LRESULT CSplicedGirderGeneralPage::OnChangeGirderType(WPARAM wParam,LPARAM lParam)

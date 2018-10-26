@@ -55,7 +55,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
 void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact);
 void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
-                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& isHarped, bool& isTemporary);
+                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& isHarped, bool& isTemporary);
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
 void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
 void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
@@ -1097,11 +1097,12 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    bool did_shear;
    bool did_lifting;
    bool did_hauling;
+   bool did_slaboffset;
    bool is_harped;
    bool is_temporary;
 
    process_artifacts(startIdx, endIdx, girderKeys, pIArtifact,
-                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, is_harped, is_temporary);
+                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, did_slaboffset, is_harped, is_temporary);
 
    if (!did_flexure && !did_shear)
    {
@@ -1171,6 +1172,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
       (*pTable)(row++,0) << _T("Truck Support Location (Trailing)");
    }
 
+   if (did_slaboffset)
+   {
+      (*pTable)(row++,0) << _T("Slab Offset (A Dimension)");
+   }
 
    // Titles are now printed. Print results information
    ColumnIndexType idx = 0;
@@ -1310,18 +1315,27 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          (*pTable)(row++,col) << distance.SetValue( pArtifact->GetTrailingOverhang() );
       }
 
+      if (did_slaboffset)
+      {
+#if defined _DEBUG
+         ATLASSERT( pArtifact->GetSlabOffset(pgsTypes::metStart) ==  pArtifact->GetSlabOffset(pgsTypes::metEnd)); // designer learned a new trick?
+#endif
+         (*pTable)(row++,col) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
+      }
+
       col++;
    }
 }
 
 void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
-                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& isHarped, bool& isTemporary)
+                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& isHarped, bool& isTemporary)
 {
    // Set all outcomes to false
    didFlexure = false;
    didShear = false;
    didLifting = false;
    didHauling = false;
+   didSlabOffset = false;
    isHarped = false;
    isTemporary = false;
 
@@ -1355,6 +1369,11 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
       if (options.doDesignHauling)
       {
          didHauling = true;
+      }
+
+      if (options.doDesignSlabOffset)
+      {
+         didSlabOffset = true;
       }
 
       // report harped information if we have any harped designs or, if we have harped strands

@@ -1,4 +1,4 @@
-Girder Spacing {#girder_spacing}
+Girder Spacing {#tg_girder_spacing}
 ======================================
 PGSuper offers several methods of defining girder spacing. This section will detail the methods of defining girder spacing and their implications on the bridge geometry.
 
@@ -16,7 +16,7 @@ Girder spacing can be measured at the Abutment/Pier Line or at the CL Bearing. A
 The girders must be located transversely as well. The transverse location is described by an offset from either the Bridge Line or the Alignment. This offset is measured in the same direction as the girder spacing. The offset can be measured to a specific girder or to the center of the girder spacing.
 
 ### Girder Spacing Examples
-The following examples illustrate how girder spacings are defined.
+The following examples illustrate how girder spacing is defined.
 
 Here the girder spacing is measured along the CL Pier/CL Bearing. The girders are located transversely by defining the offset from the alignment to the left exterior girder.
 ![](girder_spacing_on_pier.gif)

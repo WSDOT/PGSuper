@@ -73,6 +73,8 @@ protected:
 	afx_msg void OnDblclkServers();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+   afx_msg void OnHelp();
 };
 
 //{{AFX_INSERT_LOCATION}}

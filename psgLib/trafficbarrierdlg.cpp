@@ -28,7 +28,6 @@
 #include "TrafficBarrierDlg.h"
 #include "TrafficBarrierViewDialog.h"
 #include <MfcTools\CustomDDX.h>
-#include "..\htmlhelp\HelpTopics.hh"
 #include <WBFLGenericBridge.h>
 
 #include <LRFD\ConcreteUtil.h>
@@ -50,7 +49,7 @@ IMPLEMENT_DYNAMIC(CTrafficBarrierDlg, CDialog)
 CTrafficBarrierDlg::CTrafficBarrierDlg(bool allowEditing,
                                        CWnd* pParent /*=NULL*/)
 	: CDialog(CTrafficBarrierDlg::IDD, pParent),
-   m_AllowEditing(allowEditing)
+   m_bAllowEditing(allowEditing)
 {
 	//{{AFX_DATA_INIT(CTrafficBarrierDlg)
 	m_Name = _T("");
@@ -155,11 +154,14 @@ BOOL CTrafficBarrierDlg::OnInitDialog()
    GetWindowText(head);
    head += _T(" - ");
    head += m_Name;
-	if (!m_AllowEditing)
+	if (!m_bAllowEditing)
    {
-      CWnd* pbut = GetDlgItem(IDOK);
-      ASSERT(pbut);
-      pbut->EnableWindow(m_AllowEditing);
+      CWnd* pOK = GetDlgItem(IDOK);
+      pOK->ShowWindow(SW_HIDE);
+
+      CWnd* pCancel = GetDlgItem(IDCANCEL);
+      pCancel->SetWindowText(_T("Close"));
+
       head += _T(" (Read Only)");
    }
    SetWindowText(head);

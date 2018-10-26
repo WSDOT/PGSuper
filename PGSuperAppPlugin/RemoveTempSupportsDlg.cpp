@@ -10,11 +10,13 @@
 
 #include "CastClosureJointDlg.h"// for label methods
 
+#include <EAF\EAFDocument.h>
+
 // CRemoveTempSupportsDlg dialog
 
 IMPLEMENT_DYNAMIC(CRemoveTempSupportsDlg, CDialog)
 
-CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CRemoveTempSupportsDlg::IDD, pParent)
 {
    m_TimelineMgr = timelineMgr;
@@ -25,6 +27,7 @@ CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager& timelineM
    pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
 
    m_EventIndex = eventIdx;
+   m_bReadOnly = bReadOnly;
 }
 
 CRemoveTempSupportsDlg::~CRemoveTempSupportsDlg()
@@ -72,6 +75,7 @@ void CRemoveTempSupportsDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CRemoveTempSupportsDlg, CDialog)
    ON_BN_CLICKED(IDC_MOVE_RIGHT, &CRemoveTempSupportsDlg::OnMoveToTargetList)
    ON_BN_CLICKED(IDC_MOVE_LEFT, &CRemoveTempSupportsDlg::OnMoveToSourceList)
+   ON_BN_CLICKED(ID_HELP, &CRemoveTempSupportsDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -86,7 +90,17 @@ BOOL CRemoveTempSupportsDlg::OnInitDialog()
 
    FillLists();
 
-   // TODO:  Add extra initialization here
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_SOURCE_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_TARGET_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_RIGHT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_LEFT)->EnableWindow(FALSE);
+
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -128,4 +142,9 @@ void CRemoveTempSupportsDlg::FillLists()
          m_lbSource.AddItem(label,state,tsID);
       }
    }
+}
+
+void CRemoveTempSupportsDlg::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_REMOVE_TEMPORARY_SUPPORTS);
 }

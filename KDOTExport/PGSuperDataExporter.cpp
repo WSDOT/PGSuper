@@ -1067,27 +1067,24 @@ CString CPGSuperDataExporter::GetDocumentationURL()
    CString strDocumentationURL;
    strDocumentationURL.Format(_T("%s%s/"),strDocumentationRootLocation,strDocSetName);
 
-   if ( pApp->UseOnlineDocumentation() )
-   {
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-      CVersionInfo verInfo;
-      CString strAppName = AfxGetAppName(); // needs module state
-      strAppName += _T(".dll");
-      verInfo.Load(strAppName);
+   CVersionInfo verInfo;
+   CString strAppName = AfxGetAppName(); // needs module state
+   strAppName += _T(".dll");
+   verInfo.Load(strAppName);
 
-      CString strVersion = verInfo.GetProductVersionAsString();
+   CString strVersion = verInfo.GetProductVersionAsString();
 
-      // remove the build and release number
-      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-      strVersion = strVersion.Left(pos);
-      pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-      strVersion = strVersion.Left(pos);
+   // remove the build and release number
+   int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
+   strVersion = strVersion.Left(pos);
+   pos = strVersion.ReverseFind(_T('.')); // find the last '.'
+   strVersion = strVersion.Left(pos);
 
-      CString strURL;
-      strURL.Format(_T("%s%s/"),strDocumentationURL,strVersion);
-      strDocumentationURL = strURL;
-   }
+   CString strURL;
+   strURL.Format(_T("%s%s/"),strDocumentationURL,strVersion);
+   strDocumentationURL = strURL;
 
    return strDocumentationURL;
 }
@@ -1103,13 +1100,11 @@ STDMETHODIMP CPGSuperDataExporter::LoadDocumentationMap()
 
    CEAFApp* pApp = EAFGetApp();
 
-   CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();
-
    CString strDocumentationURL = GetDocumentationURL();
 
-   CString strDocMapFile = EAFGetDocumentationMapFile(strDocSetName,strDocumentationURL,strDocumentationRootLocation);
+   CString strDocMapFile = EAFGetDocumentationMapFile(strDocSetName,strDocumentationURL);
 
-   EAFLoadDocumentationMap(strDocMapFile,m_HelpTopics);
+   VERIFY(EAFLoadDocumentationMap(strDocMapFile,m_HelpTopics));
    return S_OK;
 }
 

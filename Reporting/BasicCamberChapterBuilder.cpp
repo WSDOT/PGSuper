@@ -212,7 +212,10 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       tbl.Build_Deck(pBroker,segmentKey,bTempStrands,bSidewalk,bShearKey,bConstruction,bOverlay,bDeckPanels,pDisplayUnits,i,cm,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
+      // footnotes to release and storage tables
+      (*pTable1)(0,0) << DEFL(_T("i")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" = Camber immediately after prestress release") << rptNewLine;
       (*pTable1)(0,1) << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(")") << rptNewLine;
+      (*pTable1)(0,1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       (*pTable1)(0,1) << _T("Rows with ") << Bold(_T("bold text")) << _T(" are at the support locations after erection") << rptNewLine;
 
       pPara = new rptParagraph;

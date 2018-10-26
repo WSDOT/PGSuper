@@ -71,47 +71,66 @@ LPCTSTR CTexasIBNSChapterBuilder::GetName() const
 /*--------------------------------------------------------------------*/
 rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
-
-   // This is a single segment report
-   CSegmentKey segmentKey(girderKey,0);
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-
-   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
-
-	/* For broker passed in, get interface information */
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
-
-   if( pSegmentArtifact->Passed() )
+   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   if (pMultiGirderRptSpec != NULL)
    {
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Green) << _T("The Specification Check was Successful") << color(Black) << rptNewLine;
+      CComPtr<IBroker> pBroker;
+      pMultiGirderRptSpec->GetBroker(&pBroker);
+
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IArtifact,pIArtifact);
+
+      rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+      bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
+
+      const std::vector<CGirderKey>& girderKeys( pMultiGirderRptSpec->GetGirderKeys() );
+
+      // paragraph builder eventually wants segments, so build list
+      bool bPassed=true;
+      std::vector<CSegmentKey> segmentKeys;
+      for (std::vector<CGirderKey>::const_iterator sit = girderKeys.begin(); sit!=girderKeys.end(); sit++)
+      {
+         const CGirderKey girderKey=*sit;
+
+         // This is a single segment report
+         CSegmentKey segmentKey(girderKey,0);
+         segmentKeys.push_back(segmentKey);
+
+         // Do global spec check while were at it
+         const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
+
+         if( bPassed && !pSegmentArtifact->Passed() )
+         {
+            bPassed = false;
+         }
+      }
+
+      if( bPassed )
+      {
+         rptParagraph* pPara = new rptParagraph;
+         *pChapter << pPara;
+         *pPara << color(Green) << _T("The Specification Check was Successful") << color(Black) << rptNewLine;
+      }
+      else
+      {
+         rptParagraph* pPara = new rptParagraph;
+         *pChapter << pPara;
+         *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black);
+      }
+
+      // let the paragraph builder do all the work here...
+      bool doEjectPage;
+      CTexasIBNSParagraphBuilder parabuilder;
+      rptParagraph* pcontent = parabuilder.Build(pBroker,segmentKeys,pDisplayUnits,level, doEjectPage);
+
+      *pChapter << pcontent;
+
+      return pChapter;
    }
-   else
-   {
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black);
-   }
 
-   // let the paragraph builder to all the work here...
-   bool doEjectPage;
-   CTexasIBNSParagraphBuilder parabuilder;
-   std::vector<CSegmentKey> segmentKeys;
-   segmentKeys.push_back(segmentKey);
-   rptParagraph* pcontent = parabuilder.Build(pBroker,segmentKeys,pDisplayUnits,level, doEjectPage);
+   ATLASSERT(false);
+   return NULL;
 
-   *pChapter << pcontent;
-
-   return pChapter;
 }
 
 /*--------------------------------------------------------------------*/

@@ -51,22 +51,12 @@ inline bool B2b(BOOL val) { return val!=0; }
 
 IMPLEMENT_DYNAMIC(CGirderMainSheet, CPropertySheet)
 
-CGirderMainSheet::CGirderMainSheet( GirderLibraryEntry& rentry, UINT nIDCaption, 
+CGirderMainSheet::CGirderMainSheet( GirderLibraryEntry& rentry,
                                    bool allowEditing,
                                    CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage),
+	:CPropertySheet(_T(""), pParentWnd, iSelectPage),
    m_Entry(rentry),
-   m_AllowEditing(allowEditing)
-{
-   Init();
-}
-
-CGirderMainSheet::CGirderMainSheet( GirderLibraryEntry& rentry, LPCTSTR pszCaption,
-                                   bool allowEditing,
-                                   CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(pszCaption, pParentWnd, iSelectPage),
-   m_Entry(rentry),
-   m_AllowEditing(allowEditing)
+   m_bAllowEditing(allowEditing)
 {
    Init();
 }
@@ -86,12 +76,10 @@ bool CGirderMainSheet::IsSplicedGirder()
    return (splicedBeamFactory == NULL ? false : true);
 }
 
-void CGirderMainSheet::UpdatePropertyPages(CLSID clsidBeamFamily)
+void CGirderMainSheet::UpdatePropertyPages()
 {
    // Certain pages don't apply to spliced girders
-   if ( clsidBeamFamily == CLSID_SplicedIBeamFamily || 
-        clsidBeamFamily == CLSID_SplicedUBeamFamily 
-      )
+   if ( IsSplicedGirder() )
    {
       AddPage(&m_GirderDimensionsPage);
       AddPage(&m_FlexureDesignPage); // contains debond limits
@@ -140,11 +128,7 @@ void CGirderMainSheet::Init()
    m_ShearDesignPage.m_psp.dwFlags          |= PSP_HASHELP;
    m_GirderHaunchAndCamberPage.m_psp.dwFlags   |= PSP_HASHELP;
 
-
-   CComPtr<IBeamFactory> factory;
-   m_Entry.GetBeamFactory(&factory);
-   CLSID clsidBeamFamily = factory->GetFamilyCLSID();
-   UpdatePropertyPages(clsidBeamFamily);
+   UpdatePropertyPages();
 }
 
 void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
@@ -1002,6 +986,24 @@ void CGirderMainSheet::OnApply( NMHDR * pNotifyStruct, LRESULT * result )
    }
 }
 
+void CGirderMainSheet::SetDebondTabName()
+{
+   if ( IsSplicedGirder() )
+   {
+      int index = GetPageIndex(&m_FlexureDesignPage);
+      if ( index < 0 )
+      {
+         return; // not using the debond tab
+      }
+
+      CTabCtrl* pTab = GetTabControl();
+      TC_ITEM ti;
+      ti.mask = TCIF_TEXT;
+      ti.pszText = _T("Debonding");
+      pTab->SetItem(index,&ti);
+   }
+}
+
 BOOL CGirderMainSheet::OnInitDialog() 
 {
 	BOOL bResult = CPropertySheet::OnInitDialog();
@@ -1009,16 +1011,29 @@ BOOL CGirderMainSheet::OnInitDialog()
    // Shear page takes care of its own data
    m_ShearSteelPage.m_ShearData = m_Entry.GetShearData();
 
+   SetDebondTabName();
+
    // disable OK button if editing not allowed
    CString head;
-   GetWindowText(head);
+   if ( IsSplicedGirder() )
+   {
+      head = _T("Spliced Girder Segment");
+   }
+   else
+   {
+      head = _T("Girders");
+   }
+
    head += _T(" - ");
    head += m_Entry.GetName().c_str();
-	if (!m_AllowEditing)
+	if (!m_bAllowEditing)
    {
-      CWnd* pbut = GetDlgItem(IDOK);
-      ASSERT(pbut);
-      pbut->EnableWindow(m_AllowEditing);
+      CWnd* pOK = GetDlgItem(IDOK);
+      pOK->ShowWindow(SW_HIDE);
+
+      CWnd* pCancel = GetDlgItem(IDCANCEL);
+      pCancel->SetWindowText(_T("Close"));
+
       head += _T(" (Read Only)");
    }
    SetWindowText(head);

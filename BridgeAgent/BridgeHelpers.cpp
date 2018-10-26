@@ -113,6 +113,12 @@ GirderIDType GetSuperstructureMemberID(GroupIndexType grpIdx,GirderIndexType gdr
    return ::GetGirderLineID(CSpanKey(grpIdx,gdrIdx));
 }
 
+GirderIDType GetSuperstructureMemberID(const CGirderKey& girderKey)
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   return GetSuperstructureMemberID(girderKey.groupIndex,girderKey.girderIndex);
+}
+
 CSegmentKey GetSegmentKey(GirderIDType gdrID)
 {
    GroupIndexType grpIdx  = (GroupIndexType)high_Int16((Int32)gdrID);

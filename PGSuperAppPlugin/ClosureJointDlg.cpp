@@ -40,16 +40,18 @@
 IMPLEMENT_DYNAMIC(CClosureJointDlg, CPropertySheet)
 
 CClosureJointDlg::CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(_T("Closure Joint"), pParentWnd, iSelectPage),
+	:CPropertySheet(_T("Closure Joint Details"), pParentWnd, iSelectPage),
    m_ClosureKey(closureKey)
 {
+   m_bEditingInGirder = false;
    Init(pBridgeDesc);
 }
 
 CClosureJointDlg::CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(_T("Closure Joint"), pParentWnd, iSelectPage),
+	:CPropertySheet(_T("Closure Joint Details"), pParentWnd, iSelectPage),
    m_ClosureKey(closureKey)
 {
+   m_bEditingInGirder = true;
    Init(pBridgeDesc,editSplicedGirderExtensions);
 }
 
@@ -275,7 +277,7 @@ BOOL CClosureJointDlg::OnInitDialog()
    rect.bottom = rOK.bottom;
    rect.right = rOK.left - 7;
    ScreenToClient(&rect);
-   CString strTxt(m_SplicedGirderExtensionPages.size() != 0 ? _T("Copy to all closure joints in this girder") : _T("Copy to all closure joints at this support"));
+   CString strTxt(m_bEditingInGirder ? _T("Copy to all closure joints in this girder") : _T("Copy to all closure joints at this support"));
    m_CheckBox.Create(strTxt,WS_CHILD | WS_VISIBLE | BS_LEFTTEXT | BS_RIGHT | BS_AUTOCHECKBOX,rect,this,IDC_CHECKBOX);
    m_CheckBox.SetFont(GetFont());
 

@@ -50,6 +50,7 @@
 #define TLM_RAILING_SYSTEM_ERROR                         0x00020000 // railing system is installed before deck is cast
 #define TLM_STRESS_TENDON_ERROR                          0x00040000 // tendon stressed before closure joints are cast or segments are erected
 #define TLM_LOAD_RATING_ERROR                            0x00080000 // load rating occurs before bridge is open to traffic
+#define TLM_DECK_CASTING_ERROR                           0x00100000 // deck is cast before the closure joints
 
 #define TLM_SUCCESS                                      0xffffffff // event was successfully added
 
@@ -179,6 +180,9 @@ public:
    EventIDType GetSegmentErectionEventID(SegmentIDType segmentID) const;
    void SetSegmentErectionEventByIndex(SegmentIDType segmentID,EventIndexType eventIdx);
    void SetSegmentErectionEventByID(SegmentIDType segmentID,EventIDType ID);
+
+   void GetSegmentEvents(SegmentIDType segmentID,EventIndexType* pConstructEventIdx,EventIndexType* pErectEventIdx) const;
+   void SetSegmentEvents(SegmentIDType segmentID,EventIndexType constructEventIdx,EventIndexType erectEventIdx);
 
    EventIndexType GetFirstSegmentErectionEventIndex() const;
    EventIDType GetFirstSegmentErectionEventID() const;

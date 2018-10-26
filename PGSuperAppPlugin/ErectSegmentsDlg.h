@@ -11,7 +11,7 @@ class CErectSegmentsDlg : public CDialog
 	DECLARE_DYNAMIC(CErectSegmentsDlg)
 
 public:
-	CErectSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
+	CErectSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CErectSegmentsDlg();
 
 // Dialog Data
@@ -29,9 +29,12 @@ protected:
    CTimelineItemListBox m_lbSource;
    CTimelineItemListBox m_lbTarget;
 
+   BOOL m_bReadOnly;
+
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnMoveToTargetList();
    afx_msg void OnMoveToSourceList();
+   afx_msg void OnHelp();
 };

@@ -8,6 +8,8 @@
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 
+#include <EAF\EAFDocument.h>
+
 // CStressTendonDlg dialog
 
 class CDuctItemDataPtr : public CTimelineItemIndexDataPtr
@@ -18,9 +20,10 @@ public:
 
 IMPLEMENT_DYNAMIC(CStressTendonDlg, CDialog)
 
-CStressTendonDlg::CStressTendonDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CStressTendonDlg::CStressTendonDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CStressTendonDlg::IDD, pParent),
-   m_EventIndex(eventIdx)
+   m_EventIndex(eventIdx),
+   m_bReadOnly(bReadOnly)
 {
    m_TimelineMgr = timelineMgr;
 }
@@ -69,6 +72,7 @@ void CStressTendonDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CStressTendonDlg, CDialog)
    ON_BN_CLICKED(IDC_MOVE_RIGHT, &CStressTendonDlg::OnMoveToTargetList)
    ON_BN_CLICKED(IDC_MOVE_LEFT,  &CStressTendonDlg::OnMoveToSourceList)
+   ON_BN_CLICKED(ID_HELP, &CStressTendonDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -83,7 +87,17 @@ BOOL CStressTendonDlg::OnInitDialog()
 
    FillLists();
 
-   // TODO:  Add extra initialization here
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_SOURCE_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_TARGET_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_RIGHT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_LEFT)->EnableWindow(FALSE);
+
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -142,4 +156,9 @@ void CStressTendonDlg::FillLists()
          }
       }
    }
+}
+
+void CStressTendonDlg::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_INSTALL_TENDONS);
 }

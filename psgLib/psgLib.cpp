@@ -41,6 +41,7 @@
 #include <IFace\BeamFamily.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\Project.h>
+#include <IFace\DocumentType.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "PGSuperLibrary_i.h"
 #include "LibraryAppPlugin.h"
@@ -58,6 +59,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -153,18 +155,11 @@ BOOL CPsgLibApp::InitInstance()
    AfxEnableControlContainer();
 
    // This call will initialize the grid library
-	GXInit( );
+	GXInit();
 
-   // Use the same help file as the main application
-   if ( EAFGetApp() )
-   {
-      free((void*)m_pszHelpFilePath);
-      m_pszHelpFilePath = _tcsdup(EAFGetApp()->m_pszHelpFilePath);
-   }
+   sysComCatMgr::CreateCategory(L"PGS Library Editor Components",CATID_PGSuperLibraryManagerPlugin);
 
-   sysComCatMgr::CreateCategory(L"PGSuper Library Editor Components",CATID_PGSuperLibraryManagerPlugin);
-
-	return TRUE;
+   return CWinApp::InitInstance();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -172,17 +167,7 @@ BOOL CPsgLibApp::InitInstance()
 
 int CPsgLibApp::ExitInstance() 
 {
-// This call performs cleanup etc
-	GXTerminate( );
-	
-   // RAB : 7.26.99
-   // This is taken care of in ~CWinApp()
-   // See line 342 of AppCore.cpp
-   //
-   // This line of code is causing regsvr32.exe to crash when the DLL
-   // is registered.
-   //free((void*)m_pszHelpFilePath);
-
+   GXForceTerminate();
 	return CWinApp::ExitInstance();
 }
 
@@ -407,6 +392,9 @@ LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std
    {
       ASSERT(0);
    }
+
+   CEAFDocument* pDoc = EAFGetDocument();
+   pDoc->SetModifiedFlag();
 
    return result;
 }

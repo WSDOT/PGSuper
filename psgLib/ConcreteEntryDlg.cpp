@@ -90,9 +90,12 @@ BOOL CConcreteEntryDlg::OnInitDialog()
    head += m_General.m_EntryName;
 	if (!m_bAllowEditing)
    {
-      CWnd* pbut = GetDlgItem(IDOK);
-      ASSERT(pbut);
-      pbut->EnableWindow(m_bAllowEditing);
+      CWnd* pOK = GetDlgItem(IDOK);
+      pOK->ShowWindow(SW_HIDE);
+
+      CWnd* pCancel = GetDlgItem(IDCANCEL);
+      pCancel->SetWindowText(_T("Close"));
+
       head += _T(" (Read Only)");
    }
    SetWindowText(head);

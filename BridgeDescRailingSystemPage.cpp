@@ -210,24 +210,41 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
    m_LeftRailingSystem = *(pParent->m_BridgeDesc.GetLeftRailingSystem());
    m_RightRailingSystem = *(pParent->m_BridgeDesc.GetRightRailingSystem());
 
-
    EnableToolTips(TRUE);
+
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   {
+      GetDlgItem(IDC_EVENT)->EnableWindow(FALSE);
+   }
+
 
    CPropertyPage::OnInitDialog();
 
    if ( m_strLeftUserEc == "" )
+   {
       GetDlgItem(IDC_LEFT_EC)->GetWindowText(m_strLeftUserEc);
+   }
 
    if ( m_strRightUserEc == "" )
+   {
       GetDlgItem(IDC_RIGHT_EC)->GetWindowText(m_strRightUserEc);
+   }
 
    CComboBox* pcbLeft = (CComboBox*)GetDlgItem(IDC_LEFT_INTERIORBARRIER);
    if ( pcbLeft->GetCurSel() == CB_ERR )
+   {
       pcbLeft->SetCurSel(0);
+   }
 	
    CComboBox* pcbRight = (CComboBox*)GetDlgItem(IDC_RIGHT_INTERIORBARRIER);
    if ( pcbRight->GetCurSel() == CB_ERR )
+   {
       pcbRight->SetCurSel(0);
+   }
 
    // Initialize the cached values
    GetDlgItem(IDC_LEFT_SIDEWALK_WIDTH)->GetWindowText(m_CacheWidth[0]);
@@ -242,8 +259,6 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
    m_CacheInteriorBarrierCheck[1] = IsDlgButtonChecked(IDC_RIGHT_INTERIOR_BARRIER);
    m_CacheInteriorBarrierIdx[1] = pcbRight->GetCurSel();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    if ( IS_SI_UNITS(pDisplayUnits) )
    {
@@ -536,7 +551,6 @@ void CBridgeDescRailingSystemPage::EnableInteriorBarrier(BOOL bEnable,int nID)
    GetDlgItem(nID)->EnableWindow(bEnable);
 }
 
-
 void CBridgeDescRailingSystemPage::OnHelp() 
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_BRIDGEDESC_RAILING );
@@ -560,7 +574,9 @@ void CBridgeDescRailingSystemPage::OnLeftExteriorBarrierChanged()
    }
 
    if ( IsDlgButtonChecked(IDC_LEFT_SIDEWALK) )
+   {
       nShowCmd = SW_SHOW;
+   }
 
    GetDlgItem(IDC_LEFT_CONCRETE_LABEL)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_LEFT_CONCRETE_TYPE_LABEL)->ShowWindow(nShowCmd);
@@ -594,7 +610,9 @@ void CBridgeDescRailingSystemPage::OnRightExteriorBarrierChanged()
    }
 
    if ( IsDlgButtonChecked(IDC_RIGHT_SIDEWALK) )
+   {
       nShowCmd = SW_SHOW;
+   }
 
    GetDlgItem(IDC_RIGHT_CONCRETE_LABEL)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_RIGHT_CONCRETE_TYPE_LABEL)->ShowWindow(nShowCmd);
@@ -875,9 +893,7 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
    if ( pRailingSystem->Concrete.Type != pgsTypes::Normal && pRailingSystem->Concrete.bHasFct )
    {
       CString strLWC;
-      strLWC.Format(_T("\r\n%-20s %s"),
-         _T("fct"),FormatDimension(pRailingSystem->Concrete.Fct,stress));
-
+      strLWC.Format(_T("\r\n%-20s %s"),_T("fct"),FormatDimension(pRailingSystem->Concrete.Fct,stress));
       strTip += strLWC;
    }
 
@@ -899,17 +915,25 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
            !IsDensityInRange(m_LeftRailingSystem.Concrete.WeightDensity,  m_LeftRailingSystem.Concrete.Type) )
       {
          if ( m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal )
+         {
             AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         }
          else
+         {
             AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         }
       }
       else if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) ||
                 !IsDensityInRange(m_RightRailingSystem.Concrete.WeightDensity,  m_RightRailingSystem.Concrete.Type) )
       {
          if ( m_RightRailingSystem.Concrete.Type == pgsTypes::Normal )
+         {
             AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         }
          else
+         {
             AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         }
       }
    }
 
@@ -937,15 +961,6 @@ bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::Co
 
 void CBridgeDescRailingSystemPage::FillEventList()
 {
-   CEAFDocument* pDoc = EAFGetDocument();
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      GetDlgItem(IDC_EVENT_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_EVENT)->ShowWindow(SW_HIDE);
-
-      return;
-   }
-
    CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
 
    int eventIdx = pcbEvent->GetCurSel();
@@ -981,13 +996,13 @@ void CBridgeDescRailingSystemPage::FillEventList()
 
 void CBridgeDescRailingSystemPage::OnEventChanging()
 {
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_EVENT);
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
    m_PrevEventIdx = pCB->GetCurSel();
 }
 
 void CBridgeDescRailingSystemPage::OnEventChanged()
 {
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_EVENT);
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
    int curSel = pCB->GetCurSel();
    EventIndexType eventIdx = (EventIndexType)pCB->GetItemData(curSel);
    if ( eventIdx == CREATE_TIMELINE_EVENT )
@@ -1012,9 +1027,13 @@ void CBridgeDescRailingSystemPage::OnEventChanged()
          {
             CString strProblem;
             if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
+            {
                strProblem = _T("This event begins before the activities in the previous event have completed.");
+            }
             else
+            {
                strProblem = _T("The activities in this event end after the next event begins.");
+            }
 
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 

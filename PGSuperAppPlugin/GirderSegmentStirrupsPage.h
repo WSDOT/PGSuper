@@ -34,4 +34,6 @@ protected:
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+   virtual UINT GetHelpID() { return IDH_GIRDERDETAILS_TRANSV_REBAR; }
 };

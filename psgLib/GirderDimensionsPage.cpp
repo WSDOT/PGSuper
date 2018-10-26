@@ -170,9 +170,13 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    // Fill the beam family combo box
    std::vector<CString> familyNames;
    if ( splicedBeamFactory )
+   {
       familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
+   }
    else
+   {
       familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
+   }
 
    std::vector<CString>::iterator familyIter(familyNames.begin());
    std::vector<CString>::iterator familyIterEnd(familyNames.end());
@@ -232,7 +236,7 @@ BOOL CGirderDimensionsPage::OnInitDialog()
 
    // Disable the beam family combo box if the
    // dialog is opened as read only
-   if ( !pDad->m_AllowEditing )
+   if ( !pDad->m_bAllowEditing )
    {
       pComboBox->EnableWindow(FALSE);
    }

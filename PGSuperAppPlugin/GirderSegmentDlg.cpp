@@ -331,7 +331,7 @@ BOOL CGirderSegmentDlg::OnInitDialog()
    BOOL bResult = CPropertySheet::OnInitDialog();
 
    CString strTitle;
-   strTitle.Format(_T("Group %d Girder %s Segment %d"),LABEL_GROUP(m_SegmentKey.groupIndex),LABEL_GIRDER(m_SegmentKey.girderIndex),LABEL_SEGMENT(m_SegmentKey.segmentIndex));
+   strTitle.Format(_T("Segment Details for Group %d Girder %s Segment %d"),LABEL_GROUP(m_SegmentKey.groupIndex),LABEL_GIRDER(m_SegmentKey.girderIndex),LABEL_SEGMENT(m_SegmentKey.segmentIndex));
    SetWindowText(strTitle);
 
    // Build the OK button

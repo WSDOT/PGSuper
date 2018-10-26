@@ -13,7 +13,7 @@ class CRemoveTempSupportsDlg : public CDialog
 	DECLARE_DYNAMIC(CRemoveTempSupportsDlg)
 
 public:
-	CRemoveTempSupportsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
+	CRemoveTempSupportsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CRemoveTempSupportsDlg();
 
 // Dialog Data
@@ -33,8 +33,11 @@ protected:
    CTimelineItemListBox m_lbSource;
    CTimelineItemListBox m_lbTarget;
 
+   BOOL m_bReadOnly;
+
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnMoveToTargetList();
    afx_msg void OnMoveToSourceList();
+   afx_msg void OnHelp();
 };

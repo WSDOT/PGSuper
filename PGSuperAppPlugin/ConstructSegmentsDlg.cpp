@@ -6,18 +6,20 @@
 #include "ConstructSegmentsDlg.h"
 
 #include <IFace\Project.h>
+#include <IFace\DocumentType.h>
 #include <PgsExt\BridgeDescription2.h>
 
-
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 // CConstructSegmentsDlg dialog
 
 IMPLEMENT_DYNAMIC(CConstructSegmentsDlg, CDialog)
 
-CConstructSegmentsDlg::CConstructSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CConstructSegmentsDlg::CConstructSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CConstructSegmentsDlg::IDD, pParent),
-   m_EventIndex(eventIdx)
+   m_EventIndex(eventIdx),
+   m_bReadOnly(bReadOnly)
 {
    m_TimelineMgr = timelineMgr;
    m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
@@ -90,6 +92,7 @@ void CConstructSegmentsDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CConstructSegmentsDlg, CDialog)
    ON_BN_CLICKED(IDC_MOVE_RIGHT, &CConstructSegmentsDlg::OnMoveToTargetList)
    ON_BN_CLICKED(IDC_MOVE_LEFT, &CConstructSegmentsDlg::OnMoveToSourceList)
+   ON_BN_CLICKED(ID_HELP, &CConstructSegmentsDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -104,7 +107,40 @@ BOOL CConstructSegmentsDlg::OnInitDialog()
 
    FillLists();
 
-   // TODO:  Add extra initialization here
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_SOURCE_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_TARGET_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_RIGHT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_LEFT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_RELAXATION_TIME)->EnableWindow(FALSE);
+      GetDlgItem(IDC_RELAXATION_TIME_UNIT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_AGE)->EnableWindow(FALSE);
+      GetDlgItem(IDC_AGE_UNIT)->EnableWindow(FALSE);
+
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
+
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      SetWindowText(_T("Construct Girders"));
+      GetDlgItem(IDC_SOURCE_LABEL)->SetWindowText(_T("Girders to be constructed"));
+      GetDlgItem(IDC_TARGET_LABEL)->SetWindowText(_T("Girders constructed during this activity"));
+      GetDlgItem(IDC_NOTE)->SetWindowText(_T("This activity includes lifting of the precast girders from the casting bed and placing them into storage."));
+   }
+   else
+   {
+      SetWindowText(_T("Construct Segments"));
+      GetDlgItem(IDC_SOURCE_LABEL)->SetWindowText(_T("Girders to be erected"));
+      GetDlgItem(IDC_TARGET_LABEL)->SetWindowText(_T("Girders erected during this activity"));
+      GetDlgItem(IDC_NOTE)->SetWindowText(_T("This activity includes lifting of the precast segments from the casting bed and placing them into storage."));
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -122,6 +158,10 @@ void CConstructSegmentsDlg::OnMoveToSourceList()
 
 void CConstructSegmentsDlg::FillLists()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -141,7 +181,14 @@ void CConstructSegmentsDlg::FillLists()
             EventIndexType constructEventIdx = m_TimelineMgr.GetSegmentConstructionEventIndex(segmentID);
 
             CString label;
-            label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
+            if ( pDocType->IsPGSuperDocument() )
+            {
+               label.Format(_T("Span %d, Girder %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx));
+            }
+            else
+            {
+               label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
+            }
 
             if ( constructEventIdx == m_EventIndex )
             {
@@ -155,4 +202,9 @@ void CConstructSegmentsDlg::FillLists()
          } // segment loop
       } // girder loop
    } // group loop
+}
+
+void CConstructSegmentsDlg::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_CONSTRUCT_SEGMENTS);
 }

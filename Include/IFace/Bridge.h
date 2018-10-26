@@ -257,6 +257,7 @@ interface IBridge : IUnknown
    virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) = 0;
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
+   virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) = 0;
    virtual void GetSlabOffset(const CSegmentKey& segmentKey,Float64* pStart,Float64* pEnd) = 0;
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
@@ -391,13 +392,14 @@ interface IBridge : IUnknown
    ///////////////////////////////////////////////////
 
    virtual pgsTypes::SupportedDeckType GetDeckType() = 0;
+   virtual pgsTypes::WearingSurfaceType GetWearingSurfaceType() = 0;
    virtual bool IsCompositeDeck() = 0;
    virtual bool HasOverlay() = 0;
    virtual bool IsFutureOverlay() = 0;
    virtual Float64 GetOverlayWeight() = 0;
    virtual Float64 GetOverlayDepth() = 0;
    virtual Float64 GetSacrificalDepth() = 0;
-   virtual Float64 GetFillet() = 0;
+   virtual Float64 GetFillet(SpanIndexType spanIdx, GirderIndexType gdrIdx) = 0;
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) = 0;
@@ -1176,6 +1178,7 @@ interface ISectionProperties : IUnknown
 
    // Distance from top of slab to top of girder - Does not account for camber
    virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) = 0;
 
    // Reporting
    virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
@@ -1455,6 +1458,7 @@ interface IGirder : public IUnknown
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) = 0;
 
    virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) = 0;
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx) = 0;
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx) = 0;
 

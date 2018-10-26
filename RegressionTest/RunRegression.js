@@ -15,6 +15,8 @@ var DoSendEmail=false;
 var EmailAddress = new String;
 var ExecuteCommands=true; // if false, only show commands
 var RunMultipleFiles=false;
+var AppName = "PGSuper";
+var FileExt = "pgs";
 
 
 var startDate = new Date();
@@ -189,7 +191,7 @@ function RunTest (currFolder, currCommand)
           {
              s = new String(fc.item());
             
-            idx = s.indexOf(".pgs");
+            idx = s.indexOf(FileExt);
             if (-1 != idx)
                nPgsFiles++;
           }
@@ -199,7 +201,7 @@ function RunTest (currFolder, currCommand)
           {
              s = new String(fc.item());
             
-            idx = s.indexOf(".pgs");
+            idx = s.indexOf(FileExt);
             if (-1 != idx) {
                fileCount++; // processing a pgs file.. increment count
                
@@ -259,6 +261,8 @@ function RunTest (currFolder, currCommand)
      }
      else
      {
+         if ( AppName != "PGSPLICE" )
+         {
          // testing TOGA - need to set library to txdot
          SetPGSuperLibrary("TxDOTRegressionTest", "TxDOTRegressionTest");
           
@@ -289,6 +293,7 @@ function RunTest (currFolder, currCommand)
          
          // Back to current testing library
          SetPGSuperLibrary(NewCatalogServer, NewCatalogPublisher);
+         }
      }
 
      // Recurse
@@ -315,7 +320,7 @@ function InitTest(currFolder)
 function SetPGSuperLibrary(server, publisher)
 {
    var cmd = new String;
-   cmd = Application + "/App=PGSuper /Configuration=\"" + server + "\":\"" + publisher + "\"";
+   cmd = Application + "/App=" + AppName + " /Configuration=\"" + server + "\":\"" + publisher + "\"";
 
    if(ExecuteCommands)
    {
@@ -597,6 +602,25 @@ function ParseCommandLine()
          DisplayMessage("    /M             - Run multiple files.");
          DisplayMessage("");
          return 1;
+       }
+       else if (s.charAt(1)=="A" || s.charAt(1)=="a")
+       {
+          var app = s.substring(2,s.length);
+          app = app.toUpperCase();
+          if ( app=="PGSUPER" || app=="PGSPLICE" )
+          {
+              AppName = app;
+              if ( app=="PGSUPER" )
+                 FileExt = ".pgs";
+              else
+                 FileExt = ".spl";
+          }
+          else
+          {
+             DisplayMessage("Invalid application - must be either PGSuper or PGSplice");
+             DisplayMessage("String was: \""+app+"\"");
+             return 1;
+          }
        }
        else if (s.charAt(1)=="D" || s.charAt(1)=="d")
        {

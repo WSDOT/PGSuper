@@ -291,7 +291,8 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::GetDisplayObject(iDisplayObject*
 STDMETHODIMP_(void) CGirderDropSite::XDropSite::Highlite(CDC* pDC,BOOL bHighlite)
 {
    METHOD_PROLOGUE(CGirderDropSite,DropSite);
-   pThis->m_DispObj->Highlite(pDC,bHighlite);
+   if ( pThis->m_DispObj )
+      pThis->m_DispObj->Highlite(pDC,bHighlite);
 }
 
 

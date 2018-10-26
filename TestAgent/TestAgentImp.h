@@ -75,11 +75,11 @@ public:
 // ITest1250
    virtual bool RunTest(long  type,
                         const std::_tstring& outputFileName,
-                        const std::_tstring poiFileName);
+                        const std::_tstring& poiFileName);
 
    virtual bool RunTestEx(long  type,const std::vector<SpanGirderHashType>& girderList,
                           const std::_tstring& outputFileName,
-                          const std::_tstring poiFileName);
+                          const std::_tstring& poiFileName);
 
 private:
    DECLARE_EAF_AGENT_DATA;

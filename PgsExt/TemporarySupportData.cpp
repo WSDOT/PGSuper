@@ -444,6 +444,8 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::TempSupportSegmentConnec
          CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
          pGirder->JoinSegmentsAtTemporarySupport(m_Index);
       }
+
+      m_ConnectionType = newType; // this must be done last for this case
    }
    else if ( newType == pgsTypes::tsctClosureJoint )
    {
@@ -456,6 +458,8 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::TempSupportSegmentConnec
          pGirder->SplitSegmentsAtTemporarySupport(m_Index);
       }
 
+      m_ConnectionType = newType; // this must be done here for this case
+
       // add the closure joint casting events to the timeline manager.
       CClosureJointData* pClosure = GetClosureJoint(0);
       ClosureIDType closureID = pClosure->GetID();
@@ -464,8 +468,6 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::TempSupportSegmentConnec
 
       m_Spacing.SetGirderCount(nGirders);
    }
-
-   m_ConnectionType = newType;
 }
 
 pgsTypes::TempSupportSegmentConnectionType CTemporarySupportData::GetConnectionType() const

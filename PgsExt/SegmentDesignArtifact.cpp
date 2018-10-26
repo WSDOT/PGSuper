@@ -376,6 +376,16 @@ Float64 pgsSegmentDesignArtifact::GetSlabOffset(pgsTypes::MemberEndType end) con
    return m_SlabOffset[end];
 }
 
+void pgsSegmentDesignArtifact::SetFillet(Float64 f)
+{
+   m_Fillet = f;
+}
+
+Float64 pgsSegmentDesignArtifact::GetFillet() const
+{
+   return m_Fillet;
+}
+
 void pgsSegmentDesignArtifact::SetLiftingLocations(Float64 left,Float64 right)
 {
    m_LiftLocLeft  = left;
@@ -482,6 +492,8 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
 
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
    config.SlabOffset[pgsTypes::metEnd]   = GetSlabOffset(pgsTypes::metEnd);
+
+   config.Fillet = GetFillet();
 
    WriteShearDataToStirrupConfig(&m_ShearData, config.StirrupConfig);
 
@@ -812,6 +824,7 @@ void pgsSegmentDesignArtifact::MakeCopy(const pgsSegmentDesignArtifact& rOther)
    m_SsDebondInfo        = rOther.m_SsDebondInfo;
    m_SlabOffset[pgsTypes::metStart] = rOther.m_SlabOffset[pgsTypes::metStart];
    m_SlabOffset[pgsTypes::metEnd]   = rOther.m_SlabOffset[pgsTypes::metEnd];
+   m_Fillet                         = rOther.m_Fillet;
 
    m_NumShearZones       = rOther.m_NumShearZones;
    m_ShearData           = rOther.m_ShearData;
@@ -873,6 +886,7 @@ void pgsSegmentDesignArtifact::Init()
    m_Fci                 = 0;
    m_SlabOffset[pgsTypes::metStart] = 0;
    m_SlabOffset[pgsTypes::metEnd] = 0;
+   m_Fillet = 0;
    m_NumShearZones       = 0;
    m_bWasLongitudinalRebarForShearDesigned = false;
    m_LiftLocLeft         = 0.0;

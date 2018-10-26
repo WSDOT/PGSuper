@@ -26,6 +26,9 @@
 #include "HaunchSame4BridgeDlg.h"
 #include "HaunchSpanBySpanDlg.h"
 #include "HaunchByGirderDlg.h"
+#include "FilletSame4BridgeDlg.h"
+#include "FilletSpanBySpanDlg.h"
+#include "FilletByGirderDlg.h"
 #include <PgsExt\HaunchShapeComboBox.h>
 
 class CBridgeDescription2;
@@ -38,7 +41,7 @@ inline CString SlabOffsetTypeAsString(pgsTypes::SlabOffsetType type)
    }
    else if (type == pgsTypes::sotPier)
    {
-      return _T("Define unique slab offsets per Span");
+      return _T("Define unique slab offsets per Pier");
    }
    else if (type == pgsTypes::sotGirder)
    {
@@ -51,6 +54,26 @@ inline CString SlabOffsetTypeAsString(pgsTypes::SlabOffsetType type)
    }
 }
 
+inline CString FilletTypeAsString(pgsTypes::FilletType type)
+{
+   if (type == pgsTypes::fttBridge)
+   {
+      return _T("Define single Fillet for entire Bridge");
+   }
+   else if (type == pgsTypes::fttSpan)
+   {
+      return _T("Define unique Fillets per Span");
+   }
+   else if (type == pgsTypes::fttGirder)
+   {
+      return _T("Define unique Fillets per Girder");
+   }
+   else
+   {
+      ATLASSERT(0);
+      return _T("Error, bad fillet type");
+   }
+}
 
 // CEditHaunchDlg dialog
 
@@ -71,6 +94,11 @@ public:
    CHaunchSpanBySpanDlg  m_HaunchSpanBySpanDlg;
    CHaunchByGirderDlg    m_HaunchByGirderDlg;
 
+// embedded dialogs for different Fillet layouts
+   CFilletSame4BridgeDlg m_FilletSame4BridgeDlg;
+   CFilletSpanBySpanDlg  m_FilletSpanBySpanDlg;
+   CFilletByGirderDlg    m_FilletByGirderDlg;
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
@@ -78,9 +106,11 @@ protected:
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnCbnSelchangeAType();
+   afx_msg void OnCbnSelchangeFilletType();
 
    // Force to another type than that in bridge descripton. Must be called before DoModal
    void ForceToSlabOffsetType(pgsTypes::SlabOffsetType slabOffsetType);
+   void ForceToFilletType(pgsTypes::FilletType filletType);
 
    // Change bridge description to our haunch data
    void ModifyBridgeDescr(CBridgeDescription2* pBridgeDesc);
@@ -90,19 +120,17 @@ private:
 
    // Data for haunch input
    HaunchInputData m_HaunchInputData;
-   Float64 m_Fillet;
-   bool m_bShowFillet;
 
    pgsTypes::HaunchShapeType m_HaunchShape;
    CHaunchShapeComboBox m_cbHaunchShape;
 
    bool m_WasSlabOffsetTypeForced;
    pgsTypes::SlabOffsetType m_ForcedSlabOffsetType;
+   bool m_WasFilletTypeForced;
+   pgsTypes::FilletType m_ForcedFilletType;
    bool m_WasDataIntialized;
 
    void InitializeData();
-   void FillPierData(Float64 startA, Float64 endA);
-   void FillGirderData(Float64 startA, Float64 endA);
 public:
    afx_msg void OnBnClickedHelp();
 };

@@ -86,6 +86,8 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
 
    CreateMultiGirderSpecCheckReport();
 
+   CreateMultiHaunchGeometryReport();
+
    // Design Outcome
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Design Outcome Report"),true); // hidden report
 #if defined _DEBUG || defined _BETA_VERSION

@@ -83,6 +83,7 @@ public:
    afx_msg void OnCbnSelchangeHaulingMethod();
 
    void SwapDialogs();
+   virtual BOOL OnSetActive();
 };
 
 //{{AFX_INSERT_LOCATION}}

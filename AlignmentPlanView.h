@@ -25,19 +25,15 @@
 // AlignmentPlanView.h : header file
 //
 //
-#include <map>
-#include <DManip\DManip.h>
-#include <DManipTools\DManipTools.h>
-#include "BridgeModelViewChildFrame.h"
+#include "BridgeViewPane.h"
 
 #define LABEL_NORMAL_TO_ALIGNMENT -10000
 
 /////////////////////////////////////////////////////////////////////////////
 // CAlignmentPlanView view
 
-class CAlignmentPlanView : public CDisplayView
+class CAlignmentPlanView : public CBridgeViewPane
 {
-   friend CBridgeModelViewChildFrame;
 protected:
 	CAlignmentPlanView();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CAlignmentPlanView)
@@ -47,7 +43,6 @@ public:
 
 // Operations
 public:
-   void DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -55,8 +50,6 @@ public:
 	public:
 	virtual void OnInitialUpdate();
 	protected:
-	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
-	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -69,35 +62,26 @@ protected:
 
    // Generated message map functions
 protected:
-   virtual void HandleLButtonDown(UINT nFlags, CPoint logPoint);
+	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	virtual void HandleLButtonDblClk(UINT nFlags, CPoint logPoint);
    virtual void HandleContextMenu(CWnd* pWnd,CPoint logPoint);
 
 	//{{AFX_MSG(CAlignmentPlanView)
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnViewSettings();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnKillFocus(CWnd* pNewWnd);
-//   afx_msg void OnZoom();
-//   afx_msg void OnScaleToFit();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CBridgeModelViewChildFrame* m_pFrame;
+   virtual void BuildDisplayLists();
+   virtual void UpdateDisplayObjects();
+   virtual void UpdateDrawingScale();
 
-   void UpdateDisplayObjects();
    void BuildTitleDisplayObjects();
    void BuildAlignmentDisplayObjects();
    void BuildBridgeDisplayObjects();
    void BuildLabelDisplayObjects();
    void BuildNorthArrowDisplayObjects();
 
-   void UpdateDrawingScale();
-   void DrawFocusRect();
 
    void CreateStationLabel(iDisplayList* pDisplayList,Float64 station,LPCTSTR strBaseLabel=NULL,long angle=LABEL_NORMAL_TO_ALIGNMENT,UINT textAlign=TA_BASELINE | TA_LEFT);
-
-   CBridgeModelViewChildFrame* GetFrame();
 };

@@ -35,6 +35,7 @@ IMPLEMENT_DYNAMIC(CLocationGraphController,CEAFGraphControlWindow)
 CLocationGraphController::CLocationGraphController() :
 m_GirderKey(0,0)
 {
+   m_bAlwaysSelect = TRUE;
 }
 
 BEGIN_MESSAGE_MAP(CLocationGraphController, CEAFGraphControlWindow)
@@ -47,6 +48,16 @@ BEGIN_MESSAGE_MAP(CLocationGraphController, CEAFGraphControlWindow)
    ON_BN_CLICKED(IDC_INTERVALS,OnXAxis)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+
+void CLocationGraphController::AlwaysSelect(BOOL bAlwaysSelect)
+{
+   m_bAlwaysSelect = bAlwaysSelect;
+}
+
+BOOL CLocationGraphController::AlwaysSelect() const
+{
+   return m_bAlwaysSelect;
+}
 
 BOOL CLocationGraphController::OnInitDialog()
 {
@@ -231,8 +242,15 @@ void CLocationGraphController::FillLocationCtrl()
 
    if ( curSel == CB_ERR || pcbLocation->GetCount() <= curSel )
    {
-      pcbLocation->SetCurSel(0);
-      m_Poi = vPoi.front();
+      if ( m_bAlwaysSelect )
+      {
+         pcbLocation->SetCurSel(0);
+         m_Poi = vPoi.front();
+      }
+      else
+      {
+         m_Poi = pgsPointOfInterest();
+      }
    }
    else
    {

@@ -38,6 +38,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+const ROWCOL _STARTCOL = 1;
+
 GRID_IMPLEMENT_REGISTER(CHaunchSpanGrid, CS_DBLCLKS, 0, 0, 0);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -72,11 +74,11 @@ int CHaunchSpanGrid::GetColWidth(ROWCOL nCol)
    switch (nCol)
    {
    case 0:
-      return (int)(rect.Width( )*(Float64)6/20);
    case 1:
-      return (int)(rect.Width( )*(Float64)7/20);
+      return (int)(rect.Width( )*(Float64)8/20);
    case 2:
-      return (int)(rect.Width( )*(Float64)7/20);
+   case 3:
+      return (int)(rect.Width( )*(Float64)6/20);
    default:
       ASSERT(0);
       return (int)(rect.Width( )/5);
@@ -99,7 +101,7 @@ void CHaunchSpanGrid::CustomInit()
 	GetParam( )->EnableUndo(FALSE);
 
    const int num_rows=0;
-   const int num_cols=2;
+   const int num_cols=_STARTCOL+2;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -110,37 +112,31 @@ void CHaunchSpanGrid::CustomInit()
    // no row moving
 	GetParam()->EnableMoveRows(FALSE);
 
-   // disable left side
-	SetStyleRange(CGXRange(0,0), CGXStyle()
-			.SetControl(GX_IDS_CTRL_HEADER)
-		);
-
-   CString strval;
-   strval.Format(_T("Start\n(%s)"), M_pCompUnit->UnitOfMeasure.UnitTag().c_str());
-
-// set text along top row
-	SetStyleRange(CGXRange(0,1), CGXStyle()
-         .SetWrapText(TRUE)
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strval)
-		);
-
-   strval.Format(_T("End\n(%s)"), M_pCompUnit->UnitOfMeasure.UnitTag().c_str());
-
-	SetStyleRange(CGXRange(0,2), CGXStyle()
-         .SetWrapText(TRUE)
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strval)
-		);
-
-   // make it so that text fits correctly in header row
-	ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
-
    // don't allow users to resize grids
    GetParam( )->EnableTrackColWidth(0); 
    GetParam( )->EnableTrackRowHeight(0); 
+
+   // Header
+   ROWCOL col=1;
+	SetStyleRange(CGXRange(0,col,0,col+1), CGXStyle()
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_TOP)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
+			.SetValue(_T("Location"))
+		);
+
+   CString strLabel;
+   strLabel.Format(_T("Slab Offset (%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+	SetStyleRange(CGXRange(0,col+2), CGXStyle()
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+		.SetEnabled(FALSE)          // disables usage as current cell
+		.SetValue(strLabel)
+		);
+
+   // Hide the row header column
+   HideCols(0, 0);
 
 	EnableIntelliMouse();
 	SetFocus();
@@ -150,18 +146,137 @@ void CHaunchSpanGrid::CustomInit()
 
 void CHaunchSpanGrid::SetRowStyle(ROWCOL nRow)
 {
-
-	GetParam()->EnableUndo(FALSE);
-
-	SetStyleRange(CGXRange(nRow,1), CGXStyle()
-         .SetHorizontalAlignment(DT_RIGHT)
+   ROWCOL col = _STARTCOL;
+	SetStyleRange(CGXRange(nRow,_STARTCOL,nRow,_STARTCOL+1), CGXStyle()
+ 			.SetEnabled(FALSE)          // disables usage as current cell
+			.SetInterior(GXSYSCOLOR(COLOR_BTNFACE))
+			.SetHorizontalAlignment(DT_CENTER)
+			.SetVerticalAlignment(DT_VCENTER)
 		);
 
-	SetStyleRange(CGXRange(nRow,2), CGXStyle()
+	SetStyleRange(CGXRange(nRow,_STARTCOL+2), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
 		);
+}
 
+void CHaunchSpanGrid::FillGrid(const HaunchInputData& haunchData)
+{
+   GetParam()->EnableUndo(FALSE);
+   GetParam()->SetLockReadOnly(FALSE);
+ 
+   ROWCOL rows = GetRowCount();
+   if (0 < rows)
+	   RemoveRows(0, rows);
+
+   // we want to merge cells
+   SetMergeCellsMode(gxnMergeEvalOnDisplay);
+
+   // One row for each bearing line
+   ROWCOL numRows = (ROWCOL)haunchData.m_BearingsSlabOffset.size();
+   ROWCOL row = 1;
+   InsertRows(row, numRows);
+
+   m_GirderCounts.reserve(numRows);
+
+   PierIndexType PierNo=1;
+   SlabOffsetBearingDataConstIter iter = haunchData.m_BearingsSlabOffset.begin();
+   for (; row<=numRows; row++  )
+   {
+      const SlabOffsetBearingData& hp = *iter;
+
+      SetRowStyle(row);
+
+      ROWCOL col = _STARTCOL;
+
+      // row index
+      CString crow;
+      if (row==1 || row==numRows)
+         crow.Format(_T("Abutment %d"),PierNo);
+      else
+         crow.Format(_T("Pier %d"),PierNo);
+
+      SetStyleRange(CGXRange(row,col++), CGXStyle()
+         .SetValue(crow));
+
+      if (hp.m_PDType==SlabOffsetBearingData::pdAhead)
+         crow = _AHEADSTR;
+      else if (hp.m_PDType==SlabOffsetBearingData::pdBack)
+         crow = _BACKSTR;
+      else if (hp.m_PDType==SlabOffsetBearingData::pdCL)
+         crow = _CLSTR;
+
+      SetStyleRange(CGXRange(row,col++), CGXStyle()
+         .SetValue(crow));
+
+      SetStyleRange(CGXRange(row,col++), CGXStyle()
+         .SetReadOnly(FALSE)
+         .SetEnabled(TRUE)
+         .SetValue(FormatDimension(hp.m_AsForGirders[0],*M_pCompUnit, false)) // use A at slot[0]
+         );
+
+      if (row!=1&& hp.m_PDType==SlabOffsetBearingData::pdAhead)
+      {
+	      SetStyleRange(CGXRange(row-1,_STARTCOL,row,_STARTCOL), CGXStyle()
+               .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
+	      );
+      }
+
+      if (hp.m_PDType!=SlabOffsetBearingData::pdBack)
+         PierNo++;
+
+      // save number of girders at bearing line
+      m_GirderCounts.push_back(hp.m_AsForGirders.size());
+
+      iter++;
+   }
+
+	ResizeRowHeightsToFit(CGXRange(0,0,numRows,2));
+
+   GetParam()->SetLockReadOnly(TRUE);
 	GetParam()->EnableUndo(TRUE);
+
+	ScrollCellInView(1, GetLeftCol());
+}
+
+void CHaunchSpanGrid::GetData(Float64 minA, CString& minValError, HaunchInputData* pData, CDataExchange* pDX)
+{
+   pData->m_SlabOffsetType = pgsTypes::sotPier;
+
+   SlabOffsetBearingDataIter brgIt = pData->m_BearingsSlabOffset.begin();
+
+   ROWCOL nRows = GetRowCount();
+   for ( ROWCOL row = 1; row <= nRows; row++ )
+   {
+      SlabOffsetBearingData& hp = *brgIt;
+
+      CString str = GetCellValue(row,3);
+      if (!str.IsEmpty())
+      {
+         Float64 val;
+         if(sysTokenizer::ParseDouble(str, &val))
+         {
+            val = ::ConvertToSysUnits(val, M_pCompUnit->UnitOfMeasure);
+
+            // Assign A to all girders in girder line
+            hp.m_AsForGirders.assign(m_GirderCounts[row-1], val);
+
+            if (val < minA)
+            {
+               AfxMessageBox( minValError, MB_ICONEXCLAMATION);
+               this->SetCurrentCell(row,2,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+               pDX->Fail();
+            }
+         }
+         else
+         {
+            AfxMessageBox( _T("Value is not a number - must be a positive number"), MB_ICONEXCLAMATION);
+            this->SetCurrentCell(row,2,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+            pDX->Fail();
+         }
+      }
+
+      brgIt++;
+   }
 }
 
 CString CHaunchSpanGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
@@ -177,118 +292,4 @@ CString CHaunchSpanGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
     {
         return GetValueRowCol(nRow, nCol);
     }
-}
-
-void CHaunchSpanGrid::FillGrid(const HaunchInputData& haunchData)
-{
-   GetParam()->EnableUndo(FALSE);
-   GetParam()->SetLockReadOnly(FALSE);
- 
-   // remove all but top row
-   ROWCOL rows = GetRowCount();
-   if (1 <= rows)
-	   RemoveRows(1, rows);
-
-   // One row for each available strand row
-   ROWCOL numRows = (ROWCOL)haunchData.m_SpansHaunch.size();
-   ROWCOL row = 1;
-   InsertRows(row, numRows);
-
-   HaunchPairVecConstIter iter = haunchData.m_SpansHaunch.begin();
-   for (ROWCOL row = 1; row<=numRows; row++  )
-   {
-      const HaunchPair& hp = *iter;
-
-      SetRowStyle(row);
-
-      // row index
-      CString crow;
-      crow.Format(_T("Span %d"),row);
-      SetStyleRange(CGXRange(row,0), CGXStyle()
-         .SetValue(crow));
-
-      // Start
-      SetStyleRange(CGXRange(row,1), CGXStyle()
-         .SetReadOnly(FALSE)
-         .SetEnabled(TRUE)
-         .SetValue(FormatDimension(hp.first,*M_pCompUnit, false))
-         );
-
-      // end
-      SetStyleRange(CGXRange(row,2), CGXStyle()
-         .SetReadOnly(FALSE)
-         .SetEnabled(TRUE)
-         .SetValue(FormatDimension(hp.second,*M_pCompUnit, false))
-         );
-
-      iter++;
-   }
-
-   GetParam()->SetLockReadOnly(TRUE);
-	GetParam()->EnableUndo(TRUE);
-
-	ScrollCellInView(1, GetLeftCol());
-}
-
-HaunchInputData CHaunchSpanGrid::GetData(Float64 minA, CString& minValError, CDataExchange* pDX)
-{
-   HaunchInputData data;
-   data.m_SlabOffsetType = pgsTypes::sotPier;
-
-   ROWCOL nRows = GetRowCount();
-
-   for ( ROWCOL row = 1; row <= nRows; row++ )
-   {
-      HaunchPair hp(0.0,0.0);
-
-      CString str = GetCellValue(row,1);
-      if (!str.IsEmpty())
-      {
-         Float64 val;
-         if(sysTokenizer::ParseDouble(str, &val))
-         {
-            hp.first = ::ConvertToSysUnits(val, M_pCompUnit->UnitOfMeasure);
-
-            if (hp.first < minA)
-            {
-               AfxMessageBox( minValError, MB_ICONEXCLAMATION);
-               this->SetCurrentCell(row,1,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
-               pDX->Fail();
-            }
-         }
-         else
-         {
-            AfxMessageBox( _T("Start value is not a number - must be a positive number"), MB_ICONEXCLAMATION);
-            this->SetCurrentCell(row,1,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
-            pDX->Fail();
-         }
-      }
-
-      str = GetCellValue(row,2);
-      if (!str.IsEmpty())
-      {
-         Float64 val;
-         if(sysTokenizer::ParseDouble(str, &val))
-         {
-            hp.second = ::ConvertToSysUnits(val, M_pCompUnit->UnitOfMeasure);
-
-            if (hp.second < minA)
-            {
-               AfxMessageBox( minValError, MB_ICONEXCLAMATION);
-               this->SetCurrentCell(row,2,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
-               pDX->Fail();
-            }
-         }
-         else
-         {
-            AfxMessageBox( _T("End value is not a number - must be a positive number"), MB_ICONEXCLAMATION);
-            this->SetCurrentCell(row,2,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
-            pDX->Fail();
-         }
-      }
-
-      data.m_SpansHaunch.push_back(hp);
-   }
-
-   return data;
 }

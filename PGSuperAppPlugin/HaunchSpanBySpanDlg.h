@@ -38,7 +38,7 @@ public:
 	enum { IDD = IDD_HAUNCH_SPAN_BY_SPAN };
 
    void UploadData(const HaunchInputData& rData);
-   HaunchInputData DownloadData(Float64 minA, CString& minValError, CDataExchange* pDX);
+   void DownloadData(Float64 minA, CString& minValError, HaunchInputData* pData, CDataExchange* pDX);
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

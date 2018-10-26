@@ -1,4 +1,4 @@
-Shear Capacity {#shear_capacity}
+Shear Capacity {#tg_shear_capacity}
 ======================================
 
 ## General

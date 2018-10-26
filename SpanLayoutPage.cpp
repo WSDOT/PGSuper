@@ -68,6 +68,9 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_START_SLAB_OFFSET, m_ctrlStartSlabOffset);
    DDX_Control(pDX, IDC_END_SLAB_OFFSET,   m_ctrlEndSlabOffset);
 
+   DDX_Control(pDX, IDC_FILLET_HYPERLINK,    m_FilletHyperLink);
+   DDX_Control(pDX, IDC_FILLET, m_ctrlFillet);
+
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
@@ -85,6 +88,9 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX,IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT,slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit());
    DDX_UnitValueAndTag(pDX,IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,  slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit());
+
+   Float64 fillet = pParent->m_pSpanData->GetFillet(0);
+   DDX_UnitValueAndTag(pDX,IDC_FILLET,  IDC_FILLET_UNIT,  fillet,  pDisplayUnits->GetComponentDimUnit());
 
    bool bHasCantilever[2];
    Float64 cantileverLength[2];
@@ -113,7 +119,7 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    {
       pParent->m_BridgeDesc.SetSpanLength(pParent->m_pSpanData->GetIndex(),m_SpanLength);
 
-
+      // Slab offset
       if ( pParent->m_BridgeDesc.GetSlabOffsetType()== pgsTypes::sotBridge )
       {
          pParent->m_BridgeDesc.SetSlabOffset(slabOffset[pgsTypes::metStart]);
@@ -141,6 +147,27 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
          }
       }
 
+      // Slab offset
+      if ( pParent->m_BridgeDesc.GetFilletType()== pgsTypes::fttBridge )
+      {
+         pParent->m_BridgeDesc.SetFillet(fillet);
+      }
+      else if ( pParent->m_BridgeDesc.GetFilletType() == pgsTypes::fttSpan )
+      {
+         pParent->m_pSpanData->SetFillet(fillet);
+      }
+      else
+      {
+         if ( m_InitialFilletType != pgsTypes::fttGirder )
+         {
+            GirderIndexType nGirders = pParent->m_pSpanData->GetGirderCount();
+            for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+            {
+               pParent->m_pSpanData->SetFillet(gdrIdx,fillet);
+            }
+         }
+      }
+
       for ( int i = 0; i < 2; i++ )
       {
          pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
@@ -156,6 +183,7 @@ BEGIN_MESSAGE_MAP(CSpanLayoutPage, CPropertyPage)
 	ON_WM_CTLCOLOR()
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffset,OnChangeSlabOffset)
+   ON_REGISTERED_MESSAGE(MsgChangeFilletType,OnChangeFillet)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_START_CANTILEVER, &CSpanLayoutPage::OnBnClickedStartCantilever)
    ON_BN_CLICKED(IDC_END_CANTILEVER, &CSpanLayoutPage::OnBnClickedEndCantilever)
@@ -167,6 +195,7 @@ void CSpanLayoutPage::Init(CSpanDetailsDlg* pParent)
 {
    m_SpanLength = pParent->m_pSpanData->GetSpanLength();
    m_InitialSlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
+   m_InitialFilletType = pParent->m_BridgeDesc.GetFilletType();
 }
 
 BOOL CSpanLayoutPage::OnInitDialog() 
@@ -185,6 +214,15 @@ BOOL CSpanLayoutPage::OnInitDialog()
    {
       m_ctrlStartSlabOffset.ShowDefaultWhenDisabled(TRUE);
       m_ctrlEndSlabOffset.ShowDefaultWhenDisabled(TRUE);
+   }
+
+   if ( m_InitialFilletType == pgsTypes::fttGirder )
+   {
+      m_ctrlFillet.ShowDefaultWhenDisabled(FALSE);
+   }
+   else
+   {
+      m_ctrlFillet.ShowDefaultWhenDisabled(TRUE);
    }
 
    CEAFDocument* pDoc = EAFGetDocument();
@@ -220,6 +258,8 @@ BOOL CSpanLayoutPage::OnInitDialog()
 
    UpdateSlabOffsetWindowState();
 
+   UpdateFilletWindowState();
+
    OnBnClickedStartCantilever();
    OnBnClickedEndCantilever();
 	
@@ -239,6 +279,7 @@ HBRUSH CSpanLayoutPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    switch( pWnd->GetDlgCtrlID() )
    {
    case IDC_SLAB_OFFSET_NOTE:
+   case IDC_FILLET_NOTE:
       pDC->SetTextColor(HYPERLINK_COLOR);
       break;
    };
@@ -391,6 +432,93 @@ void CSpanLayoutPage::UpdateSlabOffsetWindowState()
 
    m_ctrlStartSlabOffset.EnableWindow(bEnable);
    m_ctrlEndSlabOffset.EnableWindow(bEnable);
+}
+
+LRESULT CSpanLayoutPage::OnChangeFillet(WPARAM wParam,LPARAM lParam)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+   pgsTypes::FilletType FilletType = pParent->m_BridgeDesc.GetFilletType();
+
+   if ( m_InitialFilletType == pgsTypes::fttBridge || m_InitialFilletType == pgsTypes::fttSpan )
+   {
+      // if slab offset was bridge or pier when the dialog was created, toggle between
+      // bridge and pier mode
+      if ( FilletType == pgsTypes::fttSpan )
+      {
+         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttBridge);
+      }
+      else
+      {
+         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttSpan);
+      }
+   }
+   else
+   {
+      // if slab offset was girder when the dialog was created, toggle between
+      // girder and pier
+      if ( FilletType == pgsTypes::fttSpan )
+      {
+         // going from pier to girder so both ends of girder are the same. default values can be shown
+         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttGirder);
+         m_ctrlFillet.ShowDefaultWhenDisabled(TRUE);
+      }
+      else
+      {
+         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttSpan);
+      }
+   }
+
+   UpdateFilletWindowState();
+
+   return 0;
+}
+
+void CSpanLayoutPage::UpdateFilletHyperLinkText()
+{
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+   pgsTypes::FilletType FilletType = pParent->m_BridgeDesc.GetFilletType();
+
+   if (FilletType == pgsTypes::fttBridge )
+   {
+      m_FilletHyperLink.SetWindowText(_T("The same fillet is used for the entire bridge"));
+      m_FilletHyperLink.SetURL(_T("Click to define fillet span by span"));
+   }
+   else if ( FilletType == pgsTypes::fttGirder )
+   {
+      m_FilletHyperLink.SetWindowText(_T("A unique fillet is used for every girder"));
+      m_FilletHyperLink.SetURL(_T("Click to define fillet span by span"));
+   }
+   else
+   {
+      m_FilletHyperLink.SetWindowText(_T("Fillet is defined span by span"));
+
+      if ( m_InitialFilletType == pgsTypes::fttBridge )
+      {
+         m_FilletHyperLink.SetURL(_T("Click to use this fillet for the entire bridge"));
+      }
+      else if ( m_InitialFilletType == pgsTypes::fttGirder )
+      {
+         m_FilletHyperLink.SetURL(_T("Click to use this fillet for every girder in this span"));
+      }
+   }
+}
+
+void CSpanLayoutPage::UpdateFilletWindowState()
+{
+   UpdateFilletHyperLinkText();
+
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+   pgsTypes::FilletType FilletType = pParent->m_BridgeDesc.GetFilletType();
+
+   BOOL bEnable = TRUE;
+   if ( FilletType == pgsTypes::fttBridge || FilletType == pgsTypes::fttGirder )
+   {
+      bEnable = FALSE;
+   }
+
+   m_ctrlFillet.EnableWindow(bEnable);
 }
 
 void CSpanLayoutPage::ShowCantilevers(BOOL bShowStart,BOOL bShowEnd)

@@ -30,7 +30,6 @@ public:
 	virtual BOOL OnInitDialog();
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnHelp();
 
 public:
    // virtual function from parent
@@ -39,4 +38,6 @@ public:
 protected:
    // Hides UI elements that don't make any sense when this page is used for closure joints
    void EnableClosureJointMode();
+
+   virtual UINT GetHelpID();
 };

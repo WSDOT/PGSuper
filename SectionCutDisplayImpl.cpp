@@ -283,7 +283,14 @@ void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF col
 pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl)
 {
    GET_IFACE(IPointOfInterest,pPoi);
-   return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex,Xgl);
+   if ( m_GirderKey.groupIndex == ALL_GROUPS )
+   {
+      return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex,Xgl);
+   }
+   else
+   {
+      return pPoi->ConvertGirderCoordinateToPoi(m_GirderKey,Xgl);
+   }
 }
 
 Float64 CSectionCutDisplayImpl::GetGirderHeight(Float64 Xgl)

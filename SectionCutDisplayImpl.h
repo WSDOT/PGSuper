@@ -99,8 +99,8 @@ private:
    COLORREF           m_Color;
    CGirderKey         m_GirderKey;
    IBroker*           m_pBroker;
-   Float64            m_MinCutLocation;  // in girder line coordinates
-   Float64            m_MaxCutLocation;  // in girder line coordinates
+   Float64            m_MinCutLocation;  // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
+   Float64            m_MaxCutLocation; // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
    iCutLocation*      m_pCutLocation;
    
    CComPtr<IPoint2d> m_CachePoint;

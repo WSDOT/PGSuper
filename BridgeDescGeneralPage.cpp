@@ -363,14 +363,13 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    if ( m_bSameGirderName || bNewGirderFamily )
    {
-      pParent->m_BridgeDesc.SetGirderName(m_GirderName);
-
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2( pBroker, ILibrary, pLib );
    
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(m_GirderName);
-      pParent->m_BridgeDesc.SetGirderLibraryEntry(pGdrEntry);
+      pParent->m_BridgeDesc.SetGirderLibraryEntry(pGdrEntry); // must do this before SetGirderName
+      pParent->m_BridgeDesc.SetGirderName(m_GirderName);
    }
 
    if ( bNewGirderFamily )
@@ -392,7 +391,7 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    if ( bNewGirderFamily )
    {
-      pParent->m_BridgeDesc.CopyDown(true,true,true,true);
+      pParent->m_BridgeDesc.CopyDown(true,true,true,true,true);
    }
 }
 
@@ -1286,14 +1285,32 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    if ( m_Deck.DeckType == pgsTypes::sdtCompositeCIP || m_Deck.DeckType == pgsTypes::sdtCompositeOverlay )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
-      if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.Fillet )
-         m_Deck.GrossDepth = minSlabOffset - m_Deck.Fillet;
+      if ( minSlabOffset < m_Deck.GrossDepth )
+      {
+         m_Deck.GrossDepth = minSlabOffset;
+
+         // Since we are changing deck type here, data could be whacky. So use lrfd 9.7.1.1—Minimum Depth and Cover to
+         // insure that we have a reasonable slab depth
+         if (m_Deck.GrossDepth < 0.0)
+         {
+            m_Deck.GrossDepth = ::ConvertToSysUnits(7.0, unitMeasure::Inch);
+         }
+      }
    }
    else if ( m_Deck.DeckType == pgsTypes::sdtCompositeSIP )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
-      if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth + m_Deck.Fillet )
-         m_Deck.GrossDepth = minSlabOffset - m_Deck.PanelDepth - m_Deck.Fillet; // decrease the cast depth
+      if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth )
+      {
+         m_Deck.GrossDepth = minSlabOffset - m_Deck.PanelDepth; // decrease the cast depth
+
+         // Since we are changing deck type here, data could be wacky. So use lrfd 9.7.1.1—Minimum Depth and Cover to
+         // insure that we have a reasonable slab depth
+         if (m_Deck.GrossDepth < 0.0)
+         {
+            m_Deck.GrossDepth = max(::ConvertToSysUnits(7.0, unitMeasure::Inch) - m_Deck.PanelDepth, 0.0);
+         }
+      }
    }
 
    UpdateBridgeDescription();

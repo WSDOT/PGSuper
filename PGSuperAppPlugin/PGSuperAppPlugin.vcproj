@@ -785,6 +785,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\BridgeViewPane.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\BridgeViewPrintJob.cpp"
 				>
 			</File>
@@ -1008,6 +1012,34 @@
 			</File>
 			<File
 				RelativePath=".\ErectSegmentsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletByGirderDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletGirderGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\FilletHyperLink.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletSame4BridgeDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletSpanBySpanDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletSpanGrid.cpp"
 				>
 			</File>
 			<File
@@ -1911,6 +1943,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\BridgeViewPane.h"
+				>
+			</File>
+			<File
 				RelativePath="..\BridgeViewPrintJob.h"
 				>
 			</File>
@@ -2099,6 +2135,34 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FilletByGirderDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletGirderGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletGrid.h"
+				>
+			</File>
+			<File
+				RelativePath="..\FilletHyperLink.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletSame4BridgeDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletSpanBySpanDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FilletSpanGrid.h"
+				>
+			</File>
+			<File
 				RelativePath="..\GeneralRatingOptionsPage.h"
 				>
 			</File>
@@ -2228,10 +2292,6 @@
 			</File>
 			<File
 				RelativePath=".\HaunchSpanGrid.h"
-				>
-			</File>
-			<File
-				RelativePath="..\HtmlHelp\HelpTopics.hh"
 				>
 			</File>
 			<File
@@ -2399,6 +2459,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Documentation\PGSuper.hh"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PGSuperAll.h"
 				>
 			</File>
@@ -2447,11 +2511,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PGSuperComponentInfo.h"
+				RelativePath=".\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File

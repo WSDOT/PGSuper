@@ -168,7 +168,7 @@ END_MESSAGE_MAP()
 
 void CConfigurePGSuperDlg::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONFIGURE_PGSUPER );
+   EAFHelp( m_AppName, IDH_CONFIGURE_PGSUPER );
 }
 
 BOOL CConfigurePGSuperDlg::OnInitDialog() 
@@ -212,20 +212,6 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
    strMsg.Format(_T("Configure %s"),m_AppName);
    SetWindowText(strMsg);
 
-   GetDlgItem(IDC_CONFIGURATION_GROUP)->SetWindowText(strMsg);
-
-   strMsg.Format(_T("Use the default configuration installed with %s"),m_AppName);
-   GetDlgItem(IDC_GENERIC)->SetWindowText(strMsg);
-
-   strMsg.Format(_T("Select a server that contains %s configurations, or use the Add/Edit button to manage the servers"),m_AppName);
-   GetDlgItem(IDC_SERVERS_STATIC)->SetWindowText(strMsg);
-
-   strMsg.Format(_T("Select a %s configuration package:"),m_AppName);
-   GetDlgItem(IDC_SERVERS_STATIC2)->SetWindowText(strMsg);
-
-   strMsg.Format(_T("Update %s configuration now"),m_AppName);
-   GetDlgItem(IDC_UPDATENOW)->SetWindowText(strMsg);
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -234,11 +220,6 @@ void CConfigurePGSuperDlg::HideOkAndCancelButtons()
 {
    CWnd* pCancel = GetDlgItem(IDCANCEL);
    pCancel->ShowWindow(SW_HIDE);
-
-
-//   CWnd* pOK = GetDlgItem(IDOK);
-//   pOK->SetDlgCtrlID(IDC_UPDATENOW);
-//   pOK->ShowWindow(SW_HIDE);
 }
 
 void CConfigurePGSuperDlg::UpdateFrequencyList()

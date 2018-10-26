@@ -188,7 +188,7 @@ void CLibChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 	if (bAddToTitle)
    {
-      CString msg("Library Editor");
+      CString msg("PGS Library Editor");
 
       // set our title
 		AfxSetWindowText(m_hWnd, msg);

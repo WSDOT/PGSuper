@@ -53,10 +53,7 @@ class CGirderMainSheet : public CPropertySheet
 
 // Construction
 public:
-	CGirderMainSheet( GirderLibraryEntry& rentry, UINT nIDCaption, 
-      bool allowEditing,
-      CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CGirderMainSheet( GirderLibraryEntry& rentry, LPCTSTR pszCaption, 
+	CGirderMainSheet( GirderLibraryEntry& rentry,  
       bool allowEditing,
       CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
@@ -79,7 +76,7 @@ public:
 
    CGirderErrorDlg       m_GirderErrorDlg;
 
-   bool                m_AllowEditing;
+   bool                m_bAllowEditing;
 
    // work directly on an entry so we don't duplicate data.
    GirderLibraryEntry& m_Entry;
@@ -132,9 +129,12 @@ public:
    bool CanHarpStrands() const;
    bool CanDebondStrands() const;
 
+   void SetDebondTabName();
+
+
 private:
    void Init();
-   void UpdatePropertyPages(CLSID clsidBeamFamily);
+   void UpdatePropertyPages();
 };
 
 /////////////////////////////////////////////////////////////////////////////

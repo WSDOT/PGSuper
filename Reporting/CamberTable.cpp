@@ -210,8 +210,8 @@ void CCamberTable::Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
    
-   table1a = pgsReportStyleHolder::CreateDefaultTable(3,_T("Deflections at Release"));
-   table1b = pgsReportStyleHolder::CreateDefaultTable(4,_T("Deflections during Storage"));
+   table1a = pgsReportStyleHolder::CreateDefaultTable(4,_T("Deflections at Release"));
+   table1b = pgsReportStyleHolder::CreateDefaultTable(5,_T("Deflections during Storage"));
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
@@ -237,14 +237,16 @@ void CCamberTable::Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey,
    // Setup table headings
    ColumnIndexType col = 0;
    (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Release"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Release"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("i")),          rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    
    col = 0;
    (*table1b)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Storage"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Storage"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")) << rptNewLine << _T("Storage"),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("es")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -362,11 +364,15 @@ void CCamberTable::Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey,
       ATLASSERT( pBridge->IsFutureOverlay() ? IsZero(Doverlay) : true );
 
 
+      Float64 Di = DpsRelease + DgdrRelease; // initial camber
+      Float64 Des = DpsStorage + DgdrStorage + Dcreep1a; // camber at end of storage
+
       // Table 1a
       col = 0;
       (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi );
       (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
       (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
+      (*table1a)(row1a,col++) << deflection.SetValue( Di );
       row1a++;
 
       // Table 1b
@@ -375,6 +381,7 @@ void CCamberTable::Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey,
       (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1a );
+      (*table1b)(row1b,col++) << deflection.SetValue( Des );
       if ( storagePoi.IsTenthPoint(POI_ERECTED_SEGMENT) == 1 || storagePoi.IsTenthPoint(POI_ERECTED_SEGMENT) == 11 )
       {
          for ( ColumnIndexType i = 0; i < col; i++ )
@@ -541,8 +548,8 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
    
-   table1a = pgsReportStyleHolder::CreateDefaultTable(3,_T("Deflections at Release"));
-   table1b = pgsReportStyleHolder::CreateDefaultTable(4,_T("Deflections during Storage"));
+   table1a = pgsReportStyleHolder::CreateDefaultTable(4,_T("Deflections at Release"));
+   table1b = pgsReportStyleHolder::CreateDefaultTable(5,_T("Deflections during Storage"));
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
@@ -568,14 +575,16 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
    // Setup table headings
    ColumnIndexType col = 0;
    (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Release"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Release"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("i")),          rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    
    col = 0;
    (*table1b)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Storage"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Storage"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")) << rptNewLine << _T("Storage"),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("es")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -681,6 +690,9 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
       Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
       Float64 Dcreep3    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDeckToFinal, constructionRate, pgsTypes::pddErected );
 
+      Float64 Di = DpsRelease + DgdrRelease; // initial camber immedately after release
+      Float64 Des = DpsStorage + DgdrStorage + Dcreep1a; // camber at end of storage
+
       // if we have a future overlay, the deflection due to the overlay in BridgeSite2 must be zero
       ATLASSERT( pBridge->IsFutureOverlay() ? IsZero(Doverlay) : true );
 
@@ -689,6 +701,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
       (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi );
       (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
       (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
+      (*table1a)(row1a,col++) << deflection.SetValue( Di );
       row1a++;
 
       // Table 1b
@@ -697,6 +710,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
       (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1a );
+      (*table1b)(row1b,col++) << deflection.SetValue( Des );
       if ( storagePoi.IsTenthPoint(POI_ERECTED_SEGMENT) == 1 || storagePoi.IsTenthPoint(POI_ERECTED_SEGMENT) == 11 )
       {
          for ( ColumnIndexType i = 0; i < col; i++ )

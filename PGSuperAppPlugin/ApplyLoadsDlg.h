@@ -33,7 +33,7 @@ class CApplyLoadsDlg : public CDialog
 	DECLARE_DYNAMIC(CApplyLoadsDlg)
 
 public:
-	CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
+	CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CApplyLoadsDlg();
 
 // Dialog Data
@@ -47,6 +47,8 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
    CListCtrl m_ctrlUserLoads;
 
+   BOOL m_bReadOnly;
+
    void InitUserLoads();
    void AddDistributedLoad(int rowIdx,LoadIDType loadID);
    void AddPointLoad(int rowIdx,LoadIDType loadID);
@@ -55,4 +57,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();
+   afx_msg void OnHelp();
 };

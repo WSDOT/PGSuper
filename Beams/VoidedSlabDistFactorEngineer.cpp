@@ -665,7 +665,9 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
          }
       }
 
-      if ( pDeck->TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
+      if ( pDeck->TransverseConnectivity == pgsTypes::atcConnectedAsUnit || 
+           lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion()  // sufficiently connected as unit was removed in LRFD 7th Edition 2014
+         )
       {
          pLLDF = new lrfdLldfTypeF(plldf->gdrNum,
                                    plldf->Savg,
@@ -764,7 +766,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          {
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
  
-            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
+            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
             }
@@ -816,7 +818,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
                (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
 
-               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
+               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
                }
@@ -892,7 +894,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          }
          else
          {
-            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
+            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
             }
@@ -943,7 +945,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
                (*pPara) << Bold(_T("2+ Loaded Lanes")) << rptNewLine;
 
-               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
+               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
                }
@@ -1029,7 +1031,8 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
             if (gV1.ControllingMethod & MOMENT_OVERRIDE)
             {
                (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
+               (*pPara) << _T("e = ") << gV1.EqnData.e << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("(e)(mg") << Super(_T("MI")) << Sub(_T("1")) << _T(") = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
             }
             else
             {
@@ -1080,7 +1083,8 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
                if (gV2.ControllingMethod & MOMENT_OVERRIDE)
                {
                   (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
-                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
+                  (*pPara) << _T("e = ") << gV2.EqnData.e << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("(e)(mg") << Super(_T("ME")) << Sub(_T("2")) << _T(") = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
                }
                else
                {
@@ -1246,7 +1250,7 @@ std::_tstring CVoidedSlabDistFactorEngineer::GetComputationDescription(const CGi
    }
    else if ( lldfMethod == LLDF_LRFD || lldfMethod == LLDF_WSDOT  )
    {
-      if (decktype == pgsTypes::sdtCompositeOverlay || decktype == pgsTypes::sdtNone)
+      if (decktype == pgsTypes::sdtCompositeOverlay)
       {
          descr += std::_tstring(_T("AASHTO Type (f) using AASHTO LRFD Method per Article 4.6.2.2"));
       }

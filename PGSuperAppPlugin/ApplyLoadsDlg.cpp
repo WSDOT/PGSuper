@@ -29,6 +29,7 @@
 
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DeckDescription2.h>
@@ -41,11 +42,12 @@
 
 IMPLEMENT_DYNAMIC(CApplyLoadsDlg, CDialog)
 
-CApplyLoadsDlg::CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CApplyLoadsDlg::CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CApplyLoadsDlg::IDD, pParent)
 {
    m_TimelineMgr = timelineMgr;
    m_EventIndex = eventIdx;
+   m_bReadOnly = bReadOnly;
 }
 
 CApplyLoadsDlg::~CApplyLoadsDlg()
@@ -138,6 +140,7 @@ void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CApplyLoadsDlg, CDialog)
+   ON_BN_CLICKED(ID_HELP, &CApplyLoadsDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -159,6 +162,21 @@ BOOL CApplyLoadsDlg::OnInitDialog()
    }
    CWnd* pWnd = GetDlgItem(IDC_OVERLAY_NOTE);
    pWnd->SetWindowText(strNote);
+
+
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_RAILING_SYSTEM)->EnableWindow(FALSE);
+      GetDlgItem(IDC_OVERLAY)->EnableWindow(FALSE);
+      GetDlgItem(IDC_OVERLAY_NOTE)->EnableWindow(FALSE);
+      GetDlgItem(IDC_LIVELOAD)->EnableWindow(FALSE);
+      GetDlgItem(IDC_LOAD_RATING)->EnableWindow(FALSE);
+      GetDlgItem(IDC_USER_LOADS)->EnableWindow(FALSE);
+
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -421,4 +439,9 @@ void CApplyLoadsDlg::AddMomentLoad(int rowIdx,LoadIDType loadID)
 
    m_ctrlUserLoads.SetItemText(rowIdx, 3, strMagnitude);
    m_ctrlUserLoads.SetItemText(rowIdx, 4, pLoadData->m_Description.c_str());
+}
+
+void CApplyLoadsDlg::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_APPLY_LOADS);
 }

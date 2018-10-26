@@ -1702,7 +1702,6 @@ void CSplicedGirderData::AssertValid()
       _ASSERT(pSegment->GetGirder() == this);
       pSegment->AssertValid();
 
-      _ASSERT(pSegment->GetID() != INVALID_ID);
       _ASSERT(pSegment->GetIndex() != INVALID_INDEX);
 
       const CSpanData2* pStartSpan = pSegment->GetSpan(pgsTypes::metStart);
@@ -1718,6 +1717,8 @@ void CSplicedGirderData::AssertValid()
       // and end location of segment must be same as or before the end location of the segment's end span
       if ( m_pGirderGroup->GetBridgeDescription() != NULL )
       {
+         _ASSERT(pSegment->GetID() != INVALID_ID); // must have a valid ID if we are ultimately part of a bridge
+
          Float64 segStartLoc, segEndLoc;
          pSegment->GetStations(&segStartLoc,&segEndLoc);
          if ( pStartSpan )

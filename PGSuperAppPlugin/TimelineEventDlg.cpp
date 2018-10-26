@@ -35,6 +35,7 @@
 #include "CastDeckDlg.h"
 
 #include <EAF\EAFDocument.h>
+#include <IFace\DocumentType.h>
 
 
 
@@ -42,10 +43,11 @@
 
 IMPLEMENT_DYNAMIC(CTimelineEventDlg, CDialog)
 
-CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,CWnd* pParent /*=NULL*/)
+CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CTimelineEventDlg::IDD, pParent)
 {
    m_bEdit = bEditEvent;
+   m_bReadOnly = bReadOnly;
    m_TimelineManager = timelineMgr;
    m_EventIndex = eventIdx;
 }
@@ -73,11 +75,11 @@ bool CTimelineEventDlg::UpdateTimelineManager(const CTimelineManager& timelineMg
          strProblem = _T("The activities in this event end after the next event begins.");
       }
 
-      CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
+      CString strRemedy(_T("The timeline will be adjusted to accomodate this event."));
 
       CString strMsg;
       strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
-      if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDCANCEL )
+      if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONEXCLAMATION) == IDCANCEL )
       {
          return false; // problem not fixed...
       }
@@ -147,13 +149,10 @@ END_MESSAGE_MAP()
 
 BOOL CTimelineEventDlg::OnInitDialog()
 {
+   // must set m_pTimelineEvent before calling CDialog::OnInitDialog
    if ( m_EventIndex == INVALID_INDEX )
    {
-      // this dialog is being used to create a new event... create a default event and add it
-      int result = m_TimelineManager.AddTimelineEvent(CTimelineEvent(),false,&m_EventIndex);
-      ATLASSERT(result == TLM_SUCCESS);
-
-      SetWindowText(_T("Create Event"));
+      m_pTimelineEvent = new CTimelineEvent();
    }
    else
    {
@@ -161,12 +160,11 @@ BOOL CTimelineEventDlg::OnInitDialog()
       CString strTitle;
       strTitle.Format(_T("Edit Event %d"),LABEL_EVENT(m_EventIndex));
       SetWindowText(strTitle);
+      m_pTimelineEvent = m_TimelineManager.GetEventByIndex(m_EventIndex);
    }
 
-   m_pTimelineEvent = m_TimelineManager.GetEventByIndex(m_EventIndex);
-
    m_Grid.SubclassDlgItem(IDC_ACTIVITY_GRID, this);
-   m_Grid.CustomInit();
+   m_Grid.CustomInit(m_bReadOnly);
 
    CDialog::OnInitDialog();
 
@@ -206,7 +204,6 @@ BOOL CTimelineEventDlg::OnInitDialog()
       EventIndexType nEvents = m_TimelineManager.GetEventCount();
       for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
       {
-
          const CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(eventIdx);
          CString strEventIndex;
          strEventIndex.Format(_T("%lld"), LABEL_EVENT(eventIdx) );
@@ -223,6 +220,25 @@ BOOL CTimelineEventDlg::OnInitDialog()
       m_TimelineEventList.SetColumnWidth(2,LVSCW_AUTOSIZE);
    }
 
+   if ( m_EventIndex == INVALID_INDEX )
+   {
+      int result = m_TimelineManager.AddTimelineEvent(m_pTimelineEvent,false,&m_EventIndex);
+      ATLASSERT(result == TLM_SUCCESS);
+   }
+
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_DAY)->EnableWindow(FALSE);
+      GetDlgItem(IDC_DESCRIPTION)->EnableWindow(FALSE);
+
+      GetDlgItem(IDC_ADD)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_REMOVE)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
+
    // TODO:  Add extra initialization here
 
    return TRUE;  // return TRUE unless you set the focus to a control
@@ -233,13 +249,37 @@ void CTimelineEventDlg::UpdateAddButton()
 {
    m_btnAdd.Clear();
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   CString strErectPiers;
+   CString strConstructSegments;
+   CString strErectSegments;
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      strErectPiers        = _T("Erect Piers");
+      strConstructSegments = _T("Construct Girders");
+      strErectSegments     = _T("Erect Girders");
+   }
+   else
+   {
+      strErectPiers        = _T("Erect Piers/Temporary Supports");
+      strConstructSegments = _T("Construct Segments");
+      strErectSegments     = _T("Erect Segments");
+   }
+
    // Keep the activities in a somewhat logical sequence
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,_T("Construct Segments"),MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_PIERS,_T("Erect Piers/Temporary Supports"),MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_SEGMENTS,_T("Erect Segments"),MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTCLOSUREJOINTS,_T("Cast Closure Joints"),MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_STRESSTENDON,_T("Stress Tendons"),MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,strConstructSegments,MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_PIERS,strErectPiers,MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_SEGMENTS,strErectSegments,MF_ENABLED);
+
+   if ( pDocType->IsPGSpliceDocument() )
+   {
+      m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTCLOSUREJOINTS,_T("Cast Closure Joints"),MF_ENABLED);
+      m_btnAdd.AddMenuItem(ID_ACTIVITIES_STRESSTENDON,_T("Stress Tendons"),MF_ENABLED);
+      m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),MF_ENABLED);
+   }
+
    m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTDECK,_T("Cast Deck"),MF_ENABLED);
    m_btnAdd.AddMenuItem(ID_ACTIVITIES_APPLYLOADS,_T("Apply Loads"),MF_ENABLED);
 }
@@ -274,7 +314,7 @@ bool EditEvent(CTimelineEventDlg* pTimelineEventDlg,T* pActivityDlg)
 
 void CTimelineEventDlg::OnConstructSegments()
 {
-   CConstructSegmentsDlg dlg(m_TimelineManager,m_EventIndex);
+   CConstructSegmentsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
       m_Grid.Refresh();
@@ -283,7 +323,7 @@ void CTimelineEventDlg::OnConstructSegments()
 
 void CTimelineEventDlg::OnErectPiers()
 {
-   CErectPiersDlg dlg(m_TimelineManager,m_EventIndex);
+   CErectPiersDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
       m_Grid.Refresh();
@@ -292,7 +332,7 @@ void CTimelineEventDlg::OnErectPiers()
 
 void CTimelineEventDlg::OnErectSegments()
 {
-   CErectSegmentsDlg dlg(m_TimelineManager,m_EventIndex);
+   CErectSegmentsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
       m_Grid.Refresh();
@@ -301,7 +341,7 @@ void CTimelineEventDlg::OnErectSegments()
 
 void CTimelineEventDlg::OnRemoveTempSupports()
 {
-   CRemoveTempSupportsDlg dlg(m_TimelineManager,m_EventIndex);
+   CRemoveTempSupportsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
       m_Grid.Refresh();
@@ -310,7 +350,7 @@ void CTimelineEventDlg::OnRemoveTempSupports()
 
 void CTimelineEventDlg::OnCastClosureJoints()
 {
-   CCastClosureJointDlg dlg(m_TimelineManager,m_EventIndex);
+   CCastClosureJointDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
       m_Grid.Refresh();
@@ -319,7 +359,7 @@ void CTimelineEventDlg::OnCastClosureJoints()
 
 void CTimelineEventDlg::OnCastDeck()
 {
-   CCastDeckDlg dlg(m_TimelineManager,m_EventIndex);
+   CCastDeckDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
       m_Grid.Refresh();
@@ -328,7 +368,7 @@ void CTimelineEventDlg::OnCastDeck()
 
 void CTimelineEventDlg::OnApplyLoads()
 {
-   CApplyLoadsDlg dlg(m_TimelineManager,m_EventIndex);
+   CApplyLoadsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
       m_Grid.Refresh();
@@ -337,7 +377,7 @@ void CTimelineEventDlg::OnApplyLoads()
 
 void CTimelineEventDlg::OnStressTendons()
 {
-   CStressTendonDlg dlg(m_TimelineManager,m_EventIndex);
+   CStressTendonDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
       m_Grid.Refresh();
@@ -346,5 +386,5 @@ void CTimelineEventDlg::OnStressTendons()
 
 void CTimelineEventDlg::OnHelp()
 {
-   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_TIMELINE_EVENT);
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),m_bEdit ? IDH_TIMELINE_EVENT : IDH_TIMELINE_CREATE_EVENT);
 }

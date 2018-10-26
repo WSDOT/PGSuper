@@ -245,12 +245,14 @@ void CAbutmentConnectionsPage::OnBoundaryConditionChanged()
       GetDlgItem(IDC_BEARING_OFFSET_MEASURE)->EnableWindow(FALSE);
       GetDlgItem(IDC_END_DISTANCE_MEASURE)->EnableWindow(FALSE);
 
-      GetDlgItem(IDC_LABEL)->EnableWindow(FALSE);
-
+      GetDlgItem(IDC_BEARING_OFFSET_LABEL)->EnableWindow(FALSE);
       GetDlgItem(IDC_BEARING_OFFSET)->EnableWindow(FALSE);
       GetDlgItem(IDC_BEARING_OFFSET_T)->EnableWindow(FALSE);
+
+      GetDlgItem(IDC_END_DISTANCE_LABEL)->EnableWindow(FALSE);
       GetDlgItem(IDC_END_DISTANCE)->EnableWindow(FALSE);
       GetDlgItem(IDC_END_DISTANCE_T)->EnableWindow(FALSE);
+
       ((CComboBox*)GetDlgItem(IDC_DIAPHRAGM_LOAD))->SetCurSel(0);
       GetDlgItem(IDC_DIAPHRAGM_LOAD)->EnableWindow(FALSE);
    }

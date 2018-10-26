@@ -7,6 +7,8 @@
 
 #include <IFace\Project.h>
 
+#include <EAF\EAFDocument.h>
+
 // CErectPiersDlg dialog
 
 
@@ -17,9 +19,10 @@
 
 IMPLEMENT_DYNAMIC(CErectPiersDlg, CDialog)
 
-CErectPiersDlg::CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CErectPiersDlg::CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CErectPiersDlg::IDD, pParent),
-   m_EventIndex(eventIdx)
+   m_EventIndex(eventIdx),
+   m_bReadOnly(bReadOnly)
 {
    m_TimelineMgr = timelineMgr;
 
@@ -98,6 +101,7 @@ void CErectPiersDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CErectPiersDlg, CDialog)
    ON_BN_CLICKED(IDC_MOVE_RIGHT, &CErectPiersDlg::OnMoveToTargetList)
    ON_BN_CLICKED(IDC_MOVE_LEFT, &CErectPiersDlg::OnMoveToSourceList)
+   ON_BN_CLICKED(ID_HELP, &CErectPiersDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -112,7 +116,18 @@ BOOL CErectPiersDlg::OnInitDialog()
 
    FillLists();
 
-   // TODO:  Add extra initialization here
+
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_SOURCE_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_TARGET_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_RIGHT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_LEFT)->EnableWindow(FALSE);
+
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -178,4 +193,9 @@ void CErectPiersDlg::FillLists()
          m_lbSource.AddItem(label,state,EncodeTSIndex(tsIdx));
       }
    }
+}
+
+void CErectPiersDlg::OnHelp()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_ERECT_PIERS);
 }

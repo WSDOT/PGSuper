@@ -38,7 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 53.0 // jumped to version 50 for PGSplice development... this leaves a gap
+#define CURRENT_VERSION 54.0 // jumped to version 50 for PGSplice development... this leaves a gap
 // between version 44 (PGSuper head branch, version 2.9) and PGSplice 
 // when loading data that was added after version 44 it is ok for the load to fail for now.
 // once this is merged to the head branch, data added from the then CURRENT_VERSION and later can't fail
@@ -238,7 +238,9 @@ m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet)),
 m_DuctAreaPushRatio(2),
 m_DuctAreaPullRatio(2.5),
 m_DuctDiameterRatio(0.4),
-m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading)
+m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading),
+m_HaunchLoadComputationType(pgsTypes::hlcZeroCamber),
+m_HaunchLoadCamberTolerance(::ConvertToSysUnits(0.5,unitMeasure::Inch))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -400,10 +402,20 @@ bool SpecLibraryEntry::Edit(bool allowEditing,int nPage)
    // exchange data with dialog
    // make a temporary copy of this and have the dialog work on it.
    SpecLibraryEntry tmp(*this);
+   if ( 0 < GetRefCount() )
+   {
+      tmp.AddRef();
+   }
 
    CSpecMainSheet dlg(tmp, IDS_SPEC_SHEET, allowEditing);
    dlg.SetActivePage(nPage);
    INT_PTR i = dlg.DoModal();
+
+   if ( 0 < GetRefCount() )
+   {
+      tmp.Release();
+   }
+
    if (i==IDOK)
    {
       *this = tmp;
@@ -557,6 +569,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Bs2MaxGirdersTrafficBarrier"), m_Bs2MaxGirdersTrafficBarrier);
    pSave->Property(_T("Bs2MaxGirdersUtility"), m_Bs2MaxGirdersUtility);
    pSave->Property(_T("OverlayLoadDistribution"), (Int32)m_OverlayLoadDistribution); // added in version 34
+   pSave->Property(_T("HaunchLoadComputationType"), (Int32)m_HaunchLoadComputationType); // added in version 54
+   pSave->Property(_T("HaunchLoadCamberTolerance"), m_HaunchLoadCamberTolerance);        // ""
    pSave->Property(_T("Bs3CompStressServ"), m_Bs3CompStressServ);
    pSave->Property(_T("Bs3CompStressService1A"), m_Bs3CompStressService1A);
    pSave->Property(_T("Bs3TensStressServNc"), m_Bs3TensStressServNc);
@@ -1821,6 +1835,23 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_OverlayLoadDistribution = (pgsTypes::OverlayLoadDistributionType)oldt==pgsTypes::olDistributeTributaryWidth ? 
                                         pgsTypes::olDistributeTributaryWidth : pgsTypes::olDistributeEvenly;
          }
+
+         if ( 53.0 < version )
+         {
+            Int32 hlct;
+            if(!pLoad->Property(_T("HaunchLoadComputationType"), &hlct))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            m_HaunchLoadComputationType = (pgsTypes::HaunchLoadComputationType)hlct;
+
+            if(!pLoad->Property(_T("HaunchLoadCamberTolerance"), &m_HaunchLoadCamberTolerance))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+
 
          if(!pLoad->Property(_T("Bs3CompStressServ"), &m_Bs3CompStressServ))
          {
@@ -3755,6 +3786,8 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_Bs2MaxGirdersTrafficBarrier, rOther.m_Bs2MaxGirdersTrafficBarrier );
    TEST (m_Bs2MaxGirdersUtility       , rOther.m_Bs2MaxGirdersUtility        );
    TEST (m_OverlayLoadDistribution    , rOther.m_OverlayLoadDistribution     );
+   TEST (m_HaunchLoadComputationType  , rOther.m_HaunchLoadComputationType     );
+   TEST (m_HaunchLoadCamberTolerance  , rOther.m_HaunchLoadCamberTolerance     );
    TESTD(m_Bs3CompStressServ          , rOther.m_Bs3CompStressServ           );
    TESTD(m_Bs3CompStressService1A     , rOther.m_Bs3CompStressService1A      );
    TESTD(m_Bs3TensStressServNc        , rOther.m_Bs3TensStressServNc         );
@@ -4894,6 +4927,26 @@ pgsTypes::OverlayLoadDistributionType SpecLibraryEntry::GetOverlayLoadDistributi
 void SpecLibraryEntry::SetOverlayLoadDistributionType(pgsTypes::OverlayLoadDistributionType type)
 {
    m_OverlayLoadDistribution = type;
+}
+
+pgsTypes::HaunchLoadComputationType SpecLibraryEntry::GetHaunchLoadComputationType() const
+{
+   return m_HaunchLoadComputationType;
+}
+
+void SpecLibraryEntry::SetHaunchLoadComputationType(pgsTypes::HaunchLoadComputationType type)
+{
+   m_HaunchLoadComputationType = type;
+}
+
+Float64 SpecLibraryEntry::GetHaunchLoadCamberTolerance() const
+{
+   return m_HaunchLoadCamberTolerance;
+}
+
+void SpecLibraryEntry::SetHaunchLoadCamberTolerance(Float64 tol)
+{
+   m_HaunchLoadCamberTolerance = tol;
 }
 
 void SpecLibraryEntry::SetCreepMethod(int method)
@@ -6120,6 +6173,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_Bs2MaxGirdersTrafficBarrier= rOther.m_Bs2MaxGirdersTrafficBarrier;
    m_Bs2MaxGirdersUtility       = rOther.m_Bs2MaxGirdersUtility;
    m_OverlayLoadDistribution    = rOther.m_OverlayLoadDistribution;
+   m_HaunchLoadComputationType    = rOther.m_HaunchLoadComputationType;
+   m_HaunchLoadCamberTolerance    = rOther.m_HaunchLoadCamberTolerance;
    m_Bs3CompStressServ          = rOther.m_Bs3CompStressServ;
    m_Bs3CompStressService1A     = rOther.m_Bs3CompStressService1A;
    m_Bs3TensStressServNc        = rOther.m_Bs3TensStressServNc;

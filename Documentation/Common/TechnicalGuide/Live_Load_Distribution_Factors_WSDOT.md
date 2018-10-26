@@ -1,4 +1,4 @@
-Live Load Distribution Factors (WSDOT) {#lldf_wsdot}
+Live Load Distribution Factors (WSDOT) {#tg_lldf_wsdot}
 ======================================
 The WSDOT Bridge Design Manual, Section 3.9.4, modifies the calculation of live load distribution factors for the exterior girder of multi-girder bridges shall be as follows:
 

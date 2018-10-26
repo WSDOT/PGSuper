@@ -60,7 +60,7 @@ public:
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
    Float64 m_DiaphragmLoadLocation;
 
-   bool m_AllowEditing;
+   bool m_bAllowEditing;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

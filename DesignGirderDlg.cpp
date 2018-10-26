@@ -124,9 +124,6 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
             ::AfxMessageBox(_T("No girders selected. Please select at least one girder"),MB_OK | MB_ICONWARNING);
             pDX->Fail();
          }
-
-         if (m_GirderKeys.size() > 1)
-            m_DesignA = false; // never design A if more than one girder
       }
    }
 }
@@ -295,7 +292,8 @@ void CDesignGirderDlg::UpdateADimCtrl()
       CButton* pAFlex = (CButton*)GetDlgItem( IDC_DESIGN_FLEXURE );
       BOOL flexure_checked = (pAFlex->GetCheck()==1) ? TRUE:FALSE;
 
-      BOOL benable = FALSE;
+      BOOL benable = flexure_checked;
+/*
       if(flexure_checked)
       {
          // disable A if multiple girders are selected
@@ -308,7 +306,8 @@ void CDesignGirderDlg::UpdateADimCtrl()
             benable = (1 < m_GirderKeys.size() ? FALSE : TRUE);
          }
       }
-
+*/
+      ATLASSERT(0);
       CButton* pA= (CButton*)GetDlgItem( IDC_DESIGN_A );
       pA->EnableWindow(benable);
    }

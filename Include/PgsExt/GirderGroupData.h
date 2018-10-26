@@ -52,7 +52,7 @@ public:
    ~CGirderGroupData();
 
    CGirderGroupData& operator=(const CGirderGroupData& rOther);
-   void CopyGirderGroupData(const CGirderGroupData* pGroup);
+   void CopyGirderGroupData(const CGirderGroupData* pGroup,bool bCopyDataOnly);
    bool operator==(const CGirderGroupData& rOther) const;
    bool operator!=(const CGirderGroupData& rOther) const;
 

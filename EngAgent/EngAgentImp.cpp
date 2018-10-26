@@ -1420,13 +1420,43 @@ Float64 CEngAgentImp::GetElasticShortening(const pgsPointOfInterest& poi,pgsType
    ATLASSERT(pDetails != 0);
 
    Float64 val;
-   if ( strandType == pgsTypes::Temporary )
+   if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
    {
-      val = pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
+      if ( strandType == pgsTypes::Permanent )
+      {
+         Float64 ApsStraight = pDetails->TimeStepDetails[releaseIntervalIdx].Strands[pgsTypes::Straight].As;
+         Float64 ApsHarped   = pDetails->TimeStepDetails[releaseIntervalIdx].Strands[pgsTypes::Harped].As;
+         Float64 As = ApsStraight + ApsHarped;
+         if ( IsZero(As) )
+         {
+            val = 0;
+         }
+         else
+         {
+            // -1 because dP is less than zero for a reduction in tension and we want the loss as a positive value
+            Float64 dPStraight = -1*pDetails->TimeStepDetails[releaseIntervalIdx].Strands[pgsTypes::Straight].dP;
+            Float64 dPHarped   = -1*pDetails->TimeStepDetails[releaseIntervalIdx].Strands[pgsTypes::Harped].dP;
+            val = (dPStraight + dPHarped)/As;
+         }
+      }
+      else
+      {
+         val = -1*pDetails->TimeStepDetails[releaseIntervalIdx].Strands[strandType].dfpe;
+         // -1 because dfpe is less than zero for a reduction in tension and we want the loss as a positive value
+      }
    }
    else
    {
-      val = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
+      if ( strandType == pgsTypes::Temporary )
+      {
+         val = pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
+      }
+      else
+      {
+         val = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
+      }
    }
 
    return val;
@@ -2378,6 +2408,11 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    Float64 minStiffnessRatio = pSpecEntry->GetMinGirderStiffnessRatio();
 
+   GET_IFACE(IPointOfInterest,pPoi);
+   CSpanKey spanKey;
+   Float64 Xspan;
+   pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
@@ -2408,12 +2443,12 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       std::_tostringstream os;
-      os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
-      os << _T("Per 4.6.2.2.1, the girders in this span do not have approximately the same stiffness.") << std::endl;
+      os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
+      os << _T("The girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" do not have approximately the same stiffness as required by LRFD 4.6.2.2.1.") << std::endl;
       os << _T("Minimum I = ") << (LPCTSTR)FormatDimension(Imin,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
       os << _T("Maximum I = ") << (LPCTSTR)FormatDimension(Imax,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
       os << _T("Stiffness Ratio (I min / I max) = ") << (LPCTSTR)FormatScalar(ratio,pDisplayUnits->GetScalarFormat()) << std::endl;
-      os << _T("Minimum stiffness ratio permitted by ") << pSpecEntry->GetName() << _T(" = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
+      os << _T("Minimum stiffness ratio permitted by the Project Criteria = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
       os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
       pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
@@ -2441,6 +2476,11 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    Float64 maxAllowableAngle = pSpecEntry->GetMaxAngularDeviationBetweenGirders();
+
+   GET_IFACE(IPointOfInterest,pPoi);
+   CSpanKey spanKey;
+   Float64 Xspan;
+   pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -2482,11 +2522,11 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
       {
          GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
          std::_tostringstream os;
-         os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
-         os << _T("Per 4.6.2.2.1, the girders in this span are not parallel.") << std::endl;
-         os << _T("Greatest angular difference between girders in this span = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-         os << _T("Maximum angular difference permitted by ") << pSpecEntry->GetName() << _T(" = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-         os << _T("A refined method of analysis is required for this bridge") << std::endl;
+         os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
+         os << _T("The girders in this span are not parallel as required by LRFD 4.6.2.2.1.") << std::endl;
+         os << _T("Greatest angular difference between girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+         os << _T("Maximum angular difference permitted the Project Criteria = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+         os << _T("A refined method of analysis is required for this bridge.") << std::endl;
 
          pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
          pStatusCenter->Add(pStatusItem);
@@ -3850,10 +3890,10 @@ void CEngAgentImp::ClearDesignCriticalSections()
 
 /////////////////////////////////////////////////////////////////////////////
 // IGirderHaunch
-Float64 CEngAgentImp::GetRequiredSlabOffset(const CGirderKey& girderKey)
+Float64 CEngAgentImp::GetRequiredSlabOffset(const CSpanKey& spanKey)
 {
    HAUNCHDETAILS details;
-   GetHaunchDetails(girderKey,&details);
+   GetHaunchDetails(spanKey,&details);
 
    Float64 slab_offset = details.RequiredSlabOffset;
 
@@ -3872,18 +3912,18 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(const CGirderKey& girderKey)
    return slab_offset;
 }
 
-void CEngAgentImp::GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pDetails)
+void CEngAgentImp::GetHaunchDetails(const CSpanKey& spanKey,HAUNCHDETAILS* pDetails)
 {
-   std::map<CGirderKey,HAUNCHDETAILS>::iterator found;
-   found = m_HaunchDetails.find(girderKey);
+   std::map<CSpanKey,HAUNCHDETAILS>::iterator found;
+   found = m_HaunchDetails.find(spanKey);
 
    if ( found == m_HaunchDetails.end() )
    {
       // not found
-      m_Designer.GetHaunchDetails(girderKey,pDetails);
+      m_Designer.GetHaunchDetails(spanKey,pDetails);
 
-      std::pair<std::map<CGirderKey,HAUNCHDETAILS>::iterator,bool> result;
-      result = m_HaunchDetails.insert( std::make_pair(girderKey,*pDetails) );
+      std::pair<std::map<CSpanKey,HAUNCHDETAILS>::iterator,bool> result;
+      result = m_HaunchDetails.insert( std::make_pair(spanKey,*pDetails) );
       ATLASSERT(result.second == true);
       return;
    }

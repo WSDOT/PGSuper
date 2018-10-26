@@ -215,7 +215,7 @@ BOOL CConcreteGeneralPage::OnInitDialog()
 
 void CConcreteGeneralPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONCRETE_DETAILS );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONCRETE_GENERAL );
 }
 
 void CConcreteGeneralPage::OnUserEc()

@@ -135,14 +135,16 @@ protected:
    Float64 m_Day;
    std::_tstring m_Description;
 
-   CConstructSegmentActivity m_ConstructSegments;
+   CApplyLoadActivity m_ApplyLoads;
    CErectPiersActivity m_ErectPiers;
+   CConstructSegmentActivity m_ConstructSegments;
    CErectSegmentActivity m_ErectSegments;
-   CRemoveTemporarySupportsActivity m_RemoveTempSupports;
    CCastClosureJointActivity m_CastClosureJoints;
    CCastDeckActivity m_CastDeck;
-   CApplyLoadActivity m_ApplyLoads;
    CStressTendonActivity m_StressTendons;
+   CRemoveTemporarySupportsActivity m_RemoveTempSupports;
+
+   Uint16 GetActivityScore() const;
 
    friend CTimelineManager;
 

@@ -28,7 +28,7 @@
 class txnEditProjectCriteria : public txnTransaction
 {
 public:
-   txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria,pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType);
+   txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria,pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType,pgsTypes::WearingSurfaceType oldWearingSurfaceType,pgsTypes::WearingSurfaceType newWearingSurfaceType);
 
    ~txnEditProjectCriteria();
 
@@ -42,8 +42,9 @@ public:
 private:
    void Execute(int i);
 
-   pgsTypes::AnalysisType m_AnalysisType[2];
    std::_tstring m_strProjectCriteria[2];
+   pgsTypes::AnalysisType m_AnalysisType[2];
+   pgsTypes::WearingSurfaceType m_WearingSurfaceType[2]; // future overlay is not a valid
 };
 
 #endif // INCLUDED_EDITPROJECTCRITERIATXN_H_

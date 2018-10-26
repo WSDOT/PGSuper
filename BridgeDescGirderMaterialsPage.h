@@ -32,6 +32,7 @@
 #include "PGSuperAppPlugin\resource.h"
 #include "SameGirderTypeHyperLink.h"
 #include "SlabOffsetHyperLink.h"
+#include "FilletHyperLink.h"
 
 class CGirderDescDlg;
 
@@ -60,6 +61,7 @@ public:
    
    CSameGirderTypeHyperLink m_GirderTypeHyperLink;
    CSlabOffsetHyperLink m_SlabOffsetHyperLink;
+   CFilletHyperLink m_FilletHyperLink;
 
    bool m_bUseSameGirderType;
 
@@ -68,6 +70,12 @@ public:
 
    Float64 m_SlabOffset[2];
    CString m_strSlabOffsetCache[2];
+
+   pgsTypes::FilletType m_FilletType;
+   pgsTypes::FilletType m_FilletTypeCache;
+
+   Float64 m_Fillet;
+   CString m_strFilletCache;
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -96,10 +104,21 @@ protected:
    afx_msg void OnBeforeChangeGirderName();
 	afx_msg void OnConcreteStrength();
    afx_msg void OnConditionFactorTypeChanged();
+   afx_msg void OnConstructionEventChanged();
+   afx_msg void OnConstructionEventChanging();
+   afx_msg void OnErectionEventChanged();
+   afx_msg void OnErectionEventChanging();
    //}}AFX_MSG
    afx_msg LRESULT OnChangeSameGirderType(WPARAM wParam,LPARAM lParam);
    afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);
+   afx_msg LRESULT OnChangeFilletType(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
+
+   void FillEventList();
+   EventIDType CreateEvent();
+	
+   int m_PrevConstructionEventIdx;
+   int m_PrevErectionEventIdx; // capture the erection stage when the combo box drops down so we can restore the value if CreateEvent fails
 
    void ExchangeConcreteData(CDataExchange* pDX);
 
@@ -107,6 +126,7 @@ protected:
    void UpdateGirderTypeControls();
 
    void UpdateSlabOffsetHyperLink();
+   void UpdateFilletHyperLink();
    void UpdateSlabOffsetControls();
 
    void UpdateConcreteControls(bool bSkipEcCheckBoxes=false);
@@ -123,8 +143,8 @@ protected:
    CString m_strUserEc;
    CString m_strUserEci;
 
-   int m_LossMethod;
-   int m_TimeDependentModel;
+   pgsTypes::LossMethod m_LossMethod;
+   pgsTypes::TimeDependentModel m_TimeDependentModel;
    Float64 m_AgeAtRelease;
 
    int m_GirderNameIdx; // combo box index of current girder name just before it is changed

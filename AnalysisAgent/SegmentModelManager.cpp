@@ -2010,7 +2010,7 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    Float64 Ls = pBridge->GetSegmentLength(segmentKey);
 
    // Get the material properties
-   Float64 Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
+   Float64 Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx,pgsTypes::Start);
 
    // Get points of interest
    GET_IFACE(IPointOfInterest,pIPoi);

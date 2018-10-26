@@ -31,6 +31,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
@@ -208,9 +209,10 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    Float64 L = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
    CString strSegmentLengthLabel;
-   strSegmentLengthLabel.Format(_T("Segment Length: %s"),FormatDimension(L,pDisplayUnits->GetSpanLengthUnit()));
+   strSegmentLengthLabel.Format(_T("%s Length: %s"),pDocType->IsPGSuperDocument() ? _T("Girder") : _T("Segment"),FormatDimension(L,pDisplayUnits->GetSpanLengthUnit()));
    GetDlgItem(IDC_SEGMENT_LENGTH_LABEL)->SetWindowText(strSegmentLengthLabel);
 
 
@@ -352,7 +354,7 @@ void CGirderSegmentStrandsPage::UpdateStrandControls()
 
 void CGirderSegmentStrandsPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_DIRECST_STRAND_INPUT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_DIRECT_STRAND_INPUT );
 }
 
 void CGirderSegmentStrandsPage::OnEpoxyChanged()

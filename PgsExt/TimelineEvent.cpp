@@ -68,6 +68,19 @@ bool CTimelineEvent::operator<(const CTimelineEvent& rOther) const
 
    if ( m_Day == rOther.m_Day )
    {
+      // occur on the same day... check the activities. some activities logically
+      // occur before others.
+      if ( GetActivityScore() < rOther.GetActivityScore() )
+      {
+         return true;
+      }
+      else if ( rOther.GetActivityScore() < GetActivityScore() )
+      {
+         return false;
+      }
+
+      ATLASSERT(GetActivityScore() == rOther.GetActivityScore());
+
       // occur on the same day... the one with the shorter duration comes first
       if ( GetMinElapsedTime() < rOther.GetMinElapsedTime() )
       {
@@ -490,6 +503,68 @@ void CTimelineEvent::MakeCopy(const CTimelineEvent& rOther)
 void CTimelineEvent::MakeAssignment(const CTimelineEvent& rOther)
 {
    MakeCopy(rOther);
+}
+
+// Scores for activities to define sort order when two timeline events
+// occur on the same day. Certain activities will take place before others.
+// For example, if two events occur on the same day and one event has
+// cast closure joints and the other event has cast closure joints and cast deck
+// the event with cast closure joints only will come first in the timeline
+// because deck casting must come after closure joint casting.
+#define AS_APPLY_LOADS          0x0000
+#define AS_ERECT_PIERS          0x0001
+#define AS_CONSTRUCT_SEGMENTS   0x0002
+#define AS_ERECT_SEGMENTS       0x0004
+#define AS_CAST_CLOSURE_JOINTS  0x0008
+#define AS_CAST_DECK            0x0010
+#define AS_STRESS_TENDONS       0x0020
+#define AS_REMOVE_TEMP_SUPPORTS 0x0040
+
+Uint16 CTimelineEvent::GetActivityScore() const
+{
+   Uint16 activityScore = 0;
+
+   if ( m_ApplyLoads.IsEnabled() )
+   {
+      activityScore |= AS_APPLY_LOADS;
+   }
+
+   if ( m_ErectPiers.IsEnabled() )
+   {
+      activityScore |= AS_ERECT_PIERS;
+   }
+
+   if ( m_ConstructSegments.IsEnabled() )
+   {
+      activityScore |= AS_CONSTRUCT_SEGMENTS;
+   }
+
+   if ( m_ErectSegments.IsEnabled() )
+   {
+      activityScore |= AS_ERECT_SEGMENTS;
+   }
+
+   if ( m_CastClosureJoints.IsEnabled() )
+   {
+      activityScore |= AS_CAST_CLOSURE_JOINTS;
+   }
+
+   if ( m_CastDeck.IsEnabled() )
+   {
+      activityScore |= AS_CAST_DECK;
+   }
+
+   if ( m_StressTendons.IsEnabled() )
+   {
+      activityScore |= AS_STRESS_TENDONS;
+   }
+
+   if ( m_RemoveTempSupports.IsEnabled() )
+   {
+      activityScore |= AS_REMOVE_TEMP_SUPPORTS;
+   }
+
+   return activityScore;
 }
 
 #if defined _DEBUG

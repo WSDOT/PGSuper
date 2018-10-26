@@ -27,6 +27,7 @@
 #include <WBFLCore.h>
 #include <PgsExt\ReportPointOfInterest.h>
 #include "PoiMap.h"
+#include <IFace\AnalysisResults.h>
 
 // This utility class provides methods for creating a simple span FEM2d model for a precast segment, finding members in the segment
 // and mapping POI's between PGSuper and the Fem2d model
@@ -98,4 +99,28 @@ private:
    Float64 m_InteriorFactor;
 
    pgsKdotHaulingGirderModelFactory();
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// pgsDesignHaunchLoadGirderModelFactory
+// 
+// Subclass for modelling differential haunch load for girder design
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class PGSEXTCLASS pgsDesignHaunchLoadGirderModelFactory : public pgsGirderModelFactory
+{
+public:
+   pgsDesignHaunchLoadGirderModelFactory( const std::vector<SlabLoad>& slabLoads, LoadCaseIDType slabLoadCase, LoadCaseIDType slabPadLoadCase);
+   ~pgsDesignHaunchLoadGirderModelFactory(void);
+
+protected:
+   // Use template methods to allow children to add functionality
+   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap);
+
+private:
+   pgsDesignHaunchLoadGirderModelFactory();
+
+   std::vector<SlabLoad> m_SlabLoads;
+   LoadCaseIDType m_SlabLoadCase;
+   LoadCaseIDType m_SlabPadLoadCase;
 };

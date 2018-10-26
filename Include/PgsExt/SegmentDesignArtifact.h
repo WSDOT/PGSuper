@@ -89,7 +89,8 @@ public:
       StressExceedsConcreteStrength,
       DebondDesignFailed,
       DesignCancelled,
-      NoDesignRequested
+      NoDesignRequested,
+      DesignNotSupported // design could not be performed because design is not supported for the current application settings (e.g. time-step losses)
    };
 
    // Design outcome data that isn't neccessarily a failure
@@ -250,6 +251,9 @@ public:
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
    Float64 GetSlabOffset(pgsTypes::MemberEndType end) const; // "A" dimension
 
+   void SetFillet(Float64 f);
+   Float64 GetFillet() const;
+
    void SetLiftingLocations(Float64 left,Float64 right);
    Float64 GetLeftLiftingLocation() const;
    Float64 GetRightLiftingLocation() const;
@@ -325,6 +329,7 @@ private:
 
    Float64 m_Fci;
    Float64 m_SlabOffset[2]; // "A" dimension at start and end of girder
+   Float64 m_Fillet;
    Float64 m_LiftLocLeft;
    Float64 m_LiftLocRight;
    Float64 m_ShipLocLeft;

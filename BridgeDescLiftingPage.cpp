@@ -220,5 +220,5 @@ BOOL CGirderDescLiftingPage::OnSetActive()
 
 void CGirderDescLiftingPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_SUPPORTS );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_TEMPORARY_CONDITIONS );
 }

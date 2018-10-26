@@ -28,6 +28,7 @@
 #include "PGSuperAppPlugin\resource.h"
 #include "PGSuperDoc.h"
 #include "BridgeModelViewChildFrame.h"
+#include "BridgePlanView.h"
 #include "BridgeSectionView.h"
 #include "AlignmentPlanView.h"
 #include "AlignmentProfileView.h"
@@ -146,14 +147,11 @@ void CBridgeModelViewChildFrame::OnFilePrintDirect()
 
 void CBridgeModelViewChildFrame::DoFilePrint(bool direct)
 {
-   CBridgePlanView*    ppv = GetBridgePlanView();
-   CBridgeSectionView* psv = GetBridgeSectionView();
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    
    // create a print job and do it
-   CBridgeViewPrintJob pj(this,ppv, psv, pBroker);
+   CBridgeViewPrintJob pj(this,GetUpperView(), GetLowerView(), pBroker);
    pj.OnFilePrint(direct);
 }
 
@@ -197,16 +195,18 @@ CAlignmentProfileView* CBridgeModelViewChildFrame::GetAlignmentProfileView()
    return NULL;
 }
 
-CView* CBridgeModelViewChildFrame::GetUpperView()
+CBridgeViewPane* CBridgeModelViewChildFrame::GetUpperView()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane calls AssertValid, Must be in the application module state
-   return (CView*)m_SplitterWnd.GetPane(0, 0);
+   ASSERT_KINDOF(CBridgeViewPane,m_SplitterWnd.GetPane(0,0));
+   return (CBridgeViewPane*)m_SplitterWnd.GetPane(0, 0);
 }
 
-CView* CBridgeModelViewChildFrame::GetLowerView()
+CBridgeViewPane* CBridgeModelViewChildFrame::GetLowerView()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane calls AssertValid, Must be in the application module state
-   return (CView*)m_SplitterWnd.GetPane(1, 0);
+   ASSERT_KINDOF(CBridgeViewPane,m_SplitterWnd.GetPane(1,0));
+   return (CBridgeViewPane*)m_SplitterWnd.GetPane(1, 0);
 }
 
 void CBridgeModelViewChildFrame::InitSpanRange()
@@ -410,8 +410,8 @@ void CBridgeModelViewChildFrame::UpdateCutLocation(Float64 cut)
    m_CurrentCutLocation = ForceIntoRange(start,m_CurrentCutLocation,end);
 
 //   UpdateBar();
-   GetBridgePlanView()->OnUpdate(NULL, HINT_BRIDGEVIEWSECTIONCUTCHANGED, NULL);
-   GetBridgeSectionView()->OnUpdate(NULL, HINT_BRIDGEVIEWSECTIONCUTCHANGED, NULL);
+   GetUpperView()->OnUpdate(NULL, HINT_BRIDGEVIEWSECTIONCUTCHANGED, NULL);
+   GetLowerView()->OnUpdate(NULL, HINT_BRIDGEVIEWSECTIONCUTCHANGED, NULL);
 }
    
 Float64 CBridgeModelViewChildFrame::GetCurrentCutLocation()

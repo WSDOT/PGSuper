@@ -445,9 +445,14 @@ BOOL CShearSteelPage::OnSetActive()
    return val;
 }
 
+UINT CShearSteelPage::GetHelpID()
+{
+   return IDH_GIRDER_TRANSVERSE_REINFORCEMENT;
+}
+
 void CShearSteelPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_TRANSVERSE_REINFORCEMENT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), GetHelpID() );
 }
 
 void CShearSteelPage::FillBarComboBox(CComboBox* pcbRebar)

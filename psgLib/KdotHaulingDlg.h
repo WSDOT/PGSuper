@@ -37,6 +37,8 @@ public:
 // Dialog Data
 	enum { IDD = IDD_KDOT_HAULINGD };
 
+   void OnSetActive() {}
+
 protected:
    virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

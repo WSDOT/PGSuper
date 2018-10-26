@@ -108,6 +108,21 @@ public:
    std::vector<CTemporarySupportData*> GetTemporarySupports();
 
    // =================================================================================
+   // Fillet Used only when the parent bridge's FilletType is fttSpan or fttGirder
+   // =================================================================================
+   // Set the Fillet at a span (same for all girders)
+   // Use when Fillet type is pgsTypes::fttSpan
+   void SetFillet(Float64 fillet);
+
+   // Set/Get the Fillet at a span for a specific girder
+   // Use when Fillet type is pgsTypes::fttGirder
+   void SetFillet(GirderIndexType gdrIdx,Float64 fillet);
+   Float64 GetFillet(GirderIndexType gdrIdx,bool bGetRawValue = false) const;
+
+   // Copies girder-by-girder Fillet data from one girder to another
+   void CopyFillet(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
+
+   // =================================================================================
    // Live Load Distribution Factors (for Directly Input)
    // =================================================================================
    void SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM);
@@ -163,6 +178,11 @@ private:
 
    // safe internal function for getting lldfs in lieue of girder count changes
    LLDF& GetLLDF(GirderIndexType igs) const;
+
+   mutable std::vector<Float64> m_Fillets; // fillet for each girder in span. First value is used for ftt:Span
+
+   // make sure fillet data stays intact from girder count changes
+   void ProtectFillet() const;
 
    friend CBridgeDescription2;
 };

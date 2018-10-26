@@ -72,6 +72,7 @@ BEGIN_MESSAGE_MAP(CCatalogServerDlg, CDialog)
 	ON_BN_CLICKED(IDC_EDIT, OnEdit)
 	ON_LBN_DBLCLK(IDC_SERVERS, OnDblclkServers)
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(ID_HELP, &CCatalogServerDlg::OnHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -139,13 +140,6 @@ void CCatalogServerDlg::OnEdit()
 
 BOOL CCatalogServerDlg::OnInitDialog() 
 {
-   CString strText;
-   strText.Format(_T("%s Configuration Servers"),AfxGetApp()->m_pszProfileName);
-   SetWindowText(strText);
-
-   strText.Format(_T("A %s configuration server provides configuration settings for the software"),AfxGetApp()->m_pszProfileName);
-   GetDlgItem(IDC_TITLE)->SetWindowText(strText);
-
 	CDialog::OnInitDialog();
 
    UpdateServerList();
@@ -196,4 +190,9 @@ void CCatalogServerDlg::UpdateButtonState()
 void CCatalogServerDlg::OnDblclkServers() 
 {
    OnEdit();	
+}
+
+void CCatalogServerDlg::OnHelp()
+{
+   EAFHelp( AfxGetApp()->m_pszProfileName, IDH_CONFIGURATION_SERVERS );
 }

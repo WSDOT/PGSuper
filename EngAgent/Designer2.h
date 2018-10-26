@@ -375,8 +375,8 @@ public:
 
    pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl);
 
-   void GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pHaunchDetails);
-   void GetHaunchDetails(const CGirderKey& girderKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
+   void GetHaunchDetails(const CSpanKey& spanKey,HAUNCHDETAILS* pHaunchDetails);
+   void GetHaunchDetails(const CSpanKey& spanKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
 
    pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config);
 
@@ -477,7 +477,7 @@ private:
 
    void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact);
 
-   void GetHaunchDetails(const CGirderKey& girderKey,bool bUseConfig,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
+   void GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
 
    // Initialize the design artifact with a first guess of the design
    // variables

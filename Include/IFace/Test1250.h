@@ -50,12 +50,12 @@ COPYRIGHT
 
 // MISCELLANEOUS
 //
-inline bool create_test_file_names(const CString& input, CString* pResultsFileName, CString* pPoiFileName, CString* pErrFileName)
+inline bool create_test_file_names(const CString& strExt,const CString& input, CString* pResultsFileName, CString* pPoiFileName, CString* pErrFileName)
 {
    // files must be of type .pgs
    CString tmp(input);
    tmp.MakeLower();
-   int loc = tmp.Find(_T(".pgs"),0);
+   int loc = tmp.Find(strExt,0);
    if (loc>0)
    {
       CString basename = input.Left(input.GetLength()-4);
@@ -66,7 +66,8 @@ inline bool create_test_file_names(const CString& input, CString* pResultsFileNa
    }
    else
    {
-      CString msg = CString(_T("Error - Test input files must have .pgs extension - not: "))+input;
+      CString msg;
+      msg.Format(_T("Error - Test input files must have %s extension - not: %s"),strExt,input);
       ::AfxMessageBox(msg);
 
       return false;
@@ -93,11 +94,11 @@ interface ITest1250 : IUnknown
 {
    virtual bool RunTest(long  type,
                         const std::_tstring& outputFileName,
-                        const std::_tstring poiFileName)=0;
+                        const std::_tstring& poiFileName)=0;
 
    virtual bool RunTestEx(long  type, const std::vector<SpanGirderHashType>& girderList,
                           const std::_tstring& outputFileName,
-                          const std::_tstring poiFileName)=0;
+                          const std::_tstring& poiFileName)=0;
 };
 
 #endif // INCLUDED_IFACE_TEST1250_H_

@@ -1,17 +1,17 @@
 HKCR
 {
-	PGSuperLibrary.LibraryAppPlugin.1 = s 'PGSuper Library Editor'
+	PGSuperLibrary.LibraryAppPlugin.1 = s 'PGS Library Editor'
 	{
 		CLSID = s '{E96DEDC8-4D09-47ea-98E9-9731692D40AB}'
 	}
-	PGSuperLibrary.LibraryAppPlugin = s 'PGSuper Library Editor'
+	PGSuperLibrary.LibraryAppPlugin = s 'PGS Library Editor'
 	{
 		CLSID = s '{E96DEDC8-4D09-47ea-98E9-9731692D40AB}'
 		CurVer = s 'PGSuperLibrary.LibraryAppPlugin.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {E96DEDC8-4D09-47ea-98E9-9731692D40AB} = s 'PGSuper Library Editor'
+		ForceRemove {E96DEDC8-4D09-47ea-98E9-9731692D40AB} = s 'PGS Library Editor'
 		{
 			ProgID = s 'PGSuperLibrary.LibraryAppPlugin.1'
 			VersionIndependentProgID = s 'PGSuperLibrary.LibraryAppPlugin'

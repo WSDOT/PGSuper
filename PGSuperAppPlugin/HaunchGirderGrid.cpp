@@ -73,7 +73,7 @@ int CHaunchGirderGrid::GetColWidth(ROWCOL nCol)
    return (int)(rect.Width( )*(Float64)1/7);
 }
 
-void CHaunchGirderGrid::CustomInit(SpanIndexType nSpans, GirderIndexType maxGirdersPerSpan)
+void CHaunchGirderGrid::CustomInit(const HaunchInputData& haunchData)
 {
    // initialize units
    CComPtr<IBroker> pBroker;
@@ -91,9 +91,10 @@ void CHaunchGirderGrid::CustomInit(SpanIndexType nSpans, GirderIndexType maxGird
    // we want to merge cells
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
+   const PierIndexType nBrgLines = haunchData.m_BearingsSlabOffset.size();
    // Create entire grid with read-only place holders for inputs. Fill grid will change types to writeable later
-   const int num_rows = (int)maxGirdersPerSpan;
-   const int num_cols = (int)nSpans*2;
+   const int num_rows = (int)haunchData.m_MaxGirdersPerSpan;
+   const int num_cols = (int)nBrgLines;
 
 	SetRowCount(num_rows+1);
 	SetColCount(num_cols);
@@ -104,38 +105,43 @@ void CHaunchGirderGrid::CustomInit(SpanIndexType nSpans, GirderIndexType maxGird
    // no row moving
 	GetParam()->EnableMoveRows(FALSE);
 
-   // disable left side
-	SetStyleRange(CGXRange(0,0), CGXStyle()
-			.SetControl(GX_IDS_CTRL_HEADER)
-		);
-
    SetFrozenRows(1/*# frozen rows*/,1/*# extra header rows*/);
 
-   ROWCOL col = 0;
-
-   // set text along top rows
-	SetStyleRange(CGXRange(0,col,1,col++), CGXStyle()
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_TOP)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
-			.SetValue(_T(" "))
-		);
-
-   for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
+   ROWCOL col = 1;
+   PierIndexType PierNo=1;
+   SlabOffsetBearingDataConstIter iter = haunchData.m_BearingsSlabOffset.begin();
+   for (PierIndexType brgIdx = 0; brgIdx < nBrgLines; brgIdx++)
    {
-      CString strLabel;
-      strLabel.Format(_T("Span %d"), LABEL_SPAN(spanIdx));
+      const SlabOffsetBearingData& hp = *iter;
 
-	   SetStyleRange(CGXRange(0,col,0,col+1), CGXStyle()
+      CString strLabel;
+
+      if (brgIdx==0 || brgIdx==nBrgLines-1)
+         strLabel.Format(_T("Abut %d"),PierNo);
+      else
+         strLabel.Format(_T("Pier %d"),PierNo);
+
+      SetStyleRange(CGXRange(0,col,0,col), CGXStyle()
             .SetHorizontalAlignment(DT_CENTER)
             .SetVerticalAlignment(DT_TOP)
-			   .SetEnabled(FALSE)          // disables usage as current cell
-            .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-			   .SetValue(strLabel)
-		   );
+		      .SetEnabled(FALSE)          // disables usage as current cell
+		      .SetValue(strLabel)
+         );
 
-      strLabel.Format(_T("Start (%s)"), m_pCompUnit->UnitOfMeasure.UnitTag().c_str());
+      if (brgIdx!=0 && hp.m_PDType==SlabOffsetBearingData::pdAhead)
+      {
+         // merge columns
+	      SetStyleRange(CGXRange(0,col-1,0,col), CGXStyle()
+               .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
+	      );
+      }
+
+      if (hp.m_PDType==SlabOffsetBearingData::pdAhead)
+         strLabel.Format(_T("%s (%s)"), _AHEADSTR, m_pCompUnit->UnitOfMeasure.UnitTag().c_str());
+      else if (hp.m_PDType==SlabOffsetBearingData::pdBack)
+         strLabel.Format(_T("%s (%s)"), _BACKSTR, m_pCompUnit->UnitOfMeasure.UnitTag().c_str());
+      else if (hp.m_PDType==SlabOffsetBearingData::pdCL)
+         strLabel.Format(_T("%s (%s)"), _CLSTR, m_pCompUnit->UnitOfMeasure.UnitTag().c_str());
 
       SetStyleRange(CGXRange(1,col++), CGXStyle()
          .SetWrapText(TRUE)
@@ -145,20 +151,15 @@ void CHaunchGirderGrid::CustomInit(SpanIndexType nSpans, GirderIndexType maxGird
          .SetValue(strLabel)
          );
 
-      strLabel.Format(_T("End (%s)"), m_pCompUnit->UnitOfMeasure.UnitTag().c_str());
+      if (hp.m_PDType!=SlabOffsetBearingData::pdBack)
+         PierNo++;
 
-      SetStyleRange(CGXRange(1,col++), CGXStyle()
-         .SetWrapText(TRUE)
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-         .SetEnabled(FALSE)
-         .SetValue(strLabel)
-         );
+      iter++;
    }
 
 // Set up rows as read only
    ROWCOL row = 2;
-   for (int igdr=0; igdr<(int)maxGirdersPerSpan; igdr++)
+   for (int igdr=0; igdr<(int)haunchData.m_MaxGirdersPerSpan; igdr++)
    {
       CString strLabel;
       strLabel.Format(_T("Girder %s"), LABEL_GIRDER(igdr));
@@ -182,6 +183,10 @@ void CHaunchGirderGrid::CustomInit(SpanIndexType nSpans, GirderIndexType maxGird
       row++;
    }
 
+   // top left corner
+   SetStyleRange(CGXRange(0,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
+   SetStyleRange(CGXRange(1,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
+
    // make text fit correctly in header row
 	ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
 
@@ -193,9 +198,7 @@ void CHaunchGirderGrid::CustomInit(SpanIndexType nSpans, GirderIndexType maxGird
 	SetFocus();
 
 	GetParam( )->EnableUndo(TRUE);
-
 }
-
 
 void CHaunchGirderGrid::FillGrid(const HaunchInputData& haunchData)
 {
@@ -205,38 +208,27 @@ void CHaunchGirderGrid::FillGrid(const HaunchInputData& haunchData)
    // Grid was already sized in CustomInit. Just fill and enable data locations
    ROWCOL rowStart = 2;
    ROWCOL col = 1;
-   std::vector<HaunchPairVec>::const_iterator spanIt = haunchData.m_SpanGirdersHaunch.begin();
-   for (; spanIt!=haunchData.m_SpanGirdersHaunch.end(); spanIt++)
+   SlabOffsetBearingDataConstIter brgIt = haunchData.m_BearingsSlabOffset.begin();
+   for (; brgIt!=haunchData.m_BearingsSlabOffset.end(); brgIt++)
    {
       ROWCOL row = rowStart;
-      const HaunchPairVec& hpv = *spanIt;
-      for (HaunchPairVecConstIter gdrIt = hpv.begin(); gdrIt!=hpv.end(); gdrIt++)
+      const std::vector<Float64>& hpv = brgIt->m_AsForGirders;
+      for (std::vector<Float64>::const_iterator  gdrIt = hpv.begin(); gdrIt!=hpv.end(); gdrIt++)
       {
-         const HaunchPair& hp = *gdrIt;
-
-         // Start
+         Float64 Aval = *gdrIt;
 
          SetStyleRange(CGXRange(row,col), CGXStyle()
             .SetReadOnly(FALSE)
             .SetEnabled(TRUE)
             .SetInterior(::GetSysColor(COLOR_WINDOW))
             .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-            .SetValue(FormatDimension(hp.first,*m_pCompUnit, false))
-            );
-
-         // end
-         SetStyleRange(CGXRange(row,col+1), CGXStyle()
-            .SetReadOnly(FALSE)
-            .SetEnabled(TRUE)
-            .SetInterior(::GetSysColor(COLOR_WINDOW))
-            .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-            .SetValue(FormatDimension(hp.second,*m_pCompUnit, false))
+            .SetValue(FormatDimension(Aval,*m_pCompUnit, false))
             );
 
          row++;
       }
 
-      col +=2;
+      col ++;
    }
 
    GetParam()->SetLockReadOnly(TRUE);
@@ -245,56 +237,43 @@ void CHaunchGirderGrid::FillGrid(const HaunchInputData& haunchData)
 	ScrollCellInView(rowStart, GetLeftCol());
 }
 
-HaunchInputData CHaunchGirderGrid::GetData(Float64 minA, CString& minValError, const HaunchInputData& origData, CDataExchange* pDX)
+void CHaunchGirderGrid::GetData(Float64 minA, CString& minValError, HaunchInputData* pData, CDataExchange* pDX)
 {
-   HaunchInputData data;
-   data.m_SlabOffsetType = pgsTypes::sotGirder;
+   pData->m_SlabOffsetType = pgsTypes::sotGirder;
 
-   // Number of spans and girders cannot change so use data structure to iterate into grid
-   SpanIndexType span = 0;
-   std::vector<HaunchPairVec>::const_iterator spanIt = origData.m_SpanGirdersHaunch.begin();
-   for (; spanIt!=origData.m_SpanGirdersHaunch.end(); spanIt++)
+   // Number of spans and girders cannot change, so use original data structure to iterate into grid and update
+   PierIndexType brg = 0;
+   SlabOffsetBearingDataIter brgIt = pData->m_BearingsSlabOffset.begin();
+   for (; brgIt!=pData->m_BearingsSlabOffset.end(); brgIt++)
    {
+      SlabOffsetBearingData& rhpv = *brgIt;
+
       GirderIndexType gdr = 0;
-      HaunchPairVec newGdrVec;
-      HaunchPair newPair(0,0);
-      const HaunchPairVec& rhpv = *spanIt;
-      for (HaunchPairVecConstIter gdrIt = rhpv.begin(); gdrIt!=rhpv.end(); gdrIt++)
+      for (std::vector< Float64 >::iterator gdrIt = rhpv.m_AsForGirders.begin(); gdrIt!=rhpv.m_AsForGirders.end(); gdrIt++)
       {
-
          // Extract converted doubles from grid
-         newPair = GetHpAtCells( span, gdr, pDX);
+         Float64 A = GetAAtCells( brg, gdr, pDX);
 
-         if (newPair.first < minA)
+         if (A < minA)
          {
             AfxMessageBox( minValError, MB_ICONEXCLAMATION);
             this->SetCurrentCell((ROWCOL)gdr+1,1,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
             pDX->Fail();
          }
 
-         if (newPair.second < minA)
-         {
-            AfxMessageBox( minValError, MB_ICONEXCLAMATION);
-            this->SetCurrentCell((ROWCOL)gdr+1,1,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
-            pDX->Fail();
-         }
-
-         newGdrVec.push_back(newPair);
+         *gdrIt = A;
          gdr++;
       }
 
-      data.m_SpanGirdersHaunch.push_back(newGdrVec);
-      span++;
+      brg++;
    }
-
-   return data;
 }
 
-HaunchPair CHaunchGirderGrid::GetHpAtCells(SpanIndexType span, GirderIndexType gdr, CDataExchange* pDX)
+Float64 CHaunchGirderGrid::GetAAtCells(PierIndexType ibrg, GirderIndexType gdr, CDataExchange* pDX)
 {
-   HaunchPair hp(0.0,0.0);
+   Float64 A = 0.0;
 
-   ROWCOL col = (ROWCOL)span*2 + 1;
+   ROWCOL col = (ROWCOL)ibrg + 1;
    ROWCOL row = (ROWCOL)gdr+2;
 
    CString str = GetCellValue(row,col);
@@ -303,7 +282,7 @@ HaunchPair CHaunchGirderGrid::GetHpAtCells(SpanIndexType span, GirderIndexType g
       Float64 val;
       if(sysTokenizer::ParseDouble(str, &val))
       {
-         hp.first = ::ConvertToSysUnits(val, m_pCompUnit->UnitOfMeasure);
+         A = ::ConvertToSysUnits(val, m_pCompUnit->UnitOfMeasure);
       }
       else
       {
@@ -313,23 +292,7 @@ HaunchPair CHaunchGirderGrid::GetHpAtCells(SpanIndexType span, GirderIndexType g
       }
    }
 
-   str = GetCellValue(row,col+1);
-   if (!str.IsEmpty())
-   {
-      Float64 val;
-      if(sysTokenizer::ParseDouble(str, &val))
-      {
-         hp.second = ::ConvertToSysUnits(val, m_pCompUnit->UnitOfMeasure);
-      }
-      else
-      {
-         AfxMessageBox( _T("End value is not a number - must be a positive number"), MB_ICONEXCLAMATION);
-         this->SetCurrentCell(row,col,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
-         pDX->Fail();
-      }
-   }
-
-   return hp;
+   return A;
 }
 
 CString CHaunchGirderGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)

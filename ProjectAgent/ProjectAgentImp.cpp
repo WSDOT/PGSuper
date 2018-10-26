@@ -98,7 +98,7 @@ void use_library_entry( pgsLibraryEntryObserver* pObserver, const std::_tstring&
 
    // First check and see if it is already in the project library
    const EntryType* pProjectEntry = prjLib.LookupEntry( key.c_str() );
-   PRECONDITION(pProjectEntry !=0);
+   ATLASSERT(pProjectEntry !=0);
 
    *ppEntry = pProjectEntry; // Reference count has been added.
    (*ppEntry)->Attach( pObserver );
@@ -125,6 +125,8 @@ void release_library_entry( pgsLibraryEntryObserver* pObserver, EntryType* pEntr
 static bool IsValidStraightStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
 static bool IsValidHarpedStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
 static bool IsValidTemporaryStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
+
+#define COMPUTE_LLDF -1
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -245,7 +247,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.50;
@@ -253,7 +255,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
@@ -261,7 +263,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
@@ -269,7 +271,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.50;
@@ -277,7 +279,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
@@ -293,7 +295,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
@@ -301,7 +303,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.50;
@@ -309,7 +311,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
@@ -317,7 +319,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
@@ -325,7 +327,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.50;
@@ -333,7 +335,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
@@ -341,7 +343,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = COMPUTE_LLDF;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
@@ -349,7 +351,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
    m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
    m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = 1.00;
-   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = -1;
+   m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = COMPUTE_LLDF;
 
    m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory] = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
    m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating] = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
@@ -2462,11 +2464,13 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pObj->m_BridgeDescription.SetMeasurementLocation(pgsTypes::AtPierLine);
       pObj->m_BridgeDescription.SetGirderOrientation((pgsTypes::GirderOrientationType)xSectionData.GirderOrientation);
 
+      pObj->m_BridgeDescription.SetFillet(pgsTypes::fttBridge);
+      pObj->m_BridgeDescription.SetFillet(xSectionData.Fillet);
+
       // update the deck data
       CDeckDescription2* pDeck      = pObj->m_BridgeDescription.GetDeckDescription();
       pDeck->DeckRebarData          = xSectionData.DeckRebarData;
       pDeck->DeckType               = xSectionData.DeckType;
-      pDeck->Fillet                 = xSectionData.Fillet;
       pDeck->GrossDepth             = xSectionData.GrossDepth;
       pDeck->OverhangEdgeDepth      = xSectionData.OverhangEdgeDepth;
       pDeck->OverhangTaper          = xSectionData.OverhangTaper;
@@ -2515,7 +2519,7 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pRightRailingSystem->strExteriorRailing = xSectionData.RightTrafficBarrier;
       pRightRailingSystem->Concrete           = pDeck->Concrete;
 
-      pObj->m_BridgeDescription.CopyDown(true,true,true,true);
+      pObj->m_BridgeDescription.CopyDown(true,true,true,true,true);
    }
 
    return S_OK;
@@ -2732,8 +2736,8 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
       const CTimelineEvent* pGirderPlacementEvent;
       EventIndexType cyEventIdx;
       EventIndexType gpEventIdx;
-      pTimelineMgr->FindEvent(_T("Casting Yard"),&cyEventIdx,&pCastingYardEvent);
-      pTimelineMgr->FindEvent(_T("Girder Placement"),&gpEventIdx,&pGirderPlacementEvent);
+      VERIFY(pTimelineMgr->FindEvent(_T("Casting Yard"),&cyEventIdx,&pCastingYardEvent));
+      VERIFY(pTimelineMgr->FindEvent(_T("Girder Placement"),&gpEventIdx,&pGirderPlacementEvent));
 
       std::map<SpanGirderHashType,CGirderData>::iterator iter;
       for ( iter = girderDataMap.begin(); iter != girderDataMap.end(); iter++ )
@@ -4998,7 +5002,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          if ( 0 <= jointWidth )
          {
             m_BridgeDescription.SetGirderSpacing(jointWidth);
-            m_BridgeDescription.CopyDown(false,false,IsBridgeSpacing(m_BridgeDescription.GetGirderSpacingType()),false); // copy the joint spacing down
+            m_BridgeDescription.CopyDown(false,false,IsBridgeSpacing(m_BridgeDescription.GetGirderSpacingType()),false,false); // copy the joint spacing down
          }
       }
    }
@@ -5881,6 +5885,15 @@ void CProjectAgentImp::SetSlabOffset(Float64 slabOffset)
    }
 }
 
+void CProjectAgentImp::SetWearingSurfaceType(pgsTypes::WearingSurfaceType wearingSurfaceType)
+{
+   if ( m_BridgeDescription.GetDeckDescription()->WearingSurface != wearingSurfaceType )
+   {
+      m_BridgeDescription.GetDeckDescription()->WearingSurface = wearingSurfaceType;
+      Fire_BridgeChanged();
+   }
+}
+
 void CProjectAgentImp::SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType)
 {
    if ( m_BridgeDescription.GetSlabOffsetType() != offsetType )
@@ -5925,6 +5938,60 @@ pgsTypes::SlabOffsetType CProjectAgentImp::GetSlabOffsetType()
    return m_BridgeDescription.GetSlabOffsetType();
 }
 
+void CProjectAgentImp::SetFilletType(pgsTypes::FilletType offsetType)
+{
+   if ( m_BridgeDescription.GetFilletType() != offsetType )
+   {
+      m_BridgeDescription.SetFilletType(offsetType);
+      Fire_BridgeChanged();
+   }
+}
+
+pgsTypes::FilletType CProjectAgentImp::GetFilletType()
+{
+   return m_BridgeDescription.GetFilletType();
+}
+
+void CProjectAgentImp::SetFillet( Float64 Fillet)
+{
+   if ( m_BridgeDescription.GetFilletType() != pgsTypes::fttBridge ||
+        !IsEqual(Fillet,m_BridgeDescription.GetFillet()) )
+   {
+      // fillet type and/or value is chaning
+      m_BridgeDescription.SetFilletType(pgsTypes::fttBridge);
+      m_BridgeDescription.SetFillet(Fillet);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetFillet(SpanIndexType spanIdx, Float64 offset)
+{
+   CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+   if ( !IsEqual(pSpan->GetFillet(0),offset) )
+   {
+      m_BridgeDescription.SetFilletType(pgsTypes::fttSpan);
+      pSpan->SetFillet(offset);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 offset)
+{
+   CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+   if ( !IsEqual(pSpan->GetFillet(gdrIdx),offset) )
+   {
+      m_BridgeDescription.SetFilletType(pgsTypes::fttGirder);
+      pSpan->SetFillet(gdrIdx,offset);
+      Fire_BridgeChanged();
+   }
+}
+
+Float64 CProjectAgentImp::GetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx)
+{
+   CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+   return pSpan->GetFillet(gdrIdx);
+}
+
 std::vector<pgsTypes::BoundaryConditionType> CProjectAgentImp::GetBoundaryConditionTypes(PierIndexType pierIdx)
 {
    return m_BridgeDescription.GetBoundaryConditionTypes(pierIdx);
@@ -5948,7 +6015,6 @@ void CProjectAgentImp::SetTimelineManager(const CTimelineManager& timelineMgr)
 
 EventIndexType CProjectAgentImp::AddTimelineEvent(const CTimelineEvent& timelineEvent)
 {
-#pragma Reminder("REVIEW: automatically updating the timeline")
    EventIndexType idx;
    m_BridgeDescription.GetTimelineManager()->AddTimelineEvent(timelineEvent,true,&idx);
    Fire_BridgeChanged();
@@ -5975,7 +6041,6 @@ void CProjectAgentImp::SetEventByIndex(EventIndexType eventIdx,const CTimelineEv
    const CTimelineEvent* pTimelineEvent = m_BridgeDescription.GetTimelineManager()->GetEventByIndex(eventIdx);
    if ( *pTimelineEvent != timelineEvent )
    {
-#pragma Reminder("REVIEW: do we want automatic adjustment of the timeline?")
       CTimelineEvent* pNewEvent = new CTimelineEvent(timelineEvent);
       m_BridgeDescription.GetTimelineManager()->SetEventByIndex(eventIdx,pNewEvent,true);
       Fire_BridgeChanged();
@@ -5987,7 +6052,6 @@ void CProjectAgentImp::SetEventByID(EventIDType eventID,const CTimelineEvent& ti
    const CTimelineEvent* pTimelineEvent = m_BridgeDescription.GetTimelineManager()->GetEventByID(eventID);
    if ( *pTimelineEvent != timelineEvent )
    {
-#pragma Reminder("REVIEW: do we want automatic adjustment of the timeline?")
       CTimelineEvent* pNewEvent = new CTimelineEvent(timelineEvent);
       m_BridgeDescription.GetTimelineManager()->SetEventByID(eventID,pNewEvent,true);
       Fire_BridgeChanged();
@@ -6120,6 +6184,45 @@ EventIDType CProjectAgentImp::GetSegmentErectionEventID(const CSegmentKey& segme
    SegmentIDType segmentID = pSegment->GetID();
 
    return m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventID(segmentID);
+}
+
+void CProjectAgentImp::SetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType constructionEventIdx,EventIndexType erectionEventIdx)
+{
+   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
+   SegmentIDType segmentID = pSegment->GetID();
+
+   if ( constructionEventIdx != m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventIndex(segmentID) && 
+        erectionEventIdx     != m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventIndex(segmentID) )
+   {
+      m_BridgeDescription.GetTimelineManager()->SetSegmentEvents(segmentID,constructionEventIdx,erectionEventIdx);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType constructionEventID,EventIDType erectionEventID)
+{
+   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
+   SegmentIDType segmentID = pSegment->GetID();
+
+   if ( constructionEventID != m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventID(segmentID) && 
+        erectionEventID     != m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventID(segmentID) )
+   {
+      m_BridgeDescription.GetTimelineManager()->SetSegmentConstructionEventByID(segmentID,constructionEventID);
+      m_BridgeDescription.GetTimelineManager()->SetSegmentErectionEventByID(segmentID,erectionEventID);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::GetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType* constructionEventIdx,EventIndexType* erectionEventIdx)
+{
+   *constructionEventIdx = GetSegmentConstructionEventIndex(segmentKey);
+   *erectionEventIdx     = GetSegmentErectionEventIndex(segmentKey);
+}
+
+void CProjectAgentImp::GetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType* constructionEventID,EventIDType* erectionEventID)
+{
+   *constructionEventID = GetSegmentConstructionEventID(segmentKey);
+   *erectionEventID     = GetSegmentErectionEventID(segmentKey);
 }
 
 EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx)
@@ -6416,7 +6519,7 @@ void CProjectAgentImp::SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupDa
    if ( *pGroup != girderGroup )
    {
       ReleaseBridgeLibraryEntries();
-      *pGroup = girderGroup;
+      pGroup->CopyGirderGroupData(&girderGroup,true/*copy data only*/);
       UseBridgeLibraryEntries();
 
       if ( !m_BridgeDescription.UseSameGirderForEntireBridge() || !m_BridgeDescription.UseSameNumberOfGirdersInAllGroups() )
@@ -7710,6 +7813,25 @@ pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributi
    return m_pSpecEntry->GetOverlayLoadDistributionType();
 }
 
+pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationType()
+{
+   if(m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP)
+   {
+      // Practically impossible to compute excess camber on the fly for spliced girders. Don't even try
+      return pgsTypes::hlcZeroCamber;
+   }
+   else
+   {
+      return m_pSpecEntry->GetHaunchLoadComputationType();
+   }
+}
+
+Float64 CProjectAgentImp::GetCamberTolerance()
+{
+   ATLASSERT(m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP);
+   ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber);
+   return m_pSpecEntry->GetHaunchLoadCamberTolerance();
+}
 
 Uint16 CProjectAgentImp::GetMomentCapacityMethod()
 {
@@ -8245,10 +8367,9 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
       m_AnalysisType = pgsTypes::Continuous;
    }
 
-   GET_IFACE(IDocumentType,pDocType);
-   if ( pDocType->IsPGSuperDocument() )
+   if ( m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP )
    {
-      // the timeline is based on settings in the project criteria for PGSuper documents (using the Creep and Camber timing parameters)
+      // the timeline is based on settings in the project criteria for non-time-step loss methods (using the Creep and Camber timing parameters)
       CreatePrecastGirderBridgeTimelineEvents();
    }
 
@@ -10182,7 +10303,11 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDescription(_T("Final without Live Load (Bridge Site 2)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad(true);
-   pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(true);
+
+   if ( m_BridgeDescription.GetDeckDescription()->WearingSurface != pgsTypes::wstSacrificialDepth )
+   {
+      pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(true);
+   }
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // live load

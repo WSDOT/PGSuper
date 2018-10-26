@@ -36,10 +36,9 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include "SelectItemDlg.h"
-
 #include "GirderDescDlg.h"
+#include "PGSuperAppPlugin\TimelineEventDlg.h"
 
-#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <Atlddx.h>
@@ -60,11 +59,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CGirderDescGeneralPage, CPropertyPage)
 
 CGirderDescGeneralPage::CGirderDescGeneralPage() : CPropertyPage(CGirderDescGeneralPage::IDD)
-
 {
-	//{{AFX_DATA_INIT(CGirderDescGeneralPage)
-		// NOTE: the ClassWizard will add member initialization here
-	//}}AFX_DATA_INIT
 }
 
 CGirderDescGeneralPage::~CGirderDescGeneralPage()
@@ -85,6 +80,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Control(pDX,IDC_GIRDERNAME_NOTE,m_GirderTypeHyperLink);
    DDX_Control(pDX,IDC_SLABOFFSET_NOTE,m_SlabOffsetHyperLink);
+   DDX_Control(pDX,IDC_FILLET_NOTE,m_FilletHyperLink);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -104,12 +100,14 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    // Slab Offset
    DDX_Tag(pDX, IDC_ADIM_START_UNIT, pDisplayUnits->GetComponentDimUnit() );
    DDX_Tag(pDX, IDC_ADIM_END_UNIT,   pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_FILLET_UNIT,   pDisplayUnits->GetComponentDimUnit() );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
       DDX_UnitValueAndTag( pDX, IDC_ADIM_START, IDC_ADIM_START_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit() );
       DDX_UnitValueAndTag( pDX, IDC_ADIM_END,   IDC_ADIM_END_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_FILLET,     IDC_FILLET_UNIT,     m_Fillet,   pDisplayUnits->GetComponentDimUnit() );
 
       // validate slab offset... (must be greater or equal gross deck thickess)
       if ( pDX->m_bSaveAndValidate )
@@ -117,8 +115,8 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          Float64 Lg = pBridge->GetSegmentLength(pParent->m_SegmentKey);
          pgsPointOfInterest poiStart(pParent->m_SegmentKey,0.0);
          pgsPointOfInterest poiEnd(pParent->m_SegmentKey,Lg);
-         Float64 grossDeckThicknessStart = pBridge->GetGrossSlabDepth(poiStart) + pBridge->GetFillet();
-         Float64 grossDeckThicknessEnd   = pBridge->GetGrossSlabDepth(poiEnd) + pBridge->GetFillet();
+         Float64 grossDeckThicknessStart = pBridge->GetGrossSlabDepth(poiStart);
+         Float64 grossDeckThicknessEnd   = pBridge->GetGrossSlabDepth(poiEnd);
          
          m_SlabOffset[pgsTypes::metStart] = (IsEqual(m_SlabOffset[pgsTypes::metStart],grossDeckThicknessStart) ? grossDeckThicknessStart : m_SlabOffset[pgsTypes::metStart]);
          m_SlabOffset[pgsTypes::metEnd]   = (IsEqual(m_SlabOffset[pgsTypes::metEnd],  grossDeckThicknessEnd  ) ? grossDeckThicknessEnd   : m_SlabOffset[pgsTypes::metEnd]);
@@ -127,7 +125,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          {
             pDX->PrepareEditCtrl(IDC_ADIM_START);
             CString msg;
-            msg.Format(_T("The slab offset at the start of the girder must be at equal to the slab + fillet depth of %s"),FormatDimension(grossDeckThicknessStart,pDisplayUnits->GetComponentDimUnit()));
+            msg.Format(_T("The slab offset at the start of the girder must be at equal to the slab depth of %s"),FormatDimension(grossDeckThicknessStart,pDisplayUnits->GetComponentDimUnit()));
             AfxMessageBox(msg,MB_ICONEXCLAMATION);
             pDX->Fail();
          }
@@ -136,7 +134,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          {
             pDX->PrepareEditCtrl(IDC_ADIM_END);
             CString msg;
-            msg.Format(_T("The slab offset at the end of the girder must be at equal to the slab + fillet depth of %s"),FormatDimension(grossDeckThicknessEnd,pDisplayUnits->GetComponentDimUnit()));
+            msg.Format(_T("The slab offset at the end of the girder must be at equal to the slab depth of %s"),FormatDimension(grossDeckThicknessEnd,pDisplayUnits->GetComponentDimUnit()));
             AfxMessageBox(msg,MB_ICONEXCLAMATION);
             pDX->Fail();
          }
@@ -208,11 +206,16 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
 	ON_WM_CTLCOLOR()
    ON_REGISTERED_MESSAGE(MsgChangeSameGirderType,OnChangeSameGirderType)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
+   ON_REGISTERED_MESSAGE(MsgChangeFilletType,OnChangeFilletType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME,OnChangeGirderName)
    ON_CBN_DROPDOWN(IDC_GIRDER_NAME,OnBeforeChangeGirderName)
    ON_BN_CLICKED(IDC_FC1,OnConcreteStrength)
    ON_BN_CLICKED(IDC_FC2,OnConcreteStrength)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, OnConditionFactorTypeChanged)
+   ON_CBN_SELCHANGE(IDC_CONSTRUCTION_EVENT, OnConstructionEventChanged)
+   ON_CBN_DROPDOWN(IDC_CONSTRUCTION_EVENT, OnConstructionEventChanging)
+   ON_CBN_SELCHANGE(IDC_ERECTION_EVENT, OnErectionEventChanged)
+   ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, OnErectionEventChanging)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -222,17 +225,20 @@ END_MESSAGE_MAP()
 BOOL CGirderDescGeneralPage::OnInitDialog() 
 {
    FillGirderComboBox();
+   FillEventList();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::_tstring strSpecName = pSpec->GetSpecification();
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   m_LossMethod = pLossParams->GetLossMethod();
+   m_TimeDependentModel = pLossParams->GetTimeDependentModel();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
-   m_LossMethod = pSpecEntry->GetLossMethod();
-   m_TimeDependentModel = pSpecEntry->GetTimeDependentModel();
+   if ( m_LossMethod != pgsTypes::TIME_STEP )
+   {
+      GetDlgItem(IDC_CONSTRUCTION_EVENT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ERECTION_EVENT)->EnableWindow(FALSE);
+   }
 
    if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotPier )
    {
@@ -247,6 +253,17 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
    m_strSlabOffsetCache[pgsTypes::metEnd].Format(  _T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit(),false));
 
+   if ( m_FilletType == pgsTypes::fttBridge || m_FilletType == pgsTypes::fttSpan )
+   {
+      m_FilletTypeCache = pgsTypes::fttGirder;
+   }
+   else
+   {
+      m_FilletTypeCache = pgsTypes::fttBridge;
+   }
+
+   m_strFilletCache.Format(_T("%s"),FormatDimension(m_Fillet, pDisplayUnits->GetComponentDimUnit(),false));
+
    // Initialize the condition factor combo box
    CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
    pcbConditionFactor->AddString(_T("Good or Satisfactory (Structure condition rating 6 or higher)"));
@@ -257,9 +274,16 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
+   // initialize the event combo boxes
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_SegmentID);
+   EventIDType erectionEventID = pParent->m_TimelineMgr.GetSegmentErectionEventID(pParent->m_SegmentID);
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_CONSTRUCTION_EVENT,constructionEventID);
+   DDX_CBItemData(&dx,IDC_ERECTION_EVENT,erectionEventID);
+
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
-      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
       SegmentIDType segmentID = pParent->m_pSegment->GetID();
       ATLASSERT(segmentID != INVALID_ID);
 
@@ -286,6 +310,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    UpdateGirderTypeControls();
 
    UpdateSlabOffsetHyperLink();
+   UpdateFilletHyperLink();
    UpdateSlabOffsetControls();
 
    if ( m_strUserEc == _T("") )
@@ -300,6 +325,18 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    OnUserEci();
    OnUserEc();
+
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      if ( IsDlgButtonChecked(IDC_FC1) )
+      {
+         OnChangeFci();
+      }
+      else
+      {
+         OnChangeGirderFc();
+      }
+   }
 
    UpdateConcreteControls(true);
 
@@ -321,6 +358,14 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
       GetDlgItem(IDC_ADIM_START)->SetWindowText(_T(""));
       GetDlgItem(IDC_ADIM_END)->SetWindowText(_T(""));
+
+      // fillet
+      m_FilletHyperLink.EnableWindow(FALSE);
+
+      GetDlgItem(IDC_FILLET_LABEL)->EnableWindow(FALSE);
+      GetDlgItem(IDC_FILLET)->EnableWindow(FALSE);
+      GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));
    }
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -464,7 +509,7 @@ void CGirderDescGeneralPage::UpdateEci()
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
       Float64 Eci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == pgsTypes::tdmAASHTO || m_TimeDependentModel == pgsTypes::tdmACI209 )
       {
          matACI209Concrete concrete;
          concrete.UserEc28(true);
@@ -478,7 +523,7 @@ void CGirderDescGeneralPage::UpdateEci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         ATLASSERT(m_TimeDependentModel == pgsTypes::tdmCEBFIP);
          matCEBFIPConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
@@ -577,13 +622,13 @@ void CGirderDescGeneralPage::UpdateEc()
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
       Float64 Ec;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == pgsTypes::tdmAASHTO || m_TimeDependentModel == pgsTypes::tdmACI209 )
       {
          Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
       }
       else
       {
-         ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
+         ATLASSERT( m_TimeDependentModel == pgsTypes::tdmCEBFIP );
          Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.S);
       }
 
@@ -635,13 +680,13 @@ void CGirderDescGeneralPage::UpdateFc()
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
          Float64 fc;
 
-         if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+         if ( m_TimeDependentModel == pgsTypes::tdmAASHTO || m_TimeDependentModel == pgsTypes::tdmACI209 )
          {
             fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
          }
          else
          {
-            ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+            ATLASSERT(m_TimeDependentModel == pgsTypes::tdmCEBFIP);
             fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.S);
          }
 
@@ -675,7 +720,7 @@ void CGirderDescGeneralPage::UpdateFci()
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
          Float64 fci;
-         if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+         if ( m_TimeDependentModel == pgsTypes::tdmAASHTO || m_TimeDependentModel == pgsTypes::tdmACI209 )
          {
             matACI209Concrete concrete;
             concrete.SetTimeAtCasting(0);
@@ -686,6 +731,7 @@ void CGirderDescGeneralPage::UpdateFci()
          }
          else
          {
+            ATLASSERT(m_TimeDependentModel == pgsTypes::tdmCEBFIP);
             matCEBFIPConcrete concrete;
             concrete.SetTimeAtCasting(0);
             concrete.SetFc28(fc);
@@ -792,7 +838,7 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
 void CGirderDescGeneralPage::UpdateConcreteControls(bool bSkipEcCheckBoxes)
 {
-   if ( m_LossMethod == LOSSES_TIME_STEP )
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
       int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
       INT idFci[5] = {IDC_FCI,       IDC_FCI_UNIT,       IDC_MOD_ECI, IDC_ECI, IDC_ECI_UNIT};
@@ -938,6 +984,7 @@ HBRUSH CGirderDescGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    {
    case IDC_GIRDERNAME_NOTE:
    case IDC_SLABOFFSET_NOTE:
+   case IDC_FILLET_NOTE:
       pDC->SetTextColor(HYPERLINK_COLOR);
       break;
    };
@@ -1040,6 +1087,47 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
    return 0;
 }
 
+LRESULT CGirderDescGeneralPage::OnChangeFilletType(WPARAM wParam,LPARAM lParam)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   pgsTypes::FilletType temp = m_FilletType;
+   m_FilletType = m_FilletTypeCache;
+   m_FilletTypeCache = temp;
+
+   UpdateFilletHyperLink();
+   UpdateSlabOffsetControls();
+
+   CWnd* pwndFillet = GetDlgItem(IDC_FILLET);
+   if ( m_FilletType == pgsTypes::fttGirder )
+   {
+      // going into girder by girder slab offset mode
+      CString strTemp = m_strFilletCache;
+
+      pwndFillet->GetWindowText(m_strFilletCache);
+      pwndFillet->SetWindowText(strTemp);
+   }
+   else if ( m_FilletType == pgsTypes::fttSpan )
+   {
+      //pwndFillet->SetWindowText(m_strFilletCache);
+   }
+   else
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+      Float64 fillet;
+      CDataExchange dx(this,TRUE);
+      DDX_UnitValueAndTag(&dx, IDC_FILLET,IDC_FILLET_UNIT, fillet, pDisplayUnits->GetComponentDimUnit());
+
+      GetDlgItem(IDC_FILLET)->GetWindowText(m_strFilletCache);
+      GetDlgItem(IDC_FILLET)->SetWindowText( ::FormatDimension(fillet,pDisplayUnits->GetComponentDimUnit(),false) );
+   }
+
+   return 0;
+}
+
 void CGirderDescGeneralPage::UpdateSlabOffsetControls()
 {
    // Enable/Disable Slab Offset controls
@@ -1052,6 +1140,10 @@ void CGirderDescGeneralPage::UpdateSlabOffsetControls()
    GetDlgItem(IDC_ADIM_END_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_ADIM_END)->EnableWindow(bEnable);
    GetDlgItem(IDC_ADIM_END_UNIT)->EnableWindow(bEnable);
+
+   bEnable = (m_FilletType == pgsTypes::fttGirder ? TRUE : FALSE);
+   GetDlgItem(IDC_FILLET)->EnableWindow(bEnable);
+   GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(bEnable);
 }
 
 void CGirderDescGeneralPage::UpdateGirderTypeHyperLink()
@@ -1089,6 +1181,28 @@ void CGirderDescGeneralPage::UpdateSlabOffsetHyperLink()
    {
       m_SlabOffsetHyperLink.SetWindowText(_T("A unique Slab Offset is used in each span"));
       m_SlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
+   }
+}
+
+void CGirderDescGeneralPage::UpdateFilletHyperLink()
+{
+   if ( m_FilletType == pgsTypes::fttGirder )
+   {
+      m_FilletHyperLink.SetWindowText(_T("Fillets are defined girder by girder"));
+      if ( m_FilletTypeCache == pgsTypes::fttBridge )
+         m_FilletHyperLink.SetURL(_T("Click to use this Fillet for the entire bridge"));
+      else
+         m_FilletHyperLink.SetURL(_T("Click to use this Fillet for this span"));
+   }
+   else if ( m_FilletType == pgsTypes::fttBridge )
+   {
+      m_FilletHyperLink.SetWindowText(_T("A single Fillet is used for the entire bridge"));
+      m_FilletHyperLink.SetURL(_T("Click to define Fillets by girder"));
+   }
+   else
+   {
+      m_FilletHyperLink.SetWindowText(_T("A unique Fillet is used in each span"));
+      m_FilletHyperLink.SetURL(_T("Click to define Fillets by girder"));
    }
 }
 
@@ -1180,4 +1294,138 @@ void CGirderDescGeneralPage::OnConditionFactorTypeChanged()
       pEdit->EnableWindow(TRUE);
       break;
    }
+}
+
+void CGirderDescGeneralPage::FillEventList()
+{
+   CComboBox* pcbConstruct = (CComboBox*)GetDlgItem(IDC_CONSTRUCTION_EVENT);
+   CComboBox* pcbErect = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
+
+   int constructIdx = pcbConstruct->GetCurSel();
+   int erectIdx = pcbErect->GetCurSel();
+
+   EventIDType constructEventID = (EventIDType)pcbConstruct->GetItemData(constructIdx);
+   EventIDType erectionEventID  = (EventIDType)pcbConstruct->GetItemData(erectIdx);
+
+   pcbConstruct->ResetContent();
+   pcbErect->ResetContent();
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   EventIndexType nEvents = pParent->m_TimelineMgr.GetEventCount();
+   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   {
+      const CTimelineEvent* pTimelineEvent = pParent->m_TimelineMgr.GetEventByIndex(eventIdx);
+      EventIDType eventID = pTimelineEvent->GetID();
+
+      CString label;
+      label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+
+      int idx = pcbConstruct->AddString(label);
+      pcbConstruct->SetItemData(idx,eventID);
+      if ( eventID == constructEventID )
+      {
+         pcbConstruct->SetCurSel(idx);
+      }
+
+      idx = pcbErect->AddString(label);
+      pcbErect->SetItemData(idx,eventID);
+      if ( eventID == erectionEventID )
+      {
+         pcbErect->SetCurSel(idx);
+      }
+   }
+
+   CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
+   pcbConstruct->SetItemData(pcbConstruct->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
+   pcbErect->SetItemData(pcbErect->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
+
+   if ( pcbConstruct->GetCurSel() == CB_ERR )
+   {
+      pcbConstruct->SetCurSel(0);
+   }
+
+   if ( pcbErect->GetCurSel() == CB_ERR )
+   {
+      pcbErect->SetCurSel(0);
+   }
+}
+
+void CGirderDescGeneralPage::OnConstructionEventChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CONSTRUCTION_EVENT);
+   m_PrevConstructionEventIdx = pCB->GetCurSel();
+}
+
+void CGirderDescGeneralPage::OnConstructionEventChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CONSTRUCTION_EVENT);
+   int curSel = pCB->GetCurSel();
+   EventIDType eventID = (EventIDType)pCB->GetItemData(curSel);
+   if ( eventID == CREATE_TIMELINE_EVENT )
+   {
+      eventID = CreateEvent();
+      if ( eventID == INVALID_ID )
+      {
+         pCB->SetCurSel(m_PrevConstructionEventIdx);
+         return;
+      }
+      else
+      {
+         FillEventList();
+      }
+   }
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   pParent->m_TimelineMgr.SetSegmentConstructionEventByID(pParent->m_SegmentID,eventID);
+
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_CONSTRUCTION_EVENT,eventID);
+}
+   
+void CGirderDescGeneralPage::OnErectionEventChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
+   m_PrevErectionEventIdx = pCB->GetCurSel();
+}
+
+void CGirderDescGeneralPage::OnErectionEventChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
+   int curSel = pCB->GetCurSel();
+   EventIDType eventID = (EventIDType)pCB->GetItemData(curSel);
+   if ( eventID == CREATE_TIMELINE_EVENT )
+   {
+      eventID = CreateEvent();
+      if ( eventID == INVALID_ID )
+      {
+         pCB->SetCurSel(m_PrevErectionEventIdx);
+         return;
+      }
+      else
+      {
+         FillEventList();
+      }
+   }
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   pParent->m_TimelineMgr.SetSegmentErectionEventByID(pParent->m_SegmentID,eventID);
+
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_ERECTION_EVENT,eventID);
+}
+
+EventIDType CGirderDescGeneralPage::CreateEvent()
+{
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   CTimelineEventDlg dlg(pParent->m_TimelineMgr,INVALID_INDEX,FALSE);
+   if ( dlg.DoModal() == IDOK )
+   {
+      EventIndexType eventIdx;
+      int result = pParent->m_TimelineMgr.AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
+      ATLASSERT(result == TLM_SUCCESS);
+      EventIDType eventID = pParent->m_TimelineMgr.GetEventByIndex(eventIdx)->GetID();
+      return eventID;
+  }
+
+   return INVALID_ID;
 }

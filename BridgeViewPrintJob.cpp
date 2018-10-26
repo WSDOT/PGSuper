@@ -40,7 +40,7 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CBridgeViewPrintJob::CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgePlanView* ppv, CBridgeSectionView* psv, IBroker* pBroker)
+CBridgeViewPrintJob::CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgeViewPane* ppv, CBridgeViewPane* psv, IBroker* pBroker)
 {
    ATLASSERT(ppv!=0);
    ATLASSERT(psv!=0);

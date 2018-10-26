@@ -83,6 +83,7 @@ protected:
 public:
    afx_msg void OnBnClickedTestServer();
    afx_msg void OnCbnSelchangeServerType();
+   afx_msg void OnHelp();
 };
 
 //{{AFX_INSERT_LOCATION}}

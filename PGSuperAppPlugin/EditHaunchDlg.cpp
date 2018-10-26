@@ -40,13 +40,13 @@ IMPLEMENT_DYNAMIC(CEditHaunchDlg, CDialog)
 CEditHaunchDlg::CEditHaunchDlg(const CBridgeDescription2* pBridgeDesc, CWnd* pParent /*=NULL*/)
 	: CDialog(CEditHaunchDlg::IDD, pParent),
    m_pBridgeDesc(pBridgeDesc),
-   m_Fillet(0.0),
-   m_bShowFillet(true),
    m_HaunchShape(pgsTypes::hsSquare),
    m_WasSlabOffsetTypeForced(false),
+   m_WasFilletTypeForced(false),
    m_WasDataIntialized(false)
 {
    m_HaunchInputData.m_SlabOffsetType = pgsTypes::sotBridge;
+   m_HaunchInputData.m_FilletType = pgsTypes::fttBridge;
 }
 
 CEditHaunchDlg::~CEditHaunchDlg()
@@ -65,51 +65,71 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_HAUNCH_SHAPE,m_cbHaunchShape);
    DDX_CBItemData(pDX, IDC_HAUNCH_SHAPE, m_HaunchShape);
 
-   // fillet
-   DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNITS, m_Fillet, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueZeroOrMore( pDX, IDC_FILLET,m_Fillet, pDisplayUnits->GetComponentDimUnit() );
-
    DDX_CBItemData(pDX, IDC_A_TYPE, m_HaunchInputData.m_SlabOffsetType);
+   DDX_CBItemData(pDX, IDC_FILLET_TYPE, m_HaunchInputData.m_FilletType);
 
    if (pDX->m_bSaveAndValidate)
    {
       // Get min A value and build error message for too small of A
-      Float64 minA = m_Fillet + m_pBridgeDesc->GetDeckDescription()->GrossDepth;
+      Float64 minA = m_pBridgeDesc->GetDeckDescription()->GrossDepth;
       cmpdim.SetValue(minA);
       CString strMinValError;
-      strMinValError.Format(_T("Slab Offset value must be greater or equal to slab depth + fillet (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );
+      strMinValError.Format(_T("Slab Offset value must be greater or equal to slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );
 
+      // Slab offsets
       switch(m_HaunchInputData.m_SlabOffsetType)
       {
       case pgsTypes::sotBridge:
-         this->m_HaunchInputData = m_HaunchSame4BridgeDlg.DownloadData(minA,strMinValError,pDX);
+         m_HaunchSame4BridgeDlg.DownloadData(minA,strMinValError,&m_HaunchInputData,pDX);
          break;
       case pgsTypes::sotPier:
-         this->m_HaunchInputData = m_HaunchSpanBySpanDlg.DownloadData(minA,strMinValError,pDX);
+         m_HaunchSpanBySpanDlg.DownloadData(minA,strMinValError,&m_HaunchInputData,pDX);
          break;
       case pgsTypes::sotGirder:
-         this->m_HaunchInputData = m_HaunchByGirderDlg.DownloadData(minA,strMinValError,this->m_HaunchInputData,pDX);
+         m_HaunchByGirderDlg.DownloadData(minA,strMinValError,&m_HaunchInputData,pDX);
          break;
       default:
          ATLASSERT(0);
          break;
       };
+
+      // Fillets
+      switch(m_HaunchInputData.m_FilletType)
+      {
+      case pgsTypes::fttBridge:
+         m_FilletSame4BridgeDlg.DownloadData(&m_HaunchInputData,pDX);
+         break;
+      case pgsTypes::fttSpan:
+         m_FilletSpanBySpanDlg.DownloadData(&m_HaunchInputData,pDX);
+         break;
+      case pgsTypes::fttGirder:
+         m_FilletByGirderDlg.DownloadData(&m_HaunchInputData,pDX);
+         break;
+      default:
+         ATLASSERT(0);
+         break;
+      };
+
    }
    else
    {
       // Set data values in embedded dialogs
-      m_HaunchSame4BridgeDlg.m_ADim = m_HaunchInputData.m_SingleHaunch;
+      m_HaunchSame4BridgeDlg.m_ADim = m_HaunchInputData.m_SingleSlabOffset;
       m_HaunchSame4BridgeDlg.UpdateData(FALSE);
-
       m_HaunchSpanBySpanDlg.UploadData(this->m_HaunchInputData);
-
       m_HaunchByGirderDlg.UploadData(this->m_HaunchInputData);
+
+      m_FilletSame4BridgeDlg.m_Fillet = m_HaunchInputData.m_SingleFillet;
+      m_FilletSame4BridgeDlg.UpdateData(FALSE);
+      m_FilletSpanBySpanDlg.UploadData(this->m_HaunchInputData);
+      m_FilletByGirderDlg.UploadData(this->m_HaunchInputData);
    }
 }
 
 
 BEGIN_MESSAGE_MAP(CEditHaunchDlg, CDialog)
    ON_CBN_SELCHANGE(IDC_A_TYPE, &CEditHaunchDlg::OnCbnSelchangeAType)
+   ON_CBN_SELCHANGE(IDC_FILLET_TYPE, &CEditHaunchDlg::OnCbnSelchangeFilletType)
    ON_BN_CLICKED(ID_HELP, &CEditHaunchDlg::OnBnClickedHelp)
 END_MESSAGE_MAP()
 
@@ -122,7 +142,7 @@ BOOL CEditHaunchDlg::OnInitDialog()
    // Initialize our data structure for current data
    InitializeData();
 
-   // Embed dialogs for strand editing into current. A discription may be found at
+   // Embed dialogs for into current. A discription may be found at
    // http://www.codeproject.com/KB/dialog/embedded_dialog.aspx
 
    // Set up embedded dialogs
@@ -140,9 +160,25 @@ BOOL CEditHaunchDlg::OnInitDialog()
       VERIFY(m_HaunchSpanBySpanDlg.Create(CHaunchSpanBySpanDlg::IDD, this));
       VERIFY(m_HaunchSpanBySpanDlg.SetWindowPos( GetDlgItem(IDC_A_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
 
-      m_HaunchByGirderDlg.InitSize(m_HaunchInputData.m_SpanGirdersHaunch.size(), m_HaunchInputData.m_MaxGirdersPerSpan);
+      m_HaunchByGirderDlg.InitSize(m_HaunchInputData);
       VERIFY(m_HaunchByGirderDlg.Create(CHaunchByGirderDlg::IDD, this));
       VERIFY(m_HaunchByGirderDlg.SetWindowPos( GetDlgItem(IDC_A_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
+
+      pBox = GetDlgItem(IDC_FILLET_BOX);
+      pBox->ShowWindow(SW_HIDE);
+
+      pBox->GetWindowRect(&boxRect);
+      ScreenToClient(boxRect);
+
+      VERIFY(m_FilletSame4BridgeDlg.Create(CFilletSame4BridgeDlg::IDD, this));
+      VERIFY(m_FilletSame4BridgeDlg.SetWindowPos( GetDlgItem(IDC_FILLET_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
+
+      VERIFY(m_FilletSpanBySpanDlg.Create(CFilletSpanBySpanDlg::IDD, this));
+      VERIFY(m_FilletSpanBySpanDlg.SetWindowPos( GetDlgItem(IDC_FILLET_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
+
+      m_FilletByGirderDlg.InitSize(m_HaunchInputData);
+      VERIFY(m_FilletByGirderDlg.Create(CFilletByGirderDlg::IDD, this));
+      VERIFY(m_FilletByGirderDlg.SetWindowPos( GetDlgItem(IDC_FILLET_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
    }
 
    // Slab offset type combo
@@ -154,20 +190,19 @@ BOOL CEditHaunchDlg::OnInitDialog()
    sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotGirder));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotGirder);
 
+   // Fillet type combo
+   pBox =(CComboBox*)GetDlgItem(IDC_FILLET_TYPE);
+   sqidx = pBox->AddString( FilletTypeAsString(pgsTypes::fttBridge));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::fttBridge);
+   sqidx = pBox->AddString( FilletTypeAsString(pgsTypes::fttSpan));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::fttSpan);
+   sqidx = pBox->AddString( FilletTypeAsString(pgsTypes::fttGirder));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::fttGirder);
+
    CDialog::OnInitDialog();
 
    OnCbnSelchangeAType();
-
-   // Don't show input for fillet and shape if we only have an overlay
-   GetDlgItem(IDC_FILLET_LABEL)->EnableWindow(m_bShowFillet);
-   GetDlgItem(IDC_FILLET)->EnableWindow(m_bShowFillet);
-   GetDlgItem(IDC_FILLET_UNITS)->EnableWindow(m_bShowFillet);
-   if ( !m_bShowFillet )
-   {
-      GetDlgItem(IDC_FILLET)->SetWindowText(_T("0.00"));
-   }
-   GetDlgItem(IDC_HAUNCH_SHAPE)->EnableWindow(m_bShowFillet);
-   GetDlgItem(IDC_HAUNCH_SHAPE_LABEL)->EnableWindow(m_bShowFillet);
+   OnCbnSelchangeFilletType();
 
    m_cbHaunchShape.Initialize(m_HaunchShape);
    CDataExchange dx(this,FALSE);
@@ -181,87 +216,92 @@ void CEditHaunchDlg::InitializeData()
 {
    m_WasDataIntialized = true;
 
-   // First get fillet
    const CDeckDescription2* pDeck = m_pBridgeDesc->GetDeckDescription();
    ATLASSERT(pDeck->DeckType!= pgsTypes::sdtNone); // should not be able to edit haunch if no deck
-   m_Fillet =  pDeck->Fillet;
-
-   m_bShowFillet = pDeck->DeckType == pgsTypes::sdtNone ? FALSE:TRUE;
-
-   if (!m_bShowFillet)
-   {
-      m_HaunchShape = pgsTypes::hsSquare; // show fillet as square for overlays (the control will be disabled)
-   }
-   else
-   {
-      m_HaunchShape = pDeck->HaunchShape;
-   }
 
    // Take data from project and fill our local data structures
-   // Fill all slab offset types with default values depending on initial type
-   m_HaunchInputData.m_SpansHaunch.clear();
-   m_HaunchInputData.m_SpanGirdersHaunch.clear();
+   // Fill all slab offset types with values depending on initial type
+   m_HaunchInputData.m_BearingsSlabOffset.clear();
+   m_HaunchInputData.m_MaxGirdersPerSpan = 0;
 
-   if (m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
+   // Bridge-wide data
+   ///////////////////////////////////
+   m_HaunchShape = pDeck->HaunchShape;
+   m_HaunchInputData.m_SlabOffsetType = m_pBridgeDesc->GetSlabOffsetType();
+
+   // Pier and girder based A data are treated the same for all types
+   PierIndexType npiers = m_pBridgeDesc->GetPierCount();
+
+   bool bFirst(true);
+   for (PierIndexType ipier=0; ipier<npiers; ipier++)
    {
-      m_HaunchInputData.m_SlabOffsetType = pgsTypes::sotBridge;
-      m_HaunchInputData.m_SingleHaunch = m_pBridgeDesc->GetSlabOffset();
+      const CPierData2* pPier = m_pBridgeDesc->GetPier(ipier);
 
-      // fill pier data with same value
-      FillPierData(m_HaunchInputData.m_SingleHaunch, m_HaunchInputData.m_SingleHaunch);
-      FillGirderData(m_HaunchInputData.m_SingleHaunch, m_HaunchInputData.m_SingleHaunch);
-   }
-   else if (m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier || 
-            m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder)
-   {
-      // Pier and girder based A's are treated the same
-      m_HaunchInputData.m_SlabOffsetType = m_pBridgeDesc->GetSlabOffsetType();
-
-      GroupIndexType ngrp = m_pBridgeDesc->GetGirderGroupCount();
-#ifdef _DEBUG
-   SpanIndexType ns = m_pBridgeDesc->GetSpanCount();
-   ATLASSERT(ns==ngrp); // Always true in PGSuper
-#endif
-
-      bool bFirst(true);
-      for (GroupIndexType igrp=0; igrp<ngrp; igrp++)
+      // We want to iterate over bearing lines. Determine how many
+      pgsTypes::PierFaceType pierFaces[2];
+      PierIndexType nbrglines = 1; 
+      if (ipier==0)
       {
-         const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(igrp);
-         PierIndexType startPier = igrp;
-         PierIndexType endPier  = igrp+1;
+         ATLASSERT(pPier->IsAbutment());
+         nbrglines = 1;
+         pierFaces[0] = pgsTypes::Ahead;
+      }
+      else if (ipier==npiers-1)
+      {
+         ATLASSERT(pPier->IsAbutment());
+         nbrglines = 1;
+         pierFaces[0] = pgsTypes::Back;
+      }
+      else if (pPier->IsBoundaryPier())
+      {
+         nbrglines = 2;
+         pierFaces[0] = pgsTypes::Back;
+         pierFaces[1] = pgsTypes::Ahead;
+      }
+      else
+      {
+         ATLASSERT(pPier->IsInteriorPier());
+         nbrglines = 1;
+         pierFaces[0] = pgsTypes::Back;
+      }
 
-         m_HaunchInputData.m_SpanGirdersHaunch.push_back( HaunchPairVec() );
+      for (PierIndexType ibrg=0; ibrg<nbrglines; ibrg++)
+      {
+         const CGirderGroupData* pGroup = pPier->GetGirderGroup(pierFaces[ibrg]);
 
-         HaunchPairVec& rGirderA = m_HaunchInputData.m_SpanGirdersHaunch.back();
+         SlabOffsetBearingData brgData;
+
+         // Save pier and group data to make updating bridge description easier
+         brgData.m_PierIndex   = ipier;
+         brgData.m_pGroupIndex = pGroup->GetIndex();
+
+         if (!pPier->IsAbutment() && nbrglines==1)
+         {
+            // continuous interior pier
+            brgData.m_PDType = SlabOffsetBearingData::pdCL;
+         }
+         else
+         {
+            brgData.m_PDType = pgsTypes::Back==pierFaces[ibrg] ? SlabOffsetBearingData::pdBack :  SlabOffsetBearingData::pdAhead;
+         }
 
          GirderIndexType ng = pGroup->GetGirderCount();
+         m_HaunchInputData.m_MaxGirdersPerSpan = max(m_HaunchInputData.m_MaxGirdersPerSpan, ng);
+
          for (GirderIndexType ig=0; ig<ng; ig++)
          {
-            Float64 startA = pGroup->GetSlabOffset(startPier, ig);
-            Float64 endA   = pGroup->GetSlabOffset(endPier, ig);
+            Float64 A = pGroup->GetSlabOffset(ipier, ig);
+            brgData.m_AsForGirders.push_back(A);
 
-            // For same A for entire bridge, just use span 0, girder 0
-            if (bFirst)
+            // Fill data for case when single A is used for entire bridge. Use bearingline 1, girder 1
+            if (ipier==0 && ig==0)
             {
-               m_HaunchInputData.m_SingleHaunch = startA;
-               bFirst = false;
+               m_HaunchInputData.m_SingleSlabOffset  = A;
             }
-
-            // For piers option, take girder 0
-            if (ig==0)
-            {
-               // slab offsets are contained in girders and assumed to be the same across all in the same span
-               m_HaunchInputData.m_SpansHaunch.push_back( HaunchPair(startA, endA) );
-            }
-
-            // For unique for girders option, fill all values
-            rGirderA.push_back( HaunchPair(startA, endA) );
          }
+
+         m_HaunchInputData.m_BearingsSlabOffset.push_back( brgData );
       }
-   }
-   else 
-   {
-      ATLASSERT(0); // new type??
    }
 
    // See if haunch fill type was forced. If so, set it
@@ -270,39 +310,43 @@ void CEditHaunchDlg::InitializeData()
       m_HaunchInputData.m_SlabOffsetType = m_ForcedSlabOffsetType;
    }
 
-   // Compute max number of girders per span
-   m_HaunchInputData.m_MaxGirdersPerSpan = 0;
-   std::vector<HaunchPairVec>::const_iterator pvec    = m_HaunchInputData.m_SpanGirdersHaunch.begin();
-   std::vector<HaunchPairVec>::const_iterator pvecend = m_HaunchInputData.m_SpanGirdersHaunch.end();
-   while (pvec != pvecend)
-   {
-      m_HaunchInputData.m_MaxGirdersPerSpan = max((Uint32)pvec->size(), m_HaunchInputData.m_MaxGirdersPerSpan);
-      pvec++;
-   }
-}
+   // Now Fillets
+   /////////////////////////////////////////////
+   m_HaunchInputData.m_FilletSpans.clear();
 
-void CEditHaunchDlg::FillPierData(Float64 startA, Float64 endA)
-{
-   SpanIndexType ns = m_pBridgeDesc->GetSpanCount();
-   for(SpanIndexType is=0; is<ns; is++)
-   {
-      m_HaunchInputData.m_SpansHaunch.push_back( HaunchPair(startA, endA) );
-   }
-}
+   m_HaunchInputData.m_FilletType = m_pBridgeDesc->GetFilletType();
 
-void CEditHaunchDlg::FillGirderData(Float64 startA, Float64 endA)
-{
-   SpanIndexType ns = m_pBridgeDesc->GetSpanCount();
-   for(SpanIndexType is=0; is<ns; is++)
+   // Pier and girder based A data are treated the same for all types
+   SpanIndexType nspans = m_pBridgeDesc->GetSpanCount();
+
+   bFirst = true;
+   for (SpanIndexType ispan=0; ispan<nspans; ispan++)
    {
-      HaunchPairVec spanAs;
-      GirderIndexType ng = m_pBridgeDesc->GetSpan(is)->GetGirderCount();
-      for(GirderIndexType ig=0; ig<ng; ig++)
+      const CSpanData2* pSpan = m_pBridgeDesc->GetSpan(ispan);
+
+      FilletSpanData fsData;
+      fsData.m_SpanIndex = ispan;
+
+      GirderIndexType ng = pSpan->GetGirderCount();
+      for (GirderIndexType ig=0; ig<ng; ig++)
       {
-         spanAs.push_back( HaunchPair(startA, endA) );
+         Float64 fillet = pSpan->GetFillet(ig);
+         fsData.m_FilletsForGirders.push_back(fillet);
+
+         // Fill data for case when single A is used for entire bridge. Use bearingline 1, girder 1
+         if (ispan==0 && ig==0)
+         {
+            m_HaunchInputData.m_SingleFillet = fillet;
+         }
       }
 
-       m_HaunchInputData.m_SpanGirdersHaunch.push_back(spanAs);
+      m_HaunchInputData.m_FilletSpans.push_back( fsData );
+   }
+
+   // See if haunch fill type was forced. If so, set it
+   if (m_WasFilletTypeForced)
+   {
+      m_HaunchInputData.m_FilletType = m_ForcedFilletType;
    }
 }
 
@@ -335,10 +379,46 @@ void CEditHaunchDlg::OnCbnSelchangeAType()
    };
 }
 
+void CEditHaunchDlg::OnCbnSelchangeFilletType()
+{
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_FILLET_TYPE);
+   
+   m_HaunchInputData.m_FilletType = (pgsTypes::FilletType)pBox->GetCurSel();
+
+   switch(m_HaunchInputData.m_FilletType)
+   {
+   case pgsTypes::fttBridge:
+      m_FilletSame4BridgeDlg.ShowWindow(SW_SHOW);
+      m_FilletSpanBySpanDlg.ShowWindow(SW_HIDE);
+      m_FilletByGirderDlg.ShowWindow(SW_HIDE);
+      break;
+   case  pgsTypes::fttSpan:
+      m_FilletSame4BridgeDlg.ShowWindow(SW_HIDE);
+      m_FilletSpanBySpanDlg.ShowWindow(SW_SHOW);
+      m_FilletByGirderDlg.ShowWindow(SW_HIDE);
+      break;
+   case  pgsTypes::fttGirder:
+      m_FilletSame4BridgeDlg.ShowWindow(SW_HIDE);
+      m_FilletSpanBySpanDlg.ShowWindow(SW_HIDE);
+      m_FilletByGirderDlg.ShowWindow(SW_SHOW);
+      break;
+   default:
+      ATLASSERT(0);
+      break;
+   };
+}
+
 void CEditHaunchDlg::ForceToSlabOffsetType(pgsTypes::SlabOffsetType slabOffsetType)
 {
    m_WasSlabOffsetTypeForced = true;
    m_ForcedSlabOffsetType = slabOffsetType;
+   m_WasDataIntialized = false;
+}
+
+void CEditHaunchDlg::ForceToFilletType(pgsTypes::FilletType filletType)
+{
+   m_WasFilletTypeForced = true;
+   m_ForcedFilletType = filletType;
    m_WasDataIntialized = false;
 }
 
@@ -349,59 +429,89 @@ void CEditHaunchDlg::ModifyBridgeDescr(CBridgeDescription2* pBridgeDesc)
       InitializeData();
    }
 
-   // First Fillet
-   pBridgeDesc->GetDeckDescription()->Fillet = this->m_Fillet;
-
+   // Haunch shape
    pBridgeDesc->GetDeckDescription()->HaunchShape = m_HaunchShape;
 
-   // Haunch
+   // Slab offset
    if (m_HaunchInputData.m_SlabOffsetType == pgsTypes::sotBridge)
    {
       pBridgeDesc->SetSlabOffsetType(pgsTypes::sotBridge);
-      pBridgeDesc->SetSlabOffset(m_HaunchInputData.m_SingleHaunch);
+      pBridgeDesc->SetSlabOffset(m_HaunchInputData.m_SingleSlabOffset);
    }
    else if (m_HaunchInputData.m_SlabOffsetType == pgsTypes::sotPier)
    {
       pBridgeDesc->SetSlabOffsetType(pgsTypes::sotPier);
 
-      GroupIndexType ngrp = pBridgeDesc->GetGirderGroupCount();
-      for (GroupIndexType igrp=0; igrp<ngrp; igrp++)
+      // loop over each bearing line and set A
+      for(SlabOffsetBearingDataConstIter hdit=m_HaunchInputData.m_BearingsSlabOffset.begin(); hdit!=m_HaunchInputData.m_BearingsSlabOffset.end(); hdit++)
       {
-         PierIndexType startPier = igrp;
-         PierIndexType endPier  = igrp+1;
+         const SlabOffsetBearingData& hbd = *hdit;
+         
+         CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(hbd.m_pGroupIndex);
 
-         CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(igrp);
+         // use A from slot[0] for all girders
+         Float64 A = hbd.m_AsForGirders[0];
 
-         HaunchPair& pair = m_HaunchInputData.m_SpansHaunch[igrp];
-
-         GirderIndexType ng = pGroup->GetGirderCount();
-         for (GirderIndexType ig=0; ig<ng; ig++)
-         {
-            pGroup->SetSlabOffset(startPier, ig, pair.first);
-            pGroup->SetSlabOffset(endPier,   ig, pair.second);
-         }
+         pGroup->SetSlabOffset(hbd.m_PierIndex, A);
       }
    }
    else if (m_HaunchInputData.m_SlabOffsetType == pgsTypes::sotGirder)
    {
       pBridgeDesc->SetSlabOffsetType(pgsTypes::sotGirder);
 
-      GroupIndexType ngrp = pBridgeDesc->GetGirderGroupCount();
-      for (GroupIndexType igrp=0; igrp<ngrp; igrp++)
+      // loop over each bearing line / girder and set A
+      for(SlabOffsetBearingDataConstIter hdit=m_HaunchInputData.m_BearingsSlabOffset.begin(); hdit!=m_HaunchInputData.m_BearingsSlabOffset.end(); hdit++)
       {
-         PierIndexType startPier = igrp;
-         PierIndexType endPier  = igrp+1;
+         const SlabOffsetBearingData& hbd = *hdit;
+         
+         CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(hbd.m_pGroupIndex);
 
-         CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(igrp);
-
-         HaunchPairVec& rpv = m_HaunchInputData.m_SpanGirdersHaunch[igrp];
-
-         GirderIndexType ng = pGroup->GetGirderCount();
+         GirderIndexType ng = hbd.m_AsForGirders.size();
          for (GirderIndexType ig=0; ig<ng; ig++)
          {
-            HaunchPair pair = rpv[ig];
-            pGroup->SetSlabOffset(startPier, ig, pair.first);
-            pGroup->SetSlabOffset(endPier,   ig, pair.second);
+            pGroup->SetSlabOffset(hbd.m_PierIndex, ig, hbd.m_AsForGirders[ig]);
+         }
+      }
+   }
+
+   // Fillet
+   if (m_HaunchInputData.m_FilletType == pgsTypes::fttBridge)
+   {
+      pBridgeDesc->SetFilletType(pgsTypes::fttBridge);
+      pBridgeDesc->SetFillet(m_HaunchInputData.m_SingleFillet);
+   }
+   else if (m_HaunchInputData.m_FilletType == pgsTypes::fttSpan)
+   {
+      pBridgeDesc->SetFilletType(pgsTypes::fttSpan);
+
+      // loop over each bearing line and set A
+      for(FilletSpanDataConstIter hdit=m_HaunchInputData.m_FilletSpans.begin(); hdit!=m_HaunchInputData.m_FilletSpans.end(); hdit++)
+      {
+         const FilletSpanData& hbd = *hdit;
+         
+         CSpanData2* pSpan = pBridgeDesc->GetSpan(hbd.m_SpanIndex);
+
+         // use fillet from slot[0] for all girders
+         Float64 fillet = hbd.m_FilletsForGirders[0];
+
+         pSpan->SetFillet(fillet);
+      }
+   }
+   else if (m_HaunchInputData.m_FilletType == pgsTypes::fttGirder)
+   {
+      pBridgeDesc->SetFilletType(pgsTypes::fttGirder);
+
+      // loop over each bearing line / girder and set A
+      for(FilletSpanDataConstIter hdit=m_HaunchInputData.m_FilletSpans.begin(); hdit!=m_HaunchInputData.m_FilletSpans.end(); hdit++)
+      {
+         const FilletSpanData& hbd = *hdit;
+         
+         CSpanData2* pSpan = pBridgeDesc->GetSpan(hbd.m_SpanIndex);
+
+         GirderIndexType ng = hbd.m_FilletsForGirders.size();
+         for (GirderIndexType ig=0; ig<ng; ig++)
+         {
+            pSpan->SetFillet(ig,hbd.m_FilletsForGirders[ig]);
          }
       }
    }

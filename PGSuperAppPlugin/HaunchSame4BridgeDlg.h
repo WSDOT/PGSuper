@@ -34,7 +34,7 @@ public:
 	CHaunchSame4BridgeDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CHaunchSame4BridgeDlg();
 
-   HaunchInputData DownloadData(Float64 minA, CString& minValError, CDataExchange* pDX);
+   void DownloadData(Float64 minA, CString& minValError,HaunchInputData* pData,CDataExchange* pDX);
 
 // Dialog Data
 	enum { IDD = IDD_HAUNCHSAME4_BRIDGE };

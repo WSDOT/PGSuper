@@ -128,6 +128,10 @@ BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
 	ON_BN_CLICKED(IDC_SYNC, OnSync)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_HELP, OnCommandHelp)
+   ON_COMMAND(ID_GIRDERVIEW_DESIGNGIRDERDIRECT, OnDesignGirderDirect)
+   ON_UPDATE_COMMAND_UI(ID_GIRDERVIEW_DESIGNGIRDERDIRECT, OnUpdateDesignGirderDirect)
+   ON_COMMAND(ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnDesignGirderDirectHoldSlabOffset)
+   ON_UPDATE_COMMAND_UI(ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnUpdateDesignGirderDirectHoldSlabOffset)
    ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
@@ -344,7 +348,14 @@ void CGirderModelChildFrame::UpdateCutLocation(const pgsPointOfInterest& poi)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   m_CurrentCutLocation = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+   if ( m_GirderKey.groupIndex == ALL_GROUPS )
+   {
+      m_CurrentCutLocation = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+   }
+   else
+   {
+      m_CurrentCutLocation = pPoi->ConvertPoiToGirderCoordinate(poi);
+   }
    UpdateBar();
    GetGirderModelSectionView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
    GetGirderModelElevationView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
@@ -588,7 +599,16 @@ void CGirderModelChildFrame::CutAt(Float64 Xgl)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   pgsPointOfInterest poi = pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex,Xgl);
+   pgsPointOfInterest poi;
+   if ( m_GirderKey.groupIndex == ALL_GROUPS )
+   {
+      poi = pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex,Xgl);
+   }
+   else
+   {
+      poi = pPoi->ConvertGirderCoordinateToPoi(m_GirderKey,Xgl);
+   }
+
    if ( poi.GetID() == INVALID_ID )
    {
       // make sure we are at an actual poi
@@ -607,7 +627,15 @@ void CGirderModelChildFrame::CutAtNext()
    pgsPointOfInterest poi = pPoi->GetNextPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
    if ( poi.GetID() != INVALID_ID )
    {
-      Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+      Float64 Xgl;
+      if ( m_GirderKey.groupIndex == ALL_GROUPS )
+      {
+         Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+      }
+      else
+      {
+         Xgl = pPoi->ConvertPoiToGirderCoordinate(poi);
+      }
       CutAt(Xgl);
    }
 }
@@ -621,7 +649,15 @@ void CGirderModelChildFrame::CutAtPrev()
    pgsPointOfInterest poi = pPoi->GetPrevPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
    if ( poi.GetID() != INVALID_ID )
    {
-      Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+      Float64 Xgl;
+      if ( m_GirderKey.groupIndex == ALL_GROUPS )
+      {
+         Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+      }
+      else
+      {
+         Xgl = pPoi->ConvertPoiToGirderCoordinate(poi);
+      }
       CutAt(Xgl);
    }
 }
@@ -803,6 +839,40 @@ void CGirderModelChildFrame::OnSync()
 
    pDoc->SetGirderEditorSettings(settings);
 }
+
+void CGirderModelChildFrame::OnUpdateDesignGirderDirect(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS );
+}
+
+void CGirderModelChildFrame::OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ISpecification,pSpecification);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   pCmdUI->Enable( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS && bDesignSlabOffset );
+}
+
+void CGirderModelChildFrame::OnDesignGirderDirect()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ISpecification,pSpecification);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
+   pDoc->DesignGirder(false,bDesignSlabOffset,m_GirderKey);
+}
+
+void CGirderModelChildFrame::OnDesignGirderDirectHoldSlabOffset()
+{
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
+   pDoc->DesignGirder(false,false,m_GirderKey);
+}
+
 
 void CGirderModelChildFrame::OnSetFocus(CWnd* pOldWnd)
 {

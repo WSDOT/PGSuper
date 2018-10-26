@@ -571,8 +571,8 @@ void CTimelineManager::SetElapsedTime(EventIndexType eventIdx,Float64 elapsedTim
    for ( ; iter != end; iter++ )
    {
       CTimelineEvent* pTimelineEvent = *iter;
-      // NOTE: don't call SetDay(). SetDay() causes the timeline events to be sorted
-      // the purpose of this method is to just adjust the elasped time between events
+      // NOTE: don't call SetDay(). SetDay() causes the timeline events to be sorted.
+      // The purpose of this method is to just adjust the elasped time between events
       // keeping the same event order
       pTimelineEvent->m_Day = pTimelineEvent->m_Day + delta_elapsed_time;
    }
@@ -1203,8 +1203,6 @@ EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType 
    ATLASSERT(segmentID != INVALID_ID);
    ASSERT_VALID;
 
-   EventIndexType idx = 0;
-
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1212,10 +1210,8 @@ EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType 
       const CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
       {
-         return idx;
+         return iter - m_TimelineEvents.begin();
       }
-
-      idx++;
    }
 
    return INVALID_INDEX;
@@ -1384,6 +1380,45 @@ void CTimelineManager::SetSegmentErectionEventByID(SegmentIDType segmentID,Event
    }
 
    ASSERT_VALID;
+}
+
+void CTimelineManager::GetSegmentEvents(SegmentIDType segmentID,EventIndexType* pConstructEventIdx,EventIndexType* pErectEventIdx) const
+{
+   ATLASSERT(segmentID != INVALID_ID);
+   ASSERT_VALID;
+
+   *pConstructEventIdx = INVALID_INDEX;
+   *pErectEventIdx    = INVALID_INDEX;
+
+   std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
+   std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CTimelineEvent* pTimelineEvent = *iter;
+      if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
+      {
+         ATLASSERT(*pConstructEventIdx == INVALID_INDEX); // if this fires, we found the event twice... that's a bug
+         *pConstructEventIdx = iter - m_TimelineEvents.begin();
+      }
+
+      if ( pTimelineEvent->GetErectSegmentsActivity().HasSegment(segmentID) )
+      {
+         ATLASSERT(*pErectEventIdx == INVALID_INDEX); // if this fires, we found the event twice... that's a bug
+         *pErectEventIdx = iter - m_TimelineEvents.begin();
+      }
+
+      if ( *pConstructEventIdx != INVALID_INDEX && *pErectEventIdx != INVALID_INDEX )
+      {
+         // found them both
+         return;
+      }
+   }
+}
+
+void CTimelineManager::SetSegmentEvents(SegmentIDType segmentID,EventIndexType constructEventIdx,EventIndexType erectEventIdx)
+{
+   SetSegmentConstructionEventByIndex(segmentID,constructEventIdx);
+   SetSegmentErectionEventByIndex(segmentID,erectEventIdx);
 }
 
 EventIndexType CTimelineManager::GetFirstSegmentErectionEventIndex() const
@@ -2072,7 +2107,8 @@ int CTimelineManager::Validate() const
    }
 
    // Make sure railing system is installed after the deck
-   if ( GetRailingSystemLoadEventIndex() <= GetCastDeckEventIndex() )
+   EventIndexType castDeckEventIdx = GetCastDeckEventIndex();
+   if ( GetRailingSystemLoadEventIndex() <= castDeckEventIdx )
    {
       return TLM_RAILING_SYSTEM_ERROR;
    }
@@ -2231,6 +2267,12 @@ int CTimelineManager::Validate() const
                   if ( firstPTEventIdx <= castClosureEventIdx )
                   {
                      return TLM_STRESS_TENDON_ERROR;
+                  }
+
+                  // closures must be cast befoe or with the deck
+                  if ( castDeckEventIdx < castClosureEventIdx )
+                  {
+                     return TLM_DECK_CASTING_ERROR;
                   }
                }
             } // next i
@@ -2443,9 +2485,7 @@ int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
    }
    else
    {
-      found++; // advance to next event
       pNextEvent = *found;
-      found--; // back up to this event
       found--; // back up to previous event
       pPrevEvent = *found;
    }
@@ -2609,6 +2649,9 @@ CString CTimelineManager::GetErrorMessage(int errorCode) const
    case TLM_STRESS_TENDON_ERROR:
       strMsg = _T("A tendon has been stressed before the segments and closure joints have been assembled.");
       break;
+
+   case TLM_DECK_CASTING_ERROR:
+      strMsg = _T("The deck is cast before all of the closure joints have been cast.");
 
    default:
       ATLASSERT(false);

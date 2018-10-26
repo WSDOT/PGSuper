@@ -63,8 +63,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTimelineGrid message handlers
 
-void CTimelineGrid::CustomInit()
+void CTimelineGrid::CustomInit(BOOL bReadOnly)
 {
+   m_bReadOnly = bReadOnly;
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
@@ -158,7 +159,9 @@ void CTimelineGrid::Refresh()
    EventIndexType nEvents = pParent->m_TimelineManager.GetEventCount();
 
    if ( 0 < GetRowCount() )
+   {
       RemoveRows(1,GetRowCount());
+   }
 
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents-1; eventIdx++ )
    {
@@ -200,6 +203,9 @@ void CTimelineGrid::AddEvent(const CTimelineEvent* pTimelineEvent,const CTimelin
          .SetHorizontalAlignment(DT_RIGHT)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetValue(pTimelineEvent->GetDay())
+         .SetEnabled(m_bReadOnly ? FALSE : TRUE)
+         .SetInterior(m_bReadOnly ? ::GetSysColor(COLOR_BTNFACE): ::GetSysColor(COLOR_WINDOW) )
+         .SetTextColor(m_bReadOnly ? ::GetSysColor(COLOR_GRAYTEXT) : ::GetSysColor(COLOR_WINDOWTEXT))
 		);
 
    if ( pNextTimelineEvent )
@@ -209,6 +215,9 @@ void CTimelineGrid::AddEvent(const CTimelineEvent* pTimelineEvent,const CTimelin
             .SetHorizontalAlignment(DT_RIGHT)
             .SetVerticalAlignment(DT_VCENTER)
 			   .SetValue(elapsed_time)
+            .SetEnabled(m_bReadOnly ? FALSE : TRUE)
+            .SetInterior(m_bReadOnly ? ::GetSysColor(COLOR_BTNFACE): ::GetSysColor(COLOR_WINDOW) )
+            .SetTextColor(m_bReadOnly ? ::GetSysColor(COLOR_GRAYTEXT) : ::GetSysColor(COLOR_WINDOWTEXT))
    		);
    }
    else
@@ -225,6 +234,9 @@ void CTimelineGrid::AddEvent(const CTimelineEvent* pTimelineEvent,const CTimelin
          .SetHorizontalAlignment(DT_LEFT)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetValue(pTimelineEvent->GetDescription())
+         .SetEnabled(m_bReadOnly ? FALSE : TRUE)
+         .SetInterior(m_bReadOnly ? ::GetSysColor(COLOR_BTNFACE): ::GetSysColor(COLOR_WINDOW) )
+         .SetTextColor(m_bReadOnly ? ::GetSysColor(COLOR_GRAYTEXT) : ::GetSysColor(COLOR_WINDOWTEXT))
 		);
 
 	SetStyleRange(CGXRange(row,col++), CGXStyle()
@@ -243,7 +255,7 @@ void CTimelineGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    // We are editing an event
    CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();
    EventIndexType eventIdx = (IndexType)(nRow-1);
-   CTimelineEventDlg dlg(pParent->m_TimelineManager,eventIdx,TRUE);
+   CTimelineEventDlg dlg(pParent->m_TimelineManager,eventIdx,TRUE,m_bReadOnly);
    if ( dlg.DoModal() == IDOK )
    {
       pParent->m_TimelineManager = dlg.m_TimelineManager;
@@ -383,7 +395,7 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
 
             CString strMsg;
             strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
-            if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
+            if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
             {
                bAdjustTimeline = true; // user wants to adjust the timeline... the code will loop back to AdjustDayByIndex above
             }

@@ -92,6 +92,12 @@ interface IAllowableTendonStress : IUnknown
    virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) = 0;
    virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey) = 0;
    virtual Float64 GetAllowableAfterLosses(const CGirderKey& girderKey) = 0;
+
+   virtual Float64 GetAllowableCoefficientAtJacking(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey) = 0;
 };
 
 /*****************************************************************************

@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "WsdotHaulingDlg.h"
 #include "SpecHaulingErectionPage.h"
+#include "SpecMainSheet.h"
 
 // CWsdotHaulingDlg dialog
 
@@ -101,4 +102,23 @@ void CWsdotHaulingDlg::EnableLumpSumMethod(BOOL bEnable)
    GetDlgItem(IDC_AXLE_STIFFNESS_UNITS)->EnableWindow(!bEnable);
    GetDlgItem(IDC_MIN_ROLL_STIFFNESS)->EnableWindow(!bEnable);
    GetDlgItem(IDC_MIN_ROLL_STIFFNESS_UNITS)->EnableWindow(!bEnable);
+}
+
+void CWsdotHaulingDlg::OnSetActive()
+{
+   CSpecMainSheet* pDad = (CSpecMainSheet*)(GetParent()->GetParent());
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
+   {
+      GetDlgItem(IDC_SLWC_FR_TXT)->SetWindowText(_T("Lightweight concrete"));
+      GetDlgItem(IDC_ALWC_FR_TXT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_ALWC_FR)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_HIDE);
+   }
+   else
+   {
+      GetDlgItem(IDC_SLWC_FR_TXT)->SetWindowText(_T("Sand lightweight concrete"));
+      GetDlgItem(IDC_ALWC_FR_TXT)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_ALWC_FR)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_SHOW);
+   }
 }

@@ -60,4 +60,5 @@ public:
    afx_msg void OnErectionEventChanging();
    afx_msg void OnRemovalEventChanged();
    afx_msg void OnRemovalEventChanging();
+   afx_msg void OnHelp();
 };

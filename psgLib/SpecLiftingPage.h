@@ -69,6 +69,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	void DoCheckMax();
+public:
+   virtual BOOL OnSetActive();
 };
 
 //{{AFX_INSERT_LOCATION}}

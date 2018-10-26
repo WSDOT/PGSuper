@@ -91,6 +91,7 @@ void CPierDetailsDlg::CommonInitPages()
    m_GirderSegmentSpacingPage.m_psp.dwFlags |= PSP_HASHELP;
 
    AddPage(&m_PierLocationPage);
+   AddPage(&m_PierLayoutPage);
 
    if ( m_pPier->IsBoundaryPier() )
    {
@@ -100,14 +101,12 @@ void CPierDetailsDlg::CommonInitPages()
       }
       else
       {
-         AddPage(&m_PierLayoutPage);
          AddPage(&m_PierConnectionsPage);
       }
       AddPage(&m_PierGirderSpacingPage);
    }
    else
    {
-      AddPage(&m_PierLayoutPage);
       AddPage(&m_ClosureJointGeometryPage);
       AddPage(&m_GirderSegmentSpacingPage);
    }

@@ -31,7 +31,7 @@
 #include "RatingOptionsDlg.h"
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
 
-#include <IFace\DocumentType.h>
+#include <IFace\Project.h>
 #include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
@@ -98,12 +98,9 @@ BOOL CGeneralRatingOptionsPage::OnInitDialog()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
-   if ( pDocType->IsPGSuperDocument() )
-   {
-      GetDlgItem(IDC_LOAD_RATING_EVENT_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_LOAD_RATING_EVENT)->ShowWindow(SW_HIDE);
-   }
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   BOOL bEnable = pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? TRUE : FALSE;
+   GetDlgItem(IDC_LOAD_RATING_EVENT)->EnableWindow(bEnable);
 
    EnableToolTips();
 

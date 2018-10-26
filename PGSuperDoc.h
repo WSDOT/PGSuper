@@ -91,8 +91,6 @@ protected:
 	afx_msg void OnProjectDesignGirderDirectHoldSlabOffset();
    afx_msg void OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI);
    afx_msg void OnProjectAnalysis();
-   afx_msg void OnEditHaunch();
-   afx_msg void OnUpdateEditHaunch(CCmdUI* pCmdUI);
    //}}AFX_MSG
 
    CPGSuperComponentInfoManager m_ComponentInfoManager;

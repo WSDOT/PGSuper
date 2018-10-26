@@ -52,11 +52,11 @@ static COLORREF GetEntryColor(CollectionIndexType entryIndex)
 // get number of grid rows needed for an entry
 static ROWCOL GetEntryLoad(const CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry, bool useHarpedGrid)
 {
-   if (entry.m_X > 0.0)
+   if (0.0 < entry.m_X)
    {
       return 2;
    }
-   else if (useHarpedGrid && entry.m_Type==GirderLibraryEntry::stAdjustable && entry.m_Hend_X>0.0)
+   else if (useHarpedGrid && entry.m_Type==GirderLibraryEntry::stAdjustable && 0.0 < entry.m_Hend_X)
    {
       return 2;
    }
@@ -116,11 +116,13 @@ BOOL CGirderGlobalStrandGrid::OnGridKeyDown(UINT nChar, UINT nRepCnt, UINT nFlag
 {
 
    ROWCOL row = GetSelectedRow();
-   if (row<1)
+   if (row < 1)
    {
       // allow keyboarders to get into first row if there is one
       if (m_Entries.empty())
+      {
          return FALSE;
+      }
       else
       {
          row=1;
@@ -130,8 +132,8 @@ BOOL CGirderGlobalStrandGrid::OnGridKeyDown(UINT nChar, UINT nRepCnt, UINT nFlag
 
    if (nChar==VK_DOWN)
    {
-      CollectionIndexType orig_idx =GetRowEntry(row);
-      if ( orig_idx >= (m_Entries.size()-1))
+      CollectionIndexType orig_idx = GetRowEntry(row);
+      if ( (m_Entries.size()-1) <= orig_idx )
       {
          ::MessageBeep(MB_ICONASTERISK);
       }
@@ -176,7 +178,7 @@ BOOL CGirderGlobalStrandGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, U
 {
    this->SelectRow(nRow);
 
-   if (nRow>0)
+   if (0 < nRow)
    {
 	    // unreferenced parameters
 	    nRow, nCol, nFlags;
@@ -199,8 +201,10 @@ BOOL CGirderGlobalStrandGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, U
 
 BOOL CGirderGlobalStrandGrid::OnLButtonDblClkRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
 {
-   if (nRow>0)
+   if (0 < nRow)
+   {
       EditSelectedRow();
+   }
 
 	return TRUE;
 }
@@ -221,7 +225,7 @@ void CGirderGlobalStrandGrid::EditSelectedRow()
    {
       // entry was changed - we must delete or append a row if needed and refill grid
       ROWCOL new_nrows = GetEntryLoad(entry, use_harped);
-      if (new_nrows > old_nrows)
+      if (old_nrows < new_nrows)
       {
       	InsertRows(row, 1);
       }
@@ -316,7 +320,7 @@ void CGirderGlobalStrandGrid::AppendSelectedRow()
       Appendrow();
 
       ROWCOL new_nrows = GetEntryLoad(entry, use_harped);
-      if (new_nrows > 1)
+      if (1 < new_nrows)
       {
          Appendrow();
       }
@@ -361,7 +365,7 @@ void CGirderGlobalStrandGrid::AppendEntry(CGirderGlobalStrandGrid::GlobalStrandG
    Appendrow();
 
    ROWCOL new_nrows = GetEntryLoad(entry, use_harped);
-   if (new_nrows > 1)
+   if (1 < new_nrows)
    {
       Appendrow();
    }
@@ -415,7 +419,7 @@ void CGirderGlobalStrandGrid::RemoveSelectedRow()
       row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
    }
 
-   if (row>0)
+   if (0 < row)
    {
       sel_row = Min(sel_row, GetRowCount());
 
@@ -479,7 +483,7 @@ void CGirderGlobalStrandGrid::MoveDownSelectedRow()
    ROWCOL sel_row = GetSelectedRow();
    CollectionIndexType idx =GetRowEntry(sel_row);
    CollectionIndexType num_entries = m_Entries.size();
-   if (idx>=num_entries-1)
+   if (num_entries-1 <= idx)
    {
       ::MessageBeep(MB_ICONASTERISK);
    }
@@ -536,8 +540,10 @@ void CGirderGlobalStrandGrid::OnChangeUseHarpedGrid()
     	   ROWCOL nrows = GetRowCount();
     	   ROWCOL rows_needed = num_e_rows - nrows;
          // size grid
-         if (rows_needed>0)
+         if (0 < rows_needed)
+         {
          	InsertRows(1, rows_needed);
+         }
 
          RedrawGrid();
 
@@ -562,8 +568,10 @@ void CGirderGlobalStrandGrid::OnChangeUseHarpedGrid()
     	   ROWCOL nrows = GetRowCount();
     	   ROWCOL rows_2delete = nrows - num_e_rows;
          // size grid
-         if (rows_2delete>0)
+         if (0 < rows_2delete)
+         {
          	RemoveRows(1, rows_2delete);
+         }
 
          RedrawGrid();
 
@@ -600,8 +608,8 @@ void CGirderGlobalStrandGrid::CustomInit()
 
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
-   const int num_rows=0;
-   const int num_cols= 5;
+   const int num_rows = 0;
+   const int num_cols = 5;
 
 	this->SetRowCount(num_rows);
 	this->SetColCount(num_cols);
@@ -618,11 +626,11 @@ void CGirderGlobalStrandGrid::CustomInit()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-			.SetValue(_T("Fill\n#"))
+			.SetValue(_T("Fill #"))
 		);
 
    CString cv;
-   cv.Format(_T("Xb\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Xb (%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -631,7 +639,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Yb\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Yb (%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -649,7 +657,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Xt\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Xt (%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -658,7 +666,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Yt\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Yt (%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -698,7 +706,9 @@ void CGirderGlobalStrandGrid::FillGrid(EntryCollectionType& entries)
    GetParam()->SetLockReadOnly(FALSE);
 
    if ( 1 <= GetRowCount() )
+   {
       RemoveRows(1,GetRowCount());
+   }
 
    m_Entries = entries;
    long num_rows = GetRowsForEntries();
@@ -747,9 +757,13 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
    if (entry.m_Type == GirderLibraryEntry::stStraight)
    {
       if (entry.m_CanDebond)
+      {
          stype = _T("Straight-DB");
+      }
       else
+      {
          stype = _T("Straight");
+      }
    }
    else if (entry.m_Type == GirderLibraryEntry::stAdjustable)
    {
@@ -830,9 +844,13 @@ ROWCOL CGirderGlobalStrandGrid::GetSelectedRow()
 	// if there are no cells selected, return 0
 	CGXRangeList selList;
 	if (CopyRangeList(selList, TRUE))
+   {
 		nRow = selList.GetHead()->top;
+   }
 	else
+   {
 		nRow = 0;
+   }
    
    return nRow;
 }
@@ -851,7 +869,7 @@ void CGirderGlobalStrandGrid::SelectRow(ROWCOL nRow)
       SelectRange(CGXRange(row,0,row,ncols), FALSE);
    }
 
-   if (nRow>0)
+   if (0 < nRow)
    {
       // select all rows of same color adjacent to this one
       ROWCOL toprow = nRow;
@@ -862,7 +880,7 @@ void CGirderGlobalStrandGrid::SelectRow(ROWCOL nRow)
       CGXBrush mbrush = mstyle.GetInterior();
 
       // row above
-      if (nRow>1)
+      if (1 < nRow)
       {
          CGXStyle tstyle;
          GetStyleRowCol(nRow-1, 1, tstyle);
@@ -890,7 +908,7 @@ void CGirderGlobalStrandGrid::SelectRow(ROWCOL nRow)
 
 CollectionIndexType CGirderGlobalStrandGrid::GetRowEntry(ROWCOL nRow)
 {
-   ATLASSERT(nRow>0 && nRow<=GetRowCount());
+   ATLASSERT(0 < nRow && nRow <= GetRowCount());
 
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
@@ -903,10 +921,14 @@ CollectionIndexType CGirderGlobalStrandGrid::GetRowEntry(ROWCOL nRow)
       
       ROWCOL nrows = GetEntryLoad(grid_entry, use_harped);
       curr_row+= nrows;
-      if ( curr_row >= nRow )
+      if ( nRow <= curr_row )
+      {
          break;
+      }
       else
+      {
          global_index++;
+      }
    }
 
    return global_index;
@@ -977,27 +999,31 @@ void CGirderGlobalStrandGrid::OnChangeStrandData()
          ns++;
 
          if (entry.m_CanDebond)
+         {
             ndb++;
+         }
 
-         if (entry.m_X>0.0)
+         if (0.0 < entry.m_X)
          {
             ns++;
 
             if (entry.m_CanDebond)
+            {
                ndb++;
+            }
          }
       }
-      else if (entry.m_Type==GirderLibraryEntry::stAdjustable)
+      else if (entry.m_Type == GirderLibraryEntry::stAdjustable)
       {
          nh++;
 
-         if (entry.m_X>0.0)
+         if (0.0 < entry.m_X)
          {
             nh++;
          }
          else if (use_harped)
          {
-            if (entry.m_Hend_X>0.0)
+            if (0.0 < entry.m_Hend_X)
             {
                nh++;
             }
@@ -1017,7 +1043,9 @@ void CGirderGlobalStrandGrid::ReverseHarpedStrandOrder()
    {
       CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry = *iter;
       if ( entry.m_Type == GirderLibraryEntry::stAdjustable )
+      {
          harped_strands.push_back(entry);
+      }
    }
 
    // reverse the order of the entries
@@ -1029,7 +1057,9 @@ void CGirderGlobalStrandGrid::ReverseHarpedStrandOrder()
    {
       CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry = *iter;
       if ( entry.m_Type == GirderLibraryEntry::stAdjustable )
+      {
          entry = harped_strands[idx++];
+      }
    }
 
    RedrawGrid();
@@ -1068,9 +1098,13 @@ void CGirderGlobalStrandGrid::GenerateStrandPositions()
    if ( dlg.DoModal() == IDOK )
    {
       if ( dlg.m_StrandType == 0 )
+      {
          GenerateStraightStrands(dlg);
+      }
       else
+      {
          GenerateHarpedStrands(dlg);
+      }
 
    }
 }

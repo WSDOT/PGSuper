@@ -1,4 +1,4 @@
-Splitting Zone Checks {#splitting_zone_checks}
+Splitting Zone Checks {#tg_splitting_zone_checks}
 ======================================
 The reinforcement in the splitting/bursting zone is checked in accordance with LRFD 5.10.10.1. The area of shear reinforcement in the splitting zone is computed as
 

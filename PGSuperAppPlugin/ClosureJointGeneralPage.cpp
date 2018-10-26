@@ -39,7 +39,7 @@ IMPLEMENT_DYNAMIC(CClosureJointGeneralPage, CPropertyPage)
 CClosureJointGeneralPage::CClosureJointGeneralPage()
 	: CPropertyPage(CClosureJointGeneralPage::IDD)
 {
-
+   m_bWasEventCreated = false;
 }
 
 CClosureJointGeneralPage::~CClosureJointGeneralPage()
@@ -152,23 +152,29 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
    {
       Float64 station = pClosure->GetTemporarySupport()->GetStation();
       CString strDescription;
-      strDescription.Format(_T("Closure joint for Girderline %s at Temporary Support %d (%s)"),
+      strDescription.Format(_T("Location: Closure Joint for Group %d Girder %s at Temporary Support %d (%s)"),
+         LABEL_GROUP(grpIdx),
          LABEL_GIRDER(gdrIdx),
          LABEL_PIER(pClosure->GetTemporarySupport()->GetIndex()),
          FormatStation(pDisplayUnits->GetStationFormat(),station)
          );
       GetDlgItem(IDC_LOCATION)->SetWindowText(strDescription);
+
+      GetDlgItem(IDC_NOTE)->SetWindowText(_T("NOTE: Changes to the Installation Event apply to all closure joints at this temporary support."));
    }
    else
    {
       Float64 station = pClosure->GetPier()->GetStation();
       CString strDescription;
-      strDescription.Format(_T("Closure joint for Girderline %s at Pier %d (%s)"),
+      strDescription.Format(_T("Location: Closure Joint for Group %d Girder %s at Pier %d (%s)"),
+         LABEL_GROUP(grpIdx),
          LABEL_GIRDER(gdrIdx),
          LABEL_PIER(pClosure->GetPier()->GetIndex()),
          FormatStation(pDisplayUnits->GetStationFormat(),station)
          );
       GetDlgItem(IDC_LOCATION)->SetWindowText(strDescription);
+
+      GetDlgItem(IDC_NOTE)->SetWindowText(_T("NOTE: Changes to the Installation Event apply to all closure joints at this pier."));
    }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -757,7 +763,7 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
 
 void CClosureJointGeneralPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDERDETAILS_TRANSV_REBAR );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CLOSUREJOINT_DETAILS_GENERAL );
 }
 
 void CClosureJointGeneralPage::FillEventList()
@@ -832,6 +838,7 @@ EventIndexType CClosureJointGeneralPage::CreateEvent()
    {
       EventIndexType eventIdx;
       pParent->m_TimelineMgr.AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
+      m_bWasEventCreated = true;
       return eventIdx;
   }
 

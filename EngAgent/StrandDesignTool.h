@@ -69,7 +69,7 @@ struct InitialDesignParameters
       stress_type(stressType) {}
 };
 
-typedef IndexType DebondLevelType; 
+typedef Int32 DebondLevelType; // NEED this to be a signed type!
 
 static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
 {
@@ -80,9 +80,11 @@ static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
    }
 
    std::_tstring str(os.str());
-   DebondLevelType n = str.size();
+   DebondLevelType n = (DebondLevelType)str.size();
    if (0 < n)
+   {
       str.erase(n-2,2); // get rid of trailing ", "
+   }
 
    return str;
 }
@@ -347,6 +349,11 @@ public:
    void SetMinimumSlabOffset(Float64 offset);
    Float64 GetMinimumSlabOffset() const; // "A" dimension
 
+   Float64 GetAbsoluteMinimumSlabOffset() const; // based on girder library entry
+
+   Float64 GetFillet() const;
+   void SetFillet(Float64 f);
+
    // Lifting and hauling
    void SetLiftingLocations(Float64 left,Float64 right);
    Float64 GetLeftLiftingLocation() const;
@@ -418,6 +425,7 @@ private:
    StrandIndexType        m_MinPermanentStrands;
    StrandIndexType        m_MinTempStrands;
    Float64                m_MinSlabOffset;
+   Float64                m_AbsoluteMinimumSlabOffset;
 
    Float64 m_HgStart;
    Float64 m_HgHp1;

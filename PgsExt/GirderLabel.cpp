@@ -214,8 +214,9 @@ LPCTSTR GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasu
 CString GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits)
 {
    CString strLabel;
-   strLabel.Format(_T("Pier %d, %s"),LABEL_PIER(pPier->GetIndex()),
-                                     FormatStation(pDisplayUnits->GetStationFormat(),pPier->GetStation()));
+   strLabel.Format(_T("%s %d, %s"),(pPier->IsAbutment() ? _T("Abutment") : _T("Pier")),
+                                   LABEL_PIER(pPier->GetIndex()),
+                                   FormatStation(pDisplayUnits->GetStationFormat(),pPier->GetStation()));
 
    return strLabel;
 }

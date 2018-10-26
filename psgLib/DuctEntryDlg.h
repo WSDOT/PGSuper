@@ -42,7 +42,7 @@ public:
    Float64 m_ID;
    Float64 m_Z;
 
-   bool m_AllowEditing;
+   bool m_bAllowEditing;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

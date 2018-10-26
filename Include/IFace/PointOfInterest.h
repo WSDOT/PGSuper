@@ -67,10 +67,15 @@ interface IPointOfInterest : public IUnknown
    virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi,Float64 tolerance=0.001) = 0;
 
    // Gets the point of interest where a line defined by station and direction intersects a segment
-   // Returns true of the POI is found, or false if it is not.
+   // Returns true if the poi is found.
    virtual bool GetPointOfInterest(const CSegmentKey& segmentKey,Float64 station,IDirection* pDirection,pgsPointOfInterest* pPoi) = 0;
 
-   // Returns the poi that is nearst to the specified location on a segment
+   // Gets the point of interest where a line defined by station and direction intersects a girder.
+   // if bProjectSegmentEnds is true and the line does not intersect a segment, nearest segment end is found
+   // Returns true if the poi is found.
+   virtual bool GetPointOfInterest(const CGirderKey& girderKey,Float64 station,IDirection* pDirection,bool bProjectSegmentEnds,pgsPointOfInterest* pPoi) = 0;
+
+   // Returns the poi that is nearest to the specified location on a segment
    virtual pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) = 0;
 
    // Returns the previous/next poi with the specified attributes relative to the poi specified by ID.

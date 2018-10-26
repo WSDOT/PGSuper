@@ -50,6 +50,7 @@
 #include "GirderDisplayObjectEvents.h"
 
 #include <WBFLDManip.h>
+#include <DManipTools\DManipTools.h>
 
 #include <Material\Material.h>
 
@@ -84,7 +85,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionView
 
-IMPLEMENT_DYNCREATE(CBridgeSectionView, CDisplayView)
+IMPLEMENT_DYNCREATE(CBridgeSectionView, CBridgeViewPane)
 
 CBridgeSectionView::CBridgeSectionView()
 {
@@ -95,27 +96,14 @@ CBridgeSectionView::~CBridgeSectionView()
 }
 
 
-BEGIN_MESSAGE_MAP(CBridgeSectionView, CDisplayView)
+BEGIN_MESSAGE_MAP(CBridgeSectionView, CBridgeViewPane)
 	//{{AFX_MSG_MAP(CBridgeSectionView)
 	ON_COMMAND(ID_EDIT_DECK, OnEditDeck)
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
-	ON_WM_SIZE()
-	ON_WM_CREATE()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
 	ON_WM_KEYDOWN()
 	ON_WM_MOUSEWHEEL()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
-void CBridgeSectionView::DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw)
-{
-   OnBeginPrinting(pDC, pInfo, rcDraw);
-   OnPrepareDC(pDC);
-   UpdateDrawingScale();
-   OnDraw(pDC);
-   OnEndPrinting(pDC, pInfo);
-}
 
 bool CBridgeSectionView::IsDeckSelected()
 {
@@ -269,7 +257,11 @@ void CBridgeSectionView::SelectTemporarySupport(bool bSelect)
 void CBridgeSectionView::OnInitialUpdate()
 {
    EnableToolTips();
+   CBridgeViewPane::OnInitialUpdate();
+}
 
+void CBridgeSectionView::BuildDisplayLists()
+{
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
@@ -278,7 +270,7 @@ void CBridgeSectionView::OnInitialUpdate()
    dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
    dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CDisplayView::SetMappingMode(DManip::Isotropic);
+   CBridgeViewPane::SetMappingMode(DManip::Isotropic);
 
    // Setup display lists
    CComPtr<iDisplayList> girder_label_list;
@@ -316,8 +308,6 @@ void CBridgeSectionView::OnInitialUpdate()
    girder_list->SetID(GIRDER_DISPLAY_LIST);
    dispMgr->AddDisplayList(girder_list);
 
-   CDisplayView::OnInitialUpdate();
-
    // OnInitialUpdate eventually calls OnUpdate... OnUpdate calls the
    // following two methods so there isn't any need to call them here
    //UpdateDisplayObjects();
@@ -331,12 +321,12 @@ void CBridgeSectionView::OnInitialUpdate()
 void CBridgeSectionView::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-	CDisplayView::AssertValid();
+	CBridgeViewPane::AssertValid();
 }
 
 void CBridgeSectionView::Dump(CDumpContext& dc) const
 {
-	CDisplayView::Dump(dc);
+	CBridgeViewPane::Dump(dc);
 }
 
 CString DumpPoints(IShape* pShape)
@@ -372,6 +362,9 @@ CString DumpPoints(IShape* pShape)
 
 void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
+   // override default CBridgePlanView::OnUpdate()
+   CDisplayView::OnUpdate(pSender,lHint,pHint);
+
    if ( lHint == HINT_BRIDGECHANGED )
    {
       CComPtr<IBroker> pBroker;
@@ -451,13 +444,6 @@ void CBridgeSectionView::HandleLButtonDblClk(UINT nFlags, CPoint point)
    GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
-void CBridgeSectionView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
-{
-   CBridgeModelViewChildFrame* pFrame = GetFrame();
-   pFrame->ClearSelection();
-   Invalidate();
-}
-
 void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -499,28 +485,6 @@ void CBridgeSectionView::OnEditDeck()
 void CBridgeSectionView::OnViewSettings() 
 {
    ((CPGSDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_SECTION);
-}
-
-void CBridgeSectionView::OnSize(UINT nType, int cx, int cy) 
-{
-	CDisplayView::OnSize(nType, cx, cy);
-
-   CRect rect;
-   GetClientRect(&rect);
-   rect.DeflateRect(15,15,15,15);
-
-   CSize size = rect.Size();
-   size.cx = Max(0L,size.cx);
-   size.cy = Max(0L,size.cy);
-
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   SetLogicalViewRect(MM_TEXT,rect);
-
-   SetScrollSizes(MM_TEXT,size,CScrollView::sizeDefault,CScrollView::sizeDefault);
-
-   UpdateDrawingScale();
 }
 
 void CBridgeSectionView::UpdateGirderTooltips()
@@ -713,189 +677,6 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
    title->SetText(strTitle);
    title_list->AddDisplayObject(title);
 }
-/*
-void CBridgeSectionView::BuildGirderDisplayObjects()
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IShapes,pShapes);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   
-   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   UINT settings = pDoc->GetBridgeEditorSettings();;
-
-   GroupIndexType grpIdx = GetGroupIndex();
-
-
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> girder_list;
-   dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&girder_list);
-   girder_list->Clear();
-
-   CComPtr<iDisplayList> girder_label_list;
-   dispMgr->FindDisplayList(GIRDER_LABEL_DISPLAY_LIST,&girder_label_list);
-   girder_label_list->Clear();
-
-   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
-
-   m_GirderIDs.clear();
-   m_NextGirderID = 0;
-
-   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
-   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-   {
-      CGirderKey girderKey(grpIdx,gdrIdx);
-
-      Float64 start_pier_station = pBridgeDesc->GetGirderGroup(grpIdx)->GetPier(pgsTypes::metStart)->GetStation();
-      Float64 distFromStartOfGroup = cut_station - start_pier_station;
-#pragma Reminder("BUG: Section cut")
-      // new code is needed to deal with section cuts near piers for skewed bridges
-      // with a different number of girders in each span. See bug tracker issue 121
-
-      GroupIndexType grpIndex  = girderKey.groupIndex;
-      GirderIndexType gdrIndex = girderKey.girderIndex;
-
-      // find which segment the cut passes through
-      const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(gdrIdx);
-      SegmentIndexType nSegments = pGirder->GetSegmentCount();
-      CSegmentKey thisSegmentKey(grpIndex,gdrIndex,0);
-      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-      {
-         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-         Float64 startStation, endStation;
-         pSegment->GetStations(&startStation,&endStation);
-         if ( ::InRange(startStation,cut_station,endStation) )
-         {
-            // found the segment
-            thisSegmentKey.segmentIndex = segIdx;
-            break;
-         }
-      }
-
-      Float64 offset = pBridge->GetSegmentOffset(thisSegmentKey,cut_station);
-
-      Float64 start_connection_length = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-      Float64 start_bearing_offset    = pBridge->GetSegmentStartBearingOffset(thisSegmentKey);
-      Float64 end_offset = start_bearing_offset - start_connection_length;
-
-      Float64 segment_length = pBridge->GetSegmentLength(thisSegmentKey);
-
-      const CPrecastSegmentData* pSegment = pGirder->GetSegment(thisSegmentKey.segmentIndex);
-      Float64 startStation, endStation;
-      pSegment->GetStations(&startStation,&endStation);
-
-      Float64 distFromStartOfSegment = segment_length*(cut_station - startStation)/(endStation - startStation);
-      distFromStartOfSegment = ::ForceIntoRange(0.,distFromStartOfSegment,segment_length);
-
-      pgsPointOfInterest poi;
-      poi.SetSegmentKey( thisSegmentKey );
-      poi.SetDistFromStart(distFromStartOfSegment);
-
-      COLORREF segment_fill_color;
-      COLORREF segment_border_color;
-      if (grpIndex == grpIdx )
-      {
-         // girder cut is on bridge, and in the same span
-         segment_fill_color   = SEGMENT_FILL_COLOR;
-         segment_border_color = SEGMENT_BORDER_COLOR;
-      }
-      else
-      {
-         // girder cut is on bridge, but not in the same span
-         segment_fill_color   = SEGMENT_FILL_COLOR_ADJACENT;
-         segment_border_color = SEGMENT_BORDER_COLOR_ADJACENT;
-      }
-
-      // Display object for the girder cross section
-      CComPtr<iPointDisplayObject> dispObj;
-      dispObj.CoCreateInstance(CLSID_PointDisplayObject);
-
-      // get the girder shape before it is made composite (we don't want the deck with the shape)
-      IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(thisSegmentKey);
-
-      CComPtr<IShape> shape;
-      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,&shape);
-
-      CComQIPtr<IXYPosition> position(shape);
-      CComPtr<IPoint2d> topCenter;
-      position->get_LocatorPoint(lpTopCenter,&topCenter);
-      dispObj->SetPosition(topCenter,FALSE,FALSE);
-
-      CComPtr<iShapeDrawStrategy> strategy;
-      strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-      strategy->SetShape(shape);
-      strategy->SetSolidLineColor(segment_border_color);
-      strategy->SetSolidFillColor(segment_fill_color);
-      strategy->SetVoidLineColor(VOID_BORDER_COLOR);
-      strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
-      strategy->DoFill(true);
-
-      dispObj->SetDrawingStrategy(strategy);
-
-      dispObj->SetSelectionType(stAll);
-
-      IDType ID = m_NextGirderID++;
-      m_GirderIDs.insert( std::make_pair(girderKey,ID) );
-
-      dispObj->SetID(ID);
-
-      girder_list->AddDisplayObject(dispObj);
-
-      // Display object for the girder label
-      if ( settings & IDB_CS_LABEL_GIRDERS )
-      {
-         CComPtr<iTextBlock> doText;
-         doText.CoCreateInstance(CLSID_TextBlock);
-         CComPtr<IPoint2d> botCenter;
-         position->get_LocatorPoint(lpBottomCenter,&botCenter);
-         doText->SetPosition(botCenter);
-         CString strLabel;
-         strLabel.Format(_T("%s"),LABEL_GIRDER(gdrIdx));
-         doText->SetText(strLabel);
-         doText->SetBkMode(TRANSPARENT);
-         doText->SetTextAlign(TA_CENTER | TA_TOP);
-         girder_label_list->AddDisplayObject(doText);
-
-// Text block for debugging
-// labels the girder offset and top of girder elevation
-//         CComPtr<iTextBlock> doText2;
-//         doText2.CoCreateInstance(CLSID_TextBlock);
-//         doText2->SetPosition(topCenter);
-//
-//         GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
-//         Float64 x,y;
-//         topCenter->get_X(&x);
-//         topCenter->get_Y(&y);
-//         CString strCoordinates;
-//         strCoordinates.Format(_T("Offset %s\nElev %s"),FormatDimension(x,pdisp_units->GetXSectionDimUnit()),
-//                                                    FormatDimension(y,pdisp_units->GetXSectionDimUnit()) );
-//
-//         doText2->SetText(strCoordinates);
-//         doText2->SetTextAlign(TA_LEFT | TA_TOP);
-//         doText2->SetBkMode(TRANSPARENT);
-//         girder_label_list->AddDisplayObject(doText2);
-      }
-   
-
-      // Register an event sink with the girder display object so that we can handle Float64 clicks
-      // on the girder differently then a general Float64 click
-      CBridgeSectionViewGirderDisplayObjectEvents* pEvents = new CBridgeSectionViewGirderDisplayObjectEvents(girderKey,nGroups,nGirders,m_pFrame); // ref count = 1
-      IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents); // ref count = 1
-      CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk); // ref count = 2
-      dispObj->RegisterEventSink(events); // ref count = 3
-      unk->Release(); // removes the AddRef from new above // ref count = 2
-      events.Release(); // ref count = 1 ... i.e dispObj holds the only reference
-   }
-}
-*/
 
 void CBridgeSectionView::BuildGirderDisplayObjects()
 {
@@ -931,7 +712,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
    CComPtr<IDirection> dirAlignmentNormal;
-   pAlignment->GetBearingNormal(cut_station,&dirAlignmentNormal);
+   pAlignment->GetBearingNormal(cut_station,&dirAlignmentNormal); // section cut is normal to the alignment
 
    m_GirderIDs.clear();
    m_NextGirderID = 0;
@@ -940,15 +721,15 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    if ( vPoi.size() < nGirders )
    {
       // the cut line doesn't intersect some of the girders. this can happen when the section cut is at or near
-      // a pier.
+      // a pier, especially at the ends of the bridge.
       // find the missing girders and use the POI at the start face so there is something to draw
 
+      // all possible girders
       std::vector<GirderIndexType> vAllGirders;
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-      {
-         vAllGirders.push_back(gdrIdx);
-      }
+      vAllGirders.resize(nGirders);
+      std::generate(vAllGirders.begin(),vAllGirders.end(),IncrementValue<GirderIndexType>(0)); // fill container with sequential values begining with 0
 
+      // all the girders we found
       std::vector<GirderIndexType> vFoundGirders;
       BOOST_FOREACH(pgsPointOfInterest& poi,vPoi)
       {
@@ -956,16 +737,18 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       }
       std::sort(vFoundGirders.begin(),vFoundGirders.end());
 
+      // missing girders = all girders - found girders
       std::vector<GirderIndexType> vMissingGirders(vAllGirders.size());
       std::vector<GirderIndexType>::iterator end = std::set_difference(vAllGirders.begin(),vAllGirders.end(),vFoundGirders.begin(),vFoundGirders.end(),vMissingGirders.begin());
       vMissingGirders.resize(end-vMissingGirders.begin());
 
+      // for each missing girder, get a POI to use
       BOOST_FOREACH(GirderIndexType gdrIdx,vMissingGirders)
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,0);
-         std::vector<pgsPointOfInterest> vMyPois = pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND);
-         ATLASSERT(vMyPois.size() == 1);
-         vPoi.push_back(vMyPois.front());
+         CGirderKey girderKey(grpIdx,gdrIdx);
+         pgsPointOfInterest poi;
+         VERIFY( pPoi->GetPointOfInterest(girderKey,cut_station,dirAlignmentNormal,true,&poi) );
+         vPoi.push_back(poi);
       }
    }
 
@@ -976,13 +759,13 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       COLORREF segment_border_color;
       if ( thisSegmentKey.groupIndex == grpIdx )
       {
-         // girder cut is on bridge, and in the same span
+         // girder cut is on bridge, and in the same group
          segment_fill_color   = SEGMENT_FILL_COLOR;
          segment_border_color = SEGMENT_BORDER_COLOR;
       }
       else
       {
-         // girder cut is on bridge, but not in the same span
+         // girder cut is on bridge, but not in the same group
          segment_fill_color   = SEGMENT_FILL_COLOR_ADJACENT;
          segment_border_color = SEGMENT_BORDER_COLOR_ADJACENT;
       }
@@ -2139,20 +1922,6 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    }
 }
 
-int CBridgeSectionView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
-{
-	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
-   {
-		return -1;
-   }
-	
-   m_pFrame = (CBridgeModelViewChildFrame*)GetParent()->GetParent();
-   ASSERT( m_pFrame != 0 );
-   ASSERT( m_pFrame->IsKindOf( RUNTIME_CLASS( CBridgeModelViewChildFrame ) ) );
-	
-	return 0;
-}
-
 void CBridgeSectionView::UpdateDrawingScale()
 {
    CComPtr<iDisplayMgr> dispMgr;
@@ -2224,51 +1993,12 @@ GroupIndexType CBridgeSectionView::GetGroupIndex()
    return 0;
 }
 
-
-CBridgeModelViewChildFrame* CBridgeSectionView::GetFrame()
-{
-   CWnd* pWnd = GetParent()->GetParent();
-   ATLASSERT( pWnd->IsKindOf( RUNTIME_CLASS(CBridgeModelViewChildFrame) ) );
-   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pWnd;
-   return pFrame;
-}
-
 void CBridgeSectionView::ClearSelection()
 {
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
    dispMgr->ClearSelectedObjects();
-}
-
-void CBridgeSectionView::OnDraw(CDC* pDC)
-{
-   CDisplayView::OnDraw(pDC);
-
-   if ( CWnd::GetFocus() == this && !pDC->IsPrinting() )
-   {
-   	DrawFocusRect();
-   }
-}
-
-void CBridgeSectionView::OnSetFocus(CWnd* pOldWnd) 
-{
-	CDisplayView::OnSetFocus(pOldWnd);
-	DrawFocusRect();
-}
-
-void CBridgeSectionView::OnKillFocus(CWnd* pNewWnd) 
-{
-	CDisplayView::OnKillFocus(pNewWnd);
-	DrawFocusRect();
-}
-
-void CBridgeSectionView::DrawFocusRect()
-{
-   CClientDC dc(this);
-   CRect rClient;
-   GetClientRect(&rClient);
-   dc.DrawFocusRect(rClient);
 }
 
 void CBridgeSectionView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
@@ -2313,7 +2043,7 @@ void CBridgeSectionView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
    }
 
 
-	CDisplayView::OnKeyDown(nChar, nRepCnt, nFlags);
+	CBridgeViewPane::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
 BOOL CBridgeSectionView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)

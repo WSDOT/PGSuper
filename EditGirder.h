@@ -27,6 +27,7 @@
 #include <PgsExt\SplicedGirderData.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
+#include <PgsExt\TimelineManager.h>
 #include <PgsExt\Keys.h>
 #include <IFace\Project.h>
 
@@ -38,6 +39,7 @@ struct txnEditGirderData
    // for sorting and lookup by girder key
    bool operator<(const txnEditGirderData& rOther) const { return m_GirderKey < rOther.m_GirderKey; }
 
+   CTimelineManager m_TimelineMgr;
    CGirderKey m_GirderKey;
    bool m_bUseSameGirder;
    std::_tstring m_strGirderName;
@@ -46,6 +48,9 @@ struct txnEditGirderData
    pgsTypes::SlabOffsetType m_SlabOffsetType;
    Float64 m_SlabOffset[2]; // index is pgsTypes::MemberEndType
    // if slab offset is whole bridge then m_SlabOffset[pgsTypes::metStart] contains the value
+
+   pgsTypes::FilletType m_FilletType;
+   Float64 m_Fillet;
 };
 
 class txnEditGirder : public txnTransaction

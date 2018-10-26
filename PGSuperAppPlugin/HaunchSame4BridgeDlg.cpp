@@ -58,7 +58,7 @@ void CHaunchSame4BridgeDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CHaunchSame4BridgeDlg, CDialog)
 END_MESSAGE_MAP()
 
-HaunchInputData CHaunchSame4BridgeDlg::DownloadData(Float64 minA,CString& minValError, CDataExchange* pDX)
+void CHaunchSame4BridgeDlg::DownloadData(Float64 minA,CString& minValError,HaunchInputData* pData,CDataExchange* pDX)
 {
    UpdateData(TRUE);
 
@@ -68,9 +68,6 @@ HaunchInputData CHaunchSame4BridgeDlg::DownloadData(Float64 minA,CString& minVal
       pDX->Fail();
    }
 
-   HaunchInputData data;
-   data.m_SlabOffsetType = pgsTypes::sotBridge;
-   data.m_SingleHaunch = m_ADim;
-
-   return data;
+   pData->m_SlabOffsetType = pgsTypes::sotBridge;
+   pData->m_SingleSlabOffset = m_ADim;
 }

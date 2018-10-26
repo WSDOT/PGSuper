@@ -101,6 +101,8 @@ public:
 protected:
     bool m_bAllowRestoreDefaults;
     CRebarMaterialComboBox m_cbRebar;
+
+    virtual UINT GetHelpID();
 };
 
 //{{AFX_INSERT_LOCATION}}

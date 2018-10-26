@@ -36,7 +36,7 @@
 #include "BridgeDescGirderMaterialsPage.h"
 
 #include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\PrecastSegmentData.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <IFace\ExtendUI.h>
 
 // handy functions
@@ -104,6 +104,7 @@ public:
 
 // Attributes
 public:
+   CTimelineManager m_TimelineMgr; // copy of the timeine manager we are editing
    CSplicedGirderData m_Girder; // copy of the girder we are editing (contains the segment we are editing)
    CPrecastSegmentData* m_pSegment;
    CSegmentKey m_SegmentKey; // key to the segment we are editing

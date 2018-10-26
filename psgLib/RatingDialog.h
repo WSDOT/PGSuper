@@ -47,7 +47,7 @@ public:
 
 // Attributes
 public:
-   bool                m_AllowEditing;
+   bool                m_bAllowEditing;
 
    // work directly on an entry so we don't duplicate data.
    RatingLibraryEntry& m_Entry;

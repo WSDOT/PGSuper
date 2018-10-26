@@ -59,6 +59,8 @@ void CTxDOTAgentApp::OnHelp()
 
 BOOL CTxDOTAgentApp::InitInstance()
 {
+   GXInit();
+
    // Set up the root of the registry keys
    SetRegistryKey( _T("Washington State Department of Transportation") );
    free((void*)m_pszProfileName);
@@ -69,5 +71,6 @@ BOOL CTxDOTAgentApp::InitInstance()
 
 int CTxDOTAgentApp::ExitInstance()
 {
+   GXForceTerminate();
 	return CWinApp::ExitInstance();
 }

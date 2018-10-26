@@ -30,15 +30,15 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include "BridgePlanView.h"
-#include "BridgeSectionView.h"
+#include "BridgeModelViewChildFrame.h"
+#include "BridgeViewPane.h"
 
 struct IBroker;
 
 class CBridgeViewPrintJob : public CPrinterJob  
 {
 public:
-	CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgePlanView* ppv, CBridgeSectionView* psv, IBroker* pBroker);
+	CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgeViewPane* ppv, CBridgeViewPane* psv, IBroker* pBroker);
 	virtual ~CBridgeViewPrintJob();
 
 	// virtual overridden from base class; same meaning as CView's 
@@ -57,8 +57,8 @@ private:
 	CString	m_csFtPrint;// font type name
 	int      m_iFtPrint;	// font size
 
-   CBridgePlanView*    m_pPlanView;
-   CBridgeSectionView* m_pSectionView;
+   CBridgeViewPane*    m_pPlanView;
+   CBridgeViewPane* m_pSectionView;
    IBroker* m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
 };

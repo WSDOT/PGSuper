@@ -110,6 +110,10 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
       m_SlabOffset = pParent->m_BridgeDesc.GetSlabOffset();
       m_strSlabOffsetCache.Format(_T("%s"),FormatDimension(m_SlabOffset,pDisplayUnits->GetComponentDimUnit(), false));
+
+      m_FilletType = pParent->m_BridgeDesc.GetFilletType();
+      m_Fillet = pParent->m_BridgeDesc.GetFillet();
+      m_strFilletCache.Format(_T("%s"),FormatDimension(m_Fillet,pDisplayUnits->GetComponentDimUnit(), false));
    }
 
 	//{{AFX_DATA_MAP(CBridgeDescDeckDetailsPage)
@@ -140,8 +144,18 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       DDV_UnitValueGreaterThanZero( pDX, IDC_GROSS_DEPTH,pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
 
       // fillet
-      DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
-      DDV_UnitValueZeroOrMore( pDX, IDC_FILLET,pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
+      if (!pDX->m_bSaveAndValidate)
+      {
+         m_Fillet = pParent->m_BridgeDesc.GetFillet();
+      }
+
+      // fillet
+      DDX_CBItemData(pDX, IDC_FILLETTYPE, m_FilletType);
+      if ( m_FilletType==pgsTypes::fttBridge)
+      {
+         DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNIT, m_Fillet, pDisplayUnits->GetComponentDimUnit() );
+         DDV_UnitValueZeroOrMore( pDX, IDC_FILLET, m_Fillet, pDisplayUnits->GetComponentDimUnit() );
+      }
 
       // slab offset
       DDX_CBItemData(pDX, IDC_SAMESLABOFFSET, m_SlabOffsetType);
@@ -183,38 +197,38 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
    // wearing surface
    DDX_CBItemData( pDX, IDC_WEARINGSURFACETYPE, pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface );
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+
+   EventIndexType overlayEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetOverlayLoadEventIndex();
+   if ( overlayEventIdx != INVALID_INDEX )
    {
-      EventIndexType overlayEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetOverlayLoadEventIndex();
       DDX_CBItemData(pDX,IDC_OVERLAY_EVENT,overlayEventIdx);
+   }
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) && pDX->m_bSaveAndValidate )
+   {
+      // saving data - dialog is closing
 
-      if ( pDX->m_bSaveAndValidate )
+      if ( pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface != pgsTypes::wstSacrificialDepth )
       {
-         // saving data - dialog is closing
-
-         if ( pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface != pgsTypes::wstSacrificialDepth )
+         // there is an overlay
+         if ( overlayEventIdx == INVALID_INDEX ) // the choice is invalid... alert the user
          {
-            // there is an overlay
-            if ( overlayEventIdx == INVALID_INDEX ) // the choice is invalid... alert the user
-            {
-               pDX->PrepareCtrl(IDC_OVERLAY_EVENT);
-               AfxMessageBox(_T("Select the event when the overlay is installed."));
-               pDX->Fail();
-            }
+            pDX->PrepareCtrl(IDC_OVERLAY_EVENT);
+            AfxMessageBox(_T("Select the event when the overlay is installed."));
+            pDX->Fail();
+         }
 
-            EventIndexType railingSystemEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetRailingSystemLoadEventIndex();
-            if ( overlayEventIdx < railingSystemEventIdx )
-            {
-               pDX->PrepareCtrl(IDC_OVERLAY_EVENT);
-               AfxMessageBox(_T("The overlay cannot be installed prior to the railing system."));
-               pDX->Fail();
-            }
-         }
-         else
+         EventIndexType railingSystemEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetRailingSystemLoadEventIndex();
+         if ( overlayEventIdx < railingSystemEventIdx )
          {
-            // there is not an overlay... remove the overlay activity from the timeline
-            VERIFY(pParent->m_BridgeDesc.GetTimelineManager()->RemoveOverlayLoadEvent() == TLM_SUCCESS);
+            pDX->PrepareCtrl(IDC_OVERLAY_EVENT);
+            AfxMessageBox(_T("The overlay cannot be installed prior to the railing system."));
+            pDX->Fail();
          }
+      }
+      else
+      {
+         // there is not an overlay... remove the overlay activity from the timeline
+         VERIFY(pParent->m_BridgeDesc.GetTimelineManager()->RemoveOverlayLoadEvent() == TLM_SUCCESS);
       }
    }
 
@@ -271,7 +285,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          // Slab offset applies to the entire bridge... have users adjust Slab offset if it doesn't
          // fit with the slab depth
 
-         DDV_UnitValueLimitOrMore( pDX, IDC_ADIM,m_SlabOffset, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
+         DDV_UnitValueLimitOrMore( pDX, IDC_ADIM,m_SlabOffset, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
          pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset);
          pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotBridge);
 
@@ -283,13 +297,13 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay ) // CIP deck
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-            strMsg = _T("Slab Offset must be larger than the gross slab depth + fillet");
+            strMsg = _T("Slab Offset must be larger than the gross slab depth");
             bCheckDepth = true;
          }
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
-            strMsg = _T("Slab Offset must be larger than the cast depth + panel depth + fillet");
+            strMsg = _T("Slab Offset must be larger than the cast depth + panel depth");
             bCheckDepth = true;
          }
          else
@@ -298,7 +312,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             // should not get here
          }
 
-         if ( bCheckDepth && m_SlabOffset < grossDepth + pParent->m_BridgeDesc.GetDeckDescription()->Fillet )
+         if ( bCheckDepth && m_SlabOffset < grossDepth )
          {
             AfxMessageBox(strMsg);
             pDX->PrepareEditCtrl(IDC_ADIM);
@@ -315,14 +329,13 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay )
          {
             pDX->PrepareEditCtrl(IDC_GROSS_DEPTH);
-            Float64 maxGrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet;
+            Float64 maxGrossDepth = minSlabOffset;
             Float64 grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
             if ( ::IsLT(maxGrossDepth,grossDepth) )
             {
                CString msg;
-               msg.Format(_T("Gross slab depth must less than %s to accomodate the %s fillet and minimum slab offset of %s"),
+               msg.Format(_T("Gross slab depth must less than %s to accomodate minimum slab offset of %s"),
                             FormatDimension(maxGrossDepth,pDisplayUnits->GetComponentDimUnit()),
-                            FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
@@ -331,15 +344,14 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP )
          {
             pDX->PrepareEditCtrl(IDC_PANEL_DEPTH);
-            Float64 maxCastDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet;
+            Float64 maxCastDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
             Float64 castDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
             if ( ::IsLT(maxCastDepth,castDepth) )
             {
                CString msg;
-               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and minimum slab offset of %s"),
+               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel and minimum slab offset of %s"),
                             FormatDimension(maxCastDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth,pDisplayUnits->GetComponentDimUnit()),
-                            FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
@@ -350,6 +362,13 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             ATLASSERT(false);
             // should not get here
          }
+      }
+
+      // Set Fillet
+      if ( m_FilletType==pgsTypes::fttBridge)
+      {
+         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttBridge);
+         pParent->m_BridgeDesc.SetFillet(m_Fillet);
       }
    }
 
@@ -366,11 +385,8 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, pParent->m_BridgeDesc.GetDeckDescription()->Condition);
    DDX_Text(pDX,   IDC_CONDITION_FACTOR,      pParent->m_BridgeDesc.GetDeckDescription()->ConditionFactor);
 
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) && !pDX->m_bSaveAndValidate )
-   {
-      EventIndexType deckEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastDeckEventIndex();
-      DDX_CBItemData(pDX,IDC_DECK_EVENT,deckEventIdx);
-   }
+   EventIndexType deckEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastDeckEventIndex();
+   DDX_CBItemData(pDX,IDC_DECK_EVENT,deckEventIdx);
 }
 
 void CBridgeDescDeckDetailsPage::ExchangeConcreteData(CDataExchange* pDX)
@@ -419,8 +435,10 @@ BEGIN_MESSAGE_MAP(CBridgeDescDeckDetailsPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_OVERLAY_EVENT, OnOverlayEventChanged)
    ON_CBN_DROPDOWN(IDC_OVERLAY_EVENT, OnOverlayEventChanging)
    ON_BN_CLICKED(IDC_EDIT_HAUNCH_BUTTON, &CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton)
+   ON_BN_CLICKED(IDC_EDIT_HAUNCH_BUTTON2, &CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton)
    ON_CBN_SELCHANGE(IDC_SAMESLABOFFSET, &CBridgeDescDeckDetailsPage::OnCbnSelchangeSameslaboffset)
    ON_CBN_SELCHANGE(IDC_HAUNCH_SHAPE2, &CBridgeDescDeckDetailsPage::OnCbnSelchangeHaunchShape2)
+   ON_CBN_SELCHANGE(IDC_FILLETTYPE, &CBridgeDescDeckDetailsPage::OnCbnSelchangeFilletType)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -438,9 +456,15 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    FillEventList();
 
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   {
+      GetDlgItem(IDC_DECK_EVENT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_OVERLAY_EVENT)->EnableWindow(FALSE);
+   }
+
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -468,7 +492,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    idx = pCB->AddString(_T("Taper overhang to bottom of top flange"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::dotBottomTopFlange);
 
-   idx = pCB->AddString(_T("Don't taper overhang"));
+   idx = pCB->AddString(_T("Constant depth overhang"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::dotNone);
 
    // wearing surface types
@@ -486,13 +510,6 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
       pCB->SetItemData(idx,(DWORD)pgsTypes::wstFutureOverlay);
    }
 
-   // disable wearing surface stage if it doesn't apply
-   pCB = (CComboBox*)GetDlgItem(IDC_OVERLAY_EVENT);
-   if ( pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface == pgsTypes::wstSacrificialDepth )
-   {
-      pCB->EnableWindow(FALSE);
-   }
-
    // Slab offset type combo
    CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_SAMESLABOFFSET);
    int sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotBridge));
@@ -502,6 +519,14 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotGirder));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotGirder);
 
+   // Fillet type combo
+   pBox =(CComboBox*)GetDlgItem(IDC_FILLETTYPE);
+   sqidx = pBox->AddString( FilletTypeAsString(pgsTypes::fttBridge));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::fttBridge);
+   sqidx = pBox->AddString( FilletTypeAsString(pgsTypes::fttSpan));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::fttSpan);
+   sqidx = pBox->AddString( FilletTypeAsString(pgsTypes::fttGirder));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::fttGirder);
 
    // Initialize the condition factor combo box
    CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
@@ -585,23 +610,19 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_OVERHANG_TAPER)->EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
    BOOL show_fillet = deckType == pgsTypes::sdtNone ? FALSE:TRUE;
-   GetDlgItem(IDC_FILLET_LABEL)->EnableWindow(show_fillet);
-   GetDlgItem(IDC_FILLET)->EnableWindow(show_fillet);
-   GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(show_fillet);
 
    GetDlgItem(IDC_HAUNCH_SHAPE2)->EnableWindow(show_fillet);
    GetDlgItem(IDC_HAUNCH_SHAPE_LABEL)->EnableWindow(show_fillet);
-
    if ( !show_fillet )
    {
-      GetDlgItem(IDC_FILLET)->SetWindowText(_T("0.00"));
       SetCBItemData(this, IDC_HAUNCH_SHAPE2, pgsTypes::hsSquare);
    }
 
-
+   UpdateFilletControls();
    UpdateSlabOffsetControls();
 
-   GetDlgItem(IDC_SAMESLABOFFSET)->EnableWindow( deckType != pgsTypes::sdtNone );
+   GetDlgItem(IDC_SAMESLABOFFSET)->EnableWindow( show_fillet );
+   GetDlgItem(IDC_FILLETTYPE)->EnableWindow( show_fillet );
 
    GetDlgItem(IDC_SLAB_FC_LABEL)->EnableWindow( deckType != pgsTypes::sdtNone);
    GetDlgItem(IDC_SLAB_FC)->EnableWindow(       deckType != pgsTypes::sdtNone);
@@ -731,12 +752,10 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
 
-   CEAFDocument* pDoc = EAFGetDocument();
-   bool bPGSuperDoc = false;
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      bPGSuperDoc = true;
-   }
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
 
    CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
 
@@ -754,7 +773,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    }
    else if ( ws == pgsTypes::wstFutureOverlay )
    {
-      ATLASSERT(bPGSuperDoc == true); // future overlay only used for PGSuper... should not get here if PGSplice
+      ATLASSERT(lossMethod != pgsTypes::TIME_STEP); // future overlay only used for PGSuper... should not get here if PGSplice
       bSacDepth               = TRUE;
       bOverlayEvent           = FALSE;
       bOverlayLabel           = TRUE;
@@ -766,21 +785,22 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    }
    else
    {
-      bSacDepth               = (bPGSuperDoc ? FALSE : TRUE); // If regular overlay in PGSuper, no sacrifical depth. In PGSplice, sacrifical depth applies until overlay is applied
-      bOverlayEvent           = (bPGSuperDoc ? FALSE : TRUE);
+      bSacDepth               = (lossMethod == pgsTypes::TIME_STEP ? TRUE : FALSE); // For time step analysis sacrifical depth applies until overlay is applied. For other loss methods, sacrifical depth doesn't apply for overlays
+      bOverlayEvent           = (lossMethod == pgsTypes::TIME_STEP ? TRUE : FALSE);
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
 
-      if ( bPGSuperDoc )
+      if ( lossMethod != pgsTypes::TIME_STEP )
       {
-         // create a loading event in the timeline for the overlay load... only do this for PGSuper documents.
-         // The user has to explicitly select the event for the overlay load for PGSplice documents
+         // create a loading event in the timeline for the overlay load... only do this for non-timestep analysis
+         // The user has to explicitly select the event for the overlay load event for time-step analysis
          pTimelineMgr->SetOverlayLoadEventByIndex(pTimelineMgr->GetRailingSystemLoadEventIndex());
       }
    }
 
    GetDlgItem(IDC_OVERLAY_EVENT)->EnableWindow( bOverlayEvent );
+   GetDlgItem(IDC_OVERLAY_EVENT)->ShowWindow(ws == pgsTypes::wstSacrificialDepth ? SW_HIDE : SW_SHOW);
 
    GetDlgItem(IDC_OLAY_WEIGHT_LABEL)->EnableWindow( bOverlayLabel );
    GetDlgItem(IDC_OLAY_WEIGHT)->EnableWindow( bOverlayWeight );
@@ -1040,26 +1060,6 @@ void CBridgeDescDeckDetailsPage::OnCbnSelchangeSameslaboffset()
 
    bool bEntireBridge = m_SlabOffsetType==pgsTypes::sotBridge; 
 
-   // Note:: Original UI design (commented below showed a hint dialog and just enabled the input data button.
-   // IMHO, it is better just to pop the input dialog to force users to see data (rdp)
-/*
-   CString strHint;
-   if ( bEntireBridge )
-   {
-      strHint = _T("By selecting this option, the same slab offset will be used for the entire bridge");
-   }
-   else if (m_SlabOffsetType==pgsTypes::sotPier)
-   {
-      strHint = _T("By selecting this option, slab offset values will be set uniquely for each span. Use the Edit Haunch dialog below the check box to specify values as you wish. \n\nHint: Slab offsets can also be changed from the main menu's Edit|Haunch command");
-   }
-   else if (m_SlabOffsetType==pgsTypes::sotGirder)
-   {
-      strHint = _T("By selecting this option, slab offset values will be set uniquely for each girder. Use the Edit Haunch dialog below the check box to specify values as you wish. \n\nHint: Slab offsets can also be changed from the main menu's Edit|Haunch command");
-   }
-
-   // Show the hint dialog
-   UIHint(strHint,UIHINT_SINGLE_SLAB_OFFSET);
-*/
    CWnd* pWnd = GetDlgItem(IDC_ADIM);
    if ( bEntireBridge )   
    {
@@ -1076,9 +1076,51 @@ void CBridgeDescDeckDetailsPage::OnCbnSelchangeSameslaboffset()
    UpdateSlabOffsetControls();
 
    // Show dialog 
-   OnBnClickedEditHaunchButton();
+   if ( !bEntireBridge )   
+   {
+      OnBnClickedEditHaunchButton();
+   }
 }
 
+void CBridgeDescDeckDetailsPage::OnCbnSelchangeFilletType()
+{
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_FILLETTYPE);
+   int idx = pBox->GetCurSel();
+
+   m_FilletType = (pgsTypes::FilletType)pBox->GetItemData(idx);
+
+   // TRICKY: But this takes care of the case when the offset type is changed and never edited:
+   // Use logic in the edit haunch dialog to change the bridge description
+   CEditHaunchDlg dlg(&(pParent->m_BridgeDesc));
+   dlg.ForceToFilletType(m_FilletType);
+   dlg.ModifyBridgeDescr(&(pParent->m_BridgeDesc));
+
+   bool bEntireBridge = m_FilletType==pgsTypes::fttBridge; 
+
+   CWnd* pWnd = GetDlgItem(IDC_FILLET);
+   if ( bEntireBridge )   
+   {
+      // box was checked on so put the cache value into the window
+      pWnd->SetWindowText(m_strFilletCache);
+   }
+   else
+   {
+      // box was checked off so read the current value from the window and cache it
+      pWnd->GetWindowText(m_strFilletCache);
+      pWnd->SetWindowText(_T(""));
+   }
+
+   UpdateFilletControls();
+
+   // Show dialog 
+   if ( !bEntireBridge )   
+   {
+      OnBnClickedEditHaunchButton();
+   }
+}
 
 void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
 {
@@ -1104,19 +1146,28 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
    GetDlgItem(IDC_EDIT_HAUNCH_BUTTON)->EnableWindow(bEnable);
 }
 
-void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
+void CBridgeDescDeckDetailsPage::UpdateFilletControls()
 {
-   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   // Which controls to show
+   int ShowInput  = m_FilletType==pgsTypes::fttBridge ? SW_SHOW : SW_HIDE;
+   int ShowButton = ShowInput == SW_HIDE ?  SW_SHOW : SW_HIDE;
 
-   Uint32 hintSettings = pDoc->GetUIHintSettings();
-   if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
-   {
-      if ( EAFShowUIHints(strText) )
-      {
-         sysFlags<Uint32>::Set(&hintSettings,mask);
-         pDoc->SetUIHintSettings(hintSettings);
-      }
-   }
+   // enable/disable slab offset controls
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+
+   BOOL bEnable = (deckType != pgsTypes::sdtNone) ? TRUE : FALSE; // if enabled, disable if deck type is none
+
+   GetDlgItem(IDC_FILLET_LABEL)->ShowWindow(ShowInput);
+   GetDlgItem(IDC_FILLET)->ShowWindow(ShowInput);
+   GetDlgItem(IDC_FILLET_UNIT)->ShowWindow(ShowInput);
+   GetDlgItem(IDC_FILLET_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_FILLET)->EnableWindow(bEnable);
+   GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_EDIT_HAUNCH_BUTTON2)->ShowWindow(ShowButton);
+   GetDlgItem(IDC_EDIT_HAUNCH_BUTTON2)->EnableWindow(bEnable);
 }
 
 void CBridgeDescDeckDetailsPage::OnConditionFactorTypeChanged()
@@ -1150,15 +1201,7 @@ void CBridgeDescDeckDetailsPage::OnConditionFactorTypeChanged()
 void CBridgeDescDeckDetailsPage::FillEventList()
 {
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   CEAFDocument* pDoc = EAFGetDocument();
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      GetDlgItem(IDC_DECK_EVENT_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_DECK_EVENT)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_OVERLAY_EVENT)->ShowWindow(SW_HIDE);
 
-      return;
-   }
 
    CComboBox* pcbDeckEvent = (CComboBox*)GetDlgItem(IDC_DECK_EVENT);
    CComboBox* pcbOverlayEvent = (CComboBox*)GetDlgItem(IDC_OVERLAY_EVENT);
@@ -1366,17 +1409,13 @@ void CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
-   // Update bridge descr with dialog fillet data before entering dialog
-   CDataExchange dx(this,TRUE);
-   dx.PrepareCtrl(IDC_FILLET);
-   DDX_UnitValueAndTag( &dx, IDC_FILLET, IDC_FILLET_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
-
    CEditHaunchDlg dlg(&(pParent->m_BridgeDesc));
    dlg.ForceToSlabOffsetType(m_SlabOffsetType);
+   dlg.ForceToFilletType(m_FilletType);
    if ( dlg.DoModal() == IDOK )
    {
       // Dialog modifies bridge descr
@@ -1386,9 +1425,8 @@ void CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton()
       bool st = SetCBItemData(this, IDC_HAUNCH_SHAPE2, pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape);
       ATLASSERT(st);
 
-      // Set slab offset type combo box
+      // slab offset 
       m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-
       st = SetCBItemData(this, IDC_SAMESLABOFFSET, m_SlabOffsetType);
       ATLASSERT(st);
 
@@ -1401,7 +1439,22 @@ void CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton()
          pWnd->SetWindowText(m_strSlabOffsetCache);
       }
 
+      // fillet
+      m_FilletType = pParent->m_BridgeDesc.GetFilletType();
+      st = SetCBItemData(this, IDC_FILLETTYPE, m_FilletType);
+      ATLASSERT(st);
+
+      // Dialog can change back to single fillet for whole bridge. Set local values if needed
+      if (m_FilletType==pgsTypes::fttBridge)
+      {
+         m_Fillet = pParent->m_BridgeDesc.GetFillet();
+         m_strFilletCache.Format(_T("%s"),FormatDimension(m_Fillet,pDisplayUnits->GetComponentDimUnit(), false));
+         CWnd* pWnd = GetDlgItem(IDC_FILLET);
+         pWnd->SetWindowText(m_strFilletCache);
+      }
+
       UpdateSlabOffsetControls();
+      UpdateFilletControls();
    }
 }
 

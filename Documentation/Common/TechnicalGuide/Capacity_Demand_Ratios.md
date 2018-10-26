@@ -1,4 +1,4 @@
-Capacity/Demand Ratios {#capacity_demand_ratios}
+Capacity/Demand Ratios {#tg_capacity_demand_ratios}
 ======================================
 Capacity/Demand (C/D) ratios are reported in several places in PGSuper (examples are stresses, moment capacity,...) The rules for reporting the ratios are consistent throughout, and are as follows:
 

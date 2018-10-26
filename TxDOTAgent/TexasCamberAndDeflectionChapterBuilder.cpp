@@ -137,6 +137,9 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(CReportSpecification*
    // Fillet Check
    CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girder_list,pDisplayUnits);
 
+   // Haunch Geometry Check
+   CConstructabilityCheckTable().BuildHaunchGeometryComplianceCheck(pChapter,pBroker,girder_list,pDisplayUnits);
+
    return pChapter;
 }
 
@@ -257,7 +260,14 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
 
       delta_sk = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtCumulative, false );
       
-      delta_ol = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative, false );
+      if ( overlayIntervalIdx == INVALID_INDEX )
+      {
+         delta_ol = 0;
+      }
+      else
+      {
+         delta_ol = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative, false );
+      }
 
       delta_tb = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative, false );
       delta_sw = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative, false );

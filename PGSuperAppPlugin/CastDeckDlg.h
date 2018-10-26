@@ -31,7 +31,7 @@ class CCastDeckDlg : public CDialog
 	DECLARE_DYNAMIC(CCastDeckDlg)
 
 public:
-	CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
+	CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CCastDeckDlg();
 
 // Dialog Data
@@ -41,7 +41,13 @@ public:
    EventIndexType m_EventIndex;
 
 protected:
+   BOOL m_bReadOnly;
+
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
+
+public:
+   virtual BOOL OnInitDialog();
+   afx_msg void OnHelp();
 };

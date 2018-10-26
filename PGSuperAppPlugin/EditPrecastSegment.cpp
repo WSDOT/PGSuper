@@ -131,12 +131,7 @@ void txnEditPrecastSegment::SetSegmentData(const CSegmentKey& segmentKey,const t
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker, IEvents, pEvents);
-   pEvents->HoldEvents();
-
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,data.m_SegmentData);
    pIBridgeDesc->SetTimelineManager(data.m_TimelineMgr);
-
-   pEvents->FirePendingEvents();
 }

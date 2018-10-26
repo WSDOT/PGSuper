@@ -62,7 +62,7 @@ public:
    bool m_bStructurallyContinuous;
    Float64 m_CurbOffset;
 
-   bool m_AllowEditing;
+   bool m_bAllowEditing;
 
    CTrafficBarrierGrid m_PointsGrid;
 

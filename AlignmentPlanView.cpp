@@ -38,6 +38,7 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <WBFLDManipTools.h>
+#include <DManipTools\DManipTools.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -53,11 +54,12 @@ static char THIS_FILE[] = __FILE__;
 
 #define ALIGNMENT_ID   -300
 #define BRIDGE_ID      -400
+#define BRIDGELINE_ID  -500
 
 /////////////////////////////////////////////////////////////////////////////
 // CAlignmentPlanView
 
-IMPLEMENT_DYNCREATE(CAlignmentPlanView, CDisplayView)
+IMPLEMENT_DYNCREATE(CAlignmentPlanView, CBridgeViewPane)
 
 CAlignmentPlanView::CAlignmentPlanView()
 {
@@ -68,16 +70,9 @@ CAlignmentPlanView::~CAlignmentPlanView()
 }
 
 
-BEGIN_MESSAGE_MAP(CAlignmentPlanView, CDisplayView)
+BEGIN_MESSAGE_MAP(CAlignmentPlanView, CBridgeViewPane)
 	//{{AFX_MSG_MAP(CAlignmentPlanView)
-	ON_WM_CREATE()
-	ON_WM_SIZE()
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
-   ON_WM_KEYDOWN()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-//   ON_COMMAND(ID_ZOOM,OnZoom)
-//   ON_COMMAND(ID_SCALETOFIT,OnScaleToFit)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -87,7 +82,11 @@ END_MESSAGE_MAP()
 void CAlignmentPlanView::OnInitialUpdate() 
 {
    EnableToolTips();
+   CBridgeViewPane::OnInitialUpdate();
+}
 
+void CAlignmentPlanView::BuildDisplayLists()
+{
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
@@ -96,7 +95,7 @@ void CAlignmentPlanView::OnInitialUpdate()
    dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
    dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CDisplayView::SetMappingMode(DManip::Isotropic);
+   CBridgeViewPane::SetMappingMode(DManip::Isotropic);
 
    // Setup display lists
 
@@ -110,41 +109,20 @@ void CAlignmentPlanView::OnInitialUpdate()
    title_list->SetID(TITLE_DISPLAY_LIST);
    dispMgr->AddDisplayList(title_list);
 
-   CComPtr<iDisplayList> bridge_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&bridge_list);
-   bridge_list->SetID(BRIDGE_DISPLAY_LIST);
-   dispMgr->AddDisplayList(bridge_list);
-
    CComPtr<iDisplayList> alignment_list;
    ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
    alignment_list->SetID(ALIGNMENT_DISPLAY_LIST);
    dispMgr->AddDisplayList(alignment_list);
 
+   CComPtr<iDisplayList> bridge_list;
+   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&bridge_list);
+   bridge_list->SetID(BRIDGE_DISPLAY_LIST);
+   dispMgr->AddDisplayList(bridge_list);
+
    CComPtr<iDisplayList> north_arrow_list;
    ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&north_arrow_list);
    north_arrow_list->SetID(NORTH_ARROW_DISPLAY_LIST);
    dispMgr->AddDisplayList(north_arrow_list);
-
-   CDisplayView::OnInitialUpdate();
-}
-
-void CAlignmentPlanView::DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw)
-{
-   OnBeginPrinting(pDC, pInfo, rcDraw);
-   OnPrepareDC(pDC);
-   UpdateDrawingScale();
-   OnDraw(pDC);
-   OnEndPrinting(pDC, pInfo);
-}
-
-void CAlignmentPlanView::OnDraw(CDC* pDC)
-{
-   CDisplayView::OnDraw(pDC);
-
-   if ( CWnd::GetFocus() == this && !pDC->IsPrinting() )
-   {
-      DrawFocusRect();
-   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -154,12 +132,12 @@ void CAlignmentPlanView::OnDraw(CDC* pDC)
 void CAlignmentPlanView::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-	CDisplayView::AssertValid();
+	CBridgeViewPane::AssertValid();
 }
 
 void CAlignmentPlanView::Dump(CDumpContext& dc) const
 {
-	CDisplayView::Dump(dc);
+	CBridgeViewPane::Dump(dc);
 }
 #endif //_DEBUG
 
@@ -168,37 +146,11 @@ void CAlignmentPlanView::Dump(CDumpContext& dc) const
 
 void CAlignmentPlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
-   CDisplayView::OnUpdate(pSender,lHint,pHint);
-
+   CBridgeViewPane::OnUpdate(pSender,lHint,pHint);
    UpdateDisplayObjects();
    UpdateDrawingScale();
    Invalidate();
    UpdateWindow();
-}
-
-void CAlignmentPlanView::OnSize(UINT nType, int cx, int cy) 
-{
-	CDisplayView::OnSize(nType, cx, cy);
-
-   CRect rect;
-   GetClientRect(&rect);
-   rect.DeflateRect(15,15,15,15);
-
-   CSize size = rect.Size();
-   size.cx = Max(0L,size.cx);
-   size.cy = Max(0L,size.cy);
-
-   SetLogicalViewRect(MM_TEXT,rect);
-
-   SetScrollSizes(MM_TEXT,size,CScrollView::sizeDefault,CScrollView::sizeDefault);
-
-   UpdateDrawingScale();
-}
-
-void CAlignmentPlanView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
-{
-   CBridgeModelViewChildFrame* pFrame = GetFrame();
-   pFrame->ClearSelection();
 }
 
 void CAlignmentPlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
@@ -252,7 +204,7 @@ void CAlignmentPlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       m_pFrame->GetAlignmentProfileView()->SetFocus();
    }
 
-   CDisplayView::OnKeyDown(nChar,nRepCnt,nFlags);
+   CBridgeViewPane::OnKeyDown(nChar,nRepCnt,nFlags);
 }
 
 void CAlignmentPlanView::UpdateDisplayObjects()
@@ -418,14 +370,36 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 start_station = pBridge->GetPierStation(0);
-   Float64 end_station = pBridge->GetPierStation(pBridge->GetPierCount()-1);
 
-   // The bridge is represented on the screen by a poly line object
-   CComPtr<iPolyLineDisplayObject> doBridge;
-   doBridge.CoCreateInstance(CLSID_PolyLineDisplayObject);
+   // Draw the deck
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   CComPtr<IPoint2dCollection> points;
+   pBridge->GetSlabPerimeter(0,nSpans-1,10*nSpans,&points);
+
+   CComPtr<IPolyShape> poly_shape;
+   poly_shape.CoCreateInstance(CLSID_PolyShape);
+   poly_shape->AddPoints(points);
+
+   CComPtr<iPointDisplayObject> doBridge;
+   doBridge.CoCreateInstance(CLSID_PointDisplayObject);
+   CComPtr<IPoint2d> p;
+   points->get_Item(0,&p);
+   doBridge->SetPosition(p,FALSE,FALSE);
+
+   CComPtr<iShapeDrawStrategy> strategy;
+   strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+   CComQIPtr<IShape> shape(poly_shape);
+   strategy->SetShape(shape);
+   strategy->SetSolidLineColor(DECK_BORDER_COLOR);
+   strategy->SetSolidFillColor(DECK_FILL_COLOR);
+   strategy->DoFill(TRUE);
+   doBridge->SetDrawingStrategy(strategy);
+
+   doBridge->SetSelectionType(stAll);
+   doBridge->SetID(BRIDGE_ID);
+
+   display_list->AddDisplayObject(doBridge);
 
    // Register an event sink with the alignment object so that we can handle Float64 clicks
    // on the alignment differently then a general dbl-click
@@ -439,6 +413,14 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
    dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
 
+   // Draw the Bridge Line
+   Float64 start_station = pBridge->GetPierStation(0);
+   Float64 end_station = pBridge->GetPierStation(pBridge->GetPierCount()-1);
+
+   // The bridge is represented on the screen by a poly line object
+   CComPtr<iPolyLineDisplayObject> doBridgeLine;
+   doBridgeLine.CoCreateInstance(CLSID_PolyLineDisplayObject);
+
    Float64 alignment_offset = pBridge->GetAlignmentOffset();
 
    // model the alignment as a series of individual points
@@ -451,18 +433,18 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
       pRoadway->GetBearingNormal(station,&normal);
       CComPtr<IPoint2d> p;
       pRoadway->GetPoint(station,alignment_offset,normal,&p);
-      doBridge->AddPoint(p);
+      doBridgeLine->AddPoint(p);
    }
 
-   doBridge->put_Width(BRIDGE_LINE_WEIGHT);
-   doBridge->put_Color(BRIDGE_COLOR);
-   doBridge->put_PointType(plpNone);
-   doBridge->Commit();
+   doBridgeLine->put_Width(BRIDGE_LINE_WEIGHT);
+   doBridgeLine->put_Color(BRIDGE_COLOR);
+   doBridgeLine->put_PointType(plpNone);
+   doBridgeLine->Commit();
 
-   display_list->AddDisplayObject(dispObj);
+   doBridgeLine->SetSelectionType(stNone);
+   doBridgeLine->SetID(BRIDGELINE_ID);
 
-   dispObj->SetSelectionType(stAll);
-   dispObj->SetID(BRIDGE_ID);
+   display_list->AddDisplayObject(doBridgeLine);
 }
 
 void CAlignmentPlanView::BuildLabelDisplayObjects()
@@ -654,71 +636,4 @@ void CAlignmentPlanView::UpdateDrawingScale()
 
    title_display_list->HideDisplayObjects(false);
    na_display_list->HideDisplayObjects(false);
-}
-//
-//
-//void CAlignmentPlanView::ClearSelection()
-//{
-//   CComPtr<iDisplayMgr> dispMgr;
-//   GetDisplayMgr(&dispMgr);
-//
-//   dispMgr->ClearSelectedObjects();
-//}
-
-void CAlignmentPlanView::OnSetFocus(CWnd* pOldWnd) 
-{
-	CDisplayView::OnSetFocus(pOldWnd);
-   DrawFocusRect();
-}
-
-void CAlignmentPlanView::OnKillFocus(CWnd* pNewWnd) 
-{
-	CDisplayView::OnKillFocus(pNewWnd);
-   DrawFocusRect();
-}
-//
-//void CAlignmentPlanView::OnZoom()
-//{
-//   CComPtr<iDisplayMgr> dispMgr;
-//   GetDisplayMgr(&dispMgr);
-//
-//   CComPtr<iTaskFactory> taskFactory;
-//   dispMgr->GetTaskFactory(&taskFactory);
-//
-//   CComPtr<iTask> task;
-//   taskFactory->CreateZoomTask(this,NULL,LIGHTSTEELBLUE,&task);
-//
-//   dispMgr->SetTask(task);
-//}
-//
-//void CAlignmentPlanView::OnScaleToFit()
-//{
-//   UpdateDrawingScale();
-//}
-
-int CAlignmentPlanView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
-{
-	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
-   {
-		return -1;
-   }
-	
-   m_pFrame = (CBridgeModelViewChildFrame*)GetParent()->GetParent();
-   ASSERT( m_pFrame != 0 );
-   ASSERT( m_pFrame->IsKindOf( RUNTIME_CLASS( CBridgeModelViewChildFrame ) ) );
-
-	return 0;
-}
-
-CBridgeModelViewChildFrame* CAlignmentPlanView::GetFrame()
-{
-   return m_pFrame;
-}
-
-void CAlignmentPlanView::DrawFocusRect()
-{
-   CClientDC dc(this);
-   CRect rClient;
-   GetClientRect(&rClient);
-   dc.DrawFocusRect(rClient);
 }

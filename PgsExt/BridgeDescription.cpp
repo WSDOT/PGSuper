@@ -512,6 +512,9 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
    pBridgeDesc->SetSlabOffset(m_SlabOffset);
    pBridgeDesc->SetSlabOffsetType(m_SlabOffsetType);
 
+   pBridgeDesc->SetFilletType(pgsTypes::fttBridge);
+   pBridgeDesc->SetFillet(m_Deck.Fillet);
+
    // Bridge Deck
    CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    pDeck->bInputAsDepthAndDensity   = m_Deck.bInputAsDepthAndDensity;
@@ -520,7 +523,6 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
    pDeck->DeckEdgePoints            = m_Deck.DeckEdgePoints;
    pDeck->DeckRebarData             = m_Deck.DeckRebarData;
    pDeck->DeckType                  = m_Deck.DeckType;
-   pDeck->Fillet                    = m_Deck.Fillet;
    pDeck->GrossDepth                = m_Deck.GrossDepth;
    pDeck->OverhangEdgeDepth         = m_Deck.OverhangEdgeDepth;
    pDeck->OverhangTaper             = m_Deck.OverhangTaper;

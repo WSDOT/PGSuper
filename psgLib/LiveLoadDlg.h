@@ -84,7 +84,7 @@ protected:
 private:
    CLiveLoadAxleGrid  m_Grid;
 
-   bool m_AllowEditing;
+   bool m_bAllowEditing;
 
    void UpdateConfig();
 };

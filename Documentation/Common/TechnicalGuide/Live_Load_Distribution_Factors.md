@@ -1,11 +1,11 @@
-Live Load Distribution Factors {#lldf}
+Live Load Distribution Factors {#tg_lldf}
 ======================================
 
 LRFD 4.6.2.2 addresses the topic of distribution of live loads to beam-slab structures. This is certainly one of the most contentious and difficult to understand sections of the Specifications, and is an area where many agencies deviate and use their own modifications to the Specifications; WSDOT and TxDOT included. 
 
 WSDOT and TxDOT Modifications to Distribution Factors
 ------------------------------------------------------
-The WSDOT and TxDOT modifications to the AASHTO LRFD for computing live load distribution factors are discussed in @subpage lldf_wsdot and @subpage lldf_txdot.
+The WSDOT and TxDOT modifications to the AASHTO LRFD for computing live load distribution factors are discussed in @subpage tg_lldf_wsdot and @subpage tg_lldf_txdot.
 
 Interpretation Issues
 ---------------------

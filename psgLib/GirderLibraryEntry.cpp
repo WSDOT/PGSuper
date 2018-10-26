@@ -4352,14 +4352,14 @@ bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
       // This could be because IE was not installed correctly so the
       // component category manager is missing, or there weren't any
       // beam factories defined
-      AfxMessageBox(_T("Girder Sections not defined. This library entry cannot be edited.\nCheck your PGSuper installation"),MB_OK | MB_ICONWARNING);
+      AfxMessageBox(_T("Girder Sections not defined. This library entry cannot be edited.\nCheck your installation."),MB_OK | MB_ICONWARNING);
    }
 
    // exchange data with dialog
    // make a temporary copy of this and have the dialog work on it.
    GirderLibraryEntry tmp(*this);
 
-   CGirderMainSheet dlg(tmp, IDS_GIRDER_SHEET, allowEditing);
+   CGirderMainSheet dlg(tmp, allowEditing);
    dlg.SetActivePage(nPage);
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)

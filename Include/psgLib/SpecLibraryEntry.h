@@ -750,6 +750,15 @@ public:
    pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const;
    void SetOverlayLoadDistributionType(pgsTypes::OverlayLoadDistributionType type);
 
+   // Set/Get the how the haunch load is commputed wrt girder camber
+   pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() const;
+   void SetHaunchLoadComputationType(pgsTypes::HaunchLoadComputationType type);
+
+   // set/get solution tolerance between camber used to compute haunch load and computed excess camber.
+   // This value is only used if HaunchLoadComputationType==hlcAccountForCamber
+   Float64 GetHaunchLoadCamberTolerance() const;
+   void SetHaunchLoadCamberTolerance(Float64 tol);
+
    // Set/Get the magnitude of the pedestrian live load
    Float64 GetPedestrianLiveLoad() const;
    void SetPedestrianLiveLoad(Float64 w);
@@ -1298,6 +1307,8 @@ private:
    GirderIndexType  m_Bs2MaxGirdersTrafficBarrier;
    GirderIndexType  m_Bs2MaxGirdersUtility;
    pgsTypes::OverlayLoadDistributionType m_OverlayLoadDistribution;
+   pgsTypes::HaunchLoadComputationType m_HaunchLoadComputationType;
+   Float64 m_HaunchLoadCamberTolerance;
 
    // bridge site 3
    Float64 m_Bs3CompStressServ;

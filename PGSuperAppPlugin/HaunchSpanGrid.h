@@ -19,26 +19,66 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+#pragma once;
 
-// Local data structures for haunch
+#include <PgsExt\BridgeDescription2.h>
 
-typedef std::pair<Float64,Float64> HaunchPair;
-typedef std::vector<HaunchPair> HaunchPairVec;
-typedef HaunchPairVec::iterator HaunchPairVecIter;
-typedef HaunchPairVec::const_iterator HaunchPairVecConstIter;
+// Local data structures for SlabOffset at pier
+typedef struct SlabOffsetBearingData
+{
+   enum PDType {pdAhead, // Ahead bearing line
+                pdCL,    // Centerline bearing line (continuous interior piers only)
+                pdBack} ; // Back bearing line
+   PDType                 m_PDType;
+   std::vector< Float64 > m_AsForGirders; // A for each girder at bearing line if SlabOffsetType is sotPier,
+                                          // Then A for all girders is in slot[0]
+
+   PierIndexType  m_PierIndex;  // pier and group associated with this bearing line
+   GroupIDType    m_pGroupIndex;
+} SlabOffsetBearingData;
+
+typedef std::vector<SlabOffsetBearingData> SlabOffsetBearingDataVec;
+typedef SlabOffsetBearingDataVec::iterator SlabOffsetBearingDataIter;
+typedef SlabOffsetBearingDataVec::const_iterator SlabOffsetBearingDataConstIter;
+
+// Local data structures for Fillet at spans
+typedef struct FilletSpanData
+{
+   std::vector< Float64 > m_FilletsForGirders; // fillet for each girder at in span if FilletType is fttGirder,
+                                          // If fttSpan value for all girders is in slot[0]
+
+   SpanIndexType  m_SpanIndex;
+} FilletSpanData;
+
+typedef std::vector<FilletSpanData> FilletSpanDataVec;
+typedef FilletSpanDataVec::iterator FilletSpanDataIter;
+typedef FilletSpanDataVec::const_iterator FilletSpanDataConstIter;
+
 
 class HaunchInputData
 {
 public:
+   // Slab Offsets
    pgsTypes::SlabOffsetType m_SlabOffsetType;
 
    // Different Data for each layout type
-   Float64 m_SingleHaunch;
-   HaunchPairVec m_SpansHaunch; // start/end value by span
-   std::vector<HaunchPairVec> m_SpanGirdersHaunch; // vector for each girder in spans
+   Float64 m_SingleSlabOffset;
+   SlabOffsetBearingDataVec m_BearingsSlabOffset; // for both sotPier and sotGirder. if sotPier, A is in m_AsForGirders[0]
 
-   Uint32 m_MaxGirdersPerSpan;
+   // Fillets
+   pgsTypes::FilletType m_FilletType;
+
+   // Different Data for each layout type
+   Float64 m_SingleFillet;
+   FilletSpanDataVec m_FilletSpans; // for both fttSpan and fttGirder. if span, val is in m_AsForGirders[0]
+
+   // General
+   GirderIndexType m_MaxGirdersPerSpan;
 };
+
+#define _AHEADSTR _T("Ahead")
+#define _BACKSTR  _T("Back")
+#define _CLSTR    _T("C.L.")
 
 #pragma once
 // HaunchSpanGrid.h : header file
@@ -85,8 +125,7 @@ public:
    void CustomInit();
 
    void FillGrid(const HaunchInputData& haunchData);
-   HaunchInputData GetData(Float64 minA, CString& minValError, CDataExchange* pDX);
-
+   void GetData(Float64 minA, CString& minValError, HaunchInputData* pData, CDataExchange* pDX);
 
 private:
 
@@ -97,4 +136,6 @@ private:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    const unitmgtLengthData* M_pCompUnit;
+
+   std::vector<GirderIndexType> m_GirderCounts; // save number of girders per bearing line
 };

@@ -484,6 +484,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Fillet Check
    CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girderList,pDisplayUnits);
 
+   // Haunch Geometry Check
+   CConstructabilityCheckTable().BuildHaunchGeometryComplianceCheck(pChapter,pBroker,girderList,pDisplayUnits);
+
    // Camber Check
    CConstructabilityCheckTable().BuildCamberCheck(pChapter,pBroker,girderKey,pDisplayUnits);
 
@@ -491,7 +494,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Bottom Flange Clearance Check
-   CConstructabilityCheckTable().BuildBottomFlangeClearanceCheck(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+   CConstructabilityCheckTable().BuildBottomFlangeClearanceCheck(pChapter,pBroker,girderList,pDisplayUnits);
 
    // Load rating
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);

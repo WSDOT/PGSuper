@@ -98,6 +98,7 @@ m_MinimumFinalMzEccentricity(Float64_Max),
 m_HarpedRatio(DefaultHarpedRatio),
 m_MinPermanentStrands(0),
 m_MinSlabOffset(0.0),
+m_AbsoluteMinimumSlabOffset(0.0),
 m_ConcreteAccuracy(::ConvertToSysUnits(100,unitMeasure::PSI)),
 m_bConfigDirty(true),
 m_pGirderEntry(NULL),
@@ -198,6 +199,9 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    m_pArtifact->SetReleaseStrength( ifci );
    m_FciControl.Init(ifci,releaseIntervalIdx);
 
+   Float64 tSlab = pBridge->GetGrossSlabDepth( pgsPointOfInterest(m_SegmentKey,0.00) );
+   m_AbsoluteMinimumSlabOffset = tSlab;
+
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone || !(m_DesignOptions.doDesignSlabOffset) )
    {
       // if there is no deck, set the artifact value to the current value
@@ -210,10 +214,24 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    }
    else
    {
-      Float64 tSlab = pBridge->GetGrossSlabDepth( pgsPointOfInterest(m_SegmentKey,0.00) );
-      m_pArtifact->SetSlabOffset( pgsTypes::metStart, 1.5*tSlab );
-      m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   1.5*tSlab );
+      // Determine absolute minimum A
+      Float64 min_haunch;
+      if (!m_pGirderEntry->GetMinHaunchAtBearingLines(&min_haunch))
+      {
+         min_haunch = 0.0;
+      }
+
+      m_AbsoluteMinimumSlabOffset = tSlab + min_haunch;
+
+      Float64 defaultA = max( m_AbsoluteMinimumSlabOffset, 1.5*tSlab );
+
+      m_pArtifact->SetSlabOffset( pgsTypes::metStart, defaultA);
+      m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   defaultA);
    }
+
+#pragma Reminder("Set initial design fillet here")
+
+   m_pArtifact->SetFillet(pBridge->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex));
 
    // Initialize Prestressing
    m_pArtifact->SetNumStraightStrands( 0 );
@@ -1730,6 +1748,8 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    m_pArtifact->SetSlabOffset(pgsTypes::metStart,pBridge->GetSlabOffset(m_SegmentKey.groupIndex,startPierIdx,m_SegmentKey.girderIndex));
    m_pArtifact->SetSlabOffset(pgsTypes::metEnd,  pBridge->GetSlabOffset(m_SegmentKey.groupIndex,endPierIdx,  m_SegmentKey.girderIndex)  );
 
+   m_pArtifact->SetFillet(pBridge->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex));
+
    GDRCONFIG config = pBridge->GetSegmentConfiguration(m_SegmentKey);
    m_pArtifact->SetStraightStrandDebondInfo( config.PrestressConfig.Debond[pgsTypes::Straight] );
 
@@ -2057,9 +2077,27 @@ void pgsStrandDesignTool::SetMinimumSlabOffset(Float64 offset)
 
 Float64 pgsStrandDesignTool::GetMinimumSlabOffset() const
 {
-   return m_MinSlabOffset;
+   return max(m_MinSlabOffset,m_AbsoluteMinimumSlabOffset);
 }
 
+Float64 pgsStrandDesignTool::GetAbsoluteMinimumSlabOffset() const
+{
+   ATLASSERT(m_AbsoluteMinimumSlabOffset>0.0); 
+   return m_AbsoluteMinimumSlabOffset;
+}
+
+Float64 pgsStrandDesignTool::GetFillet() const
+{
+   return m_pArtifact->GetFillet();
+}
+
+void pgsStrandDesignTool::SetFillet(Float64 f)
+{
+   ATLASSERT(f>0.0);
+   m_pArtifact->SetFillet(f);
+
+   m_bConfigDirty = true; // cache is dirty
+}
 
 void pgsStrandDesignTool::SetLiftingLocations(Float64 left,Float64 right)
 {
@@ -4394,7 +4432,7 @@ DebondLevelType pgsStrandDesignTool::GetMinAdjacentDebondLevel(DebondLevelType c
    ATLASSERT(maxDbsTermAtSection <= num_db_at_curr_level); // can't terminate more strands than we have at this level. calling routine on drugs.
 
    // Go after minimum level that has enough strands to alleviate our problem
-   DebondLevelType min_lvl = INVALID_INDEX;
+   DebondLevelType min_lvl = -1;
    for (DebondLevelType levelIdx = 0; levelIdx < currLevel; levelIdx++)
    {
       const DebondLevel& rlvl = m_DebondLevels[levelIdx];
@@ -4407,7 +4445,7 @@ DebondLevelType pgsStrandDesignTool::GetMinAdjacentDebondLevel(DebondLevelType c
       }
    }
 
-   if (min_lvl == INVALID_INDEX)
+   if (min_lvl == -1)
    {
       ATLASSERT(false); // something messed up with initial determination of debond levels
       min_lvl = 0;

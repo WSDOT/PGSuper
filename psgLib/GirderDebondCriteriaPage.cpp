@@ -89,6 +89,22 @@ BOOL CGirderDebondCriteriaPage::OnInitDialog()
    CGirderMainSheet* pParent = (CGirderMainSheet*)GetParent();
    if ( pParent->IsSplicedGirder() )
    {
+      // Debond Distance Criteria doesn't apply to spliced girders
+      GetDlgItem(IDC_DEBOND_CRITERIA_GROUP)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_DEBOND_CRITERIA_NOTE)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_CHECK_MAX_LENGTH_FRACTION)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_MAX_LENGTH_FRACTION)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_MAX_LENGTH_FRACTION_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_CHECK_MAX_LENGTH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_MAX_LENGTH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_MAX_LENGTH_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_MIN_DISTANCE_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_MIN_DISTANCE)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_MIN_DISTANCE_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_DEFAULT_DISTANCE_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_DEFAULT_DISTANCE)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_DEFAULT_DISTANCE_UNIT)->ShowWindow(SW_HIDE);
+
       // Design strategies don't apply to spliced girders.. Hide the UI elements
       GetDlgItem(IDC_DESIGN_STRATEGY_GROUP)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_DESIGN_STRATEGY_NOTE)->ShowWindow(SW_HIDE);

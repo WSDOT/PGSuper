@@ -118,9 +118,9 @@ CGirderGroupData& CGirderGroupData::operator=(const CGirderGroupData& rOther)
    return *this;
 }
 
-void CGirderGroupData::CopyGirderGroupData(const CGirderGroupData* pGroup)
+void CGirderGroupData::CopyGirderGroupData(const CGirderGroupData* pGroup,bool bCopyDataOnly)
 {
-   MakeCopy(*pGroup,true/*copy only data*/);
+   MakeCopy(*pGroup,bCopyDataOnly);
 }
 
 bool CGirderGroupData::operator==(const CGirderGroupData& rOther) const
@@ -236,6 +236,8 @@ void CGirderGroupData::SetPier(pgsTypes::MemberEndType end,CPierData2* pPier)
    {
       m_pPier[end]->SetGirderSpacing(pierFace,*pOldSpacing);
    }
+
+   m_pPier[end]->GetGirderSpacing(pierFace)->SetPier(pPier);
 
    // Update where the first/last segment starts/ends
    std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
@@ -1514,10 +1516,14 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
    for ( ; myGirderIter != myGirderIterEnd; myGirderIter++, otherGirderIter++ )
    {
       CSplicedGirderData* pMyGirder = *myGirderIter; // this is my girder... we are replacing it with a copy of the other girder
+      GirderIndexType myGirderIdx = INVALID_INDEX;
+      GirderIDType myGirderID = INVALID_ID;
       if ( pMyGirder )
       {
-         pMyGirder->SetGirderGroup(NULL); // this removes the girder from its group which removes it from the bridge. it does not alter the timeline events
+         myGirderIdx = pMyGirder->GetIndex();
+         myGirderID = pMyGirder->GetID();
          pMyGirder->Clear();
+         pMyGirder->SetGirderGroup(NULL); // this removes the girder from its group which removes it from the bridge. it does not alter the timeline events
          delete pMyGirder; // done with this girder
       }
       pMyGirder = NULL;
@@ -1529,6 +1535,8 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
       {
          // copies only the data
          pNewGirder->CopySplicedGirderData(pOtherGirder);
+         pNewGirder->SetIndex(myGirderIdx);
+         pNewGirder->SetID(myGirderID);
       }
       else
       {

@@ -30,6 +30,7 @@
 //
 #include "PGSuperAppPlugin\resource.h"
 #include "SameSlabOffsetHyperLink.h"
+#include "FilletHyperLink.h"
 #include <MFCTools\CacheEdit.h>
 
 class CSpanDetailsDlg;
@@ -64,6 +65,7 @@ public:
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_VIRTUAL
    afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
+   afx_msg LRESULT OnChangeFillet(WPARAM wParam,LPARAM lParam);
 
 // Implementation
 protected:
@@ -86,6 +88,14 @@ protected:
    pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
    void UpdateSlabOffsetHyperLinkText();
    void UpdateSlabOffsetWindowState();
+
+
+   CCacheEdit m_ctrlFillet;
+
+   CFilletHyperLink   m_FilletHyperLink;
+   pgsTypes::FilletType m_InitialFilletType;
+   void UpdateFilletHyperLinkText();
+   void UpdateFilletWindowState();
 
    void ShowCantilevers(BOOL bShowStart,BOOL bShowEnd);
 

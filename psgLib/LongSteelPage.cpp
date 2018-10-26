@@ -161,7 +161,7 @@ BOOL CLongSteelPage::OnNcActivate(BOOL bActive)
 
 void CLongSteelPage::OnHelp()
 {
-   EAFHelp(  AfxGetAppName(), IDH_GIRDER_LONGITUDINAL_REINFORCEMENT );
+   EAFHelp(  EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_LONGITUDINAL_REINFORCEMENT );
 }
 
 void CLongSteelPage::OnAppendRow() 

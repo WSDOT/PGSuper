@@ -226,12 +226,13 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
 
    if ( dlg.DoModal() == IDOK )
    {
-      pParent->m_BridgeDescription.SetTimelineManager(&dlg.m_TimelineMgr);
+      EventIndexType constructionEventIdx = dlg.m_TimelineMgr.GetSegmentConstructionEventIndex(dlg.m_SegmentID);
+      EventIndexType erectionEventIdx = dlg.m_TimelineMgr.GetSegmentErectionEventIndex(dlg.m_SegmentID);
 
 #pragma Reminder("UPDATE: Clean up handling of shear data")
-   // Shear data is kind of messy. It is the only data on the segment that we have to
-   // set on the dialog and then get it for the transaction. Updated the dialog
-   // so it works seamlessly for all cases
+      // Shear data is kind of messy. It is the only data on the segment that we have to
+      // set on the dialog and then get it for the transaction. Updated the dialog
+      // so it works seamlessly for all cases
       dlg.m_Girder.GetSegment(segIdx)->ShearData = dlg.m_StirrupsPage.m_ShearData;
 
       if ( dlg.m_bCopyToAll )
@@ -241,11 +242,23 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
          for ( SegmentIndexType idx = 0; idx < nSegments; idx++ )
          {
             pParent->m_pGirder->SetSegment(idx,*dlg.m_Girder.GetSegment(segIdx));
+
+            const CPrecastSegmentData* pSegment = pParent->m_pGirder->GetSegment(idx);
+            SegmentIDType segID = pSegment->GetID();
+            dlg.m_TimelineMgr.SetSegmentConstructionEventByIndex(segID,constructionEventIdx);
+            dlg.m_TimelineMgr.SetSegmentErectionEventByIndex(segID,erectionEventIdx);
          }
       }
       else
       {
          pParent->m_pGirder->SetSegment(segIdx,*dlg.m_Girder.GetSegment(segIdx));
+      }
+
+      pParent->m_BridgeDescription.SetTimelineManager(&dlg.m_TimelineMgr);
+
+      if ( dlg.WasEventCreated() )
+      {
+         pParentPage->EventCreated();
       }
 
       pParent->Invalidate();
@@ -263,7 +276,7 @@ void CGirderGrid::EditClosure(CollectionIndexType idx)
 
    if ( dlg.DoModal() == IDOK )
    {
-      pParent->m_BridgeDescription.SetTimelineManager(&dlg.m_TimelineMgr);
+      EventIndexType eventIdx = dlg.m_TimelineMgr.GetCastClosureJointEventIndex(dlg.m_ClosureID);
 
       if ( dlg.m_bCopyToAllClosureJoints )
       {
@@ -271,13 +284,24 @@ void CGirderGrid::EditClosure(CollectionIndexType idx)
          IndexType nCP = pParent->m_pGirder->GetClosureJointCount();
          for ( IndexType i = 0; i < nCP; i++ )
          {
-            pParent->m_pGirder->GetClosureJoint(i)->CopyClosureJointData(&dlg.m_ClosureJoint);
+            CClosureJointData* pCJ = pParent->m_pGirder->GetClosureJoint(i);
+            pCJ->CopyClosureJointData(&dlg.m_ClosureJoint);
+            IDType cjID = pCJ->GetID();
+            dlg.m_TimelineMgr.SetCastClosureJointEventByIndex(cjID,eventIdx);
          }
       }
       else
       {
          pParent->m_pGirder->GetClosureJoint(idx)->CopyClosureJointData(&dlg.m_ClosureJoint);
       }
+
+      pParent->m_BridgeDescription.SetTimelineManager(&dlg.m_TimelineMgr);
+
+      if ( dlg.WasEventCreated() )
+      {
+         pParentPage->EventCreated();
+      }
+
       pParent->Invalidate();
       pParent->UpdateWindow();
    }

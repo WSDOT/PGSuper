@@ -54,6 +54,8 @@ public:
 
    bool m_bCopyToAll; // if true, the data from this dialog is applied to all segments at this position in this group
 
+   bool WasEventCreated() { return m_GeneralPage.m_bWasEventCreated; }
+
 public:
 	virtual ~CGirderSegmentDlg();
 	virtual INT_PTR DoModal();

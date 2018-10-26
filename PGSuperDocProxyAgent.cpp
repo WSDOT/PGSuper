@@ -333,16 +333,8 @@ void CPGSuperDocProxyAgent::CreateBridgeModelView()
 
 void CPGSuperDocProxyAgent::CreateGirderView(const CGirderKey& girderKey)
 {
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
-   {
-      AfxMessageBox(_T("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details."),MB_OK);
-   }
-   else
-   {
-      GET_IFACE(IEAFViewRegistrar,pViewReg);
-      CView* pView = pViewReg->CreateView(m_GirderModelEditorViewKey,(void*)&girderKey);
-   }
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
+   CView* pView = pViewReg->CreateView(m_GirderModelEditorViewKey,(void*)&girderKey);
 }
 
 void CPGSuperDocProxyAgent::CreateLoadsView()
@@ -1002,15 +994,20 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_
       // skip all but one result hint - firing multiple result hints 
       // causes the UI to unnecessarilly update multiple times
       bool skip = false;
-      std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
-      std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
-      for ( ; iter != iterEnd; iter++ )
+      if ( MIN_RESULTS_HINT <= lHint && lHint <= MAX_RESULTS_HINT )
       {
-         UIEvent e = *iter;
-         if ( MIN_RESULTS_HINT <= e.lHint && e.lHint <= MAX_RESULTS_HINT )
+         // the current hint is in the range that indicates analysis results are going to be updated
+         std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
+         std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
+         for ( ; iter != iterEnd; iter++ )
          {
-            skip = true;
-            break; // a result hint is already queued 
+            UIEvent e = *iter;
+            if ( MIN_RESULTS_HINT <= e.lHint && e.lHint <= MAX_RESULTS_HINT )
+            {
+               // we already have a hint in that range
+               skip = true;
+               break;
+            }
          }
       }
 

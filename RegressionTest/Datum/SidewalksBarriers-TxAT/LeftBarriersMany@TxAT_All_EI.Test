@@ -1,24 +1,24 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.29    7   4.50                   1      1      IV      *    28   0.6  270  21.32  11.89                                               6  50.0  6.0  4.300  5.300   3.180    -2.993     5533   0.682  0.682   3.332 -0.559 -0.028 -0.187 -0.774 119.22  248.62    3.00    3.17    3.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.29    7   4.50                     1     1     IV      *     28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   3.180    -2.993     5533   0.682  0.682   3.332 -0.559 -0.028 -0.187 -0.774 119.22  248.62    3.00    3.17    3.17 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.29    7   4.50                   1      2      IV      *    28   0.6  270  21.32  11.89                                               6  50.0  6.0  4.300  5.300   2.873    -2.584     5068   0.488  0.559   3.332 -0.412 -0.030 -0.204 -0.646 119.22  258.58    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.29    7   4.50                     1     2     IV      *     28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   2.873    -2.584     5068   0.488  0.559   3.332 -0.412 -0.030 -0.204 -0.646 119.22  258.58    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.29    7   4.50                   1      4      IV      *    28   0.6  270  21.32  11.89                                               6  50.0  6.0  4.300  5.300   2.678    -2.250     4387   0.488  0.559   3.332 -0.412 -0.030  0.000 -0.442 119.22  278.36    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.29    7   4.50                     1     4     IV      *     28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   2.678    -2.250     4387   0.488  0.559   3.332 -0.412 -0.030  0.000 -0.442 119.22  278.36    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful

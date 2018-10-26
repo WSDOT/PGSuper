@@ -27,6 +27,7 @@
 #include "CastDeckDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 
 
@@ -34,11 +35,12 @@
 
 IMPLEMENT_DYNAMIC(CCastDeckDlg, CDialog)
 
-CCastDeckDlg::CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CCastDeckDlg::CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
 	: CDialog(CCastDeckDlg::IDD, pParent)
 {
    m_TimelineMgr = timelineMgr;
    m_EventIndex = eventIdx;
+   m_bReadOnly = bReadOnly;
 }
 
 CCastDeckDlg::~CCastDeckDlg()
@@ -80,7 +82,34 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CCastDeckDlg, CDialog)
+   ON_BN_CLICKED(ID_HELP, &CCastDeckDlg::OnHelp)
 END_MESSAGE_MAP()
+
+BOOL CCastDeckDlg::OnInitDialog()
+{
+   CDialog::OnInitDialog();
+
+   if ( m_bReadOnly )
+   {
+      GetDlgItem(IDC_AGE)->EnableWindow(FALSE);
+      GetDlgItem(IDC_AGE_UNIT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_CURING)->EnableWindow(FALSE);
+      GetDlgItem(IDC_CURING_UNIT)->EnableWindow(FALSE);
+
+      GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
+      SetDefID(IDCANCEL);
+   }
+
+   return TRUE;  // return TRUE unless you set the focus to a control
+   // EXCEPTION: OCX Property Pages should return FALSE
+}
 
 
 // CCastDeckDlg message handlers
+
+void CCastDeckDlg::OnHelp()
+{
+   // TODO: Add your control notification handler code here
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_CAST_DECK);
+}

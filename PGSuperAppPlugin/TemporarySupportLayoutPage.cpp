@@ -37,6 +37,8 @@
 
 #include <IFace\Project.h>
 
+#include <EAF\EAFDocument.h>
+
 // CTemporarySupportLayoutPage dialog
 
 IMPLEMENT_DYNAMIC(CTemporarySupportLayoutPage, CPropertyPage)
@@ -151,6 +153,7 @@ BEGIN_MESSAGE_MAP(CTemporarySupportLayoutPage, CPropertyPage)
    ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, &CTemporarySupportLayoutPage::OnErectionEventChanging)
    ON_CBN_SELCHANGE(IDC_REMOVAL_EVENT, &CTemporarySupportLayoutPage::OnRemovalEventChanged)
    ON_CBN_DROPDOWN(IDC_REMOVAL_EVENT, &CTemporarySupportLayoutPage::OnRemovalEventChanging)
+	ON_COMMAND(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -394,4 +397,9 @@ BOOL CTemporarySupportLayoutPage::OnSetActive()
    FillEventList();
 
    return CPropertyPage::OnSetActive();
+}
+
+void CTemporarySupportLayoutPage::OnHelp()
+{
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_TSDETAILS_GENERAL );
 }

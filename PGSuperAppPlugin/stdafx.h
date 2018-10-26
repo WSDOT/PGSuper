@@ -48,6 +48,7 @@
 #include <WBFLSections.h>
 #include <WBFLCogo.h>
 #include <WBFLGenericBridge.h>
+#include <WBFLSTL.h>
 
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderLabel.h>

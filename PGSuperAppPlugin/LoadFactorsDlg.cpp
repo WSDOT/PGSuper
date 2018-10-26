@@ -29,6 +29,7 @@
 #include <Lrfd\VersionMgr.h>
 
 #include <IFace\Project.h>
+#include <EAF\EAFDocument.h>
 
 // CLoadFactorsDlg dialog
 
@@ -143,6 +144,7 @@ void CLoadFactorsDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CLoadFactorsDlg, CDialog)
+   ON_BN_CLICKED(ID_HELP, &CLoadFactorsDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -255,4 +257,10 @@ BOOL CLoadFactorsDlg::OnInitDialog()
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CLoadFactorsDlg::OnHelp()
+{
+   // TODO: Add your control notification handler code here
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_LOAD_FACTORS);
 }

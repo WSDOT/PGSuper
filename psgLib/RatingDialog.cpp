@@ -46,7 +46,7 @@ CRatingDialog::CRatingDialog( RatingLibraryEntry& rentry,
                                    CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T("Load Rating Criteria"), pParentWnd, iSelectPage),
    m_Entry(rentry),
-   m_AllowEditing(allowEditing)
+   m_bAllowEditing(allowEditing)
 {
    m_LiveLoadFactorsPage1[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Design - Inventory"),pgsTypes::lrDesign_Inventory);
    m_LiveLoadFactorsPage1[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Design - Operating"),pgsTypes::lrDesign_Operating);
@@ -127,11 +127,14 @@ BOOL CRatingDialog::OnInitDialog()
    GetWindowText(head);
    head += _T(" - ");
    head += m_Entry.GetName().c_str();
-	if (!m_AllowEditing)
+	if (!m_bAllowEditing)
    {
-      CWnd* pbut = GetDlgItem(IDOK);
-      ASSERT(pbut);
-      pbut->EnableWindow(m_AllowEditing);
+      CWnd* pOK = GetDlgItem(IDOK);
+      pOK->ShowWindow(SW_HIDE);
+
+      CWnd* pCancel = GetDlgItem(IDCANCEL);
+      pCancel->SetWindowText(_T("Close"));
+
       head += _T(" (Read Only)");
    }
    SetWindowText(head);

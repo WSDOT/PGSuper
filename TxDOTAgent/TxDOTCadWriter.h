@@ -79,6 +79,7 @@ public:
    void WriteFloat64(Float64 val, LPCTSTR title, Int16 colWidth, Int16 nChars, LPCTSTR format);
    void WriteInt16(Int16 val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format);
    void WriteString(LPCTSTR val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format);
+   void WriteStringEx(LPCTSTR val, LPCTSTR title, Int16 lftPad, Int16 nchars, Int16 rhtPad, LPCTSTR format);
    void WriteBlankSpaces(Int16 ns);
    void WriteBlankSpacesNoTitle(Int16 ns);
    void WriteToFile(FILE* fp);
@@ -112,14 +113,16 @@ class TxDOTCadWriter : public TxDOTDebondTool
 {
 public:
 
-   TxDOTCadWriter(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry):
-   TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry)
+   TxDOTCadWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, IStrandGeometry* pStrandGeometry):
+   TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry), 
+   m_isUBeam(isUBeam)
    {;}
 
    void WriteInitialData(CadWriterWorkerBee& workerBee);
-   void WriteFinalData(FILE *fp, bool isExtended, bool isIBeam);
+   void WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int16 extraSpacesForSlabOffset);
 
 private:
    void WriteRowData(CadWriterWorkerBee& workerBee, const RowData& row,Float64 Hg) const;
+   bool m_isUBeam;
 };
 

@@ -54,7 +54,7 @@ public:
 
 public:
    // custom stuff for grid
-   void CustomInit();
+   void CustomInit(BOOL bReadOnly);
    void Refresh();
    void RemoveEvents();
 
@@ -63,6 +63,7 @@ protected:
 	//{{AFX_MSG(CTimelineGrid)
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
+   BOOL m_bReadOnly;
 
    void AddEvent(const CTimelineEvent* pTimelineEvent,const CTimelineEvent* pNextTimelineEvent);
    

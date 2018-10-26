@@ -70,18 +70,18 @@ void CKDOTExportAppPlugin::OnHelp()
 BOOL CKDOTExportAppPlugin::InitInstance()
 {
    // To get grids working
-   ::GXInit();
+   GXInit();
 
-    _Module.Init(ObjectMap, m_hInstance, &LIBID_KDOTExport);
+   _Module.Init(ObjectMap, m_hInstance, &LIBID_KDOTExport);
 
-    return CWinApp::InitInstance();
+   return CWinApp::InitInstance();
 }
 
 int CKDOTExportAppPlugin::ExitInstance()
 {
-   ::GXTerminate();
-    _Module.Term();
-    return CWinApp::ExitInstance();
+   GXForceTerminate();
+   _Module.Term();
+   return CWinApp::ExitInstance();
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -24,6 +24,7 @@
 #include "stdafx.h"
 #include "GraphingAgent_i.h"
 #include "PGSpliceGrapherImp.h"
+#include <Graphing\DeflectionHistoryGraphBuilder.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,6 +46,10 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CPGSpliceGrapherImp::InitGraphBuilders()
 {
    CGrapherBase::InitCommonGraphBuilders();
+
+   GET_IFACE(IGraphManager,pGraphMgr);
+   pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
+
    return S_OK;
 }
 
@@ -71,12 +76,12 @@ STDMETHODIMP CPGSpliceGrapherImp::Init()
    /* Gets done at project load time */
    EAF_AGENT_INIT;
 
-   return InitGraphBuilders();
+   return AGENT_S_SECONDPASSINIT;
 }
 
 STDMETHODIMP CPGSpliceGrapherImp::Init2()
 {
-   return S_OK;
+   return InitGraphBuilders();
 }
 
 STDMETHODIMP CPGSpliceGrapherImp::GetClassID(CLSID* pCLSID)
@@ -95,5 +100,6 @@ STDMETHODIMP CPGSpliceGrapherImp::Reset()
 STDMETHODIMP CPGSpliceGrapherImp::ShutDown()
 {
    EAF_AGENT_CLEAR_INTERFACE_CACHE;
+
    return S_OK;
 }

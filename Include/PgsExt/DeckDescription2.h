@@ -60,6 +60,8 @@ LOG
 
 class PGSEXTCLASS CDeckDescription2
 {
+   friend CBridgeDescription2;
+
 public:
    CDeckDescription2();
    CDeckDescription2(const CDeckDescription2& rOther); // copies only data, not ID or Index
@@ -81,7 +83,6 @@ public:
    Float64 GrossDepth; // Cast Depth if SIP
    pgsTypes::DeckOverhangTaper OverhangTaper;
    Float64 OverhangEdgeDepth; // depth of overhang at edge of slab
-   Float64 Fillet;
    pgsTypes::HaunchShapeType HaunchShape; // square or filleted haunch
    Float64 PanelDepth; // depth of SIP panel
    Float64 PanelSupport; // Width of SIP panel support (deduct this from roughened surface width
@@ -116,4 +117,7 @@ protected:
    virtual void MakeAssignment(const CDeckDescription2& rOther);
 
    const CBridgeDescription2* m_pBridgeDesc;
+
+private:
+   Float64 m_LegacyFillet;
 };

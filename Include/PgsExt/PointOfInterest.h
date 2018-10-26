@@ -282,6 +282,13 @@ public:
    // returns true if the girder path coordinate has been set
    bool HasGirderPathCoordinate() const;
 
+   // Set/Get the span location of this poi
+   void SetSpanPoint(SpanIndexType spanIdx,Float64 Xspan);
+   void GetSpanPoint(SpanIndexType* pSpanIdx,Float64* pXspan) const;
+
+   // returns true if the span key has been set
+   bool HasSpanPoint() const;
+
    //------------------------------------------------------------------------
    // Removes all attributes from this POI
    void ClearAttributes();
@@ -392,6 +399,10 @@ protected:
 
    bool m_bHasGirderPathCoordinate; // tracks if m_Xgp has been set
    Float64 m_Xgp; // location of this POI in girder path coordinates (X=0 is the CL Pier TS at the start of the first segment in the girder)
+
+   bool m_bHasSpanPoint;
+   SpanIndexType m_SpanIdx;
+   Float64 m_Xspan;
 
    bool m_bCanMerge;
 

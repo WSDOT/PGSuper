@@ -114,6 +114,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    //
 
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
+   boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( new CMultiGirderReportSpecificationBuilder(m_pBroker) );
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
 
@@ -123,7 +124,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false,false)) );
-   pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasIBNSChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
@@ -583,7 +584,8 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
    {
       // file names
       CString resultsfile, poifile, errfile;
-      if (create_test_file_names(txInfo.m_strFileName,&resultsfile,&poifile,&errfile))
+      CString strExt(_T(".pgs"));
+      if (create_test_file_names(strExt,txInfo.m_strFileName,&resultsfile,&poifile,&errfile))
       {
          GET_IFACE(ITest1250, ptst );
 

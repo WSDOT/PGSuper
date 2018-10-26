@@ -99,8 +99,7 @@ protected:
    void UpdateConcreteParametersToolTip();
    
    void UpdateSlabOffsetControls();
-
-   void UIHint(const CString& strText,UINT mask);
+   void UpdateFilletControls();
 
    CString m_strTip;
    CBridgeDescDeckPointGrid m_Grid;
@@ -108,6 +107,10 @@ protected:
    Float64 m_SlabOffset;
    pgsTypes::SlabOffsetType m_SlabOffsetType;
    CString m_strSlabOffsetCache;
+
+   Float64 m_Fillet;
+   pgsTypes::FilletType m_FilletType;
+   CString m_strFilletCache;
 
    int m_PrevDeckEventIdx;
    int m_PrevOverlayEventIdx;
@@ -126,6 +129,7 @@ public:
    afx_msg void OnBnClickedEditHaunchButton();
    afx_msg void OnCbnSelchangeSameslaboffset();
    afx_msg void OnCbnSelchangeHaunchShape2();
+   afx_msg void OnCbnSelchangeFilletType();
 };
 
 //{{AFX_INSERT_LOCATION}}

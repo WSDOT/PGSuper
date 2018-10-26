@@ -45,6 +45,8 @@ public:
    // IEditClosureJointData
    virtual const CClosureKey& GetClosureKey() { return m_ClosureKey; }
 
+   bool m_bEditingInGirder;
+
    const CBridgeDescription2* m_pBridgeDesc;
    CTimelineManager m_TimelineMgr;
    CClosureJointData m_ClosureJoint; // does not have association with temporary support, segments, or spliced girder
@@ -62,6 +64,8 @@ public:
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
    txnTransaction* GetExtensionPageTransaction();
+
+   bool WasEventCreated() { return m_General.m_bWasEventCreated; }
 
 protected:
 	DECLARE_MESSAGE_MAP()
