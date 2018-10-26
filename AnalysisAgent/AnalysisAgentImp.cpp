@@ -10581,7 +10581,7 @@ Float64 CAnalysisAgentImp::GetSidlDeflection(const pgsPointOfInterest& poi,const
    }
    else
    {
-      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screen camber
+      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screed camber
       if ( deckType == pgsTypes::sdtCompositeSIP )
          delta_diaphragm = 0;
 
@@ -10720,7 +10720,7 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
    }
    else
    {
-      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screen camber
+      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screed camber
       if ( deckType == pgsTypes::sdtCompositeSIP )
       {
          Ddiaphragm = 0;

@@ -16203,8 +16203,12 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
          if ( (bTopMat    && (nmRebarData.Mat == CDeckRebarData::TopMat)) ||
               (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat)) )
          {
-            if ( ( nmRebarData.PierIdx == prev_pier && IsLE(dist_from_cl_prev_pier,nmRebarData.RightCutoff) ) ||
-                 ( nmRebarData.PierIdx == next_pier && IsLE(dist_to_cl_next_pier,  nmRebarData.LeftCutoff)  ) )
+            bool bAddRebarForPrevPier = ( nmRebarData.PierIdx == prev_pier && IsLE(dist_from_cl_prev_pier,nmRebarData.RightCutoff) );
+            bool bAddRebarForNextPier = ( nmRebarData.PierIdx == next_pier && IsLE(dist_to_cl_next_pier,  nmRebarData.LeftCutoff ) );
+            pgsTypes::PierConnectionType connectionType = pBridgeDesc->GetPier(nmRebarData.PierIdx)->GetConnectionType();
+            bool bIsContinuous = !(connectionType == pgsTypes::Hinged || connectionType == pgsTypes::Roller);
+            
+            if ( (bAddRebarForPrevPier || bAddRebarForNextPier) && bIsContinuous )
             {
                if ( nmRebarData.RebarSize != matRebar::bsNone )
                {

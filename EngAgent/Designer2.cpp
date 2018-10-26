@@ -417,8 +417,17 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
          // slope of the line connecting the two exterior mating surfaces
          ATLASSERT( 2 <= nMatingSurfaces );
 
+         // this is at CL mating surface... we need out to out
          Float64 left_mating_surface_offset  = pGdr->GetMatingSurfaceLocation(poi,0);
          Float64 right_mating_surface_offset = pGdr->GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
+
+         // width of mating surface
+         Float64 left_mating_surface_width  = pGdr->GetMatingSurfaceWidth(poi,0);
+         Float64 right_mating_surface_width = pGdr->GetMatingSurfaceWidth(poi,nMatingSurfaces-1);
+
+         // add half the width to get the offset to the outside edge of the top of the section
+         left_mating_surface_offset  += ::BinarySign(left_mating_surface_offset) * left_mating_surface_width/2;
+         right_mating_surface_offset += ::BinarySign(right_mating_surface_offset)* right_mating_surface_width/2;
 
          Float64 ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
          Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);

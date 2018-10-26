@@ -303,32 +303,16 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
 
       if ( 1 < nGirders )
       {
-         // get girder spacing data
-         CComPtr<IGirderSpacing> startSpacing;
-         span->get_GirderSpacing(etStart,&startSpacing);
+         // get span length
+         Float64 L = pBridge->GetSpanLength(spanIdx,gdrIdx);
 
-         CComPtr<IGirderSpacing> endSpacing;
-         span->get_GirderSpacing(etEnd,&endSpacing);
-
-         Float64 S1 = 0;
-         Float64 S2 = 0;
-         for ( SpacingIndexType spaceIdx = 0; spaceIdx < nGirders-1; spaceIdx++ )
-         {
-            Float64 s;
-
-            // spacing at start pier
-            startSpacing->get_GirderSpacing(spaceIdx,mlCenterlinePier,mtNormal,&s);
-            S1 = _cpp_max(s,S1);
-
-            // spacing at end pier
-            endSpacing->get_GirderSpacing(spaceIdx,mlCenterlinePier,mtNormal,&s);
-            S2 = _cpp_max(s,S2);
-         }
+         // Girder spacing normal to the CL girder is the tributary width
+         Float64 S1,S2;
+         TributaryFlangeWidth(bridge,spanIdx,gdrIdx,0.0,&S1);
+         TributaryFlangeWidth(bridge,spanIdx,gdrIdx,  L,&S2);
 
          Float64 S = _cpp_max(S1,S2);
 
-         // get span length
-         Float64 L = pBridge->GetSpanLength(spanIdx,gdrIdx);
          if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && L/S < 2.0 )
          {
             //  ratio of span length to girder spacing is out of range
@@ -356,11 +340,11 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
             {
                bOverhangCheckFailed = true;
                // force tributary area to be S/2
-               if ( IsGE(S/2,left_overhang) )
-                  twLeft = S/2;
+               if ( gdrIdx == 0 && IsGE(S/2,left_overhang) )
+                  twLeft = twRight;
 
-               if ( IsGE(S/2,right_overhang) )
-                  twRight = S/2;
+               if ( gdrIdx == nGirders-1 && IsGE(S/2,right_overhang) )
+                  twRight = twLeft;
 
                // overhang is too big
                std::_tostringstream os;

@@ -1023,7 +1023,7 @@ std::_tstring CUBeamDistFactorEngineer::GetComputationDescription(SpanIndexType 
 
    if ( lldfMethod == LLDF_WSDOT )
    {
-      descr += std::_tstring(_T("WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999"));
+      descr += std::_tstring(_T("WSDOT Method per Bridge Design Manual Section 3.9.4"));
    }
    else if ( lldfMethod == LLDF_TXDOT )
    {

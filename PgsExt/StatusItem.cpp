@@ -455,8 +455,6 @@ CEAFStatusItem(statusGroupID,callbackID,strDescription)
 bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    // we only want one of these in the status center
-   SetID(INVALID_ID);
-
    pgsEffectiveFlangeWidthStatusItem* other = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pOther);
    if ( !other )
       return false;
