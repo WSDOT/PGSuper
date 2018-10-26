@@ -3,11 +3,9 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin.h"
+
 #include "GirderSegmentGeneralPage.h"
 #include "GirderSegmentDlg.h"
-
-#include <PgsExt\BridgeDescription2.h>
-
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
@@ -73,11 +71,7 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
-   DDX_CBItemData(pDX,IDC_CONSTRUCTION_EVENT,pParent->m_ConstructionEventIdx);
-   DDX_CBItemData(pDX,IDC_ERECTION_EVENT,pParent->m_ErectionEventIdx);
 
    pgsTypes::SegmentVariationType variationType;
    Float64 VariationLength[4];
@@ -213,20 +207,25 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
 
-#pragma Reminder("REVIEW: should the time mgr be coming from the parent propery sheet dialog?")
-   // I think so!
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-   EventIndexType eventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(pParent->m_SegmentID);
-   m_AgeAtRelease = pTimelineMgr->GetEventByIndex(eventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+   EventIndexType constructionEventIdx = pParent->m_TimelineMgr.GetSegmentConstructionEventIndex(pParent->m_SegmentID);
+   m_AgeAtRelease = pParent->m_TimelineMgr.GetEventByIndex(constructionEventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+
+   EventIndexType erectionEventIdx = pParent->m_TimelineMgr.GetSegmentErectionEventIndex(pParent->m_SegmentID);
+
+   // initialize the event combo boxes
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_CONSTRUCTION_EVENT,constructionEventIdx);
+   DDX_CBItemData(&dx,IDC_ERECTION_EVENT,erectionEventIdx);
 
    if ( m_strUserEc == _T("") )
+   {
       m_ctrlEc.GetWindowText(m_strUserEc);
+   }
 	
    if ( m_strUserEci == _T("") )
+   {
       m_ctrlEci.GetWindowText(m_strUserEci);
+   }
 
    OnUserEci();
    OnUserEc();
@@ -251,10 +250,14 @@ void CGirderSegmentGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 
    int value;
    if ( !pDX->m_bSaveAndValidate )
+   {
       value = pSegment->Material.Concrete.bBasePropertiesOnInitialValues ? 0 : 1;
+   }
    DDX_Radio(pDX,IDC_FC1,value);
    if ( pDX->m_bSaveAndValidate )
+   {
       pSegment->Material.Concrete.bBasePropertiesOnInitialValues = (value == 0 ? true : false);
+   }
 
    DDX_UnitValueAndTag( pDX, IDC_FCI,  IDC_FCI_UNIT,   pSegment->Material.Concrete.Fci , pDisplayUnits->GetStressUnit() );
    DDV_UnitValueGreaterThanZero( pDX, IDC_FCI,pSegment->Material.Concrete.Fci, pDisplayUnits->GetStressUnit() );
@@ -380,13 +383,17 @@ void CGirderSegmentGeneralPage::OnChangeGirderFc()
 void CGirderSegmentGeneralPage::OnChangeEc()
 {
    if (m_ctrlEcCheck.GetCheck() == TRUE) // checked
+   {
       UpdateEci();
+   }
 }
 
 void CGirderSegmentGeneralPage::OnChangeEci()
 {
    if (m_ctrlEciCheck.GetCheck() == TRUE) // checked
+   {
       UpdateEc();
+   }
 }
 
 void CGirderSegmentGeneralPage::UpdateEci()
@@ -556,7 +563,7 @@ void CGirderSegmentGeneralPage::UpdateFc()
    if ( i == IDC_FC1 )
    {
       // concrete model is based on f'ci... compute f'c
-#pragma Reminder("UPDATE: assuming ACI209 concrete model")
+#pragma Reminder("UPDATE: assuming ACI209 concrete model") // OK for LRFD and ACI209, review for CEB-FIP
       // Get f'ci from edit control
       CString strFci;
       m_ctrlFci.GetWindowText(strFci);
@@ -585,7 +592,7 @@ void CGirderSegmentGeneralPage::UpdateFci()
    if ( i == IDC_FC2 )
    {
       // concrete model is based on f'ci... compute f'c
-#pragma Reminder("UPDATE: assuming ACI209 concrete model")
+#pragma Reminder("UPDATE: assuming ACI209 concrete model") // OK for LRFD and ACI209, review for CEB-FIP
       // Get f'c from edit control
       CString strFc;
       m_ctrlFc.GetWindowText(strFc);
@@ -785,8 +792,6 @@ void CGirderSegmentGeneralPage::UpdateConcreteParametersToolTip()
    const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
 
-#pragma Reminder("UPDATE: add ACI and CEB-FIP parameters to the tooltip text")
-
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
       _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pSegment->Material.Concrete.Type,true).c_str(),
@@ -794,16 +799,6 @@ void CGirderSegmentGeneralPage::UpdateConcreteParametersToolTip()
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pSegment->Material.Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pSegment->Material.Concrete.MaxAggregateSize,aggsize)
       );
-
-   //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-   //{
-   //   // add K1 parameter
-   //   CString strK1;
-   //   strK1.Format(_T("\r\n%-20s %s"),
-   //      _T("K1"),FormatScalar(pParent->m_GirderData.Material.K1,scalar));
-
-   //   strTip += strK1;
-   //}
 
    if ( pSegment->Material.Concrete.Type != pgsTypes::Normal && pSegment->Material.Concrete.bHasFct )
    {
@@ -938,11 +933,15 @@ void CGirderSegmentGeneralPage::UpdateSegmentVariationParameters(pgsTypes::Segme
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
    BOOL bStartDepthFixed = FALSE;
    if ( pSegment->GetPrevSegment() && pSegment->GetPrevSegment()->GetVariationType() == pgsTypes::svtNone )
+   {
       bStartDepthFixed = TRUE;
+   }
 
    BOOL bEndDepthFixed = FALSE;
    if ( pSegment->GetNextSegment() && pSegment->GetNextSegment()->GetVariationType() == pgsTypes::svtNone )
+   {
       bEndDepthFixed = TRUE;
+   }
 
    GetDlgItem(IDC_BOTTOM_FLANGE_DEPTH)->EnableWindow(variationType == pgsTypes::svtNone ? FALSE : TRUE);
 
@@ -1089,7 +1088,9 @@ Float64 CGirderSegmentGeneralPage::GetValue(UINT nIDC,const unitmgtLengthData& l
    pWnd->GetWindowText(szBuffer,TEXT_BUFFER_SIZE);
    Float64 d;
    if ( _sntscanf_s(szBuffer,_countof(szBuffer),_T("%lf"), &d) != 1 )
+   {
       return 0;
+   }
    
    d = ::ConvertToSysUnits(d,lengthUnit.UnitOfMeasure );
    return d;
@@ -1180,16 +1181,11 @@ void CGirderSegmentGeneralPage::FillEventList()
    pcbConstruct->ResetContent();
    pcbErect->ResetContent();
 
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+   EventIndexType nEvents = pParent->m_TimelineMgr.GetEventCount();
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
    {
-      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+      const CTimelineEvent* pTimelineEvent = pParent->m_TimelineMgr.GetEventByIndex(eventIdx);
 
       CString label;
       label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
@@ -1203,10 +1199,22 @@ void CGirderSegmentGeneralPage::FillEventList()
    pcbErect->SetItemData(pcbErect->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
    if ( constructIdx != CB_ERR )
+   {
       pcbConstruct->SetCurSel(constructIdx);
+   }
+   else
+   {
+      pcbConstruct->SetCurSel(0);
+   }
 
    if ( erectIdx != CB_ERR )
+   {
       pcbErect->SetCurSel(erectIdx);
+   }
+   else
+   {
+      pcbErect->SetCurSel(0);
+   }
 }
 
 void CGirderSegmentGeneralPage::OnConstructionEventChanging()
@@ -1217,39 +1225,27 @@ void CGirderSegmentGeneralPage::OnConstructionEventChanging()
 
 void CGirderSegmentGeneralPage::OnConstructionEventChanged()
 {
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CONSTRUCTION_EVENT);
    int curSel = pCB->GetCurSel();
-   EventIndexType idx = (IndexType)pCB->GetItemData(curSel);
-   if ( idx == CREATE_TIMELINE_EVENT )
+   EventIndexType eventIdx = (IndexType)pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
-      EventIndexType eventIdx = CreateEvent();
-
-      if ( eventIdx != INVALID_INDEX )
+      eventIdx = CreateEvent();
+      if ( eventIdx == INVALID_INDEX )
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-         const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-#pragma Reminder("UPDATE")
-         // need to disable segment construction in prev event
-         // and then enable it in the event that has been selected
-         //CTimelineEvent* pTimelineEvent
-         CTimelineEvent timelineEvent = *pTimelineMgr->GetEventByIndex(eventIdx);
-         timelineEvent.GetConstructSegmentsActivity().Enable(true);
-         // also need to updated m_AgeAtRelease and the concrete model
-         // for the new construct segment activity parameters
-
-         FillEventList();
-
-         pCB->SetCurSel((int)eventIdx);
+         pCB->SetCurSel(m_PrevConstructionEventIdx);
+         return;
       }
       else
       {
-         pCB->SetCurSel(m_PrevConstructionEventIdx);
+         FillEventList();
       }
    }
+
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+   pParent->m_TimelineMgr.SetSegmentConstructionEventByIndex(pParent->m_SegmentID,eventIdx);
+
+   pCB->SetCurSel((int)eventIdx);
 }
    
 void CGirderSegmentGeneralPage::OnErectionEventChanging()
@@ -1260,48 +1256,38 @@ void CGirderSegmentGeneralPage::OnErectionEventChanging()
 
 void CGirderSegmentGeneralPage::OnErectionEventChanged()
 {
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
    int curSel = pCB->GetCurSel();
-   EventIndexType idx = (IndexType)pCB->GetItemData(curSel);
-   if ( idx == CREATE_TIMELINE_EVENT )
+   EventIndexType eventIdx = (IndexType)pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
-      EventIndexType eventIdx = CreateEvent();
-
-      if (eventIdx != INVALID_INDEX )
+      eventIdx = CreateEvent();
+      if ( eventIdx == INVALID_INDEX )
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-         const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-         CTimelineEvent timelineEvent = *pTimelineMgr->GetEventByIndex(eventIdx);
-         timelineEvent.GetErectSegmentsActivity().Enable(true);
-
-         timelineEvent.GetErectSegmentsActivity().AddSegment( GetSegmentID() );
-         pIBridgeDesc->SetEventByIndex(eventIdx,timelineEvent);
-
-         FillEventList();
-
-         pCB->SetCurSel((int)eventIdx);
+         pCB->SetCurSel(m_PrevErectionEventIdx);
+         return;
       }
       else
       {
-         pCB->SetCurSel(m_PrevErectionEventIdx);
+         FillEventList();
       }
    }
+
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+   pParent->m_TimelineMgr.SetSegmentErectionEventByIndex(pParent->m_SegmentID,eventIdx);
+
+   pCB->SetCurSel((int)eventIdx);
 }
 
 EventIndexType CGirderSegmentGeneralPage::CreateEvent()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+   CTimelineEventDlg dlg(pParent->m_TimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+      EventIndexType eventIdx;
+      pParent->m_TimelineMgr.AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
+      return eventIdx;
   }
 
    return INVALID_INDEX;
@@ -1418,11 +1404,15 @@ void CGirderSegmentGeneralPage::OnBnClickedBottomFlangeDepth()
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
    BOOL bStartDepthFixed = FALSE;
    if ( pSegment->GetPrevSegment() && pSegment->GetPrevSegment()->GetVariationType() == pgsTypes::svtNone )
+   {
       bStartDepthFixed = TRUE;
+   }
 
    BOOL bEndDepthFixed = FALSE;
    if ( pSegment->GetNextSegment() && pSegment->GetNextSegment()->GetVariationType() == pgsTypes::svtNone )
+   {
       bEndDepthFixed = TRUE;
+   }
 
    m_ctrlBottomFlangeDepth[pgsTypes::sztLeftPrismatic].EnableWindow(bStartDepthFixed ? FALSE : bEnable[pgsTypes::sztLeftPrismatic]);
    GetDlgItem( IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT  )->EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::sztLeftPrismatic]);

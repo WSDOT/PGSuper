@@ -221,14 +221,15 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
+   CString fciTag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
+   CString fcTag  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )")  : _T("sqrt( f'c (KSI) )"));
 
    // Allowable concrete stress at prestress release
 	DDX_Text(pDX, IDC_RELEASE_COMPRESSION, m_Entry.m_CyCompStressServ);
    DDV_GreaterThanZero(pDX, IDC_RELEASE_COMPRESSION, m_Entry.m_CyCompStressServ);
 
    DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION, IDC_RELEASE_TENSION_UNIT, m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_RELEASE_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_RELEASE_TENSION_UNIT,fciTag);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_UNIT,m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure);
    DDX_Check_Bool(pDX, IDC_CHECK_RELEASE_TENSION_MAX, m_Entry.m_CyDoTensStressServMax);
    DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_MAX, IDC_RELEASE_TENSION_MAX_UNIT, m_Entry.m_CyTensStressServMax, pDisplayUnits->Stress );
@@ -238,7 +239,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_WITH_REBAR, IDC_SERVICE_TENSION_UNIT, m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure);
-   DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,tag);
+   DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,fciTag);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR,m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure );
 
    if (pDX->m_bSaveAndValidate && m_Entry.m_CyTensStressServWithRebar < m_Entry.m_CyTensStressServ)
@@ -252,7 +253,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_TS_REMOVAL_COMPRESSION, m_Entry.m_TempStrandRemovalCompStress);
 
    DDX_UnitValueAndTag(pDX, IDC_TS_REMOVAL_TENSION, IDC_TS_REMOVAL_TENSION_UNIT, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_TS_REMOVAL_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_TS_REMOVAL_TENSION_UNIT,fcTag);
    DDV_UnitValueZeroOrMore(pDX,IDC_TS_REMOVAL_TENSION, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_TS_REMOVAL_TENSION_MAX, m_Entry.m_TempStrandRemovalDoTensStressMax);
    DDX_UnitValueAndTag(pDX, IDC_TS_REMOVAL_TENSION_MAX, IDC_TS_REMOVAL_TENSION_MAX_UNIT, m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
@@ -267,7 +268,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_AFTER_DECK_COMPRESSION, m_Entry.m_Bs1CompStress);
 
    DDX_UnitValueAndTag(pDX, IDC_AFTER_DECK_TENSION, IDC_AFTER_DECK_TENSION_UNIT, m_Entry.m_Bs1TensStress, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_AFTER_DECK_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_AFTER_DECK_TENSION_UNIT,fcTag);
    DDV_UnitValueZeroOrMore(pDX, IDC_AFTER_DECK_TENSION,m_Entry.m_Bs1TensStress, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_AFTER_DECK_TENSION_MAX, m_Entry.m_Bs1DoTensStressMax);
    DDX_UnitValueAndTag(pDX, IDC_AFTER_DECK_TENSION_MAX, IDC_AFTER_DECK_TENSION_MAX_UNIT, m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
@@ -284,7 +285,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_Bs3CompStressServ);
 
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_TENSION, IDC_SERVICE_TENSION_UNIT, m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SERVICE_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_SERVICE_TENSION_UNIT,fcTag);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_TENSION,m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_TENSION_MAX, m_Entry.m_Bs3DoTensStressServNcMax);
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_TENSION_MAX, IDC_SERVICE_TENSION_MAX_UNIT, m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
@@ -294,7 +295,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_TENSION, IDC_SEVERE_SERVICE_TENSION_UNIT, m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SEVERE_SERVICE_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_SEVERE_SERVICE_TENSION_UNIT,fcTag);
    DDV_UnitValueZeroOrMore(pDX, IDC_SEVERE_SERVICE_TENSION,m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_SEVERE_SERVICE_TENSION_MAX, m_Entry.m_Bs3DoTensStressServScMax);
    DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_TENSION_MAX, IDC_SEVERE_SERVICE_TENSION_MAX_UNIT, m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
@@ -723,6 +724,8 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
 
    int map_size = sizeof(map)/sizeof(int);
 
+   DDX_CBEnum(pDX,IDC_TIME_DEPENDENT_MODEL,m_Entry.m_TimeDependentModel);
+
    if ( pDX->m_bSaveAndValidate )
    {
       // data is coming out of the dialog
@@ -807,10 +810,6 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
          idx = 0;
          DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,idx);
       }
-
-#pragma Reminder("UPDATE: DDX for time dependent model type")
-      CComboBox* pCB = (CComboBox*)pDX->m_pDlgWnd->GetDlgItem(IDC_TIME_DEPENDENT_MODEL);
-      pCB->SetCurSel(0); // select the one and only option (more options coming soon)
    }
 }
 

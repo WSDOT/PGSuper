@@ -218,7 +218,7 @@ void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      Float64 E = pMaterial->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx);
+      Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
       Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
       StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);
@@ -229,7 +229,7 @@ void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
       if ( bHasClosure[etStart] )
       {
          CClosureKey closureKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
-         E = pMaterial->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
+         E = pMaterial->GetClosureJointEc(closureKey,intervalIdx);
          D = pMaterial->GetSegmentWeightDensity(closureKey,intervalIdx);
          closureMaterial[etStart]->put_E(stageIdx,E);
          closureMaterial[etStart]->put_Density(stageIdx,D);
@@ -238,7 +238,7 @@ void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
       if ( bHasClosure[etEnd] )
       {
          CClosureKey closureKey(segmentKey);
-         E = pMaterial->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
+         E = pMaterial->GetClosureJointEc(closureKey,intervalIdx);
          D = pMaterial->GetSegmentWeightDensity(closureKey,intervalIdx);
          closureMaterial[etEnd]->put_E(stageIdx,E);
          closureMaterial[etEnd]->put_Density(stageIdx,D);

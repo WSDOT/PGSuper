@@ -3126,6 +3126,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TimelineItemListBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TimelineManager.cpp"
 				>
 			</File>
@@ -3540,6 +3544,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\TimelineEvent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\TimelineItemListBox.h"
 				>
 			</File>
 			<File

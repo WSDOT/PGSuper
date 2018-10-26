@@ -140,8 +140,8 @@ public:
    void SetSlabOffset(Float64 slabOffset);
    Float64 GetSlabOffset() const;
 
-   // returns the greatest slab offset defined for the bridge
-   Float64 GetMaxSlabOffset() const;
+   // returns the least slab offset defined for the bridge
+   Float64 GetMinSlabOffset() const;
 
    bool SetSpanLength(SpanIndexType spanIdx,Float64 newLength);
    bool MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);

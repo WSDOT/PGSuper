@@ -100,12 +100,12 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject*
 
    pThis->m_pCutLocation = pCutLoc;
 
-   Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
+   Float64 Xgl = pThis->m_pCutLocation->GetCurrentCutLocation();
 
    CComPtr<IPoint2d> pnt;
    pnt.CoCreateInstance(CLSID_Point2d);
-   pnt->put_X(pos);
-   pnt->put_Y( 0.0 );
+   pnt->put_X(Xgl);
+   pnt->put_Y(0.0);
    pDO->SetPosition(pnt, FALSE, FALSE);
 }
 
@@ -117,10 +117,10 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::SetColor(COLORREF color)
 }
 
 
-STDMETHODIMP_(pgsPointOfInterest) CSectionCutDisplayImpl::XStrategy::GetCutPOI(Float64 distFromStartOfGirder)
+STDMETHODIMP_(pgsPointOfInterest) CSectionCutDisplayImpl::XStrategy::GetCutPOI(Float64 Xgl)
 {
    METHOD_PROLOGUE(CSectionCutDisplayImpl,Strategy);
-   return pThis->GetCutPOI(distFromStartOfGirder);
+   return pThis->GetCutPOI(Xgl);
 }
 
 STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
@@ -136,9 +136,13 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::Draw(iPointDispl
    COLORREF color;
 
    if ( pDO->IsSelected() )
+   {
       color = pDispMgr->GetSelectionLineColor();
+   }
    else
+   {
       color = pThis->m_Color;
+   }
 
    CComPtr<IPoint2d> pos;
    pDO->GetPosition(&pos);
@@ -172,11 +176,11 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::GetBoundingBox(i
    CComPtr<IPoint2d> pnt;
    pDO->GetPosition(&pnt);
    
-   Float64 xpos;
-   pnt->get_X(&xpos);
+   Float64 Xgl;
+   pnt->get_X(&Xgl);
 
    Float64 top, left, right, bottom;
-   pThis->GetBoundingBox(pDO, xpos, &top, &left, &right, &bottom);
+   pThis->GetBoundingBox(pDO, Xgl, &top, &left, &right, &bottom);
 
 
    CComPtr<IRect2d> bounding_box;
@@ -191,7 +195,7 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::GetBoundingBox(i
    (*rect)->AddRef();
 }
 
-void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 position, 
+void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 Xgl, 
                                             Float64* top, Float64* left, Float64* right, Float64* bottom)
 {
    CComPtr<iDisplayList> pDL;
@@ -211,19 +215,19 @@ void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 po
    Float64 height = y2-yo;
 
    *top    = height;
-   *bottom = -(GetGirderHeight(position) + height);
-   *left   = position;
+   *bottom = -(GetGirderHeight(Xgl) + height);
+   *left   = Xgl;
    *right  = *left + width;
 }
 
 void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* userLoc)
 {
-   Float64 x;
-   userLoc->get_X(&x);
-   x = ::ForceIntoRange(m_MinCutLocation,x,m_MaxCutLocation);
+   Float64 Xgl;
+   userLoc->get_X(&Xgl);
+   Xgl= ::ForceIntoRange(m_MinCutLocation,Xgl,m_MaxCutLocation);
 
    Float64 wtop, wleft, wright, wbottom;
-   GetBoundingBox(pDO, x, &wtop, &wleft, &wright, &wbottom);
+   GetBoundingBox(pDO, Xgl, &wtop, &wleft, &wright, &wbottom);
 
    CComPtr<iDisplayList> pDL;
    pDO->GetDisplayList(&pDL);
@@ -276,61 +280,15 @@ void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF col
    pDC->SelectObject(old_brush);
 }
 
-pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 distFromStart)
+pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   GET_IFACE(IBridge,pBridge);
-
-   Float64 distFromStartOfGirder = 0;
-   GroupIndexType groupIndex = INVALID_INDEX;
-   Float64 group_offset = 0;
-   GroupIndexType startGroupIdx = (m_GirderKey.groupIndex == ALL_GROUPS ? 0 : m_GirderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (m_GirderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
-   {
-      Float64 girder_layout_length = pBridge->GetGirderLayoutLength(CSegmentKey(grpIdx,m_GirderKey.girderIndex,INVALID_INDEX));
-      if ( ::InRange(group_offset,distFromStart,group_offset+girder_layout_length) )
-      {
-         distFromStartOfGirder = distFromStart - group_offset;
-         groupIndex = grpIdx;
-         break;
-      }
-      else
-      {
-         group_offset += girder_layout_length;
-      }
-   }
-
-   SegmentIndexType segmentIndex = INVALID_INDEX;
-   SegmentIndexType nSegments = pBridgeDesc->GetGirderGroup(groupIndex)->GetGirder(m_GirderKey.girderIndex)->GetSegmentCount();
-   Float64 running_segment_length = 0;
-   Float64 distFromStartOfSegment = 0;
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(CSegmentKey(groupIndex,m_GirderKey.girderIndex,segIdx));
-      if ( ::InRange(running_segment_length,distFromStartOfGirder,running_segment_length+segment_layout_length))
-      {
-         distFromStartOfSegment = distFromStartOfGirder - running_segment_length;
-         distFromStartOfSegment = ::ForceIntoRange(0.0,distFromStartOfSegment,segment_layout_length);
-         segmentIndex = segIdx;
-         break;
-      }
-      else
-      {
-         running_segment_length += segment_layout_length;
-      }
-   }
-
    GET_IFACE(IPointOfInterest,pPoi);
-   pgsPointOfInterest poi = pPoi->GetPointOfInterest(CSegmentKey(groupIndex,m_GirderKey.girderIndex,segmentIndex),distFromStartOfSegment);
-   return poi;
+   return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex,Xgl);
 }
 
-Float64 CSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStart)
+Float64 CSectionCutDisplayImpl::GetGirderHeight(Float64 Xgl)
 {
-   pgsPointOfInterest poi = GetCutPOI(distFromStart);
+   pgsPointOfInterest poi = GetCutPOI(Xgl);
 
    GET_IFACE(IGirder,pGirder);
    Float64 height = pGirder->GetHeight(poi);
@@ -346,12 +304,12 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(iDis
 
    if (pPointDO)
    {
-      Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
+      Float64 Xgl = pThis->m_pCutLocation->GetCurrentCutLocation();
    
       CComPtr<IPoint2d> pnt;
       pnt.CoCreateInstance(CLSID_Point2d);
-      pnt->put_X(pos);
-      pnt->put_Y( 0.0 );
+      pnt->put_X(Xgl);
+      pnt->put_Y(0.0);
       pPointDO->SetPosition(pnt, TRUE, FALSE);
    }
 }
@@ -361,14 +319,14 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnDragMoved(iD
 {
    METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
 
-   Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
+   Float64 Xgl =  pThis->m_pCutLocation->GetCurrentCutLocation();
 
-   Float64 xoff;
-   offset->get_Dx(&xoff);
+   Float64 xOffset;
+   offset->get_Dx(&xOffset);
 
-   pos += xoff;
+   Xgl += xOffset;
 
-   pThis->PutPosition(pos);
+   pThis->PutPosition(Xgl);
 }
 
 STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnMoved(iDisplayObject* pDO)
@@ -451,10 +409,14 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseMove(iD
 STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
 {
    METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
-   Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
-   Float64 xoff = BinarySign(zDelta)*1.0;
-   pos += xoff * (pThis->m_MaxCutLocation - pThis->m_MinCutLocation)/100.0;
-   pThis->PutPosition(pos);
+   if ( zDelta < 0 )
+   {
+      pThis->m_pCutLocation->CutAtPrev();
+   }
+   else
+   {
+      pThis->m_pCutLocation->CutAtNext();
+   }
    return true;
 }
 
@@ -465,16 +427,11 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnKeyDown(iDis
    switch(nChar)
    {
    case VK_RIGHT:
+      pThis->m_pCutLocation->CutAtNext();
+      break;
+
    case VK_LEFT:
-      {
-         Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
-
-         Float64 xoff = nChar==VK_RIGHT ? 1.0 : -1.0;
-         pos += xoff * (pThis->m_MaxCutLocation - pThis->m_MinCutLocation)/100.0;
-
-         pThis->PutPosition(pos);
-
-      }
+      pThis->m_pCutLocation->CutAtPrev();
       break;
 
    case VK_RETURN:
@@ -528,10 +485,10 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(
    return false;
 }
 
-void CSectionCutDisplayImpl::PutPosition(Float64 pos)
+void CSectionCutDisplayImpl::PutPosition(Float64 Xgl)
 {
-   pos = ::ForceIntoRange(m_MinCutLocation,pos,m_MaxCutLocation);
-   m_pCutLocation->CutAt(pos);
+   Xgl = ::ForceIntoRange(m_MinCutLocation,Xgl,m_MaxCutLocation);
+   m_pCutLocation->CutAt(Xgl);
 }
 
 

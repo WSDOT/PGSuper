@@ -21,11 +21,13 @@ SupportIndexType DecodeTSIndex(SupportIndexType tsIdx) { return MAX_INDEX-tsIdx;
 
 IMPLEMENT_DYNAMIC(CCastClosureJointDlg, CDialog)
 
-CCastClosureJointDlg::CCastClosureJointDlg(const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/)
+CCastClosureJointDlg::CCastClosureJointDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
 	: CDialog(CCastClosureJointDlg::IDD, pParent)
 {
-   m_pTimelineMgr = pTimelineMgr;
-   m_pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
+   m_TimelineMgr = timelineMgr;
+   m_EventIndex = eventIdx;
+
+   m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -39,48 +41,50 @@ CCastClosureJointDlg::~CCastClosureJointDlg()
 void CCastClosureJointDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+   DDX_Control(pDX,IDC_SOURCE_LIST,m_lbSource);
+   DDX_Control(pDX,IDC_TARGET_LIST,m_lbTarget);
 
    if ( pDX->m_bSaveAndValidate )
    {
-      // Data coming out of dialog
-      m_CastClosureJoints.Clear();
-      m_CastClosureJoints.Enable(true);
-
-      CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-      int nItems = pTargetList->GetCount();
+      // Set event information for everything in the target list
+      int nItems = m_lbTarget.GetCount();
       for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
       {
-         PierIndexType key = (PierIndexType)pTargetList->GetItemData(itemIdx);
-         if ( IsTSIndex(key) )
+         CTimelineItemIDDataPtr* pItemData = (CTimelineItemIDDataPtr*)m_lbTarget.GetItemDataPtr(itemIdx);
+         ClosureIDType closureID = pItemData->m_ID;
+         m_TimelineMgr.SetCastClosureJointEventByIndex(closureID,m_EventIndex);
+      }
+
+      // Remove event information for everything in the source list that isn't used in another event
+      nItems = m_lbSource.GetCount();
+      for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
+      {
+         CTimelineItemIDDataPtr* pItemData = (CTimelineItemIDDataPtr*)m_lbSource.GetItemDataPtr(itemIdx);
+         if ( pItemData->m_State == CTimelineItemDataPtr::Used )
          {
-            SupportIndexType tsIdx = DecodeTSIndex(key);
-            const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
-            SupportIDType tsID = pTS->GetID();
-            m_CastClosureJoints.AddTempSupport(tsID);
+            // item is used in a different event
+            continue;
          }
-         else
-         {
-            const CPierData2* pPier = m_pBridgeDesc->GetPier(key);
-            PierIDType pierID = pPier->GetID();
-            m_CastClosureJoints.AddPier(pierID);
-         }
+
+         ClosureIDType closureID = pItemData->m_ID;
+         m_TimelineMgr.SetCastClosureJointEventByIndex(closureID,INVALID_INDEX);
       }
 
       Float64 age;
       DDX_Text(pDX,IDC_AGE,age);
-      m_CastClosureJoints.SetConcreteAgeAtContinuity(age);
+      m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastClosureJointActivity().SetConcreteAgeAtContinuity(age);
    }
    else
    {
-      Float64 age = m_CastClosureJoints.GetConcreteAgeAtContinuity();
+      Float64 age = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
       DDX_Text(pDX,IDC_AGE,age);
    }
 }
 
 
 BEGIN_MESSAGE_MAP(CCastClosureJointDlg, CDialog)
-   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CCastClosureJointDlg::OnMoveRight)
-   ON_BN_CLICKED(IDC_MOVE_LEFT, &CCastClosureJointDlg::OnMoveLeft)
+   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CCastClosureJointDlg::OnMoveToTargetList)
+   ON_BN_CLICKED(IDC_MOVE_LEFT, &CCastClosureJointDlg::OnMoveToSourceList)
 END_MESSAGE_MAP()
 
 
@@ -88,10 +92,12 @@ END_MESSAGE_MAP()
 
 BOOL CCastClosureJointDlg::OnInitDialog()
 {
-   FillSourceList();
-   FillTargetList();
+   m_lbSource.Initialize(CTimelineItemListBox::Source,CTimelineItemListBox::ID,&m_lbTarget);
+   m_lbTarget.Initialize(CTimelineItemListBox::Target,CTimelineItemListBox::ID,&m_lbSource);
 
    CDialog::OnInitDialog();
+
+   FillLists();
 
    // TODO:  Add extra initialization here
 
@@ -99,145 +105,72 @@ BOOL CCastClosureJointDlg::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CCastClosureJointDlg::OnMoveRight()
+void CCastClosureJointDlg::OnMoveToTargetList()
 {
-   // Move from source to target lists
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-   int nCount = pSourceList->GetSelCount();
-   CArray<int,int> arrSelected;
-   arrSelected.SetSize(nCount);
-   pSourceList->GetSelItems(nCount,arrSelected.GetData());
-
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-   for ( int i = 0; i < nCount; i++ )
-   {
-      int sel = arrSelected.GetAt(i);
-
-      PierIndexType key = (PierIndexType)pSourceList->GetItemData(sel);
-      if ( IsTSIndex(key) )
-      {
-         SupportIndexType tsIdx = DecodeTSIndex(key);
-         const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
-         CString label( GetLabel(pTS,m_pDisplayUnits) );
-         pTargetList->SetItemData(pTargetList->AddString(label),key);
-      }
-      else
-      {
-         const CPierData2* pPier = m_pBridgeDesc->GetPier(key);
-         CString label( GetLabel(pPier,m_pDisplayUnits) );
-         pTargetList->SetItemData(pTargetList->AddString(label),key);
-      }
-   }
-
-   for ( int i = nCount-1; 0 <= i; i-- )
-   {
-      pSourceList->DeleteString(arrSelected.GetAt(i));
-   }
+   m_lbSource.MoveSelectedItemsToBuddy();
 }
 
-void CCastClosureJointDlg::OnMoveLeft()
+void CCastClosureJointDlg::OnMoveToSourceList()
 {
-   // Move from target to source lists
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-   int nCount = pTargetList->GetSelCount();
-   CArray<int,int> arrSelected;
-   arrSelected.SetSize(nCount);
-   pTargetList->GetSelItems(nCount,arrSelected.GetData());
-
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-   for ( int i = 0; i < nCount; i++ )
-   {
-      int sel = arrSelected.GetAt(i);
-
-      PierIndexType key = (PierIndexType)pTargetList->GetItemData(sel);
-      if ( IsTSIndex(key) )
-      {
-         SupportIndexType tsIdx = DecodeTSIndex(key);
-         const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
-         CString label( GetLabel(pTS,m_pDisplayUnits) );
-         pSourceList->SetItemData(pSourceList->AddString(label),key);
-      }
-      else
-      {
-         const CPierData2* pPier = m_pBridgeDesc->GetPier(key);
-         CString label( GetLabel(pPier,m_pDisplayUnits) );
-         pSourceList->SetItemData(pSourceList->AddString(label),key);
-      }
-   }
-
-   for ( int i = nCount-1; 0 <= i; i-- )
-   {
-      pTargetList->DeleteString(arrSelected.GetAt(i));
-   }
+   m_lbTarget.MoveSelectedItemsToBuddy();
 }
 
-void CCastClosureJointDlg::FillSourceList()
+void CCastClosureJointDlg::FillLists()
 {
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-
    const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirderGroup(GroupIndexType(0))->GetGirder(0);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
    const CClosureJointData* pClosure = pSegment->GetRightClosure();
 
    while ( pClosure )
    {
+      ClosureIDType closureID = pClosure->GetID();
+      EventIndexType castClosureJointEventIdx = m_TimelineMgr.GetCastClosureJointEventIndex(closureID);
+
       if ( pClosure->GetPier() )
       {
          PierIDType pierID = pClosure->GetPier()->GetID();
-         if ( !m_pTimelineMgr->IsClosureJointAtPier(pierID) )
+         bool bHasClosure = m_TimelineMgr.IsClosureJointAtPier(pierID);
+
+         CString label(GetLabel(pClosure->GetPier(),m_pDisplayUnits));
+
+         if ( castClosureJointEventIdx == m_EventIndex )
          {
-            PierIndexType pierIdx = pClosure->GetPier()->GetIndex();
-            CString label(GetLabel(pClosure->GetPier(),m_pDisplayUnits));
-            pSourceList->SetItemData(pSourceList->AddString(label),pierIdx);
+            // erected during this event, put it in the target list
+            m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,closureID);
+         }
+         else
+         {
+            // not erected during this event, put it in the source list
+            CTimelineItemDataPtr::State state = (bHasClosure ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
+            m_lbSource.AddItem(label,state,closureID);
          }
       }
       else
       {
          ATLASSERT(pClosure->GetTemporarySupport());
          SupportIDType tsID = pClosure->GetTemporarySupport()->GetID();
-         if ( !m_pTimelineMgr->IsClosureJointAtTempSupport(tsID) )
+         bool bHasClosure = m_TimelineMgr.IsClosureJointAtTempSupport(tsID);
+
+         CString label( GetLabel(pClosure->GetTemporarySupport(),m_pDisplayUnits) );
+
+         if ( castClosureJointEventIdx == m_EventIndex )
          {
-            SupportIndexType tsIdx = pClosure->GetTemporarySupport()->GetIndex();
-            CString label( GetLabel(pClosure->GetTemporarySupport(),m_pDisplayUnits) );
-            pSourceList->SetItemData(pSourceList->AddString(label), EncodeTSIndex(tsIdx) );
+            m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,closureID);
+         }
+         else
+         {
+            CTimelineItemDataPtr::State state = (bHasClosure ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
+            m_lbSource.AddItem(label,state,closureID);
          }
       }
 
       if ( pClosure->GetRightSegment() )
+      {
          pClosure = pClosure->GetRightSegment()->GetRightClosure();
+      }
       else
+      {
          pClosure = NULL;
-   }
-}
-
-void CCastClosureJointDlg::FillTargetList()
-{
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-
-   const std::set<PierIDType>& piers = m_CastClosureJoints.GetPiers();
-   std::set<PierIDType>::const_iterator pierIter(piers.begin());
-   std::set<PierIDType>::const_iterator pierIterEnd(piers.end());
-   for ( ; pierIter != pierIterEnd; pierIter++ )
-   {
-      PierIDType pierID = *pierIter;
-      const CPierData2* pPier = m_pBridgeDesc->FindPier(pierID);
-      PierIndexType pierIdx = pPier->GetIndex();
-
-      CString label( GetLabel(pPier,m_pDisplayUnits) );
-      pTargetList->SetItemData(pTargetList->AddString(label),pierIdx);
-   }
-
-   const std::set<SupportIDType>& tempSupports = m_CastClosureJoints.GetTempSupports();
-   std::set<SupportIDType>::const_iterator tsIter(tempSupports.begin());
-   std::set<SupportIDType>::const_iterator tsIterEnd(tempSupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      SupportIDType tsID = *tsIter;
-      const CTemporarySupportData* pTS = m_pBridgeDesc->FindTemporarySupport(tsID);
-      SupportIndexType tsIdx = pTS->GetIndex();
-
-      CString label( GetLabel(pTS,m_pDisplayUnits) );
-
-      pTargetList->SetItemData(pTargetList->AddString(label),EncodeTSIndex(tsIdx));
+      }
    }
 }

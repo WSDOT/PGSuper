@@ -38,21 +38,13 @@ class CSectionCutDlgEx : public CDialog
 {
 // Construction
 public:
-   CSectionCutDlgEx(CWnd* pParent=NULL);   // standard constructor
+   CSectionCutDlgEx(IBroker* pBroker,const CGirderKey& girderKey,const pgsPointOfInterest& initialPoi,CWnd* pParent=NULL);
 
-	CSectionCutDlgEx(IndexType nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
-		CGirderModelChildFrame::CutLocation, CWnd* pParent = NULL);
+   pgsPointOfInterest GetPOI();
 
-   void SetValue(Float64 value);
-   Float64 GetValue()const;
-   void SetCutLocation(CGirderModelChildFrame::CutLocation location);
-   CGirderModelChildFrame::CutLocation GetCutLocation() const;
-   void SetBounds(Float64 lowerBound, Float64 upperBound);
-   void GetBounds(Float64* plowerBound, Float64* pupperBound);
 // Dialog Data
 	//{{AFX_DATA(CSectionCutDlgEx)
 	enum { IDD = IDD_SECTION_CUT_DIALOG_EX };
-	int		m_CutIndex;
 	//}}AFX_DATA
 
 
@@ -69,25 +61,26 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSectionCutDlgEx)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnGirderMiddle();
-	afx_msg void OnLeftEnd();
-	afx_msg void OnLeftHarp();
-	afx_msg void OnRightEnd();
-	afx_msg void OnRightHarp();
-	afx_msg void OnUserCut();
 	afx_msg void OnHelp();
+   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
 
 private:
-   IndexType m_nHarpPoints;
-   Float64	 m_Value;
-   Float64   m_LowerBound;
-   Float64   m_UpperBound;
-   CGirderModelChildFrame::CutLocation m_CutLocation;
+   IBroker* m_pBroker;
+   pgsPointOfInterest m_InitialPOI;
+   CGirderKey m_GirderKey;
 
-   void Update();
+   std::vector<pgsPointOfInterest> m_vPOI;
+
+   CSliderCtrl m_Slider;
+   CStatic m_Label;
+   int m_SliderPos;
+
+   void UpdateSliderLabel();
+   void UpdatePOI();
+
 };
 
 //{{AFX_INSERT_LOCATION}}

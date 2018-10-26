@@ -345,7 +345,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
             if ( pOtherTimelineEvent && pOtherTimelineEvent->GetStressTendonActivity().IsTendonStressed(gdrID,ductIdx) )
             {
-               pOtherTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx);
+               pOtherTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx,false);
             }
          }
       }
@@ -934,7 +934,6 @@ void CTimelineManager::SetPierErectionEventByIndex(PierIDType pierID,EventIndexT
 
    if ( eventIdx != INVALID_INDEX )
    {
-      m_TimelineEvents[eventIdx]->GetErectPiersActivity().Enable(true);
       m_TimelineEvents[eventIdx]->GetErectPiersActivity().AddPier(pierID);
    }
 }
@@ -1244,6 +1243,7 @@ EventIDType CTimelineManager::GetSegmentConstructionEventID(SegmentIDType segmen
 void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentID,EventIndexType eventIdx)
 {
    ATLASSERT(segmentID != INVALID_ID);
+   Float64 ageAtRelease, relaxationTime;
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1251,6 +1251,8 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
       CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
       {
+         ageAtRelease   = pTimelineEvent->GetConstructSegmentsActivity().GetAgeAtRelease();
+         relaxationTime = pTimelineEvent->GetConstructSegmentsActivity().GetRelaxationTime();
          pTimelineEvent->GetConstructSegmentsActivity().RemoveSegment(segmentID);
          break;
       }
@@ -1258,8 +1260,9 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
 
    if ( eventIdx != INVALID_INDEX )
    {
-      m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().Enable(true);
       m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().AddSegment(segmentID);
+      m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetAgeAtRelease(ageAtRelease);
+      m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetRelaxationTime(relaxationTime);
    }
 
    ASSERT_VALID;
@@ -1338,7 +1341,6 @@ void CTimelineManager::SetSegmentErectionEventByIndex(SegmentIDType segmentID,Ev
 
    if ( eventIdx != INVALID_INDEX )
    {
-      m_TimelineEvents[eventIdx]->GetErectSegmentsActivity().Enable(true);
       m_TimelineEvents[eventIdx]->GetErectSegmentsActivity().AddSegment(segmentID);
    }
 
@@ -1476,6 +1478,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
       return;
    }
 
+   Float64 ageAtContinuity;
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1483,12 +1486,13 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
       CTimelineEvent* pTimelineEvent = *iter;
       if ( pClosure->GetPier() && pTimelineEvent->GetCastClosureJointActivity().HasPier(pClosure->GetPier()->GetID()) )
       {
-         pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
+         ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
          break;
       }
 
       if ( pClosure->GetTemporarySupport() && pTimelineEvent->GetCastClosureJointActivity().HasTempSupport(pClosure->GetTemporarySupport()->GetID()) )
       {
+         ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
          pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
          break;
       }
@@ -1497,6 +1501,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
    if ( eventIdx != INVALID_INDEX )
    {
       m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().Enable(true);
+      m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().SetConcreteAgeAtContinuity(ageAtContinuity);
 
       if ( pClosure->GetPier() )
       {
@@ -1572,14 +1577,13 @@ void CTimelineManager::SetStressTendonEventByIndex(GirderIDType girderID,DuctInd
       CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderID,ductIdx) )
       {
-         pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderID,ductIdx);
+         pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderID,ductIdx,false);
          break;
       }
    }
 
    if ( eventIdx != INVALID_INDEX )
    {
-      m_TimelineEvents[eventIdx]->GetStressTendonActivity().Enable(true);
       m_TimelineEvents[eventIdx]->GetStressTendonActivity().AddTendon(girderID,ductIdx);
    }
 
@@ -1734,7 +1738,6 @@ void CTimelineManager::SetRailingSystemLoadEventByIndex(EventIndexType eventIdx)
 
    if ( eventIdx != INVALID_INDEX )
    {
-      m_TimelineEvents[eventIdx]->GetApplyLoadActivity().Enable(true);
       m_TimelineEvents[eventIdx]->GetApplyLoadActivity().ApplyRailingSystemLoad(true);
    }
 
@@ -1803,7 +1806,6 @@ void CTimelineManager::SetOverlayLoadEventByIndex(EventIndexType eventIdx)
    // activate the overlay load in the specified event
    if ( eventIdx != INVALID_INDEX )
    {
-      m_TimelineEvents[eventIdx]->GetApplyLoadActivity().Enable(true);
       m_TimelineEvents[eventIdx]->GetApplyLoadActivity().ApplyOverlayLoad(true);
    }
 
@@ -1893,7 +1895,6 @@ void CTimelineManager::SetLiveLoadEventByIndex(EventIndexType eventIdx)
 
    if ( eventIdx != INVALID_INDEX )
    {
-      m_TimelineEvents[eventIdx]->GetApplyLoadActivity().Enable(true);
       m_TimelineEvents[eventIdx]->GetApplyLoadActivity().ApplyLiveLoad(true);
    }
 
@@ -2206,7 +2207,7 @@ void CTimelineManager::Sort()
    std::sort(m_TimelineEvents.begin(),m_TimelineEvents.end(),CompareEvents);
 
    // make sure events don't overlap and that there is only one
-   // of each time of single occurance activities
+   // of each type of single occurance activities (such as cast deck or open to traffic)
    EventIndexType nLiveLoadEvents = 0;
    EventIndexType nRailingSystemEvents = 0;
    EventIndexType nOverlayEvents = 0;
@@ -2277,14 +2278,14 @@ bool SearchMe(CTimelineEvent* pEvent)
    return g_Day <= pEvent->GetDay(); 
 }
 
-int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent)
+int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
 {
-   CTimelineEvent* pNextEvent = NULL;
-   CTimelineEvent* pPrevEvent = NULL;
+   const CTimelineEvent* pNextEvent = NULL;
+   const CTimelineEvent* pPrevEvent = NULL;
 
    // find the first event that comes after the new event
    g_Day = pTimelineEvent->GetDay();
-   std::vector<CTimelineEvent*>::iterator found( std::find_if(m_TimelineEvents.begin(),m_TimelineEvents.end(),SearchMe) );
+   std::vector<CTimelineEvent*>::const_iterator found( std::find_if(m_TimelineEvents.begin(),m_TimelineEvents.end(),SearchMe) );
    if ( found == m_TimelineEvents.end() )
    {
       // the "next" event wasn't found... that means there is no event that would come after the event that is being validated
@@ -2399,67 +2400,67 @@ CString CTimelineManager::GetErrorMessage(int errorCode) const
    switch(errorCode)
    {
    case TLM_CAST_DECK_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for casting the deck is not included in the timeline");
+      strMsg = _T("The timeline does not include an activity for casting the deck.");
       break;
 
    case TLM_OVERLAY_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for installing the overlay is not included in the timeline");
+      strMsg = _T("The timeline does not include an activity for installing the overlay.");
       break;
 
    case TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for installing the railing system is not included in the timeline");
+      strMsg = _T("The timeline does not include an activity for installing the traffic barrier/railing system.");
       break;
 
    case TLM_LIVELOAD_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for opening the bridge to traffic is not included in the timeline");
+      strMsg = _T("The timeline does not include an activity for opening the bridge to traffic.");
       break;
 
    case TLM_USER_LOAD_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for applying one or more user defined loads is not included in the timeline");
+      strMsg = _T("The timeline does not include activities for one or more user defined loads.");
       break;
 
    case TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for constructing one or more segments is not included in the timeline");
+      strMsg = _T("The timeline does not include activites for constructing one or more segments.");
       break;
 
    case TLM_ERECT_PIERS_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for constructing one or more piers or temporary supports is not included in the timeline");
+      strMsg = _T("The timeline does not include activities for constructing one or more piers or temporary supports.");
       break;
 
    case TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for erecting one or more segments is not included in the timeline");
+      strMsg = _T("The timeline does not include activites for erecting one or more segments.");
       break;
 
    case TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for removing one or more temporary supports is not included in the timeline");
+      strMsg = _T("The timeline does not include activities for removing one or more of the temporary supports.");
       break;
 
    case TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for casting one or more closure joints is not included in the timeline");
+      strMsg = _T("The timeline does not include activities for casting one or more of the closure joints.");
       break;
 
    case TLM_STRESS_TENDONS_ACTIVITY_REQUIRED:
-      strMsg = _T("An activity for stress one or more tendons is not included in the timeline");
+      strMsg = _T("The timeline does not include activites for stressing one or more tendons.");
       break;
 
    case TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR:
-      strMsg = _T("A temporary support has been removed while it is still supporting a segment");
+      strMsg = _T("A temporary support has been removed while it is still supporting a segment.");
       break;
 
    case TLM_SEGMENT_ERECTION_ERROR:
-      strMsg = _T("A segment has been erected before its supporting elements (Pier or Temporary Support) have been erected");
+      strMsg = _T("A segment has been erected before its supporting elements (Pier or Temporary Support) have been erected.");
       break;
 
    case TLM_CLOSURE_JOINT_ERROR:
-      strMsg = _T("A closure joint has been cast before its adjacent segments have been erected");
+      strMsg = _T("A closure joint has been cast before its adjacent segments have been erected.");
       break;
 
    case TLM_RAILING_SYSTEM_ERROR:
-      strMsg = _T("The traffic barrier/railing system has been installed before the deck was cast");
+      strMsg = _T("The traffic barrier/railing system has been installed before the deck was cast.");
       break;
 
    case TLM_STRESS_TENDON_ERROR:
-      strMsg = _T("A tendon has been stress before the segments and closure joints have been assembled");
+      strMsg = _T("A tendon has been stressed before the segments and closure joints have been assembled.");
       break;
 
    default:
@@ -2471,7 +2472,6 @@ CString CTimelineManager::GetErrorMessage(int errorCode) const
 #if defined _DEBUG
 void CTimelineManager::AssertValid() const
 {
-   EventIndexType nSegmentConstructionEvents = 0;
    EventIndexType nLiveLoadEvents = 0;
    EventIndexType nOverlayEvents = 0;
 
@@ -2481,11 +2481,6 @@ void CTimelineManager::AssertValid() const
    {
       const CTimelineEvent* pTimelineEvent = *iter;
       pTimelineEvent->AssertValid();
-
-      if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
-      {
-         nSegmentConstructionEvents++;
-      }
 
       if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsLiveLoadApplied() )
       {
@@ -2504,7 +2499,6 @@ void CTimelineManager::AssertValid() const
       }
    }
 
-   ATLASSERT(nSegmentConstructionEvents <= 1); // 0 means not set yet, 1 is ok, 2 or more... no good
    ATLASSERT(nLiveLoadEvents <= 1); // 0 means not set yet, 1 is ok, 2 or more... no good
    ATLASSERT(nOverlayEvents <= 1); // 0 means not set yet, 1 is ok, 2 or more... no good
 }

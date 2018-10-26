@@ -295,14 +295,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
-
+   ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
    ReportEquivPostTensionLoads(pChapter,pDisplayUnits,girderKey);
 
    bool bPermit;
    ReportLiveLoad(pChapter,bDesign,bRating,pRatingSpec,bPermit);
    ReportLimitStates(pChapter,bDesign,bRating,bPermit,one_girder_has_shear_key,pRatingSpec);
-
-   ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
 
    return pChapter;
 }
@@ -1210,8 +1208,8 @@ void CLoadingDetailsChapterBuilder::ReportEquivPostTensionLoads(rptChapter* pCha
             (*p_table)(0,2) << COLHDR(Sub2(_T("X"),_T("end")),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
             (*p_table)(0,3) << COLHDR(Sub2(_T("W"),_T("start")),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
             (*p_table)(0,4) << COLHDR(Sub2(_T("W"),_T("end")),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
-            (*p_table)(0,5) << COLHDR(Sub2(_T("Y"),_T("start")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-            (*p_table)(0,6) << COLHDR(Sub2(_T("Y"),_T("end")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+            (*p_table)(0,5) << COLHDR(Sub2(_T("e"),_T("start")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+            (*p_table)(0,6) << COLHDR(Sub2(_T("e"),_T("end")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
             (*p_table)(0,7) << COLHDR(_T("e'"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
             (*p_table)(0,8) << COLHDR(_T("X"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
             (*p_table)(0,9) << COLHDR(Sub2(_T("P"),_T("e")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
@@ -1227,8 +1225,8 @@ void CLoadingDetailsChapterBuilder::ReportEquivPostTensionLoads(rptChapter* pCha
                (*p_table)(row,2) << loc.SetValue(distLoad.Xend);
                (*p_table)(row,3) << fpl.SetValue(distLoad.Wstart);
                (*p_table)(row,4) << fpl.SetValue(distLoad.Wend);
-               (*p_table)(row,5) << ecc.SetValue(distLoad.Ystart);
-               (*p_table)(row,6) << ecc.SetValue(distLoad.Yend);
+               (*p_table)(row,5) << ecc.SetValue(distLoad.eStart);
+               (*p_table)(row,6) << ecc.SetValue(distLoad.eEnd);
                (*p_table)(row,7) << ecc.SetValue(distLoad.e_prime);
                (*p_table)(row,8) << loc.SetValue(distLoad.x);
                (*p_table)(row,9) << force.SetValue(distLoad.P);

@@ -537,6 +537,13 @@ typedef struct pgsTypes
       TIME_STEP           = 12  // Losses are computed with a time-step method
    } LossMethod;
 
+   typedef enum TimeDependentModel
+   {
+      tdmAASHTO, 
+      tdmACI209,
+      //tdmCEBFIP
+   } TimeDependentModel;
+
    typedef enum JackingEndType
    {
       jeLeft,

@@ -47,7 +47,6 @@ public:
 	enum { IDD = IDD_SPLICEDGIRDER };
 
    std::vector<EventIndexType> m_TendonStressingEvent; // index is duct index, value is event when tendon is stressed
-   std::vector<EventIndexType> m_CastClosureEvent;
 
    int GetDuctCount();
 

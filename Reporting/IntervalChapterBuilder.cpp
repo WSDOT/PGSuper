@@ -100,9 +100,9 @@ rptChapter* CIntervalChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       (*pIntervalTable)(row,col++) << pIntervals->GetDescription(girderKey,intervalIdx);
       (*pIntervalTable)(row,col++) << LABEL_EVENT(pIntervals->GetStartEvent(girderKey,intervalIdx));
       (*pIntervalTable)(row,col++) << LABEL_EVENT(pIntervals->GetEndEvent(girderKey,intervalIdx));
-      (*pIntervalTable)(row,col++) << pIntervals->GetStart(girderKey,intervalIdx);
-      (*pIntervalTable)(row,col++) << pIntervals->GetMiddle(girderKey,intervalIdx);
-      (*pIntervalTable)(row,col++) << pIntervals->GetEnd(girderKey,intervalIdx);
+      (*pIntervalTable)(row,col++) << pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::Start);
+      (*pIntervalTable)(row,col++) << pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::Middle);
+      (*pIntervalTable)(row,col++) << pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::End);
       (*pIntervalTable)(row,col++) << pIntervals->GetDuration(girderKey,intervalIdx);
       row++;
    }

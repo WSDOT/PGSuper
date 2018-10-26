@@ -218,6 +218,7 @@ public:
    virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi);
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual void GetSlabOffset(const CSegmentKey& segmentKey,Float64* pStart,Float64* pEnd);
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
@@ -351,10 +352,10 @@ public:
    virtual Float64 GetDeckWeightDensity(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
    virtual Float64 GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
 
-   virtual Float64 GetSegmentConcreteAge(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosureJointConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckConcreteAge(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetSegmentConcreteAge(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetClosureJointConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetDeckConcreteAge(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
 
    virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
@@ -691,14 +692,17 @@ public:
 public:
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSegmentKey& segmentKey);
    virtual pgsPointOfInterest GetPointOfInterest(PoiIDType poiID);
-   virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart);
+   virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs);
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode = POIFIND_OR);
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSpanKey& spanKey);
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSpanKey& spanKey,PoiAttributeType attrib,Uint32 mode = POIFIND_OR);
    virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey);
    virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey,const GDRCONFIG& config);
-   virtual pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart);
-   virtual pgsPointOfInterest GetPointOfInterest(const CGirderKey& girderKey,PierIndexType pierIdx);
+   virtual pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs);
+   virtual pgsPointOfInterest GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIFIND_OR);
+   virtual pgsPointOfInterest GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIFIND_OR);
+   virtual pgsPointOfInterest GetPierPointOfInterest(const CGirderKey& girderKey,PierIndexType pierIdx);
+   virtual pgsPointOfInterest GetTemporarySupportPointOfInterest(const CGirderKey& girderKey,SupportIndexType tsIdx);
    virtual void RemovePointsOfInterest(std::vector<pgsPointOfInterest>& vPoi,PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute);
    virtual bool IsInClosureJoint(const pgsPointOfInterest& poi);
    virtual bool IsOnSegment(const pgsPointOfInterest& poi);
@@ -730,6 +734,7 @@ public:
    virtual Float64 ConvertGirderPathCoordinateToGirderCoordinate(const CGirderKey& girderKey,Float64 Xgp);
    virtual Float64 ConvertGirderPathCoordinateToGirderlineCoordinate(const CGirderKey& girderKey,Float64 Xgp);
    virtual Float64 ConvertPoiToGirderlineCoordinate(const pgsPointOfInterest& poi);
+   virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl);
 
 // ISectionProperties
 public:
@@ -788,8 +793,8 @@ public:
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi);
    virtual Float64 GetSurfaceArea(const CSegmentKey& segmentKey);
    virtual Float64 GetVolume(const CSegmentKey& segmentKey);
-   virtual Float64 GetBridgeEIxx(Float64 distFromStart);
-   virtual Float64 GetBridgeEIyy(Float64 distFromStart);
+   virtual Float64 GetBridgeEIxx(Float64 Xb);
+   virtual Float64 GetBridgeEIyy(Float64 Xb);
    virtual Float64 GetSegmentWeightPerLength(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentWeight(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentHeightAtPier(const CSegmentKey& segmentKey,PierIndexType pierIdx);
@@ -956,15 +961,15 @@ public:
    virtual IntervalIndexType GetIntervalCount(const CGirderKey& girderKey);
    virtual EventIndexType GetStartEvent(const CGirderKey& girderKey,IntervalIndexType idx); 
    virtual EventIndexType GetEndEvent(const CGirderKey& girderKey,IntervalIndexType idx); 
-   virtual Float64 GetStart(const CGirderKey& girderKey,IntervalIndexType idx);
-   virtual Float64 GetMiddle(const CGirderKey& girderKey,IntervalIndexType idx);
-   virtual Float64 GetEnd(const CGirderKey& girderKey,IntervalIndexType idx);
+   virtual Float64 GetTime(const CGirderKey& girderKey,IntervalIndexType idx,pgsTypes::IntervalTimeType timeType);
    virtual Float64 GetDuration(const CGirderKey& girderKey,IntervalIndexType idx);
    virtual LPCTSTR GetDescription(const CGirderKey& girderKey,IntervalIndexType idx);
    virtual IntervalIndexType GetInterval(const CGirderKey& girderKey,EventIndexType eventIdx);
    virtual IntervalIndexType GetFirstStressStrandInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetLastStressStrandInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetStressStrandInterval(const CSegmentKey& segmentKey);
+   virtual IntervalIndexType GetFirstPrestressReleaseInterval(const CGirderKey& girderKey);
+   virtual IntervalIndexType GetLastPrestressReleaseInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetPrestressReleaseInterval(const CSegmentKey& segmentKey);
    virtual IntervalIndexType GetLiftSegmentInterval(const CSegmentKey& segmentKey);
    virtual IntervalIndexType GetStorageInterval(const CSegmentKey& segmentKey);

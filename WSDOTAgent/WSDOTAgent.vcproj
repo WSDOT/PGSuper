@@ -57,6 +57,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\ARP\OpenBridgeML\Include;\ARP\OpenBridgeML\Schema"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;ENABLE_LOGGING"
@@ -153,6 +154,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\ARP\OpenBridgeML\Include;\ARP\OpenBridgeML\Schema"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;ENABLE_LOGGING"
@@ -251,6 +253,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -353,6 +356,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -456,6 +460,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -556,6 +561,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"

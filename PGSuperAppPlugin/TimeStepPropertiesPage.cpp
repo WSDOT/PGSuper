@@ -34,7 +34,9 @@ IMPLEMENT_DYNAMIC(CTimeStepPropertiesPage, CPropertyPage)
 
 CTimeStepPropertiesPage::CTimeStepPropertiesPage()
 	: CPropertyPage(CTimeStepPropertiesPage::IDD)
-   , m_bIgnoreTimeDependentEffects(false)
+   , m_bIgnoreCreepEffects(false)
+   , m_bIgnoreShrinkageEffects(false)
+   , m_bIgnoreRelaxationEffects(false)
 {
 
 }
@@ -47,7 +49,9 @@ void CTimeStepPropertiesPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
-   DDX_Check_Bool(pDX,IDC_TIME_DEPENDENT_EFFECTS,m_bIgnoreTimeDependentEffects);
+   DDX_Check_Bool(pDX,IDC_IGNORE_CREEP,m_bIgnoreCreepEffects);
+   DDX_Check_Bool(pDX,IDC_IGNORE_SHRINKAGE,m_bIgnoreShrinkageEffects);
+   DDX_Check_Bool(pDX,IDC_IGNORE_RELAXATION,m_bIgnoreRelaxationEffects);
 }
 
 
@@ -61,5 +65,5 @@ END_MESSAGE_MAP()
 void CTimeStepPropertiesPage::OnHelp()
 {
 #pragma Reminder("UPDATE: implement Help button")
-   //::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PIERDETAILS_GIRDERSPACING );
+   //::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_TIMESTEP_PARAMETERS );
 }

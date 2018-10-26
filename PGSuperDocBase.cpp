@@ -541,10 +541,9 @@ bool CPGSuperDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segment
    const CPrecastSegmentData* pSegment     = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
 
    txnEditPrecastSegmentData oldSegmentData;
-   oldSegmentData.m_SegmentKey           = segmentKey;
-   oldSegmentData.m_SegmentData          = *pSegment;
-   oldSegmentData.m_ConstructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(pSegment->GetID());
-   oldSegmentData.m_ErectionEventIdx     = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
+   oldSegmentData.m_SegmentKey  = segmentKey;
+   oldSegmentData.m_SegmentData = *pSegment;
+   oldSegmentData.m_TimelineMgr = *pTimelineMgr;
 
    if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectSelection )
    {
@@ -624,10 +623,9 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    CPrecastSegmentData* pSegment = girder.GetSegment(segmentKey.segmentIndex);
 
    txnEditPrecastSegmentData oldSegmentData;
-   oldSegmentData.m_SegmentKey           = segmentKey;
-   oldSegmentData.m_SegmentData          = *pSegment;
-   oldSegmentData.m_ConstructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
-   oldSegmentData.m_ErectionEventIdx     = pTimelineMgr->GetSegmentErectionEventIndex(segmentID);
+   oldSegmentData.m_SegmentKey  = segmentKey;
+   oldSegmentData.m_SegmentData = *pSegment;
+   oldSegmentData.m_TimelineMgr = *pTimelineMgr;
 
    if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectInput )
    {
@@ -3474,7 +3472,9 @@ void CPGSuperDocBase::OnLosses()
    pLossParameters->GetTendonPostTensionParameters(&oldData.Dset_PT,&oldData.WobbleFriction_PT,&oldData.FrictionCoefficient_PT);
    pLossParameters->GetTemporaryStrandPostTensionParameters(&oldData.Dset_TTS,&oldData.WobbleFriction_TTS,&oldData.FrictionCoefficient_TTS);
 
-   oldData.bIgnoreTimeDependentEffects = pLossParameters->IgnoreTimeDependentEffects();
+   oldData.bIgnoreCreepEffects      = pLossParameters->IgnoreCreepEffects();
+   oldData.bIgnoreShrinkageEffects  = pLossParameters->IgnoreShrinkageEffects();
+   oldData.bIgnoreRelaxationEffects = pLossParameters->IgnoreRelaxationEffects();
 
    oldData.bUseLumpSumLosses             = pLossParameters->UseGeneralLumpSumLosses();
    oldData.BeforeXferLosses              = pLossParameters->GetBeforeXferLosses();
@@ -3487,7 +3487,9 @@ void CPGSuperDocBase::OnLosses()
    oldData.AfterSIDLLosses               = pLossParameters->GetAfterSIDLLosses();
    oldData.FinalLosses                   = pLossParameters->GetFinalLosses();
 
-   dlg.m_TimeStepProperties.m_bIgnoreTimeDependentEffects = oldData.bIgnoreTimeDependentEffects;
+   dlg.m_TimeStepProperties.m_bIgnoreCreepEffects      = oldData.bIgnoreCreepEffects;
+   dlg.m_TimeStepProperties.m_bIgnoreShrinkageEffects  = oldData.bIgnoreShrinkageEffects;
+   dlg.m_TimeStepProperties.m_bIgnoreRelaxationEffects = oldData.bIgnoreRelaxationEffects;
 
    dlg.m_PostTensioning.Dset_PT                = oldData.Dset_PT;
    dlg.m_PostTensioning.WobbleFriction_PT      = oldData.WobbleFriction_PT;
@@ -3511,7 +3513,9 @@ void CPGSuperDocBase::OnLosses()
    if ( dlg.DoModal() == IDOK )
    {
       txnEditLossParametersData newData;
-      newData.bIgnoreTimeDependentEffects = dlg.m_TimeStepProperties.m_bIgnoreTimeDependentEffects;
+      newData.bIgnoreCreepEffects      = dlg.m_TimeStepProperties.m_bIgnoreCreepEffects;
+      newData.bIgnoreShrinkageEffects  = dlg.m_TimeStepProperties.m_bIgnoreShrinkageEffects;
+      newData.bIgnoreRelaxationEffects = dlg.m_TimeStepProperties.m_bIgnoreRelaxationEffects;
 
       newData.Dset_PT                = dlg.m_PostTensioning.Dset_PT;
       newData.WobbleFriction_PT      = dlg.m_PostTensioning.WobbleFriction_PT;

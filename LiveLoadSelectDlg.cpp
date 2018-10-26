@@ -295,7 +295,13 @@ void CLiveLoadSelectDlg::FillEventList()
    }
 
    if ( eventIdx != CB_ERR )
+   {
       pcbEvent->SetCurSel(eventIdx);
+   }
+   else
+   {
+      pcbEvent->SetCurSel(0);
+   }
 }
 
 void CLiveLoadSelectDlg::OnEventChanging()
@@ -340,10 +346,10 @@ EventIndexType CLiveLoadSelectDlg::CreateEvent()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
-   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+      return pIBridgeDesc->AddTimelineEvent(*dlg.m_pTimelineEvent);
   }
 
    return INVALID_INDEX;

@@ -24,6 +24,7 @@
 #include <Reporting\ACI209CreepCoefficientChapterBuilder.h>
 
 #include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
 #include <Material\ConcreteBase.h>
 #include <Material\ACI209Concrete.h>
 
@@ -150,6 +151,116 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
 
       rowIdx++;
    }
+
+#if defined _DEBUG || defined _BETA_VERSION
+   pTable = pgsReportStyleHolder::CreateDefaultTable(6*nSegments+1);
+   *pPara << pTable << rptNewLine;
+
+   pTable->SetNumberOfHeaderRows(2);
+   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   rowIdx = 0;
+   colIdx = 0;
+
+   pTable->SetRowSpan(rowIdx,colIdx,2);
+   (*pTable)(rowIdx,colIdx) << _T("Interval");
+   pTable->SetRowSpan(rowIdx+1,colIdx++,SKIP_CELL);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      pTable->SetColumnSpan(rowIdx,colIdx,3);
+      (*pTable)(rowIdx,colIdx) << _T("Segment ") << LABEL_SEGMENT(segIdx);
+      pTable->SetColumnSpan(rowIdx,colIdx+1,SKIP_CELL);
+      pTable->SetColumnSpan(rowIdx,colIdx+2,SKIP_CELL);
+      (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("i")) << rptNewLine << _T("(days)");
+      (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
+      (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
+      if ( segIdx != nSegments-1 )
+      {
+         pTable->SetColumnSpan(rowIdx,colIdx,3);
+         (*pTable)(rowIdx,colIdx) << _T("Closure Joint ") << LABEL_SEGMENT(segIdx);
+         pTable->SetColumnSpan(rowIdx,colIdx+1,SKIP_CELL);
+         pTable->SetColumnSpan(rowIdx,colIdx+2,SKIP_CELL);
+         (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("i")) << rptNewLine << _T("(days)");
+         (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
+         (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
+      }
+   }
+   pTable->SetColumnSpan(rowIdx,colIdx,3);
+   (*pTable)(rowIdx,colIdx) << _T("Deck");
+   pTable->SetColumnSpan(rowIdx,colIdx+1,SKIP_CELL);
+   pTable->SetColumnSpan(rowIdx,colIdx+2,SKIP_CELL);
+   (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("i")) << rptNewLine << _T("(days)");
+   (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
+   (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+
+   rowIdx = pTable->GetNumberOfHeaderRows();
+   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, rowIdx++ )
+   {
+      colIdx = 0;
+      (*pTable)(rowIdx,colIdx++) << LABEL_INTERVAL(intervalIdx);
+
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey segmentKey(girderKey,segIdx);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+         if ( releaseIntervalIdx <= intervalIdx )
+         {
+            Float64 ti = pMaterials->GetSegmentConcreteAge(segmentKey,releaseIntervalIdx,pgsTypes::Middle);
+            Float64 t  = pMaterials->GetSegmentConcreteAge(segmentKey,intervalIdx,pgsTypes::End);
+            (*pTable)(rowIdx,colIdx++) << ti;
+            (*pTable)(rowIdx,colIdx++) << t-ti;
+            (*pTable)(rowIdx,colIdx++) << pMaterials->GetSegmentCreepCoefficient(segmentKey,releaseIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+         }
+         else
+         {
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+         }
+
+         if ( segIdx < nSegments-1 )
+         {
+            CClosureKey closureKey(segmentKey);
+            IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
+            if ( compositeClosureIntervalIdx <= intervalIdx )
+            {
+               Float64 ti = pMaterials->GetClosureJointConcreteAge(segmentKey,compositeClosureIntervalIdx,pgsTypes::Middle);
+               Float64 t  = pMaterials->GetClosureJointConcreteAge(segmentKey,intervalIdx,pgsTypes::End);
+               (*pTable)(rowIdx,colIdx++) << ti;
+               (*pTable)(rowIdx,colIdx++) << t-ti;
+               (*pTable)(rowIdx,colIdx++) << pMaterials->GetClosureJointCreepCoefficient(closureKey,compositeClosureIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+            }
+            else
+            {
+               (*pTable)(rowIdx,colIdx++) << _T("");
+               (*pTable)(rowIdx,colIdx++) << _T("");
+               (*pTable)(rowIdx,colIdx++) << _T("");
+            }
+         }
+      }
+
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+      if ( compositeDeckIntervalIdx <= intervalIdx )
+      {
+         Float64 ti = pMaterials->GetDeckConcreteAge(girderKey,compositeDeckIntervalIdx,pgsTypes::Middle);
+         Float64 t  = pMaterials->GetDeckConcreteAge(girderKey,intervalIdx,pgsTypes::End);
+         (*pTable)(rowIdx,colIdx++) << ti;
+         (*pTable)(rowIdx,colIdx++) << t-ti;
+         (*pTable)(rowIdx,colIdx++) << pMaterials->GetDeckCreepCoefficient(girderKey,compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+      }
+      else
+      {
+         (*pTable)(rowIdx,colIdx++) << _T("");
+         (*pTable)(rowIdx,colIdx++) << _T("");
+         (*pTable)(rowIdx,colIdx++) << _T("");
+      }
+   }
+#endif //#if defined _DEBUG || defined _BETA_VERSION
+
 
    return pChapter;
 }

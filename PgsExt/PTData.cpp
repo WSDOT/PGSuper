@@ -1529,7 +1529,7 @@ void CPTData::RemoveFromTimeline()
       {
          EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(gdrID,ductIdx);
          CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-         pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx);
+         pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx,true/*duct is removed from bridge model*/);
       }
    }
 }
@@ -1542,7 +1542,7 @@ void CPTData::RemoveFromTimeline(DuctIndexType ductIdx)
       GirderIDType gdrID = m_pGirder->GetID();
       EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(gdrID,ductIdx);
       CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-      pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx);
+      pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx,true/*duct is removed from bridge model*/);
    }
 }
 

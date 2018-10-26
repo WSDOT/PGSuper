@@ -76,6 +76,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
    m_SegmentErectionIntervals.clear();
    m_SegmentErectionSequenceIntervalLimits.clear();
    m_StrandStressingSequenceIntervalLimits.clear();
+   m_ReleaseSequenceIntervalLimits.clear();
    m_RemoveTemporaryStrandsIntervals.clear();
 
    m_StressTendonIntervals.clear();
@@ -216,14 +217,28 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator strandStressingFound(m_StrandStressingSequenceIntervalLimits.find(girderKey));
             if ( strandStressingFound == m_StrandStressingSequenceIntervalLimits.end() )
             {
-               // this is the first segment from the girder to be erected
+               // this is the first segment from the girder have strands stressed
                m_StrandStressingSequenceIntervalLimits.insert(std::make_pair(girderKey,std::make_pair(stressStrandIntervalIdx,stressStrandIntervalIdx)));
             }
             else
             {
-               // a segment from this girder has already been erected.. update the record
+               // a segment from this girder has already had its strands stressed.. update the record
                strandStressingFound->second.first  = Min(strandStressingFound->second.first, stressStrandIntervalIdx);
                strandStressingFound->second.second = Max(strandStressingFound->second.second,stressStrandIntervalIdx);
+            }
+
+            // this is for keeping track of when the strands are released for the first and last segments constructed for this girder
+            std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator releaseFound(m_ReleaseSequenceIntervalLimits.find(girderKey));
+            if ( releaseFound == m_ReleaseSequenceIntervalLimits.end() )
+            {
+               // this is the first segment from the girder to have its strands released
+               m_ReleaseSequenceIntervalLimits.insert(std::make_pair(girderKey,std::make_pair(releaseIntervalIdx,releaseIntervalIdx)));
+            }
+            else
+            {
+               // a segment from this girder has already had its strands released.. update the record
+               releaseFound->second.first  = Min(releaseFound->second.first, releaseIntervalIdx);
+               releaseFound->second.second = Max(releaseFound->second.second,releaseIntervalIdx);
             }
          } // next girder
       } // if activity
@@ -494,11 +509,10 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                   vIntervals.push_back(compositeDeckInterval);
                   IntervalIndexType compositeDeckIntervalIdx = vIntervals.size()-1;
 
-                  // there is no curing duration so the composite deck state is the curing deck stage
+                  // there is no curing duration so the composite deck stage is the curing deck stage
                   AddToStageMap(girderKey,compositeDeckIntervalIdx,cureDeckStageIdx);
                   m_CompositeDeckInterval.insert(std::make_pair(girderKey,compositeDeckIntervalIdx));
-                  cureDeckStageIdx = INVALID_INDEX; // not using the cure deck stage... will adjust stageIdx below
-                  bCureDeckStageUsed = false;
+                  bCureDeckStageUsed = false; // not using the cure deck stage... will adjust stageIdx below
                }
             } // next gdr
          } // next group
@@ -641,14 +655,13 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                   }
                   else
                   {
-                     //vIntervals.push_back(compositeDeckInterval);
-                     //IntervalIndexType compositeDeckIntervalIdx = vIntervals.size()-1;
+                     vIntervals.push_back(compositeDeckInterval);
+                     IntervalIndexType compositeDeckIntervalIdx = vIntervals.size()-1;
 
-                     //// there is no curing duration so the composite deck state is the curing deck stage
-                     //AddToStageMap(girderKey,compositeDeckIntervalIdx,cureDeckStageIdx);
-                     //m_CompositeDeckInterval.insert(std::make_pair(girderKey,compositeDeckIntervalIdx));
+                     // there is no curing duration so the composite deck state is the curing deck stage
+                     AddToStageMap(girderKey,compositeDeckIntervalIdx,cureDeckStageIdx);
+                     m_CompositeDeckInterval.insert(std::make_pair(girderKey,compositeDeckIntervalIdx));
                      bCureDeckStageUsed = false;
-                     bCompositeDeckStageUsed = false;
                   }
                }// next gdr
             } // next grp
@@ -1245,21 +1258,6 @@ Float64 CIntervalManager::GetTime(const CGirderKey& girderKey,IntervalIndexType 
    return time;
 }
 
-Float64 CIntervalManager::GetStart(const CGirderKey& girderKey,IntervalIndexType idx) const
-{
-   return GetTime(girderKey,idx,pgsTypes::Start);
-}
-
-Float64 CIntervalManager::GetMiddle(const CGirderKey& girderKey,IntervalIndexType idx) const
-{
-   return GetTime(girderKey,idx,pgsTypes::Middle);
-}
-
-Float64 CIntervalManager::GetEnd(const CGirderKey& girderKey,IntervalIndexType idx) const
-{
-   return GetTime(girderKey,idx,pgsTypes::End);
-}
-
 Float64 CIntervalManager::GetDuration(const CGirderKey& girderKey,IntervalIndexType idx) const
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
@@ -1387,6 +1385,60 @@ IntervalIndexType CIntervalManager::GetStressStrandInterval(const CSegmentKey& s
    std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_StressStrandIntervals.find(segmentKey));
    ATLASSERT( found != m_StressStrandIntervals.end());
    return found->second;
+}
+
+IntervalIndexType CIntervalManager::GetFirstPrestressReleaseInterval(const CGirderKey& girderKey) const
+{
+   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+   {
+      IntervalIndexType intervalIdx = MAX_INDEX;
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_ReleaseSequenceIntervalLimits.begin());
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_ReleaseSequenceIntervalLimits.end());
+      for ( ; iter != iterEnd; iter++ )
+      {
+         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
+              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+            )
+         {
+            intervalIdx = Min(intervalIdx,iter->second.first);
+         }
+      }
+      return intervalIdx;
+   }
+   else
+   {
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_ReleaseSequenceIntervalLimits.find(girderKey));
+      ATLASSERT(found != m_ReleaseSequenceIntervalLimits.end());
+      return found->second.first;
+   }
+}
+
+IntervalIndexType CIntervalManager::GetLastPrestressReleaseInterval(const CGirderKey& girderKey) const
+{
+   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+   {
+      IntervalIndexType intervalIdx = MAX_INDEX;
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_ReleaseSequenceIntervalLimits.begin());
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_ReleaseSequenceIntervalLimits.end());
+      for ( ; iter != iterEnd; iter++ )
+      {
+         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
+              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+            )
+         {
+            intervalIdx = Min(intervalIdx,iter->second.second);
+         }
+      }
+      return intervalIdx;
+   }
+   else
+   {
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_ReleaseSequenceIntervalLimits.find(girderKey));
+      ATLASSERT(found != m_ReleaseSequenceIntervalLimits.end());
+      return found->second.second;
+   }
 }
 
 IntervalIndexType CIntervalManager::GetPrestressReleaseInterval(const CSegmentKey& segmentKey) const
@@ -1637,25 +1689,18 @@ void CIntervalManager::AssertValid() const
    }
    ATLASSERT(stages.size() == 1);
 
-   if ( m_bTimeStepMethod )
+   stages.clear();
+   iter = m_CompositeDeckInterval.begin();
+   end  = m_CompositeDeckInterval.end();
+   for ( ; iter != end; iter++ )
    {
-      stages.clear();
-      iter = m_CompositeDeckInterval.begin();
-      end  = m_CompositeDeckInterval.end();
-      for ( ; iter != end; iter++ )
-      {
-         CGirderKey girderKey(iter->first);
-         IntervalIndexType intervalIdx = iter->second;
+      CGirderKey girderKey(iter->first);
+      IntervalIndexType intervalIdx = iter->second;
 
-         StageIndexType stageIdx = GetStage(girderKey,intervalIdx);
-         stages.insert(stageIdx);
-      }
-      ATLASSERT(stages.size() == 1);
+      StageIndexType stageIdx = GetStage(girderKey,intervalIdx);
+      stages.insert(stageIdx);
    }
-   else
-   {
-      ATLASSERT(m_CompositeDeckInterval.size() == 0);
-   }
+   ATLASSERT(stages.size() == 1);
 
    stages.clear();
    iter = m_LiveLoadInterval.begin();

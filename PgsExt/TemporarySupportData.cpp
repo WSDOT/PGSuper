@@ -382,12 +382,15 @@ pgsTypes::TemporarySupportType CTemporarySupportData::GetSupportType() const
 
 void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType newType,EventIndexType castClosureJointEvent)
 {
-   pgsTypes::SegmentConnectionType oldType = m_ConnectionType;
-   if ( oldType == newType )
+   if ( m_ConnectionType == newType )
+   {
       return; // nothing changed;
+   }
+
+   m_ConnectionType = newType;
 
    CBridgeDescription2* pBridgeDesc = m_pSpan->GetBridgeDescription();
-   if ( newType == pgsTypes::sctContinuousSegment )
+   if ( m_ConnectionType == pgsTypes::sctContinuousSegment )
    {
       // before the closure joints go away, remove their casting event from the timeline
       // manager
@@ -400,7 +403,7 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType ne
          pTimelineMgr->GetEventByIndex(eventIdx)->GetCastClosureJointActivity().RemoveTempSupport(GetID());
       }
 
-      // connection has changed to continuous segments... join segments
+      // connection has changed from closure joint to continuous segments... join segments
       CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_pSpan);
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -409,9 +412,9 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType ne
          pGirder->JoinSegmentsAtTemporarySupport(m_Index);
       }
    }
-   else if ( oldType == pgsTypes::sctContinuousSegment )
+   else if ( m_ConnectionType == pgsTypes::sctClosureJoint )
    {
-      // connection has changed from continuous... split at this temporary support
+      // connection has changed from continuous to closure joint... split at this temporary support
       CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_pSpan);
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -421,15 +424,13 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType ne
       }
 
       // add the closure joint casting events to the timeline manager.
+      CClosureJointData* pClosure = GetClosureJoint(0);
+      ClosureIDType closureID = pClosure->GetID();
       CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
-      CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(castClosureJointEvent);
-      ATLASSERT(pTimelineEvent != NULL);
-      pTimelineEvent->GetCastClosureJointActivity().AddTempSupport(GetID());
+      pTimelineMgr->SetCastClosureJointEventByIndex(closureID,castClosureJointEvent);
 
       m_Spacing.SetGirderCount(nGirders);
    }
-
-   m_ConnectionType = newType;
 }
 
 pgsTypes::SegmentConnectionType CTemporarySupportData::GetConnectionType() const

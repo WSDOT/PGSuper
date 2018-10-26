@@ -62,7 +62,7 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
 
-#if defined _BETA_VERSION
+#if defined _DEBUG || defined _BETA_VERSION
    pGraphMgr->AddGraphBuilder(new CVirtualWorkGraphBuilder);
 #endif
 }

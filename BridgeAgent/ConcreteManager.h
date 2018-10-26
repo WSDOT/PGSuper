@@ -26,6 +26,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\Keys.h>
 #include <Material\Material.h>
+#include <LRFD\LRFD.h>
 #include "StatusItems.h"
 #include <map>
 
@@ -152,8 +153,10 @@ private:
    matConcreteBase* CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime,Float64 vs);
 
    // factory method for LRFD concrete (non time-dependent version)
-   matLRFDConcrete* CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 stepTime);
-   // matConcreteBase* CreateTimeDependentLRFDConcreteModel();
+   lrfdLRFDConcrete* CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime);
+
+   // factory method for LRFD concrete (time-dependent version)
+   lrfdLRFDTimeDependentConcrete* CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading);
 
    // factory method for ACI209 concrete model
    matACI209Concrete* CreateACI209Model(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading);

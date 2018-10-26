@@ -33,12 +33,14 @@ class CTimelineEventDlg : public CDialog
 	DECLARE_DYNAMIC(CTimelineEventDlg)
 
 public:
-	CTimelineEventDlg(const CTimelineManager* pTimelineMgr,BOOL bEditEvent,CWnd* pParent = NULL);   // standard constructor
+	CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CTimelineEventDlg();
 
+   bool UpdateTimelineManager(const CTimelineManager& timelineMgr);
+
+   CTimelineManager m_TimelineManager; // our local copy of the timeline manager which were are operating upon
+   CTimelineEvent* m_pTimelineEvent; // the event in m_TimelineManager that we are operating upon
    EventIndexType m_EventIndex;
-   CTimelineEvent m_TimelineEvent;
-   const CTimelineManager* m_pTimelineMgr;
 
 // Dialog Data
 	enum { IDD = IDD_TIMELINE_EVENT };
@@ -47,8 +49,6 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
    BOOL m_bEdit;
 
-   //CMenu m_mnuAdd;
-   //CMFCMenuButton m_btnAdd;
    CCoolButton m_btnAdd;
    CActivityGrid m_Grid;
    CListCtrl m_TimelineEventList;

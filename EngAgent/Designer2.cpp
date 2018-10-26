@@ -691,16 +691,17 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
 
       // get the POI that will be used for spec checking
       std::vector<pgsPointOfInterest> releasePois( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
-      std::vector<pgsPointOfInterest> erectedPois( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+//      std::vector<pgsPointOfInterest> erectedPois( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+      std::vector<pgsPointOfInterest> erectedPois( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
 
-      std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_H | POI_HARPINGPOINT));
+      std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL,POIFIND_OR));
       releasePois.insert(releasePois.end(),vOtherPoi.begin(),vOtherPoi.end());
       erectedPois.insert(erectedPois.end(),vOtherPoi.begin(),vOtherPoi.end());
 
       std::sort(releasePois.begin(),releasePois.end());
       std::sort(erectedPois.begin(),erectedPois.end());
 
-      // remove any duplicate (sometimes PSXFER and HARPINGPOINT share location with other pois)
+      // remove any duplicate
       releasePois.erase(std::unique(releasePois.begin(),releasePois.end()),releasePois.end());
       erectedPois.erase(std::unique(erectedPois.begin(),erectedPois.end()),erectedPois.end());
 
@@ -713,12 +714,8 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
       // Check allowable stresses in all applicable intervals
-      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-      for ( ; iter != end; iter++ )
+      BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
       {
-         IntervalIndexType intervalIdx = *iter;
-
          // POIs to spec check
          std::vector<pgsPointOfInterest> vPoi;
          if ( intervalIdx < erectSegmentIntervalIdx )
@@ -1419,7 +1416,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
    Float64 Tmax = pDuctLimits->GetDuctSizeLimit(girderKey);
    Float64 Rmin = pDuctLimits->GetRadiusOfCurvatureLimit(girderKey);
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE_NOCHECK(IIntervals,pIntervals); // only used if there are tendons
    GET_IFACE(ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )

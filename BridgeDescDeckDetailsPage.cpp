@@ -248,22 +248,19 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
          Float64 grossDepth;
          bool bCheckDepth = false;
-         CString strMsg1;
-         CString strMsg2;
+         CString strMsg;
 
          if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP ||
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay ) // CIP deck
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-            strMsg1 = _T("Slab Offset must be larger than the gross slab depth");
-            strMsg2 = _T("Overhang edge depth must be less than the gross slab depth");
+            strMsg = _T("Slab Offset must be larger than the gross slab depth + fillet");
             bCheckDepth = true;
          }
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
-            strMsg1 = _T("Slab Offset must be larger than the cast depth + panel depth");
-            strMsg2 = _T("Overhang edge depth must be less than the cast depth + panel depth");
+            strMsg = _T("Slab Offset must be larger than the cast depth + panel depth + fillet");
             bCheckDepth = true;
          }
          else
@@ -272,9 +269,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             // should not get here
          }
 
-         if ( bCheckDepth && m_SlabOffset < grossDepth )
+         if ( bCheckDepth && m_SlabOffset < grossDepth + pParent->m_BridgeDesc.GetDeckDescription()->Fillet )
          {
-            AfxMessageBox(strMsg1);
+            AfxMessageBox(strMsg);
             pDX->PrepareEditCtrl(IDC_ADIM);
             pDX->Fail();
          }
@@ -286,19 +283,21 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          
          pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotGirder); // force to girder-by-girder
 
-         Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
+         Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
 
          if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP || 
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay )
          {
             pDX->PrepareEditCtrl(IDC_GROSS_DEPTH);
-            if ( maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
+            Float64 maxGrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet;
+            Float64 grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+            if ( ::IsLT(maxGrossDepth,grossDepth) )
             {
                CString msg;
-               msg.Format(_T("Gross slab depth must less than %s to accomodate the %s fillet and maximum slab offset of %s"),
-                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
+               msg.Format(_T("Gross slab depth must less than %s to accomodate the %s fillet and minimum slab offset of %s"),
+                            FormatDimension(maxGrossDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
-                            FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+                            FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
             }
@@ -306,14 +305,16 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP )
          {
             pDX->PrepareEditCtrl(IDC_PANEL_DEPTH);
-            if ( maxSlabOffset -  pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
+            Float64 maxCastDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet;
+            Float64 castDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+            if ( ::IsLT(maxCastDepth,castDepth) )
             {
                CString msg;
-               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and maximum slab offset of %s"),
-                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
+               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and minimum slab offset of %s"),
+                            FormatDimension(maxCastDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
-                            FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+                            FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
             }
@@ -891,16 +892,6 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
       _T("Max Aggregate Size"),  FormatDimension(pDeck->Concrete.MaxAggregateSize,aggsize)
       );
 
-   //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-   //{
-   //   // add K1 parameter
-   //   CString strK1;
-   //   strK1.Format(_T("\r\n%-20s %s"),
-   //      _T("K1"),FormatScalar(pDeck->SlabK1,scalar));
-
-   //   strTip += strK1;
-   //}
-
    if ( pDeck->Concrete.Type != pgsTypes::Normal && pDeck->Concrete.bHasFct )
    {
       CString strLWC;
@@ -1106,10 +1097,18 @@ void CBridgeDescDeckDetailsPage::FillEventList()
    {
       pcbDeckEvent->SetCurSel(deckEventIdx);
    }
+   else
+   {
+      pcbDeckEvent->SetCurSel(0);
+   }
 
    if ( overlayEventIdx != CB_ERR )
    {
       pcbOverlayEvent->SetCurSel(overlayEventIdx);
+   }
+   else
+   {
+      pcbOverlayEvent->SetCurSel(0);
    }
 }
 
@@ -1194,14 +1193,14 @@ void CBridgeDescDeckDetailsPage::OnOverlayEventChanged()
    if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
       CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-      CTimelineEventDlg dlg(pParent->m_BridgeDesc.GetTimelineManager(),FALSE);
+      CTimelineEventDlg dlg(*pParent->m_BridgeDesc.GetTimelineManager(),INVALID_INDEX,FALSE);
       if ( dlg.DoModal() == IDOK )
       {
          bool bDone = false;
          bool bAdjustTimeline = false;
          while ( !bDone )
          {
-            int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(dlg.m_TimelineEvent,bAdjustTimeline,&eventIdx);
+            int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(*dlg.m_pTimelineEvent,bAdjustTimeline,&eventIdx);
             if ( result == TLM_SUCCESS )
             {
                bDone = true;
@@ -1254,11 +1253,11 @@ void CBridgeDescDeckDetailsPage::OnOverlayEventChanged()
 EventIndexType CBridgeDescDeckDetailsPage::CreateEvent()
 {
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   CTimelineEventDlg dlg(pParent->m_BridgeDesc.GetTimelineManager(),FALSE);
+   CTimelineEventDlg dlg(*pParent->m_BridgeDesc.GetTimelineManager(),INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
       EventIndexType eventIdx;
-      int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(dlg.m_TimelineEvent,true,&eventIdx);
+      int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
       return eventIdx;
   }
 

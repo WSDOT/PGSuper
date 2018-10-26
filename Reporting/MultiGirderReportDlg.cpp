@@ -242,7 +242,7 @@ void CMultiGirderReportDlg::InitChapterListFromSpec()
 
 void CMultiGirderReportDlg::InitFromRptSpec()
 {
-   boost::shared_ptr<CMultiGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CMultiGirderReportSpecification>(m_pInitRptSpec);
+   boost::shared_ptr<CMultiGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CMultiGirderReportSpecification>(m_pInitRptSpec);
    ATLASSERT(pRptSpec); // is there a new mode?
    m_GirderKeys = pRptSpec->GetGirderKeys();
 

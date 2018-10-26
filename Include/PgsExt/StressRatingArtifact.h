@@ -58,6 +58,9 @@ public:
    void SetPointOfInterest(const pgsPointOfInterest& poi);
    const pgsPointOfInterest& GetPointOfInterest() const;
 
+   void SetStressLocation(pgsTypes::StressLocation stressLocation);
+   pgsTypes::StressLocation GetStressLocation() const;
+
    void SetRatingType(pgsTypes::LoadRatingType ratingType);
    pgsTypes::LoadRatingType GetLoadRatingType() const;
 
@@ -133,6 +136,8 @@ protected:
    mutable Float64 m_RF;
 
    pgsPointOfInterest m_POI;
+
+   pgsTypes::StressLocation m_StressLocation;
 
    pgsTypes::LoadRatingType m_RatingType;
 

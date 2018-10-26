@@ -157,12 +157,12 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          Float64 intEdge, extEdge;
          pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboLeft, &intEdge, &extEdge);
          Float64 dist = fabs(intEdge+extEdge )/2.0;
-         (*pPara) << _T("Distance from Nominal Centerline of Left Sidewalk to Left Edge of Deck = ")<<dim.SetValue( dist ) << rptNewLine;
+         (*pPara) << _T("Distance from Nominal Centerline of Left Sidewalk to Left Edge of Deck = ") << dim.SetValue( dist ) << rptNewLine;
          pBarriers->GetSidewalkDeadLoadEdges(pgsTypes::tboLeft, &intEdge, &extEdge);
-         (*pPara) << _T("Left Sidewalk Actual Width = ")<<dim.SetValue( fabs(intEdge-extEdge) ) << rptNewLine;
-         (*pPara) << _T("Left Sidewalk Face Depth = ")<<dim.SetValue( pLeftRailing->RightDepth ) << rptNewLine;
-         (*pPara) << _T("Left Sidewalk Back Depth = ")<<dim.SetValue( pLeftRailing->LeftDepth ) << rptNewLine;
-         (*pPara) << _T("Left Sidewalk Weight = ")<<fpl.SetValue( pBarriers->GetSidewalkWeight(pgsTypes::tboLeft) ) << rptNewLine;
+         (*pPara) << _T("Left Sidewalk Actual Width =  ") << dim.SetValue( fabs(intEdge-extEdge) ) << rptNewLine;
+         (*pPara) << _T("Left Sidewalk Face   Depth =  ") << dim.SetValue( pLeftRailing->RightDepth ) << rptNewLine;
+         (*pPara) << _T("Left Sidewalk Back   Depth =  ") << dim.SetValue( pLeftRailing->LeftDepth ) << rptNewLine;
+         (*pPara) << _T("Left Sidewalk Weight = ") << fpl.SetValue( pBarriers->GetSidewalkWeight(pgsTypes::tboLeft) ) << rptNewLine;
       }
 
       *pPara << rptNewLine;
@@ -178,41 +178,41 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
       if ( pRightRailing->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
       {
-         (*pPara) << _T("Right Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+         (*pPara) << _T("Right Traffic Barrier Weight (computed from area) = ") << fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
       }
       else
       {
-         (*pPara) << _T("Right Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+         (*pPara) << _T("Right Traffic Barrier Weight = ") << fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
       }
 
-      (*pPara) << _T("Distance from CG of Right Exterior Traffic Barrier to Right Edge of Deck = ")<<dim.SetValue( pBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboRight) ) << rptNewLine;
+      (*pPara) << _T("Distance from CG of Right Exterior Traffic Barrier to Right Edge of Deck = ") << dim.SetValue( pBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboRight) ) << rptNewLine;
 
       if ( pRightRailing->bUseInteriorRailing)
       {
          if ( pRightRailing->GetInteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
          {
-            (*pPara) << _T("Right Interior Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+            (*pPara) << _T("Right Interior Traffic Barrier Weight (computed from area) = ") << fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
          }
          else
          {
-            (*pPara) << _T("Right Interior Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+            (*pPara) << _T("Right Interior Traffic Barrier Weight = ") << fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
          }
 
-         (*pPara) << _T("Distance from CG of Right Interior Traffic Barrier to Right Edge of Deck = ")<<dim.SetValue( pBarriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboRight) ) << rptNewLine;
+         (*pPara) << _T("Distance from CG of Right Interior Traffic Barrier to Right Edge of Deck = ") << dim.SetValue( pBarriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboRight) ) << rptNewLine;
       }
 
       if ( pRightRailing->bUseSidewalk)
       {
-         (*pPara) << _T("Right Sidewalk Nominal Width = ")<<dim.SetValue( pRightRailing->Width ) << rptNewLine;
+         (*pPara) << _T("Right Sidewalk Nominal Width = ") << dim.SetValue( pRightRailing->Width ) << rptNewLine;
          Float64 intEdge, extEdge;
          pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboRight, &intEdge, &extEdge);
          Float64 dist = fabs(intEdge+extEdge )/2.0;
          (*pPara) << _T("Distance from Nominal Centerline of Right Sidewalk to Right Edge of Deck = ")<<dim.SetValue( dist ) << rptNewLine;
          pBarriers->GetSidewalkDeadLoadEdges(pgsTypes::tboRight, &intEdge, &extEdge);
-         (*pPara) << _T("Right Sidewalk Actual Width = ")<<dim.SetValue( fabs(intEdge-extEdge) ) << rptNewLine;
-         (*pPara) << _T("Right Sidewalk Face Depth = ")<<dim.SetValue( pRightRailing->RightDepth ) << rptNewLine;
-         (*pPara) << _T("Right Sidewalk Back Depth = ")<<dim.SetValue( pRightRailing->LeftDepth ) << rptNewLine;
-         (*pPara) << _T("Right Sidewalk Weight = ")<<fpl.SetValue( pBarriers->GetSidewalkWeight(pgsTypes::tboRight) ) << rptNewLine;
+         (*pPara) << _T("Right Sidewalk Actual Width = ") << dim.SetValue( fabs(intEdge-extEdge) ) << rptNewLine;
+         (*pPara) << _T("Right Sidewalk Face Depth = ") << dim.SetValue( pRightRailing->RightDepth ) << rptNewLine;
+         (*pPara) << _T("Right Sidewalk Back Depth = ") << dim.SetValue( pRightRailing->LeftDepth ) << rptNewLine;
+         (*pPara) << _T("Right Sidewalk Weight = ") << fpl.SetValue( pBarriers->GetSidewalkWeight(pgsTypes::tboRight) ) << rptNewLine;
       }
 
       *pPara << rptNewLine;
@@ -221,6 +221,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       {
          GET_IFACE2(pBroker, IMaterials,         pMaterial);
         (*pPara) << _T("Slab   ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetDeckEc28() ) << rptNewLine;
+        (*pPara) << rptNewLine;
       }
    }
 
@@ -233,7 +234,32 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
 
-   Float64 start_of_bridge_station = pBridge->GetPierStation(0);
+   if ( !m_SimplifiedVersion )
+   {
+      for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+      {
+         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+         PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+         PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
+
+         SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
+         SpanIndexType endSpanIdx   = (SpanIndexType)(endPierIdx-1);
+
+         for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+         {
+            Float64 startStation = pBridge->GetPierStation((PierIndexType)spanIdx);
+            Float64 endStation   = pBridge->GetPierStation((PierIndexType)spanIdx+1);
+            Float64 XbStart = pBridge->GetDistanceFromStartOfBridge(startStation);
+            Float64 XbEnd   = pBridge->GetDistanceFromStartOfBridge(endStation);
+            Float64 Xb = 0.5*(XbStart + XbEnd);
+
+            (*pPara) << _T("Bending Stiffness of Entire Bridge Section at center of Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("xx")) << _T(" = ") << uei.SetValue( pSectProp->GetBridgeEIxx(Xb) ) << _T(" (used to compute Live Load Deflections per LRFD 3.6.1.3.2)") << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("yy")) << _T(" = ") << uei.SetValue( pSectProp->GetBridgeEIyy(Xb) ) << rptNewLine;
+            *pPara << rptNewLine;
+         }
+      }
+   }
 
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
@@ -272,23 +298,6 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
             pPara = new rptParagraph();
             *pChapter << pPara;
-
-            if (!m_SimplifiedVersion)
-            {
-               if ( thisSegmentKey.segmentIndex != ALL_SEGMENTS )
-               {
-                  Float64 span_length = pBridge->GetSegmentSpanLength(thisSegmentKey);
-   #pragma Reminder("UPDATE: this looks like it could be a bug")
-                  // using grpIdx for pier station... assumes precast girder bridge
-                  // what happens if this is a spliced girder bridge (with multiple girder groups?)
-                  Float64 start_of_span_station = pBridge->GetPierStation(grpIdx);
-                  Float64 dist_from_start_of_bridge_to_mid_span = start_of_span_station - start_of_bridge_station + span_length/2; 
-                  (*pPara) << _T("Bending Stiffness of Entire Bridge Section at mid-span") << rptNewLine;
-                  (*pPara) << Sub2(_T("EI"),_T("xx")) << _T(" = ") << uei.SetValue( pSectProp->GetBridgeEIxx(dist_from_start_of_bridge_to_mid_span) ) << _T(" (used to compute Live Load Deflections per LRFD 3.6.1.3.2)") << rptNewLine;
-                  (*pPara) << Sub2(_T("EI"),_T("yy")) << _T(" = ") << uei.SetValue( pSectProp->GetBridgeEIyy(dist_from_start_of_bridge_to_mid_span) ) << rptNewLine;
-                  *pPara << rptNewLine;
-               } // end of if for segmentKey.segmentIndex
-            }
 
             bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(constructionEventIdx,thisSegmentKey);
             bool bIsPrismatic_Final       = pGirder->IsPrismatic(liveLoadEventIdx,thisSegmentKey);
@@ -361,22 +370,3 @@ CChapterBuilder* CSectPropChapterBuilder::Clone() const
 {
    return new CSectPropChapterBuilder;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

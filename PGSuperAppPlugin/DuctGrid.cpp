@@ -832,10 +832,10 @@ EventIndexType CDuctGrid::CreateEvent()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
-   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+      return pIBridgeDesc->AddTimelineEvent(*dlg.m_pTimelineEvent);
    }
 
    return INVALID_INDEX;

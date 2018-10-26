@@ -33,6 +33,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>
+#include <EAF\EAFDisplayUnits.h>
 
 void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pIntervals,
                        std::vector<pgsPointOfInterest>::const_iterator poiBeginIter,
@@ -120,6 +121,12 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
    std::vector<Float64> vLLIMmin,vLLIMmax;
    std::vector<Float64> vPLmin,vPLmax;
    std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
+
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Load rating for moment"));
+
    GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPoi, vDCmin, vDCmax, vDWmin, vDWmax, vCRmin, vCRmax, vSHmin, vSHmax, vREmin, vREmax, vPSmin, vPSmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
 
    CGirderKey thisGirderKey(girderKey);
@@ -171,6 +178,18 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
       const pgsPointOfInterest& poi = vPoi[i];
+
+      CString strProgress;
+      if ( poi.HasGirderCoordinate() )
+      {
+         strProgress.Format(_T("Load rating for %s moment at %s"),bPositiveMoment ? _T("positive") : _T("negative"),
+            ::FormatDimension(poi.GetGirderCoordinate(),pDisplayUnits->GetSpanLengthUnit()));
+      }
+      else
+      {
+         strProgress.Format(_T("Load rating for %s moment"),bPositiveMoment ? _T("positive") : _T("negative"));
+      }
+      pProgress->UpdateMessage(strProgress);
 
       Float64 condition_factor = (bPositiveMoment ? pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey()) 
                                                   : pRatingSpec->GetDeckConditionFactor() );
@@ -266,6 +285,11 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
 
 void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Load rating for shear"));
+
    CGirderKey thisGirderKey(girderKey);
    if ( thisGirderKey.groupIndex == ALL_GROUPS )
    {
@@ -395,6 +419,18 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
       const pgsPointOfInterest& poi = vPoi[i];
+
+      CString strProgress;
+      if ( poi.HasGirderCoordinate() )
+      {
+         strProgress.Format(_T("Load rating for shear at %s"),
+            ::FormatDimension(poi.GetGirderCoordinate(),pDisplayUnits->GetSpanLengthUnit()));
+      }
+      else
+      {
+         strProgress = _T("Load rating for shear");
+      }
+      pProgress->UpdateMessage(strProgress);
 
       Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
 
@@ -529,6 +565,11 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
              ratingType == pgsTypes::lrLegal_Routine    ||
              ratingType == pgsTypes::lrLegal_Special ); // see MBE C6A.5.4.1
 
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Load rating for flexural stresses"));
+
 
    CGirderKey thisGirderKey(girderKey);
    if ( thisGirderKey.groupIndex == ALL_GROUPS )
@@ -542,142 +583,27 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   std::vector<Float64> vDCTopMin, vDCBotMin, vDCTopMax, vDCBotMax;
-   std::vector<Float64> vDWTopMin, vDWBotMin, vDWTopMax, vDWBotMax;
-   std::vector<Float64> vCRTopMin, vCRBotMin, vCRTopMax, vCRBotMax;
-   std::vector<Float64> vSHTopMin, vSHBotMin, vSHTopMax, vSHBotMax;
-   std::vector<Float64> vRETopMin, vREBotMin, vRETopMax, vREBotMax;
-   std::vector<Float64> vPSTopMin, vPSBotMin, vPSTopMax, vPSBotMax;
-   std::vector<Float64> vLLIMTopMin, vLLIMBotMin, vLLIMTopMax, vLLIMBotMax;
-   std::vector<Float64> vUnused1,vUnused2;
-   std::vector<VehicleIndexType> vTruckIndexTopMin, vTruckIndexTopMax, vTruckIndexBotMin, vTruckIndexBotMax;
-   std::vector<VehicleIndexType> vUnusedIndex1, vUnusedIndex2;
-   std::vector<Float64> vPLTopMin, vPLBotMin, vPLTopMax, vPLBotMax;
+   GET_IFACE(IPrecompressedTensileZone,pPTZ);
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
-   pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
-   pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
-
-   GET_IFACE(ICombinedForces2,pCombinedForces);
-   GET_IFACE(IProductForces2,pProductForces);
+   GET_IFACE(ICombinedForces,pCombinedForces);
+   GET_IFACE(IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType bat;
    if ( analysisType == pgsTypes::Envelope )
    {
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDC,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vDCTopMin,&vDCBotMin);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDC,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vDCTopMax,&vDCBotMax);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDWRating,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vDWTopMin,&vDWBotMin);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDWRating,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vDWTopMax,&vDWBotMax);
-
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcCR,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vCRTopMin,&vCRBotMin);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcCR,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vCRTopMax,&vCRBotMax);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcSH,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vSHTopMin,&vSHBotMin);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcSH,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vSHTopMax,&vSHBotMax);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcRE,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vRETopMin,&vREBotMin);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcRE,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vRETopMax,&vREBotMax);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcPS,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vPSTopMin,&vPSBotMin);
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcPS,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vPSTopMax,&vPSBotMax);
-
-      if ( vehicleIdx == INVALID_INDEX )
-      {
-         pProductForces->GetLiveLoadStress(loadRatingIntervalIdx,llType,vPoi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,&vTruckIndexTopMin, &vUnusedIndex1, &vTruckIndexBotMin, &vUnusedIndex2);
-         pProductForces->GetLiveLoadStress(loadRatingIntervalIdx,llType,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,&vUnusedIndex1, &vTruckIndexTopMax, &vUnusedIndex2, &vTruckIndexBotMax);
-      }
-      else
-      {
-         pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,NULL,NULL,NULL,NULL);
-         pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,NULL,NULL,NULL,NULL);
-      }
-
-      pCombinedForces->GetCombinedLiveLoadStress( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, topLocation, botLocation, &vUnused1,  &vPLTopMax, &vUnused2, &vPLBotMax );
-      pCombinedForces->GetCombinedLiveLoadStress( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, pgsTypes::MinSimpleContinuousEnvelope, topLocation, botLocation, &vPLTopMin, &vUnused2,  &vPLBotMin, &vUnused2 );
+      bat = pgsTypes::MaxSimpleContinuousEnvelope;
    }
    else
    {
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDC,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative,topLocation,botLocation,&vDCTopMin,&vDCBotMin);
-      vDCTopMax = vDCTopMin;
-      vDCBotMax = vDCBotMin;
-
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDWRating,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative,topLocation,botLocation,&vDWTopMin,&vDWBotMin);
-      vDWTopMax = vDWTopMin;
-      vDWBotMax = vDWBotMin;
-
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcCR,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative,topLocation,botLocation,&vCRTopMin,&vCRBotMin);
-      vCRTopMax = vCRTopMin;
-      vCRBotMax = vCRBotMin;
-
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcSH,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative,topLocation,botLocation,&vSHTopMin,&vSHBotMin);
-      vSHTopMax = vSHTopMin;
-      vSHBotMax = vSHBotMin;
-
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcRE,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative,topLocation,botLocation,&vRETopMin,&vREBotMin);
-      vRETopMax = vRETopMin;
-      vREBotMax = vREBotMin;
-
-      pCombinedForces->GetStress(loadRatingIntervalIdx,lcPS,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative,topLocation,botLocation,&vPSTopMin,&vPSBotMin);
-      vPSTopMax = vPSTopMin;
-      vPSBotMax = vPSBotMin;
-
-      if ( vehicleIdx == INVALID_INDEX )
-      {
-         pProductForces->GetLiveLoadStress(loadRatingIntervalIdx,llType,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,&vTruckIndexTopMin, &vTruckIndexTopMax, &vTruckIndexBotMin, &vTruckIndexBotMax);
-      }
-      else
-      {
-         pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,NULL,NULL,NULL,NULL);
-      }
-
-      pCombinedForces->GetCombinedLiveLoadStress( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, topLocation, botLocation, &vPLTopMin, &vPLTopMax,  &vPLBotMin, &vPLBotMax );
+      bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
    }
 
-   ATLASSERT(vPoi.size() == vDCTopMin.size());
-   ATLASSERT(vPoi.size() == vDCTopMax.size());
-   ATLASSERT(vPoi.size() == vDCBotMin.size());
-   ATLASSERT(vPoi.size() == vDCBotMax.size());
-
-   ATLASSERT(vPoi.size() == vDWTopMin.size());
-   ATLASSERT(vPoi.size() == vDWTopMax.size());
-   ATLASSERT(vPoi.size() == vDWBotMin.size());
-   ATLASSERT(vPoi.size() == vDWBotMax.size());
-
-   ATLASSERT(vPoi.size() == vCRTopMin.size());
-   ATLASSERT(vPoi.size() == vCRTopMax.size());
-   ATLASSERT(vPoi.size() == vCRBotMin.size());
-   ATLASSERT(vPoi.size() == vCRBotMax.size());
-
-   ATLASSERT(vPoi.size() == vSHTopMin.size());
-   ATLASSERT(vPoi.size() == vSHTopMax.size());
-   ATLASSERT(vPoi.size() == vSHBotMin.size());
-   ATLASSERT(vPoi.size() == vSHBotMax.size());
-
-   ATLASSERT(vPoi.size() == vRETopMin.size());
-   ATLASSERT(vPoi.size() == vRETopMax.size());
-   ATLASSERT(vPoi.size() == vREBotMin.size());
-   ATLASSERT(vPoi.size() == vREBotMax.size());
-
-   ATLASSERT(vPoi.size() == vPSTopMin.size());
-   ATLASSERT(vPoi.size() == vPSTopMax.size());
-   ATLASSERT(vPoi.size() == vPSBotMin.size());
-   ATLASSERT(vPoi.size() == vPSBotMax.size());
-
-   ATLASSERT(vPoi.size() == vLLIMTopMin.size());
-   ATLASSERT(vPoi.size() == vLLIMTopMax.size());
-   ATLASSERT(vPoi.size() == vLLIMBotMin.size());
-   ATLASSERT(vPoi.size() == vLLIMBotMax.size());
-
-   ATLASSERT(vPoi.size() == vPLTopMin.size());
-   ATLASSERT(vPoi.size() == vPLTopMax.size());
-   ATLASSERT(vPoi.size() == vPLBotMin.size());
-   ATLASSERT(vPoi.size() == vPLBotMax.size());
-
    GET_IFACE(IPretensionStresses,pPrestress);
-   std::vector<Float64> vPS = pPrestress->GetStress(loadRatingIntervalIdx,vPoi,pgsTypes::BottomGirder);
-
    GET_IFACE(IPosttensionStresses,pPostTension); // this is the primary, direct post-tensioning stress (P*e)
-   std::vector<Float64> vPT = pPostTension->GetStress(loadRatingIntervalIdx,vPoi,pgsTypes::BottomGirder,ALL_DUCTS);
-
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
-   Float64 system_factor    = pRatingSpec->GetSystemFactorFlexure();
+   Float64 system_factor = pRatingSpec->GetSystemFactorFlexure();
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
    pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
@@ -692,94 +618,162 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
    GET_IFACE(IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   CollectionIndexType nPOI = vPoi.size();
-   for ( CollectionIndexType i = 0; i < nPOI; i++ )
+   BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
    {
-      const pgsPointOfInterest& poi = vPoi[i];
-
-      // do this in the loop because the vector of POI can be for multiple segments
-      Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
-      Float64 fr               = pRatingSpec->GetAllowableTension(ratingType,poi.GetSegmentKey());
-      Float64 ps   = vPS[i];
-      Float64 pt   = vPT[i];
-
-      Float64 DC   = vDCBotMax[i];
-      Float64 DW   = vDWBotMax[i];
-      Float64 CR   = vCRBotMax[i];
-      Float64 SH   = vSHBotMax[i];
-      Float64 RE   = vREBotMax[i];
-      Float64 PS   = vPSBotMax[i];
-      Float64 LLIM = vLLIMBotMax[i];
-      Float64 PL   = (bIncludePL ? vPLBotMax[i] : 0);
-
-      VehicleIndexType truck_index = vehicleIdx;
-      if ( vehicleIdx == INVALID_INDEX )
+      std::vector<pgsTypes::StressLocation> vStressLocations;
+      for ( int i = 0; i < 4; i++ )
       {
-         truck_index = vTruckIndexBotMax[i];
+         pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
+         if ( pPTZ->IsInPrecompressedTensileZone(poi,stressLocation,bat) )
+         {
+            vStressLocations.push_back(stressLocation);
+         }
       }
 
-      Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
-      if ( gLL < 0 )
+      if ( vStressLocations.size() == 0 )
       {
-         if ( ::IsStrengthLimitState(ls) )
+         // no sections are in the precompressed tensile zone... how is this possible?
+         ATLASSERT(false);
+         pgsStressRatingArtifact stressArtifact;
+         ratingArtifact.AddArtifact(poi,stressArtifact);
+         continue; // next POI
+      }
+
+      std::vector<pgsStressRatingArtifact> vArtifacts;
+      BOOST_FOREACH(const pgsTypes::StressLocation& stressLocation,vStressLocations)
+      {
+         CString strProgress;
+         if ( poi.HasGirderCoordinate() )
          {
-            // need to compute gLL based on axle weights
-            GET_IFACE(IProductForces,pProductForce);
-
-            Float64 fMinTop, fMinBot, fMaxTop, fMaxBot, fDummyTop, fDummyBot;
-            AxleConfiguration MinAxleConfigTop, MinAxleConfigBot, MaxAxleConfigTop, MaxAxleConfigBot, DummyAxleConfigTop, DummyAxleConfigBot;
-            if ( analysisType == pgsTypes::Envelope )
-            {
-               pProductForce->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
-               pProductForce->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
-            }
-            else
-            {
-               pProductForce->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
-            }
-
-            gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
+            strProgress.Format(_T("Load rating for flexural stress at %s"),
+               ::FormatDimension(poi.GetGirderCoordinate(),pDisplayUnits->GetSpanLengthUnit()));
          }
          else
          {
-            gLL = GetServiceLiveLoadFactor(ratingType);
+            strProgress = _T("Load rating for flexural stress");
          }
+         pProgress->UpdateMessage(strProgress);
+
+         Float64 fDummy, fDC, fDW, fCR, fSH, fRE, fPS, fLLIM, fPL;
+         pCombinedForces->GetStress(loadRatingIntervalIdx,lcDC,      poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fDC);
+         pCombinedForces->GetStress(loadRatingIntervalIdx,lcDWRating,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fDW);
+
+         pCombinedForces->GetStress(loadRatingIntervalIdx,lcCR,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fCR);
+         pCombinedForces->GetStress(loadRatingIntervalIdx,lcSH,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fSH);
+         pCombinedForces->GetStress(loadRatingIntervalIdx,lcRE,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fRE);
+         pCombinedForces->GetStress(loadRatingIntervalIdx,lcPS,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fPS);
+
+         Float64 fDummy1, fDummy2, fDummy3;
+         VehicleIndexType truckIndex, dummyIndex1, dummyIndex2, dummyIndex3;
+
+         if ( vehicleIdx == INVALID_INDEX )
+         {
+            pProductForces->GetLiveLoadStress(loadRatingIntervalIdx,llType,poi,bat,true,true,stressLocation,stressLocation,&fDummy1,&fDummy2,&fDummy3,&fLLIM,&dummyIndex1, &dummyIndex2, &dummyIndex3, &truckIndex);
+         }
+         else
+         {
+            pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,poi,bat,true,true,stressLocation,stressLocation,&fDummy1,&fDummy2,&fDummy3,&fLLIM,NULL,NULL,NULL,NULL);
+         }
+
+         if ( bIncludePL )
+         {
+            pCombinedForces->GetCombinedLiveLoadStress( loadRatingIntervalIdx, pgsTypes::lltPedestrian, poi, bat, stressLocation, stressLocation, &fDummy,  &fDummy2, &fDummy3, &fPL);
+         }
+         else
+         {
+            fPL = 0;
+         }
+
+         Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation);
+         Float64 fpt = pPostTension->GetStress(loadRatingIntervalIdx,poi,stressLocation,ALL_DUCTS);
+
+         // do this in the loop because the vector of POI can be for multiple segments
+         Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
+         Float64 fr               = pRatingSpec->GetAllowableTension(ratingType,poi.GetSegmentKey());
+
+         VehicleIndexType truck_index = vehicleIdx;
+         if ( vehicleIdx == INVALID_INDEX )
+         {
+            truck_index = truckIndex;
+         }
+
+         Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
+         if ( gLL < 0 )
+         {
+            if ( ::IsStrengthLimitState(ls) )
+            {
+               // need to compute gLL based on axle weights
+               Float64 fMax, fDummy1, fDummy2, fDummy3;
+               AxleConfiguration MaxAxleConfig, DummyAxleConfig1, DummyAxleConfig2, DummyAxleConfig3;
+               pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,bat,true,true,stressLocation,stressLocation,&fDummy1,&fDummy2,&fDummy3,&fMax,&DummyAxleConfig1,&DummyAxleConfig2,&DummyAxleConfig3,&MaxAxleConfig);
+
+               gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfig);
+            }
+            else
+            {
+               gLL = GetServiceLiveLoadFactor(ratingType);
+            }
+         }
+
+
+         std::_tstring strVehicleName = strLLNames[truck_index];
+         Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
+
+         pgsStressRatingArtifact stressArtifact;
+         stressArtifact.SetStressLocation(stressLocation);
+         stressArtifact.SetRatingType(ratingType);
+         stressArtifact.SetPointOfInterest(poi);
+         stressArtifact.SetVehicleIndex(truck_index);
+         stressArtifact.SetVehicleWeight(W);
+         stressArtifact.SetVehicleName(strVehicleName.c_str());
+         stressArtifact.SetAllowableStress(fr);
+         stressArtifact.SetPrestressStress(fps);
+         stressArtifact.SetPostTensionStress(fpt);
+         stressArtifact.SetDeadLoadFactor(gDC);
+         stressArtifact.SetDeadLoadStress(fDC);
+         stressArtifact.SetWearingSurfaceFactor(gDW);
+         stressArtifact.SetWearingSurfaceStress(fDW);
+         stressArtifact.SetCreepFactor(gCR);
+         stressArtifact.SetCreepStress(fCR);
+         stressArtifact.SetShrinkageFactor(gSH);
+         stressArtifact.SetShrinkageStress(fSH);
+         stressArtifact.SetRelaxationFactor(gRE);
+         stressArtifact.SetRelaxationStress(fRE);
+         stressArtifact.SetSecondaryEffectsFactor(gPS);
+         stressArtifact.SetSecondaryEffectsStress(fPS);
+         stressArtifact.SetLiveLoadFactor(gLL);
+         stressArtifact.SetLiveLoadStress(fLLIM+fPL);
+
+         vArtifacts.push_back(stressArtifact);
       }
 
-
-      std::_tstring strVehicleName = strLLNames[truck_index];
-      Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
-
-      pgsStressRatingArtifact stressArtifact;
-      stressArtifact.SetRatingType(ratingType);
-      stressArtifact.SetPointOfInterest(poi);
-      stressArtifact.SetVehicleIndex(truck_index);
-      stressArtifact.SetVehicleWeight(W);
-      stressArtifact.SetVehicleName(strVehicleName.c_str());
-      stressArtifact.SetAllowableStress(fr);
-      stressArtifact.SetPrestressStress(ps);
-      stressArtifact.SetPostTensionStress(pt);
-      stressArtifact.SetDeadLoadFactor(gDC);
-      stressArtifact.SetDeadLoadStress(DC);
-      stressArtifact.SetWearingSurfaceFactor(gDW);
-      stressArtifact.SetWearingSurfaceStress(DW);
-      stressArtifact.SetCreepFactor(gCR);
-      stressArtifact.SetCreepStress(CR);
-      stressArtifact.SetShrinkageFactor(gSH);
-      stressArtifact.SetShrinkageStress(SH);
-      stressArtifact.SetRelaxationFactor(gRE);
-      stressArtifact.SetRelaxationStress(RE);
-      stressArtifact.SetSecondaryEffectsFactor(gPS);
-      stressArtifact.SetSecondaryEffectsStress(PS);
-      stressArtifact.SetLiveLoadFactor(gLL);
-      stressArtifact.SetLiveLoadStress(LLIM+PL);
+      std::vector<pgsStressRatingArtifact>::iterator artifactIter(vArtifacts.begin());
+      std::vector<pgsStressRatingArtifact>::iterator artifactIterEnd(vArtifacts.end());
+      pgsStressRatingArtifact controllingArtifact = *artifactIter;
+      Float64 controllingRF = controllingArtifact.GetRatingFactor();
+      artifactIter++;
+      for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+      {
+         pgsStressRatingArtifact& artifact = (*artifactIter);
+         Float64 RF = artifact.GetRatingFactor();
+         if ( RF < controllingRF )
+         {
+            controllingArtifact = artifact;
+            controllingRF = RF;
+         }
+      }
    
-      ratingArtifact.AddArtifact(poi,stressArtifact);
-   }
+      ratingArtifact.AddArtifact(poi,controllingArtifact);
+   } // next poi
 }
 
 void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
 {
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Checking for reinforcement yielding"));
+
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
    if ( bPositiveMoment )
@@ -872,6 +866,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
+#pragma Reminder("REVIEW: Should this be TopDeck?")
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
 
@@ -880,6 +875,18 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
       const pgsPointOfInterest& poi = vPoi[i];
+
+      CString strProgress;
+      if ( poi.HasGirderCoordinate() )
+      {
+         strProgress.Format(_T("Checking for reinforcement yielding for %s moment at %s"),bPositiveMoment ? _T("positive") : _T("negative"),
+            ::FormatDimension(poi.GetGirderCoordinate(),pDisplayUnits->GetSpanLengthUnit()));
+      }
+      else
+      {
+         strProgress.Format(_T("Checking for reinforcement yielding for %s moment"),bPositiveMoment ? _T("positive") : _T("negative"));
+      }
+      pProgress->UpdateMessage(strProgress);
 
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1479,11 +1486,8 @@ Float64 pgsLoadRater::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingT
    Float64 sum_axle_weight = 0; // sum of axle weights on the bridge
    Float64 firstAxleLocation = -1;
    Float64 lastAxleLocation = 0;
-   AxleConfiguration::iterator iter(axleConfig.begin());
-   AxleConfiguration::iterator end(axleConfig.end());
-   for ( ; iter != end; iter++ )
+   BOOST_FOREACH(AxlePlacement& axle_placement,axleConfig)
    {
-      AxlePlacement& axle_placement = *iter;
       sum_axle_weight += axle_placement.Weight;
 
       if ( !IsZero(axle_placement.Weight) )

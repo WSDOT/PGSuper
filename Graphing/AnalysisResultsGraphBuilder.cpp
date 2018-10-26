@@ -365,19 +365,14 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    }
 
 
-   intervals.clear();
-   intervals = AddTSRemovalIntervals(railingSystemIntervalIdx,vRailingSystemIntervals,vTempSupportRemovalIntervals);
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftTrafficBarrier), pftTrafficBarrier, intervals, ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftTrafficBarrier), pftTrafficBarrier, vAllIntervals, ACTIONS_ALL) );
 
    if ( bSidewalk )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftSidewalk), pftSidewalk, intervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftSidewalk), pftSidewalk, vAllIntervals, ACTIONS_ALL) );
    }
 
-
-   intervals.clear();
-   intervals = AddTSRemovalIntervals(overlayIntervalIdx,vOverlayIntervals,vTempSupportRemovalIntervals);
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftOverlay), pftOverlay, intervals, ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftOverlay), pftOverlay, vAllIntervals, ACTIONS_ALL) );
 
 
    // User Defined Static Loads

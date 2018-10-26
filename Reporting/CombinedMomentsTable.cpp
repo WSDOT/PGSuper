@@ -87,16 +87,24 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
    if (liveLoadIntervalIdx <= intervalIdx)
    {
       if (bDesign)
+      {
          BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, true, false);
+      }
 
       if (bRating)
+      {
          BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, false, true);
+      }
 
       if (bDesign)
+      {
          BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, true, false);
+      }
 
       if (bRating)
+      {
          BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, false, true);
+      }
    }
 }
 
@@ -121,9 +129,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -178,11 +184,9 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-#pragma Reminder("UPDATE: using a dummy segment index")
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(thisGirderKey,0));
-
-      PoiAttributeType poiRefAttribute = (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),poiRefAttribute) );
+      PoiAttributeType poiRefAttribute;
+      std::vector<pgsPointOfInterest> vPoi;
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
 
       std::vector<Float64> dummy;
       std::vector<Float64> minServiceI, maxServiceI;
@@ -196,6 +200,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
       std::vector<Float64> minCRcum, maxCRcum;
       std::vector<Float64> minSHinc, maxSHinc;
       std::vector<Float64> minSHcum, maxSHcum;
+      std::vector<Float64> minREinc, maxREinc;
+      std::vector<Float64> minREcum, maxREcum;
       std::vector<Float64> minPSinc, maxPSinc;
       std::vector<Float64> minPScum, maxPScum;
 
@@ -224,6 +230,11 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
          minSHinc = pForces2->GetMoment( intervalIdx, lcSH, vPoi, minBAT, rtIncremental );
          maxSHcum = pForces2->GetMoment( intervalIdx, lcSH, vPoi, maxBAT, rtCumulative );
          minSHcum = pForces2->GetMoment( intervalIdx, lcSH, vPoi, minBAT, rtCumulative );
+
+         maxREinc = pForces2->GetMoment( intervalIdx, lcRE, vPoi, maxBAT, rtIncremental );
+         minREinc = pForces2->GetMoment( intervalIdx, lcRE, vPoi, minBAT, rtIncremental );
+         maxREcum = pForces2->GetMoment( intervalIdx, lcRE, vPoi, maxBAT, rtCumulative );
+         minREcum = pForces2->GetMoment( intervalIdx, lcRE, vPoi, minBAT, rtCumulative );
 
          maxPSinc = pForces2->GetMoment( intervalIdx, lcPS, vPoi, maxBAT, rtIncremental );
          minPSinc = pForces2->GetMoment( intervalIdx, lcPS, vPoi, minBAT, rtIncremental );
@@ -278,6 +289,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
                (*p_table)(row,col++) << moment.SetValue( minCRinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxSHinc[index] );
                (*p_table)(row,col++) << moment.SetValue( minSHinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxREinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( minREinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxPSinc[index] );
                (*p_table)(row,col++) << moment.SetValue( minPSinc[index] );
             }
@@ -299,6 +312,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
                (*p_table)(row,col++) << moment.SetValue( minCRcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxSHcum[index] );
                (*p_table)(row,col++) << moment.SetValue( minSHcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxREcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( minREcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxPScum[index] );
                (*p_table)(row,col++) << moment.SetValue( minPScum[index] );
             }
@@ -323,6 +338,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
             {
                (*p_table)(row,col++) << moment.SetValue( maxCRinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxSHinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxREinc[index] );
                (*p_table)(row,col++) << moment.SetValue( maxPSinc[index] );
             }
 
@@ -338,6 +354,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
             {
                (*p_table)(row,col++) << moment.SetValue( maxCRcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxSHcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxREcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxPScum[index] );
             }
 
@@ -1141,3 +1158,34 @@ bool CCombinedMomentsTable::TestMe(dbgLog& rlog)
    TESTME_EPILOG("CCombinedMomentsTable");
 }
 #endif // _UNITTEST
+
+
+void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,std::vector<pgsPointOfInterest>* pPoi,PoiAttributeType* pRefAttribute)
+{
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+
+   PoiAttributeType poiRefAttribute;
+   if (intervalIdx == releaseIntervalIdx)
+   {
+      poiRefAttribute = POI_RELEASED_SEGMENT;
+   }
+   else if ( releaseIntervalIdx < intervalIdx && intervalIdx < compositeDeckIntervalIdx )
+   {
+      poiRefAttribute = POI_ERECTED_SEGMENT;
+   }
+   else
+   {
+      poiRefAttribute = POI_SPAN;
+   }
+
+   *pRefAttribute = poiRefAttribute;
+
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   *pPoi = pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),poiRefAttribute);
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS), POI_SPECIAL | POI_SECTCHANGE, POIFIND_OR) );
+   pPoi->insert(pPoi->end(),vPoi2.begin(),vPoi2.end());
+   std::sort(pPoi->begin(),pPoi->end());
+   pPoi->erase(std::unique(pPoi->begin(),pPoi->end()),pPoi->end());
+}

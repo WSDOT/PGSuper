@@ -184,7 +184,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(limitState));
 
    std::_tostringstream os;
-   os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(girderKey,intervalIdx) << std::endl;
+   os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(girderKey,intervalIdx) << _T(" : ") << strLimitState << std::endl;
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
    bool bCompression = pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression);
@@ -193,6 +193,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << os.str() << rptNewLine;
+   pTitle->SetName(os.str().c_str());
 
    rptParagraph* pPara = new rptParagraph( pgsReportStyleHolder::GetSubheadingStyle() );
    *pChapter << pPara;
@@ -315,6 +316,12 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    rptRcTable* p_table;
    ColumnIndexType nColumns = 1; // location column
 
+   if ( segIdx == ALL_SEGMENTS )
+   {
+      nColumns++; // second location column
+   }
+
+
    // Is allowable stress check at top of girder applicable anywhere along the girder
    bool bApplicableTensionTop     = pGirderArtifact->IsFlexuralStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension,    topLocation);
    bool bApplicableCompressionTop = pGirderArtifact->IsFlexuralStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression,topLocation);
@@ -400,6 +407,14 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
    ColumnIndexType col1 = 0;
    ColumnIndexType col2 = 0;
+
+   if ( segIdx == ALL_SEGMENTS )
+   {
+      p_table->SetRowSpan(0,col1,2);
+      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      ATLASSERT( intervalIdx != releaseIntervalIdx ); // segments should be jointed into a continuous girder
+      (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   }
 
    p_table->SetRowSpan(0,col1,2);
    p_table->SetRowSpan(1,col2++,SKIP_CELL);
@@ -585,6 +600,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
 
          const pgsPointOfInterest& poi( pTensionArtifact ? pTensionArtifact->GetPointOfInterest() : pCompressionArtifact->GetPointOfInterest());
+
+         if ( segIdx == ALL_SEGMENTS )
+         {
+            (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
+         }
 
          (*p_table)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, poi, end_size );
 

@@ -1156,6 +1156,12 @@ Float64 CPierData2::GetCantileverLength() const
 
 pgsTypes::PierConnectionType CPierData2::GetPierConnectionType() const
 {
+#if defined _DEBUG
+   if ( IsInteriorPier() )
+   {
+      ATLASSERT(m_PierConnectionType == pgsTypes::Hinge || m_PierConnectionType == pgsTypes::Roller);
+   }
+#endif
    return m_PierConnectionType;
 }
 

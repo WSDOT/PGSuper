@@ -88,17 +88,20 @@ bool CStressTendonActivity::IsEnabled() const
 void CStressTendonActivity::Clear()
 {
    m_Tendons.clear();
+   m_bEnabled = false;
 }
 
 void CStressTendonActivity::AddTendon(GirderIDType gdrID,DuctIndexType ductIdx)
 {
    m_Tendons.insert(CTendonKey(gdrID,ductIdx));
+   m_bEnabled = true;
 }
 
 void CStressTendonActivity::AddTendon(const CTendonKey& tendonKey)
 {
    ATLASSERT(tendonKey.girderID != INVALID_ID); // must be using girder ID
    m_Tendons.insert(tendonKey);
+   m_bEnabled = true;
 }
 
 void CStressTendonActivity::AddTendons(const std::set<CTendonKey>& tendons)
@@ -113,9 +116,10 @@ void CStressTendonActivity::AddTendons(const std::set<CTendonKey>& tendons)
    }
 #endif
    m_Tendons.insert(tendons.begin(),tendons.end());
+   m_bEnabled = true;
 }
 
-void CStressTendonActivity::RemoveTendon(GirderIDType gdrID,DuctIndexType ductIdx)
+void CStressTendonActivity::RemoveTendon(GirderIDType gdrID,DuctIndexType ductIdx,bool bRemovedFromBridge)
 {
    CTendonKey key(gdrID,ductIdx);
    std::set<CTendonKey>::iterator found(m_Tendons.find(key));
@@ -123,22 +127,30 @@ void CStressTendonActivity::RemoveTendon(GirderIDType gdrID,DuctIndexType ductId
    {
       m_Tendons.erase(found);
 
-      // adjust the remaining keys for this girder.
-      // if we remove ductIdx 0, ductIdx 1 becomes 0, 2 becomes 1, etc
-      std::set<CTendonKey>::iterator iter(m_Tendons.begin());
-      std::set<CTendonKey>::iterator end(m_Tendons.end());
-      for ( ; iter != end; iter++ )
+      if ( bRemovedFromBridge )
       {
-         CTendonKey& thisKey = *iter;
-         if ( thisKey.girderID == gdrID && ductIdx < thisKey.ductIdx )
+         // adjust the remaining keys for this girder.
+         // if we remove ductIdx 0, ductIdx 1 becomes 0, 2 becomes 1, etc
+         std::set<CTendonKey>::iterator iter(m_Tendons.begin());
+         std::set<CTendonKey>::iterator end(m_Tendons.end());
+         for ( ; iter != end; iter++ )
          {
-            thisKey.ductIdx--;
+            CTendonKey& thisKey = *iter;
+            if ( thisKey.girderID == gdrID && ductIdx < thisKey.ductIdx )
+            {
+               thisKey.ductIdx--;
+            }
          }
       }
    }
    else
    {
       ATLASSERT(false); // not found???
+   }
+
+   if ( m_Tendons.size() == 0 )
+   {
+      m_bEnabled = false;
    }
 }
 
@@ -158,6 +170,11 @@ private:
 void CStressTendonActivity::RemoveTendons(GirderIDType gdrID)
 {
    m_Tendons.erase(std::remove_if(m_Tendons.begin(),m_Tendons.end(),MatchGirderID(gdrID)),m_Tendons.end());
+
+   if ( m_Tendons.size() == 0 )
+   {
+      m_bEnabled = false;
+   }
 }
 
 bool CStressTendonActivity::IsTendonStressed(GirderIDType gdrID,DuctIndexType ductIdx) const

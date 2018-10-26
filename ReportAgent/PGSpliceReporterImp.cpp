@@ -28,6 +28,7 @@
 
 #include <Reporting\IntervalChapterBuilder.h>
 #include <Reporting\TendonGeometryChapterBuilder.h>
+#include <Reporting\ShrinkageStrainChapterBuilder.h>
 
 #include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
 #include <Reporting\EquilibriumCheckChapterBuilder.h>
@@ -71,6 +72,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    boost::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
    VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder),TEXT("Bridge Description")));
    VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder),TEXT("Section Properties")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
 
 
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(new CEquilibriumCheckReportSpecificationBuilder(m_pBroker));

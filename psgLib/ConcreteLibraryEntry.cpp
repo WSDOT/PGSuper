@@ -573,7 +573,7 @@ HICON  ConcreteLibraryEntry::GetIcon() const
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool ConcreteLibraryEntry::Edit(bool allowEditing)
+bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -606,6 +606,7 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing)
 #pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
    INT_PTR i = dlg.DoModal();
+   dlg.SetActivePage(nPage);
    if (i==IDOK)
    {
       this->SetName(dlg.m_General.m_EntryName);

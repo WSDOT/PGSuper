@@ -77,7 +77,7 @@ boost::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuil
    ATLASSERT( vPoi.size() == 1 );
    pgsPointOfInterest initial_poi = vPoi.front();
 
-   boost::shared_ptr<CEquilibriumCheckReportSpecification> pInitRptSpec( boost::shared_dynamic_cast<CEquilibriumCheckReportSpecification>(pRptSpec) );
+   boost::shared_ptr<CEquilibriumCheckReportSpecification> pInitRptSpec( boost::dynamic_pointer_cast<CEquilibriumCheckReportSpecification>(pRptSpec) );
 
    CEquilibriumCheckDlg dlg(m_pBroker,pInitRptSpec,initial_poi,0);
 

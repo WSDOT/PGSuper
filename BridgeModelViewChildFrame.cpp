@@ -248,9 +248,45 @@ int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    return 0;
 }
 
-void CBridgeModelViewChildFrame::CutAt(Float64 cut)
+void CBridgeModelViewChildFrame::CutAt(Float64 X)
 {
-   UpdateCutLocation(cut);
+   UpdateCutLocation(X);
+}
+
+Float64 CBridgeModelViewChildFrame::GetNextCutStation(Float64 direction)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   // if control key is down... move the section cut
+
+   Float64 station = GetCurrentCutLocation();
+
+   SpanIndexType spanIdx;
+   if ( !pBridge->GetSpan(station,&spanIdx) )
+   {
+      return station;
+   }
+
+   Float64 back_pier = pBridge->GetPierStation(spanIdx);
+   Float64 ahead_pier = pBridge->GetPierStation(spanIdx+1);
+   Float64 span_length = ahead_pier - back_pier;
+   Float64 inc = span_length/10;
+
+   station = station + direction*inc;
+
+   return station;
+}
+
+void CBridgeModelViewChildFrame::CutAtNext()
+{
+   CutAt(GetNextCutStation(1));
+}
+
+void CBridgeModelViewChildFrame::CutAtPrev()
+{
+   CutAt(GetNextCutStation(-1));
 }
 
 LPCTSTR CBridgeModelViewChildFrame::GetDeckTypeName(pgsTypes::SupportedDeckType deckType) const

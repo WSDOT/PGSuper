@@ -30,8 +30,9 @@
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DeckDescription2.h>
-#include <PgsExt\TimelineManager.h>
+
 #include <PgsExt\PointLoadData.h>
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
@@ -40,14 +41,35 @@
 
 IMPLEMENT_DYNAMIC(CApplyLoadsDlg, CDialog)
 
-CApplyLoadsDlg::CApplyLoadsDlg(CWnd* pParent /*=NULL*/)
+CApplyLoadsDlg::CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
 	: CDialog(CApplyLoadsDlg::IDD, pParent)
 {
-
+   m_TimelineMgr = timelineMgr;
+   m_EventIndex = eventIdx;
 }
 
 CApplyLoadsDlg::~CApplyLoadsDlg()
 {
+}
+
+void CApplyLoadsDlg::InitalizeCheckBox(CDataExchange* pDX,EventIndexType eventIdx,UINT nIDC)
+{
+   int value;
+   if ( eventIdx == m_EventIndex )
+   {
+      value = BST_CHECKED;
+   }
+   else if ( eventIdx == INVALID_INDEX )
+   {
+      value = BST_UNCHECKED;
+   }
+   else
+   {
+      CButton* pCheckBox = (CButton*)GetDlgItem(nIDC);
+      pCheckBox->SetButtonStyle(BS_AUTO3STATE);
+      value = BST_INDETERMINATE;
+   }
+   DDX_Check(pDX,nIDC,value);
 }
 
 void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
@@ -57,36 +79,52 @@ void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      m_ApplyLoads.Enable(true);
+      int value;
+      DDX_Check(pDX,IDC_RAILING_SYSTEM,value);
+      if ( value == BST_CHECKED )
+      {
+         m_TimelineMgr.SetRailingSystemLoadEventByIndex(m_EventIndex);
+      }
+      else if ( value == BST_UNCHECKED )
+      {
+         m_TimelineMgr.SetRailingSystemLoadEventByIndex(INVALID_INDEX);
+      }
 
-      bool bValue;
-      DDX_Check_Bool(pDX,IDC_RAILING_SYSTEM,bValue);
-      m_ApplyLoads.ApplyRailingSystemLoad(bValue);
+      DDX_Check(pDX,IDC_OVERLAY,value);
+      if ( value == BST_CHECKED )
+      {
+         m_TimelineMgr.SetOverlayLoadEventByIndex(m_EventIndex);
+      }
+      else if ( value == BST_UNCHECKED )
+      {
+         m_TimelineMgr.SetOverlayLoadEventByIndex(INVALID_INDEX);
+      }
 
-      DDX_Check_Bool(pDX,IDC_OVERLAY,bValue);
-      m_ApplyLoads.ApplyOverlayLoad(bValue);
-
-      DDX_Check_Bool(pDX,IDC_LIVELOAD,bValue);
-      m_ApplyLoads.ApplyLiveLoad(bValue);
+      DDX_Check(pDX,IDC_LIVELOAD,value);
+      if ( value == BST_CHECKED )
+      {
+         m_TimelineMgr.SetLiveLoadEventByIndex(m_EventIndex);
+      }
+      else if ( value == BST_UNCHECKED )
+      {
+         m_TimelineMgr.SetLiveLoadEventByIndex(INVALID_INDEX);
+      }
    }
    else
    {
-      bool bValue = m_ApplyLoads.IsRailingSystemLoadApplied();
-      DDX_Check_Bool(pDX,IDC_RAILING_SYSTEM,bValue);
+      EventIndexType railingSystemEventIdx = m_TimelineMgr.GetRailingSystemLoadEventIndex();
+      InitalizeCheckBox(pDX,railingSystemEventIdx,IDC_RAILING_SYSTEM);
 
-      bValue = m_ApplyLoads.IsOverlayLoadApplied();
-      DDX_Check_Bool(pDX,IDC_OVERLAY,bValue);
+      EventIndexType overlayEventIdx = m_TimelineMgr.GetOverlayLoadEventIndex();
+      InitalizeCheckBox(pDX,overlayEventIdx,IDC_OVERLAY);
 
-      bValue = m_ApplyLoads.IsLiveLoadApplied();
-      DDX_Check_Bool(pDX,IDC_LIVELOAD,bValue);
+      EventIndexType liveLoadEventIdx = m_TimelineMgr.GetLiveLoadEventIndex();
+      InitalizeCheckBox(pDX,liveLoadEventIdx,IDC_LIVELOAD);
    }
 }
 
 
 BEGIN_MESSAGE_MAP(CApplyLoadsDlg, CDialog)
-   ON_BN_CLICKED(IDC_RAILING_SYSTEM, &CApplyLoadsDlg::OnRailingSystemClicked)
-   ON_BN_CLICKED(IDC_OVERLAY, &CApplyLoadsDlg::OnOverlayClicked)
-   ON_BN_CLICKED(IDC_LIVELOAD, &CApplyLoadsDlg::OnLiveloadClicked)
 END_MESSAGE_MAP()
 
 
@@ -94,162 +132,23 @@ END_MESSAGE_MAP()
 
 BOOL CApplyLoadsDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-   m_RailingSystemEventIdx = pTimelineMgr->GetRailingSystemLoadEventIndex();
-   m_OverlayEventIdx       = pTimelineMgr->GetOverlayLoadEventIndex();
-   m_LiveLoadEventIdx      = pTimelineMgr->GetLiveLoadEventIndex();
-
    CDialog::OnInitDialog();
 
    InitUserLoads();
 
-   CString strNote;
-   if ( m_ThisEventIdx == m_RailingSystemEventIdx )
-   {
-      // the railing system is installed in this event so disable
-      // the check box so we don't end up with the railing system
-      // not defined in any event
-      GetDlgItem(IDC_RAILING_SYSTEM)->EnableWindow(FALSE);
-      strNote = _T("");
-   }
-   else
-   {
-      strNote.Format(_T("(Installed during Event %d)"),LABEL_EVENT(m_RailingSystemEventIdx));
-   }
-   CWnd* pWnd = GetDlgItem(IDC_RAILING_SYSTEM_NOTE);
-   pWnd->SetWindowText(strNote);
-
-
-   const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
+   CString strNote(_T(""));
+   const CDeckDescription2* pDeck = m_TimelineMgr.GetBridgeDescription()->GetDeckDescription();
    if ( pDeck->WearingSurface == pgsTypes::wstSacrificialDepth )
    {
       GetDlgItem(IDC_OVERLAY)->EnableWindow(FALSE);
       GetDlgItem(IDC_OVERLAY_NOTE)->EnableWindow(FALSE);
       strNote = _T("(Bridge does not have an overlay)");
    }
-   else if ( m_ThisEventIdx == m_OverlayEventIdx )
-   {
-      GetDlgItem(IDC_OVERLAY)->EnableWindow(FALSE);
-      GetDlgItem(IDC_OVERLAY_NOTE)->EnableWindow(FALSE);
-      strNote = _T("");
-   }
-   else
-   {
-      strNote.Format(_T("(Installed during Event %d)"),LABEL_EVENT(m_OverlayEventIdx));
-   }
-   pWnd = GetDlgItem(IDC_OVERLAY_NOTE);
-   pWnd->SetWindowText(strNote);
-
-   if ( m_ThisEventIdx == m_LiveLoadEventIdx )
-   {
-      GetDlgItem(IDC_LIVELOAD)->EnableWindow(FALSE);
-      strNote = _T("");
-   }
-   else
-   {
-      strNote.Format(_T("(Opened to traffic during Event %d)"),LABEL_EVENT(m_LiveLoadEventIdx));
-   }
-   pWnd = GetDlgItem(IDC_LIVELOAD_NOTE);
+   CWnd* pWnd = GetDlgItem(IDC_OVERLAY_NOTE);
    pWnd->SetWindowText(strNote);
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void CApplyLoadsDlg::OnRailingSystemClicked()
-{
-   CString strNote;
-
-   if ( IsDlgButtonChecked(IDC_RAILING_SYSTEM) )
-   {
-      if ( m_ThisEventIdx == m_RailingSystemEventIdx )
-      {
-         strNote.Format(_T(""));
-      }
-      else
-      {
-         strNote.Format(_T("(Moving installation from Event %d to this event)"),LABEL_EVENT(m_RailingSystemEventIdx));
-      }
-   }
-   else
-   {
-      if ( m_ThisEventIdx == m_RailingSystemEventIdx )
-      {
-         strNote.Format(_T(""));
-      }
-      else
-      {
-         strNote.Format(_T("(Installed during Event %d)"),LABEL_EVENT(m_RailingSystemEventIdx));
-      }
-   }
-
-   CWnd* pWnd = GetDlgItem(IDC_RAILING_SYSTEM_NOTE);
-   pWnd->SetWindowText(strNote);
-}
-
-void CApplyLoadsDlg::OnOverlayClicked()
-{
-   CString strNote;
-
-   if ( IsDlgButtonChecked(IDC_OVERLAY) )
-   {
-      if ( m_ThisEventIdx == m_OverlayEventIdx )
-      {
-         strNote.Format(_T(""));
-      }
-      else
-      {
-         strNote.Format(_T("(Moving installation from Event %d to this event)"),LABEL_EVENT(m_OverlayEventIdx));
-      }
-   }
-   else
-   {
-      if ( m_ThisEventIdx == m_OverlayEventIdx )
-      {
-         strNote.Format(_T(""));
-      }
-      else
-      {
-         strNote.Format(_T("(Installed during Event %d)"),LABEL_EVENT(m_OverlayEventIdx));
-      }
-   }
-
-   CWnd* pWnd = GetDlgItem(IDC_OVERLAY_NOTE);
-   pWnd->SetWindowText(strNote);
-}
-
-void CApplyLoadsDlg::OnLiveloadClicked()
-{
-   CString strNote;
-
-   if ( IsDlgButtonChecked(IDC_LIVELOAD) )
-   {
-      if ( m_ThisEventIdx == m_LiveLoadEventIdx )
-      {
-         strNote.Format(_T(""));
-      }
-      else
-      {
-         strNote.Format(_T("(Moving opening to traffic from Event %d to this event)"),LABEL_EVENT(m_LiveLoadEventIdx));
-      }
-   }
-   else
-   {
-      if ( m_ThisEventIdx == m_LiveLoadEventIdx )
-      {
-         strNote.Format(_T(""));
-      }
-      else
-      {
-         strNote.Format(_T("(Opened to traffic during Event %d)"),LABEL_EVENT(m_LiveLoadEventIdx));
-      }
-   }
-
-   CWnd* pWnd = GetDlgItem(IDC_LIVELOAD_NOTE);
-   pWnd->SetWindowText(strNote);
 }
 
 void CApplyLoadsDlg::InitUserLoads()
@@ -269,10 +168,11 @@ void CApplyLoadsDlg::InitUserLoads()
    ATLASSERT(st!=-1);
 
    int rowIdx = 0;
-   IndexType nLoads = m_ApplyLoads.GetUserLoadCount();
+   CApplyLoadActivity& applyLoads = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetApplyLoadActivity();
+   IndexType nLoads = applyLoads.GetUserLoadCount();
    for ( IndexType idx = 0; idx < nLoads; idx++, rowIdx++ )
    {
-      LoadIDType loadID = m_ApplyLoads.GetUserLoadID(idx);
+      LoadIDType loadID = applyLoads.GetUserLoadID(idx);
 
       UserLoads::UserLoadType loadType = UserLoads::GetUserLoadTypeFromID(loadID);
       switch(loadType)

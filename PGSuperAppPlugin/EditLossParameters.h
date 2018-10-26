@@ -27,7 +27,9 @@
 
 struct txnEditLossParametersData
 {
-   bool    bIgnoreTimeDependentEffects;
+   bool    bIgnoreCreepEffects;
+   bool    bIgnoreShrinkageEffects;
+   bool    bIgnoreRelaxationEffects;
 
    bool    bUseLumpSumLosses;
    Float64 BeforeXferLosses;

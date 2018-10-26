@@ -342,9 +342,7 @@ void CPGSpliceDoc::OnEditClosureJoint()
       }
    }
 
-   const CClosureJointData* pClosure = pBridgeDesc->GetClosureJoint(closureKey);
-   ATLASSERT(pClosure != NULL);
-   EditClosureJointDescription(pClosure,EGS_GENERAL);
+   EditClosureJointDescription(closureKey,EGS_GENERAL);
 }
 
 void CPGSpliceDoc::OnEditGirder()
@@ -526,11 +524,6 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    dlg.m_StirrupsPage.m_ShearData = pSegment->ShearData;
 
-   SegmentIDType segID = pSegment->GetID();
-
-   dlg.m_ConstructionEventIdx = pIBridgeDesc->GetTimelineManager()->GetSegmentConstructionEventIndex(segID);
-   dlg.m_ErectionEventIdx     = pIBridgeDesc->GetTimelineManager()->GetSegmentErectionEventIndex(segID);
-
    if ( dlg.DoModal() == IDOK )
    {
       CPrecastSegmentData* pNewSegment = dlg.m_Girder.GetSegment(segmentKey.segmentIndex);
@@ -540,8 +533,7 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
       txnEditPrecastSegmentData newData;
       newData.m_SegmentKey           = segmentKey;
       newData.m_SegmentData          = *pNewSegment;
-      newData.m_ConstructionEventIdx = dlg.m_ConstructionEventIdx;
-      newData.m_ErectionEventIdx     = dlg.m_ErectionEventIdx;
+      newData.m_TimelineMgr          = dlg.m_TimelineMgr;
 
       CSegmentKey thisSegmentKey(segmentKey);
       if ( dlg.m_bCopyToAll )
@@ -569,37 +561,27 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
 
 bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int nPage)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CClosureJointData* pClosure = pIBridgeDesc->GetClosureJointData(closureKey);
-   return EditClosureJointDescription(pClosure,nPage);
-}
-
-bool CPGSpliceDoc::EditClosureJointDescription(const CClosureJointData* pClosure,int nPage)
-{
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   CSegmentKey closureKey(pClosure->GetClosureKey());
-
-   EventIndexType closureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(closureKey.groupIndex,closureKey.segmentIndex);
-
-   CClosureJointData ClosureJoint(*pClosure);
-   CClosureJointDlg dlg(closureKey,pClosure,closureEventIdx);
+   CClosureJointDlg dlg(pIBridgeDesc->GetBridgeDescription(),closureKey);
 
    if ( dlg.DoModal() == IDOK )
    {
+      const CClosureJointData* pClosure = pIBridgeDesc->GetClosureJointData(closureKey);
       txnEditClosureJointData newData;
       newData.m_PierIdx         = pClosure->GetPierIndex();
       newData.m_TSIdx           = pClosure->GetTemporarySupportIndex();
       newData.m_ClosureJoint    = dlg.m_ClosureJoint;
-      newData.m_ClosureEventIdx = dlg.m_EventIndex;
+      newData.m_TimelineMgr     = dlg.m_TimelineMgr;
 
+      CClosureKey thisClosureKey(closureKey);
       if ( dlg.m_bCopyToAllClosureJoints )
       {
-         closureKey.girderIndex = ALL_GIRDERS;
+         thisClosureKey.girderIndex = ALL_GIRDERS;
       }
 
-      txnTransaction* pTxn = new txnEditClosureJoint(closureKey,newData);
+      txnTransaction* pTxn = new txnEditClosureJoint(thisClosureKey,newData);
       txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
@@ -665,9 +647,9 @@ void CPGSpliceDoc::DeleteTemporarySupport(SupportIDType tsID)
 
 bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
 {
-#pragma Reminder("UPDATE: move temporary support editing to the base document class")
-   // We want to be able to eventually handle temporary shoring towers in PGSuper
-   // so the editing needs to be at that level
+   // NOTE: in the future, if we handle temporary shorting towers in PGSuper,
+   // we will want to move this to the base document class so that one
+   // thoe takes care of all the editing needs
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

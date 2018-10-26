@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,17
- PRODUCTVERSION 3,0,0,17
+ FILEVERSION 3,0,0,18
+ PRODUCTVERSION 3,0,0,18
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.17"
+            VALUE "FileVersion", "3.0.0.18"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.17"
+            VALUE "ProductVersion", "3.0.0.18"
         END
     END
     BLOCK "VarFileInfo"
@@ -590,40 +590,40 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,284,117,10
 END
 
-IDD_SPEC_CREEP DIALOGEX 0, 0, 275, 256
+IDD_SPEC_CREEP DIALOGEX 0, 0, 275, 244
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Creep and Camber"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,6,260,243
-    LTEXT           "Time from stressing to prestress transfer",IDC_STATIC,17,27,158,17
-    EDITTEXT        IDC_XFER_TIME,209,27,24,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "hrs",IDC_XFER_TIME_TAG,240,27,18,8
-    LTEXT           "Min",IDC_STATIC,185,47,12,8
-    LTEXT           "Max",IDC_STATIC,215,47,14,8
-    LTEXT           "Time from prestress transfer until temporary strand removal / diaphragm casting",IDC_STATIC,17,58,159,17
-    EDITTEXT        IDC_CREEP_DURATION1_MIN,179,58,24,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_CREEP_DURATION1_MAX,209,58,24,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_CREEP_DURATION1_TAG,240,58,18,8
-    LTEXT           "Min",IDC_STATIC,185,74,12,8
-    LTEXT           "Max",IDC_STATIC,215,74,14,8
-    LTEXT           "Time from prestress transfer until slab casting or application of superimposed dead loads on noncomposite girders",IDC_STATIC,17,84,159,25
-    EDITTEXT        IDC_CREEP_DURATION2_MIN,179,84,24,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_CREEP_DURATION2_MAX,209,84,24,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_CREEP_DURATION2_TAG,240,84,18,8
-    LTEXT           "Variability between upper and lower bound camber",IDC_STATIC,19,118,166,9
-    EDITTEXT        IDC_CAMBER_VARIABILITY,198,116,35,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_NC_CREEP_TAG2,240,118,8,8
-    LTEXT           "Total Creep Duration",IDC_STATIC,19,141,170,9
-    EDITTEXT        IDC_NC_CREEP,198,138,35,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NC_CREEP_TAG,240,141,19,8
-    GROUPBOX        "Curing of Precast Concrete",IDC_STATIC,15,160,253,61,WS_GROUP
-    CONTROL         "Normal",IDC_CURING_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,23,175,38,10
-    CONTROL         "Accelerated (Steam or Rad. Heat)",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,23,187,125,10
-    LTEXT           "1 day of steam or radiant heat curing is equal to ",IDC_STATIC,19,202,152,8
-    EDITTEXT        IDC_CURING_TIME_FACTOR,172,200,18,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "days of normal curing",IDC_STATIC,194,203,68,8
-    LTEXT           "NOTE: These parameters do not apply to Time-Step analysis",IDC_STATIC,15,230,191,8
+    GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,6,260,231
+    LTEXT           "Time from stressing to prestress transfer",IDC_STATIC,17,38,158,17
+    EDITTEXT        IDC_XFER_TIME,209,38,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "hrs",IDC_XFER_TIME_TAG,240,38,18,8
+    LTEXT           "Min",IDC_STATIC,185,58,12,8
+    LTEXT           "Max",IDC_STATIC,215,58,14,8
+    LTEXT           "Time from prestress transfer until temporary strand removal / diaphragm casting",IDC_STATIC,17,69,159,17
+    EDITTEXT        IDC_CREEP_DURATION1_MIN,179,69,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_CREEP_DURATION1_MAX,209,69,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CREEP_DURATION1_TAG,240,69,18,8
+    LTEXT           "Min",IDC_STATIC,185,85,12,8
+    LTEXT           "Max",IDC_STATIC,215,85,14,8
+    LTEXT           "Time from prestress transfer until slab casting or application of superimposed dead loads on noncomposite girders",IDC_STATIC,17,95,159,25
+    EDITTEXT        IDC_CREEP_DURATION2_MIN,179,95,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_CREEP_DURATION2_MAX,209,95,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CREEP_DURATION2_TAG,240,95,18,8
+    LTEXT           "Variability between upper and lower bound camber",IDC_STATIC,19,129,166,9
+    EDITTEXT        IDC_CAMBER_VARIABILITY,198,127,35,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_NC_CREEP_TAG2,240,129,8,8
+    LTEXT           "Total Creep Duration",IDC_STATIC,19,152,170,9
+    EDITTEXT        IDC_NC_CREEP,198,149,35,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NC_CREEP_TAG,240,152,19,8
+    GROUPBOX        "Curing of Precast Concrete",IDC_STATIC,11,171,253,61,WS_GROUP
+    CONTROL         "Normal",IDC_CURING_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,23,186,38,10
+    CONTROL         "Accelerated (Steam or Rad. Heat)",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,23,198,125,10
+    LTEXT           "1 day of steam or radiant heat curing is equal to ",IDC_STATIC,19,213,152,8
+    EDITTEXT        IDC_CURING_TIME_FACTOR,172,211,18,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "days of normal curing",IDC_STATIC,194,214,68,8
+    CTEXT           "NOTE: These parameters do not apply to Time-Step analysis",IDC_STATIC,20,20,239,10,WS_BORDER
 END
 
 IDD_SPEC_LOSSES DIALOGEX 0, 0, 494, 224
@@ -1013,9 +1013,9 @@ BEGIN
     LTEXT           "Max. Hold Down Force",IDC_STATIC,229,22,79,8
     EDITTEXT        IDC_HOLD_DOWN_FORCE,307,19,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Kips",IDC_HOLD_DOWN_FORCE_UNITS,351,22,23,8
-    LTEXT           "Harped Strand Slope Limits",IDC_STATIC,23,33,86,8
-    CONTROL         "Check",IDC_CHECK_SLOPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,34,37,8
-    CONTROL         "Design",IDC_DESIGN_SLOPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,183,34,37,8
+    LTEXT           "Harped Strand Slope Limits",IDC_STATIC,23,35,86,8
+    CONTROL         "Check",IDC_CHECK_SLOPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,36,37,8
+    CONTROL         "Design",IDC_DESIGN_SLOPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,183,36,37,8
     LTEXT           "Max Slope for 0.5"" d and smaller Strands",IDC_STATIC_SLOPE_05,148,49,128,20
     EDITTEXT        IDC_STRAND_SLOPE_05,279,47,30,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "Max Slope for 0.6"" d Strands",IDC_STATIC_SLOPE_06,314,48,99,11
@@ -1025,31 +1025,31 @@ BEGIN
     LTEXT           "Splitting Resitance (5.10.10.1)",IDC_STATIC,25,84,96,8
     CONTROL         "Check",IDC_CHECK_SPLITTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,83,37,8
     CONTROL         "Design",IDC_DESIGN_SPLITTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,199,83,37,8
-    LTEXT           "Splitting zone length",IDC_STATIC,239,84,74,8
+    LTEXT           "Splitting zone length",IDC_STATIC,246,84,64,8
     LTEXT           "h/",IDC_STATIC,315,84,8,8
     EDITTEXT        IDC_N,324,81,18,14,ES_AUTOHSCROLL
     LTEXT           "Confinement Reinforcement (5.10.10.2)",IDC_STATIC,25,97,124,8
-    CONTROL         "Check",IDC_CHECK_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,97,37,8
-    CONTROL         "Design",IDC_DESIGN_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,197,97,37,8
+    CONTROL         "Check",IDC_CHECK_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,97,37,8
+    CONTROL         "Design",IDC_DESIGN_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,199,97,37,8
     GROUPBOX        "Lifting Check/Design Options",IDC_STATIC,12,120,462,54
     CONTROL         "Check",IDC_CHECK_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,135,37,8
     CONTROL         "Design",IDC_DESIGN_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,135,37,8
     LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,23,150,140,8
-    EDITTEXT        IDC_MIN_LIFTING_POINT,169,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MIN_LIFTING_POINT_UNIT,212,151,19,8
-    LTEXT           "(Enter value or H)",IDC_STATIC,238,151,56,8
-    LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,311,152,31,8
-    EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,353,150,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,395,152,19,8
+    EDITTEXT        IDC_MIN_LIFTING_POINT,177,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MIN_LIFTING_POINT_UNIT,220,150,19,8
+    LTEXT           "(Enter value or H)",IDC_STATIC,244,150,56,8
+    LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,316,150,31,8
+    EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,351,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,395,150,19,8
     GROUPBOX        "Hauling Check/Design Options",IDC_STATIC,12,176,462,63
     CONTROL         "Check",IDC_CHECK_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,191,37,8
     CONTROL         "Design",IDC_DESIGN_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,78,191,37,8
-    LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,26,205,149,8
+    LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,23,205,149,8
     EDITTEXT        IDC_MIN_TRUCK_SUPPORT,177,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,220,205,19,8
-    LTEXT           "(Enter value of H)",IDC_STATIC,247,205,56,8
+    LTEXT           "(Enter value of H)",IDC_STATIC,244,205,56,8
     LTEXT           "Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,316,205,31,8
-    EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,351,203,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,351,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,395,205,19,8
     CONTROL         "Not to be less than",IDC_IS_SUPPORT_LESS_THAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,219,73,10
     EDITTEXT        IDC_SUPPORT_LESS_THAN,101,217,25,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1060,8 +1060,8 @@ BEGIN
     CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,201,261,37,8
     LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,25,279,100,8
     CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,278,45,10
-    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,198,279,84,8
-    EDITTEXT        IDC_DEFLECTION_LIMIT,283,274,40,14,ES_AUTOHSCROLL
+    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,201,279,84,8
+    EDITTEXT        IDC_DEFLECTION_LIMIT,281,276,40,14,ES_AUTOHSCROLL
     GROUPBOX        "Strand Fill Order to be Used for Automated Harped Pattern Design",IDC_STATIC,12,304,462,51
     CONTROL         "Add Strands Using the Permanent Strand Grid Fill Order",IDC_RADIO_FILL_PERMANENT,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,23,320,193,10
@@ -1786,7 +1786,7 @@ BEGIN
         RIGHTMARGIN, 268
         VERTGUIDE, 15
         TOPMARGIN, 6
-        BOTTOMMARGIN, 249
+        BOTTOMMARGIN, 237
     END
 
     IDD_SPEC_LOSSES, DIALOG
@@ -2295,7 +2295,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_LIBRARYTYPE         "Library Editor\nUntitled\nMaster Library\nLibrary File (*.lbr)\n.lbr\nPGSuperLibrary.Document\nPGSuper Library File"
+    IDR_LIBRARYTYPE         "Library Editor\nUntitled\nPGSuper/PGSplice Library\nLibrary File (*.lbr)\n.lbr\nPGSuperLibrary.Document\nPGSuper/PGSplice Library File"
 END
 
 STRINGTABLE 

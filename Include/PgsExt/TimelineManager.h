@@ -212,6 +212,7 @@ public:
    void SetLiveLoadEventByID(EventIDType ID);
 
    int Validate() const;
+   int ValidateEvent(const CTimelineEvent* pTimelineEvent) const;
    CString GetErrorMessage(int errorCode) const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
@@ -222,7 +223,6 @@ protected:
    virtual void MakeAssignment(const CTimelineManager& rOther);
    void Clear();
    void Sort();
-   int ValidateEvent(const CTimelineEvent* pTimelineEvent);
    int CanRemoveEvent(CTimelineEvent* pTimelineEvent);
 
    std::vector<CTimelineEvent*> m_TimelineEvents; // owns the timeline events... will be deleted in the destructor

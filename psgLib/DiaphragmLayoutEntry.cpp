@@ -170,7 +170,7 @@ DiaphragmLayoutEntry::DiaphragmLayoutVec DiaphragmLayoutEntry::GetDiaphragmLayou
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool DiaphragmLayoutEntry::Edit(bool allowEditing)
+bool DiaphragmLayoutEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

@@ -155,7 +155,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS) ) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_SPAN ) );
 
    GET_IFACE2(pBroker,IPosttensionStresses,pPrestress);
 

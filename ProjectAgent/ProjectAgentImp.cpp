@@ -375,7 +375,9 @@ CProjectAgentImp::CProjectAgentImp()
 
    m_bIgnoreEffectiveFlangeWidthLimits = false;
 
-   m_bIgnoreTimeDependentEffects = false;
+   m_bIgnoreCreepEffects = false;
+   m_bIgnoreShrinkageEffects = false;
+   m_bIgnoreRelaxationEffects = false;
 
    m_bGeneralLumpSum               = false;
    m_BeforeXferLosses              = 0;
@@ -2978,8 +2980,12 @@ HRESULT CProjectAgentImp::LossesProc(IStructuredSave* pSave,IStructuredLoad* pLo
          pSave->EndUnit(); // LumSumLosses
       }
 
-      // added in version 6 of ProjectData data block
-      pSave->put_Property(_T("IgnoreTimeDependentEffects"),CComVariant(pObj->m_bIgnoreTimeDependentEffects));
+      // added in version 6 of ProjectData data block (removed in version 8)
+      //pSave->put_Property(_T("IgnoreTimeDependentEffects"),CComVariant(pObj->m_bIgnoreTimeDependentEffects));
+      // added in version 8 of ProjectData data block
+      pSave->put_Property(_T("IgnoreCreepEffects"),CComVariant(pObj->m_bIgnoreCreepEffects));
+      pSave->put_Property(_T("IgnoreShrinkageEffects"),CComVariant(pObj->m_bIgnoreShrinkageEffects));
+      pSave->put_Property(_T("IgnoreRelaxationEffects"),CComVariant(pObj->m_bIgnoreRelaxationEffects));
 
       pSave->BeginUnit(_T("PostTensioning"),1.0);
       pSave->put_Property(_T("AnchorSet"),          CComVariant(pObj->m_Dset_PT));
@@ -3040,11 +3046,25 @@ HRESULT CProjectAgentImp::LossesProc(IStructuredSave* pSave,IStructuredLoad* pLo
             pLoad->EndUnit();
          }
 
-         if ( 6 < version )
+         if ( 6 < version && version < 8 )
          {
             var.vt = VT_BOOL;
             pLoad->get_Property(_T("IgnoreTimeDependentEffects"),&var);
-            pObj->m_bIgnoreTimeDependentEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+            pObj->m_bIgnoreCreepEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+            pObj->m_bIgnoreShrinkageEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+            pObj->m_bIgnoreRelaxationEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+         }
+         else if ( 8 <= version )
+         {
+            var.vt = VT_BOOL;
+            pLoad->get_Property(_T("IgnoreCreepEffects"),&var);
+            pObj->m_bIgnoreCreepEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+
+            pLoad->get_Property(_T("IgnoreShrinkageEffects"),&var);
+            pObj->m_bIgnoreShrinkageEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+
+            pLoad->get_Property(_T("IgnoreRelaxationEffects"),&var);
+            pObj->m_bIgnoreRelaxationEffects = (var.boolVal == VARIANT_TRUE ? true : false);
          }
 
          pLoad->BeginUnit(_T("PostTensioning"));
@@ -3998,7 +4018,7 @@ bool CProjectAgentImp::AssertValid() const
 }
 #endif // _DEBUG
 
-BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),7.0)
+BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),8.0)
    BEGIN_UNIT(_T("ProjectProperties"),_T("Project Properties"),1.0)
       PROPERTY(_T("BridgeName"),SDT_STDSTRING, m_BridgeName )
       PROPERTY(_T("BridgeId"),  SDT_STDSTRING, m_BridgeID )
@@ -5668,7 +5688,7 @@ const CTimelineManager* CProjectAgentImp::GetTimelineManager()
    return m_BridgeDescription.GetTimelineManager();
 }
 
-void CProjectAgentImp::SetTimelineManager(CTimelineManager& timelineMgr)
+void CProjectAgentImp::SetTimelineManager(const CTimelineManager& timelineMgr)
 {
    m_BridgeDescription.SetTimelineManager(&timelineMgr);
    Fire_BridgeChanged();
@@ -8436,11 +8456,6 @@ void CProjectAgentImp::FirePendingEvents()
 	      Fire_OnLibraryConflictResolved();
       }
 	
-	
-	
-	
-	
-	
 	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LOADMODIFIER) )
       {
 	      Fire_LoadModifiersChanged();
@@ -8455,7 +8470,12 @@ void CProjectAgentImp::FirePendingEvents()
       {
 	      Fire_LiveLoadChanged();
       }
-	
+		
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LOSSPARAMETERS) )
+      {
+	      Fire_OnLossParametersChanged();
+      }
+
 	   std::map<CGirderKey,Uint32>::iterator iter(m_PendingEventsHash.begin());
 	   std::map<CGirderKey,Uint32>::iterator iterEnd(m_PendingEventsHash.end());
 	   for ( ; iter != iterEnd; iter++ )
@@ -8910,28 +8930,70 @@ pgsTypes::LossMethod CProjectAgentImp::GetLossMethod()
    }
    else
    {
-      GET_IFACE(ISpecification,pSpec);
-      std::_tstring strSpecName = pSpec->GetSpecification();
-      GET_IFACE(ILibrary,pLib);
-      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+      const SpecLibraryEntry* pSpecEntry = GetSpecEntry(m_Spec.c_str());
       loss_method = (pgsTypes::LossMethod)pSpecEntry->GetLossMethod();
    }
 
    return loss_method;
 }
 
-void CProjectAgentImp::IgnoreTimeDependentEffects(bool bIgnore)
+pgsTypes::TimeDependentModel CProjectAgentImp::GetTimeDependentModel()
 {
-   if ( m_bIgnoreTimeDependentEffects != bIgnore )
+   const SpecLibraryEntry* pSpecEntry = GetSpecEntry(m_Spec.c_str());
+   return (pgsTypes::TimeDependentModel)pSpecEntry->GetTimeDependentModel();
+}
+
+void CProjectAgentImp::IgnoreCreepEffects(bool bIgnore)
+{
+   if ( m_bIgnoreCreepEffects != bIgnore )
    {
-      m_bIgnoreTimeDependentEffects = bIgnore;
-      Fire_BridgeChanged();
+      m_bIgnoreCreepEffects = bIgnore;
+      Fire_OnLossParametersChanged();
    }
 }
 
-bool CProjectAgentImp::IgnoreTimeDependentEffects()
+bool CProjectAgentImp::IgnoreCreepEffects()
 {
-   return m_bIgnoreTimeDependentEffects;
+   return m_bIgnoreCreepEffects;
+}
+
+void CProjectAgentImp::IgnoreShrinkageEffects(bool bIgnore)
+{
+   if ( m_bIgnoreShrinkageEffects != bIgnore )
+   {
+      m_bIgnoreShrinkageEffects = bIgnore;
+      Fire_OnLossParametersChanged();
+   }
+}
+
+bool CProjectAgentImp::IgnoreShrinkageEffects()
+{
+   return m_bIgnoreShrinkageEffects;
+}
+
+void CProjectAgentImp::IgnoreRelaxationEffects(bool bIgnore)
+{
+   if ( m_bIgnoreRelaxationEffects != bIgnore )
+   {
+      m_bIgnoreRelaxationEffects = bIgnore;
+      Fire_OnLossParametersChanged();
+   }
+}
+
+bool CProjectAgentImp::IgnoreRelaxationEffects()
+{
+   return m_bIgnoreRelaxationEffects;
+}
+
+void CProjectAgentImp::IgnoreTimeDependentEffects(bool bIgnoreCreep,bool bIgnoreShrinkage,bool bIgnoreRelaxation)
+{
+   if ( m_bIgnoreCreepEffects != bIgnoreCreep || m_bIgnoreShrinkageEffects != bIgnoreShrinkage || m_bIgnoreRelaxationEffects != bIgnoreRelaxation )
+   {
+      m_bIgnoreCreepEffects      = bIgnoreCreep;
+      m_bIgnoreShrinkageEffects  = bIgnoreShrinkage;
+      m_bIgnoreRelaxationEffects = bIgnoreRelaxation;
+      Fire_OnLossParametersChanged();
+   }
 }
 
 void CProjectAgentImp::SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction)
@@ -8941,7 +9003,7 @@ void CProjectAgentImp::SetTendonPostTensionParameters(Float64 Dset,Float64 wobbl
       m_Dset_PT                = Dset;
       m_WobbleFriction_PT      = wobble;
       m_FrictionCoefficient_PT = friction;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -8959,7 +9021,7 @@ void CProjectAgentImp::SetTemporaryStrandPostTensionParameters(Float64 Dset,Floa
       m_Dset_TTS                = Dset;
       m_WobbleFriction_TTS      = wobble;
       m_FrictionCoefficient_TTS = friction;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -8975,7 +9037,7 @@ void CProjectAgentImp::UseGeneralLumpSumLosses(bool bLumpSum)
    if ( bLumpSum != m_bGeneralLumpSum )
    {
       m_bGeneralLumpSum = bLumpSum;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -8994,7 +9056,7 @@ void CProjectAgentImp::SetBeforeXferLosses(Float64 loss)
    if ( !IsEqual(m_BeforeXferLosses,loss) )
    {
       m_BeforeXferLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -9008,7 +9070,7 @@ void CProjectAgentImp::SetAfterXferLosses(Float64 loss)
    if ( !IsEqual(m_AfterXferLosses,loss) )
    {
       m_AfterXferLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -9022,7 +9084,7 @@ void CProjectAgentImp::SetLiftingLosses(Float64 loss)
    if ( !IsEqual(m_LiftingLosses,loss) )
    {
       m_LiftingLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -9036,7 +9098,7 @@ void CProjectAgentImp::SetShippingLosses(Float64 loss)
    if ( !IsEqual(m_ShippingLosses,loss) )
    {
       m_ShippingLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -9050,7 +9112,7 @@ void CProjectAgentImp::SetBeforeTempStrandRemovalLosses(Float64 loss)
    if ( !IsEqual(m_BeforeTempStrandRemovalLosses,loss) )
    {
       m_BeforeTempStrandRemovalLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -9064,7 +9126,7 @@ void CProjectAgentImp::SetAfterTempStrandRemovalLosses(Float64 loss)
    if ( !IsEqual(m_AfterTempStrandRemovalLosses,loss) )
    {
       m_AfterTempStrandRemovalLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -9078,7 +9140,7 @@ void CProjectAgentImp::SetAfterDeckPlacementLosses(Float64 loss)
    if ( !IsEqual(m_AfterDeckPlacementLosses,loss) )
    {
       m_AfterDeckPlacementLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -9092,7 +9154,7 @@ void CProjectAgentImp::SetAfterSIDLLosses(Float64 loss)
    if ( !IsEqual(m_AfterSIDLLosses,loss) )
    {
       m_AfterSIDLLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 
@@ -9106,7 +9168,7 @@ void CProjectAgentImp::SetFinalLosses(Float64 loss)
    if ( !IsEqual(m_FinalLosses,loss) )
    {
       m_FinalLosses = loss;
-      Fire_BridgeChanged();
+      Fire_OnLossParametersChanged();
    }
 }
 

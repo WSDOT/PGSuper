@@ -32,6 +32,8 @@ interface IEventMap;
 interface IEAFDisplayUnits;
 interface IRatingSpecification;
 interface ILiveLoads;
+interface IIntervals;
+interface IPointOfInterest;
 
 /*****************************************************************************
 CLASS 
@@ -146,6 +148,9 @@ public:
    static bool TestMe(dbgLog& rlog);
    #endif // _UNITTEST
 };
+
+void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,std::vector<pgsPointOfInterest>* pPoi,PoiAttributeType* pRefAttribute);
+
 
 // INLINE METHODS
 //
@@ -624,7 +629,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
    ColumnIndexType nCols = 0;
 
    rptRcTable* pTable;
-   nCols = (bTimeStepMethod ? 12 : 6);
+   nCols = (bTimeStepMethod ? 14 : 6);
 
    if ( bRating )
    {
@@ -633,7 +638,9 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
 
    if ( analysisType == pgsTypes::Envelope )
    {
-      nCols += (bTimeStepMethod ? 11 : 5);
+      ATLASSERT(!bTimeStepMethod); // can't use envelope with time-step
+      //nCols += (bTimeStepMethod ? 13 : 5);
+      nCols += 5;
    }
 
    if ( liveLoadIntervalIdx <= intervalIdx )
@@ -685,6 +692,8 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
       (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
       (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
 
+      ATLASSERT(!bTimeStepMethod); // can't use envelope mode with time-step
+/*
       if ( bTimeStepMethod )
       {
          pTable->SetColumnSpan(0,col1,2);
@@ -698,11 +707,16 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
          (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
 
          pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << symbol(SUM) << _T("RE");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+
+         pTable->SetColumnSpan(0,col1,2);
          (*pTable)(0,col1++) << symbol(SUM) << _T("PS");
          (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
       }
-
+*/
       if (bRating)
       {
          pTable->SetColumnSpan(0,col1,2);
@@ -739,6 +753,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
       {
          (*pTable)(0,col1++) << COLHDR(_T("CR"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(_T("SH"),          M, unitT );
+         (*pTable)(0,col1++) << COLHDR(_T("RE"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(_T("PS"),          M, unitT );
       }
 
@@ -754,6 +769,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
       {
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("CR"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("SH"),          M, unitT );
+         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("RE"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("PS"),          M, unitT );
       }
 

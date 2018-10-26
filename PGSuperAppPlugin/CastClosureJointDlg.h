@@ -10,6 +10,8 @@
 #include <WBFLTypes.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\TemporarySupportData.h>
+#include <PgsExt\TimelineItemListBox.h>
+
 bool IsTSIndex(SupportIndexType tsIdx);
 SupportIndexType EncodeTSIndex(SupportIndexType tsIdx);
 SupportIndexType DecodeTSIndex(SupportIndexType tsIdx);
@@ -23,26 +25,30 @@ class CCastClosureJointDlg : public CDialog
 	DECLARE_DYNAMIC(CCastClosureJointDlg)
 
 public:
-	CCastClosureJointDlg(const CTimelineManager* pTimelineMgr,CWnd* pParent = NULL);   // standard constructor
+	CCastClosureJointDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CCastClosureJointDlg();
 
 // Dialog Data
 	enum { IDD = IDD_CAST_CLOSOURE_JOINT };
-   CCastClosureJointActivity m_CastClosureJoints;
+
+   CTimelineManager m_TimelineMgr;
+   EventIndexType m_EventIndex;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-   void FillSourceList();
-   void FillTargetList();
+   void FillLists();
 
-	DECLARE_MESSAGE_MAP()
 
-   const CTimelineManager* m_pTimelineMgr;
+   CTimelineItemListBox m_lbSource;
+   CTimelineItemListBox m_lbTarget;
+
+   DECLARE_MESSAGE_MAP()
+
    const CBridgeDescription2* m_pBridgeDesc;
    CComPtr<IEAFDisplayUnits> m_pDisplayUnits;
 
 public:
    virtual BOOL OnInitDialog();
-   afx_msg void OnMoveRight();
-   afx_msg void OnMoveLeft();
+   afx_msg void OnMoveToTargetList();
+   afx_msg void OnMoveToSourceList();
 };

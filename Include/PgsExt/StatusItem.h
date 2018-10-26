@@ -109,6 +109,26 @@ private:
    UINT m_HelpID;
 };
 
+/////////////////////////
+class PGSEXTCLASS pgsProjectCriteriaStatusItem : public CEAFStatusItem
+{
+public:
+   pgsProjectCriteriaStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
+};
+
+class PGSEXTCLASS pgsProjectCriteriaStatusCallback : public iStatusCallback
+{
+public:
+   pgsProjectCriteriaStatusCallback(IBroker* pBroker);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
+
+private:
+   IBroker* m_pBroker;
+   UINT m_HelpID;
+};
+
 // status for girder input
 class PGSEXTCLASS pgsGirderDescriptionStatusItem : public pgsSegmentRelatedStatusItem
 {

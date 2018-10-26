@@ -346,12 +346,13 @@ struct TIME_STEP_CONCRETE
    Float64 Yn;  // Centroid measured in Girder Section Coordinates
    Float64 In;  // Moment of inertia
    Float64 H;   // Height of concrete part
+   Float64 E;   // Modulus of Elasticity used for computing transformed section properties
 
    // Creep Strains during this interval due to loads applied in previous intervals
    struct CREEP_STRAIN
    {
       Float64 P;
-      Float64 E;
+      Float64 E; // modulus of elasticity used to compute creep strain
       Float64 A;
       Float64 Cs;
       Float64 Ce;
@@ -370,7 +371,7 @@ struct TIME_STEP_CONCRETE
    struct CREEP_CURVATURE
    {
       Float64 M;
-      Float64 E;
+      Float64 E; // modulus of elasticity used to compute creep curvature
       Float64 I;
       Float64 Cs;
       Float64 Ce;
@@ -395,9 +396,9 @@ struct TIME_STEP_CONCRETE
 
    // Restraining force (force required to cause deformations that are
    // equal and opposite to the unrestrained deformations)
-   Float64 PrCreep; // = -Ea*An*e
-   Float64 MrCreep; // = -Ea*In*r
-   Float64 PrShrinkage; // = -Ea*An*esi
+   Float64 PrCreep; // = -E*An*e
+   Float64 MrCreep; // = -E*In*r
+   Float64 PrShrinkage; // = -E*An*esi
 
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
@@ -428,6 +429,7 @@ struct TIME_STEP_CONCRETE
       Yn = 0;
       In = 0;
       H  = 0;
+      E  = 0;
 
       esi = 0;
       e = 0;
@@ -481,6 +483,7 @@ struct TIME_STEP_STRAND
    // Geometric Properties
    Float64 As;
    Float64 Ys; // centroid of strand, measured in Girder Section Coordinates
+   Float64 E;
 
    // Relaxation
    Float64 fr; // prestress loss due to relaxation during this interval
@@ -524,7 +527,9 @@ struct TIME_STEP_STRAND
       tEnd = 0;
       As = 0;
       Ys = 0;
+      E = 0;
       fr = 0;
+      er = 0;
       PrRelaxation = 0;
 
       Pj  = 0;
@@ -566,6 +571,7 @@ struct TIME_STEP_REBAR
    // Geometric Properties
    Float64 As;
    Float64 Ys; // centroid of rebar, measured in Girder Section Coordinates
+   Float64 E;
 
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
@@ -580,6 +586,7 @@ struct TIME_STEP_REBAR
    {
       As = 0;
       Ys = 0;
+      E = 0;
       int n = sizeof(dPi)/sizeof(dPi[0]);
       for ( int i = 0; i < n; i++ )
       {
@@ -607,6 +614,8 @@ struct TIME_STEP_DETAILS
    // Section Properties are taken about the centroid of the transformed section
    // The centroid, Ytr, is in Girder Section Coordinate (measured from top of girder, up is positive)
    Float64 Atr, Ytr, Itr;
+
+   Float64 E; // modulus used to transform properties into an equivalent material
 
    // Change in total loading on the section due to externally applied loads during this interval
    // Array index is one of the ProductForceType enum values

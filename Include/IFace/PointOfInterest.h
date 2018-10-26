@@ -66,13 +66,19 @@ interface IPointOfInterest : public IUnknown
    // Returns the poi that is nearst to the specified location on a segment
    virtual pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) = 0;
 
+   // Returns the previous/next poi with the specified attributes relative to the poi specified by ID.
+   virtual pgsPointOfInterest GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIFIND_OR) = 0;
+   virtual pgsPointOfInterest GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIFIND_OR) = 0;
+
    // Gets the critical section for shear points of interest
    virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey) = 0;
    virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey,const GDRCONFIG& config) = 0;
 
    // Returns a point of interest that is located at the intersection of a girder and a pier
-   virtual pgsPointOfInterest GetPointOfInterest(const CGirderKey& girderKey,PierIndexType pierIdx) = 0;
+   virtual pgsPointOfInterest GetPierPointOfInterest(const CGirderKey& girderKey,PierIndexType pierIdx) = 0;
 
+   // Returns a point of interest that is located at the intersection of a girder and a temporary support
+   virtual pgsPointOfInterest GetTemporarySupportPointOfInterest(const CGirderKey& girderKey,SupportIndexType tsIdx) = 0;
 
    // Returns the points of interest located in the range xLeft-xRight around the given POI.
    // The returned vector of POI does not include POIs that are in adjacent segments
@@ -146,7 +152,7 @@ interface IPointOfInterest : public IUnknown
 
    // Convert between POI and Girderline Coordinates
    virtual Float64 ConvertPoiToGirderlineCoordinate(const pgsPointOfInterest& poi) = 0;
-   //virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgl) = 0;
+   virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl) = 0;
 
    // Convert between Girder and Girder Path Coordinates
    virtual Float64 ConvertGirderCoordinateToGirderPathCoordinate(const CGirderKey& girderKey,Float64 Xg) = 0;

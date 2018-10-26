@@ -250,6 +250,7 @@ interface IBridge : IUnknown
    virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) = 0;
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
+   virtual void GetSlabOffset(const CSegmentKey& segmentKey,Float64* pStart,Float64* pEnd) = 0;
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
 
@@ -567,12 +568,12 @@ interface IMaterials : IUnknown
    virtual Float64 GetDeckWeightDensity(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
 
-   // Returns the age of concrete at the middle of an interval. Returns 0 if the concrete has not
+   // Returns the age of concrete. Returns 0 if the concrete has not
    // be cast or hasn't attained sufficient strength prior to this interval.
-   virtual Float64 GetSegmentConcreteAge(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetClosureJointConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckConcreteAge(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetSegmentConcreteAge(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetClosureJointConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetDeckConcreteAge(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
 
    // Returns the concrete strength at the middle of an interval
    virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
@@ -1114,8 +1115,9 @@ interface ISectionProperties : IUnknown
 
    // Bending stiffness of entire bridge section - for deflection calculation
    // Crowns, slopes, and slab haunches are ignored.
-   virtual Float64 GetBridgeEIxx(Float64 distFromStartOfBridge) = 0;
-   virtual Float64 GetBridgeEIyy(Float64 distFromStartOfBridge) = 0;
+   // Xb is measured in Bridge Line Coordinates
+   virtual Float64 GetBridgeEIxx(Float64 Xb) = 0;
+   virtual Float64 GetBridgeEIyy(Float64 Xb) = 0;
 
 
    virtual Float64 GetSegmentWeightPerLength(const CSegmentKey& segmentKey) = 0;

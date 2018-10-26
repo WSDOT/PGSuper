@@ -92,16 +92,19 @@ void CSupportActivityBase::Clear()
 {
    m_Piers.clear();
    m_TempSupports.clear();
+   m_bEnabled = false;
 }
 
 void CSupportActivityBase::AddPier(PierIDType pierID)
 {
    m_Piers.insert(pierID);
+   m_bEnabled = true;
 }
 
 void CSupportActivityBase::AddPiers(const std::vector<PierIDType>& piers)
 {
    m_Piers.insert(piers.begin(),piers.end());
+   m_bEnabled = true;
 }
 
 const std::set<PierIDType>& CSupportActivityBase::GetPiers() const
@@ -122,6 +125,11 @@ void CSupportActivityBase::RemovePier(PierIDType pierID)
    {
       m_Piers.erase(found);
    }
+
+   if ( m_TempSupports.size() == 0 && m_Piers.size() == 0 )
+   {
+      m_bEnabled = false;
+   }
 }
 
 IndexType CSupportActivityBase::GetPierCount() const
@@ -132,11 +140,13 @@ IndexType CSupportActivityBase::GetPierCount() const
 void CSupportActivityBase::AddTempSupport(SupportIDType tsID)
 {
    m_TempSupports.insert(tsID);
+   m_bEnabled = true;
 }
 
 void CSupportActivityBase::AddTempSupports(const std::vector<SupportIDType>& tempSupports)
 {
    m_TempSupports.insert(tempSupports.begin(),tempSupports.end());
+   m_bEnabled = true;
 }
 
 const std::set<SupportIDType>& CSupportActivityBase::GetTempSupports() const
@@ -156,6 +166,11 @@ void CSupportActivityBase::RemoveTempSupport(SupportIDType tsID)
    if ( found != m_TempSupports.end() )
    {
       m_TempSupports.erase(found);
+   }
+
+   if ( m_TempSupports.size() == 0 && m_Piers.size() == 0 )
+   {
+      m_bEnabled = false;
    }
 }
 
@@ -270,7 +285,6 @@ HRESULT CSupportActivityBase::SaveSubclassData(IStructuredSave* pStrSave,IProgre
    // does nothing by default
    return S_OK;
 }
-
 
 void CSupportActivityBase::MakeCopy(const CSupportActivityBase& rOther)
 {

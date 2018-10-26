@@ -30,6 +30,7 @@
 
 #include <IFace\ExtendUI.h>
 #include <PgsExt\SplicedGirderData.h>
+#include <PgsExt\BridgeDescription2.h>
 
 // CGirderSegmentDlg
 
@@ -44,12 +45,10 @@ public:
    // IEditSegmentData
    virtual const CSegmentKey& GetSegmentKey() { return m_SegmentKey; }
 
+   CTimelineManager m_TimelineMgr; // copy of the timeine manager we are editing
    CSplicedGirderData m_Girder; // copy of the girder we are editing (contains the segment we are editing)
    CSegmentKey m_SegmentKey; // key to the segment we are editing
    SegmentIDType m_SegmentID; // ID of the segment we are editing
-
-   EventIndexType m_ConstructionEventIdx;
-   EventIndexType m_ErectionEventIdx;
 
    CGirderSegmentStirrupsPage m_StirrupsPage;
 

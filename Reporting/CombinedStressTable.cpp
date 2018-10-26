@@ -95,16 +95,24 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    if (liveLoadIntervalIdx <= intervalIdx)
    {
       if (bDesign)
+      {
          BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, true, false, bGirderStresses);
+      }
 
       if (bRating)
+      {
          BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, false, true, bGirderStresses);
+      }
 
       if (bDesign)
+      {
          BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, true, false, bGirderStresses);
+      }
 
       if (bRating)
+      {
          BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, false, true, bGirderStresses);
+      }
    }
 }
 
@@ -161,7 +169,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    ColumnIndexType col2 = 0;
 
    // Set up table headings
-   ColumnIndexType nCols = (bTimeStepMethod ? 12 : 6);
+   ColumnIndexType nCols = (bTimeStepMethod ? 14 : 6);
    if ( bRating )
    {
       nCols += 2;
@@ -180,6 +188,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    {
       (*pTable)(0,col1++) << COLHDR(_T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable)(0,col1++) << COLHDR(_T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0,col1++) << COLHDR(_T("RE"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable)(0,col1++) << COLHDR(_T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
    (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -192,6 +201,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    {
       (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("RE"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    (*pTable)(0,col1++) << COLHDR(_T("Service I"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -218,12 +228,14 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       std::vector<Float64> fTopDWRatinginc, fBotDWRatinginc;
       std::vector<Float64> fTopCRinc, fBotCRinc;
       std::vector<Float64> fTopSHinc, fBotSHinc;
+      std::vector<Float64> fTopREinc, fBotREinc;
       std::vector<Float64> fTopPSinc, fBotPSinc;
       std::vector<Float64> fTopDCcum, fBotDCcum;
       std::vector<Float64> fTopDWcum, fBotDWcum;
       std::vector<Float64> fTopDWRatingcum, fBotDWRatingcum;
       std::vector<Float64> fTopCRcum, fBotCRcum;
       std::vector<Float64> fTopSHcum, fBotSHcum;
+      std::vector<Float64> fTopREcum, fBotREcum;
       std::vector<Float64> fTopPScum, fBotPScum;
       std::vector<Float64> fTopMinServiceI, fBotMinServiceI;
       std::vector<Float64> fTopMaxServiceI, fBotMaxServiceI;
@@ -233,7 +245,9 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+      PoiAttributeType poiRefAttribute;
+      std::vector<pgsPointOfInterest> vPoi;
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
 
       pForces2->GetStress( intervalIdx, lcDC, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopDCinc, &fBotDCinc);
       pForces2->GetStress( intervalIdx, lcDW, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopDWinc, &fBotDWinc);
@@ -254,6 +268,8 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
          pForces2->GetStress( intervalIdx, lcCR, vPoi, bat, rtCumulative,  topLocation, botLocation, &fTopCRcum, &fBotCRcum);
          pForces2->GetStress( intervalIdx, lcSH, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopSHinc, &fBotSHinc);
          pForces2->GetStress( intervalIdx, lcSH, vPoi, bat, rtCumulative,  topLocation, botLocation, &fTopSHcum, &fBotSHcum);
+         pForces2->GetStress( intervalIdx, lcRE, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopREinc, &fBotREinc);
+         pForces2->GetStress( intervalIdx, lcRE, vPoi, bat, rtCumulative,  topLocation, botLocation, &fTopREcum, &fBotREcum);
          pForces2->GetStress( intervalIdx, lcPS, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopPSinc, &fBotPSinc);
          pForces2->GetStress( intervalIdx, lcPS, vPoi, bat, rtCumulative,  topLocation, botLocation, &fTopPScum, &fBotPScum);
       }
@@ -282,7 +298,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
          }
 
-         (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*pTable)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
          (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCinc[index]) << rptNewLine;
          (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCinc[index]);
 
@@ -302,6 +318,9 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
             (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopSHinc[index]) << rptNewLine;
             (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotSHinc[index]);
+
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopREinc[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotREinc[index]);
 
             (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopPSinc[index]) << rptNewLine;
             (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotPSinc[index]);
@@ -326,6 +345,9 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
             (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopSHcum[index]) << rptNewLine;
             (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotSHcum[index]);
+
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopREcum[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotREcum[index]);
 
             (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopPScum[index]) << rptNewLine;
             (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotPScum[index]);
@@ -407,7 +429,10 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT);
+
+      PoiAttributeType poiRefAttribute;
+      std::vector<pgsPointOfInterest> vPoi;
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
 
       std::vector<Float64> fTopMinPedestrianLL, fBotMinPedestrianLL;
       std::vector<Float64> fTopMaxPedestrianLL, fBotMaxPedestrianLL;
@@ -475,7 +500,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
          }
 
-         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
 
          if ( bPedLoading )
          {
@@ -807,8 +832,9 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
 
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+      PoiAttributeType poiRefAttribute;
+      std::vector<pgsPointOfInterest> vPoi;
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
 
       if ( bDesign )
       {
@@ -868,7 +894,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
          if ( intervalIdx != releaseIntervalIdx )
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
-         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
 
          if ( bDesign )
          {

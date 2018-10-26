@@ -1251,13 +1251,13 @@ Float64 CBridgeDescription::GetSlabOffset() const
    return m_SlabOffset;
 }
 
-Float64 CBridgeDescription::GetMaxSlabOffset() const
+Float64 CBridgeDescription::GetMinSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
       return GetSlabOffset();
 
    const CSpanData* pSpan = GetSpan(0);
-   Float64 maxSlabOffset = 0;
+   Float64 minSlabOffset = DBL_MAX;
    do
    {
       const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
@@ -1267,13 +1267,13 @@ Float64 CBridgeDescription::GetMaxSlabOffset() const
          Float64 startSlabOffset = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart);
          Float64 endSlabOffset   = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd);
 
-         maxSlabOffset = ::Max(maxSlabOffset,startSlabOffset,endSlabOffset);
+         minSlabOffset = ::Min(minSlabOffset,startSlabOffset,endSlabOffset);
       }
 
       pSpan = pSpan->GetNextPier()->GetNextSpan();
    } while (pSpan);
 
-   return maxSlabOffset;
+   return minSlabOffset;
 }
 
 void CBridgeDescription::SetDistributionFactorMethod(pgsTypes::DistributionFactorMethod method)

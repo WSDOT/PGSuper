@@ -61,6 +61,7 @@ class ATL_NO_VTABLE CEngAgentImp :
    public IRatingSpecificationEventSink,
    public ILoadModifiersEventSink,
    public IEnvironmentEventSink,
+   public ILossParametersEventSink,
    public ICrackedSection
 {
 public:
@@ -90,6 +91,7 @@ BEGIN_COM_MAP(CEngAgentImp)
    COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
    COM_INTERFACE_ENTRY(ILoadModifiersEventSink)
    COM_INTERFACE_ENTRY(IEnvironmentEventSink)
+   COM_INTERFACE_ENTRY(ILossParametersEventSink)
    COM_INTERFACE_ENTRY(ICrackedSection)
    COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
@@ -306,6 +308,10 @@ public:
    virtual HRESULT OnExposureConditionChanged();
    virtual HRESULT OnRelHumidityChanged();
 
+// ILossParametersEventSink
+public:
+   virtual HRESULT OnLossParametersChanged();
+
 private:
    DECLARE_EAF_AGENT_DATA;
 
@@ -417,6 +423,7 @@ private:
    DWORD m_dwRatingSpecificationCookie;
    DWORD m_dwLoadModifiersCookie;
    DWORD m_dwEnvironmentCookie;
+   DWORD m_dwLossParametersCookie;
 
    void InvalidateAll();
    void InvalidateHaunch();

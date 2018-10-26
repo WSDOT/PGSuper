@@ -42,5 +42,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-   bool m_bIgnoreTimeDependentEffects;
+   bool m_bIgnoreCreepEffects;
+   bool m_bIgnoreShrinkageEffects;
+   bool m_bIgnoreRelaxationEffects;
 };

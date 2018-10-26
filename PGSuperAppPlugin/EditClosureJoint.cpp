@@ -70,7 +70,7 @@ bool txnEditClosureJoint::Execute()
       oldData.m_ClosureKey.girderIndex = gdrIdx;
 
       oldData.m_ClosureJoint = *pBridgeDesc->GetClosureJoint(oldData.m_ClosureKey);
-      oldData.m_ClosureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(oldData.m_ClosureKey.groupIndex,oldData.m_ClosureKey.segmentIndex);
+      oldData.m_TimelineMgr = (*pIBridgeDesc->GetTimelineManager());
 
       m_OldData.insert(oldData);
 
@@ -111,9 +111,13 @@ std::_tstring txnEditClosureJoint::Name() const
 {
    std::_tostringstream os;
    if ( m_NewData.m_PierIdx != INVALID_INDEX )
+   {
       os << "Edit Closure Joint for Girder " << LABEL_GIRDER(m_ClosureKey.girderIndex) << " at Pier " << LABEL_PIER(m_NewData.m_PierIdx);
+   }
    else
+   {
       os << "Edit Closure Joint for Girder " << LABEL_GIRDER(m_ClosureKey.girderIndex) << " at Temporary Support " << LABEL_TEMPORARY_SUPPORT(m_NewData.m_TSIdx);
+   }
 
    return os.str();
 }
@@ -138,7 +142,7 @@ void txnEditClosureJoint::SetClosureJointData(const CSegmentKey& closureKey,cons
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetClosureJointData(closureKey,data.m_ClosureJoint);
-   pIBridgeDesc->SetCastClosureJointEventByIndex(closureKey.groupIndex,closureKey.segmentIndex,data.m_ClosureEventIdx);
+   pIBridgeDesc->SetTimelineManager(data.m_TimelineMgr);
 
    pEvents->FirePendingEvents();
 }

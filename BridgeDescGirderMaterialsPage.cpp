@@ -622,7 +622,7 @@ void CGirderDescGeneralPage::UpdateFc()
       if ( i == IDC_FC1 )
       {
          // concrete model is based on f'ci... compute f'c
-   #pragma Reminder("UPDATE: assuming ACI209 concrete model")
+#pragma Reminder("UPDATE: this is ok for LRFD and ACI209 concrete models. Review and update for CEB-FIP")
          // Get f'ci from edit control
          CString strFci;
          m_ctrlFci.GetWindowText(strFci);
@@ -653,7 +653,7 @@ void CGirderDescGeneralPage::UpdateFci()
       if ( i == IDC_FC2 )
       {
          // concrete model is based on f'ci... compute f'c
-   #pragma Reminder("UPDATE: assuming ACI209 concrete model")
+#pragma Reminder("UPDATE: this is ok for LRFD and ACI209 concrete models. Review and update for CEB-FIP")
          // Get f'c from edit control
          CString strFc;
          m_ctrlFc.GetWindowText(strFc);
@@ -846,8 +846,6 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
    const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
 
-#pragma Reminder("UPDATE: add ACI and CEB-FIP parameters to the tooltip text")
-
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
       _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pParent->m_pSegment->Material.Concrete.Type,true).c_str(),
@@ -855,16 +853,6 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_pSegment->Material.Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pParent->m_pSegment->Material.Concrete.MaxAggregateSize,aggsize)
       );
-
-   //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-   //{
-   //   // add K1 parameter
-   //   CString strK1;
-   //   strK1.Format(_T("\r\n%-20s %s"),
-   //      _T("K1"),FormatScalar(pParent->m_GirderData.Material.K1,scalar));
-
-   //   strTip += strK1;
-   //}
 
    if ( pParent->m_pSegment->Material.Concrete.Type != pgsTypes::Normal && pParent->m_pSegment->Material.Concrete.bHasFct )
    {

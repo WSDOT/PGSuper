@@ -314,13 +314,6 @@ void CEngAgentImp::ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes:
       return; // this type isn't enabled, so leave
    }
 
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
-
-   std::_tostringstream os;
-   os << "Load Rating Girder Line " << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
-   pProgress->UpdateMessage( os.str().c_str() );
-
    std::map<RatingArtifactKey,pgsRatingArtifact>::iterator found;
    RatingArtifactKey key(girderKey,vehicleIndex);
    found = m_RatingArtifacts[ratingType].find(key);
@@ -329,6 +322,12 @@ void CEngAgentImp::ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes:
       return; // We already have an artifact for this girder
    }
 
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+
+   std::_tostringstream os;
+   os << "Load Rating Girder Line " << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
+   pProgress->UpdateMessage( os.str().c_str() );
 
    pgsRatingArtifact artifact = m_LoadRater.Rate(girderKey,ratingType,vehicleIndex);
 
@@ -1296,6 +1295,12 @@ STDMETHODIMP CEngAgentImp::Init2()
    ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
+   hr = pBrokerInit->FindConnectionPoint(IID_ILossParametersEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Advise( GetUnknown(), &m_dwLossParametersCookie );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the connection point
+
    return S_OK;
 }
 
@@ -1343,6 +1348,12 @@ STDMETHODIMP CEngAgentImp::ShutDown()
    hr = pBrokerInit->FindConnectionPoint(IID_IEnvironmentEventSink, &pCP );
    ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwEnvironmentCookie );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the connection point
+
+   hr = pBrokerInit->FindConnectionPoint(IID_ILossParametersEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Unadvise( m_dwLossParametersCookie );
    ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
@@ -4194,6 +4205,14 @@ HRESULT CEngAgentImp::OnExposureConditionChanged()
 }
 
 HRESULT CEngAgentImp::OnRelHumidityChanged()
+{
+   InvalidateAll();
+   return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// ILossParametersEventSink
+HRESULT CEngAgentImp::OnLossParametersChanged()
 {
    InvalidateAll();
    return S_OK;

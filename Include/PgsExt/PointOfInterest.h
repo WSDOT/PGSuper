@@ -107,31 +107,40 @@ typedef Uint32 PoiAttributeType; // NOTE: if more bits are needed use a 64-bit t
 //#define POI_NONREF1                0x00400000
 
 // Special Points
-#define POI_CRITSECTSHEAR1           0x00200000 // critical section for shear, for strength I limit state
-#define POI_CRITSECTSHEAR2           0x00100000 // critical section for shear, for strength II limit state
-#define POI_HARPINGPOINT             0x00080000 // harping point
-#define POI_CONCLOAD                 0x00040000 // point of application of a concentrated load
-#define POI_PSXFER                   0x00020000 // POI at end of prestress transfer length
-#define POI_PSDEV                    0x00010000 // POI at end of prestress development length
-#define POI_DEBOND                   0x00008000 // POI at debond location
-#define POI_DECKBARCUTOFF            0x00004000 // POI at negative moment reinforcement cutoff point
-#define POI_BARCUTOFF                0x00002000 // POI at negative moment reinforcement cutoff point
-#define POI_BARDEVELOP               0x00001000 // POI at girder moment reinforcement development point
-#define POI_H                        0x00000800 // POI at h from face of support
-#define POI_15H                      0x00000400 // POI at 1.5h from face of support
-#define POI_FACEOFSUPPORT            0x00000200 // POI at face of support
-#define POI_CLOSURE                  0x00000100 // POI at center of closure joint
+#define POI_STIRRUP_ZONE             0x00200000 // Stirrup Zone Boundary
+#define POI_CRITSECTSHEAR1           0x00100000 // critical section for shear, for strength I limit state
+#define POI_CRITSECTSHEAR2           0x00080000 // critical section for shear, for strength II limit state
+#define POI_HARPINGPOINT             0x00040000 // harping point
+#define POI_CONCLOAD                 0x00020000 // point of application of a concentrated load
+#define POI_PSXFER                   0x00010000 // POI at end of prestress transfer length
+#define POI_PSDEV                    0x00008000 // POI at end of prestress development length
+#define POI_DEBOND                   0x00004000 // POI at debond location
+#define POI_DECKBARCUTOFF            0x00002000 // POI at negative moment reinforcement cutoff point
+#define POI_BARCUTOFF                0x00001000 // POI at negative moment reinforcement cutoff point
+#define POI_BARDEVELOP               0x00000800 // POI at girder moment reinforcement development point
+#define POI_H                        0x00000400 // POI at h from face of support
+#define POI_15H                      0x00000200 // POI at 1.5h from face of support
+#define POI_FACEOFSUPPORT            0x00000100 // POI at face of support
+#define POI_CLOSURE                  0x00000080 // POI at center of closure joint
+
+#define POI_SPECIAL POI_STIRRUP_ZONE | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD | \
+                    POI_PSXFER | POI_PSDEV | POI_DEBOND | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | \
+                    POI_H | POI_15H | POI_FACEOFSUPPORT | POI_CLOSURE
+
 // Section Changes
-#define POI_SECTCHANGE_TRANSITION    0x00000080
-#define POI_SECTCHANGE_RIGHTFACE     0x00000040
-#define POI_SECTCHANGE_LEFTFACE      0x00000020
+#define POI_SECTCHANGE_TRANSITION    0x00000040
+#define POI_SECTCHANGE_RIGHTFACE     0x00000020
+#define POI_SECTCHANGE_LEFTFACE      0x00000010
+
 #define POI_SECTCHANGE POI_SECTCHANGE_LEFTFACE | POI_SECTCHANGE_RIGHTFACE | POI_SECTCHANGE_TRANSITION
+
 // intermediate pier and temporary supports
-#define POI_INTERMEDIATE_TEMPSUPPORT 0x00000010 // POI at a temporary support that occurs between the ends of a segment
-#define POI_INTERMEDIATE_PIER        0x00000008 // POI at a pier that occurs between the ends of a segment
-#define POI_BOUNDARY_PIER            0x00000004 // POI at a pier that occurs between groups
-#define POI_ABUTMENT                 0x00000002 // POI at CL Bearing at start/end abutment
-#define POI_STIRRUP_ZONE             0x00000001 // Stirrup Zone Boundary
+#define POI_INTERMEDIATE_TEMPSUPPORT 0x00000008 // POI at a temporary support that occurs between the ends of a segment
+#define POI_INTERMEDIATE_PIER        0x00000004 // POI at a pier that occurs between the ends of a segment
+#define POI_BOUNDARY_PIER            0x00000002 // POI at a pier that occurs between groups
+#define POI_ABUTMENT                 0x00000001 // POI at CL Bearing at start/end abutment
+
+#define POI_SUPPORTS POI_INTERMEDIATE_TEMPSUPPORT | POI_INTERMEDIATE_PIER | POI_BOUNDARY_PIER | POI_ABUTMENT
 
 
 /*****************************************************************************

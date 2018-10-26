@@ -89,16 +89,24 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    if ( liveLoadIntervalIdx <= intervalIdx )
    {
       if (bDesign)
+      {
          BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, true, false);
+      }
 
       if (bRating)
+      {
          BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, false, true);
+      }
 
       if (bDesign)
+      {
          BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, true, false);
+      }
 
       if (bRating)
+      {
          BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, false, true);
+      }
    }
 }
 
@@ -127,9 +135,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    rptRcTable* p_table = 0;
 
@@ -178,11 +184,9 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-#pragma Reminder("UPDATE: using a dummy segment index")
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(thisGirderKey,0));
-
-      PoiAttributeType poiRefAttribute = (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),poiRefAttribute) );
+      PoiAttributeType poiRefAttribute;
+      std::vector<pgsPointOfInterest> vPoi;
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
 
       std::vector<sysSectionValue> dummy;
       std::vector<sysSectionValue> minServiceI, maxServiceI;
@@ -196,6 +200,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       std::vector<sysSectionValue> minCRcum, maxCRcum;
       std::vector<sysSectionValue> minSHinc, maxSHinc;
       std::vector<sysSectionValue> minSHcum, maxSHcum;
+      std::vector<sysSectionValue> minREinc, maxREinc;
+      std::vector<sysSectionValue> minREcum, maxREcum;
       std::vector<sysSectionValue> minPSinc, maxPSinc;
       std::vector<sysSectionValue> minPScum, maxPScum;
 
@@ -233,6 +239,9 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             maxSHinc = pForces2->GetShear( intervalIdx, lcSH, vPoi, maxBAT, rtIncremental );
             minSHinc = maxSHinc;
 
+            maxREinc = pForces2->GetShear( intervalIdx, lcRE, vPoi, maxBAT, rtIncremental );
+            minREinc = maxREinc;
+
             maxPSinc = pForces2->GetShear( intervalIdx, lcPS, vPoi, maxBAT, rtIncremental );
             minPSinc = maxPSinc;
 
@@ -241,6 +250,9 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
             maxSHcum = pForces2->GetShear( intervalIdx, lcSH, vPoi, maxBAT, rtCumulative );
             minSHcum = maxSHcum;
+
+            maxREcum = pForces2->GetShear( intervalIdx, lcRE, vPoi, maxBAT, rtCumulative );
+            minREcum = maxREcum;
 
             maxPScum = pForces2->GetShear( intervalIdx, lcPS, vPoi, maxBAT, rtCumulative );
             minPScum = minPScum;
@@ -281,6 +293,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             minCRinc = pForces2->GetShear( intervalIdx, lcCR, vPoi, minBAT, rtIncremental );
             maxSHinc = pForces2->GetShear( intervalIdx, lcSH, vPoi, maxBAT, rtIncremental );
             minSHinc = pForces2->GetShear( intervalIdx, lcSH, vPoi, minBAT, rtIncremental );
+            maxREinc = pForces2->GetShear( intervalIdx, lcRE, vPoi, maxBAT, rtIncremental );
+            minREinc = pForces2->GetShear( intervalIdx, lcRE, vPoi, minBAT, rtIncremental );
             maxPSinc = pForces2->GetShear( intervalIdx, lcPS, vPoi, maxBAT, rtIncremental );
             minPSinc = pForces2->GetShear( intervalIdx, lcPS, vPoi, minBAT, rtIncremental );
 
@@ -288,6 +302,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             minCRcum = pForces2->GetShear( intervalIdx, lcCR, vPoi, minBAT, rtCumulative );
             maxSHcum = pForces2->GetShear( intervalIdx, lcSH, vPoi, maxBAT, rtCumulative );
             minSHcum = pForces2->GetShear( intervalIdx, lcSH, vPoi, minBAT, rtCumulative );
+            maxREcum = pForces2->GetShear( intervalIdx, lcRE, vPoi, maxBAT, rtCumulative );
+            minREcum = pForces2->GetShear( intervalIdx, lcRE, vPoi, minBAT, rtCumulative );
             maxPScum = pForces2->GetShear( intervalIdx, lcPS, vPoi, maxBAT, rtCumulative );
             minPScum = pForces2->GetShear( intervalIdx, lcPS, vPoi, minBAT, rtCumulative );
          }
@@ -321,7 +337,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
          (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
 
-         if ( analysisType == pgsTypes::Envelope /*&& continunityIntervalIdx == castDeckIntervalIdx*/ )
+         if ( analysisType == pgsTypes::Envelope )
          {
             (*p_table)(row,col++) << shear.SetValue( maxDCinc[index] );
             (*p_table)(row,col++) << shear.SetValue( minDCinc[index] );
@@ -340,6 +356,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
                (*p_table)(row,col++) << shear.SetValue( minCRinc[index] );
                (*p_table)(row,col++) << shear.SetValue( maxSHinc[index] );
                (*p_table)(row,col++) << shear.SetValue( minSHinc[index] );
+               (*p_table)(row,col++) << shear.SetValue( maxREinc[index] );
+               (*p_table)(row,col++) << shear.SetValue( minREinc[index] );
                (*p_table)(row,col++) << shear.SetValue( maxPSinc[index] );
                (*p_table)(row,col++) << shear.SetValue( minPSinc[index] );
             }
@@ -361,6 +379,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
                (*p_table)(row,col++) << shear.SetValue( minCRcum[index] );
                (*p_table)(row,col++) << shear.SetValue( maxSHcum[index] );
                (*p_table)(row,col++) << shear.SetValue( minSHcum[index] );
+               (*p_table)(row,col++) << shear.SetValue( maxREcum[index] );
+               (*p_table)(row,col++) << shear.SetValue( minREcum[index] );
                (*p_table)(row,col++) << shear.SetValue( maxPScum[index] );
                (*p_table)(row,col++) << shear.SetValue( minPScum[index] );
             }
@@ -385,6 +405,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             {
                (*p_table)(row,col++) << shear.SetValue( maxCRinc[index] );
                (*p_table)(row,col++) << shear.SetValue( maxSHinc[index] );
+               (*p_table)(row,col++) << shear.SetValue( maxREinc[index] );
                (*p_table)(row,col++) << shear.SetValue( maxPSinc[index] );
             }
 
@@ -400,6 +421,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             {
                (*p_table)(row,col++) << shear.SetValue( maxCRcum[index] );
                (*p_table)(row,col++) << shear.SetValue( maxSHcum[index] );
+               (*p_table)(row,col++) << shear.SetValue( maxREcum[index] );
                (*p_table)(row,col++) << shear.SetValue( maxPScum[index] );
             }
 

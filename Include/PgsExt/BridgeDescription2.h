@@ -125,8 +125,8 @@ public:
    void SetSlabOffset(Float64 slabOffset);
    Float64 GetSlabOffset(bool bGetRawValue = false) const;
 
-   // returns the greatest slab offset defined for the bridge
-   Float64 GetMaxSlabOffset() const;
+   // returns the least slab offset defined for the bridge
+   Float64 GetMinSlabOffset() const;
 
    // =================================================================================
    // Spans and Girder Groups

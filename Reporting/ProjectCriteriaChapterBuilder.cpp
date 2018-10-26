@@ -1009,9 +1009,18 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          break;
       case pgsTypes::TIME_STEP:
          *pPara<<_T("Losses calculated with a time-step method") << rptNewLine;
-#pragma Reminder("UPDATE: report correct concrete model")
-         ATLASSERT(pSpecEntry->GetTimeDependentModel() == TDM_ACI209);
-         *pPara<<_T("Time-dependent concrete properties based on ACI 209R-92") << rptNewLine;
+         if ( pSpecEntry->GetTimeDependentModel() == TDM_AASHTO )
+         {
+            *pPara<<_T("Time-dependent concrete properties based on AASHTO LRFD") << rptNewLine;
+         }
+         else if ( pSpecEntry->GetTimeDependentModel() == TDM_ACI209)
+         {
+            *pPara<<_T("Time-dependent concrete properties based on ACI 209R-92") << rptNewLine;
+         }
+         else
+         {
+            ATLASSERT(false);
+         }
          break;
       default:
          ATLASSERT(false); // Should never get here

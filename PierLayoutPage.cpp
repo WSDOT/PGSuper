@@ -60,7 +60,6 @@ CPierLayoutPage::CPierLayoutPage() : CPropertyPage(CPierLayoutPage::IDD)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
    m_MovePierOption = pgsTypes::MoveBridge;
-   m_ErectionEventIndex = 0;
 
    HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
    ASSERT(SUCCEEDED(hr));
@@ -93,8 +92,6 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_String(pDX,IDC_ORIENTATION,m_strOrientation);
 
-   DDX_CBItemData(pDX,IDC_ERECTION_EVENT,m_ErectionEventIndex);
-
    DDX_UnitValueAndTag(pDX,IDC_BACK_SLAB_OFFSET,  IDC_BACK_SLAB_OFFSET_UNIT,  m_SlabOffset[pgsTypes::Back],  pDisplayUnits->GetComponentDimUnit());
    DDX_UnitValueAndTag(pDX,IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
 
@@ -119,8 +116,6 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
       CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
       pParent->m_BridgeDesc.MovePier(pParent->m_pPier->GetIndex(),m_Station,m_MovePierOption);
       pParent->m_pPier->SetOrientation(m_strOrientation.c_str());
-      pParent->m_BridgeDesc.GetTimelineManager()->SetPierErectionEventByIndex(pParent->m_pPier->GetID(),m_ErectionEventIndex);
-
 
       if ( pParent->m_BridgeDesc.GetSlabOffsetType()== pgsTypes::sotBridge )
       {
@@ -222,8 +217,12 @@ BOOL CPierLayoutPage::OnInitDialog()
 
    UpdateMoveOptionList();
 
-   
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+
+   EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetPierErectionEventIndex(m_PierIdx);
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_ERECTION_EVENT,eventIdx);
+
 
    m_PierFaceCount = 2;
    if ( pParent->m_pPier->IsInteriorPier() && 
@@ -313,9 +312,6 @@ void CPierLayoutPage::Init(const CPierData2* pPier)
       m_NextPierStation = -DBL_MAX;
 
    m_strOrientation = pPier->GetOrientation();
-
-   m_ErectionEventIndex = pBridgeDesc->GetTimelineManager()->GetPierErectionEventIndex(m_PierIdx);
-
 
    const CGirderGroupData* pBackGroup  = pPier->GetGirderGroup(pgsTypes::Back );
    const CGirderGroupData* pAheadGroup = pPier->GetGirderGroup(pgsTypes::Ahead);
@@ -564,7 +560,13 @@ void CPierLayoutPage::FillEventList()
    pcbErect->SetItemData(pcbErect->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
    if ( erectIdx != CB_ERR )
+   {
       pcbErect->SetCurSel(erectIdx);
+   }
+   else
+   {
+      pcbErect->SetCurSel(0);
+   }
 }
 
 void CPierLayoutPage::OnErectionStageChanging()
@@ -577,25 +579,24 @@ void CPierLayoutPage::OnErectionStageChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
    int curSel = pCB->GetCurSel();
-   EventIndexType idx = (IndexType)pCB->GetItemData(curSel);
-   if ( idx == CREATE_TIMELINE_EVENT )
+   EventIndexType eventIdx = (IndexType)pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
-      EventIndexType eventIdx = CreateEvent();
-      if (eventIdx != INVALID_INDEX)
+      eventIdx = CreateEvent();
+      if ( eventIdx == INVALID_INDEX )
       {
-         CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-         pParent->m_BridgeDesc.GetTimelineManager()->SetPierErectionEventByIndex(pParent->m_pPier->GetIndex(),eventIdx);
-
-         FillEventList();
-
-         pCB->SetCurSel((int)idx);
-         m_ErectionEventIndex = idx;
+         pCB->SetCurSel(m_PrevEventIdx);
+         return;
       }
       else
       {
-         pCB->SetCurSel(m_PrevEventIdx);
+         FillEventList();
       }
    }
+
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+   pParent->m_BridgeDesc.GetTimelineManager()->SetPierErectionEventByIndex(pParent->m_pPier->GetIndex(),eventIdx);
+   pCB->SetCurSel((int)eventIdx);
 }
 
 EventIndexType CPierLayoutPage::CreateEvent()
@@ -603,11 +604,11 @@ EventIndexType CPierLayoutPage::CreateEvent()
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
    CTimelineManager* pTimelineMgr = pParent->GetBridgeDescription()->GetTimelineManager();
 
-   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
       EventIndexType idx;
-      pTimelineMgr->AddTimelineEvent(dlg.m_TimelineEvent,true,&idx);
+      pTimelineMgr->AddTimelineEvent(*dlg.m_pTimelineEvent,true,&idx);
       return idx;
   }
 

@@ -192,11 +192,6 @@ CGirderModelElevationView::~CGirderModelElevationView()
 BEGIN_MESSAGE_MAP(CGirderModelElevationView, CDisplayView)
 	//{{AFX_MSG_MAP(CGirderModelElevationView)
 	ON_WM_CREATE()
-	ON_COMMAND(ID_LEFTEND, OnLeftEnd)
-	ON_COMMAND(ID_LEFT_HP, OnLeftHp)
-	ON_COMMAND(ID_CENTER, OnCenter)
-	ON_COMMAND(ID_RIGHT_HP, OnRightHp)
-	ON_COMMAND(ID_RIGHTEND, OnRightEnd)
 	ON_COMMAND(ID_USER_CUT, OnUserCut)
 	ON_WM_SIZE()
 	ON_COMMAND(ID_EDIT_PRESTRESSING, OnEditPrestressing)
@@ -611,39 +606,14 @@ pgsPointOfInterest CGirderModelElevationView::GetCutLocation()
    dispObj->GetEventSink(&sink);
 
    CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(dispObj);
-   CComQIPtr<iSectionCutDrawStrategy,&IID_iSectionCutDrawStrategy> sc_strat(sink);
+   CComQIPtr<iSectionCutDrawStrategy,&IID_iSectionCutDrawStrategy> sectionCutStrategy(sink);
 
-   return sc_strat->GetCutPOI(m_pFrame->GetCurrentCutLocation());
-}
-
-void CGirderModelElevationView::OnLeftEnd() 
-{
-   m_pFrame->CutAtLeftEnd();
-}
-
-void CGirderModelElevationView::OnLeftHp() 
-{
-   m_pFrame->CutAtLeftHp();
-}
-
-void CGirderModelElevationView::OnCenter() 
-{
-   m_pFrame->CutAtCenter();
-}
-
-void CGirderModelElevationView::OnRightHp() 
-{
-   m_pFrame->CutAtRightHp();
-}
-
-void CGirderModelElevationView::OnRightEnd() 
-{
-   m_pFrame->CutAtRightEnd();
+   return sectionCutStrategy->GetCutPOI(m_pFrame->GetCurrentCutLocation());
 }
 
 void CGirderModelElevationView::OnUserCut() 
 {
-	m_pFrame->CutAtLocation();
+	m_pFrame->ShowCutDlg();
 }
 
 void CGirderModelElevationView::OnSize(UINT nType, int cx, int cy) 
@@ -1849,15 +1819,9 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, 
                   // Rebar locations are in Girder Section Coordinates (0,0 is at the top center of the shape)
                   // Since this is an elevation view, we don't use the X-value
 
-                  Float64 yStart, yEnd;
-                  startBarLocation->get_Y(&yStart);
-                  endBarLocation->get_Y(&yEnd);
-
                   // Move points along girder
                   startBarLocation->put_X(startLoc);
-                  startBarLocation->put_Y(yStart);
                   endBarLocation->put_X(endLoc);
-                  endBarLocation->put_Y(yEnd);
                   
                   BuildLine(pDL, startBarLocation, endBarLocation, REBAR_COLOR);
                } // if 0 < nbars
@@ -2619,7 +2583,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
       {
          // Overall length along the top
          CSegmentKey segmentKey(gdrKey,0);
-         poiStart = pPoi->GetPointOfInterest(segmentKey,0);
+         poiStart = pPoi->GetPointOfInterest(segmentKey,0.0);
 
          segmentKey.segmentIndex = nSegments-1;
          Float64 segment_length = pBridge->GetSegmentLength(segmentKey);

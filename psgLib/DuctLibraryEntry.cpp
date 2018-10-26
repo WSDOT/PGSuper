@@ -169,7 +169,7 @@ HICON DuctLibraryEntry::GetIcon() const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_DUCT_ENTRY) );
 }
 
-bool DuctLibraryEntry::Edit(bool allowEditing)
+bool DuctLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

@@ -1761,7 +1761,7 @@ RatingLibraryEntry& RatingLibraryEntry::operator= (const RatingLibraryEntry& rOt
    return *this;
 }
 
-bool RatingLibraryEntry::Edit(bool allowEditing)
+bool RatingLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -1770,6 +1770,7 @@ bool RatingLibraryEntry::Edit(bool allowEditing)
    RatingLibraryEntry tmp(*this);
 
    CRatingDialog dlg(tmp, allowEditing);
+   dlg.SetActivePage(nPage);
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {

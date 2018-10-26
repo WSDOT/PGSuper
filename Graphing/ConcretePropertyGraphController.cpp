@@ -59,6 +59,9 @@ BEGIN_MESSAGE_MAP(CConcretePropertyGraphController, CEAFGraphControlWindow)
    ON_BN_CLICKED(IDC_DECK,OnGraphElement)
    ON_BN_CLICKED(IDC_FC,OnGraphType)
    ON_BN_CLICKED(IDC_EC,OnGraphType)
+   ON_BN_CLICKED(IDC_ECE,OnGraphType)
+   ON_BN_CLICKED(IDC_SH,OnGraphType)
+   ON_BN_CLICKED(IDC_CR,OnGraphType)
    ON_CBN_SELCHANGE(IDC_GROUP,OnGroupChanged)
    ON_CBN_SELCHANGE(IDC_GIRDER,OnGirderChanged)
    ON_CBN_SELCHANGE(IDC_SEGMENT,OnSegmentChanged)
@@ -78,7 +81,7 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
    EAFGetBroker(&m_pBroker);
 
    CheckRadioButton(IDC_PRECAST_SEGMENT,IDC_DECK,IDC_PRECAST_SEGMENT);
-   CheckRadioButton(IDC_FC,IDC_EC,IDC_FC);
+   CheckRadioButton(IDC_FC,IDC_CR,IDC_FC);
 
    FillGroupControl();
    FillGirderControl();
@@ -113,14 +116,27 @@ int CConcretePropertyGraphController::GetGraphElement()
 
 int CConcretePropertyGraphController::GetGraphType()
 {
-   int id = GetCheckedRadioButton(IDC_FC,IDC_EC);
-   if ( id == IDC_FC )
+   int id = GetCheckedRadioButton(IDC_FC,IDC_CR);
+   switch(id)
    {
+   case IDC_FC:
       return GRAPH_TYPE_FC;
-   }
-   else
-   {
+
+   case IDC_EC:
       return GRAPH_TYPE_EC;
+
+   case IDC_ECE:
+      return GRAPH_TYPE_ECE;
+
+   case IDC_SH:
+      return GRAPH_TYPE_SH;
+
+   case IDC_CR:
+      return GRAPH_TYPE_CR;
+
+   default:
+      ATLASSERT(false);
+      return GRAPH_TYPE_FC;
    }
 }
 

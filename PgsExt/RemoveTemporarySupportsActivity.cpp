@@ -92,12 +92,14 @@ void CTemporarySupportActivityBase::AddTempSupport(SupportIDType tsID)
 {
    m_TempSupports.push_back(tsID);
    std::sort(m_TempSupports.begin(),m_TempSupports.end());
+   m_bEnabled = true;
 }
 
 void CTemporarySupportActivityBase::AddTempSupports(const std::vector<SupportIDType>& tempSupports)
 {
    m_TempSupports.insert(m_TempSupports.end(),tempSupports.begin(),tempSupports.end());
    std::sort(m_TempSupports.begin(),m_TempSupports.end());
+   m_bEnabled = true;
 }
 
 const std::vector<SupportIDType>& CTemporarySupportActivityBase::GetTempSupports() const
@@ -117,6 +119,11 @@ void CTemporarySupportActivityBase::RemoveTempSupport(SupportIDType tsID)
    if ( found != m_TempSupports.end() )
    {
       m_TempSupports.erase(found);
+   }
+
+   if ( m_TempSupports.size() == 0 )
+   {
+      m_bEnabled = false;
    }
 }
 

@@ -86,16 +86,19 @@ bool CSegmentActivityBase::IsEnabled() const
 void CSegmentActivityBase::Clear()
 {
    m_Segments.clear();
+   m_bEnabled = false;
 }
 
 void CSegmentActivityBase::AddSegment(SegmentIDType segmentID)
 {
    m_Segments.insert(segmentID);
+   m_bEnabled = true;
 }
 
 void CSegmentActivityBase::AddSegments(const std::set<SegmentIDType>& segments)
 {
    m_Segments.insert(segments.begin(),segments.end());
+   m_bEnabled = true;
 }
 
 const std::set<SegmentIDType>& CSegmentActivityBase::GetSegments() const
@@ -115,6 +118,11 @@ void CSegmentActivityBase::RemoveSegment(SegmentIDType segmentID)
    if ( found != m_Segments.end() )
    {
       m_Segments.erase(found);
+   }
+
+   if ( m_Segments.size() == 0 )
+   {
+      m_bEnabled = false;
    }
 }
 

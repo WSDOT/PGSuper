@@ -151,42 +151,42 @@ void CActivityGrid::Refresh()
       RemoveRows(1,GetRowCount());
    }
 
-   if ( pParent->m_TimelineEvent.GetConstructSegmentsActivity().IsEnabled() )
+   if ( pParent->m_pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
    {
       AddActivity(_T("Construct Segments"),CONSTRUCT_SEGMENTS);
    }
 
-   if ( pParent->m_TimelineEvent.GetErectPiersActivity().IsEnabled() )
+   if ( pParent->m_pTimelineEvent->GetErectPiersActivity().IsEnabled() )
    {
       AddActivity(_T("Erect Piers/Temporary Supports"),ERECT_PIERS);
    }
 
-   if ( pParent->m_TimelineEvent.GetCastClosureJointActivity().IsEnabled() )
+   if ( pParent->m_pTimelineEvent->GetCastClosureJointActivity().IsEnabled() )
    {
       AddActivity(_T("Cast Closure Joints"),CAST_CLOSURE_JOINTS);
    }
 
-   if ( pParent->m_TimelineEvent.GetErectSegmentsActivity().IsEnabled() )
+   if ( pParent->m_pTimelineEvent->GetErectSegmentsActivity().IsEnabled() )
    {
       AddActivity(_T("Erect Segments"),ERECT_SEGMENTS);
    }
 
-   if ( pParent->m_TimelineEvent.GetStressTendonActivity().IsEnabled() )
+   if ( pParent->m_pTimelineEvent->GetStressTendonActivity().IsEnabled() )
    {
       AddActivity(_T("Stress Tendons"),STRESS_TENDONS);
    }
 
-   if ( pParent->m_TimelineEvent.GetRemoveTempSupportsActivity().IsEnabled() )
+   if ( pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().IsEnabled() )
    {
       AddActivity(_T("Remove Temporary Supports"),REMOVE_TS);
    }
 
-   if ( pParent->m_TimelineEvent.GetCastDeckActivity().IsEnabled() )
+   if ( pParent->m_pTimelineEvent->GetCastDeckActivity().IsEnabled() )
    {
       AddActivity(_T("Cast Deck"),CAST_DECK);
    }
 
-   if ( pParent->m_TimelineEvent.GetApplyLoadActivity().IsEnabled() )
+   if ( pParent->m_pTimelineEvent->GetApplyLoadActivity().IsEnabled() )
    {
       AddActivity(_T("Apply Loads"),APPLY_LOADS);
    }
@@ -237,75 +237,66 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    GetStyleRowCol(nRow,nCol,style);
    if ( (int)style.GetItemDataPtr() == CONSTRUCT_SEGMENTS )
    {
-      CConstructSegmentsDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
-      dlg.m_ConstructSegments = pParent->m_TimelineEvent.GetConstructSegmentsActivity();
+      CConstructSegmentsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetConstructSegmentsActivity(dlg.m_ConstructSegments);
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
    else if ( (int)style.GetItemDataPtr() == ERECT_PIERS )
    {
-      CErectPiersDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
-      dlg.m_ErectPiers = pParent->m_TimelineEvent.GetErectPiersActivity();
+      CErectPiersDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetErectPiersActivity(dlg.m_ErectPiers);
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
    else if ( (int)style.GetItemDataPtr() == ERECT_SEGMENTS )
    {
-      CErectSegmentsDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
-      dlg.m_ErectSegments = pParent->m_TimelineEvent.GetErectSegmentsActivity();
+      CErectSegmentsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetErectSegmentsActivity(dlg.m_ErectSegments);
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
    else if ( (int)style.GetItemDataPtr() == STRESS_TENDONS )
    {
-      CStressTendonDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
-      dlg.m_StressTendonActivity = pParent->m_TimelineEvent.GetStressTendonActivity();
+      CStressTendonDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetStressTendonActivity(dlg.m_StressTendonActivity);
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
    else if ( (int)style.GetItemDataPtr() == REMOVE_TS )
    {
-      CRemoveTempSupportsDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
-      dlg.m_RemoveTempSupports = pParent->m_TimelineEvent.GetRemoveTempSupportsActivity();
+      CRemoveTempSupportsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetRemoveTempSupportsActivity(dlg.m_RemoveTempSupports);
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
    else if ( (int)style.GetItemDataPtr() == CAST_CLOSURE_JOINTS )
    {
-      CCastClosureJointDlg dlg(pParent->m_pTimelineMgr);
-      dlg.m_CastClosureJoints = pParent->m_TimelineEvent.GetCastClosureJointActivity();
+      CCastClosureJointDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetCastClosureJointActivity(dlg.m_CastClosureJoints);
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
    else if ( (int)style.GetItemDataPtr() == CAST_DECK )
    {
-      CCastDeckDlg dlg;
-      dlg.m_CastDeck = pParent->m_TimelineEvent.GetCastDeckActivity();
+      CCastDeckDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetCastDeckActivity(dlg.m_CastDeck);
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
    else if ( (int)style.GetItemDataPtr() == APPLY_LOADS )
    {
-      CApplyLoadsDlg dlg;
-      dlg.m_ThisEventIdx = eventIdx;
-      dlg.m_ApplyLoads = pParent->m_TimelineEvent.GetApplyLoadActivity();
+      CApplyLoadsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex);
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetApplyLoadActivity(dlg.m_ApplyLoads);
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
    else
@@ -337,24 +328,24 @@ void CActivityGrid::RemoveActivity()
 
       if ( activityType == CONSTRUCT_SEGMENTS )
       {
-         if ( pParent->m_TimelineEvent.GetConstructSegmentsActivity().IsEnabled() )
+         if ( pParent->m_pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
          {
             AfxMessageBox(_T("This activity cannot be directly removed. Add a Construct Segments activity to a different timeline event to remove it from this event."));
             return;
          }
          else
          {
-            pParent->m_TimelineEvent.GetConstructSegmentsActivity().Enable(false);
+            pParent->m_pTimelineEvent->GetConstructSegmentsActivity().Enable(false);
          }
       }
 
       if ( activityType == ERECT_PIERS )
       {
-         if ( pParent->m_TimelineEvent.GetErectPiersActivity().GetPierCount() == 0 &&
-              pParent->m_TimelineEvent.GetErectPiersActivity().GetTemporarySupportCount() == 0 )
+         if ( pParent->m_pTimelineEvent->GetErectPiersActivity().GetPierCount() == 0 &&
+              pParent->m_pTimelineEvent->GetErectPiersActivity().GetTemporarySupportCount() == 0 )
          {
-            pParent->m_TimelineEvent.GetErectPiersActivity().Enable(false);
-            pParent->m_TimelineEvent.GetErectPiersActivity().Clear();
+            pParent->m_pTimelineEvent->GetErectPiersActivity().Enable(false);
+            pParent->m_pTimelineEvent->GetErectPiersActivity().Clear();
          }
          else
          {
@@ -365,10 +356,10 @@ void CActivityGrid::RemoveActivity()
 
       if ( activityType == CAST_CLOSURE_JOINTS )
       {
-         if ( pParent->m_TimelineEvent.GetCastClosureJointActivity().GetTemporarySupportCount() == 0 )
+         if ( pParent->m_pTimelineEvent->GetCastClosureJointActivity().GetTemporarySupportCount() == 0 )
          {
-            pParent->m_TimelineEvent.GetCastClosureJointActivity().Enable(false);
-            pParent->m_TimelineEvent.GetCastClosureJointActivity().Clear();
+            pParent->m_pTimelineEvent->GetCastClosureJointActivity().Enable(false);
+            pParent->m_pTimelineEvent->GetCastClosureJointActivity().Clear();
          }
          else
          {
@@ -379,10 +370,10 @@ void CActivityGrid::RemoveActivity()
 
       if ( activityType == ERECT_SEGMENTS )
       {
-         if ( pParent->m_TimelineEvent.GetErectSegmentsActivity().GetSegmentCount() == 0 )
+         if ( pParent->m_pTimelineEvent->GetErectSegmentsActivity().GetSegmentCount() == 0 )
          {
-            pParent->m_TimelineEvent.GetErectSegmentsActivity().Enable(false);
-            pParent->m_TimelineEvent.GetErectSegmentsActivity().Clear();
+            pParent->m_pTimelineEvent->GetErectSegmentsActivity().Enable(false);
+            pParent->m_pTimelineEvent->GetErectSegmentsActivity().Clear();
          }
          else
          {
@@ -393,10 +384,10 @@ void CActivityGrid::RemoveActivity()
 
       if ( activityType == STRESS_TENDONS )
       {
-         if ( pParent->m_TimelineEvent.GetStressTendonActivity().GetTendonCount() == 0 )
+         if ( pParent->m_pTimelineEvent->GetStressTendonActivity().GetTendonCount() == 0 )
          {
-            pParent->m_TimelineEvent.GetStressTendonActivity().Enable(false);
-            pParent->m_TimelineEvent.GetStressTendonActivity().Clear();
+            pParent->m_pTimelineEvent->GetStressTendonActivity().Enable(false);
+            pParent->m_pTimelineEvent->GetStressTendonActivity().Clear();
          }
          else
          {
@@ -407,10 +398,10 @@ void CActivityGrid::RemoveActivity()
 
       if ( activityType == REMOVE_TS )
       {
-         if ( pParent->m_TimelineEvent.GetRemoveTempSupportsActivity().GetTempSupportCount() == 0 )
+         if ( pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().GetTempSupportCount() == 0 )
          {
-            pParent->m_TimelineEvent.GetRemoveTempSupportsActivity().Enable(false);
-            pParent->m_TimelineEvent.GetRemoveTempSupportsActivity().Clear();
+            pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().Enable(false);
+            pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().Clear();
          }
          else
          {
@@ -421,28 +412,28 @@ void CActivityGrid::RemoveActivity()
 
       if ( activityType == CAST_DECK )
       {
-         if ( pParent->m_TimelineEvent.GetCastDeckActivity().IsEnabled() )
+         if ( pParent->m_pTimelineEvent->GetCastDeckActivity().IsEnabled() )
          {
             AfxMessageBox(_T("This activity cannot be removed. The deck is cast during this activity. Cast the deck in a different event in the timeline."));
             return;
          }
          else
          {
-            pParent->m_TimelineEvent.GetCastDeckActivity().Enable(false);
+            pParent->m_pTimelineEvent->GetCastDeckActivity().Enable(false);
          }
       }
 
       if ( activityType == APPLY_LOADS )
       {
-         if ( pParent->m_TimelineEvent.GetApplyLoadActivity().IsEnabled() )
+         if ( pParent->m_pTimelineEvent->GetApplyLoadActivity().IsEnabled() )
          {
             AfxMessageBox(_T("This activity cannot be removed. Loads are applied during this activity. Apply these loads in a different event in the timeline."));
             return;
          }
          else
          {
-            pParent->m_TimelineEvent.GetApplyLoadActivity().Enable(false);
-            pParent->m_TimelineEvent.GetApplyLoadActivity().Clear();
+            pParent->m_pTimelineEvent->GetApplyLoadActivity().Enable(false);
+            pParent->m_pTimelineEvent->GetApplyLoadActivity().Clear();
          }
       }
    }

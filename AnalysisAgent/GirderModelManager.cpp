@@ -700,7 +700,7 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 {
    // need the POI where the girder intersects the pier
    GET_IFACE(IPointOfInterest,pPoi);
-   pgsPointOfInterest poi = pPoi->GetPointOfInterest(girderKey,pier);
+   pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pier);
 
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
@@ -2021,6 +2021,7 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
    USES_CONVERSION;
 
    GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IPointOfInterest,pPoi);
 
    pfTopMin->clear();
    pfTopMax->clear();
@@ -2071,8 +2072,8 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
    pModelData->pLiveLoadResponse[bat]->ComputeStresses( m_LBAMPoi, bstrStage, llmt, 
           fetMz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
-   CollectionIndexType top_stress_point_idx = GetStressPointIndex(topLocation);
-   CollectionIndexType bot_stress_point_idx = GetStressPointIndex(botLocation);
+   CollectionIndexType top_stress_point_index = GetStressPointIndex(topLocation);
+   CollectionIndexType bot_stress_point_index = GetStressPointIndex(botLocation);
 
    IndexType idx = 0;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -2090,16 +2091,16 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
       CComPtr<ILiveLoadConfiguration> fLeftMinConfig, fRightMinConfig;
       minResults->GetResult(idx,&fLeftMin,pTopMinIndex || pBotMinIndex ? &fLeftMinConfig : NULL,&fRightMin,pTopMinIndex || pBotMinIndex ? &fRightMinConfig : NULL);
 
-      Float64 dist_from_start = poi.GetDistFromStart();
-      Float64 start_offset = pBridge->GetSegmentStartEndDistance(segmentKey);
       Float64 fBotMax, fBotMin, fTopMax, fTopMin;
 
-      if ( IsZero(dist_from_start - start_offset) )
+      Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
+
+      if ( IsZero(Xg) )
       {
-         fRightMax->GetResult(bot_stress_point_idx,&fBotMax);
-         fRightMax->GetResult(top_stress_point_idx,&fTopMin);
-         fRightMin->GetResult(bot_stress_point_idx,&fBotMin);
-         fRightMin->GetResult(top_stress_point_idx,&fTopMax);
+         fRightMax->GetResult(bot_stress_point_index,&fBotMax);
+         fRightMax->GetResult(top_stress_point_index,&fTopMax);
+         fRightMin->GetResult(bot_stress_point_index,&fBotMin);
+         fRightMin->GetResult(top_stress_point_index,&fTopMin);
 
          if ( pTopMinIndex )
          {
@@ -2131,10 +2132,130 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
       }
       else
       {
-         fLeftMax->GetResult(bot_stress_point_idx,&fBotMax);
-         fLeftMax->GetResult(top_stress_point_idx,&fTopMin);
-         fLeftMin->GetResult(bot_stress_point_idx,&fBotMin);
-         fLeftMin->GetResult(top_stress_point_idx,&fTopMax);
+         fLeftMax->GetResult(bot_stress_point_index,&fBotMax);
+         fLeftMax->GetResult(top_stress_point_index,&fTopMax);
+         fLeftMin->GetResult(bot_stress_point_index,&fBotMin);
+         fLeftMin->GetResult(top_stress_point_index,&fTopMin);
+
+         if ( pTopMinIndex )
+         {
+            VehicleIndexType vehIdx;
+            fLeftMaxConfig->get_VehicleIndex(&vehIdx);
+            pTopMinIndex->push_back(vehIdx);
+         }
+
+         if ( pTopMaxIndex )
+         {
+            VehicleIndexType vehIdx;
+            fLeftMinConfig->get_VehicleIndex(&vehIdx);
+            pTopMaxIndex->push_back(vehIdx);
+         }
+
+         if ( pBotMinIndex )
+         {
+            VehicleIndexType vehIdx;
+            fLeftMinConfig->get_VehicleIndex(&vehIdx);
+            pBotMinIndex->push_back(vehIdx);
+         }
+
+         if ( pBotMaxIndex )
+         {
+            VehicleIndexType vehIdx;
+            fLeftMaxConfig->get_VehicleIndex(&vehIdx);
+            pBotMaxIndex->push_back(vehIdx);
+         }
+      }
+
+      if ( fTopMax < fTopMin )
+      {
+         std::swap(fTopMax,fTopMin);
+
+         if ( pTopMinIndex && pTopMaxIndex )
+         {
+            std::swap(pTopMaxIndex->back(),pTopMinIndex->back());
+         }
+         else if ( pTopMinIndex && !pTopMaxIndex )
+         {
+            pTopMinIndex->push_back(pTopMaxIndex->back());
+            pTopMaxIndex->pop_back();
+         }
+         else if ( pTopMaxIndex && !pTopMinIndex )
+         {
+            pTopMaxIndex->push_back(pTopMinIndex->back());
+            pTopMinIndex->pop_back();
+         }
+      }
+
+      if ( fBotMax < fBotMin )
+      {
+         std::swap(fBotMax,fBotMin);
+
+         if ( pBotMinIndex && pBotMaxIndex )
+         {
+            std::swap(pBotMaxIndex->back(),pBotMinIndex->back());
+         }
+         else if ( pBotMinIndex && !pBotMaxIndex )
+         {
+            pBotMinIndex->push_back(pBotMaxIndex->back());
+            pBotMaxIndex->pop_back();
+         }
+         else if ( pBotMaxIndex && !pBotMinIndex )
+         {
+            pBotMaxIndex->push_back(pBotMinIndex->back());
+            pBotMinIndex->pop_back();
+         }
+      }
+
+      pfBotMax->push_back(fBotMax);
+      pfBotMin->push_back(fBotMin);
+      pfTopMax->push_back(fTopMax);
+      pfTopMin->push_back(fTopMin);
+/*
+      Float64 dist_from_start = poi.GetDistFromStart();
+      Float64 start_offset = pBridge->GetSegmentStartEndDistance(segmentKey);
+      if ( IsZero(dist_from_start - start_offset) )
+      {
+         fRightMax->GetResult(bot_stress_point_index,&fBotMax);
+         fRightMin->GetResult(bot_stress_point_index,&fBotMin);
+
+         fRightMax->GetResult(top_stress_point_index,&fTopMin);
+         fRightMin->GetResult(top_stress_point_index,&fTopMax);
+
+         if ( pTopMinIndex )
+         {
+            VehicleIndexType vehIdx;
+            fRightMaxConfig->get_VehicleIndex(&vehIdx);
+            pTopMinIndex->push_back(vehIdx);
+         }
+
+         if ( pTopMaxIndex )
+         {
+            VehicleIndexType vehIdx;
+            fRightMinConfig->get_VehicleIndex(&vehIdx);
+            pTopMaxIndex->push_back(vehIdx);
+         }
+
+         if ( pBotMinIndex )
+         {
+            VehicleIndexType vehIdx;
+            fRightMinConfig->get_VehicleIndex(&vehIdx);
+            pBotMinIndex->push_back(vehIdx);
+         }
+
+         if ( pBotMaxIndex )
+         {
+            VehicleIndexType vehIdx;
+            fRightMaxConfig->get_VehicleIndex(&vehIdx);
+            pBotMaxIndex->push_back(vehIdx);
+         }
+      }
+      else
+      {
+         fLeftMax->GetResult(bot_stress_point_index,&fBotMax);
+         fLeftMin->GetResult(bot_stress_point_index,&fBotMin);
+
+         fLeftMax->GetResult(top_stress_point_index,&fTopMin);
+         fLeftMin->GetResult(top_stress_point_index,&fTopMax);
 
          if ( pTopMinIndex )
          {
@@ -2169,6 +2290,7 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
       pfBotMin->push_back(fBotMin);
       pfTopMax->push_back(fTopMax);
       pfTopMin->push_back(fTopMin);
+*/
    }
 }
 
@@ -2997,7 +3119,6 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
 {
    VERIFY_NOT_TIME_STEP_ANALYSIS;
-   ATLASSERT(combo != lcCR && combo != lcSH && combo != lcRE && combo != lcPS); // this are time-step analysis load combinations
 
    pfTop->clear();
    pfBot->clear();
@@ -4999,7 +5120,7 @@ void CGirderModelManager::GetBearingProductReaction(IntervalIndexType intervalId
    {
       Float64 RLeftTotal, RRightTotal;
       Float64 RLeftPrimary, RRightPrimary;
-      GetBearingProductReaction(intervalIdx,pftTotalPostTensioning,girderKey,bat,resultsType,&RLeftTotal,&RRightTotal);
+      GetBearingProductReaction(intervalIdx,pftEquivPostTensioning,girderKey,bat,resultsType,&RLeftTotal,&RRightTotal);
       GetBearingProductReaction(intervalIdx,pftPrimaryPostTensioning,girderKey,bat,resultsType,&RLeftPrimary,&RRightPrimary);
       *pLftEnd = RLeftTotal - RLeftPrimary;
       *pRgtEnd = RRightTotal - RRightPrimary;
@@ -6224,8 +6345,8 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             }
             else
             {
-               Float64 distFromStartOfBridge = pBridge->GetDistanceFromStartOfBridge(segmentPoi);
-               Float64 ei_defl = pSectProp->GetBridgeEIxx( distFromStartOfBridge );
+               Float64 Xb = pBridge->GetDistanceFromStartOfBridge(segmentPoi);
+               Float64 ei_defl = pSectProp->GetBridgeEIxx( Xb );
                ei_defl /= nGirders;
 
                data.ea_defl = ei_defl;
@@ -6255,8 +6376,8 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                   }
                   else
                   {
-                     Float64 distFromStartOfBridge = pBridge->GetDistanceFromStartOfBridge(closurePoi);
-                     Float64 ei_defl = pSectProp->GetBridgeEIxx( distFromStartOfBridge );
+                     Float64 Xb = pBridge->GetDistanceFromStartOfBridge(closurePoi);
+                     Float64 ei_defl = pSectProp->GetBridgeEIxx( Xb );
                      ei_defl /= nGirders;
 
                      data.ea_defl = ei_defl;
@@ -9820,7 +9941,7 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             Float64 dist_along_segment;
             pntEnd[pgsTypes::metStart]->DistanceEx(pntSegPierIntersection,&dist_along_segment);
 
-            pgsPointOfInterest poi = pPoi->GetPointOfInterest(girderKey,pPier->GetIndex());
+            pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pPier->GetIndex());
 
             Float64 Pback,  Mback;  // load on back side of pier
             Float64 Pahead, Mahead; // load on ahead side of pier
@@ -10303,12 +10424,12 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    momentLoads.push_back(start_moment);
 
 
-   // Instead of using the eccentricity at the start/end of the tendon segment, we are using
-   // the distance down from the top of the non-composite girder. Eccentricity is based on
-   // the material properties and we end up with non-symmetrical equivalent loads for
-   // symmetrical tendons when the modulus of the segments are different. Using the geometry
-   // of the tendon instead of eccentricities, we get equivalent loadings that make sense.
-   Float64 Ystart = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,startPoi,ductIdx);
+   //// Instead of using the eccentricity at the start/end of the tendon segment, we are using
+   //// the distance down from the top of the non-composite girder. Eccentricity is based on
+   //// the material properties and we end up with non-symmetrical equivalent loads for
+   //// symmetrical tendons when the modulus of the segments are different. Using the geometry
+   //// of the tendon instead of eccentricities, we get equivalent loadings that make sense.
+   //Float64 Ystart = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,startPoi,ductIdx);
 
    // Start of duct to first low point
    Float64 lowPoint, lowOffset;
@@ -10321,14 +10442,12 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    Float64 XspanLow;
    pPoi->ConvertPoiToSpanPoint(lowPoi,&spanKey,&XspanLow);
 
-   Float64 Ylow = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,lowPoi,ductIdx);
-
    // we want e_prime to be positive if the parabola is a smile shape
    EquivPostTensionDistributedLoad load;
 
-   Float64 e_prime = Ystart - Ylow;
+   Float64 e_prime = eptl - epts;
    Float64 x = XgLow - XgStart;
-   Float64 w = P*e_prime*L/(endDist*endDist*(x-L) + L*x*x - x*x*x);
+   Float64 w = 2*P*e_prime/(x*x);
 
    if ( !IsZero(w) )
    {
@@ -10337,8 +10456,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       load.Xend    = XspanLow;
       load.Wstart  = w;
       load.Wend    = w;
-      load.Ystart = Ystart;
-      load.Yend   = Ylow;
+      load.eStart = epts;
+      load.eEnd   = eptl;
       load.e_prime = e_prime;
       load.x      = x;
       load.P      = P;
@@ -10357,9 +10476,9 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       Float64 leftIP, highOffset, rightIP;
       CDuctGeometry::OffsetType highOffsetType;
       ductGeometry.GetHighPoint(pierIdx,&leftIP,&highOffset,&highOffsetType,&rightIP);
-      pgsPointOfInterest highPoi = pPoi->GetPointOfInterest(girderKey,pierIdx);
+      pgsPointOfInterest highPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
       Float64 XgHigh = pPoi->ConvertPoiToGirderCoordinate(highPoi);
-      Float64 Yhigh = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,highPoi,ductIdx);
+      Float64 epth = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,highPoi,ductIdx);
 
       // Low point in span - IP
       // find the location of the inflection point on the left side of the pier (previous span)
@@ -10375,10 +10494,10 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       Float64 XgLIP = XgHigh - leftIP;
 
       pgsPointOfInterest lipPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgLIP);
-      Float64 Ylip = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,lipPoi,ductIdx);
+      Float64 elip = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,lipPoi,ductIdx);
 
       // low point to inflection point
-      e_prime = Ylip - Ylow;
+      e_prime = eptl - elip;
       x = XgLIP - XgLow;
       w = 2*P*e_prime/(x*x);
       if ( !IsZero(w) )
@@ -10388,8 +10507,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
          load.Xend    = XspanLIP;
          load.Wstart  = w;
          load.Wend    = w;
-         load.Ystart = Ylow;
-         load.Yend   = Ylip;
+         load.eStart = eptl;
+         load.eEnd   = elip;
          load.e_prime = e_prime;
          load.x      = x;
          load.P      = P;
@@ -10400,7 +10519,7 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       }
 
       // Inflection point to high point
-      e_prime = Ylip - Yhigh;
+      e_prime = epth - elip;
       x = XgHigh - XgLIP;
       w = 2*P*e_prime/(x*x);
       if ( !IsZero(w) )
@@ -10410,8 +10529,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
          load.Xend    = XspanHigh;
          load.Wstart  = w;
          load.Wend    = w;
-         load.Ystart = Ylip;
-         load.Yend   = Yhigh;
+         load.eStart = elip;
+         load.eEnd   = epth;
          load.e_prime = e_prime;
          load.x      = x;
          load.P      = P;
@@ -10445,8 +10564,7 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       XgLow = XgHigh + XspanLow;
       
       lowPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgLow);
-
-      Ylow = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,lowPoi,ductIdx);
+      eptl = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,lowPoi,ductIdx);
 
       // find inflection point to the right of the pier
       // if rightIP is less than zero, rightIP is a fraction measure from the high point to the next low point
@@ -10455,10 +10573,10 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       Float64 XgRIP = XgHigh + XspanRIP;
 
       pgsPointOfInterest ripPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgRIP);
-      Float64 Yrip = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,ripPoi,ductIdx);
+      Float64 erip = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,ripPoi,ductIdx);
 
       // high point to inflection point
-      e_prime = Yrip - Yhigh;
+      e_prime = epth - erip;
       x = XgRIP - XgHigh;
       w = 2*P*e_prime/(x*x);
 
@@ -10469,8 +10587,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
          load.Xend    = XspanRIP;
          load.Wstart  = w;
          load.Wend    = w;
-         load.Ystart = Yhigh;
-         load.Yend   = Yrip;
+         load.eStart = epth;
+         load.eEnd   = erip;
          load.e_prime = e_prime;
          load.x      = x;
          load.P      = P;
@@ -10481,7 +10599,7 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       }
 
       // IP to low point
-      e_prime = Yrip - Ylow;
+      e_prime = eptl - erip;
       x = XgLow - XgRIP;
       w = 2*P*e_prime/(x*x);
 
@@ -10493,8 +10611,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
          load.Xend    = XspanLow;
          load.Wstart  = w;
          load.Wend    = w;
-         load.Ystart = Yrip;
-         load.Yend   = Ylow;
+         load.eStart = erip;
+         load.eEnd   = eptl;
          load.e_prime = e_prime;
          load.x      = x;
          load.P      = P;
@@ -10530,12 +10648,11 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    pgsPointOfInterest endPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgEnd);
    Float64 XspanEnd;
    pPoi->ConvertPoiToSpanPoint(endPoi,&spanKey,&XspanEnd);
+   Float64 epte = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,endPoi,ductIdx);
 
-   Float64 Yend = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,endPoi,ductIdx);
-
-   e_prime = Yend - Ylow;
+   e_prime = eptl - epte;
    x = XgEnd - XgLow; 
-   w = P*e_prime*L/(endDist*endDist*(x-L) + L*x*x - x*x*x);
+   w = 2*P*e_prime/(x*x);
 
    if ( !IsZero(w) )
    {
@@ -10543,8 +10660,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       load.Xend   = XspanEnd;
       load.Wstart = w;
       load.Wend   = w;
-      load.Ystart = Ylow;
-      load.Yend   = Yend;
+      load.eStart = eptl;
+      load.eEnd   = epte;
       load.e_prime = e_prime;
       load.x      = x;
       load.P      = P;
@@ -10555,7 +10672,6 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    }
 
    // P*e at end of tendon
-   Float64 epte = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,endPoi,ductIdx);
    Float64 Me = P*epte;
    EquivPostTensionMomentLoad end_moment;
    end_moment.M = -Me;
@@ -12484,7 +12600,7 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
    CGirderKey aheadGirderKey(aheadGroupIdx,gdrIdx);
    CGirderKey girderKey(backGroupIdx == INVALID_INDEX ? aheadGirderKey : backGirderKey);
 
-   pgsPointOfInterest poi = pPoi->GetPointOfInterest(girderKey,pierIdx);
+   pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
 
@@ -12864,9 +12980,7 @@ void CGirderModelManager::GetSlabLoad(const CSegmentKey& segmentKey, std::vector
 
 void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::vector<SlabLoad>* pSlabLoads)
 {
-   ATLASSERT(segmentKey.groupIndex   != INVALID_INDEX);
-   ATLASSERT(segmentKey.girderIndex  != INVALID_INDEX);
-   ATLASSERT(segmentKey.segmentIndex != INVALID_INDEX);
+   ASSERT_SEGMENT_KEY(segmentKey);
 
    ATLASSERT(pSlabLoads!=0);
    pSlabLoads->clear();
@@ -13100,9 +13214,7 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
 
 void CGirderModelManager::GetCantileverSlabLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2)
 {
-   ATLASSERT(segmentKey.groupIndex   != INVALID_INDEX);
-   ATLASSERT(segmentKey.girderIndex  != INVALID_INDEX);
-   ATLASSERT(segmentKey.segmentIndex != INVALID_INDEX);
+   ASSERT_SEGMENT_KEY(segmentKey);
 
    Float64 P1[3], P2[3];
    GetCantileverSlabLoads(segmentKey,&P1[0],&P2[0]);

@@ -134,7 +134,7 @@ public:
 
    //------------------------------------------------------------------------
    // Edit the entry
-   virtual bool Edit(bool allowEditing);
+   virtual bool Edit(bool allowEditing,int nPage=0);
 
    //------------------------------------------------------------------------
    // Save to structured storage

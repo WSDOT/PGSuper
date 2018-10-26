@@ -24,6 +24,7 @@
 
 #include <System\Transaction.h>
 #include <PgsExt\PrecastSegmentData.h>
+#include <PgsExt\TimelineManager.h>
 #include <IFace\Project.h>
 
 struct txnEditPrecastSegmentData
@@ -31,8 +32,7 @@ struct txnEditPrecastSegmentData
    bool operator<(const txnEditPrecastSegmentData& rOther) const { return m_SegmentKey < rOther.m_SegmentKey; }
    CSegmentKey m_SegmentKey;
    CPrecastSegmentData m_SegmentData;
-   EventIndexType  m_ConstructionEventIdx;
-   EventIndexType  m_ErectionEventIdx;
+   CTimelineManager m_TimelineMgr;
 };
 
 class txnEditPrecastSegment : public txnTransaction

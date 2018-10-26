@@ -4416,15 +4416,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00002.ico"
-				>
-			</File>
-			<File
 				RelativePath="ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00003.ico"
+				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -4432,11 +4428,15 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00004.ico"
+				RelativePath="res\ico00003.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00004.ico"
+				>
+			</File>
+			<File
+				RelativePath="ico00004.ico"
 				>
 			</File>
 			<File
@@ -4448,11 +4448,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\icon1.ico"
+				RelativePath="icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath="icon1.ico"
+				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File
@@ -4515,11 +4515,11 @@
 				RelativePath="res\TrafficBarrier_Sidewalk_PedestrianBarrier.emf"
 				>
 			</File>
+			<File
+				RelativePath=".\res\Z.emf"
+				>
+			</File>
 		</Filter>
-		<File
-			RelativePath=".\res\Z.emf"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global

@@ -39,6 +39,8 @@ m_strVehicleName(_T("Unknown"))
    m_bRFComputed = false;
    m_RF = 0;
 
+   m_StressLocation = pgsTypes::BottomGirder;
+
    m_RatingType = pgsTypes::lrDesign_Inventory;
 
    m_VehicleIndex = INVALID_INDEX;
@@ -90,6 +92,16 @@ void pgsStressRatingArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
 const pgsPointOfInterest& pgsStressRatingArtifact::GetPointOfInterest() const
 {
    return m_POI;
+}
+
+void pgsStressRatingArtifact::SetStressLocation(pgsTypes::StressLocation stressLocation)
+{
+   m_StressLocation = stressLocation;
+}
+
+pgsTypes::StressLocation pgsStressRatingArtifact::GetStressLocation() const
+{
+   return m_StressLocation;
 }
 
 void pgsStressRatingArtifact::SetRatingType(pgsTypes::LoadRatingType ratingType)
@@ -357,6 +369,7 @@ Float64 pgsStressRatingArtifact::GetRatingFactor() const
 void pgsStressRatingArtifact::MakeCopy(const pgsStressRatingArtifact& rOther)
 {
    m_POI                        = rOther.m_POI;
+   m_StressLocation             = rOther.m_StressLocation;
    m_RatingType                 = rOther.m_RatingType;
    m_VehicleIndex               = rOther.m_VehicleIndex;
    m_bRFComputed                = rOther.m_bRFComputed;

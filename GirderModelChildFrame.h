@@ -51,8 +51,6 @@ protected:
 
 // Attributes
 public:
-   enum CutLocation {LeftEnd,LeftHarp,Center,RightHarp,RightEnd,UserInput};
-
 // Operations
    // Let our views tell us about updates
 	void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
@@ -61,23 +59,16 @@ public:
    EventIndexType GetEvent() const {return m_EventIndex;}
 
    // iCutLocation
-   Float64 GetCurrentCutLocation() {return m_CurrentCutLocation;}
-   void CutAt(Float64 Xg);
-   void ShowCutDlg();
-   Float64 GetMinCutLocation();
-   Float64 GetMaxCutLocation();
+   virtual Float64 GetCurrentCutLocation();
+   virtual void CutAt(Float64 Xg);
+   virtual void CutAtNext();
+   virtual void CutAtPrev();
+   virtual void ShowCutDlg();
+   virtual Float64 GetMinCutLocation();
+   virtual Float64 GetMaxCutLocation();
 
    pgsPointOfInterest GetCutLocation();
 
-   void CutAtLocation();
-   void CutAtLeftEnd();
-   void CutAtLeftHp();
-   void CutAtCenter();
-   void CutAtRightHp(); 
-   void CutAtRightEnd(); 
-
-   void CutAtNext();
-   void CutAtPrev();
 
 
    void SelectGirder(const CGirderKey& girderKey,bool bDoUpdate);
@@ -126,9 +117,11 @@ protected:
    // update bar - set dialog bar content and update views
    void UpdateBar();
 
+   void UpdateMaxCutLocation();
+
    virtual CRuntimeClass* GetLowerPaneClass() const;
    virtual Float64 GetTopFrameFraction() const;
-   void UpdateCutLocation(CutLocation cutLoc,Float64 Xg = 0.0);
+   void UpdateCutLocation(const pgsPointOfInterest& poi);
    void OnUpdateFrameTitle(BOOL bAddToTitle);
    
    virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
@@ -147,7 +140,6 @@ private:
 
    // view variables
    Float64 m_CurrentCutLocation;
-   CutLocation m_CutLocation;
    Float64 m_MaxCutLocation;
    
    EventIndexType m_EventIndex; 

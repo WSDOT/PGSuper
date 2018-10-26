@@ -51,9 +51,6 @@ public:
    EventIndexType GetStartEvent(const CGirderKey& girderKey,IntervalIndexType idx) const;
    EventIndexType GetEndEvent(const CGirderKey& girderKey,IntervalIndexType idx) const;
    Float64 GetTime(const CGirderKey& girderKey,IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) const;
-   Float64 GetStart(const CGirderKey& girderKey,IntervalIndexType idx) const;
-   Float64 GetMiddle(const CGirderKey& girderKey,IntervalIndexType idx) const;
-   Float64 GetEnd(const CGirderKey& girderKey,IntervalIndexType idx) const;
    Float64 GetDuration(const CGirderKey& girderKey,IntervalIndexType idx) const;
    LPCTSTR GetDescription(const CGirderKey& girderKey,IntervalIndexType idx) const;
 
@@ -70,6 +67,14 @@ public:
 
    // returns the index of the interval when the prestressing strands are stressed
    IntervalIndexType GetStressStrandInterval(const CSegmentKey& segmentKey) const;
+
+   // returns the index of the interval when the prestressing strands are released for
+   // the first segment constructed for this girder
+   IntervalIndexType GetFirstPrestressReleaseInterval(const CGirderKey& girderKey) const;
+
+   // returns the index of the interval when the prestressing strands are released for
+   // the last segment constructed for this girder
+   IntervalIndexType GetLastPrestressReleaseInterval(const CGirderKey& girderKey) const;
 
    // returns the index of the interval when the prestressing is release
    // to the girder (girder has reached release strength)
@@ -186,6 +191,9 @@ protected:
 
    // map of when the strands are stressed for the first and last segment constructed for a girder
    std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>> m_StrandStressingSequenceIntervalLimits;
+
+   // map of when the strands are release for the first and last segment constructed for a girder
+   std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>> m_ReleaseSequenceIntervalLimits;
 
    // map of when segments are erected. this makes it easier to provide this information
    std::map<CSegmentKey,IntervalIndexType> m_SegmentErectionIntervals;

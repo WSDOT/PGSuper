@@ -734,14 +734,14 @@ Float64 CBridgeDescription2::GetSlabOffset(bool bGetRawValue) const
    return m_SlabOffset;
 }
 
-Float64 CBridgeDescription2::GetMaxSlabOffset() const
+Float64 CBridgeDescription2::GetMinSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
    {
       return GetSlabOffset();
    }
 
-   Float64 maxSlabOffset = 0;
+   Float64 minSlabOffset = DBL_MAX;
    std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
@@ -755,12 +755,12 @@ Float64 CBridgeDescription2::GetMaxSlabOffset() const
          for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
          {
             Float64 slabOffset = pGroup->GetSlabOffset(pierIdx,gdrIdx);
-            maxSlabOffset = Max(maxSlabOffset,slabOffset);
+            minSlabOffset = Min(minSlabOffset,slabOffset);
          }
       }
    }
 
-   return maxSlabOffset;
+   return minSlabOffset;
 }
 
 void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSpanData2* pFirstSpan,const CPierData2* pNextPier,EventIndexType pierErectionEventIdx)

@@ -47,6 +47,8 @@
 #include <atlcom.h>
 #include <atlctl.h>
 
+#include <afxcmn.h>
+
 #include <PGSuperAll.h>
 
 #include <WBFLCore.h>

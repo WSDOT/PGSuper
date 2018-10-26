@@ -346,7 +346,7 @@ SpecLibraryEntry& SpecLibraryEntry::operator= (const SpecLibraryEntry& rOther)
 }
 
 //======================== OPERATIONS =======================================
-bool SpecLibraryEntry::Edit(bool allowEditing)
+bool SpecLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -355,6 +355,7 @@ bool SpecLibraryEntry::Edit(bool allowEditing)
    SpecLibraryEntry tmp(*this);
 
    CSpecMainSheet dlg(tmp, IDS_SPEC_SHEET, allowEditing);
+   dlg.SetActivePage(nPage);
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {

@@ -713,7 +713,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
       wndProgress->put_HasGauge(VARIANT_FALSE);
       wndProgress->put_HasCancel(VARIANT_FALSE);
       CEAFMainFrame* pWnd = EAFGetMainFrame();
-      wndProgress->Show(CComBSTR(_T("Checking the configuration updates")),pWnd->GetSafeHwnd());
+      wndProgress->Show(CComBSTR(_T("Checking for configuration updates")),pWnd->GetSafeHwnd());
 
       try
       {
@@ -726,7 +726,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
          else
          {
             CString msg;
-            msg.Format(_T("Error - currently selected configuration server not found. Name was: %s"),m_CurrentCatalogServer);
+			msg.Format(_T("Error: the configuration server, %s, could not be found."),m_CurrentCatalogServer);
             CCatalogServerException exc(CCatalogServerException::ceServerNotFound, msg);
             throw exc;
          }

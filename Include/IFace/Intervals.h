@@ -49,14 +49,8 @@ interface IIntervals : IUnknown
    // returns the timeline event index at the end of the interval
    virtual EventIndexType GetEndEvent(const CGirderKey& girderKey,IntervalIndexType idx) = 0; 
 
-   // returns the time at the start of the interval
-   virtual Float64 GetStart(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
-
-   // returns the time at the middle of the interval
-   virtual Float64 GetMiddle(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
-
-   // returns the time at the end of the interval
-   virtual Float64 GetEnd(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
+   // returns the specified time for an interval
+   virtual Float64 GetTime(const CGirderKey& girderKey,IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) = 0;
 
    // returns the duration of the interval
    virtual Float64 GetDuration(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
@@ -77,6 +71,14 @@ interface IIntervals : IUnknown
 
    // returns the index of the interval when the prestressing strands are stressed
    virtual IntervalIndexType GetStressStrandInterval(const CSegmentKey& segmentKey) = 0;
+
+   // returns the index of the interval when the prestressing strands are released for the first segment 
+   // that is constructed for this girder
+   virtual IntervalIndexType GetFirstPrestressReleaseInterval(const CGirderKey& girderKey) = 0;
+
+   // returns the index of the interval when the prestressing strands are released for the last segment 
+   // that is constructed for this girder
+   virtual IntervalIndexType GetLastPrestressReleaseInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when the prestressing is release
    // to the girder (girder has reached release strength).

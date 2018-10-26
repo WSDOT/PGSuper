@@ -962,7 +962,13 @@ void CBridgeDescRailingSystemPage::FillEventList()
    pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
    if ( eventIdx != CB_ERR )
+   {
       pcbEvent->SetCurSel(eventIdx);
+   }
+   else
+   {
+      pcbEvent->SetCurSel(0);
+   }
 }
 
 void CBridgeDescRailingSystemPage::OnEventChanging()
@@ -1031,11 +1037,11 @@ void CBridgeDescRailingSystemPage::OnEventChanged()
 EventIndexType CBridgeDescRailingSystemPage::CreateEvent()
 {
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   CTimelineEventDlg dlg(pParent->m_BridgeDesc.GetTimelineManager(),FALSE);
+   CTimelineEventDlg dlg(*pParent->m_BridgeDesc.GetTimelineManager(),INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
       EventIndexType eventIdx;
-      int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(dlg.m_TimelineEvent,true,&eventIdx);
+      int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
       return eventIdx;
   }
 

@@ -240,46 +240,14 @@ void CTimelineGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    if ( nCol != 4 )
       return;
 
+   // We are editing an event
    CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();
-   CTimelineEventDlg dlg(&pParent->m_TimelineManager,TRUE);
    EventIndexType eventIdx = (IndexType)(nRow-1);
-   dlg.m_EventIndex = eventIdx;
-   dlg.m_TimelineEvent = *pParent->m_TimelineManager.GetEventByIndex(eventIdx);
-   dlg.m_TimelineEvent.SetID( pParent->m_TimelineManager.GetEventByIndex(eventIdx)->GetID() );
+   CTimelineEventDlg dlg(pParent->m_TimelineManager,eventIdx,TRUE);
    if ( dlg.DoModal() == IDOK )
    {
-      bool bDone = false;
-      bool bAdjustTimeline = false;
-      while ( !bDone )
-      {
-         int result = pParent->m_TimelineManager.SetEventByIndex(eventIdx,dlg.m_TimelineEvent,bAdjustTimeline);
-         if ( result == TLM_SUCCESS )
-         {
-            bDone = true;
-            Refresh();
-         }
-         else
-         {
-            CString strProblem;
-            if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
-               strProblem = _T("This event begins before the activities in the previous event have completed.");
-            else
-               strProblem = _T("The activities in this event end after the next event begins.");
-
-            CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
-
-            CString strMsg;
-            strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
-            if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
-            {
-               bAdjustTimeline = true;
-            }
-            else
-            {
-               return;
-            }
-         }
-      }
+      pParent->m_TimelineManager = dlg.m_TimelineManager;
+      Refresh();
    }
 }
 

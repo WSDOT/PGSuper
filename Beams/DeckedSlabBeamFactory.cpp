@@ -183,7 +183,7 @@ void CDeckedSlabBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType st
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      Float64 E = pMaterial->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx);
+      Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
       Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
       StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);

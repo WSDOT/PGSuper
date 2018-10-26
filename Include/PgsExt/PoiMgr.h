@@ -98,12 +98,15 @@ public:
    //------------------------------------------------------------------------
    // Returns the point of interest at the specified location. If not found,
    // returns a default poi
-   pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart);
+   pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs);
 
    //------------------------------------------------------------------------
    // Returns the point of interest nearest to the specified location. A default POI is
    // returned if a poi could not be found
-   pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart);
+   pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs);
+
+   pgsPointOfInterest GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIMGR_OR) const;
+   pgsPointOfInterest GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIMGR_OR) const;
 
    //------------------------------------------------------------------------
    // Returns the point of interest at the specified location or a default if not found. 
@@ -160,8 +163,10 @@ private:
 
    void AndFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
    bool AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentKey,PoiAttributeType attrib) const;
+   bool AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const;
    void OrFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
    bool OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentKey,PoiAttributeType attrib) const;
+   bool OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const;
 
 public:
 #if defined _DEBUG

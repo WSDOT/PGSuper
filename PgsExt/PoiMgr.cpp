@@ -448,6 +448,134 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segme
    return pgsPointOfInterest();
 }
 
+pgsPointOfInterest pgsPoiMgr::GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib,Uint32 mode) const
+{
+   std::vector<pgsPointOfInterest>::const_iterator begin(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(begin, end, FindByID(poiID) ) );
+   if ( found == end )
+   {
+      ATLASSERT(false); // poi not found
+      return pgsPointOfInterest();
+   }
+
+   // at the beginning so we can't back up one poi
+   pgsPointOfInterest foundPoi(*found);
+   if ( found == begin )
+   {
+      return foundPoi;
+   }
+
+   pgsPointOfInterest poi;
+   if ( attrib == 0 )
+   {
+      // unconditionally want the previous poi
+      poi = *(found-1);
+   }
+
+   std::vector<pgsPointOfInterest>::const_reverse_iterator rend(m_Poi.rend());
+   std::vector<pgsPointOfInterest>::const_reverse_iterator iter(found);
+   for ( ; iter != rend; iter++ )
+   {
+      const pgsPointOfInterest& thisPoi(*iter);
+      if ( thisPoi.GetSegmentKey().girderIndex != foundPoi.GetSegmentKey().girderIndex )
+      {
+         continue;
+      }
+
+      if ( mode == POIMGR_OR )
+      {
+         if ( OrAttributeEvaluation(thisPoi,attrib) )
+         {
+            poi = thisPoi;
+            break;
+         }
+      }
+      else
+      {
+         ATLASSERT(mode == POIMGR_AND);
+         if ( AndAttributeEvaluation(thisPoi,attrib) )
+         {
+            poi = thisPoi;
+            break;
+         }
+      }
+   }
+
+   if ( poi.GetID() == INVALID_ID || poi.GetSegmentKey().girderIndex != foundPoi.GetSegmentKey().girderIndex )
+   {
+      // couldn't find a poi with the desired attributes or we found one, but it is in a different girder
+      return pgsPointOfInterest();
+   }
+
+   return poi;
+}
+
+pgsPointOfInterest pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib,Uint32 mode) const
+{
+   std::vector<pgsPointOfInterest>::const_iterator begin(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(begin, end, FindByID(poiID) ) );
+   if ( found == end )
+   {
+      ATLASSERT(false); // poi not found
+      return pgsPointOfInterest();
+   }
+
+   pgsPointOfInterest foundPoi(*found);
+   if ( found == end-1 )
+   {
+      // at the last poi so we can't advance to the next
+      return foundPoi;
+   }
+
+   pgsPointOfInterest poi;
+   if ( attrib == 0 )
+   {
+      // unconditionally want the next poi
+      poi = *(found+1);
+   }
+   else
+   {
+      // search for next poi that has the desired attributes
+      std::vector<pgsPointOfInterest>::const_iterator iter = found+1;
+      for ( ; iter != end; iter++ )
+      {
+         const pgsPointOfInterest& thisPoi(*iter);
+         if ( thisPoi.GetSegmentKey().girderIndex != foundPoi.GetSegmentKey().girderIndex )
+         {
+            continue;
+         }
+
+         if ( mode == POIMGR_OR )
+         {
+            if ( OrAttributeEvaluation(thisPoi,attrib) )
+            {
+               poi = thisPoi;
+               break;
+            }
+         }
+         else
+         {
+            ATLASSERT(mode == POIMGR_AND);
+            if ( AndAttributeEvaluation(thisPoi,attrib) )
+            {
+               poi = thisPoi;
+               break;
+            }
+         }
+      }
+   }
+
+   if ( poi.GetID() == INVALID_ID || poi.GetSegmentKey().girderIndex != foundPoi.GetSegmentKey().girderIndex )
+   {
+      // couldn't find a poi with the desired attributes or we found one, but it is in a different girder
+      return pgsPointOfInterest();
+   }
+
+   return poi;
+}
+
 pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(PoiIDType id) const
 {
    std::vector<pgsPointOfInterest>::const_iterator begin(m_Poi.begin());
@@ -612,64 +740,80 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segment
    if ( segmentKey == poi.GetSegmentKey() )
    {
       // segmentKeys match....
+      return AndAttributeEvaluation(poi,attrib);
+   }
 
-      if ( targetReference == 0 )
+   return false;
+}
+
+bool pgsPoiMgr::AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const
+{
+   // TRICKY CODE
+   // This if expression checks if each flag in attrib is set. If it is, the corrosponding flag in poi must
+   // also be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
+
+   // If the search attribute has referenced attributes, get the reference type
+   PoiAttributeType targetReference = pgsPointOfInterest::GetReference(attrib);
+
+   // NOTE: you can only search for POIs with referenced or non-referenced attributes. You can't search
+   // for both types at the same time
+
+   if ( targetReference == 0 )
+   {
+      // searching for a non-referenced attribute
+      if ((sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR1)           ? poi.HasAttribute(POI_CRITSECTSHEAR1)           : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR2)           ? poi.HasAttribute(POI_CRITSECTSHEAR2)           : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_HARPINGPOINT)             ? poi.IsHarpingPoint()                           : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CONCLOAD)                 ? poi.IsConcentratedLoad()                       : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)                        ? poi.IsAtH()                                    : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)                      ? poi.IsAt15H()                                  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)                   ? poi.HasAttribute(POI_PSXFER)                   : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DECKBARCUTOFF)            ? poi.HasAttribute(POI_DECKBARCUTOFF)            : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARCUTOFF)                ? poi.HasAttribute(POI_BARCUTOFF)                : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARDEVELOP)               ? poi.HasAttribute(POI_BARDEVELOP)               : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE)     ? poi.HasAttribute(POI_SECTCHANGE_RIGHTFACE)     : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE)      ? poi.HasAttribute(POI_SECTCHANGE_LEFTFACE)      : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION)    ? poi.HasAttribute(POI_SECTCHANGE_TRANSITION)    : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)            ? poi.HasAttribute(POI_FACEOFSUPPORT)            : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_PIER)        ? poi.HasAttribute(POI_INTERMEDIATE_PIER)        : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BOUNDARY_PIER)            ? poi.HasAttribute(POI_BOUNDARY_PIER)            : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_ABUTMENT)                 ? poi.HasAttribute(POI_ABUTMENT)                 : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)             ? poi.HasAttribute(POI_STIRRUP_ZONE)             : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT) ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : true)
+         )
       {
-         // searching for a non-referenced attribute
-         if ((sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR1)           ? poi.HasAttribute(POI_CRITSECTSHEAR1)           : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR2)           ? poi.HasAttribute(POI_CRITSECTSHEAR2)           : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_HARPINGPOINT)             ? poi.IsHarpingPoint()                           : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CONCLOAD)                 ? poi.IsConcentratedLoad()                       : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)                        ? poi.IsAtH()                                    : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)                      ? poi.IsAt15H()                                  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)                   ? poi.HasAttribute(POI_PSXFER)                   : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DECKBARCUTOFF)            ? poi.HasAttribute(POI_DECKBARCUTOFF)            : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARCUTOFF)                ? poi.HasAttribute(POI_BARCUTOFF)                : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARDEVELOP)               ? poi.HasAttribute(POI_BARDEVELOP)               : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE)     ? poi.HasAttribute(POI_SECTCHANGE_RIGHTFACE)     : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE)      ? poi.HasAttribute(POI_SECTCHANGE_LEFTFACE)      : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION)    ? poi.HasAttribute(POI_SECTCHANGE_TRANSITION)    : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)            ? poi.HasAttribute(POI_FACEOFSUPPORT)            : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_PIER)        ? poi.HasAttribute(POI_INTERMEDIATE_PIER)        : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BOUNDARY_PIER)            ? poi.HasAttribute(POI_BOUNDARY_PIER)            : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_ABUTMENT)                 ? poi.HasAttribute(POI_ABUTMENT)                 : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)             ? poi.HasAttribute(POI_STIRRUP_ZONE)             : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT) ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : true)
-            )
-         {
-            // This poi matches the selection criteria.
-            return true;
-         }
+         // This poi matches the selection criteria.
+         return true;
       }
-      else
+   }
+   else
+   {
+      // searching for a referenced attribute
+      if ( attrib == targetReference )
       {
-         // searching for a referenced attribute
-         if ( attrib == targetReference )
-         {
-            // didn't specify which referenced attribute is being searched for... can't match them all
-            return false;
-         }
+         // didn't specify which referenced attribute is being searched for... can't match them all
+         return false;
+      }
 
-         if (
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PICKPOINT) ? poi.HasAttribute(targetReference | POI_PICKPOINT)   : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BUNKPOINT) ? poi.HasAttribute(targetReference | POI_BUNKPOINT)   : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_0L)  ? poi.IsTenthPoint(targetReference) == 1  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_1L)  ? poi.IsTenthPoint(targetReference) == 2  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_2L)  ? poi.IsTenthPoint(targetReference) == 3  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_3L)  ? poi.IsTenthPoint(targetReference) == 4  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_4L)  ? poi.IsTenthPoint(targetReference) == 5  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_5L)  ? poi.IsTenthPoint(targetReference) == 6  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_6L)  ? poi.IsTenthPoint(targetReference) == 7  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_7L)  ? poi.IsTenthPoint(targetReference) == 8  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_8L)  ? poi.IsTenthPoint(targetReference) == 9  : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_9L)  ? poi.IsTenthPoint(targetReference) == 10 : true) &&
-             (sysFlags<PoiAttributeType>::IsSet(attrib,POI_10L) ? poi.IsTenthPoint(targetReference) == 11 : true)
-            )
-         {
-            // This poi matches the selection criteria.
-            return true;
-         }
+      if (
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PICKPOINT) ? poi.HasAttribute(targetReference | POI_PICKPOINT)   : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BUNKPOINT) ? poi.HasAttribute(targetReference | POI_BUNKPOINT)   : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_0L)  ? poi.IsTenthPoint(targetReference) == 1  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_1L)  ? poi.IsTenthPoint(targetReference) == 2  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_2L)  ? poi.IsTenthPoint(targetReference) == 3  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_3L)  ? poi.IsTenthPoint(targetReference) == 4  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_4L)  ? poi.IsTenthPoint(targetReference) == 5  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_5L)  ? poi.IsTenthPoint(targetReference) == 6  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_6L)  ? poi.IsTenthPoint(targetReference) == 7  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_7L)  ? poi.IsTenthPoint(targetReference) == 8  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_8L)  ? poi.IsTenthPoint(targetReference) == 9  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_9L)  ? poi.IsTenthPoint(targetReference) == 10 : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_10L) ? poi.IsTenthPoint(targetReference) == 11 : true)
+         )
+      {
+         // This poi matches the selection criteria.
+         return true;
       }
    }
 
@@ -708,11 +852,19 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentK
       return false;
    }
 
+   return OrAttributeEvaluation(poi,attrib);
+}
+
+bool pgsPoiMgr::OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const
+{
+   // TRICKY CODE
+   // This if expression checks if each flag in attrib is set. If it is, the corrosponding flag in the poi must
+   // be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
+
    if ( attrib == 0 )
    {
       return true; // always match if we don't care what the attributes are
    }
-
 
    // If the search attribute has referenced attributes, get the reference type
    PoiAttributeType targetReference = pgsPointOfInterest::GetReference(attrib);
@@ -782,7 +934,6 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentK
          return true;
       }
    }
-
 
    return false;
 }

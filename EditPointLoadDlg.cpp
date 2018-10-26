@@ -474,7 +474,6 @@ void CEditPointLoadDlg::UpdateGirderList()
 
 void CEditPointLoadDlg::FillEventList()
 {
-
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
@@ -510,6 +509,11 @@ void CEditPointLoadDlg::FillEventList()
          pcbEvent->SetCurSel(selEventIdx);
          m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(selEventIdx);
       }
+      else
+      {
+         pcbEvent->SetCurSel(0);
+         m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(0);
+      }
    }
 }
 
@@ -521,10 +525,10 @@ EventIndexType CEditPointLoadDlg::CreateEvent()
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
-   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+      return pIBridgeDesc->AddTimelineEvent(*dlg.m_pTimelineEvent);
   }
 
    return INVALID_INDEX;

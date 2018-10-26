@@ -246,6 +246,8 @@ BOOL CPierConnectionsPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
+   FillBoundaryConditionComboBox(); // must do this after OnInitDialog
+
    CString strType(m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
    CString strLabel;
    strLabel.Format(_T("Distance from %s Line to C.G. of Diaphragm"),strType);
@@ -277,17 +279,16 @@ void CPierConnectionsPage::InitializeComboBoxes()
 {
    FillBearingOffsetComboBox();
    FillEndDistanceComboBox();
-   FillBoundaryConditionComboBox();
    FillDiaphragmLoadComboBox();
 }
 
 void CPierConnectionsPage::FillBoundaryConditionComboBox()
 {
-   CBoundaryConditionComboBox* pcbBoundaryConditions = (CBoundaryConditionComboBox*)GetDlgItem(IDC_BOUNDARY_CONDITIONS);
-
    std::vector<pgsTypes::PierConnectionType> connections( m_pPier->GetBridgeDescription()->GetPierConnectionTypes(m_PierIdx) );
+   m_cbBoundaryCondition.Initialize(m_pPier->IsBoundaryPier(),connections);
 
-   pcbBoundaryConditions->Initialize(connections);
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_BOUNDARY_CONDITIONS,m_PierConnectionType);
 }
 
 void CPierConnectionsPage::FillDiaphragmLoadComboBox()

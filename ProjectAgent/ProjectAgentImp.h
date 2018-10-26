@@ -72,6 +72,7 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public CProxyIRatingSpecificationEventSink<CProjectAgentImp>,
    public CProxyILibraryConflictEventSink<CProjectAgentImp>,
    public CProxyILoadModifiersEventSink<CProjectAgentImp>,
+   public CProxyILossParametersEventSink<CProjectAgentImp>,
    public CProxyIEventsEventSink<CProjectAgentImp>,
    public IAgentEx,
    public IAgentPersist,
@@ -147,6 +148,7 @@ BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
    CONNECTION_POINT_ENTRY( IID_IRatingSpecificationEventSink )
    CONNECTION_POINT_ENTRY( IID_ILibraryConflictEventSink )
    CONNECTION_POINT_ENTRY( IID_ILoadModifiersEventSink )
+   CONNECTION_POINT_ENTRY( IID_ILossParametersEventSink )
    CONNECTION_POINT_ENTRY( IID_IEventsSink )
 END_CONNECTION_POINT_MAP()
 
@@ -273,7 +275,7 @@ public:
    virtual std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx);
    virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx);
    virtual const CTimelineManager* GetTimelineManager();
-   virtual void SetTimelineManager(CTimelineManager& timelineMbr);
+   virtual void SetTimelineManager(const CTimelineManager& timelineMbr);
    virtual EventIndexType AddTimelineEvent(const CTimelineEvent& timelineEvent);
    virtual EventIndexType GetEventCount();
    virtual const CTimelineEvent* GetEventByIndex(EventIndexType eventIdx);
@@ -570,8 +572,14 @@ public:
 // ILossParameters
 public:
    virtual pgsTypes::LossMethod GetLossMethod();
-   virtual void IgnoreTimeDependentEffects(bool bIgnore);
-   virtual bool IgnoreTimeDependentEffects();
+   virtual pgsTypes::TimeDependentModel GetTimeDependentModel();
+   virtual void IgnoreCreepEffects(bool bIgnore);
+   virtual bool IgnoreCreepEffects();
+   virtual void IgnoreShrinkageEffects(bool bIgnore);
+   virtual bool IgnoreShrinkageEffects();
+   virtual void IgnoreRelaxationEffects(bool bIgnore);
+   virtual bool IgnoreRelaxationEffects();
+   virtual void IgnoreTimeDependentEffects(bool bIgnoreCreep,bool bIgnoreShrinkage,bool bIgnoreRelaxation);
    virtual void SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
    virtual void GetTendonPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction);
    virtual void SetTemporaryStrandPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
@@ -725,8 +733,10 @@ private:
    // Prestress Losses
    //
 
-   bool m_bIgnoreTimeDependentEffects; // if true, time dependent effects (creep, shrinkage, relaxation)
-   // are ignored in the time-step analysis
+   // if true, the time dependent effect is ignores in the time-step analysis
+   bool m_bIgnoreCreepEffects;
+   bool m_bIgnoreShrinkageEffects;
+   bool m_bIgnoreRelaxationEffects;
 
    // General Lump Sum Losses
    bool m_bGeneralLumpSum; // if true, the loss method specified in the project criteria is ignored
@@ -857,6 +867,7 @@ private:
    friend CProxyIRatingSpecificationEventSink<CProjectAgentImp>;
    friend CProxyILibraryConflictEventSink<CProjectAgentImp>;
    friend CProxyILoadModifiersEventSink<CProjectAgentImp>;
+   friend CProxyILossParametersEventSink<CProjectAgentImp>;
 
    // In early versions of PGSuper, the girder concrete was stored by named reference
    // to a concrete girder library entry. Then, concrete parameters where assigned to

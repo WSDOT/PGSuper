@@ -154,7 +154,9 @@ public:
    Float64 GetCantileverLength() const;
 
    // Set/Get the connection type at the pier (boundary condition)
-   // (this parameter is not used if the pier is located within a girder group, i.e. not used if IsInteriorPier() returns true)
+   // when used with a Boundary Pier the connection type can be any of the pgsTypes::PierConnectionType enum values
+   // when used with an Interior Pier, the connection type must be limited to Hinge or Roller. The Segment
+   // Connection Type will determine the connectivity between the super- and substructures.
    pgsTypes::PierConnectionType GetPierConnectionType() const;
    void SetPierConnectionType(pgsTypes::PierConnectionType type);
 

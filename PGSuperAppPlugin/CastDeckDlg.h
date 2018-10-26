@@ -22,6 +22,7 @@
 #pragma once
 
 #include <PgsExt\CastDeckActivity.h>
+#include <PgsExt\TimelineManager.h>
 
 // CCastDeckDlg dialog
 
@@ -30,13 +31,14 @@ class CCastDeckDlg : public CDialog
 	DECLARE_DYNAMIC(CCastDeckDlg)
 
 public:
-	CCastDeckDlg(CWnd* pParent = NULL);   // standard constructor
+	CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CCastDeckDlg();
 
 // Dialog Data
 	enum { IDD = IDD_CAST_DECK };
 
-   CCastDeckActivity m_CastDeck;
+   CTimelineManager m_TimelineMgr;
+   EventIndexType m_EventIndex;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

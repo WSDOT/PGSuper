@@ -23,11 +23,6 @@
 // BridgePlanView.cpp : implementation file
 //
 
-#pragma Reminder("UPDATE")
-// RAB added ID's to all girders, piers, segments, etc... in the bridge product model. 
-// These object ID's could be the display object id. currently this view keeps a 
-// mapping of key values to display object ids. this may not be necessary
-
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
@@ -1123,30 +1118,15 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
       if ( ::GetKeyState(VK_CONTROL) < 0 || bSectionCutSelected )
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridge,pBridge);
-
-         // if control key is down... move the section cut
-
          CBridgeModelViewChildFrame* pFrame = GetFrame();
-         Float64 station = pFrame->GetCurrentCutLocation();
-
-         SpanIndexType spanIdx;
-         if ( !pBridge->GetSpan(station,&spanIdx) )
+         if ( nChar == VK_LEFT )
          {
-            return;
+            pFrame->CutAtPrev();
          }
-
-         Float64 back_pier = pBridge->GetPierStation(spanIdx);
-         Float64 ahead_pier = pBridge->GetPierStation(spanIdx+1);
-         Float64 span_length = ahead_pier - back_pier;
-         Float64 inc = span_length/10;
-
-         station = station + (nChar == VK_LEFT ? -1 : 1)*inc*nRepCnt;
-
-         pFrame->CutAt( station );
-
+         else if ( nChar == VK_RIGHT )
+         {
+            pFrame->CutAtNext();
+         }
          return; // don't send this on to the display view
       }
       else
@@ -1879,8 +1859,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   //GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -2049,29 +2030,55 @@ void CBridgePlanView::BuildPierDisplayObjects()
       strategy_pier->SetLeftOffset(left_offset);
       strategy_pier->SetRightOffset(right_offset);
 
-#pragma Reminder("UPDATE: These are dummy vales...")
-      Float64 left_overhang = 0.5;
-      Float64 right_overhang = 0.5;
-      //// make the pier overhang the exterior girders
-      //Float64 prev_girder_length = (prev_span_idx == INVALID_INDEX ? 0 : pBridge->GetGirderLength(prev_span_idx,0));
-      //Float64 prev_top_width = (prev_span_idx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,0),prev_girder_length)));
-      //Float64 prev_bot_width = (prev_span_idx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,0),prev_girder_length)));
-      //Float64 next_top_width = (next_span_idx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,0),0)));
-      //Float64 next_bot_width = (next_span_idx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,0),0)));
-      //Float64 left_overhang = Max(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
-      //left_overhang /= cos(fabs(skew));
-      //left_overhang *= 1.10;
+      // Draw the piers so that the are wider than the width of the girders... compute the overhang
+      // from the left and right exterior girder
+      GroupIndexType backGroupIdx, aheadGroupIdx;
+      pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
 
-      //GirderIndexType nGirdersPrevSpan = (prev_span_idx == INVALID_INDEX ? 0 : pBridge->GetGirderCount(prev_span_idx));
-      //GirderIndexType nGirdersNextSpan = (next_span_idx == INVALID_INDEX ? 0 : pBridge->GetGirderCount(next_span_idx));
-      //prev_girder_length = (prev_span_idx == INVALID_INDEX ? 0 : pBridge->GetGirderLength(prev_span_idx,nGirdersPrevSpan-1));
-      //prev_top_width = (prev_span_idx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,nGirdersPrevSpan-1),prev_girder_length)));
-      //prev_bot_width = (prev_span_idx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,nGirdersPrevSpan-1),prev_girder_length)));
-      //next_top_width = (next_span_idx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,nGirdersNextSpan-1),0)));
-      //next_bot_width = (next_span_idx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,nGirdersNextSpan-1),0)));
-      //Float64 right_overhang = 1.10*Max(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
-      //right_overhang /= cos(fabs(skew));
-      //right_overhang *= 1.10;
+      // Left side of pier
+      pgsPointOfInterest backPoi, aheadPoi;
+      if ( backGroupIdx != INVALID_INDEX )
+      {
+         CGirderKey girderKey(backGroupIdx,0);
+         backPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
+      }
+
+      if ( aheadGroupIdx != INVALID_INDEX )
+      {
+         CGirderKey girderKey(aheadGroupIdx,0);
+         aheadPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
+      }
+
+      Float64 back_top_width  = (backGroupIdx  == INVALID_INDEX ? 0 : pGirder->GetTopWidth(backPoi));
+      Float64 back_bot_width  = (backGroupIdx  == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(backPoi));
+      Float64 ahead_top_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(aheadPoi));
+      Float64 ahead_bot_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(aheadPoi));
+      Float64 left_overhang   = Max(back_top_width,back_bot_width,ahead_top_width,ahead_bot_width)/2;
+      left_overhang /= cos(fabs(skew));
+      left_overhang *= 1.10;
+
+      // Right Side of Pier
+      if ( backGroupIdx != INVALID_INDEX )
+      {
+         GirderIndexType nGirders = pBridge->GetGirderCount(backGroupIdx);
+         CGirderKey girderKey(backGroupIdx,nGirders-1);
+         backPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
+      }
+
+      if ( aheadGroupIdx != INVALID_INDEX )
+      {
+         GirderIndexType nGirders = pBridge->GetGirderCount(aheadGroupIdx);
+         CGirderKey girderKey(aheadGroupIdx,nGirders-1);
+         aheadPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
+      }
+
+      back_top_width  = (backGroupIdx  == INVALID_INDEX ? 0 : pGirder->GetTopWidth(backPoi));
+      back_bot_width  = (backGroupIdx  == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(backPoi));
+      ahead_top_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(aheadPoi));
+      ahead_bot_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(aheadPoi));
+      Float64 right_overhang = Max(back_top_width,back_bot_width,ahead_top_width,ahead_bot_width)/2;
+      right_overhang /= cos(fabs(skew));
+      right_overhang *= 1.10;
 
       strategy_pier->SetStartExtension(left_overhang);
       strategy_pier->SetEndExtension(right_overhang);
@@ -2383,8 +2390,10 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
    GET_IFACE2(pBroker,ITempSupport,pTemporarySupport); // only needed if there are temporary supports
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
@@ -2528,46 +2537,35 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       }
       strategy_pier->SetDoFill(TRUE);
 
-#pragma Reminder("FIX: These are dummy vales...")
-      // See commented code block below
-      Float64 left_offset = 0;
-      Float64 right_offset = 0;
-      Float64 left_overhang = 0.5;
-      Float64 right_overhang = 0.5;
-
       Float64 support_width = pTS->GetSupportWidth();
       
       Float64 brg_offset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType brg_offset_measurement_type;
       pTS->GetBearingOffset(&brg_offset,&brg_offset_measurement_type);
       if ( brg_offset_measurement_type == ConnectionLibraryEntry::NormalToPier )
+      {
          brg_offset /= cos(skew);
+      }
 
-      left_offset  = 1.05*(brg_offset + support_width);
-      right_offset = 1.05*(brg_offset + support_width);
+      Float64 left_offset  = 1.05*(brg_offset + support_width);
+      Float64 right_offset = 1.05*(brg_offset + support_width);
 
-      // this is how the offset and overhang values are computed for precast girder bridges
-      // when the values are fixed above, delete this code block
-   //   // make the pier overhang the exterior girders
-   //   Float64 prev_girder_length = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderLength(prev_span_idx,0));
-   //   Float64 prev_top_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,0),prev_girder_length)));
-   //   Float64 prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,0),prev_girder_length)));
-   //   Float64 next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,0),0)));
-   //   Float64 next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,0),0)));
-   //   Float64 left_overhang = Max(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
-   //   left_overhang /= cos(fabs(skew));
-   //   left_overhang *= 1.10;
+      // need POI at intersection of TS and CL Girder
+      GroupIndexType grpIdx = pBridgeDesc->GetGirderGroup(pTS->GetSpan())->GetIndex();
+      pgsPointOfInterest leftPoi = pPoi->GetTemporarySupportPointOfInterest(CGirderKey(grpIdx,0),tsIdx);
+      Float64 top_width = pGirder->GetTopWidth(leftPoi);
+      Float64 bot_width = pGirder->GetBottomWidth(leftPoi);
+      Float64 left_overhang = Max(top_width,bot_width);
+      left_overhang /= cos(fabs(skew));
+      left_overhang *= 1.10;
 
-   //   GirderIndexType nGirdersPrevSpan = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderCount(prev_span_idx));
-   //   GirderIndexType nGirdersNextSpan = (next_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderCount(next_span_idx));
-   //   prev_girder_length = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderLength(prev_span_idx,nGirdersPrevSpan-1));
-   //   prev_top_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,nGirdersPrevSpan-1),prev_girder_length)));
-   //   prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,nGirdersPrevSpan-1),prev_girder_length)));
-   //   next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,nGirdersNextSpan-1),0)));
-   //   next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,nGirdersNextSpan-1),0)));
-   //   Float64 right_overhang = 1.10*Max(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
-   //   right_overhang /= cos(fabs(skew));
-   //   right_overhang *= 1.10;
+      GirderIndexType nGirders = pTS->GetSpan()->GetGirderCount();
+      pgsPointOfInterest rightPoi = pPoi->GetTemporarySupportPointOfInterest(CGirderKey(grpIdx,nGirders-1),tsIdx);
+      top_width = pGirder->GetTopWidth(rightPoi);
+      bot_width = pGirder->GetBottomWidth(rightPoi);
+      Float64 right_overhang = Max(top_width,bot_width);
+      right_overhang /= cos(fabs(skew));
+      right_overhang *= 1.10;
 
       strategy_pier->SetLeftOffset(left_offset);
       strategy_pier->SetRightOffset(right_offset);
@@ -2689,8 +2687,8 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          doConnection->SetTipDisplayTime(TOOLTIP_DURATION);
 
 #pragma Reminder("TODO: Need connection display object for temporary supports")
-         //// Register an event sink with the connection text display object so that we can handle Float64 clicks
-         //// differently then a general Float64 click
+         //// Register an event sink with the connection text display object so that we can handle dbl-clicks
+         //// differently then a general dbl-click
          //CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
 
          //IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);

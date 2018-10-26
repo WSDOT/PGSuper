@@ -35,9 +35,11 @@ class CBridgeModelViewChildFrame;
 class iCutLocation
 {
 public:
-   // Cut locations are in the Girder Coordinate System
+   // Cut locations are in the Girderline Coordinate System
    virtual Float64 GetCurrentCutLocation() = 0;
-   virtual void CutAt(Float64 Xg) = 0;
+   virtual void CutAt(Float64 Xgl) = 0;
+   virtual void CutAtNext() = 0;
+   virtual void CutAtPrev() = 0;
    virtual void ShowCutDlg() = 0;
    virtual Float64 GetMinCutLocation() = 0;
    virtual Float64 GetMaxCutLocation() = 0;
@@ -52,8 +54,8 @@ interface iSectionCutDrawStrategy : public IUnknown
    STDMETHOD_(void,SetColor)(COLORREF color) PURE;
 	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc) PURE;
 
-   // distFromStartOfGirder is in the GirderCoodinateSystem
-   STDMETHOD_(pgsPointOfInterest,GetCutPOI)(Float64 distFromStartOfGirder) PURE;
+   // Xgl is in the Girderline Coodinate System
+   STDMETHOD_(pgsPointOfInterest,GetCutPOI)(Float64 Xgl) PURE;
 };
 
 // {2CDCA9C4-A9A3-4c75-B7B1-ED9E1E308203}

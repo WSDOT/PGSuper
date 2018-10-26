@@ -700,8 +700,13 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    {
       switch( pSpecEntry->GetTimeDependentModel() )
       {
+      case TDM_AASHTO:
+         write_lrfd_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
+         break;
+
       case TDM_ACI209:
          write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
+         break;
       }
    }
    else

@@ -352,19 +352,19 @@ void CSpanGirderReportDlg::InitFromRptSpec()
 {
    if ( m_Mode == SpanAndChapters )
    {
-      boost::shared_ptr<CSpanReportSpecification> pRptSpec = boost::shared_dynamic_cast<CSpanReportSpecification>(m_pInitRptSpec);
+      boost::shared_ptr<CSpanReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CSpanReportSpecification>(m_pInitRptSpec);
       m_Group = pRptSpec->GetSpan();
    }
    else if ( m_Mode == SpanGirderAndChapters )
    {
-      boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CGirderReportSpecification>(m_pInitRptSpec);
+      boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CGirderReportSpecification>(m_pInitRptSpec);
       const CGirderKey& girderKey(pRptSpec->GetGirderKey());
       m_Group = girderKey.groupIndex;
       m_Girder = girderKey.girderIndex;
    }
    else if ( m_Mode == GirderAndChapters )
    {
-      boost::shared_ptr<CGirderLineReportSpecification> pRptSpec = boost::shared_dynamic_cast<CGirderLineReportSpecification>(m_pInitRptSpec);
+      boost::shared_ptr<CGirderLineReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CGirderLineReportSpecification>(m_pInitRptSpec);
       m_Girder = int(pRptSpec->GetGirderIndex());
    }
    else if ( m_Mode == ChaptersOnly )

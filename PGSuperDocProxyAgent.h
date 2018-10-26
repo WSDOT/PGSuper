@@ -86,6 +86,7 @@ class CPGSuperDocProxyAgent :
    public ISpecificationEventSink,
    public IRatingSpecificationEventSink,
    public ILoadModifiersEventSink,
+   public ILossParametersEventSink,
    public ILibraryConflictEventSink,
    public IUIEvents,
    public IUpdateTemplates,
@@ -115,6 +116,7 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
    COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
    COM_INTERFACE_ENTRY(ILoadModifiersEventSink)
+   COM_INTERFACE_ENTRY(ILossParametersEventSink)
    COM_INTERFACE_ENTRY(ILibraryConflictEventSink)
    COM_INTERFACE_ENTRY(IUIEvents)
    COM_INTERFACE_ENTRY(IUpdateTemplates)
@@ -191,6 +193,10 @@ public:
 public:
    virtual HRESULT OnLoadModifiersChanged();
 
+// ILossParametersEventSink
+public:
+   virtual HRESULT OnLossParametersChanged();
+
 // ILibraryConflictSink
 public:
    virtual HRESULT OnLibraryConflictResolved();
@@ -263,6 +269,7 @@ public:
    virtual void AddMomentLoad(const CMomentLoadData& loadData);
    virtual void DeleteMomentLoad(CollectionIndexType loadIdx);
    virtual void EditEffectiveFlangeWidth();
+   virtual void SelectProjectCriteria();
 
 // IDesign
 public:
@@ -334,6 +341,7 @@ private:
    DWORD m_dwRatingSpecificationCookie;
    DWORD m_dwLoadModiferCookie;
    DWORD m_dwLibraryConflictGuiCookie;
+   DWORD m_dwLossParametersCookie;
 
    int m_EventHoldCount;
    bool m_bFiringEvents;

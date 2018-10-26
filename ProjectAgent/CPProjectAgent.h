@@ -22,20 +22,21 @@
 
 #include <PgsExt\Keys.h>
 
-#define EVT_PROJECTPROPERTIES 0x0001
-//#define EVT_UNITS             0x0002
-#define EVT_EXPOSURECONDITION 0x0004
-#define EVT_RELHUMIDITY       0x0008
-#define EVT_BRIDGE            0x0010
-#define EVT_SPECIFICATION     0x0020
-#define EVT_LIBRARYCONFLICT   0x0040
-#define EVT_LOADMODIFIER      0x0080
-#define EVT_GIRDERFAMILY      0x0100
-#define EVT_LIVELOAD          0x0200
-#define EVT_LIVELOADNAME      0x0400
-#define EVT_ANALYSISTYPE      0x0800
+#define EVT_PROJECTPROPERTIES    0x0001
+//#define EVT_UNITS                0x0002
+#define EVT_EXPOSURECONDITION    0x0004
+#define EVT_RELHUMIDITY          0x0008
+#define EVT_BRIDGE               0x0010
+#define EVT_SPECIFICATION        0x0020
+#define EVT_LIBRARYCONFLICT      0x0040
+#define EVT_LOADMODIFIER         0x0080
+#define EVT_GIRDERFAMILY         0x0100
+#define EVT_LIVELOAD             0x0200
+#define EVT_LIVELOADNAME         0x0400
+#define EVT_ANALYSISTYPE         0x0800
 #define EVT_RATING_SPECIFICATION 0x1000
 #define EVT_CONSTRUCTIONLOAD     0x2000
+#define EVT_LOSSPARAMETERS       0x4000
 
 
 
@@ -560,6 +561,42 @@ public:
 			{
 				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
 				ret = pEventSink->OnCancelPendingEvents();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// CProxyILossParametersEventSink
+template <class T>
+class CProxyILossParametersEventSink : public IConnectionPointImpl<T, &IID_ILossParametersEventSink, CComDynamicUnkArray>
+{
+public:
+
+//ILossParametersEventSink : IUnknown
+public:
+	HRESULT Fire_OnLossParametersChanged()
+	{
+		T* pT = (T*)this;
+
+      if ( 0 < pT->m_EventHoldCount )
+      {
+         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LOSSPARAMETERS);
+         return S_OK;
+      }
+
+      pT->Lock();
+		HRESULT ret = S_OK;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				ILossParametersEventSink* pEventSink = reinterpret_cast<ILossParametersEventSink*>(*pp);
+				ret = pEventSink->OnLossParametersChanged();
 			}
 			pp++;
 		}

@@ -50,7 +50,6 @@
 #include <afxole.h>         // MFC OLE classes
 #include <afxodlgs.h>       // MFC OLE dialog classes
 #include <afxdisp.h>        // MFC OLE automation classes
-#include <afxcontrolbars.h>	// MFC support for ribbon and control bars
 
 #define _ATL_APARTMENT_THREADED
 #define _ATL_NO_AUTOMATIC_NAMESPACE

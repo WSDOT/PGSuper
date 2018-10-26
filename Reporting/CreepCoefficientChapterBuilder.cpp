@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <Reporting\LRFDCreepCoefficientChapterBuilder.h>
+#include <Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h>
 #include <Reporting\ACI209CreepCoefficientChapterBuilder.h>
 
 #include <IFace\AnalysisResults.h>
@@ -68,7 +69,14 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
-      pChapter = CACI209CreepCoefficientChapterBuilder().Build(pRptSpec,level);
+      if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmAASHTO )
+      {
+         pChapter = CLRFDTimeDependentCreepCoefficientChapterBuilder().Build(pRptSpec,level);
+      }
+      else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmACI209 )
+      {
+         pChapter = CACI209CreepCoefficientChapterBuilder().Build(pRptSpec,level);
+      }
    }
    else
    {

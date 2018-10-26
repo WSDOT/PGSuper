@@ -50,4 +50,7 @@
 // The bridge does not have a stable geometric configuration
 #define XREASON_UNSTABLE                     0x0080
 
+// The project criteria doesn't have the correct settings
+#define XREASON_PROJECT_CRITERIA             0x0100
+
 #endif // INCLUDED_PGSUPEREXCEPTION_H_

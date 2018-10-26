@@ -31,6 +31,9 @@
 
 #include "HtmlHelp\HelpTopics.hh"
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\PointOfInterest.h>
+#include <IFace\Bridge.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,84 +44,30 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSectionCutDlgEx dialog
 
-CSectionCutDlgEx::CSectionCutDlgEx(IndexType nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
-                     CGirderModelChildFrame::CutLocation location, CWnd* pParent):
-CDialog(CSectionCutDlgEx::IDD, pParent),
-m_Value(value),
-m_LowerBound(lowerBound),
-m_UpperBound(upperBound),
-m_CutLocation(location),
-m_nHarpPoints(nHarpPoints)
-{
-}
-
-
-CSectionCutDlgEx::CSectionCutDlgEx(CWnd* pParent /*=NULL*/)
+CSectionCutDlgEx::CSectionCutDlgEx(IBroker* pBroker,const CGirderKey& girderKey,const pgsPointOfInterest& initialPoi,CWnd* pParent) 
 : CDialog(CSectionCutDlgEx::IDD, pParent),
-m_Value(0.0),
-m_LowerBound(0.0),
-m_UpperBound(0.0),
-m_nHarpPoints(0),
-m_CutLocation(CGirderModelChildFrame::Center)
+m_pBroker(pBroker),
+m_SliderPos(0)
 {
-	//{{AFX_DATA_INIT(CSectionCutDlgEx)
-	m_CutIndex = -1;
-	//}}AFX_DATA_INIT
+   m_InitialPOI = initialPoi;
+   m_GirderKey = girderKey;
 }
-
-void CSectionCutDlgEx::GetBounds(Float64* plowerBound, Float64* pupperBound)
-{
-   *plowerBound=m_LowerBound;
-   *pupperBound=m_UpperBound;
-}
-
-void CSectionCutDlgEx::SetBounds(Float64 lowerBound, Float64 upperBound)
-{ 
-   m_LowerBound = lowerBound;
-   m_UpperBound = upperBound;
-}
-
 
 void CSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSectionCutDlgEx) 
 	//}}AFX_DATA_MAP
-	DDX_Radio(pDX, IDC_LEFT_END, m_CutIndex);
-	DDX_Text(pDX, IDC_VALUE, m_Value);
-   DDX_UnitValueAndTag( pDX, IDC_VALUE, IDC_VALUE_UNITS, m_Value, pDisplayUnits->GetSpanLengthUnit() );
 
-   if ( pDX->m_bSaveAndValidate && m_CutIndex == IDC_USER_CUT )
-      DDV_UnitValueRange(pDX, IDC_VALUE, m_Value, m_LowerBound, m_UpperBound, pDisplayUnits->GetSpanLengthUnit() );
+   DDX_Control(pDX, IDC_SLIDER, m_Slider);
+   DDX_Control(pDX, IDC_LOCATION, m_Label);
+   DDX_Slider(pDX, IDC_SLIDER, m_SliderPos);
 
-   if (!pDX->m_bSaveAndValidate)
-   {
-      CStatic* pprompt = (CStatic*)GetDlgItem(IDC_USER_CUT);
-      ASSERT(pprompt); 
-
-      CString str;
-      std::_tstring tag;
-      Float64 lower, upper;
-      lower = ::ConvertFromSysUnits(m_LowerBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      upper = ::ConvertFromSysUnits(m_UpperBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      tag = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag();
-      str.Format(_T("Enter a Value Between %g and %g %s"),lower, upper, tag.c_str());
-      pprompt->SetWindowText(str);
-   }
 }
 
 BEGIN_MESSAGE_MAP(CSectionCutDlgEx, CDialog)
 	//{{AFX_MSG_MAP(CSectionCutDlgEx)
-	ON_BN_CLICKED(IDC_GIRDER_MIDDLE, OnGirderMiddle)
-	ON_BN_CLICKED(IDC_LEFT_END, OnLeftEnd)
-	ON_BN_CLICKED(IDC_LEFT_HARP, OnLeftHarp)
-	ON_BN_CLICKED(IDC_RIGHT_END, OnRightEnd)
-	ON_BN_CLICKED(IDC_RIGHT_HARP, OnRightHarp)
-	ON_BN_CLICKED(IDC_USER_CUT, OnUserCut)
+   ON_WM_HSCROLL()
 	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -128,90 +77,112 @@ END_MESSAGE_MAP()
 
 BOOL CSectionCutDlgEx::OnInitDialog() 
 {
-   if ( m_nHarpPoints == 0 )
-   {
-      GetDlgItem(IDC_LEFT_HARP)->EnableWindow(FALSE);
-      GetDlgItem(IDC_RIGHT_HARP)->EnableWindow(FALSE);
-   }
+   UpdatePOI();
 
-   m_CutIndex = (int)m_CutLocation;
-   
    CDialog::OnInitDialog();
 
-	Update();
+   // initial the slider range
+   m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
+
+   // initial the slider position to the current poi location
+   CollectionIndexType pos = m_vPOI.size()/2; // default is mid-span
+   std::vector<pgsPointOfInterest>::iterator iter;
+   for ( iter = m_vPOI.begin(); iter != m_vPOI.end(); iter++ )
+   {
+      pgsPointOfInterest& poi = *iter;
+      if ( poi.GetID() == m_InitialPOI.GetID() )
+      {
+         pos = (iter - m_vPOI.begin());
+      }
+   }
+   m_Slider.SetPos((int)pos);
+
+   UpdateSliderLabel();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-
-void CSectionCutDlgEx::Update()
-{
-   CWnd* pEdit = GetDlgItem(IDC_VALUE);
-   CWnd* pUnit = GetDlgItem(IDC_VALUE_UNITS);
-
-   BOOL bEnable = (m_CutLocation == CGirderModelChildFrame::UserInput) ? TRUE : FALSE;
-   pEdit->EnableWindow( bEnable );
-   pUnit->EnableWindow( bEnable );
-}
-
-void CSectionCutDlgEx::SetValue(Float64 value)
-{
-   m_Value=value;
-}
-
-Float64 CSectionCutDlgEx::GetValue()const
-{
-   return m_Value;
-}
-
-void CSectionCutDlgEx::SetCutLocation(CGirderModelChildFrame::CutLocation location)
-{
-   m_CutLocation=location;
-}
-
-CGirderModelChildFrame::CutLocation CSectionCutDlgEx::GetCutLocation() const 
-{
-   return m_CutLocation;
-}
-
-void CSectionCutDlgEx::OnGirderMiddle() 
-{
-   m_CutLocation = CGirderModelChildFrame::Center;
-   Update();
-}
-
-void CSectionCutDlgEx::OnLeftEnd() 
-{
-   m_CutLocation = CGirderModelChildFrame::LeftEnd;
-   Update();
-}
-
-void CSectionCutDlgEx::OnLeftHarp() 
-{
-   m_CutLocation = CGirderModelChildFrame::LeftHarp;
-   Update();
-}
-
-void CSectionCutDlgEx::OnRightEnd() 
-{
-   m_CutLocation = CGirderModelChildFrame::RightEnd;
-   Update();
-}
-
-void CSectionCutDlgEx::OnRightHarp() 
-{
-   m_CutLocation = CGirderModelChildFrame::RightHarp;
-   Update();
-}
-
-void CSectionCutDlgEx::OnUserCut() 
-{
-   m_CutLocation = CGirderModelChildFrame::UserInput;
-   Update();
-}
-
 void CSectionCutDlgEx::OnHelp() 
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_SECTIONCUT );
+}
+
+pgsPointOfInterest CSectionCutDlgEx::GetPOI()
+{
+   ASSERT((int)m_SliderPos < (int)m_vPOI.size());
+   pgsPointOfInterest poi = m_vPOI[m_SliderPos];
+   return poi;
+}
+
+void CSectionCutDlgEx::UpdatePOI()
+{
+   GET_IFACE(IPointOfInterest,pPOI);
+   m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS));
+   if (m_Slider.GetSafeHwnd() != NULL )
+   {
+      m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
+                                                   // subtract one so we don't go past the end of the array
+   }
+}
+
+void CSectionCutDlgEx::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+   UpdateSliderLabel();
+   CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+void CSectionCutDlgEx::UpdateSliderLabel()
+{
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IDocumentType,pDocType);
+
+   ASSERT((int)m_SliderPos < (int)m_vPOI.size());
+   pgsPointOfInterest poi = m_vPOI[m_Slider.GetPos()];
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   CString strLabel1;
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      strLabel1.Format(_T("Location from Start of Span %d Girder %s, %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),
+         ::FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()));
+   }
+   else
+   {
+      strLabel1.Format(_T("Location from Start of Segment %d, %s"),LABEL_SEGMENT(segmentKey.segmentIndex),
+         ::FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()));
+   }
+   
+   if ( poi.HasAttribute(POI_ERECTED_SEGMENT) || poi.HasAttribute(POI_HARPINGPOINT) )
+   {
+      CString strAttribute;
+      strAttribute.Format(_T(" (%s)"),poi.GetAttributes(POI_ERECTED_SEGMENT,false).c_str());
+      strLabel1 += strAttribute;
+   }
+
+   Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+   CString strLabel2;
+   strLabel2.Format(_T("Location from Start of Girder Line, %s"),::FormatDimension(Xgl,pDisplayUnits->GetSpanLengthUnit()));
+
+   CString strLabel3;
+   if ( pDocType->IsPGSpliceDocument() )
+   {
+      CSpanKey spanKey;
+      Float64 Xspan;
+      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+      strLabel3.Format(_T("Location from Start of Span %d, %s"),LABEL_SPAN(spanKey.spanIndex),::FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
+      if ( poi.HasAttribute(POI_SPAN) )
+      {
+         CString strAttribute;
+         strAttribute.Format(_T(" (%s)"),poi.GetAttributes(POI_SPAN,false).c_str());
+         strLabel3 += strAttribute;
+      }
+   }
+
+   CString strLabel;
+   strLabel.Format(_T("%s\r\n%s\r\n%s"),strLabel1,strLabel2,strLabel3);
+
+   m_Label.SetWindowText(strLabel);
 }

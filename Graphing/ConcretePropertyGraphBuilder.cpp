@@ -76,6 +76,14 @@ m_XAxisType(X_AXIS_TIME_LOG)
    m_Scalar.Precision = 0;
    m_Scalar.Format = sysNumericFormatTool::Fixed;
 
+   m_StrainScalar.Width = 3;
+   m_StrainScalar.Precision = 3;
+   m_StrainScalar.Format = sysNumericFormatTool::Engineering;
+
+   m_CreepScalar.Width = 6;
+   m_CreepScalar.Precision = 3;
+   m_CreepScalar.Format = sysNumericFormatTool::Fixed;
+
    SetName(_T("Concrete Properties"));
 }
 
@@ -92,6 +100,14 @@ m_XAxisType(X_AXIS_TIME_LOG)
    m_Scalar.Width = 7;
    m_Scalar.Precision = 0;
    m_Scalar.Format = sysNumericFormatTool::Fixed;
+
+   m_StrainScalar.Width = 3;
+   m_StrainScalar.Precision = 3;
+   m_StrainScalar.Format = sysNumericFormatTool::Engineering;
+
+   m_CreepScalar.Width = 6;
+   m_CreepScalar.Precision = 3;
+   m_CreepScalar.Format = sysNumericFormatTool::Fixed;
 }
 
 CConcretePropertyGraphBuilder::~CConcretePropertyGraphBuilder()
@@ -277,12 +293,11 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
 {
    delete m_pYFormat;
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-
    switch(m_GraphType)
    {
    case GRAPH_TYPE_FC:
       {
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
@@ -292,10 +307,37 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
       }
    case GRAPH_TYPE_EC:
       {
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       const unitmgtStressData& stressUnit = pDisplayUnits->GetModEUnit();
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Ec (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
+      m_Graph.SetYAxisTitle(strYAxisTitle);
+      break;
+      }
+   case GRAPH_TYPE_ECE:
+      {
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      const unitmgtStressData& stressUnit = pDisplayUnits->GetModEUnit();
+      m_pYFormat = new StressTool(stressUnit);
+      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      std::_tstring strYAxisTitle = _T("Age Adjusted Ec (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
+      m_Graph.SetYAxisTitle(strYAxisTitle);
+      break;
+      }
+   case GRAPH_TYPE_SH:
+      {
+      m_pYFormat = new ScalarTool(m_StrainScalar);
+      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      std::_tstring strYAxisTitle = _T("Shrinkage Strain");
+      m_Graph.SetYAxisTitle(strYAxisTitle);
+      break;
+      }
+   case GRAPH_TYPE_CR:
+      {
+      m_pYFormat = new ScalarTool(m_CreepScalar);
+      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      std::_tstring strYAxisTitle = _T("Creep Coefficient");
       m_Graph.SetYAxisTitle(strYAxisTitle);
       break;
       }
@@ -306,7 +348,28 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
 
 void CConcretePropertyGraphBuilder::UpdateGraphTitle()
 {
-   CString strType(m_GraphType == GRAPH_TYPE_FC ? _T("Concrete Strength") : _T("Elastic Modulus"));
+   CString strType;
+   if ( m_GraphType == GRAPH_TYPE_FC )
+   {
+      strType = _T("Concrete Strength");
+   }
+   else if ( m_GraphType == GRAPH_TYPE_EC )
+   {
+      strType = _T("Elastic Modulus");
+   }
+   else if ( m_GraphType == GRAPH_TYPE_ECE )
+   {
+      strType = _T("Age Adjusted Elastic Modulus");
+   }
+   else if ( m_GraphType == GRAPH_TYPE_SH )
+   {
+      strType = _T("Shrinkage Strain");
+   }
+   else if ( m_GraphType == GRAPH_TYPE_CR )
+   {
+      strType = _T("Creep Coefficient");
+   }
+
    CString strElement;
    if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
    {
@@ -345,14 +408,37 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
 {
    // clear graph
    m_Graph.ClearData();
+   m_Graph.SetMinimumSize(0,1,0,1);
 
    int penWeight = GRAPH_PEN_WEIGHT;
 
-   CString strLabel = (m_GraphType == GRAPH_TYPE_FC ? _T("f'c") : _T("Ec"));
-   IndexType dataSeries = m_Graph.CreateDataSeries(strLabel, PS_SOLID, penWeight, ORANGE);
+   CString strLabel;
+   if ( m_GraphType == GRAPH_TYPE_FC )
+   {
+      strLabel = _T("f'c");
+   }
+   else if ( m_GraphType == GRAPH_TYPE_EC )
+   {
+      strLabel = _T("Ec");
+   }
+   else if ( m_GraphType == GRAPH_TYPE_ECE )
+   {
+      strLabel = _T("Ece");
+   }
+   else if ( m_GraphType == GRAPH_TYPE_SH )
+   {
+      strLabel = _T("e");
+      m_Graph.SetMinimumSize(0,1,0,0);
+   }
+   else if ( m_GraphType == GRAPH_TYPE_CR )
+   {
+      strLabel = _T("Y");
+   }
 
    GET_IFACE(IMaterials,pMaterials);
    GET_IFACE(IIntervals,pIntervals);
+
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_SegmentKey);
    IntervalIndexType startIntervalIdx = 0;
    if ( m_XAxisType == X_AXIS_AGE_LINEAR  || m_XAxisType == X_AXIS_AGE_LOG )
    {
@@ -370,27 +456,28 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       }
    }
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_SegmentKey);
+   IndexType dataSeries = m_Graph.CreateDataSeries(strLabel, PS_SOLID, penWeight, ORANGE);
+
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 xMiddle;
       if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
       {
-         xMiddle = pIntervals->GetMiddle(m_SegmentKey,intervalIdx);
+         xMiddle = pIntervals->GetTime(m_SegmentKey,intervalIdx,pgsTypes::Middle);
       }
       else if ( m_XAxisType == X_AXIS_AGE_LINEAR || m_XAxisType == X_AXIS_AGE_LOG )
       {
          if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
          {
-            xMiddle = pMaterials->GetSegmentConcreteAge(m_SegmentKey,intervalIdx);
+            xMiddle = pMaterials->GetSegmentConcreteAge(m_SegmentKey,intervalIdx,pgsTypes::Middle);
          }
          else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
          {
-            xMiddle = pMaterials->GetClosureJointConcreteAge(m_ClosureKey,intervalIdx);
+            xMiddle = pMaterials->GetClosureJointConcreteAge(m_ClosureKey,intervalIdx,pgsTypes::Middle);
          }
          else
          {
-            xMiddle = pMaterials->GetDeckConcreteAge(m_ClosureKey,intervalIdx);
+            xMiddle = pMaterials->GetDeckConcreteAge(m_ClosureKey,intervalIdx,pgsTypes::Middle);
          }
       }
       else
@@ -406,9 +493,21 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
          {
             value = pMaterials->GetSegmentFc(m_SegmentKey,intervalIdx);
          }
-         else
+         else if ( m_GraphType == GRAPH_TYPE_EC )
          {
             value = pMaterials->GetSegmentEc(m_SegmentKey,intervalIdx);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_ECE )
+         {
+            value = pMaterials->GetSegmentAgeAdjustedEc(m_SegmentKey,intervalIdx);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_SH )
+         {
+            value = pMaterials->GetSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_CR )
+         {
+            value = pMaterials->GetSegmentCreepCoefficient(m_SegmentKey,startIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
          }
       }
       else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
@@ -417,20 +516,44 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
          {
             value = pMaterials->GetClosureJointFc(m_ClosureKey,intervalIdx);
          }
-         else
+         else if ( m_GraphType == GRAPH_TYPE_EC )
          {
             value = pMaterials->GetClosureJointEc(m_ClosureKey,intervalIdx);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_ECE )
+         {
+            value = pMaterials->GetClosureJointAgeAdjustedEc(m_ClosureKey,intervalIdx);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_SH )
+         {
+            value = pMaterials->GetClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::Middle);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_CR )
+         {
+            value = pMaterials->GetClosureJointCreepCoefficient(m_ClosureKey,startIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
          }
       }
       else if ( m_GraphElement = GRAPH_ELEMENT_DECK )
       {
          if ( m_GraphType == GRAPH_TYPE_FC )
          {
-            value = pMaterials->GetDeckFc(m_ClosureKey,intervalIdx);
+            value = pMaterials->GetDeckFc(m_SegmentKey,intervalIdx);
          }
-         else
+         else if ( m_GraphType == GRAPH_TYPE_EC )
          {
-            value = pMaterials->GetDeckEc(m_ClosureKey,intervalIdx);
+            value = pMaterials->GetDeckEc(m_SegmentKey,intervalIdx);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_ECE )
+         {
+            value = pMaterials->GetDeckAgeAdjustedEc(m_SegmentKey,intervalIdx);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_SH )
+         {
+            value = pMaterials->GetDeckFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+         }
+         else if ( m_GraphType == GRAPH_TYPE_CR )
+         {
+            value = pMaterials->GetDeckCreepCoefficient(m_SegmentKey,startIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
          }
       }
       AddGraphPoint(dataSeries,xMiddle,value);

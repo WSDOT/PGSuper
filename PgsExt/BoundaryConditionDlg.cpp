@@ -78,7 +78,7 @@ BOOL CBoundaryConditionDlg::OnInitDialog()
    std::vector<pgsTypes::PierConnectionType> connections = pIBridgeDesc->GetPierConnectionTypes(m_PierIdx);
 
    m_cbBoundaryCondition.SetPierType(PIERTYPE_INTERMEDIATE);
-   m_cbBoundaryCondition.Initialize(connections);
+   m_cbBoundaryCondition.Initialize(true,connections);
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE

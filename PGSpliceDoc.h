@@ -47,7 +47,6 @@ protected: // create from serialization only
 	//{{AFX_VIRTUAL(CPGSpliceDoc)
 	//}}AFX_VIRTUAL
 
-   bool EditClosureJointDescription(const CClosureJointData* pClosure,int nPage);
    bool EditTemporarySupportDescription(SupportIDType tsID,int nPage);
    
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);

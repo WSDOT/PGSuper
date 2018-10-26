@@ -480,7 +480,7 @@ Float64 TrafficBarrierEntry::GetCurbOffset() const
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool TrafficBarrierEntry::Edit(bool allowEditing)
+bool TrafficBarrierEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

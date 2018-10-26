@@ -60,8 +60,6 @@ void CClosureJointGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
-   DDX_CBItemData(pDX,IDC_EVENT,pParent->m_EventIndex);
-
    ExchangeConcreteData(pDX);
 
    if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
@@ -103,27 +101,30 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GroupIndexType  grpIdx  = pParent->m_ClosureKey.groupIndex;
    GirderIndexType gdrIdx  = pParent->m_ClosureKey.girderIndex;
    SegmentIndexType segIdx = pParent->m_ClosureKey.segmentIndex;
 
-   const CClosureJointData* pClosureJoint = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(gdrIdx)->GetClosureJoint(segIdx);
+   // initialize the event combobox
+   EventIndexType eventIdx = pParent->m_TimelineMgr.GetCastClosureJointEventIndex(pParent->m_ClosureID);
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_EVENT,eventIdx);
 
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-   EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosureJoint->GetID());
-   m_AgeAtContinuity = pTimelineMgr->GetEventByIndex(eventIdx)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+   m_AgeAtContinuity = pParent->m_TimelineMgr.GetEventByIndex(eventIdx)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
 
    if ( m_strUserEc == _T("") )
+   {
       m_ctrlEc.GetWindowText(m_strUserEc);
+   }
 	
    if ( m_strUserEci == _T("") )
+   {
       m_ctrlEci.GetWindowText(m_strUserEci);
+   }
 
    OnUserEci();
    OnUserEc();
@@ -133,33 +134,32 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
 
    // get the real closure joint so we can access the temporary support
-   if ( pClosureJoint->GetTemporarySupport() )
+   const CClosureJointData* pClosure = pParent->m_pBridgeDesc->GetClosureJoint(pParent->m_ClosureKey);
+   if ( pClosure->GetTemporarySupport() )
    {
-      Float64 station = pClosureJoint->GetTemporarySupport()->GetStation();
+      Float64 station = pClosure->GetTemporarySupport()->GetStation();
       CString strDescription;
       strDescription.Format(_T("Closure joint for Girderline %s at Temporary Support %d (%s)"),
          LABEL_GIRDER(gdrIdx),
-         LABEL_PIER(pClosureJoint->GetTemporarySupport()->GetIndex()),
+         LABEL_PIER(pClosure->GetTemporarySupport()->GetIndex()),
          FormatStation(pDisplayUnits->GetStationFormat(),station)
          );
       GetDlgItem(IDC_LOCATION)->SetWindowText(strDescription);
    }
    else
    {
-      Float64 station = pClosureJoint->GetPier()->GetStation();
+      Float64 station = pClosure->GetPier()->GetStation();
       CString strDescription;
       strDescription.Format(_T("Closure joint for Girderline %s at Pier %d (%s)"),
          LABEL_GIRDER(gdrIdx),
-         LABEL_PIER(pClosureJoint->GetPier()->GetIndex()),
+         LABEL_PIER(pClosure->GetPier()->GetIndex()),
          FormatStation(pDisplayUnits->GetStationFormat(),station)
          );
       GetDlgItem(IDC_LOCATION)->SetWindowText(strDescription);
    }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   CSegmentKey closureKey = pParent->m_ClosureKey;
-   closureKey.segmentIndex = pClosureJoint->GetIndex();
-   Float64 length = pBridge->GetClosureJointLength(closureKey);
+   Float64 length = pBridge->GetClosureJointLength(pParent->m_ClosureKey);
    CString strLength;
    strLength.Format(_T("Length: %s"),FormatDimension(length,pDisplayUnits->GetXSectionDimUnit()));
    GetDlgItem(IDC_LENGTH)->SetWindowText(strLength);
@@ -178,10 +178,14 @@ void CClosureJointGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 
    int value;
    if ( !pDX->m_bSaveAndValidate )
+   {
       value = pParent->m_ClosureJoint.GetConcrete().bBasePropertiesOnInitialValues ? 0 : 1;
+   }
    DDX_Radio(pDX,IDC_FC1,value);
    if ( pDX->m_bSaveAndValidate )
+   {
       pParent->m_ClosureJoint.GetConcrete().bBasePropertiesOnInitialValues = (value == 0 ? true : false);
+   }
 
    DDX_UnitValueAndTag(pDX,IDC_FCI,IDC_FCI_UNIT,pParent->m_ClosureJoint.GetConcrete().Fci,pDisplayUnits->GetStressUnit());
    DDX_UnitValueAndTag(pDX,IDC_FC,IDC_FC_UNIT,pParent->m_ClosureJoint.GetConcrete().Fc,pDisplayUnits->GetStressUnit());
@@ -336,13 +340,17 @@ void CClosureJointGeneralPage::OnChangeFc()
 void CClosureJointGeneralPage::OnChangeEci()
 {
    if (m_ctrlEciCheck.GetCheck() == TRUE) // checked
+   {
       UpdateEc();
+   }
 }
 
 void CClosureJointGeneralPage::OnChangeEc()
 {
    if (m_ctrlEcCheck.GetCheck() == TRUE) // checked
+   {
       UpdateEci();
+   }
 }
 
 void CClosureJointGeneralPage::UpdateEci()
@@ -508,7 +516,7 @@ void CClosureJointGeneralPage::UpdateFc()
    if ( i == IDC_FC1 )
    {
       // concrete model is based on f'ci... compute f'c
-#pragma Reminder("UPDATE: assuming ACI209 concrete model")
+#pragma Reminder("UPDATE: assuming ACI209 concrete model") // OK for LRFD and ACI209, review for CEB-FIP
       // Get f'ci from edit control
       CString strFci;
       m_ctrlFci.GetWindowText(strFci);
@@ -536,7 +544,7 @@ void CClosureJointGeneralPage::UpdateFci()
    if ( i == IDC_FC2 )
    {
       // concrete model is based on f'ci... compute f'c
-#pragma Reminder("UPDATE: assuming ACI209 concrete model")
+#pragma Reminder("UPDATE: assuming ACI209 concrete model") // OK for LRFD and ACI209, review for CEB-FIP
       // Get f'c from edit control
       CString strFc;
       m_ctrlFc.GetWindowText(strFc);
@@ -646,8 +654,6 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
    const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
 
-#pragma Reminder("UPDATE: add ACI and CEB-FIP parameters to the tooltip text")
-
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
       _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pParent->m_ClosureJoint.GetConcrete().Type,true).c_str(),
@@ -655,16 +661,6 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_ClosureJoint.GetConcrete().WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pParent->m_ClosureJoint.GetConcrete().MaxAggregateSize,aggsize)
       );
-
-   //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-   //{
-   //   // add K1 parameter
-   //   CString strK1;
-   //   strK1.Format(_T("\r\n%-20s %s"),
-   //      _T("K1"),FormatScalar(pParent->m_ClosureJoint.K1,scalar));
-
-   //   strTip += strK1;
-   //}
 
    if ( pParent->m_ClosureJoint.GetConcrete().Type != pgsTypes::Normal && pParent->m_ClosureJoint.GetConcrete().bHasFct )
    {
@@ -694,15 +690,11 @@ void CClosureJointGeneralPage::FillEventList()
 
    pcbEvent->ResetContent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
+   EventIndexType nEvents = pParent->m_TimelineMgr.GetEventCount();
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
    {
-      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+      const CTimelineEvent* pTimelineEvent = pParent->m_TimelineMgr.GetEventByIndex(eventIdx);
 
       CString label;
       label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
@@ -714,7 +706,13 @@ void CClosureJointGeneralPage::FillEventList()
    pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
    if ( selEventIdx != CB_ERR )
+   {
       pcbEvent->SetCurSel(selEventIdx);
+   }
+   else
+   {
+      pcbEvent->SetCurSel(0);
+   }
 }
 
 void CClosureJointGeneralPage::OnEventChanging()
@@ -727,42 +725,36 @@ void CClosureJointGeneralPage::OnEventChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
    int curSel = pCB->GetCurSel();
-   EventIndexType idx = (EventIndexType)pCB->GetItemData(curSel);
-   if ( idx == CREATE_TIMELINE_EVENT )
+   EventIndexType eventIdx = (EventIndexType)pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
-      CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
-
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
-      idx = CreateEvent();
-      if ( idx != INVALID_INDEX )
+      eventIdx = CreateEvent();
+      if ( eventIdx == INVALID_INDEX )
       {
-         pIBridgeDesc->SetCastClosureJointEventByIndex(pParent->m_ClosureKey.groupIndex,pParent->m_ClosureKey.segmentIndex,idx);
-#pragma Reminder("UPDATE") // need to update concrete time parameter based on settings for new event
-         FillEventList();
-
-         pCB->SetCurSel((int)idx);
+         pCB->SetCurSel(m_PrevEventIdx);
+         return;
       }
       else
       {
-         pCB->SetCurSel(m_PrevEventIdx);
+         FillEventList();
       }
    }
+
+   CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
+   pParent->m_TimelineMgr.SetCastClosureJointEventByIndex(pParent->m_ClosureID,eventIdx);
+
+   pCB->SetCurSel((int)eventIdx);
 }
 
 EventIndexType CClosureJointGeneralPage::CreateEvent()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
+   CTimelineEventDlg dlg(pParent->m_TimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+      EventIndexType eventIdx;
+      pParent->m_TimelineMgr.AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
+      return eventIdx;
   }
 
    return INVALID_INDEX;

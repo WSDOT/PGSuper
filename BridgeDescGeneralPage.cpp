@@ -376,6 +376,11 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
       pParent->m_BridgeDesc.SetGirderLibraryEntry(pGdrEntry);
    }
 
+   if ( bNewGirderFamily )
+   {
+      UpdateGirderSpacingLimits();
+   }
+
    pParent->m_BridgeDesc.SetGirderSpacingType(m_GirderSpacingType);
    pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
 
@@ -390,7 +395,7 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    if ( bNewGirderFamily )
    {
-      pParent->m_BridgeDesc.CopyDown(false,true,false,false);
+      pParent->m_BridgeDesc.CopyDown(true,true,true,true);
    }
 }
 
@@ -976,7 +981,6 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    UpdateGirderConnectivity();      // fills the combo box and enables/disables
 
    UpdateBridgeDescription();
-   OnGirderSpacingTypeChanged();
 
    if ( !UpdateGirderSpacingLimits() || m_NumGdrSpinner.GetPos() == 1)
    {
@@ -986,10 +990,6 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    {
       EnableGirderSpacing(TRUE,FALSE);
    }
-
-
-
-   UpdateSuperstructureDescription();
 }
 
 void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
@@ -1274,19 +1274,15 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    if ( m_Deck.DeckType == pgsTypes::sdtCompositeCIP || m_Deck.DeckType == pgsTypes::sdtCompositeOverlay )
    {
-      Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
-      if ( maxSlabOffset < m_Deck.GrossDepth )
-      {
-         m_Deck.GrossDepth = maxSlabOffset;
-      }
+      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.Fillet )
+         m_Deck.GrossDepth = minSlabOffset - m_Deck.Fillet;
    }
    else if ( m_Deck.DeckType == pgsTypes::sdtCompositeSIP )
    {
-      Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
-      if ( maxSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth )
-      {
-         m_Deck.GrossDepth = maxSlabOffset - m_Deck.PanelDepth; // decrease the cast depth
-      }
+      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth + m_Deck.Fillet )
+         m_Deck.GrossDepth = minSlabOffset - m_Deck.PanelDepth - m_Deck.Fillet; // decrease the cast depth
    }
 
    UpdateBridgeDescription();

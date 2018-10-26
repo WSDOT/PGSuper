@@ -76,13 +76,19 @@ public:
    void SelectAlignment();
    void ClearSelection();
 
-   // iCutLocation
    void InvalidateCutLocation() {m_bCutLocationInitialized = false;}
-   Float64 GetCurrentCutLocation();
-   void CutAt(Float64 Xg);
-   void ShowCutDlg();
-   Float64 GetMinCutLocation();
-   Float64 GetMaxCutLocation();
+
+   // iCutLocation
+   virtual Float64 GetCurrentCutLocation();
+   virtual void CutAt(Float64 X);
+   virtual void CutAtNext();
+   virtual void CutAtPrev();
+   virtual void ShowCutDlg();
+   virtual Float64 GetMinCutLocation();
+   virtual Float64 GetMaxCutLocation();
+
+
+   Float64 GetNextCutStation(Float64 direction);
 
    LPCTSTR GetDeckTypeName(pgsTypes::SupportedDeckType deckType) const;
 

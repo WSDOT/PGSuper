@@ -32,7 +32,7 @@
 #include "ApplyLoadsDlg.h"
 #include "ConstructSegmentsDlg.h"
 #include "StressTendonDlg.h"
-
+#include "CastDeckDlg.h"
 
 
 
@@ -40,16 +40,62 @@
 
 IMPLEMENT_DYNAMIC(CTimelineEventDlg, CDialog)
 
-CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager* pTimelineMgr,BOOL bEditEvent,CWnd* pParent /*=NULL*/)
-	: CDialog(CTimelineEventDlg::IDD, pParent),
-   m_pTimelineMgr(pTimelineMgr)
+CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,CWnd* pParent /*=NULL*/)
+	: CDialog(CTimelineEventDlg::IDD, pParent)
 {
    m_bEdit = bEditEvent;
-   m_EventIndex = INVALID_INDEX;
+   m_TimelineManager = timelineMgr;
+
+   if ( eventIdx == INVALID_INDEX )
+   {
+      // this dialog is for a new event
+      int result = m_TimelineManager.AddTimelineEvent(CTimelineEvent(),false,&m_EventIndex);
+      ATLASSERT(result == TLM_SUCCESS);
+   }
+   else
+   {
+      // this dialog is for an existing event
+      m_EventIndex = eventIdx;
+   }
+
+   m_pTimelineEvent = m_TimelineManager.GetEventByIndex(m_EventIndex);
 }
 
 CTimelineEventDlg::~CTimelineEventDlg()
 {
+}
+
+bool CTimelineEventDlg::UpdateTimelineManager(const CTimelineManager& timelineMgr)
+{
+   // Get the event that was changed and validate it against the original timeline
+   const CTimelineEvent* pNewEvent = timelineMgr.GetEventByIndex(m_EventIndex);
+   int result = timelineMgr.ValidateEvent(pNewEvent);
+
+   if ( result != TLM_SUCCESS )
+   {
+      // The event that was changed doesn't fit... as the user what to do about it
+      CString strProblem;
+      if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
+      {
+         strProblem = _T("This event begins before the activities in the previous event have completed.");
+      }
+      else
+      {
+         strProblem = _T("The activities in this event end after the next event begins.");
+      }
+
+      CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
+
+      CString strMsg;
+      strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
+      if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDCANCEL )
+      {
+         return false; // problem not fixed...
+      }
+   }
+   m_TimelineManager = timelineMgr; // timelineMgr should have a properly adjusted timeline
+   m_pTimelineEvent = m_TimelineManager.GetEventByIndex(m_EventIndex);
+   return true;
 }
 
 void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
@@ -64,37 +110,19 @@ void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
    {
       CString description;
       DDX_Text(pDX,IDC_DESCRIPTION,description);
-      m_TimelineEvent.SetDescription(description);
+      m_pTimelineEvent->SetDescription(description);
 
       Float64 day;
       DDX_Text(pDX,IDC_DAY,day);
-      m_TimelineEvent.SetDay(day);
-
-      // Multiple events on the same day are ok.
-      // This is typically done when erecting segments if we want to look at the step by step
-      // erection sequence.
-
-      //// check for duplicate data if the event manager does not have an event with this ID (pTimelineEvent == NULL)
-      //// and when there is a event with this ID and the day is changing... otherwise, a event with ID
-      //// is already defined and it's day isn't changing so there wont be duplicates
-      //const CTimelineEvent* pTimelineEvent = m_pTimelineMgr->GetEventByID(m_TimelineEvent.GetID());
-      //bool bCheckDay = (pTimelineEvent == NULL ? true : (pTimelineEvent->GetDay() != day ? true : false));
-      //if ( bCheckDay && m_pTimelineMgr->HasEvent(day) )
-      //{
-      //   pDX->PrepareEditCtrl(IDC_DAY);
-      //   CString strMsg;
-      //   strMsg.Format(_T("An event is already defined at day %d"),(int)day);
-      //   AfxMessageBox(strMsg);
-      //   pDX->Fail();
-      //}
+      m_pTimelineEvent->SetDay(day);
 
 #pragma Reminder("UPDATE: event elapsed time validation")
       // If this is a new event, then pTimelineEvent is NULL. We need a way to validate the duration of this event
       //if ( pTimelineEvent )
       //{
-      //   EventIndexType eventIdx = m_pTimelineMgr->GetEventIndex(pTimelineEvent->GetID());
-      //   Float64 duration = m_pTimelineMgr->GetDuration(eventIdx);
-      //   if ( duration < m_TimelineEvent.GetMinElapsedTime() )
+      //   EventIndexType eventIdx = m_TimelineManager.GetEventIndex(pTimelineEvent->GetID());
+      //   Float64 duration = m_TimelineManager.GetDuration(eventIdx);
+      //   if ( duration < m_pTimelineEvent->GetMinElapsedTime() )
       //   {
       //      pDX->PrepareEditCtrl(IDC_DAY);
       //      CString strMsg;
@@ -106,10 +134,10 @@ void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      CString description = m_TimelineEvent.GetDescription();
+      CString description = m_pTimelineEvent->GetDescription();
       DDX_Text(pDX,IDC_DESCRIPTION,description);
 
-      Float64 day = m_TimelineEvent.GetDay();
+      Float64 day = m_pTimelineEvent->GetDay();
       DDX_Text(pDX,IDC_DAY,day);
    }
 }
@@ -175,11 +203,11 @@ BOOL CTimelineEventDlg::OnInitDialog()
       m_TimelineEventList.InsertColumn(1,_T("Day"));
       m_TimelineEventList.InsertColumn(2,_T("Description"));
 
-      EventIndexType nEvents = m_pTimelineMgr->GetEventCount();
+      EventIndexType nEvents = m_TimelineManager.GetEventCount();
       for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
       {
 
-         const CTimelineEvent* pTimelineEvent = m_pTimelineMgr->GetEventByIndex(eventIdx);
+         const CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(eventIdx);
          CString strEventIndex;
          strEventIndex.Format(_T("%lld"), LABEL_EVENT(eventIdx) );
          m_TimelineEventList.InsertItem(LVIF_TEXT,(int)eventIdx,strEventIndex,0,0,0,0);
@@ -206,122 +234,112 @@ void CTimelineEventDlg::UpdateAddButton()
    m_btnAdd.Clear();
 
    // Keep the activities in a somewhat logical sequence
-
-
-   UINT flags = 0;
-
-   flags = (m_TimelineEvent.GetConstructSegmentsActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,_T("Construct Segments"),flags);
-
-   flags = (m_TimelineEvent.GetErectPiersActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_PIERS,_T("Erect Piers/Temporary Supports"),flags);
-
-   flags = (m_TimelineEvent.GetErectSegmentsActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_SEGMENTS,_T("Erect Segments"),flags);
-
-   flags = (m_TimelineEvent.GetCastClosureJointActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTCLOSUREJOINTS,_T("Cast Closure Joints"),flags);
-
-   flags = (m_TimelineEvent.GetStressTendonActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_STRESSTENDON,_T("Stress Tendons"),flags);
-
-   flags = (m_TimelineEvent.GetRemoveTempSupportsActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),flags);
-
-   flags = (m_TimelineEvent.GetCastDeckActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTDECK,_T("Cast Deck"),flags);
-
-   flags = (m_TimelineEvent.GetApplyLoadActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_APPLYLOADS,_T("Apply Loads"),flags);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,_T("Construct Segments"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_PIERS,_T("Erect Piers/Temporary Supports"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_SEGMENTS,_T("Erect Segments"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTCLOSUREJOINTS,_T("Cast Closure Joints"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_STRESSTENDON,_T("Stress Tendons"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTDECK,_T("Cast Deck"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_APPLYLOADS,_T("Apply Loads"),MF_ENABLED);
 }
 
 void CTimelineEventDlg::OnRemoveActivities()
 {
    m_Grid.RemoveActivity();
-   UpdateAddButton();
+}
+
+template <class T>
+bool EditEvent(CTimelineEventDlg* pTimelineEventDlg,T* pActivityDlg)
+{
+   if ( pActivityDlg->DoModal() == IDOK ) // so the dialog
+   {
+      // user pressed OK
+      // check the update the timeline... if UpdateTimelineManager returns true
+      // it was successful, otherwise, go back to the dialog
+      while ( pTimelineEventDlg->UpdateTimelineManager(pActivityDlg->m_TimelineMgr) == false )
+      {
+         if ( pActivityDlg->DoModal() == IDCANCEL )
+         {
+            // user canceled the edit
+            return false;
+         }
+      }
+      // timeline has been updated
+      return true;
+   }
+   return false; // user pressed cancel
 }
 
 void CTimelineEventDlg::OnConstructSegments()
 {
-   CConstructSegmentsDlg dlg(m_pTimelineMgr,m_EventIndex);
-   if ( dlg.DoModal() == IDOK )
+   CConstructSegmentsDlg dlg(m_TimelineManager,m_EventIndex);
+   if ( EditEvent(this,&dlg) )
    {
-      m_TimelineEvent.SetConstructSegmentsActivity(dlg.m_ConstructSegments);
       m_Grid.Refresh();
-      UpdateAddButton();
    }
 }
 
 void CTimelineEventDlg::OnErectPiers()
 {
-   CErectPiersDlg dlg(m_pTimelineMgr,m_EventIndex);
-   if ( dlg.DoModal() == IDOK )
+   CErectPiersDlg dlg(m_TimelineManager,m_EventIndex);
+   if ( EditEvent(this,&dlg) )
    {
-      m_TimelineEvent.SetErectPiersActivity(dlg.m_ErectPiers);
       m_Grid.Refresh();
-      UpdateAddButton();
    }
 }
 
 void CTimelineEventDlg::OnErectSegments()
 {
-   CErectSegmentsDlg dlg(m_pTimelineMgr,m_EventIndex);
-   if ( dlg.DoModal() == IDOK )
+   CErectSegmentsDlg dlg(m_TimelineManager,m_EventIndex);
+   if ( EditEvent(this,&dlg) )
    {
-      m_TimelineEvent.SetErectSegmentsActivity(dlg.m_ErectSegments);
       m_Grid.Refresh();
-      UpdateAddButton();
    }
 }
 
 void CTimelineEventDlg::OnRemoveTempSupports()
 {
-   CRemoveTempSupportsDlg dlg(m_pTimelineMgr,m_EventIndex);
-   if ( dlg.DoModal() == IDOK )
+   CRemoveTempSupportsDlg dlg(m_TimelineManager,m_EventIndex);
+   if ( EditEvent(this,&dlg) )
    {
-      m_TimelineEvent.SetRemoveTempSupportsActivity(dlg.m_RemoveTempSupports);
       m_Grid.Refresh();
-      UpdateAddButton();
    }
 }
 
 void CTimelineEventDlg::OnCastClosureJoints()
 {
-   CCastClosureJointDlg dlg(m_pTimelineMgr);
-   if ( dlg.DoModal() == IDOK )
+   CCastClosureJointDlg dlg(m_TimelineManager,m_EventIndex);
+   if ( EditEvent(this,&dlg) )
    {
-      m_TimelineEvent.SetCastClosureJointActivity(dlg.m_CastClosureJoints);
       m_Grid.Refresh();
-      UpdateAddButton();
    }
 }
 
 void CTimelineEventDlg::OnCastDeck()
 {
-   m_TimelineEvent.GetCastDeckActivity().Enable(true);
-   m_Grid.Refresh();
-   UpdateAddButton();
+   CCastDeckDlg dlg(m_TimelineManager,m_EventIndex);
+   if ( EditEvent(this,&dlg) )
+   {
+      m_Grid.Refresh();
+   }
 }
 
 void CTimelineEventDlg::OnApplyLoads()
 {
-   CApplyLoadsDlg dlg;
-   if ( dlg.DoModal() == IDOK )
+   CApplyLoadsDlg dlg(m_TimelineManager,m_EventIndex);
+   if ( EditEvent(this,&dlg) )
    {
-      m_TimelineEvent.SetApplyLoadActivity(dlg.m_ApplyLoads);
       m_Grid.Refresh();
-      UpdateAddButton();
    }
 }
 
 void CTimelineEventDlg::OnStressTendons()
 {
-   CStressTendonDlg dlg(m_pTimelineMgr,m_EventIndex);
-   if ( dlg.DoModal() == IDOK )
+   CStressTendonDlg dlg(m_TimelineManager,m_EventIndex);
+   if ( EditEvent(this,&dlg) )
    {
-      m_TimelineEvent.SetStressTendonActivity(dlg.m_StressTendonActivity);
       m_Grid.Refresh();
-      UpdateAddButton();
    }
 }
 

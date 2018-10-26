@@ -15,12 +15,12 @@
 
 IMPLEMENT_DYNAMIC(CConstructSegmentsDlg, CDialog)
 
-CConstructSegmentsDlg::CConstructSegmentsDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CConstructSegmentsDlg::CConstructSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
 	: CDialog(CConstructSegmentsDlg::IDD, pParent),
-   m_pTimelineMgr(pTimelineMgr),
    m_EventIndex(eventIdx)
 {
-   m_pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
+   m_TimelineMgr = timelineMgr;
+   m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
 }
 
 CConstructSegmentsDlg::~CConstructSegmentsDlg()
@@ -30,59 +30,64 @@ CConstructSegmentsDlg::~CConstructSegmentsDlg()
 void CConstructSegmentsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+   DDX_Control(pDX,IDC_SOURCE_LIST,m_lbSource);
+   DDX_Control(pDX,IDC_TARGET_LIST,m_lbTarget);
+
    if ( pDX->m_bSaveAndValidate )
    {
-      m_ConstructSegments.Clear();
-
-      CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-      int nItems = pTargetList->GetCount();
-      m_ConstructSegments.Enable(nItems == 0 ? false : true);
-
+      int nItems = m_lbTarget.GetCount();
       for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
       {
-         SegmentIDType segID = (SegmentIDType)pTargetList->GetItemData(itemIdx);
-         const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
-         const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+         CTimelineItemIDDataPtr* pItemData = (CTimelineItemIDDataPtr*)m_lbTarget.GetItemDataPtr(itemIdx);
+         SegmentIDType segmentID = pItemData->m_ID;
 
-         // add the segment at segmentKey.segmentIndex for all girders in this group
-         const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-         GirderIndexType nGirders = pGroup->GetGirderCount();
-         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-         {
-            const CPrecastSegmentData* pThisSegment = pGroup->GetGirder(gdrIdx)->GetSegment(segmentKey.segmentIndex);
-            SegmentIDType thisSegmentID = pThisSegment->GetID();
-            m_ConstructSegments.AddSegment(thisSegmentID);
-         }
+         m_TimelineMgr.SetSegmentConstructionEventByIndex(segmentID,m_EventIndex);
       }
 
-      Float64 relax, age;
-      DDX_Text(pDX,IDC_RELAXATION_TIME,relax);
-      DDX_Text(pDX,IDC_AGE,age);
+      nItems = m_lbSource.GetCount();
+      for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
+      {
+         CTimelineItemIDDataPtr* pItemData = (CTimelineItemIDDataPtr*)m_lbSource.GetItemDataPtr(itemIdx);
+         if ( pItemData->m_State == CTimelineItemDataPtr::Used )
+         {
+            continue;
+         }
 
-      if ( relax < age )
+         SegmentIDType segmentID = pItemData->m_ID;
+
+         m_TimelineMgr.SetSegmentConstructionEventByIndex(segmentID,INVALID_INDEX);
+      }
+
+      CTimelineEvent* pEvent = m_TimelineMgr.GetEventByIndex(m_EventIndex);
+      Float64 relaxationTime;
+      Float64 ageAtRelease;
+      DDX_Text(pDX,IDC_RELAXATION_TIME,relaxationTime);
+      DDX_Text(pDX,IDC_AGE,ageAtRelease);
+
+      if ( relaxationTime < ageAtRelease )
       {
          pDX->PrepareEditCtrl(IDC_AGE);
          AfxMessageBox(_T("Concrete age at release must be less than or equal to the time between strand stressing and release"),MB_ICONWARNING);
          pDX->Fail();
       }
 
-
-      m_ConstructSegments.SetRelaxationTime(relax);
-      m_ConstructSegments.SetAgeAtRelease(age);
+      pEvent->GetConstructSegmentsActivity().SetRelaxationTime(relaxationTime);
+      pEvent->GetConstructSegmentsActivity().SetAgeAtRelease(ageAtRelease);
    }
    else
    {
-      Float64 relax = m_ConstructSegments.GetRelaxationTime();
-      Float64 age   = m_ConstructSegments.GetAgeAtRelease();
-      DDX_Text(pDX,IDC_RELAXATION_TIME,relax);
-      DDX_Text(pDX,IDC_AGE,age);
+      CTimelineEvent* pEvent = m_TimelineMgr.GetEventByIndex(m_EventIndex);
+      Float64 relaxationTime = pEvent->GetConstructSegmentsActivity().GetRelaxationTime();
+      Float64 ageAtRelease = pEvent->GetConstructSegmentsActivity().GetAgeAtRelease();
+      DDX_Text(pDX,IDC_RELAXATION_TIME,relaxationTime);
+      DDX_Text(pDX,IDC_AGE,ageAtRelease);
    }
 }
 
 
 BEGIN_MESSAGE_MAP(CConstructSegmentsDlg, CDialog)
-   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CConstructSegmentsDlg::OnMoveRight)
-   ON_BN_CLICKED(IDC_MOVE_LEFT, &CConstructSegmentsDlg::OnMoveLeft)
+   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CConstructSegmentsDlg::OnMoveToTargetList)
+   ON_BN_CLICKED(IDC_MOVE_LEFT, &CConstructSegmentsDlg::OnMoveToSourceList)
 END_MESSAGE_MAP()
 
 
@@ -90,10 +95,12 @@ END_MESSAGE_MAP()
 
 BOOL CConstructSegmentsDlg::OnInitDialog()
 {
-   FillSourceList();
-   FillTargetList();
+   m_lbSource.Initialize(CTimelineItemListBox::Source,CTimelineItemListBox::ID,&m_lbTarget);
+   m_lbTarget.Initialize(CTimelineItemListBox::Target,CTimelineItemListBox::ID,&m_lbSource);
 
    CDialog::OnInitDialog();
+
+   FillLists();
 
    // TODO:  Add extra initialization here
 
@@ -101,72 +108,18 @@ BOOL CConstructSegmentsDlg::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CConstructSegmentsDlg::OnMoveRight()
+void CConstructSegmentsDlg::OnMoveToTargetList()
 {
-   // Move from source to target lists
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-   int nCount = pSourceList->GetSelCount();
-   CArray<int,int> arrSelected;
-   arrSelected.SetSize(nCount);
-   pSourceList->GetSelItems(nCount,arrSelected.GetData());
-
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-   for ( int i = 0; i < nCount; i++ )
-   {
-      int sel = arrSelected.GetAt(i);
-      SegmentIDType segID = (SegmentIDType)pSourceList->GetItemData(sel);
-      const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
-      const CSegmentKey& sourceSegment(pSegment->GetSegmentKey());
-
-      CString label;
-      label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(sourceSegment.groupIndex),LABEL_GIRDER(sourceSegment.girderIndex),LABEL_SEGMENT(sourceSegment.segmentIndex));
-      int idx = pTargetList->AddString(label);
-      pTargetList->SetItemData(idx,segID);
-   }
-
-   for ( int i = nCount-1; 0 <= i; i-- )
-   {
-      int sel = arrSelected.GetAt(i);
-      pSourceList->DeleteString(sel);
-   }
+   m_lbSource.MoveSelectedItemsToBuddy();
 }
 
-void CConstructSegmentsDlg::OnMoveLeft()
+void CConstructSegmentsDlg::OnMoveToSourceList()
 {
-   // Move from target to source lists
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-   int nCount = pTargetList->GetSelCount();
-   CArray<int,int> arrSelected;
-   arrSelected.SetSize(nCount);
-   pTargetList->GetSelItems(nCount,arrSelected.GetData());
-
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-   for ( int i = 0; i < nCount; i++ )
-   {
-      int sel = arrSelected.GetAt(i);
-      SegmentIDType segID = (SegmentIDType)pTargetList->GetItemData(sel);
-
-      const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
-      const CSegmentKey& targetSegment(pSegment->GetSegmentKey());
-
-      CString label;
-      label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(targetSegment.groupIndex),LABEL_GIRDER(targetSegment.girderIndex),LABEL_SEGMENT(targetSegment.segmentIndex));
-
-      int idx = pSourceList->AddString(label);
-      pSourceList->SetItemData(idx,segID);
-   }
-
-   for ( int i = nCount-1; 0 <= i; i-- )
-   {
-      int sel = arrSelected.GetAt(i);
-      pTargetList->DeleteString(sel);
-   }
+   m_lbTarget.MoveSelectedItemsToBuddy();
 }
 
-void CConstructSegmentsDlg::FillSourceList()
+void CConstructSegmentsDlg::FillLists()
 {
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -180,48 +133,24 @@ void CConstructSegmentsDlg::FillSourceList()
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-            SegmentIDType segID = pSegment->GetID();
+            SegmentIDType segmentID = pSegment->GetID();
 
-            bool bIsSegmentConstructed = m_pTimelineMgr->IsSegmentConstructed(segID);
-            EventIndexType constructEventIdx = m_pTimelineMgr->GetSegmentConstructionEventIndex(segID);
-            if ( bIsSegmentConstructed && constructEventIdx == m_EventIndex )
+            bool bIsSegmentConstructed = m_TimelineMgr.IsSegmentConstructed(segmentID);
+            EventIndexType constructEventIdx = m_TimelineMgr.GetSegmentConstructionEventIndex(segmentID);
+
+            CString label;
+            label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
+
+            if ( constructEventIdx == m_EventIndex )
             {
-               if ( !m_ConstructSegments.HasSegment(segID) )
-                  bIsSegmentConstructed = false;
+               m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,segmentID);
             }
-            if ( !bIsSegmentConstructed )
+            else
             {
-               CString label;
-               label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
-               int idx = pSourceList->AddString(label);
-               pSourceList->SetItemData(idx,segID);
+               CTimelineItemDataPtr::State state = (bIsSegmentConstructed ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
+               m_lbSource.AddItem(label,state,segmentID);
             }
          } // segment loop
       } // girder loop
    } // group loop
-}
-
-void CConstructSegmentsDlg::FillTargetList()
-{
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-
-   const std::set<SegmentIDType>& segments = m_ConstructSegments.GetSegments();
-   std::set<SegmentIDType>::const_iterator iter(segments.begin());
-   std::set<SegmentIDType>::const_iterator iterEnd(segments.end());
-   std::set<CSegmentKey> targets; // keep track of previously encountered segments at this position in the girder group
-   for ( ; iter != iterEnd; iter++ )
-   {
-      SegmentIDType segID = *iter;
-      const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
-      CSegmentKey segmentKey(pSegment->GetSegmentKey());
-
-      std::pair<std::set<CSegmentKey>::iterator,bool> result( targets.insert(segmentKey) );
-      if (result.second) // is true if inserted, false if the set already contains this segment key
-      {
-         CString label;
-         label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex));
-         int idx = pTargetList->AddString(label);
-         pTargetList->SetItemData(idx,segID);
-      }
-   }
 }

@@ -76,6 +76,7 @@ DEFINE_GUID(IID_IEditByUI,
 0xe1cf3eaa, 0x3e85, 0x450a, 0x9a, 0x67, 0xd6, 0x8f, 0xf3, 0x21, 0xdc, 0x16);
 interface IEditByUI : IUnknown
 {
+#pragma Reminder("UPDATE: these should all return a boolean") // true = edited, false = cancelled, no change
    virtual void EditBridgeDescription(int nPage) = 0;
    virtual void EditAlignmentDescription(int nPage) = 0;
    virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) = 0;
@@ -114,4 +115,7 @@ interface IEditByUIEx : IEditByUI
    virtual void DeleteMomentLoad(CollectionIndexType loadIdx) = 0;
 
    virtual void EditEffectiveFlangeWidth() = 0;
+
+   // Displays the project criteria selection dialog
+   virtual void SelectProjectCriteria() = 0;
 };

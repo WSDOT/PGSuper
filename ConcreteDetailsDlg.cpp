@@ -93,10 +93,6 @@ void CConcreteDetailsDlg::Init()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 
@@ -106,13 +102,18 @@ void CConcreteDetailsDlg::Init()
    }
    else
    {
-      switch( pSpecEntry->GetTimeDependentModel() )
+      switch( pLossParameters->GetTimeDependentModel() )
       {
-      case TDM_ACI209:
+      case pgsTypes::tdmAASHTO:
+         AddPage( &m_AASHTO );
          AddPage( &m_ACI );
          break;
 
-      //case TDM_CEBFIP:
+      case pgsTypes::tdmACI209:
+         AddPage( &m_ACI );
+         break;
+
+      //case pgsTypes::tdmCEBFIP:
          //AddPage( &m_CEBFIPPage );
          //break;
 

@@ -982,7 +982,7 @@ interface IBridgeDescription : IUnknown
 
    // timeline management
    virtual const CTimelineManager* GetTimelineManager() = 0;
-   virtual void SetTimelineManager(CTimelineManager& timelineMgr) = 0;
+   virtual void SetTimelineManager(const CTimelineManager& timelineMgr) = 0;
 
    virtual EventIndexType AddTimelineEvent(const CTimelineEvent& timelineEvent) = 0;
    virtual EventIndexType GetEventCount() = 0;
@@ -1098,11 +1098,19 @@ interface ILossParameters : IUnknown
    // Returns the method for computing prestress losses
    virtual pgsTypes::LossMethod GetLossMethod() = 0;
 
+   // Returns the time-dependent model type
+   virtual pgsTypes::TimeDependentModel GetTimeDependentModel() = 0;
+
    // Indicates if time dependent effects are ignored during time-step analysis.
    // This setting only applies to time-step analysis. If ignored, the time-step
    // analysis results are restricted to an elastic response.
-   virtual void IgnoreTimeDependentEffects(bool bIgnore) = 0;
-   virtual bool IgnoreTimeDependentEffects() = 0;
+   virtual void IgnoreCreepEffects(bool bIgnore) = 0;
+   virtual bool IgnoreCreepEffects() = 0;
+   virtual void IgnoreShrinkageEffects(bool bIgnore) = 0;
+   virtual bool IgnoreShrinkageEffects() = 0;
+   virtual void IgnoreRelaxationEffects(bool bIgnore) = 0;
+   virtual bool IgnoreRelaxationEffects() = 0;
+   virtual void IgnoreTimeDependentEffects(bool bIgnoreCreep,bool bIgnoreShrinkage,bool bIgnoreRelaxation) = 0;
 
    // Set/Get the parameters for computing initial losses in post-tension tendons
    virtual void SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction) = 0;
@@ -1159,4 +1167,21 @@ interface ILossParameters : IUnknown
    // Returns the final losses for a lump sum method
    virtual Float64 GetFinalLosses() = 0;
    virtual void SetFinalLosses(Float64 loss) = 0;
+};
+
+/*****************************************************************************
+INTERFACE
+   ILossParametersEventSink
+
+   Callback interface for Loss Parameters events
+
+DESCRIPTION
+   Callback interface for Parameters events
+*****************************************************************************/
+// {E677C320-9E35-4ce2-9FA6-083E99F87742}
+DEFINE_GUID(IID_ILossParametersEventSink, 
+0xe677c320, 0x9e35, 0x4ce2, 0x9f, 0xa6, 0x8, 0x3e, 0x99, 0xf8, 0x77, 0x42);
+interface ILossParametersEventSink : IUnknown
+{
+   virtual HRESULT OnLossParametersChanged() = 0;
 };

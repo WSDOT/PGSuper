@@ -27,6 +27,7 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PierDetailsDlg.h"
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\ClosureJointData.h>
 
 #include "PGSuperDocBase.h"
 
@@ -66,9 +67,13 @@ INT_PTR CPierDetailsDlg::DoModal()
    if ( result == IDOK )
    {
       if ( 0 < m_BridgeExtensionPages.size() )
+      {
          NotifyBridgeExtensionPages();
+      }
       else
+      {
          NotifyExtensionPages();
+      }
    }
 
    return result;

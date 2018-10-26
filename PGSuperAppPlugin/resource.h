@@ -1017,6 +1017,7 @@
 #define IDC_STRENGTH_II_LL_PERMIT2      1561
 #define IDC_LIVELOAD                    1561
 #define IDC_TS_JACK                     1561
+#define IDC_IGNORE_SHRINKAGE            1561
 #define IDC_SHOW_NUMBERS                1562
 #define IDC_NEXT_SPAN_SPACING_GRID      1562
 #define IDC_CHECK2                      1562
@@ -1024,6 +1025,7 @@
 #define IDC_USER_EC                     1562
 #define IDC_OVERLAY                     1562
 #define IDC_SERVICE_III_CR              1562
+#define IDC_IGNORE_CREEP                1562
 #define IDC_ADD_SPAN                    1563
 #define IDC_SERVICE_III_SH              1563
 #define IDC_REMOVE_SPAN                 1564
@@ -1484,6 +1486,8 @@
 #define IDC_DIAPHRAGM_GROUP             1803
 #define IDC_CONFIGURATION_GROUP         1804
 #define IDC_TITLE                       1805
+#define IDC_IGNORE_RELAXATION           1806
+#define IDC_SLIDER                      1807
 #define IDC_STRENGTH_I_SH               1843
 #define IDC_STRENGTH_I_PS               1844
 #define IDC_SERVICE_I_CR                1859
@@ -1661,7 +1665,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        364
 #define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1806
+#define _APS_NEXT_CONTROL_VALUE         1808
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

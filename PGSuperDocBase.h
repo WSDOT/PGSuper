@@ -351,7 +351,6 @@ protected:
 	//{{AFX_MSG(CPGSuperDocBase)
 	afx_msg void OnFileProjectProperties();
 	afx_msg void OnProjectEnvironment();
-	afx_msg void OnProjectSpec();
    afx_msg void OnRatingSpec();
 	afx_msg void OnProjectAutoCalc();
 	afx_msg void OnUpdateProjectAutoCalc(CCmdUI* pCmdUI);
@@ -396,6 +395,7 @@ public:
    afx_msg void OnEditUserLoads();
 	afx_msg void OnViewLibraryEditor();
 	afx_msg void OnEffectiveFlangeWidth();
+	afx_msg void OnProjectSpec();
 
    bool LoadMasterLibrary();
    bool DoLoadMasterLibrary(const CString& rPath);

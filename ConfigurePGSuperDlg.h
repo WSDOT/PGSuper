@@ -31,6 +31,7 @@
 
 #include "PGSuperAppPlugin\resource.h"
 #include "PGSuperCatalogServers.h"
+#include <afxlinkctrl.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CConfigurePGSuperDlg dialog

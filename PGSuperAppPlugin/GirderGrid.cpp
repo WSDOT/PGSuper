@@ -214,17 +214,9 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
    CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(pParentPage->GetParent());
 
-   CGirderSegmentDlg dlg(&pParent->m_BridgeDescription,CSegmentKey(pParent->m_GirderKey,segIdx),pParent->GetExtensionPages(),this);
-
    CGirderKey girderKey = pParent->m_GirderKey;
    CSegmentKey segmentKey(girderKey,segIdx);
-
-   const CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
-
-   dlg.m_Girder     = *(pParent->m_pGirder);
-   dlg.m_SegmentKey = segmentKey;
-   dlg.m_SegmentID  = pParent->m_pGirder->GetSegment(segIdx)->GetID();
-
+   CGirderSegmentDlg dlg(&pParent->m_BridgeDescription,segmentKey,pParent->GetExtensionPages(),this);
 
 #pragma Reminder("UPDATE: Clean up handling of shear data")
    // Shear data is kind of messy. It is the only data on the segment that we have to
@@ -232,11 +224,14 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
    // so it works seamlessly for all cases
    dlg.m_StirrupsPage.m_ShearData = dlg.m_Girder.GetSegment(segIdx)->ShearData;
 
-   dlg.m_ConstructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(dlg.m_SegmentID);
-   dlg.m_ErectionEventIdx     = pTimelineMgr->GetSegmentErectionEventIndex(dlg.m_SegmentID);
-
    if ( dlg.DoModal() == IDOK )
    {
+      pParent->m_BridgeDescription.SetTimelineManager(&dlg.m_TimelineMgr);
+
+#pragma Reminder("UPDATE: Clean up handling of shear data")
+   // Shear data is kind of messy. It is the only data on the segment that we have to
+   // set on the dialog and then get it for the transaction. Updated the dialog
+   // so it works seamlessly for all cases
       dlg.m_Girder.GetSegment(segIdx)->ShearData = dlg.m_StirrupsPage.m_ShearData;
 
       if ( dlg.m_bCopyToAll )
@@ -253,7 +248,6 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
          pParent->m_pGirder->SetSegment(segIdx,*dlg.m_Girder.GetSegment(segIdx));
       }
 
-#pragma Reminder("BUG: Segment events aren't getting set even if they were changed")
       pParent->Invalidate();
       pParent->UpdateWindow();
    }
@@ -264,11 +258,13 @@ void CGirderGrid::EditClosure(CollectionIndexType idx)
    CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(pParentPage->GetParent());
 
-   CSegmentKey segmentKey(pParent->m_GirderKey,idx);
-   CClosureJointDlg dlg(segmentKey,pParent->m_pGirder->GetClosureJoint(idx),pParentPage->m_CastClosureEvent[idx],pParent->GetExtensionPages(),this);
+   CClosureKey closureKey(pParent->m_GirderKey,idx);
+   CClosureJointDlg dlg(&(pParent->m_BridgeDescription),closureKey,pParent->GetExtensionPages(),this);
 
    if ( dlg.DoModal() == IDOK )
    {
+      pParent->m_BridgeDescription.SetTimelineManager(&dlg.m_TimelineMgr);
+
       if ( dlg.m_bCopyToAllClosureJoints )
       {
          // copy to all closure joints in this girder
@@ -276,13 +272,11 @@ void CGirderGrid::EditClosure(CollectionIndexType idx)
          for ( IndexType i = 0; i < nCP; i++ )
          {
             pParent->m_pGirder->GetClosureJoint(i)->CopyClosureJointData(&dlg.m_ClosureJoint);
-            pParentPage->m_CastClosureEvent[i] = dlg.m_EventIndex;
          }
       }
       else
       {
          pParent->m_pGirder->GetClosureJoint(idx)->CopyClosureJointData(&dlg.m_ClosureJoint);
-         pParentPage->m_CastClosureEvent[idx] = dlg.m_EventIndex;
       }
       pParent->Invalidate();
       pParent->UpdateWindow();

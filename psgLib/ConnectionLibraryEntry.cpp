@@ -441,7 +441,7 @@ void ConnectionLibraryEntry::SetDiaphragmLoadLocation(Float64 loc)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool ConnectionLibraryEntry::Edit(bool allowEditing)
+bool ConnectionLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

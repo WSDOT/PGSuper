@@ -50,14 +50,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define SOCKET_HT   0
-#define SOCKET_HB   1
-#define SOCKET_TFL  2
-#define SOCKET_TFR  3
-#define SOCKET_BFL  4
-#define SOCKET_BFR  5
-#define SOCKET_BC   6
-#define SOCKET_CGPS 7
+#define SOCKET_TL   0 // top left (top left of girder or slab)
+#define SOCKET_TC   1 // top center (on CL of non-composite girder)
+#define SOCKET_TR   2 // top right (top right of girder or slab
+#define SOCKET_BL   3 // bottom left of girder bottom flange
+#define SOCKET_BC   4 // bottom center of girder
+#define SOCKET_BR   5 // bottom right of girder bottom flange
+#define SOCKET_CGPS 6 // CG of prestress force
 
 #define SECTION_LIST             1
 #define STRAIGHT_STRAND_LIST     2
@@ -91,11 +90,6 @@ BEGIN_MESSAGE_MAP(CGirderModelSectionView, CDisplayView)
 	ON_COMMAND(ID_EDIT_PRESTRESSING, OnEditPrestressing)
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
 	ON_COMMAND(ID_EDIT_STIRRUPS, OnEditStirrups)
-	ON_COMMAND(ID_LEFTEND, OnLeftEnd)
-	ON_COMMAND(ID_LEFT_HP, OnLeftHp)
-	ON_COMMAND(ID_CENTER, OnCenter)
-	ON_COMMAND(ID_RIGHT_HP, OnRightHp)
-	ON_COMMAND(ID_RIGHTEND, OnRightEnd)
 	ON_COMMAND(ID_USER_CUT, OnUserCut)
 	ON_WM_SIZE()
 	ON_WM_PAINT()
@@ -293,6 +287,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
+   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
 
    CComPtr<iPointDisplayObject> doPnt;
@@ -314,54 +309,63 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
    strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
    strategy->DoFill(true);
 
-   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
-
    // Set up sockets so dimension lines can plug into the girder shape
-   CComPtr<IRect2d> box;
-   shape->get_BoundingBox(&box);
+   CComPtr<IRect2d> boxGirder, boxSlab;
    CComPtr<IPoint2d> pntTC, pntBC; // top and bottom center
    Float64 top_width = 0;
    if (eventIdx <= castDeckEventIdx)
    {
       top_width = pGirder->GetTopWidth(poi);
+      shape->get_BoundingBox(&boxGirder);
+      shape->get_BoundingBox(&boxSlab);
    }
    else
    {
       GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       top_width = pSectProp->GetTributaryFlangeWidth(poi);
+
+      CComQIPtr<ICompositeShape> composite(shape);
+      IndexType nShapes;
+      composite->get_Count(&nShapes);
+      CComPtr<ICompositeShapeItem> girderShapeItem;
+      composite->get_Item(0,&girderShapeItem); // basic girder is always first in composite
+      CComPtr<IShape> girderShape;
+      girderShapeItem->get_Shape(&girderShape);
+      girderShape->get_BoundingBox(&boxGirder);
+
+      CComPtr<ICompositeShapeItem> slabShapeItem;
+      composite->get_Item(nShapes-1,&slabShapeItem); // slab is always last in composite
+      CComPtr<IShape> slabShape;
+      slabShapeItem->get_Shape(&slabShape);
+      slabShape->get_BoundingBox(&boxSlab);
    }
 
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
 
-   CComPtr<iSocket> socketHT, socketHB, socketTFL, socketTFR, socketBFL, socketBFR, socketBC;
+   CComPtr<iSocket> socketTL, socketTC, socketTR, socketBL, socketBC, socketBR;
    CComQIPtr<iConnectable> connectable(doPnt);
 
-   // sockets for top flange dimension line
-   box->get_TopCenter(&pntTC);
+   // sockets for top flange dimension lines
+   boxSlab->get_TopCenter(&pntTC);
    pntTC->Offset(-top_width/2,0);
-   connectable->AddSocket(SOCKET_TFL,pntTC,&socketTFL);
+   connectable->AddSocket(SOCKET_TL,pntTC,&socketTL);
    pntTC->Offset(top_width,0);
-   connectable->AddSocket(SOCKET_TFR,pntTC,&socketTFR);
+   connectable->AddSocket(SOCKET_TR,pntTC,&socketTR);
+
+   Float64 yTop;
+   pntTC->get_Y(&yTop);
+   pntTC.Release();
+   boxGirder->get_TopCenter(&pntTC);
+   pntTC->put_Y(yTop);
+   connectable->AddSocket(SOCKET_TC,pntTC,&socketTC);
 
    // sockets for bottom flange dimension line
-   box->get_BottomCenter(&pntBC);
-   pntBC->Offset(-bottom_width/2,0);
-   connectable->AddSocket(SOCKET_BFL,pntBC,&socketBFL);
-   pntBC->Offset(bottom_width,0);
-   connectable->AddSocket(SOCKET_BFR,pntBC,&socketBFR);
-
-   // sockets for height dimension line
-   pntTC.Release();
-   pntBC.Release();
-   box->get_TopCenter(&pntTC);
-   box->get_BottomCenter(&pntBC);
-   connectable->AddSocket(SOCKET_HT,pntTC,&socketHT);
-   connectable->AddSocket(SOCKET_HB,pntBC,&socketHB);
-
-   // sockets for center of prestressing
-   pntBC.Release();
-   box->get_BottomCenter(&pntBC);
+   boxGirder->get_BottomCenter(&pntBC);
    connectable->AddSocket(SOCKET_BC,pntBC,&socketBC);
+   pntBC->Offset(-bottom_width/2,0);
+   connectable->AddSocket(SOCKET_BL,pntBC,&socketBL);
+   pntBC->Offset(bottom_width,0);
+   connectable->AddSocket(SOCKET_BR,pntBC,&socketBR);
 
    pDL->AddDisplayObject(doPnt);
 }
@@ -631,7 +635,6 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroke
    // setup socket for dimension line
    CComQIPtr<iConnectable> connectable(doPnt);
 
-   // sockets for top flange dimension line
    CComPtr<iSocket> socketCGPS;
    connectable->AddSocket(SOCKET_CGPS,point,&socketCGPS);
 
@@ -642,6 +645,17 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+
+   EventIndexType eventIdx = m_pFrame->GetEvent();
+   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+
+   // need to layout dimension line witness lines in twips
+   const long twip_offset = 1440/2;
+
    CComPtr<iDisplayList> pDL;
    pDispMgr->FindDisplayList(DIMENSION_LIST,&pDL);
    ATLASSERT(pDL);
@@ -651,16 +665,22 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    CComPtr<iDimensionLine> doDimLineBottomFlangeWidth;
    CComPtr<iDimensionLine> doDimLineHeight;
    CComPtr<iDimensionLine> doDimLineCGPS;
+   CComPtr<iDimensionLine> doDimLineLeftOverhang;
+   CComPtr<iDimensionLine> doDimLineRightOverhang;
 
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineTopFlangeWidth);
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineBottomFlangeWidth);
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineHeight);
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineCGPS);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineLeftOverhang);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineRightOverhang);
 
    doDimLineTopFlangeWidth->SetID(0);
    doDimLineBottomFlangeWidth->SetID(1);
    doDimLineHeight->SetID(2);
    doDimLineCGPS->SetID(3);
+   doDimLineLeftOverhang->SetID(4);
+   doDimLineLeftOverhang->SetID(5);
 
    // Connect the dimension lines to the sockets in the section display object
    CComPtr<iDisplayList> pSectionDL;
@@ -675,14 +695,13 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    CComQIPtr<iConnectable> connectableSection(doSection);
 
    // get the sockets
-   CComPtr<iSocket> socketTFL,socketTFR,socketBFL,socketBFR,socketHT,socketHB,socketBC;
-   connectableSection->GetSocket(SOCKET_TFL,  atByID, &socketTFL);
-   connectableSection->GetSocket(SOCKET_TFR,  atByID, &socketTFR);
-   connectableSection->GetSocket(SOCKET_BFL,  atByID, &socketBFL);
-   connectableSection->GetSocket(SOCKET_BFR,  atByID, &socketBFR);
-   connectableSection->GetSocket(SOCKET_HT,   atByID, &socketHT);
-   connectableSection->GetSocket(SOCKET_HB,   atByID, &socketHB);
-   connectableSection->GetSocket(SOCKET_BC,   atByID, &socketBC);
+   CComPtr<iSocket> socketTL,socketTC,socketTR,socketBL,socketBC,socketBR;
+   connectableSection->GetSocket(SOCKET_TL,  atByID, &socketTL);
+   connectableSection->GetSocket(SOCKET_TC,  atByID, &socketTC);
+   connectableSection->GetSocket(SOCKET_TR,  atByID, &socketTR);
+   connectableSection->GetSocket(SOCKET_BL,  atByID, &socketBL);
+   connectableSection->GetSocket(SOCKET_BC,  atByID, &socketBC);
+   connectableSection->GetSocket(SOCKET_BR,  atByID, &socketBR);
 
    UINT settings = pDoc->GetGirderEditorSettings();
 
@@ -706,6 +725,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    CComQIPtr<iConnector> connectorBottomFlangeWidth(doDimLineBottomFlangeWidth);
    CComQIPtr<iConnector> connectorHeight(doDimLineHeight);
    CComQIPtr<iConnector> connectorCGPS(doDimLineCGPS);
+   CComQIPtr<iConnector> connectorLeftOverhang(doDimLineLeftOverhang);
+   CComQIPtr<iConnector> connectorRightOverhang(doDimLineRightOverhang);
 
    // connect the top flange width dimension line (across the top)
    CComPtr<iPlug> startPlug, endPlug;
@@ -713,16 +734,35 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    connectorTopFlangeWidth->GetEndPlug(&endPlug);
    
    DWORD dwCookie;
-   socketTFL->Connect(startPlug,&dwCookie);
-   socketTFR->Connect(endPlug,&dwCookie);
+   socketTL->Connect(startPlug,&dwCookie);
+   socketTR->Connect(endPlug,&dwCookie);
+
+   // connect the overhang dimension lines
+   if ( castDeckEventIdx < eventIdx )
+   {
+      startPlug.Release();
+      endPlug.Release();
+      connectorLeftOverhang->GetStartPlug(&startPlug);
+      connectorLeftOverhang->GetEndPlug(&endPlug);
+      socketTL->Connect(startPlug,&dwCookie);
+      socketTC->Connect(endPlug,&dwCookie);
+
+      startPlug.Release();
+      endPlug.Release();
+      connectorRightOverhang->GetStartPlug(&startPlug);
+      connectorRightOverhang->GetEndPlug(&endPlug);
+      socketTC->Connect(startPlug,&dwCookie);
+      socketTR->Connect(endPlug,&dwCookie);
+   }
 
    // connect the bottom flange width dimension line (across the bottom)
    startPlug.Release();
    endPlug.Release();
    connectorBottomFlangeWidth->GetStartPlug(&startPlug);
    connectorBottomFlangeWidth->GetEndPlug(&endPlug);
-   socketBFR->Connect(startPlug,&dwCookie);
-   socketBFL->Connect(endPlug,&dwCookie);
+   socketBR->Connect(startPlug,&dwCookie);
+   socketBL->Connect(endPlug,&dwCookie);
+
 
    // connect the height dimension line (left side)
    startPlug.Release();
@@ -730,8 +770,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    connectorHeight->GetStartPlug(&startPlug);
    connectorHeight->GetEndPlug(&endPlug);
 
-   socketHB->Connect(startPlug,&dwCookie);
-   socketHT->Connect(endPlug,&dwCookie);
+   socketBC->Connect(startPlug,&dwCookie);
+   socketTC->Connect(endPlug,&dwCookie);
 
    // connect cg ps dimension line (bottom center to cg symbol)
    if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS)
@@ -746,17 +786,10 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    }
 
    // set the text labels on the dimension lines
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(segmentKey,eventIdx), pIntervals->GetPrestressReleaseInterval(segmentKey) );
 
-   EventIndexType eventIdx = m_pFrame->GetEvent();
-   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(segmentKey,m_pFrame->GetEvent()), pIntervals->GetPrestressReleaseInterval(segmentKey) );
-
-   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
-
-   Float64 top_width    = (eventIdx <= castDeckEventIdx ? pGirder->GetTopWidth(poi) : pSectProp->GetTributaryFlangeWidth(poi));
+   Float64 twLeft, twRight;
+   Float64 top_width = (eventIdx <= castDeckEventIdx ? pGirder->GetTopWidth(poi) : pSectProp->GetTributaryFlangeWidthEx(poi,&twLeft,&twRight));
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
    Float64 height       = pSectProp->GetHg(intervalIdx,poi);
 
@@ -771,6 +804,24 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    textBlock->SetText(strDim);
    doDimLineTopFlangeWidth->SetTextBlock(textBlock);
 
+   if ( castDeckEventIdx < eventIdx )
+   {
+      textBlock.Release();
+      textBlock.CoCreateInstance(CLSID_TextBlock);
+      strDim = FormatDimension(twLeft,length_unit);
+      textBlock->SetText(strDim);
+      doDimLineLeftOverhang->SetTextBlock(textBlock);
+
+      textBlock.Release();
+      textBlock.CoCreateInstance(CLSID_TextBlock);
+      strDim = FormatDimension(twRight,length_unit);
+      textBlock->SetText(strDim);
+      doDimLineRightOverhang->SetTextBlock(textBlock);
+
+      // move the top flange width line up
+      doDimLineTopFlangeWidth->SetWitnessLength(3*twip_offset/2);
+   }
+
    textBlock.Release();
    textBlock.CoCreateInstance(CLSID_TextBlock);
    strDim = FormatDimension(bottom_width,length_unit);
@@ -783,6 +834,13 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    textBlock->SetText(strDim);
    textBlock->SetBkMode(TRANSPARENT);
    doDimLineHeight->SetTextBlock(textBlock);
+
+   // adjust the witness line
+   long tx0,ty0;
+   long tx1,ty1;
+   m_pCoordinateMap->WPtoTP(0,0,&tx0,&ty0);
+   m_pCoordinateMap->WPtoTP(top_width/2.0,0,&tx1,&ty1);
+   doDimLineHeight->SetWitnessLength(tx1-tx0+twip_offset);
 
    if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS )
    {
@@ -799,19 +857,21 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
       doDimLineCGPS->SetTextBlock(textBlock);
 
       // adjust the witness lines on the vertical dimensions
-      long tx0,ty0;
-      long tx1,ty1;
-      m_pCoordinateMap->WPtoTP(0,0,&tx0,&ty0);
       m_pCoordinateMap->WPtoTP(bottom_width/2.0,0,&tx1,&ty1);
-      long dimwit = doDimLineHeight->GetWitnessLength();
-      doDimLineCGPS->SetWitnessLength(tx1-tx0+dimwit); 
-      doDimLineHeight->SetWitnessLength(dimwit*2);
+      doDimLineCGPS->SetWitnessLength(tx1-tx0+twip_offset); 
    }
 
    // add the dimension line display objects to the display list
    pDL->AddDisplayObject(doDimLineTopFlangeWidth);
    pDL->AddDisplayObject(doDimLineBottomFlangeWidth);
    pDL->AddDisplayObject(doDimLineHeight);
+
+   if ( castDeckEventIdx < eventIdx )
+   {
+      pDL->AddDisplayObject(doDimLineLeftOverhang);
+      pDL->AddDisplayObject(doDimLineRightOverhang);
+   }
+
 
    if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS )
    {
@@ -903,34 +963,9 @@ void CGirderModelSectionView::OnViewSettings()
 	((CPGSuperDocBase*)GetDocument())->EditGirderViewSettings(VS_GIRDER_SECTION);
 }
 
-void CGirderModelSectionView::OnLeftEnd() 
-{
-   m_pFrame->CutAtLeftEnd();
-}
-
-void CGirderModelSectionView::OnLeftHp() 
-{
-   m_pFrame->CutAtLeftHp();
-}
-
-void CGirderModelSectionView::OnCenter() 
-{
-   m_pFrame->CutAtCenter();
-}
-
-void CGirderModelSectionView::OnRightHp() 
-{
-   m_pFrame->CutAtRightHp();
-}
-
-void CGirderModelSectionView::OnRightEnd() 
-{
-   m_pFrame->CutAtRightEnd();
-}
-
 void CGirderModelSectionView::OnUserCut() 
 {
-	m_pFrame->CutAtLocation();
+	m_pFrame->ShowCutDlg();
 }
 
 void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy) 

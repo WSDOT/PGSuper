@@ -82,12 +82,27 @@ PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 #define RLM_LUMPSUM     2
 
 // constants for time dependent models
-//#define TDM_AASHTO    0
+#define TDM_AASHTO    0
 #define TDM_ACI209    1
 //#define TDM_CEBFIP    2
 
 // MISCELLANEOUS
 //
+
+#define SPEC_PAGE_DESCRIPTION 0
+#define SPEC_PAGE_DESIGN      1
+#define SPEC_PAGE_SEGMENT     2
+#define SPEC_PAGE_CLOSURE     3
+#define SPEC_PAGE_STRANDS     4
+#define SPEC_PAGE_LIFTING     5
+#define SPEC_PAGE_HAULING     6
+#define SPEC_PAGE_LOADS       7
+#define SPEC_PAGE_MOMENT      8
+#define SPEC_PAGE_SHEAR       9
+#define SPEC_PAGE_CREEP      10
+#define SPEC_PAGE_LOSSES     11
+#define SPEC_PAGE_LIMITS     12
+
 
 /*****************************************************************************
 CLASS 
@@ -160,7 +175,7 @@ public:
 
    // Causes the editing dialog to be displayed. if allowEditing is false
    // the dialog is opened in a read-only mode
-   virtual bool Edit(bool allowEditing);
+   virtual bool Edit(bool allowEditing,int nPage=0);
 
    // Save to structured storage
    virtual bool SaveMe(sysIStructuredSave* pSave);

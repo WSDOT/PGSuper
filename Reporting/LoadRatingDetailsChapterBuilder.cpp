@@ -274,7 +274,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    }
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gM");
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")) << _T(" (*)"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << _T("RF");
 
    const pgsMomentRatingArtifact* pControllingRating;
@@ -412,7 +412,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    }
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gV");
-   (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("LL+IM")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("LL+IM")) << _T(" (*)"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << _T("RF");
 
    
@@ -497,7 +497,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StressRatingEquation.png") ) << rptNewLine;
    }
 
-   ColumnIndexType nColumns = 12;
+   ColumnIndexType nColumns = 13;
    if (bSplicedGirder)
    {
       nColumns += 9;
@@ -506,6 +506,9 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   
+   table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << table << rptNewLine;
    pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -527,6 +530,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,col++) << _T("Location");
    (*table)(0,col++) << RPT_STRESS(_T("allow"));
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if (bSplicedGirder)
@@ -553,7 +557,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gM");
-   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("LL+IM")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("LL+IM")) << _T(" (*)"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("RF");
 
    const pgsStressRatingArtifact* pControllingRating;
@@ -563,6 +567,8 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    pgsRatingArtifact::StressRatings artifacts = pRatingArtifact->GetStressRatings();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+
+   LPCTSTR stressLocation[] = {_T("Bottom Girder"),_T("Top Girder"),_T("Bottom Deck"),_T("Top Deck")};
 
    RowIndexType row = 1;
    pgsRatingArtifact::StressRatings::iterator iter(artifacts.begin());
@@ -587,6 +593,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN,  poi, end_size );
+      (*table)(row,col++) << stressLocation[artifact.GetStressLocation()];
       (*table)(row,col++) << stress.SetValue(artifact.GetAllowableStress());
       (*table)(row,col++) << stress.SetValue(artifact.GetPrestressStress());
       if (bSplicedGirder)
@@ -700,7 +707,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("PS")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    }
    (*table)(0,col++) << _T("gM");
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")) << _T("( *)"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("bcr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("d"),_T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );

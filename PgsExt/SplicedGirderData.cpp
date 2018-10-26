@@ -1016,11 +1016,7 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
       {
          // we found the closure that is going away
          // take the right hand segment with it
-         ATLASSERT(pTS->GetConnectionType() == pgsTypes::sctClosureJoint); // should be closure joint.. it is changing to sctContinuous
-
-
          RemoveClosureJointFromTimelineManager(pClosure);
-
 
          CPrecastSegmentData* pLeftSegment  = pClosure->GetLeftSegment();
          CPrecastSegmentData* pRightSegment = pClosure->GetRightSegment();

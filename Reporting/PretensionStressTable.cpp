@@ -139,10 +139,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey, POI_RELEASED_SEGMENT ) );
-   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest( segmentKey, POI_ERECTED_SEGMENT ) );
-   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   std::sort(vPoi.begin(),vPoi.end());
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey, POI_SPAN ) );
 
    // don't want to report at these locations since the are off segment
    // and don't have stresses due to pre-tensioning.
@@ -168,7 +165,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       {
          (*p_table)(row,col++) << rptReleasePoi.SetValue( POI_RELEASED_SEGMENT, poi );
       }
-      (*p_table)(row,col++) << rptErectedPoi.SetValue( POI_ERECTED_SEGMENT, poi, end_size  );
+      (*p_table)(row,col++) << rptErectedPoi.SetValue( POI_SPAN, poi, end_size  );
 
       Float64 fTop, fBot;
       if ( bDesign )

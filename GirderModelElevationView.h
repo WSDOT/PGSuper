@@ -84,11 +84,6 @@ protected:
 protected:
 	//{{AFX_MSG(CGirderModelElevationView)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnLeftEnd();
-	afx_msg void OnLeftHp();
-	afx_msg void OnCenter();
-	afx_msg void OnRightHp();
-	afx_msg void OnRightEnd();
 	afx_msg void OnUserCut();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnEditPrestressing();
@@ -117,7 +112,7 @@ private:
    void BuildStrandDisplayObjects(          CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildStrandCGDisplayObjects(        CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildSegmentDisplayObjects(         CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
-   void BuildClosureJointDisplayObjects(     CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildClosureJointDisplayObjects(    CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildTendonDisplayObjects(          CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildRebarDisplayObjects(           CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildPointLoadDisplayObjects(       CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr, bool* casesExist);

@@ -55,8 +55,11 @@ public:
    // Add multiple tendons to the list of tendons that are stressed during this event
    void AddTendons(const std::set<CTendonKey>& tendons);
 
-   // Removes a tendon from the stressing list
-   void RemoveTendon(GirderIDType gdrID,DuctIndexType ductIdx);
+   // Removes a tendon from the stressing list.
+   // Pass a value of true for bRemovedFromBridge if the tendon has been removed from the
+   // bridge model. This will update the indices of the ducts. Use false
+   // if the tendon is simply not stressed in this activity any longer
+   void RemoveTendon(GirderIDType gdrID,DuctIndexType ductIdx,bool bRemovedFromBridge);
 
    // Removes all tendons for the specified girder from the stressing list
    void RemoveTendons(GirderIDType gdrID);

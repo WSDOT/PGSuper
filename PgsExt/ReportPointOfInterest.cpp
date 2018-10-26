@@ -72,9 +72,9 @@ rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference,const 
 {
    ATLASSERT(sysFlags<PoiAttributeType>::IsSet(reference,POI_RELEASED_SEGMENT) || 
              sysFlags<PoiAttributeType>::IsSet(reference,POI_STORAGE_SEGMENT)  || 
-             sysFlags<PoiAttributeType>::IsSet(reference,POI_ERECTED_SEGMENT)  || 
              sysFlags<PoiAttributeType>::IsSet(reference,POI_LIFT_SEGMENT)     || 
              sysFlags<PoiAttributeType>::IsSet(reference,POI_HAUL_SEGMENT)     || 
+             sysFlags<PoiAttributeType>::IsSet(reference,POI_ERECTED_SEGMENT)  || 
              sysFlags<PoiAttributeType>::IsSet(reference,POI_SPAN));
 
    m_POI = poi;
@@ -97,7 +97,7 @@ std::_tstring rptPointOfInterest::AsString() const
       GirderIndexType  gdrIdx = m_POI.GetSegmentKey().girderIndex;
       SegmentIndexType segIdx = m_POI.GetSegmentKey().segmentIndex;
 
-      str1.Format(_T("Group %d Girder %s Segment %d, "),LABEL_SPAN(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
+      str1.Format(_T("Group %d Girder %s Segment %d, "),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
       str = str1;
    }
 

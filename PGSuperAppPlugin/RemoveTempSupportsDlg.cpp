@@ -14,17 +14,17 @@
 
 IMPLEMENT_DYNAMIC(CRemoveTempSupportsDlg, CDialog)
 
-CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
-	: CDialog(CRemoveTempSupportsDlg::IDD, pParent),
-   m_pTimelineMgr(pTimelineMgr)
+CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+	: CDialog(CRemoveTempSupportsDlg::IDD, pParent)
 {
+   m_TimelineMgr = timelineMgr;
+   m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
 
    m_EventIndex = eventIdx;
-
-   m_pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
 }
 
 CRemoveTempSupportsDlg::~CRemoveTempSupportsDlg()
@@ -34,25 +34,44 @@ CRemoveTempSupportsDlg::~CRemoveTempSupportsDlg()
 void CRemoveTempSupportsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+   DDX_Control(pDX,IDC_SOURCE_LIST,m_lbSource);
+   DDX_Control(pDX,IDC_TARGET_LIST,m_lbTarget);
+
    if ( pDX->m_bSaveAndValidate )
    {
-      m_RemoveTempSupports.Clear();
-      m_RemoveTempSupports.Enable(true);
-
-      CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-      int nItems = pTargetList->GetCount();
+      int nItems = m_lbTarget.GetCount();
       for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
       {
-         SupportIDType key = (SupportIDType)pTargetList->GetItemData(itemIdx);
-         m_RemoveTempSupports.AddTempSupport(key);
+         CTimelineItemIDDataPtr* pItemData = (CTimelineItemIDDataPtr*)m_lbTarget.GetItemDataPtr(itemIdx);
+         SupportIDType tsID = pItemData->m_ID;
+
+         EventIndexType erectionEventIdx, removalEventIdx;
+         m_TimelineMgr.GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
+         m_TimelineMgr.SetTempSupportEvents(tsID,erectionEventIdx,m_EventIndex);
+      }
+
+      nItems = m_lbSource.GetCount();
+      for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
+      {
+         CTimelineItemIDDataPtr* pItemData = (CTimelineItemIDDataPtr*)m_lbSource.GetItemDataPtr(itemIdx);
+         if ( pItemData->m_State == CTimelineItemDataPtr::Used )
+         {
+            continue;
+         }
+
+         SupportIDType tsID = pItemData->m_ID;
+
+         EventIndexType erectionEventIdx, removalEventIdx;
+         m_TimelineMgr.GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
+         m_TimelineMgr.SetTempSupportEvents(tsID,erectionEventIdx,INVALID_INDEX);
       }
    }
 }
 
 
 BEGIN_MESSAGE_MAP(CRemoveTempSupportsDlg, CDialog)
-   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CRemoveTempSupportsDlg::OnMoveRight)
-   ON_BN_CLICKED(IDC_MOVE_LEFT, &CRemoveTempSupportsDlg::OnMoveLeft)
+   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CRemoveTempSupportsDlg::OnMoveToTargetList)
+   ON_BN_CLICKED(IDC_MOVE_LEFT, &CRemoveTempSupportsDlg::OnMoveToSourceList)
 END_MESSAGE_MAP()
 
 
@@ -60,10 +79,12 @@ END_MESSAGE_MAP()
 
 BOOL CRemoveTempSupportsDlg::OnInitDialog()
 {
-   FillSourceList();
-   FillTargetList();
+   m_lbSource.Initialize(CTimelineItemListBox::Source,CTimelineItemListBox::ID,&m_lbTarget);
+   m_lbTarget.Initialize(CTimelineItemListBox::Target,CTimelineItemListBox::ID,&m_lbSource);
 
    CDialog::OnInitDialog();
+
+   FillLists();
 
    // TODO:  Add extra initialization here
 
@@ -71,94 +92,40 @@ BOOL CRemoveTempSupportsDlg::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CRemoveTempSupportsDlg::OnMoveRight()
+void CRemoveTempSupportsDlg::OnMoveToTargetList()
 {
-   // Move from source to target lists
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-   int nCount = pSourceList->GetSelCount();
-   CArray<int,int> arrSelected;
-   arrSelected.SetSize(nCount);
-   pSourceList->GetSelItems(nCount,arrSelected.GetData());
-
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-   for ( int i = 0; i < nCount; i++ )
-   {
-      int sel = arrSelected.GetAt(i);
-
-      SupportIDType tsID = (SupportIDType)pSourceList->GetItemData(sel);
-      const CTemporarySupportData* pTS = m_pBridgeDesc->FindTemporarySupport(tsID);
-      CString label(GetLabel(pTS,m_pDisplayUnits));
-      pTargetList->SetItemData(pTargetList->AddString(label),tsID);
-   }
-
-   for ( int i = nCount-1; 0 <= i; i-- )
-   {
-      pSourceList->DeleteString(arrSelected.GetAt(i));
-   }
+   m_lbSource.MoveSelectedItemsToBuddy();
 }
 
-void CRemoveTempSupportsDlg::OnMoveLeft()
+void CRemoveTempSupportsDlg::OnMoveToSourceList()
 {
-   // Move from target to source lists
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-   int nCount = pTargetList->GetSelCount();
-   CArray<int,int> arrSelected;
-   arrSelected.SetSize(nCount);
-   pTargetList->GetSelItems(nCount,arrSelected.GetData());
-
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-   for ( int i = 0; i < nCount; i++ )
-   {
-      int sel = arrSelected.GetAt(i);
-
-      SupportIDType tsID = (SupportIDType)pTargetList->GetItemData(sel);
-      const CTemporarySupportData* pTS = m_pBridgeDesc->FindTemporarySupport(tsID);
-      CString label(GetLabel(pTS,m_pDisplayUnits));
-      pSourceList->SetItemData(pSourceList->AddString(label),tsID);
-   }
-
-   for ( int i = nCount-1; 0 <= i; i-- )
-   {
-      pTargetList->DeleteString(arrSelected.GetAt(i));
-   }
+   m_lbTarget.MoveSelectedItemsToBuddy();
 }
 
-void CRemoveTempSupportsDlg::FillSourceList()
+void CRemoveTempSupportsDlg::FillLists()
 {
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-
    SupportIndexType nTS = m_pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
       const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
       SupportIDType tsID = pTS->GetID();
-      bool bIsTemporarySupportRemoved = m_pTimelineMgr->IsTemporarySupportRemoved(tsID);
+
+      bool bIsTemporarySupportRemoved = m_TimelineMgr.IsTemporarySupportRemoved(tsID);
       EventIndexType erectEventIdx, removeEventIdx;
-      m_pTimelineMgr->GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
-      if ( bIsTemporarySupportRemoved && removeEventIdx == m_EventIndex )
-      {
-         if ( !m_RemoveTempSupports.HasTempSupport(tsID) )
-            bIsTemporarySupportRemoved = false;
-      }
-      if ( !bIsTemporarySupportRemoved )
-      {
-         CString label( GetLabel(pTS,m_pDisplayUnits) );
-         pSourceList->SetItemData(pSourceList->AddString(label),tsID);
-      }
-   }
-}
+      m_TimelineMgr.GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
 
-void CRemoveTempSupportsDlg::FillTargetList()
-{
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-
-   const std::vector<SupportIDType>& tempSupports = m_RemoveTempSupports.GetTempSupports();
-   std::vector<SupportIDType>::const_iterator tsIter;
-   for ( tsIter = tempSupports.begin(); tsIter != tempSupports.end(); tsIter++ )
-   {
-      SupportIDType tsID = *tsIter;
-      const CTemporarySupportData* pTS = m_pBridgeDesc->FindTemporarySupport(tsID);
       CString label( GetLabel(pTS,m_pDisplayUnits) );
-      pTargetList->SetItemData(pTargetList->AddString(label),pTS->GetID());
+
+      if ( removeEventIdx == m_EventIndex )
+      {
+         // removed during this event, put it in the target list
+         m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,tsID);
+      }
+      else
+      {
+         // not removed during this event, put it in the source list
+         CTimelineItemDataPtr::State state = (bIsTemporarySupportRemoved ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
+         m_lbSource.AddItem(label,state,tsID);
+      }
    }
 }

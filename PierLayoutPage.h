@@ -56,7 +56,6 @@ public:
    Float64 m_Station;
    pgsTypes::MovePierOption m_MovePierOption;
    std::_tstring m_strOrientation;
-   EventIndexType m_ErectionEventIndex;
 
    void Init(const CPierData2* pPier);
 

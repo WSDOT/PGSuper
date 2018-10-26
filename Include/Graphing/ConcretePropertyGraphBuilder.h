@@ -32,6 +32,9 @@
 // Graph Types
 #define GRAPH_TYPE_FC   0  // Plot concrete strength
 #define GRAPH_TYPE_EC   1  // Plot modulus of elasticity
+#define GRAPH_TYPE_ECE  2  // Plot age adjusted modulus of elasticity
+#define GRAPH_TYPE_SH   3  // Plot of shrinkage strain
+#define GRAPH_TYPE_CR   4  // Plot of creep coefficients
 
 // Graph Elements
 #define GRAPH_ELEMENT_SEGMENT 0 // plot properties for a segment
@@ -73,6 +76,8 @@ protected:
    CComPtr<IBroker> m_pBroker;
 
    unitmgtScalar m_Scalar;
+   unitmgtScalar m_StrainScalar;
+   unitmgtScalar m_CreepScalar;
    arvPhysicalConverter* m_pTimeFormat;
    arvPhysicalConverter* m_pIntervalFormat;
    arvPhysicalConverter* m_pYFormat;

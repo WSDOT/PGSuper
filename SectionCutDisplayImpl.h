@@ -33,14 +33,14 @@ public:
    CSectionCutDisplayImpl();
    ~CSectionCutDisplayImpl();
 
-   pgsPointOfInterest GetCutPOI(Float64 distFromStart);
+   pgsPointOfInterest GetCutPOI(Float64 Xgl);
 
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Strategy,iSectionCutDrawStrategy)
    STDMETHOD_(void,SetColor)(COLORREF color);
 	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc);
-   STDMETHOD_(pgsPointOfInterest,GetCutPOI)(Float64 distFromStartOfGirder);
+   STDMETHOD_(pgsPointOfInterest,GetCutPOI)(Float64 Xgl);
    END_INTERFACE_PART(Strategy)
 
 //   BEGIN_INTERFACE_PART(Events,iSectionCutEvents)
@@ -92,20 +92,20 @@ public:
 
 private:
    virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc);
-   void GetBoundingBox(iPointDisplayObject* pDO, Float64 position, 
+   void GetBoundingBox(iPointDisplayObject* pDO, Float64 Xgl, 
                        Float64* top, Float64* left, Float64* right, Float64* bottom);
-   Float64 GetGirderHeight(Float64 distFromStartOfGirder);
+   Float64 GetGirderHeight(Float64 Xgl);
 
    COLORREF           m_Color;
    CGirderKey         m_GirderKey;
    IBroker*           m_pBroker;
-   Float64            m_MinCutLocation;
-   Float64            m_MaxCutLocation;
+   Float64            m_MinCutLocation;  // in girder line coordinates
+   Float64            m_MaxCutLocation;  // in girder line coordinates
    iCutLocation*      m_pCutLocation;
    
    CComPtr<IPoint2d> m_CachePoint;
 
-   void PutPosition(Float64 pos);
+   void PutPosition(Float64 Xgl);
 };
 
 

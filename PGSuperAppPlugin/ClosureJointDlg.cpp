@@ -39,22 +39,18 @@
 
 IMPLEMENT_DYNAMIC(CClosureJointDlg, CPropertySheet)
 
-CClosureJointDlg::CClosureJointDlg(const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,CWnd* pParentWnd, UINT iSelectPage)
+CClosureJointDlg::CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T("Closure Joint"), pParentWnd, iSelectPage),
-   m_EventIndex(eventIdx),
-   m_ClosureJoint(*pClosureJoint),
    m_ClosureKey(closureKey)
 {
-   Init();
+   Init(pBridgeDesc);
 }
 
-CClosureJointDlg::CClosureJointDlg(const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd, UINT iSelectPage)
+CClosureJointDlg::CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T("Closure Joint"), pParentWnd, iSelectPage),
-   m_EventIndex(eventIdx),
-   m_ClosureJoint(*pClosureJoint),
    m_ClosureKey(closureKey)
 {
-   Init(editSplicedGirderExtensions);
+   Init(pBridgeDesc,editSplicedGirderExtensions);
 }
 
 CClosureJointDlg::~CClosureJointDlg()
@@ -69,9 +65,13 @@ INT_PTR CClosureJointDlg::DoModal()
    if ( result == IDOK )
    {
       if ( 0 < m_SplicedGirderExtensionPages.size() )
+      {
          NotifySplicedGirderExtensionPages();
+      }
       else
+      {
          NotifyExtensionPages();
+      }
    }
 
    return result;
@@ -84,7 +84,7 @@ END_MESSAGE_MAP()
 
 
 // CClosureJointDlg message handlers
-void CClosureJointDlg::CommonInit()
+void CClosureJointDlg::CommonInit(const CBridgeDescription2* pBridgeDesc)
 {
    m_bCopyToAllClosureJoints = false;
 
@@ -96,17 +96,29 @@ void CClosureJointDlg::CommonInit()
    AddPage(&m_General);
    AddPage(&m_Longitudinal);
    AddPage(&m_Stirrups);
+
+   // initialize the dialog data
+   m_pBridgeDesc = pBridgeDesc;
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_ClosureKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(m_ClosureKey.girderIndex);
+   const CClosureJointData* pClosureJoint = pGirder->GetClosureJoint(m_ClosureKey.segmentIndex);
+   m_ClosureID = pClosureJoint->GetID();
+   m_PierID = pClosureJoint->GetPierID();
+   m_TempSupportID = pClosureJoint->GetTemporarySupportID();
+   m_ClosureJoint = *pClosureJoint;
+   
+   m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 }
 
-void CClosureJointDlg::Init()
+void CClosureJointDlg::Init(const CBridgeDescription2* pBridgeDesc)
 {
-   CommonInit();
+   CommonInit(pBridgeDesc);
    CreateExtensionPages();
 }
 
-void CClosureJointDlg::Init(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
+void CClosureJointDlg::Init(const CBridgeDescription2* pBridgeDesc,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
-   CommonInit();
+   CommonInit(pBridgeDesc);
    CreateExtensionPages(editSplicedGirderExtensions);
 }
 
@@ -186,9 +198,13 @@ void CClosureJointDlg::DestroyExtensionPages()
 txnTransaction* CClosureJointDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
+   {
       return m_Macro.CreateClone();
+   }
    else
+   {
       return NULL;
+   }
 }
 
 void CClosureJointDlg::NotifySplicedGirderExtensionPages()
@@ -299,5 +315,7 @@ LRESULT CClosureJointDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
 	}
 	else
+   {
 		return 0;
+   }
 }

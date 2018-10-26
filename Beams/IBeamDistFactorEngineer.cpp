@@ -548,6 +548,11 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    lrfdLldfTypeAEKIJ* pLLDF;
    if ( pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_LRFD )
    {
+      bool bRigidMethod = (0 < nDiaphragms ? true : false);
+      if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SeventhEdition2014 )
+      {
+         bRigidMethod = false; // rigid method only used for steel bridges starting with LRFD 7th Edition, 2014
+      }
       pLLDF = new lrfdLldfTypeAEK(plldf->gdrNum,
                                   plldf->Savg,
                                   plldf->gdrSpacings,
@@ -561,7 +566,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
                                   plldf->I, 
                                   plldf->A, 
                                   plldf->eg,
-                                  (0 < nDiaphragms ? true : false),
+                                  bRigidMethod,
                                   plldf->skew1,
                                   plldf->skew2,
                                   bSkewMoment,bSkewShear);

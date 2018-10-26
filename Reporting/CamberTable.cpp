@@ -147,44 +147,59 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoiRelease( pPoi->GetPointsOfInterest( segmentKey,POI_RELEASED_SEGMENT | POI_TENTH_POINTS) );
+   std::vector<pgsPointOfInterest> vPoiStorage( pPoi->GetPointsOfInterest( segmentKey,POI_STORAGE_SEGMENT | POI_TENTH_POINTS ) );
+   std::vector<pgsPointOfInterest> vPoiErected( pPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT | POI_TENTH_POINTS ) );
+
+   ATLASSERT(vPoiRelease.size() == vPoiStorage.size() && vPoiStorage.size() == vPoiErected.size());
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IProductLoads,pProduct);
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(segmentKey);
-   IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType releaseIntervalIdx           = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType storageIntervalIdx           = pIntervals->GetStorageInterval(segmentKey);
+   IntervalIndexType erectionIntervalIdx          = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx          = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx     = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx     = pIntervals->GetInstallRailingSystemInterval(segmentKey);
+   IntervalIndexType overlayIntervalIdx           = pIntervals->GetOverlayInterval(segmentKey);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-   bool bSidewalk = pProduct->HasSidewalkLoad(segmentKey);
-   bool bShearKey = pProduct->HasShearKeyLoad(segmentKey);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // create the tables
-   rptRcTable* table1;
+   rptRcTable* table1a;
+   rptRcTable* table1b;
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2,_T("Camber - Part 1 (upwards is positive)"));
+   
+   table1a = pgsReportStyleHolder::CreateDefaultTable(3);
+   table1b = pgsReportStyleHolder::CreateDefaultTable(4);
+   (*pLayoutTable)(0,0) << table1a;
+   (*pLayoutTable)(0,1) << table1b;
+
+   table2 = pgsReportStyleHolder::CreateDefaultTable(10 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
-      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table1b->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -195,16 +210,21 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
    // Setup table headings
    ColumnIndexType col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsi")),       rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),       rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Release"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Release"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   
+   col = 0;
+   (*table1b)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Storage"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Storage"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Erected"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Erected"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    if ( bShearKey )
@@ -245,59 +265,83 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("4")) << _T(" - ") << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+   pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
-   RowIndexType row1 = table1->GetNumberOfHeaderRows();
+   RowIndexType row1a = table1a->GetNumberOfHeaderRows();
+   RowIndexType row1b = table1b->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   std::vector<pgsPointOfInterest>::iterator releasePoiIter(vPoiRelease.begin());
+   std::vector<pgsPointOfInterest>::iterator releasePoiIterEnd(vPoiRelease.end());
+   std::vector<pgsPointOfInterest>::iterator storagePoiIter(vPoiStorage.begin());
+   std::vector<pgsPointOfInterest>::iterator erectedPoiIter(vPoiErected.begin());
+   for ( ; releasePoiIter != releasePoiIterEnd; releasePoiIter++, storagePoiIter++, erectedPoiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& releasePoi(*releasePoiIter);
+      const pgsPointOfInterest& storagePoi(*storagePoiIter);
+      const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
+      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+
+      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+
+#pragma Reminder("UPDATE: should be able to get this as a product load result")
+      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
+      Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
+
       //Dps1       = pCamber->GetPrestressDeflection( poi, false );
       //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      Dps1       = pProductForces->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      Dps        = pProductForces->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
-      Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( poi );
+      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
+      //Float64 Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
       //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      Dgirder    = pProductForces->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
-      Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
-      Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProductForces->GetDeflection(castDeckIntervalIdx,pftShearKey,poi,bat, rtCumulative, false);
-      Ddeck      = pProductForces->GetDeflection(castDeckIntervalIdx,pftSlab,poi,bat, rtCumulative, false);
-      Ddeck     += pProductForces->GetDeflection(castDeckIntervalIdx,pftSlabPad,poi,bat, rtCumulative, false);
-      Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Duser2     = pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Dbarrier   = pProductForces->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat, rtCumulative, false);
-      Dsidewalk  = pProductForces->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      poi,bat, rtCumulative, false);
-      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProductForces->GetDeflection(overlayIntervalIdx,pftOverlay,poi,bat, rtCumulative, false));
+      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
+#pragma Reminder("UPDATE: creep should be a product load result")
+      Float64 Dcreep1    = pCamber->GetCreepDeflection( storagePoi, ICamber::cpReleaseToDiaphragm, constructionRate );
+      Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
+              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate );
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
 
       // if we have a future overlay, the deflection due to the overlay in BridgeSite2 must be zero
       ATLASSERT( pBridge->IsFutureOverlay() ? IsZero(Doverlay) : true );
 
-      // Table 1
-      col = 0;
-      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
-      (*table1)(row1,col++) << deflection.SetValue( Dps1 );
-      (*table1)(row1,col++) << deflection.SetValue( Dps );
-      (*table1)(row1,col++) << deflection.SetValue( Dtpsi );
-      (*table1)(row1,col++) << deflection.SetValue( Dtpsr );
-      (*table1)(row1,col++) << deflection.SetValue( Dgirder );
-      (*table1)(row1,col++) << deflection.SetValue( Dcreep1 );
 
-      row1++;
+      // Table 1a
+      col = 0;
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
+      (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
+      row1a++;
+
+      // Table 1b
+      col = 0;
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1 );
+      row1b++;
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
+      (*table2)(row2,col++) << deflection.SetValue( DpsErected );
+      (*table2)(row2,col++) << deflection.SetValue( Dtpsr );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
       if ( bShearKey )
       {
@@ -325,14 +369,18 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps + Dtpsi;
+#pragma Reminder("UPDATE: D1 should be based on deflections after erection")
+      // PGSuper v2 used deflections at end of storage. Since RDP and TxDOT are
+      // going to totally redo camber, make it match v2 and fix it later
+      //Float64 D1 = DgdrErected + DpsErected;
+      Float64 D1 = DgdrStorage + DpsStorage;
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Ddeck + Duser1;
       Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
       (*table3)(row3,col++) << deflection.SetValue( D2 );
       (*table3)(row3,col++) << deflection.SetValue( D3 );
@@ -363,7 +411,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       row3++;
    }
 
-   *pTable1 = table1;
+   *pTable1 = pLayoutTable;
    *pTable2 = table2;
    *pTable3 = table3;
 }
@@ -422,6 +470,9 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    table1a = pgsReportStyleHolder::CreateDefaultTable(3);
    table1b = pgsReportStyleHolder::CreateDefaultTable(4);
+   (*pLayoutTable)(0,0) << table1a;
+   (*pLayoutTable)(0,1) << table1b;
+
    table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0)+ (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
@@ -442,7 +493,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    // Setup table headings
    ColumnIndexType col = 0;
-   (*table1a)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Release"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Release"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    
@@ -487,6 +538,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::_tostringstream os;
+   os << days;
    (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -512,14 +564,15 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
       Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
-      Float64 DpsErection  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
 
       Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
       Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
-      Float64 DgdrErection = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
 
 #pragma Reminder("FINISH: get creep deflection as a product load")
       Float64 Dcreep       = pCamber->GetCreepDeflection( storagePoi, ICamber::cpReleaseToDeck, constructionRate );
+      //Float64 Dcreep       = pProduct->GetDeflection(storageIntervalIdx,pftCreep,storagePoi,bat,rtCumulative,false);
 
       Float64 Ddiaphragm   = pProduct->GetDeflection(castDeckIntervalIdx,pftDiaphragm,erectedPoi,bat, rtCumulative, false);
       Float64 Dshearkey    = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
@@ -551,8 +604,8 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       // Table 2
       col = 0;
       (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi, end_size );
-      (*table2)(row2,col++) << deflection.SetValue( DgdrErection );
-      (*table2)(row2,col++) << deflection.SetValue( DpsErection );
+      (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
+      (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -584,7 +637,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 #pragma Reminder("UPDATE: D1 should be based on deflections after erection")
       // PGSuper v2 used deflections at end of storage. Since RDP and TxDOT are
       // going to totally redo camber, make it match v2 and fix it later
-      //Float64 D1 = DgdrErection + DpsErection;
+      //Float64 D1 = DgdrErected + DpsErected;
       Float64 D1 = DgdrStorage + DpsStorage;
       Float64 D2 = D1 + Dcreep;
       Float64 D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
@@ -620,8 +673,6 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       row3++;
    }
 
-   (*pLayoutTable)(0,0) << table1a;
-   (*pLayoutTable)(0,1) << table1b;
    *pTable1 = pLayoutTable;
    *pTable2 = table2;
    *pTable3 = table3;
@@ -640,8 +691,13 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT ) );
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
+   std::vector<pgsPointOfInterest> vPoiRelease( pPoi->GetPointsOfInterest( segmentKey,POI_RELEASED_SEGMENT | POI_TENTH_POINTS) );
+   std::vector<pgsPointOfInterest> vPoiStorage( pPoi->GetPointsOfInterest( segmentKey,POI_STORAGE_SEGMENT | POI_TENTH_POINTS ) );
+   std::vector<pgsPointOfInterest> vPoiErected( pPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT | POI_TENTH_POINTS ) );
+
+   ATLASSERT(vPoiRelease.size() == vPoiStorage.size() && vPoiStorage.size() == vPoiErected.size());
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -666,18 +722,28 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    // create the tables
-   rptRcTable* table1;
+   rptRcTable* table1a;
+   rptRcTable* table1b;
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2,_T("Camber - Part 1 (upwards is positive)"));
+
+   table1a = pgsReportStyleHolder::CreateDefaultTable(3);
+   table1b = pgsReportStyleHolder::CreateDefaultTable(4);
+   (*pLayoutTable)(0,0) << table1a;
+   (*pLayoutTable)(0,1) << table1b;
+
+   table2 = pgsReportStyleHolder::CreateDefaultTable(11 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
-      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table1b->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -688,16 +754,21 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
    // Setup table headings
    ColumnIndexType col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsi")),       rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),       rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Release"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Release"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   
+   col = 0;
+   (*table1b)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Storage"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Storage"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Erected"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Erected"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    if ( bShearKey )
@@ -742,54 +813,79 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
-   RowIndexType row1 = table1->GetNumberOfHeaderRows();
+   RowIndexType row1a = table1a->GetNumberOfHeaderRows();
+   RowIndexType row1b = table1b->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-
-   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   
+   std::vector<pgsPointOfInterest>::iterator releasePoiIter(vPoiRelease.begin());
+   std::vector<pgsPointOfInterest>::iterator releasePoiIterEnd(vPoiRelease.end());
+   std::vector<pgsPointOfInterest>::iterator storagePoiIter(vPoiStorage.begin());
+   std::vector<pgsPointOfInterest>::iterator erectedPoiIter(vPoiErected.begin());
+   for ( ; releasePoiIter != releasePoiIterEnd; releasePoiIter++, storagePoiIter++, erectedPoiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& releasePoi(*releasePoiIter);
+      const pgsPointOfInterest& storagePoi(*storagePoiIter);
+      const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
+      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+
+      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+
+#pragma Reminder("UPDATE: should be able to get this as a product load result")
+      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
+      Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
+
+      //Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
       //Dps1       = pCamber->GetPrestressDeflection( poi, false );
       //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
-      Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( poi );
+      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
+      //Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( poi );
       //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
-      Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
-      Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,poi,bat, rtCumulative, false);
-      Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,poi,bat, rtCumulative, false);
-      Dpanel     = pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPanel,poi,bat, rtCumulative, false);
-      Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,poi,bat, rtCumulative, false);
-      Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat, rtCumulative, false);
-      Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      poi,bat, rtCumulative, false);
-      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,poi,bat, rtCumulative, false));
+      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
+      Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
+      Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
+      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
+              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Dpanel     = pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPanel,erectedPoi,bat, rtCumulative, false);
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate );
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
 
-      // Table 1
+
+      // Table 1a
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
-      (*table1)(row1,col++) << deflection.SetValue( Dps1 );
-      (*table1)(row1,col++) << deflection.SetValue( Dps );
-      (*table1)(row1,col++) << deflection.SetValue( Dtpsi );
-      (*table1)(row1,col++) << deflection.SetValue( Dtpsr );
-      (*table1)(row1,col++) << deflection.SetValue( Dgirder );
-      (*table1)(row1,col++) << deflection.SetValue( Dcreep1 );
-      row1++;
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
+      (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
+      row1a++;
+
+      // Table 1b
+      col = 0;
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1 );
+      row1b++;
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
+      (*table2)(row2,col++) << deflection.SetValue( DpsErected );
+      (*table2)(row2,col++) << deflection.SetValue( Dtpsr );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -820,14 +916,18 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps + Dtpsi;
+#pragma Reminder("UPDATE: D1 should be based on deflections after erection")
+      // PGSuper v2 used deflections at end of storage. Since RDP and TxDOT are
+      // going to totally redo camber, make it match v2 and fix it later
+      //Float64 D1 = DgdrErected + DpsErected;
+      Float64 D1 = DgdrStorage + DpsStorage;
       Float64 D2 = D1 + Dcreep1;
-      Float64 D3 = D2 + Ddiaphragm + + Dshearkey + Dtpsr + Dpanel;
+      Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Dpanel;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dbarrier + Dsidewalk + Doverlay + Duser2;
+      Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi,end_size );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
       (*table3)(row3,col++) << deflection.SetValue( D2 );
       (*table3)(row3,col++) << deflection.SetValue( D3 );
@@ -858,7 +958,8 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       row3++;
    }
 
-   *pTable1 = table1;
+
+   *pTable1 = pLayoutTable;
    *pTable2 = table2;
    *pTable3 = table3;
 }
@@ -877,8 +978,12 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT ) );
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoiRelease( pPoi->GetPointsOfInterest( segmentKey,POI_RELEASED_SEGMENT | POI_TENTH_POINTS) );
+   std::vector<pgsPointOfInterest> vPoiStorage( pPoi->GetPointsOfInterest( segmentKey,POI_STORAGE_SEGMENT | POI_TENTH_POINTS ) );
+   std::vector<pgsPointOfInterest> vPoiErected( pPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT | POI_TENTH_POINTS ) );
+
+   ATLASSERT(vPoiRelease.size() == vPoiStorage.size() && vPoiStorage.size() == vPoiErected.size());
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
@@ -903,18 +1008,28 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    // create the tables
-   rptRcTable* table1;
+   rptRcTable* table1a;
+   rptRcTable* table1b;
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2,_T("Camber - Part 1 (upwards is positive)"));
+
+   table1a = pgsReportStyleHolder::CreateDefaultTable(3);
+   table1b = pgsReportStyleHolder::CreateDefaultTable(4);
+   (*pLayoutTable)(0,0) << table1a;
+   (*pLayoutTable)(0,1) << table1b;
+
+   table2 = pgsReportStyleHolder::CreateDefaultTable(9 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
-      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table1b->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -925,14 +1040,20 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    // Setup table headings
    ColumnIndexType col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Release"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Release"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   
+   col = 0;
+   (*table1b)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Storage"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Storage"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Erected"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Erected"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    if ( bShearKey )
@@ -974,48 +1095,72 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
-   RowIndexType row1 = table1->GetNumberOfHeaderRows();
+   RowIndexType row1a = table1a->GetNumberOfHeaderRows();
+   RowIndexType row1b = table1b->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   
+   std::vector<pgsPointOfInterest>::iterator releasePoiIter(vPoiRelease.begin());
+   std::vector<pgsPointOfInterest>::iterator releasePoiIterEnd(vPoiRelease.end());
+   std::vector<pgsPointOfInterest>::iterator storagePoiIter(vPoiStorage.begin());
+   std::vector<pgsPointOfInterest>::iterator erectedPoiIter(vPoiErected.begin());
+   for ( ; releasePoiIter != releasePoiIterEnd; releasePoiIter++, storagePoiIter++, erectedPoiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& releasePoi(*releasePoiIter);
+      const pgsPointOfInterest& storagePoi(*storagePoiIter);
+      const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
+      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+
+      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+
+      //Float64 Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
       //Dps1       = pCamber->GetPrestressDeflection( poi, false );
       //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
       //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
-      Dcreep     = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDeck, constructionRate );
-      Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,poi,bat, rtCumulative, false);
-      Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,poi,bat, rtCumulative, false);
-      Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,poi,bat, rtCumulative, false);
-      Dpanel     = pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPanel,poi,bat, rtCumulative, false);
-      Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat, rtCumulative, false);
-      Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      poi,bat, rtCumulative, false);
-      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,poi,bat, rtCumulative, false));
+      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
+#pragma Reminder("FINISH: get creep deflection as a product load")
+      Float64 Dcreep     = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDeck, constructionRate );
+      Float64 Ddiaphragm = pProduct->GetDeflection(castDeckIntervalIdx,pftDiaphragm,erectedPoi,bat, rtCumulative, false);
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
+              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Dpanel     = pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPanel,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
 
-      // Table 1
+
+      // Table 1a
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
-      (*table1)(row1,col++) << deflection.SetValue( Dps1 );
-      (*table1)(row1,col++) << deflection.SetValue( Dps );
-      (*table1)(row1,col++) << deflection.SetValue( Dgirder );
-      (*table1)(row1,col++) << deflection.SetValue( Dcreep );
-      row1++;
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
+      (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
+      row1a++;
+
+      // Table 1b
+      col = 0;
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( Dcreep );
+      row1b++;
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
+      (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -1045,12 +1190,16 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps;
+#pragma Reminder("UPDATE: D1 should be based on deflections after erection")
+      // PGSuper v2 used deflections at end of storage. Since RDP and TxDOT are
+      // going to totally redo camber, make it match v2 and fix it later
+      //Float64 D1 = DgdrErected + DpsErected;
+      Float64 D1 = DgdrStorage + DpsStorage;
       Float64 D2 = D1 + Dcreep;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
       Float64 D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
 
       D2 = IsZero(D2) ? 0 : D2;
@@ -1079,7 +1228,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       row3++;
    }
 
-   *pTable1 = table1;
+   *pTable1 = pLayoutTable;
    *pTable2 = table2;
    *pTable3 = table3;
 }
@@ -1097,8 +1246,12 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT ) );
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoiRelease( pPoi->GetPointsOfInterest( segmentKey,POI_RELEASED_SEGMENT | POI_TENTH_POINTS) );
+   std::vector<pgsPointOfInterest> vPoiStorage( pPoi->GetPointsOfInterest( segmentKey,POI_STORAGE_SEGMENT | POI_TENTH_POINTS ) );
+   std::vector<pgsPointOfInterest> vPoiErected( pPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT | POI_TENTH_POINTS ) );
+
+   ATLASSERT(vPoiRelease.size() == vPoiStorage.size() && vPoiStorage.size() == vPoiErected.size());
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -1109,6 +1262,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
@@ -1123,18 +1277,29 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    // create the tables
-   rptRcTable* table1;
+   // create the tables
+   rptRcTable* table1a;
+   rptRcTable* table1b;
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
-   table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2,_T("Camber - Part 1 (upwards is positive)"));
+   
+   table1a = pgsReportStyleHolder::CreateDefaultTable(3);
+   table1b = pgsReportStyleHolder::CreateDefaultTable(4);
+   (*pLayoutTable)(0,0) << table1a;
+   (*pLayoutTable)(0,1) << table1b;
+
+   table2 = pgsReportStyleHolder::CreateDefaultTable(10 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
-      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table1b->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -1145,16 +1310,21 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
 
    // Setup table headings
    ColumnIndexType col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsi")),       rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),       rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Release"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Release"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   
+   col = 0;
+   (*table1b)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Storage"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Storage"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Erected"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Erected"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    if ( bShearKey )
@@ -1198,53 +1368,78 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
-   RowIndexType row1 = table1->GetNumberOfHeaderRows();
+   // Fill up the tables
+   RowIndexType row1a = table1a->GetNumberOfHeaderRows();
+   RowIndexType row1b = table1b->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   std::vector<pgsPointOfInterest>::iterator releasePoiIter(vPoiRelease.begin());
+   std::vector<pgsPointOfInterest>::iterator releasePoiIterEnd(vPoiRelease.end());
+   std::vector<pgsPointOfInterest>::iterator storagePoiIter(vPoiStorage.begin());
+   std::vector<pgsPointOfInterest>::iterator erectedPoiIter(vPoiErected.begin());
+   for ( ; releasePoiIter != releasePoiIterEnd; releasePoiIter++, storagePoiIter++, erectedPoiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& releasePoi(*releasePoiIter);
+      const pgsPointOfInterest& storagePoi(*storagePoiIter);
+      const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
+      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+
+      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+
+#pragma Reminder("UPDATE: should be able to get this as a product load result")
+      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
+      Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
+
+      //Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
       //Dps1       = pCamber->GetPrestressDeflection( poi, false );
       //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
-      Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( poi );
+      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
+      //Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( poi );
       //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
-      Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
-      Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,poi,bat, rtCumulative, false);
-      Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,poi,bat, rtCumulative, false);
-      Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,poi,bat, rtCumulative, false);
-      Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      poi,bat, rtCumulative, false);
-      Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat, rtCumulative, false);
-      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,poi,bat, rtCumulative, false));
-      Dcreep3    = pCamber->GetCreepDeflection( poi, ICamber::cpDeckToFinal, constructionRate );
+      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
+      Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
+      Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
+              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate );
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
+      Float64 Dcreep3    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDeckToFinal, constructionRate );
 
-      // Table 1
+      // Table 1a
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
-      (*table1)(row1,col++) << deflection.SetValue( Dps1 );
-      (*table1)(row1,col++) << deflection.SetValue( Dps );
-      (*table1)(row1,col++) << deflection.SetValue( Dtpsi );
-      (*table1)(row1,col++) << deflection.SetValue( Dtpsr );
-      (*table1)(row1,col++) << deflection.SetValue( Dgirder );
-      (*table1)(row1,col++) << deflection.SetValue( Dcreep1 );
-      row1++;
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
+      (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
+      row1a++;
+
+      // Table 1b
+      col = 0;
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1 );
+      row1b++;
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
+      (*table2)(row2,col++) << deflection.SetValue( DpsErected );
+      (*table2)(row2,col++) << deflection.SetValue( Dtpsr );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
 
       if (bShearKey)
@@ -1273,14 +1468,18 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps + Dtpsi;
+#pragma Reminder("UPDATE: D1 should be based on deflections after erection")
+      // PGSuper v2 used deflections at end of storage. Since RDP and TxDOT are
+      // going to totally redo camber, make it match v2 and fix it later
+      //Float64 D1 = DgdrErected + DpsErected;
+      Float64 D1 = DgdrStorage + DpsStorage;
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Duser1;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       Float64 D6 = D5 + Dcreep3;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi,end_size );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
       (*table3)(row3,col++) << deflection.SetValue( D2 );
       (*table3)(row3,col++) << deflection.SetValue( D3 );
@@ -1310,7 +1509,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
       row3++;
    }
 
-   *pTable1 = table1;
+   *pTable1 = pLayoutTable;
    *pTable2 = table2;
    *pTable3 = table3;
 }
@@ -1328,8 +1527,12 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT ) );
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoiRelease( pPoi->GetPointsOfInterest( segmentKey,POI_RELEASED_SEGMENT | POI_TENTH_POINTS) );
+   std::vector<pgsPointOfInterest> vPoiStorage( pPoi->GetPointsOfInterest( segmentKey,POI_STORAGE_SEGMENT | POI_TENTH_POINTS ) );
+   std::vector<pgsPointOfInterest> vPoiErected( pPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT | POI_TENTH_POINTS ) );
+
+   ATLASSERT(vPoiRelease.size() == vPoiStorage.size() && vPoiStorage.size() == vPoiErected.size());
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
@@ -1354,18 +1557,28 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    // create the tables
-   rptRcTable* table1;
+   rptRcTable* table1a;
+   rptRcTable* table1b;
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2,_T("Camber - Part 1 (upwards is positive)"));
+   
+   table1a = pgsReportStyleHolder::CreateDefaultTable(3);
+   table1b = pgsReportStyleHolder::CreateDefaultTable(4);
+   (*pLayoutTable)(0,0) << table1a;
+   (*pLayoutTable)(0,1) << table1b;
+
+   table2 = pgsReportStyleHolder::CreateDefaultTable(9 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
-      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table1b->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -1376,14 +1589,20 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    // Setup table headings
    ColumnIndexType col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Release"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1a)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Release"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   
+   col = 0;
+   (*table1b)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Storage"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Storage"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table1b)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Erected"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Erected"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    if ( bShearKey )
@@ -1426,48 +1645,68 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
-   RowIndexType row1 = table1->GetNumberOfHeaderRows();
+   RowIndexType row1a = table1a->GetNumberOfHeaderRows();
+   RowIndexType row1b = table1b->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   std::vector<pgsPointOfInterest>::iterator releasePoiIter(vPoiRelease.begin());
+   std::vector<pgsPointOfInterest>::iterator releasePoiIterEnd(vPoiRelease.end());
+   std::vector<pgsPointOfInterest>::iterator storagePoiIter(vPoiStorage.begin());
+   std::vector<pgsPointOfInterest>::iterator erectedPoiIter(vPoiErected.begin());
+   for ( ; releasePoiIter != releasePoiIterEnd; releasePoiIter++, storagePoiIter++, erectedPoiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& releasePoi(*releasePoiIter);
+      const pgsPointOfInterest& storagePoi(*storagePoiIter);
+      const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 Dps1, Dps, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
+      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+
+      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+
+      //Float64 Dps1, Dps, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
       //Dps1       = pCamber->GetPrestressDeflection( poi, false );
       //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
       //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
-      Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
-      Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,      poi,bat, rtCumulative, false);
-      Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,poi,bat, rtCumulative, false) 
-                 + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,poi,bat, rtCumulative, false);
-      Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      poi,bat, rtCumulative, false);
-      Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat, rtCumulative, false);
-      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,poi,bat, rtCumulative, false));
-      Dcreep3    = pCamber->GetCreepDeflection( poi, ICamber::cpDeckToFinal, constructionRate );
+      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
+      Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
+      Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,      erectedPoi,bat, rtCumulative, false);
+      Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate );
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
+      Float64 Dcreep3    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDeckToFinal, constructionRate );
 
-      // Table 1
+      // Table 1a
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
-      (*table1)(row1,col++) << deflection.SetValue( Dps1 );
-      (*table1)(row1,col++) << deflection.SetValue( Dps );
-      (*table1)(row1,col++) << deflection.SetValue( Dgirder );
-      (*table1)(row1,col++) << deflection.SetValue( Dcreep1 );
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
+      (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
+      row1a++;
 
-      row1++;
+      // Table 1b
+      col = 0;
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
+      (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1 );
+      row1b++;
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
+      (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -1497,14 +1736,18 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps;
+#pragma Reminder("UPDATE: D1 should be based on deflections after erection")
+      // PGSuper v2 used deflections at end of storage. Since RDP and TxDOT are
+      // going to totally redo camber, make it match v2 and fix it later
+      //Float64 D1 = DgdrErected + DpsErected;
+      Float64 D1 = DgdrStorage + DpsStorage;
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Duser1;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       Float64 D6 = D5 + Dcreep3;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi,end_size );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
       (*table3)(row3,col++) << deflection.SetValue( D2 );
       (*table3)(row3,col++) << deflection.SetValue( D3 );
@@ -1534,7 +1777,8 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
       row3++;
    }
 
-   *pTable1 = table1;
+
+   *pTable1 = pLayoutTable;
    *pTable2 = table2;
    *pTable3 = table3;
 }

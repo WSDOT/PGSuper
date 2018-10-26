@@ -313,7 +313,7 @@ bool pgsSplittingZoneArtifact::StartPassed() const
 {
    if (m_IsApplicable)
    {
-      return m_StartPr >= GetStartSplittingForce();
+      return GetStartSplittingForce() <= m_StartPr;
    }
    else
    {

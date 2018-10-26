@@ -509,6 +509,11 @@ void CClosureJointData::ResolveReferences()
    // associated pier or temporary support. The ID of the associated object is stored and now
    // it is time to resolve that reference.
 
+   if ( m_pGirder == NULL )
+   {
+      return; // can't resolve it
+   }
+
    CGirderGroupData* pGirderGroup = m_pGirder->GetGirderGroup();
    if ( pGirderGroup == NULL )
    {

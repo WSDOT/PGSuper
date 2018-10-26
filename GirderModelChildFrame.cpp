@@ -67,7 +67,6 @@ IMPLEMENT_DYNCREATE(CGirderModelChildFrame, CSplitChildFrame)
 
 CGirderModelChildFrame::CGirderModelChildFrame():
 m_CurrentCutLocation(0),
-m_CutLocation(Center),
 m_EventIndex(0),
 m_GirderKey(ALL_GROUPS,0),
 m_bIsAfterFirstUpdate(false)
@@ -259,6 +258,9 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       }
    }
 
+   UpdateMaxCutLocation();
+   m_CurrentCutLocation = m_MaxCutLocation/2;
+
    FillEventComboBox();
    UpdateBar();
 
@@ -319,10 +321,12 @@ void CGirderModelChildFrame::UpdateViews()
    GetGirderModelSectionView()->OnUpdate(NULL,0,NULL);
 }
 
-void CGirderModelChildFrame::UpdateCutLocation(CutLocation cutLoc,Float64 Xg)
+void CGirderModelChildFrame::UpdateCutLocation(const pgsPointOfInterest& poi)
 {
-   m_CurrentCutLocation = Xg;
-   m_CutLocation = cutLoc;
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   m_CurrentCutLocation = pPoi->ConvertPoiToGirderlineCoordinate(poi);
    UpdateBar();
    GetGirderModelSectionView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
    GetGirderModelElevationView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
@@ -404,32 +408,63 @@ void CGirderModelChildFrame::UpdateBar()
       m_GirderKey.girderIndex = 0;
    }
 
+   UpdateMaxCutLocation();
+   if ( m_MaxCutLocation < m_CurrentCutLocation )
+   {
+      m_CurrentCutLocation = m_MaxCutLocation;
+   }
+
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   CString msg;
+   msg.Format(_T("Section Cut: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetSpanLengthUnit()));
+
+   pwndCutLocation->SetWindowText(msg);
+   pwndCutLocation->EnableWindow();
+
+   // frame title
+   OnUpdateFrameTitle(TRUE);
+}
+
+void CGirderModelChildFrame::UpdateMaxCutLocation()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   // Update the section cut range
    ATLASSERT(m_GirderKey.girderIndex != ALL_GIRDERS);
    if ( m_GirderKey.groupIndex == ALL_GROUPS )
    {
-      // summ the length of all the girders
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      // sum the length of all the girders
       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
       m_MaxCutLocation = 0;
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
          Float64 lg = pBridge->GetGirderLayoutLength(CGirderKey(grpIdx,m_GirderKey.girderIndex));
 
-         // if this is the first group, deduct the start end distance from the layout length
-         // to get the length from the start of the girder (basically coverting from
-         // girder path coordinates to girder coordinates)
+         // if this is the first group, deduct the distance from the pier line to the end of the girder
+         // from the girder layout length (basically coverting from
+         // girder path length to girder length)
          if ( grpIdx == 0 )
          {
-            lg -= pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,m_GirderKey.girderIndex,0));
+            CSegmentKey segmentKey(grpIdx,m_GirderKey.girderIndex,0);
+            Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+            Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
+            Float64 start_offset = brgOffset - endDist;
+            lg -= start_offset;
          }
 
-         // if this is the last group, deduct the end end distance from the layout length
-         // to get the length to the end of the girder (basically coverting from
-         // girder path coordinates to girder coordinates)
+         // if this is the last group, deduct the distance from the last pier line to the end of the girder
+         // from the girder layout length (basically coverting from
+         // girder path length to girder length)
          if ( grpIdx == nGroups-1 )
          {
             SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,m_GirderKey.girderIndex));
-            lg -= pBridge->GetSegmentEndEndDistance(CSegmentKey(grpIdx,m_GirderKey.girderIndex,nSegments-1));
+            CSegmentKey segmentKey(grpIdx,m_GirderKey.girderIndex,nSegments-1);
+            Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(segmentKey);
+            Float64 endDist   = pBridge->GetSegmentEndEndDistance(segmentKey);
+            Float64 end_offset = brgOffset - endDist;
+            lg -= end_offset;
          }
 
          m_MaxCutLocation += lg;
@@ -437,73 +472,8 @@ void CGirderModelChildFrame::UpdateBar()
    }
    else
    {
-      GET_IFACE2(pBroker,IBridge,pBridge);
       m_MaxCutLocation = pBridge->GetGirderLength(m_GirderKey);
    }
-
-   if (m_CutLocation == UserInput)
-   {
-      if (m_MaxCutLocation < m_CurrentCutLocation)
-      {
-         m_CurrentCutLocation = m_MaxCutLocation;
-      }
-   }
-   else if (m_CutLocation == LeftEnd)
-   {
-      m_CurrentCutLocation = 0.0;
-   }
-   else if (m_CutLocation == RightEnd)
-   {
-      m_CurrentCutLocation = m_MaxCutLocation;
-   }
-   else if (m_CutLocation == Center)
-   {
-      m_CurrentCutLocation = m_MaxCutLocation/2.0;
-   }
-   else
-   {
-      // cut was taken at a harping point, must enlist poi interface
-      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-      std::vector<pgsPointOfInterest> poi;
-      std::vector<pgsPointOfInterest>::iterator iter;
-
-#pragma Reminder("UPDATE: assuming segment index")
-      CSegmentKey segmentKey(m_GirderKey,0);
-
-      poi = pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT);
-      CollectionIndexType nPoi = poi.size();
-      ATLASSERT( 0 <= nPoi && nPoi <= 2 );
-      iter = poi.begin();
-      pgsPointOfInterest left_hp_poi = *iter++;
-      pgsPointOfInterest right_hp_poi = left_hp_poi;
-      if ( nPoi == 2 )
-      {
-         right_hp_poi = *iter++;
-      }
-
-      if (m_CutLocation == LeftHarp)
-      {
-         m_CurrentCutLocation = left_hp_poi.GetDistFromStart();
-      }
-      else if (m_CutLocation == RightHarp)
-      {
-         m_CurrentCutLocation = right_hp_poi.GetDistFromStart();
-      }
-      else
-      {
-         ASSERT(0); // unknown cut location type
-      }
-   }
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   CString msg;
-   msg.Format(_T("Section Cut Offset: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetSpanLengthUnit()));
-
-   pwndCutLocation->SetWindowText(msg);
-   pwndCutLocation->EnableWindow();
-
-   // frame title
-   OnUpdateFrameTitle(TRUE);
 }
 
 void CGirderModelChildFrame::OnGirderChanged()
@@ -569,35 +539,13 @@ void CGirderModelChildFrame::ShowCutDlg()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   Float64 val  = m_CurrentCutLocation;
-   Float64 high = m_MaxCutLocation;
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
-#pragma Reminder("UPDATE: assuming segment index")
-   CSegmentKey segmentKey(m_GirderKey,0);
-
-#pragma Reminder("UPDATE: this doesn't work for spliced girders")
-   // The whole section cut thing needs to be re-worked for spliced girders.
-   // The dialog needs to offer cut options for all segments in the view.
-   // Each segment can have a different number of harp points.
-   if ( segmentKey.groupIndex == ALL_GROUPS )
+   CSectionCutDlgEx dlg(pBroker,m_GirderKey,GetCutLocation());
+   if ( dlg.DoModal() == IDOK )
    {
-      segmentKey.groupIndex = 0;
-   }
-
-   ATLASSERT( segmentKey.groupIndex != ALL_GROUPS && segmentKey.girderIndex != ALL_GIRDERS  );
-   IndexType nHarpPoints = pStrandGeom->GetNumHarpPoints(segmentKey);
-
-   CSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
-
-   INT_PTR st = dlg.DoModal();
-   if (st == IDOK)
-   {
-      m_CurrentCutLocation = dlg.GetValue();
-      UpdateCutLocation(dlg.GetCutLocation(),m_CurrentCutLocation);
+      UpdateCutLocation(dlg.GetPOI());
    }
 }
 
@@ -611,84 +559,52 @@ Float64 CGirderModelChildFrame::GetMaxCutLocation()
    return m_MaxCutLocation;
 }
 
-void CGirderModelChildFrame::CutAt(Float64 Xg)
+Float64 CGirderModelChildFrame::GetCurrentCutLocation() 
 {
-   UpdateCutLocation(UserInput,Xg);
+   return m_CurrentCutLocation;
 }
 
-void CGirderModelChildFrame::CutAtLeftEnd() 
+void CGirderModelChildFrame::CutAt(Float64 Xgl)
 {
-   UpdateCutLocation(LeftEnd);
-}
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   pgsPointOfInterest poi = pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex,Xgl);
+   if ( poi.GetID() == INVALID_ID )
+   {
+      // make sure we are at an actual poi
+      poi = pPoi->GetNearestPointOfInterest(poi.GetSegmentKey(),poi.GetDistFromStart());
+   }
 
-void CGirderModelChildFrame::CutAtLeftHp() 
-{
-   UpdateCutLocation(LeftHarp);
-}
-
-void CGirderModelChildFrame::CutAtCenter() 
-{
-   UpdateCutLocation(Center);
-}
-
-void CGirderModelChildFrame::CutAtRightHp() 
-{
-   UpdateCutLocation(RightHarp);
-}
-
-void CGirderModelChildFrame::CutAtRightEnd() 
-{
-   UpdateCutLocation(RightEnd);
+   UpdateCutLocation(poi);
 }
 
 void CGirderModelChildFrame::CutAtNext()
 {
-   Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
-   f = ::RoundOff(f+0.1,0.1);
-   if ( 1 < f )
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   pgsPointOfInterest currentPoi = GetCutLocation();
+   pgsPointOfInterest poi = pPoi->GetNextPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
+   if ( poi.GetID() != INVALID_ID )
    {
-      f = 1;
+      Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+      CutAt(Xgl);
    }
-
-   CutAt(f*m_MaxCutLocation);
 }
 
 void CGirderModelChildFrame::CutAtPrev()
 {
-   Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
-   f = ::RoundOff(f-0.1,0.1);
-   if ( f < 0 )
-   {
-      f = 0;
-   }
-
-   CutAt(f*m_MaxCutLocation);
-}
-
-void CGirderModelChildFrame::CutAtLocation()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   Float64 val  = ::ConvertFromSysUnits(m_CurrentCutLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   Float64 high = ::ConvertFromSysUnits(m_MaxCutLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-
-   CSectionCutDlg dlg(val,0.0,high,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
-
-   INT_PTR st = dlg.DoModal();
-   if (st == IDOK)
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   pgsPointOfInterest currentPoi = GetCutLocation();
+   pgsPointOfInterest poi = pPoi->GetPrevPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
+   if ( poi.GetID() != INVALID_ID )
    {
-      val = ::ConvertToSysUnits(dlg.GetValue(),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      CutAt(val);
+      Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+      CutAt(Xgl);
    }
-
-   // Because the dialog messes with the screen
-   // force an update (this is a hack because of the selection tool).
-   GetGirderModelElevationView()->Invalidate();
-   GetGirderModelElevationView()->UpdateWindow();
 }
 
 pgsPointOfInterest CGirderModelChildFrame::GetCutLocation()

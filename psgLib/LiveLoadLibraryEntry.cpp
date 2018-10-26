@@ -362,7 +362,7 @@ Float64 LiveLoadLibraryEntry::GetMaxVariableAxleSpacing() const
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
 
-bool LiveLoadLibraryEntry::Edit(bool allowEditing)
+bool LiveLoadLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

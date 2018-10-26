@@ -62,8 +62,9 @@
 #define HINT_LIVELOADCHANGED          MIN_RESULTS_HINT + 8
 #define HINT_ANALYSISTYPECHANGED      MIN_RESULTS_HINT + 9
 #define HINT_RATINGSPECCHANGED        MIN_RESULTS_HINT + 10
+#define HINT_LOSSPARAMETERSCHANGED    MIN_RESULTS_HINT + 11
 
-#define MAX_RESULTS_HINT              HINT_RATINGSPECCHANGED
+#define MAX_RESULTS_HINT              HINT_LOSSPARAMETERSCHANGED
 
 #define HINT_LIBRARYCHANGED           201 // Changes made to non-referenced entries only
 #define HINT_GIRDERCHANGED            202 // Girder changes are treated individualy

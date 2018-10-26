@@ -52,6 +52,7 @@ protected:
    void OnEndDistanceMeasureChanged();
    afx_msg void OnBearingOffsetMeasureChanged();
    afx_msg void OnConnectionTypeChanged();
+   afx_msg void OnBoundaryConditionsChanged();
    afx_msg void OnInstallationStageChanged();
    afx_msg void OnInstallationStageChanging();
 
@@ -73,12 +74,8 @@ protected:
    CString m_strSupportLabel;
 
    CClosureKey m_ClosureKey;
+   ClosureIDType m_ClosureID;
 
-   pgsTypes::TemporarySupportType m_tsSupportType;
-
-   pgsTypes::SegmentConnectionType m_TSConnectionType;
-   pgsTypes::PierSegmentConnectionType m_SegmentConnectionType;
-   pgsTypes::PierConnectionType m_PierConnectionType;
    Float64 m_EndDistance;
    Float64 m_BearingOffset;
    Float64 m_SupportWidth;
@@ -86,7 +83,6 @@ protected:
    Float64 m_DiaphragmHeight;
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType;
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
-   EventIndexType m_ClosureJointEventIndex;
 
    EventIndexType CreateEvent();
 

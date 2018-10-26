@@ -24,19 +24,21 @@
 
 #include <System\Transaction.h>
 #include <PgsExt\ClosureJointData.h>
+#include <PgsExt\TimelineManager.h>
 
 struct txnEditClosureJointData
 {
    txnEditClosureJointData()
-   { m_ClosureEventIdx = INVALID_INDEX; m_PierIdx = INVALID_INDEX; m_TSIdx = INVALID_INDEX; }
+   { m_PierIdx = INVALID_INDEX; m_TSIdx = INVALID_INDEX; }
 
    bool operator<(const txnEditClosureJointData& rOther) const { return m_ClosureKey < rOther.m_ClosureKey; }
 
-   CSegmentKey m_ClosureKey;
-   CClosureJointData m_ClosureJoint;
-   EventIndexType m_ClosureEventIdx;
    PierIndexType m_PierIdx;
    SupportIndexType m_TSIdx;
+
+   CSegmentKey m_ClosureKey;
+   CClosureJointData m_ClosureJoint;
+   CTimelineManager m_TimelineMgr;
 };
 
 class txnEditClosureJoint : public txnTransaction

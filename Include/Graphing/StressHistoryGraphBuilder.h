@@ -30,6 +30,8 @@
 
 class CStressHistoryGraphController;
 class arvPhysicalConverter;
+interface ILimitStateForces;
+interface IIntervals;
 
 class GRAPHINGCLASS CStressHistoryGraphBuilder : public CEAFAutoCalcGraphBuilder
 {
@@ -64,10 +66,7 @@ protected:
    arvPhysicalConverter* m_pYFormat;
    grGraphXY m_Graph;
 
-   bool m_bTopDeck;
-   bool m_bBottomDeck;
-   bool m_bTopGirder;
-   bool m_bBottomGirder;
+   bool m_bPlot[4];
 
    int m_XAxisType;
 
@@ -77,5 +76,7 @@ protected:
    void UpdateYAxis();
    void UpdateGraphTitle(const pgsPointOfInterest& poi);
    void UpdateGraphData(const pgsPointOfInterest& poi);
+   Float64 GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IIntervals* pIntervals);
+   void PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,IndexType dataSeries,ILimitStateForces* pLimitStateForces);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
 };

@@ -2,6 +2,7 @@
 
 #include <PgsExt\StressTendonActivity.h>
 #include <PgsExt\TimelineManager.h>
+#include <PgsExt\TimelineItemListBox.h>
 
 // CStressTendonDlg dialog
 
@@ -10,28 +11,27 @@ class CStressTendonDlg : public CDialog
 	DECLARE_DYNAMIC(CStressTendonDlg)
 
 public:
-	CStressTendonDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
+	CStressTendonDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CStressTendonDlg();
 
 // Dialog Data
 	enum { IDD = IDD_STRESS_TENDON };
-   CStressTendonActivity m_StressTendonActivity;
+
+   CTimelineManager m_TimelineMgr;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-   void FillSourceList();
-   void FillTargetList();
+   void FillLists();
 
-   std::vector<CTendonKey> m_SourceTendons; // all unstressed tendons
-   std::vector<CTendonKey> m_TargetTendons; // all tendons stress during this activity
-
-   const CTimelineManager* m_pTimelineMgr;
    EventIndexType m_EventIndex;
+
+   CTimelineItemListBox m_lbSource;
+   CTimelineItemListBox m_lbTarget;
 
 	DECLARE_MESSAGE_MAP()
 
 public:
    virtual BOOL OnInitDialog();
-   afx_msg void OnMoveRight();
-   afx_msg void OnMoveLeft();
+   afx_msg void OnMoveToTargetList();
+   afx_msg void OnMoveToSourceList();
 };

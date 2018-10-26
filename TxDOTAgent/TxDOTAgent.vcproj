@@ -35,7 +35,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying Toga Templates to BridgeLink folder"
-				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
 				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
@@ -61,6 +61,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;..\Include;..\Include\PlugIns;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;ENABLE_LOGGING"
@@ -136,7 +137,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying Toga Templates to BridgeLink folder"
-				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
 				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
@@ -161,6 +162,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;..\Include;..\Include\PlugIns;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;ENABLE_LOGGING"
@@ -237,7 +239,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying Toga Templates to BridgeLink folder"
-				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
 				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
@@ -263,6 +265,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -344,7 +347,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying Toga Templates to BridgeLink folder"
-				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
 				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
@@ -369,6 +372,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -450,7 +454,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying Toga Templates to BridgeLink folder"
-				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
 				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
@@ -476,6 +480,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -557,7 +562,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying Toga Templates to BridgeLink folder"
-				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;xcopy /y/d .\TogaTemplates\*.ico \ARP\BridgeLink\TogaTemplates&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
 				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
@@ -582,6 +587,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"

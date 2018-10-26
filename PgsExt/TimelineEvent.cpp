@@ -61,7 +61,21 @@ CTimelineEvent& CTimelineEvent::operator= (const CTimelineEvent& rOther)
 
 bool CTimelineEvent::operator<(const CTimelineEvent& rOther) const
 {
-   return m_Day < rOther.m_Day;
+   if ( m_Day < rOther.m_Day )
+   {
+      return true;
+   }
+
+   if ( m_Day == rOther.m_Day )
+   {
+      // occur on the same day... the one with the shorter duration comes first
+      if ( GetMinElapsedTime() <= rOther.GetMinElapsedTime() )
+      {
+         return true;
+      }
+   }
+
+   return false;
 }
 
 bool CTimelineEvent::operator==(const CTimelineEvent& rOther) const
@@ -295,6 +309,8 @@ CApplyLoadActivity& CTimelineEvent::GetApplyLoadActivity()
 
 Float64 CTimelineEvent::GetMinElapsedTime() const
 {
+   // The minimum elapsed time for this event is
+   // the greatest of the elapsed time of all the activities in this event
    Float64 elapsedTime = 0;
 
    if ( m_ConstructSegments.IsEnabled() )
@@ -302,6 +318,8 @@ Float64 CTimelineEvent::GetMinElapsedTime() const
       // the duration of this activity is the time from strand stressing to release
       elapsedTime = Max(elapsedTime,m_ConstructSegments.GetRelaxationTime());
    }
+
+   // Commented out code below are the zero duration activities... no need to explicitly check them
 
    //if ( m_ErectPiers.IsEnabled() )
    //{

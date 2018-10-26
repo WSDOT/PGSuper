@@ -148,14 +148,6 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
          pTimelineMgr->SetStressTendonEventByIndex(pParent->m_GirderID,ductIdx,m_TendonStressingEvent[ductIdx]);
       }
 
-      SegmentIndexType nCP = pParent->m_pGirder->GetClosureJointCount();
-      for ( SegmentIndexType cpIdx = 0; cpIdx < nCP; cpIdx++ )
-      {
-         const CClosureJointData* pCP = pParent->m_pGirder->GetClosureJoint(cpIdx);
-         IDType cpID = pCP->GetID();
-         pTimelineMgr->SetCastClosureJointEventByIndex(cpID,m_CastClosureEvent[cpIdx]);
-      }
-
       int result = pTimelineMgr->Validate();
       if ( result != TLM_SUCCESS )
       {
@@ -247,16 +239,6 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
       EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pParent->m_GirderID,ductIdx);
       m_TendonStressingEvent.push_back(eventIdx);
    }
-
-   IndexType nClosureJoints = pParent->m_pGirder->GetClosureJointCount();
-   for ( IndexType idx = 0; idx < nClosureJoints; idx++ )
-   {
-      const CPrecastSegmentData* pSegment = pParent->m_pGirder->GetSegment(idx);
-      SegmentIDType segID = pSegment->GetID();
-      EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(segID);
-      m_CastClosureEvent.push_back(eventIdx);
-   }
-
 
    FillStrandList(IDC_STRAND);
 
@@ -486,7 +468,7 @@ pgsTypes::StrandInstallationType CSplicedGirderGeneralPage::GetInstallationType(
 
 void CSplicedGirderGeneralPage::FillDuctType()
 {
-#pragma Reminder("FINISH: get the exact terminology from LRFD 5.6.4")
+   // LRFD 5.4.6.1
    CComboBox* pcbDuctType = (CComboBox*)GetDlgItem(IDC_DUCT_TYPE);
    pcbDuctType->AddString(_T("Galvanized ferrous metal"));
    pcbDuctType->AddString(_T("Polyethylene"));
@@ -495,6 +477,7 @@ void CSplicedGirderGeneralPage::FillDuctType()
 
 void CSplicedGirderGeneralPage::FillInstallationType()
 {
+   // LRFD 5.4.6.2
    CComboBox* pcbInstallType = (CComboBox*)GetDlgItem(IDC_INSTALLATION_TYPE);
    int idx = pcbInstallType->AddString(_T("Push"));
    pcbInstallType->SetItemData(idx,(DWORD_PTR)pgsTypes::sitPush);

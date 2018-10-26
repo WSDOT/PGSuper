@@ -46,8 +46,6 @@ protected:
    Float64 m_Station;
    std::_tstring m_strOrientation;
    pgsTypes::TemporarySupportType m_Type;
-   EventIndexType m_ErectionEventIndex;
-   EventIndexType m_RemovalEventIndex;
    Float64 m_ElevAdjustment;
 
    int m_PrevErectionEventIdx;
@@ -56,6 +54,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();
+   virtual BOOL OnSetActive();
    afx_msg void OnSupportTypeChanged();
    afx_msg void OnErectionEventChanged();
    afx_msg void OnErectionEventChanging();

@@ -3306,7 +3306,7 @@ const GirderLibraryEntry::DiaphragmLayoutRules& GirderLibraryEntry::GetDiaphragm
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool GirderLibraryEntry::Edit(bool allowEditing)
+bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3324,6 +3324,7 @@ bool GirderLibraryEntry::Edit(bool allowEditing)
    GirderLibraryEntry tmp(*this);
 
    CGirderMainSheet dlg(tmp, IDS_GIRDER_SHEET, allowEditing);
+   dlg.SetActivePage(nPage);
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {

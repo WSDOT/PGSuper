@@ -64,7 +64,7 @@ void CGraphView::DumpLBAM()
 {
    // Alt + Ctrl + L
    boost::shared_ptr<CGraphBuilder> pGraphBuilder(GetGraphBuilder());
-   boost::shared_ptr<CAnalysisResultsGraphBuilder> pMyGraphBuilder = boost::shared_dynamic_cast<CAnalysisResultsGraphBuilder>(pGraphBuilder);
+   boost::shared_ptr<CAnalysisResultsGraphBuilder> pMyGraphBuilder = boost::dynamic_pointer_cast<CAnalysisResultsGraphBuilder>(pGraphBuilder);
    if ( pMyGraphBuilder )
    {
       pMyGraphBuilder->DumpLBAM();
@@ -91,7 +91,7 @@ void CGraphView::Dump(CDumpContext& dc) const
 bool CGraphView::DoResultsExist()
 {
    boost::shared_ptr<CGraphBuilder> pGraphBuilder(GetGraphBuilder());
-   boost::shared_ptr<CEAFGraphBuilderBase> pMyGraphBuilder = boost::shared_dynamic_cast<CEAFGraphBuilderBase>(pGraphBuilder);
+   boost::shared_ptr<CEAFGraphBuilderBase> pMyGraphBuilder = boost::dynamic_pointer_cast<CEAFGraphBuilderBase>(pGraphBuilder);
    return pMyGraphBuilder->IsValidGraph();
 }
 

@@ -380,7 +380,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       CollectionIndexType nItems = pStatusCenter->Count();
 
       GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-      GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? firstGroupIdx : pBridge->GetGirderGroupCount()-1);
+      GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : firstGroupIdx);
       for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
       {
          CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);

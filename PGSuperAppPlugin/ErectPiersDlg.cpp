@@ -17,16 +17,17 @@
 
 IMPLEMENT_DYNAMIC(CErectPiersDlg, CDialog)
 
-CErectPiersDlg::CErectPiersDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+CErectPiersDlg::CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
 	: CDialog(CErectPiersDlg::IDD, pParent),
-   m_pTimelineMgr(pTimelineMgr),
    m_EventIndex(eventIdx)
 {
+   m_TimelineMgr = timelineMgr;
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
 
-   m_pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
+   m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
 }
 
 CErectPiersDlg::~CErectPiersDlg()
@@ -36,29 +37,58 @@ CErectPiersDlg::~CErectPiersDlg()
 void CErectPiersDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+   DDX_Control(pDX,IDC_SOURCE_LIST,m_lbSource);
+   DDX_Control(pDX,IDC_TARGET_LIST,m_lbTarget);
 
    if ( pDX->m_bSaveAndValidate )
    {
-      m_ErectPiers.Clear();
-      m_ErectPiers.Enable(true);
-
-      CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-      int nItems = pTargetList->GetCount();
+      // Set event information for everything in the target list
+      int nItems = m_lbTarget.GetCount();
       for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
       {
-         PierIndexType key = (PierIndexType)pTargetList->GetItemData(itemIdx);
-         if ( IsTSIndex(key) )
+         CTimelineItemIndexDataPtr* pItemData = (CTimelineItemIndexDataPtr*)m_lbTarget.GetItemDataPtr(itemIdx);
+         if ( IsTSIndex(pItemData->m_Index) )
          {
-            SupportIndexType tsIdx = DecodeTSIndex(key);
+            SupportIndexType tsIdx = DecodeTSIndex(pItemData->m_Index);
             const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
-
-            m_ErectPiers.AddTempSupport(pTS->GetID());
+            SupportIDType tsID = pTS->GetID();
+            EventIndexType erectionEventIdx,removalEventIdx;
+            m_TimelineMgr.GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
+            m_TimelineMgr.SetTempSupportEvents(tsID,m_EventIndex,removalEventIdx);
          }
          else
          {
-            PierIndexType pierIdx = (PierIndexType)key;
-            const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
-            m_ErectPiers.AddPier(pPier->GetID());
+            const CPierData2* pPier = m_pBridgeDesc->GetPier(pItemData->m_Index);
+            PierIDType pierID = pPier->GetID();
+            m_TimelineMgr.SetPierErectionEventByIndex(pierID,m_EventIndex);
+         }
+      }
+
+      // Remove event information for everything in the source list that isn't used in another event
+      nItems = m_lbSource.GetCount();
+      for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
+      {
+         CTimelineItemIndexDataPtr* pItemData = (CTimelineItemIndexDataPtr*)m_lbSource.GetItemDataPtr(itemIdx);
+         if ( pItemData->m_State == CTimelineItemDataPtr::Used )
+         {
+            // item is used in a different event
+            continue;
+         }
+
+         if ( IsTSIndex(pItemData->m_Index) )
+         {
+            SupportIndexType tsIdx = DecodeTSIndex(pItemData->m_Index);
+            const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
+            SupportIDType tsID = pTS->GetID();
+            EventIndexType erectionEventIdx,removalEventIdx;
+            m_TimelineMgr.GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
+            m_TimelineMgr.SetTempSupportEvents(tsID,INVALID_INDEX,removalEventIdx);
+         }
+         else
+         {
+            const CPierData2* pPier = m_pBridgeDesc->GetPier(pItemData->m_Index);
+            PierIDType pierID = pPier->GetID();
+            m_TimelineMgr.SetPierErectionEventByIndex(pierID,INVALID_INDEX);
          }
       }
    }
@@ -66,8 +96,8 @@ void CErectPiersDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CErectPiersDlg, CDialog)
-   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CErectPiersDlg::OnMoveRight)
-   ON_BN_CLICKED(IDC_MOVE_LEFT, &CErectPiersDlg::OnMoveLeft)
+   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CErectPiersDlg::OnMoveToTargetList)
+   ON_BN_CLICKED(IDC_MOVE_LEFT, &CErectPiersDlg::OnMoveToSourceList)
 END_MESSAGE_MAP()
 
 
@@ -75,10 +105,12 @@ END_MESSAGE_MAP()
 
 BOOL CErectPiersDlg::OnInitDialog()
 {
-   FillSourceList();
-   FillTargetList();
+   m_lbSource.Initialize(CTimelineItemListBox::Source,CTimelineItemListBox::Index,&m_lbTarget);
+   m_lbTarget.Initialize(CTimelineItemListBox::Target,CTimelineItemListBox::Index,&m_lbSource);
 
    CDialog::OnInitDialog();
+
+   FillLists();
 
    // TODO:  Add extra initialization here
 
@@ -86,106 +118,40 @@ BOOL CErectPiersDlg::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CErectPiersDlg::OnMoveRight()
+
+void CErectPiersDlg::OnMoveToTargetList()
 {
-   // Move from source to target lists
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-   int nCount = pSourceList->GetSelCount();
-   CArray<int,int> arrSelected;
-   arrSelected.SetSize(nCount);
-   pSourceList->GetSelItems(nCount,arrSelected.GetData());
-
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-   for ( int i = 0; i < nCount; i++ )
-   {
-      int sel = arrSelected.GetAt(i);
-
-      PierIndexType key = (PierIndexType)pSourceList->GetItemData(sel);
-      if ( IsTSIndex(key) )
-      {
-         SupportIndexType tsIdx = DecodeTSIndex(key);
-
-         const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
-         CString label(GetLabel(pTS,m_pDisplayUnits));
-
-         pTargetList->SetItemData(pTargetList->AddString(label),key);
-      }
-      else
-      {
-         const CPierData2* pPier = m_pBridgeDesc->GetPier(key);
-         ATLASSERT(pPier->GetIndex() == key);
-
-         CString label(GetLabel(pPier,m_pDisplayUnits));
-         pTargetList->SetItemData(pTargetList->AddString(label),key);
-      }
-   }
-
-   for ( int i = nCount-1; 0 <= i; i-- )
-   {
-      pSourceList->DeleteString(arrSelected.GetAt(i));
-   }
+   m_lbSource.MoveSelectedItemsToBuddy();
 }
 
-void CErectPiersDlg::OnMoveLeft()
+void CErectPiersDlg::OnMoveToSourceList()
 {
-   // Move from target to source lists
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-   int nCount = pTargetList->GetSelCount();
-   CArray<int,int> arrSelected;
-   arrSelected.SetSize(nCount);
-   pTargetList->GetSelItems(nCount,arrSelected.GetData());
-
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-   for ( int i = 0; i < nCount; i++ )
-   {
-      int sel = arrSelected.GetAt(i);
-
-      PierIndexType key = (PierIndexType)pTargetList->GetItemData(sel);
-      if ( IsTSIndex(key) )
-      {
-         SupportIndexType tsIdx = DecodeTSIndex(key);
-
-         const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
-         CString label(GetLabel(pTS,m_pDisplayUnits));
-
-         pSourceList->SetItemData(pSourceList->AddString(label),key);
-      }
-      else
-      {
-         const CPierData2* pPier = m_pBridgeDesc->GetPier(key);
-         ATLASSERT(pPier->GetIndex() == key);
-
-         CString label(GetLabel(pPier,m_pDisplayUnits));
-         pSourceList->SetItemData(pSourceList->AddString(label),key);
-      }
-   }
-
-   for ( int i = nCount-1; 0 <= i; i-- )
-   {
-      pTargetList->DeleteString(arrSelected.GetAt(i));
-   }
+   m_lbTarget.MoveSelectedItemsToBuddy();
 }
 
-void CErectPiersDlg::FillSourceList()
+void CErectPiersDlg::FillLists()
 {
-   CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
-
    PierIndexType nPiers = m_pBridgeDesc->GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
       PierIDType pierID = pPier->GetID();
-      bool bIsPierErected = m_pTimelineMgr->IsPierErected(pierID);
-      EventIndexType erectionEventIdx = m_pTimelineMgr->GetPierErectionEventIndex(pierID);
-      if ( bIsPierErected && erectionEventIdx == m_EventIndex )
+
+      bool bIsPierErected = m_TimelineMgr.IsPierErected(pierID);
+      EventIndexType erectionEventIdx = m_TimelineMgr.GetPierErectionEventIndex(pierID);
+
+      CString label( GetLabel(pPier,m_pDisplayUnits) );
+
+      if ( erectionEventIdx == m_EventIndex )
       {
-         if ( !m_ErectPiers.HasPier(pierID) )
-            bIsPierErected = false;
+         // erected during this event, put it in the target list
+         m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,pierIdx);
       }
-      if ( !bIsPierErected )
+      else
       {
-         CString label(GetLabel(pPier,m_pDisplayUnits));
-         pSourceList->SetItemData(pSourceList->AddString(label),pierIdx);
+         // not erected during this event, put it in the source list
+         CTimelineItemDataPtr::State state = (bIsPierErected ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
+         m_lbSource.AddItem(label,state,pierIdx);
       }
    }
 
@@ -194,48 +160,22 @@ void CErectPiersDlg::FillSourceList()
    {
       const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
       SupportIDType tsID = pTS->GetID();
-      bool bIsTemporarySupportErected = m_pTimelineMgr->IsTemporarySupportErected(tsID);
+
+      bool bIsTemporarySupportErected = m_TimelineMgr.IsTemporarySupportErected(tsID);
+
       EventIndexType erectEventIdx, removeEventIdx;
-      m_pTimelineMgr->GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
-      if ( bIsTemporarySupportErected && erectEventIdx == m_EventIndex )
+      m_TimelineMgr.GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
+      
+      CString label(GetLabel(pTS,m_pDisplayUnits));
+
+      if ( erectEventIdx == m_EventIndex )
       {
-         if ( !m_ErectPiers.HasTempSupport(tsID) )
-            bIsTemporarySupportErected = false;
+         m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,EncodeTSIndex(tsIdx));
       }
-      if ( !bIsTemporarySupportErected )
+      else
       {
-         CString label(GetLabel(pTS,m_pDisplayUnits));
-
-         pSourceList->SetItemData(pSourceList->AddString(label),EncodeTSIndex(tsIdx));
+         CTimelineItemDataPtr::State state = (bIsTemporarySupportErected ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
+         m_lbSource.AddItem(label,state,EncodeTSIndex(tsIdx));
       }
-   }
-}
-
-void CErectPiersDlg::FillTargetList()
-{
-   CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
-
-   const std::set<PierIDType>& piers = m_ErectPiers.GetPiers();
-   std::set<PierIDType>::const_iterator pierIter;
-   for ( pierIter = piers.begin(); pierIter != piers.end(); pierIter++ )
-   {
-      PierIDType pierID = *pierIter;
-
-      const CPierData2* pPier = m_pBridgeDesc->FindPier(pierID);
-      PierIndexType pierIdx = pPier->GetIndex();
-
-      CString label(GetLabel(pPier,m_pDisplayUnits));
-      pTargetList->SetItemData(pTargetList->AddString(label),pierIdx);
-   }
-
-   const std::set<SupportIDType>& tempSupports = m_ErectPiers.GetTempSupports();
-   std::set<SupportIDType>::const_iterator tsIter;
-   for ( tsIter = tempSupports.begin(); tsIter != tempSupports.end(); tsIter++ )
-   {
-      SupportIDType tsID = *tsIter;
-      const CTemporarySupportData* pTS = m_pBridgeDesc->FindTemporarySupport(tsID);
-      CString label( GetLabel(pTS,m_pDisplayUnits) );
-
-      pTargetList->SetItemData(pTargetList->AddString(label),EncodeTSIndex(pTS->GetIndex()));
    }
 }

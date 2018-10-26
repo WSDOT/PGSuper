@@ -47,8 +47,6 @@ CTemporarySupportLayoutPage::CTemporarySupportLayoutPage()
    m_Station = 0.0;
    m_strOrientation = _T("NORMAL");
    m_Type = pgsTypes::ErectionTower;
-   m_ErectionEventIndex = 0;
-   m_RemovalEventIndex  = 0;
    m_ElevAdjustment = 0;
 }
 
@@ -62,13 +60,6 @@ void CTemporarySupportLayoutPage::Init(const CTemporarySupportData* pTS)
    m_strOrientation = pTS->GetOrientation();
    m_Type           = pTS->GetSupportType();
    m_ElevAdjustment = pTS->GetElevationAdjustment();
-
-   SupportIDType tsID = pTS->GetID();
-
-   const CSpanData2* pSpanData = pTS->GetSpan();
-   const CBridgeDescription2* pBridge = pSpanData->GetBridgeDescription();
-   const CTimelineManager* pTimelineMgr = pBridge->GetTimelineManager();
-   pTimelineMgr->GetTempSupportEvents(tsID,&m_ErectionEventIndex,&m_RemovalEventIndex);
 }
 
 void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
@@ -86,26 +77,10 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBEnum(pDX,IDC_TS_TYPE,m_Type);
 
-   DDX_CBItemData(pDX,IDC_ERECTION_EVENT,m_ErectionEventIndex);
-   DDX_CBItemData(pDX,IDC_REMOVAL_EVENT,m_RemovalEventIndex);
-
    DDX_UnitValueAndTag(pDX,IDC_ADJUSTMENT,IDC_ADJUSTMENT_UNIT,m_ElevAdjustment,pDisplayUnits->GetComponentDimUnit());
 
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( pParent->m_BridgeDesc.GetTimelineManager()->GetEventCount() <= m_ErectionEventIndex )
-      {
-         pDX->PrepareCtrl(IDC_ERECTION_EVENT);
-         AfxMessageBox(_T("Select an erection event"));
-         pDX->Fail();
-      }
-
-      if ( pParent->m_BridgeDesc.GetTimelineManager()->GetEventCount() <= m_RemovalEventIndex )
-      {
-         pDX->PrepareCtrl(IDC_REMOVAL_EVENT);
-         AfxMessageBox(_T("Select an removal event"));
-         pDX->Fail();
-      }
 #pragma Reminder("Validate temporary support orientation")
       //pDX->PrepareEditCtrl(IDC_ORIENTATION);
       //GET_IFACE2(pBroker,IBridge,pBridge);
@@ -153,7 +128,6 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       // copy the local page data in the bridge model owned by the parent property sheet
       pParent->m_pTS->SetOrientation(m_strOrientation.c_str());
       pParent->m_pTS->SetSupportType(m_Type);
-      pBridgeDesc->GetTimelineManager()->SetTempSupportEvents(pParent->m_pTS->GetID(),m_ErectionEventIndex,m_RemovalEventIndex);
 
       pParent->m_pTS->SetElevationAdjustment(m_ElevAdjustment);
 
@@ -192,6 +166,13 @@ BOOL CTemporarySupportLayoutPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
+   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   EventIndexType erectionEventIdx, removalEventIdx;
+   pParent->m_BridgeDesc.GetTimelineManager()->GetTempSupportEvents(pParent->m_pTS->GetID(),&erectionEventIdx,&removalEventIdx);
+   CDataExchange dx(this,FALSE);
+   DDX_CBItemData(&dx,IDC_ERECTION_EVENT,erectionEventIdx);
+   DDX_CBItemData(&dx,IDC_REMOVAL_EVENT,removalEventIdx);
+
    CString fmt;
    fmt.LoadString( IDS_DLG_ORIENTATIONFMT );
    GetDlgItem(IDC_ORIENTATION_FORMAT)->SetWindowText( fmt );
@@ -223,11 +204,10 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
    GetDlgItem(IDC_ADJUSTMENT_UNIT)->ShowWindow(showWnd);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   pParent->m_pTS->SetSupportType(type);
+
    if ( type == pgsTypes::StrongBack && pParent->m_pTS->GetConnectionType() == pgsTypes::sctContinuousSegment )
    {
-#pragma Reminder("UPDATE: add option to create an event on the fly")
-      // Adding this option will make this UI element consistent with all the other UI elements that
-      // ask the user to select an event
       CSelectItemDlg dlg;
       dlg.m_strLabel = _T("Precast segments must be spliced with a closure joint at strong back supports. Select the event when the closure joints are cast.");
       dlg.m_strTitle = _T("Select Event");
@@ -244,10 +224,14 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
          strItem.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
 
          if ( eventIdx != 0 )
+         {
             strItems += _T("\n");
+         }
 
          strItems += strItem;
       }
+
+      strItems += _T("\nCreate Event...");
 
       dlg.m_strItems = strItems;
       EventIndexType castClosureEventIndex;
@@ -258,6 +242,15 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
       else
       {
          return;
+      }
+
+      if ( castClosureEventIndex == nEvents )
+      {
+         castClosureEventIndex = CreateEvent();
+         if ( castClosureEventIndex == INVALID_INDEX )
+         {
+            return;
+         }
       }
 
       pParent->m_pTS->SetConnectionType(pgsTypes::sctClosureJoint,castClosureEventIndex);
@@ -296,10 +289,22 @@ void CTemporarySupportLayoutPage::FillEventList()
    pcbRemove->SetItemData(pcbRemove->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
    if ( erectIdx != CB_ERR )
+   {
       pcbErect->SetCurSel(erectIdx);
+   }
+   else
+   {
+      pcbErect->SetCurSel(0);
+   }
 
    if ( removeIdx != CB_ERR )
+   {
       pcbRemove->SetCurSel(removeIdx);
+   }
+   else
+   {
+      pcbRemove->SetCurSel(0);
+   }
 }
 
 void CTemporarySupportLayoutPage::OnErectionEventChanging()
@@ -312,21 +317,26 @@ void CTemporarySupportLayoutPage::OnErectionEventChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
    int curSel = pCB->GetCurSel();
-   if ( pCB->GetItemData(curSel) == CREATE_TIMELINE_EVENT )
+   EventIndexType eventIdx = pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
-      EventIndexType eventIdx = CreateEvent();
-      
-      if ( eventIdx != INVALID_INDEX )
+      eventIdx = CreateEvent();
+      if ( eventIdx == INVALID_INDEX )
       {
-         m_ErectionEventIndex = eventIdx;
-         FillEventList();
-         pCB->SetCurSel((int)eventIdx);
+         pCB->SetCurSel(m_PrevErectionEventIdx);
+         return;
       }
       else
       {
-         pCB->SetCurSel(m_PrevErectionEventIdx);
+         FillEventList();
       }
    }
+
+   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   EventIndexType erectionEventIdx, removalEventIdx;
+   pParent->m_BridgeDesc.GetTimelineManager()->GetTempSupportEvents(pParent->m_pTS->GetID(),&erectionEventIdx,&removalEventIdx);
+   pParent->m_BridgeDesc.GetTimelineManager()->SetTempSupportEvents(pParent->m_pTS->GetID(),eventIdx,removalEventIdx);
+   pCB->SetCurSel((int)eventIdx);
 }
 
 void CTemporarySupportLayoutPage::OnRemovalEventChanging()
@@ -339,21 +349,27 @@ void CTemporarySupportLayoutPage::OnRemovalEventChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_REMOVAL_EVENT);
    int curSel = pCB->GetCurSel();
-   if ( pCB->GetItemData(curSel) == CREATE_TIMELINE_EVENT )
+   EventIndexType eventIdx = pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
-      EventIndexType eventIdx = CreateEvent();
-      
-      if ( eventIdx != INVALID_INDEX )
+      eventIdx = CreateEvent();
+      if ( eventIdx == INVALID_INDEX )
       {
-         m_RemovalEventIndex = eventIdx;
-         FillEventList();
-         pCB->SetCurSel((int)eventIdx);
+         pCB->SetCurSel(m_PrevErectionEventIdx);
+         return;
       }
       else
       {
-         pCB->SetCurSel((int)m_RemovalEventIndex);
+         FillEventList();
       }
    }
+
+   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   EventIndexType erectionEventIdx, removalEventIdx;
+   pParent->m_BridgeDesc.GetTimelineManager()->GetTempSupportEvents(pParent->m_pTS->GetID(),&erectionEventIdx,&removalEventIdx);
+   pParent->m_BridgeDesc.GetTimelineManager()->SetTempSupportEvents(pParent->m_pTS->GetID(),erectionEventIdx,eventIdx);
+   pCB->SetCurSel((int)eventIdx);
+
 }
 
 EventIndexType CTemporarySupportLayoutPage::CreateEvent()
@@ -362,13 +378,20 @@ EventIndexType CTemporarySupportLayoutPage::CreateEvent()
    CBridgeDescription2* pBridge = pParent->GetBridgeDescription();
    CTimelineManager* pTimelineMgr = pBridge->GetTimelineManager();
 
-   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
       EventIndexType idx;
-      pTimelineMgr->AddTimelineEvent(dlg.m_TimelineEvent,true,&idx);
+      pTimelineMgr->AddTimelineEvent(*dlg.m_pTimelineEvent,true,&idx);
       return idx;
   }
 
    return INVALID_INDEX;
+}
+
+BOOL CTemporarySupportLayoutPage::OnSetActive()
+{
+   FillEventList();
+
+   return CPropertyPage::OnSetActive();
 }

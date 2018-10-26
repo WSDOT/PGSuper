@@ -238,16 +238,13 @@ void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF o
    CBrush brush(fill_color);
    CBrush* pOldBrush = pDC->SelectObject(&brush);
 
-   if ( m_pPier->IsInteriorPier() )
+   if ( m_pPier->GetPierConnectionType() == pgsTypes::Roller )
    {
-      DrawPinnedSupport(pDC, topx, topy, wid, hgt);
+      DrawRollerSupport(pDC, topx, topy, wid, hgt);
    }
    else
    {
-      if ( m_pPier->GetPierConnectionType() == pgsTypes::Roller )
-         DrawRollerSupport(pDC, topx, topy, wid, hgt);
-      else
-         DrawPinnedSupport(pDC, topx, topy, wid, hgt);
+      DrawPinnedSupport(pDC, topx, topy, wid, hgt);
    }
 
    pDC->SelectObject(pOldPen);

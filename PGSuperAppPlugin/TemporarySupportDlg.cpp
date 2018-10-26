@@ -51,9 +51,13 @@ INT_PTR CTemporarySupportDlg::DoModal()
    if ( result == IDOK )
    {
       if ( 0 < m_BridgeExtensionPages.size() )
+      {
          NotifyBridgeExtensionPages();
+      }
       else
+      {
          NotifyExtensionPages();
+      }
    }
 
    return result;
@@ -82,7 +86,9 @@ LRESULT CTemporarySupportDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
 	}
 	else
+   {
 		return 0;
+   }
 }
 
 void CTemporarySupportDlg::CommonInitPages()
@@ -316,6 +322,7 @@ void CTemporarySupportDlg::Init(const CBridgeDescription2* pBridgeDesc,SupportIn
    }
 
    m_pTS = m_BridgeDesc.GetTemporarySupport(tsIdx);
+
    m_General.Init(m_pTS);
    m_Geometry.Init(m_pTS);
    m_Spacing.Init(m_pTS);

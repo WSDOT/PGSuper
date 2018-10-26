@@ -51,8 +51,10 @@ int CBoundaryConditionComboBox::AddBoundaryCondition(pgsTypes::PierConnectionTyp
    return idx;
 }
 
-void CBoundaryConditionComboBox::Initialize(const std::vector<pgsTypes::PierConnectionType>& connections)
+void CBoundaryConditionComboBox::Initialize(bool bIsBoundaryPier,const std::vector<pgsTypes::PierConnectionType>& connections)
 {
+   m_bIsBoundaryPier = bIsBoundaryPier;
+
    int curSel = GetCurSel();
    pgsTypes::PierConnectionType currentType;
    if ( curSel != CB_ERR )
@@ -131,7 +133,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    
    if ( connectionType == pgsTypes::Hinge )
    {
-      bmpHinges.LoadBitmap(IDB_HINGES);
+      bmpHinges.LoadBitmap(m_bIsBoundaryPier ? IDB_HINGES : IDB_IP_HINGES);
       dcMemory.SelectObject(&bmpHinges);
       bmpHinges.GetBitmap(&bmpInfo);
 
@@ -154,7 +156,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    }
    else if ( connectionType == pgsTypes::Roller )
    {
-      bmpRollers.LoadBitmap(IDB_ROLLERS);
+      bmpRollers.LoadBitmap(m_bIsBoundaryPier ? IDB_ROLLERS : IDB_IP_ROLLERS);
       dcMemory.SelectObject(&bmpRollers);
       bmpRollers.GetBitmap(&bmpInfo);
 

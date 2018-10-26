@@ -163,7 +163,7 @@ void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString msg;
-   msg.Format(_T("PGSuper was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
+   msg.Format(_T("The software was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
    AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
 }
 
@@ -258,15 +258,15 @@ void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    std::_tstring msg = pStatusItem->GetDescription();
 
-   if (m_HelpID!=0)
+   if (m_HelpID != 0)
    {
-      msg += std::_tstring(_T("\r\n\r\nClick on Help button for more details."));
+      msg += std::_tstring(_T("\r\n\r\nPress the Help button for more details."));
    }
 
    bool is_severe = m_Severity==eafTypes::statusError;
    if (!is_severe)
    {
-      msg += std::_tstring(_T("\r\n\r\nClick OK to remove this message."));
+      msg += std::_tstring(_T("\r\n\r\nPress the OK to remove this message."));
    }
 
    pgsInformationalStatusItem* pItem = dynamic_cast<pgsInformationalStatusItem*>(pStatusItem);
@@ -284,6 +284,70 @@ void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    }
 }
 
+
+////////////////
+
+pgsProjectCriteriaStatusItem::pgsProjectCriteriaStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription)
+{
+}
+
+bool pgsProjectCriteriaStatusItem::IsEqual(CEAFStatusItem* pOther)
+{
+   pgsProjectCriteriaStatusItem* other = dynamic_cast<pgsProjectCriteriaStatusItem*>(pOther);
+   if ( !other )
+   {
+      return false;
+   }
+
+   if ( GetDescription() != other->GetDescription())
+   {
+      return false;
+   }
+
+   return true;
+}
+
+//////////////////////////////////////////////////////////
+pgsProjectCriteriaStatusCallback::pgsProjectCriteriaStatusCallback(IBroker* pBroker):
+m_pBroker(pBroker)
+{
+   m_HelpID = 0;
+}
+
+eafTypes::StatusSeverityType pgsProjectCriteriaStatusCallback::GetSeverity()
+{
+   return eafTypes::statusError;
+}
+
+void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   //pgsInformationalStatusItem* pItem = dynamic_cast<pgsInformationalStatusItem*>(pStatusItem);
+   //ATLASSERT(pItem!=NULL);
+
+   std::_tstring msg = pStatusItem->GetDescription();
+
+   GET_IFACE(ISpecification,pSpec);
+   std::_tstring strSpec(pSpec->GetSpecification());
+   GET_IFACE(ILibrary,pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(strSpec.c_str());
+   if ( pSpecEntry->IsEditingEnabled() )
+   {
+      SpecLibrary* pSpecLibrary = pLib->GetSpecLibrary();
+      pSpecLibrary->EditEntry(pSpecEntry->GetName().c_str(),SPEC_PAGE_LOSSES);
+   }
+   else
+   {
+      msg += _T("\r\n\r\nWould you like to select a different Project Criteria?");
+      if ( AfxMessageBox(msg.c_str(),MB_YESNO | MB_ICONQUESTION) == IDYES )
+      {
+         GET_IFACE(IEditByUIEx,pEdit);
+         pEdit->SelectProjectCriteria();
+      }
+   }
+}
 
 ////////////////
 

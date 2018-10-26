@@ -53,7 +53,8 @@ void CEditTimelineDlg::DoDataExchange(CDataExchange* pDX)
       {
          pDX->PrepareCtrl(IDC_GRID);
          CString strMsg = m_TimelineManager.GetErrorMessage(result);
-         AfxMessageBox(strMsg);
+         strMsg += _T("\r\n\r\nPlease correct the timeline.");
+         AfxMessageBox(strMsg,MB_ICONEXCLAMATION);
          pDX->Fail();
       }
    }
@@ -84,7 +85,7 @@ BOOL CEditTimelineDlg::OnInitDialog()
 
 void CEditTimelineDlg::OnAddEvent()
 {
-   CTimelineEventDlg dlg(&m_TimelineManager,TRUE);
+   CTimelineEventDlg dlg(m_TimelineManager,INVALID_INDEX,TRUE);
    if ( dlg.DoModal() == IDOK )
    {
       bool bDone = false;
@@ -92,7 +93,7 @@ void CEditTimelineDlg::OnAddEvent()
       while ( !bDone )
       {
          EventIndexType eventIdx;
-         int result = m_TimelineManager.AddTimelineEvent(dlg.m_TimelineEvent,bAdjustTimeline,&eventIdx);
+         int result = m_TimelineManager.AddTimelineEvent(*dlg.m_pTimelineEvent,bAdjustTimeline,&eventIdx);
          if ( result == TLM_SUCCESS )
          {
             bDone = true;
@@ -132,6 +133,6 @@ void CEditTimelineDlg::OnRemoveEvent()
 void CEditTimelineDlg::OnHelp()
 {
    // TODO: Add your control notification handler code here
-#pragma Reminder("IMPLEMENT")
+#pragma Reminder("IMPLEMENT HELP")
    AfxMessageBox(_T("Implement"));
 }

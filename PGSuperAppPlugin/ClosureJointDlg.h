@@ -24,6 +24,8 @@
 
 #include <PgsExt\Keys.h>
 #include <PgsExt\ClosureJointData.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\TimelineManager.h>
 #include "ClosureJointGeneralPage.h"
 #include "ClosureJointLongitudinalReinforcementPage.h"
 #include "ClosureJointStirrupsPage.h"
@@ -37,15 +39,19 @@ class CClosureJointDlg : public CPropertySheet, public IEditClosureJointData
 	DECLARE_DYNAMIC(CClosureJointDlg)
 
 public:
-	CClosureJointDlg(const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CClosureJointDlg(const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
    // IEditClosureJointData
    virtual const CClosureKey& GetClosureKey() { return m_ClosureKey; }
 
-   EventIndexType m_EventIndex; // cast closure joint stage
+   const CBridgeDescription2* m_pBridgeDesc;
+   CTimelineManager m_TimelineMgr;
    CClosureJointData m_ClosureJoint; // does not have association with temporary support, segments, or spliced girder
-   CSegmentKey m_ClosureKey; // segmentIndex is the closure joint index
+   CClosureKey m_ClosureKey; // segmentIndex is the closure joint index
+   ClosureIDType m_ClosureID;
+   PierIDType m_PierID;
+   SupportIDType m_TempSupportID;
 
    bool m_bCopyToAllClosureJoints; // if true, the data from this dialog is applied to all closure joints at this support
 
@@ -60,9 +66,9 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
 
-   void CommonInit();
-   void Init();
-   void Init(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void CommonInit(const CBridgeDescription2* pBridgeDesc);
+   void Init(const CBridgeDescription2* pBridgeDesc);
+   void Init(const CBridgeDescription2* pBridgeDesc,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
    void CreateExtensionPages();
    void CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
    void DestroyExtensionPages();

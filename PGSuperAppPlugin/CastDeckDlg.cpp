@@ -34,10 +34,11 @@
 
 IMPLEMENT_DYNAMIC(CCastDeckDlg, CDialog)
 
-CCastDeckDlg::CCastDeckDlg(CWnd* pParent /*=NULL*/)
+CCastDeckDlg::CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
 	: CDialog(CCastDeckDlg::IDD, pParent)
 {
-
+   m_TimelineMgr = timelineMgr;
+   m_EventIndex = eventIdx;
 }
 
 CCastDeckDlg::~CCastDeckDlg()
@@ -53,14 +54,16 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       // Data coming out of the dialog
+      m_TimelineMgr.SetCastDeckEventByIndex(m_EventIndex,true);
+
       Float64 age;
       DDX_Text(pDX,IDC_AGE,age);
-      m_CastDeck.SetConcreteAgeAtContinuity(age);
+      m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity().SetConcreteAgeAtContinuity(age);
    }
    else
    {
       // Data going into the dialog
-      Float64 age = m_CastDeck.GetConcreteAgeAtContinuity();
+      Float64 age = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
       DDX_Text(pDX,IDC_AGE,age);
    }
 }

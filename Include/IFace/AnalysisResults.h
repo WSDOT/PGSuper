@@ -153,8 +153,8 @@ typedef struct EquivPostTensionDistributedLoad
    SpanIndexType spanIdx;
    Float64 Xstart, Xend;
    Float64 Wstart, Wend;
-   Float64 Ystart, Yend; // elevation of tendon, measured from top of non-composite girder
-   Float64 e_prime; // Yend - Ystart
+   Float64 eStart, eEnd; // eccentricty of tendon
+   Float64 e_prime; // eEnd - eStart
    Float64 P;
    Float64 x; // Xstart - Xend
 } EquivPostTensionDistributedLoad;

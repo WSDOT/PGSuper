@@ -21,12 +21,14 @@
 #define IDB_HINGES                      289
 #define IDB_ROLLERS                     290
 #define IDB_CONTINUOUS                  291
+#define IDB_IP_HINGES                   292
+#define IDB_IP_ROLLERS                  293
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        192
+#define _APS_NEXT_RESOURCE_VALUE        294
 #define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1361
 #define _APS_NEXT_SYMED_VALUE           101

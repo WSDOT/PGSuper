@@ -1663,13 +1663,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
 
    std::vector<sysSectionValue> results;
 
-#if defined _DEBUG
-   GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
-   ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
-#endif
-
-   if ( pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+   if ( pfType == pftPretension || pfType == pftPrimaryPostTensioning )
    {
       GET_IFACE( ILossParameters, pLossParams);
       if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -1678,6 +1672,11 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
       }
       else
       {
+#if defined _DEBUG
+         GET_IFACE(IPointOfInterest,pPoi);
+         std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
+         ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
+#endif
          // This is not time-step analysis.
          // The pretension effects are handled in the segment and girder models for
          // elastic analysis... we want to use the code further down in this method.
@@ -1698,6 +1697,17 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
             return results;
          }
       }
+   }
+
+   // Secondary effects aren't computed in the LBAM model
+   // Secondary = Total - Primary. Since the primary PT only
+   // creates moment, not shear, its contribution is zero.
+   // This leaves Secondary = Total. Total PT isn't in the
+   // LBAM either, but results of Equiv post tensioning is
+   // it is the same as total.
+   if ( pfType == pftTotalPostTensioning || pfType == pftSecondaryEffects )
+   {
+      pfType = pftEquivPostTensioning;
    }
 
 
@@ -1755,6 +1765,11 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       }
       else
       {
+#if defined _DEBUG
+         GET_IFACE(IPointOfInterest,pPoi);
+         std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
+         ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
+#endif
          // This is not time-step analysis.
          // The pretension effects are handled in the segment and girder models for
          // elastic analysis... we want to use the code further down in this method.
@@ -1769,7 +1784,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
 
          // Post-tensioning is not modeled for linear elastic analysis, so the
          // results are zero
-         if ( pfType == pftPrimaryPostTensioning )
+         if ( pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
          {
             results.resize(vPoi.size(),0.0);
             return results;
@@ -6020,7 +6035,7 @@ void CAnalysisAgentImp::GetBearingProductReaction(IntervalIndexType intervalIdx,
    {
       Float64 RLeftTotal, RRightTotal;
       Float64 RLeftPrimary, RRightPrimary;
-      GetBearingProductReaction(intervalIdx,pftTotalPostTensioning,  girderKey,bat,resultsType,&RLeftTotal,&RRightTotal);
+      GetBearingProductReaction(intervalIdx,pftEquivPostTensioning,  girderKey,bat,resultsType,&RLeftTotal,&RRightTotal);
       GetBearingProductReaction(intervalIdx,pftPrimaryPostTensioning,girderKey,bat,resultsType,&RLeftPrimary,&RRightPrimary);
       *pLftEnd = RLeftTotal - RLeftPrimary;
       *pRgtEnd = RRightTotal - RRightPrimary;
@@ -6377,6 +6392,9 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,ProductF
 
    GET_IFACE(ILosses,pLosses);
 
+   pgsTypes::FaceType topFace = (IsTopStressLocation(topLocation) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+   pgsTypes::FaceType botFace = (IsTopStressLocation(botLocation) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; iter != end; iter++ )
@@ -6392,16 +6410,16 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,ProductF
       if ( pfType == pftTotalPostTensioning )
       {
          // total post-tensioning is primary (P*e) + secondary
-         fTop = pTopConcreteElement->f[pgsTypes::TopFace   ][pftPrimaryPostTensioning][resultsType]
-              + pTopConcreteElement->f[pgsTypes::TopFace   ][pftSecondaryEffects     ][resultsType];
+         fTop = pTopConcreteElement->f[topFace][pftPrimaryPostTensioning][resultsType]
+              + pTopConcreteElement->f[topFace][pftSecondaryEffects     ][resultsType];
 
-         fBot = pBotConcreteElement->f[pgsTypes::BottomFace][pftPrimaryPostTensioning][resultsType]
-              + pBotConcreteElement->f[pgsTypes::BottomFace][pftSecondaryEffects     ][resultsType];
+         fBot = pBotConcreteElement->f[botFace][pftPrimaryPostTensioning][resultsType]
+              + pBotConcreteElement->f[botFace][pftSecondaryEffects     ][resultsType];
       }
       else
       {
-         fTop = pTopConcreteElement->f[pgsTypes::TopFace   ][pfType][resultsType];
-         fBot = pBotConcreteElement->f[pgsTypes::BottomFace][pfType][resultsType];
+         fTop = pTopConcreteElement->f[topFace][pfType][resultsType];
+         fBot = pBotConcreteElement->f[botFace][pfType][resultsType];
       }
 
       pfTop->push_back(fTop);
@@ -6462,6 +6480,9 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,LoadingC
 
    std::vector<ProductForceType> pfTypes = m_pGirderModelManager->GetProductForces(combo);
 
+  pgsTypes::FaceType topFace = (IsTopStressLocation(topLocation) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+  pgsTypes::FaceType botFace = (IsTopStressLocation(botLocation) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+
    std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
    for ( ; poiIter != poiIterEnd; poiIter++ )
@@ -6479,8 +6500,8 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,LoadingC
       for ( ; pfTypeIter != pfTypeIterEnd; pfTypeIter++ )
       {
          ProductForceType pfType = *pfTypeIter;
-         fTop += pTopConcreteElement->f[pgsTypes::TopFace   ][pfType][resultsType];
-         fBot += pBotConcreteElement->f[pgsTypes::BottomFace][pfType][resultsType];
+         fTop += pTopConcreteElement->f[topFace][pfType][resultsType];
+         fBot += pBotConcreteElement->f[botFace][pfType][resultsType];
       }
 
       pfTop->push_back(fTop);
@@ -6500,6 +6521,14 @@ void CAnalysisAgentImp::GetElasticStress(IntervalIndexType intervalIdx,LoadingCo
 
    pfTop->clear();
    pfBot->clear();
+
+   if ( combo == lcPS )
+   {
+      // no secondary effects for elastic analysis
+      pfTop->resize(vPoi.size(),0.0);
+      pfBot->resize(vPoi.size(),0.0);
+      return;
+   }
 
    try
    {
@@ -6613,6 +6642,11 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes
 
       fLLMin = pConcreteElement->fLLMin[face];
       fLLMax = pConcreteElement->fLLMax[face];
+
+      if ( fLLMax < fLLMin )
+      {
+         std::swap(fLLMin,fLLMax);
+      }
 
       Float64 fMin = gDCMin*(*dcIter) + gDWMin*(*dwIter) + gCRMin*(*crIter) + gSHMin*(*shIter) + gREMin*(*reIter) + gPSMin*(*psIter) + gLLMin*fLLMin + k*(fPR + fPT);
       Float64 fMax = gDCMax*(*dcIter) + gDWMax*(*dwIter) + gCRMax*(*crIter) + gSHMax*(*shIter) + gREMax*(*reIter) + gPSMax*(*psIter) + gLLMax*fLLMax + k*(fPR + fPT);
@@ -6730,7 +6764,7 @@ std::vector<Float64> CAnalysisAgentImp::GetElasticDeflection(IntervalIndexType i
       // At sometime in the future, this came code may be used for PT box girders in which case this code would
       // be relevant and corred.
       ATLASSERT(false); // this is just to get your attention... why was this code called?
-      std::vector<Float64> total   = GetElasticDeflection(intervalIdx,pftTotalPostTensioning,vPoi,bat,resultsType);
+      std::vector<Float64> total   = GetElasticDeflection(intervalIdx,pftEquivPostTensioning,vPoi,bat,resultsType);
       std::vector<Float64> primary = GetElasticDeflection(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,resultsType);
       std::transform(total.begin(),total.end(),primary.begin(),std::back_inserter(deflections),std::minus<Float64>());
    }

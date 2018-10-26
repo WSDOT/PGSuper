@@ -137,7 +137,7 @@ public:
 
    //------------------------------------------------------------------------
    // Edit the entry
-   virtual bool Edit(bool allowEditing);
+   virtual bool Edit(bool allowEditing,int nPage=0);
 
    //------------------------------------------------------------------------
    // Get the icon for this entry

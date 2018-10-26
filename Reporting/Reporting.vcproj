@@ -46,6 +46,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="0"
 				AdditionalIncludeDirectories="\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;_DEBUG;_USRDLL"
@@ -132,6 +133,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="0"
 				AdditionalIncludeDirectories="\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;_DEBUG;_USRDLL"
@@ -218,6 +220,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -310,6 +313,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -401,6 +405,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -495,6 +500,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="-Zm120"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -571,6 +577,10 @@
 			>
 			<File
 				RelativePath=".\ACI209CreepCoefficientChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ACI209ShrinkageStrainChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -871,6 +881,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LRFDTimeDependentCreepCoefficientChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LRFDTimeDependentShrinkageStrainChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MomentCapacityDetailsChapterBuilder.cpp"
 				>
 			</File>
@@ -1060,6 +1078,10 @@
 			</File>
 			<File
 				RelativePath=".\ShearCheckTable.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShrinkageStrainChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -1258,6 +1280,10 @@
 			>
 			<File
 				RelativePath="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\ACI209ShrinkageStrainChapterBuilder.h"
 				>
 			</File>
 			<File
@@ -1607,6 +1633,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h"
 				>
 			</File>
@@ -1756,6 +1790,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\ShearCheckTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\ShrinkageStrainChapterBuilder.h"
 				>
 			</File>
 			<File

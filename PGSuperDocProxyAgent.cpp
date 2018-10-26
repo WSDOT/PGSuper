@@ -250,6 +250,12 @@ void CPGSuperDocProxyAgent::AdviseEventSinks()
    hr = pCP->Advise( GetUnknown(), &m_dwLoadModiferCookie );
    ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+
+   hr = pBrokerInit->FindConnectionPoint( IID_ILossParametersEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Advise( GetUnknown(), &m_dwLossParametersCookie );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 }
 
 void CPGSuperDocProxyAgent::UnadviseEventSinks()
@@ -306,6 +312,12 @@ void CPGSuperDocProxyAgent::UnadviseEventSinks()
    hr = pBrokerInit->FindConnectionPoint( IID_ILoadModifiersEventSink, &pCP );
    ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwLoadModiferCookie );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+
+   hr = pBrokerInit->FindConnectionPoint( IID_ILossParametersEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Unadvise( m_dwLossParametersCookie );
    ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 }
@@ -570,7 +582,7 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
       pBridgeHint->bAdded = pHint->bAdded;
    }
 
-   boost::shared_ptr<CObject> pObjHint = boost::shared_dynamic_cast<CObject,CBridgeHint>(pBridgeHint);
+   boost::shared_ptr<CObject> pObjHint = boost::dynamic_pointer_cast<CObject,CBridgeHint>(pBridgeHint);
    FireEvent( 0, HINT_BRIDGECHANGED, pObjHint );
 
    return S_OK;
@@ -711,6 +723,16 @@ HRESULT CPGSuperDocProxyAgent::OnLoadModifiersChanged()
    m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_LOADMODIFIERSCHANGED, pnull );
+   return S_OK;
+}
+
+// ILossParametersEventSink
+HRESULT CPGSuperDocProxyAgent::OnLossParametersChanged()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   m_pMyDocument->SetModifiedFlag();
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_LOSSPARAMETERSCHANGED, pnull );
    return S_OK;
 }
 
@@ -1060,32 +1082,32 @@ bool CPGSuperDocProxyAgent::EditDirectInputPrestressing(const CSegmentKey& segme
 // IEditByUIEx
 void CPGSuperDocProxyAgent::AddPointLoad(const CPointLoadData& loadData)
 {
-   return m_pMyDocument->AddPointLoad(loadData);
+   m_pMyDocument->AddPointLoad(loadData);
 }
 
 void CPGSuperDocProxyAgent::DeletePointLoad(CollectionIndexType loadIdx)
 {
-   return m_pMyDocument->DeletePointLoad(loadIdx);
+   m_pMyDocument->DeletePointLoad(loadIdx);
 }
 
 void CPGSuperDocProxyAgent::AddDistributedLoad(const CDistributedLoadData& loadData)
 {
-   return m_pMyDocument->AddDistributedLoad(loadData);
+   m_pMyDocument->AddDistributedLoad(loadData);
 }
 
 void CPGSuperDocProxyAgent::DeleteDistributedLoad(CollectionIndexType loadIdx)
 {
-   return m_pMyDocument->DeleteDistributedLoad(loadIdx);
+   m_pMyDocument->DeleteDistributedLoad(loadIdx);
 }
 
 void CPGSuperDocProxyAgent::AddMomentLoad(const CMomentLoadData& loadData)
 {
-   return m_pMyDocument->AddMomentLoad(loadData);
+   m_pMyDocument->AddMomentLoad(loadData);
 }
 
 void CPGSuperDocProxyAgent::DeleteMomentLoad(CollectionIndexType loadIdx)
 {
-   return m_pMyDocument->DeleteMomentLoad(loadIdx);
+   m_pMyDocument->DeleteMomentLoad(loadIdx);
 }
 
 void CPGSuperDocProxyAgent::EditEffectiveFlangeWidth()
@@ -1093,6 +1115,10 @@ void CPGSuperDocProxyAgent::EditEffectiveFlangeWidth()
    m_pMyDocument->OnEffectiveFlangeWidth();
 }
 
+void CPGSuperDocProxyAgent::SelectProjectCriteria()
+{
+   m_pMyDocument->OnProjectSpec();
+}
 
 ///////////////////////////////////////////////////////////////////////////////////
 // IDesign

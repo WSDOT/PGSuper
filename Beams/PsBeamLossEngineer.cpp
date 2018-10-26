@@ -26,6 +26,10 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#if defined _DEBUG
+#include <IFace\Project.h>
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -133,6 +137,13 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
 const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx)
 {
    ATLASSERT(intervalIdx == INVALID_INDEX); // this kind of loss calculation is for all intervals... always
+
+#if defined _DEBUG
+   GET_IFACE(ILossParameters,pLossParameters);
+   ATLASSERT( pLossParameters->GetLossMethod() != pgsTypes::TIME_STEP );
+   // this shouldn't ever happen because the beam factory should create the appropreate loss engineer
+   // but just in case we create a new beam type and forget to do this in the factor, assert here
+#endif
 
    const LOSSDETAILS* pLossDetails = m_DesignLosses.GetFromCache(poi,config);
    if ( pLossDetails == NULL )

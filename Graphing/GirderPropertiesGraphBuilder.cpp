@@ -255,6 +255,16 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       break;
       }
 
+   case Ece:
+      {
+      const unitmgtStressData& stressUnit = pDisplayUnits->GetModEUnit();
+      m_pYFormat = new StressTool(stressUnit);
+      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      std::_tstring strYAxisTitle = _T("Age Adjusted Ec (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
+      m_Graph.SetYAxisTitle(strYAxisTitle);
+      break;
+      }
+
    default:
       ASSERT(false); 
    }
@@ -444,6 +454,26 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          break;
          }
 
+      case Ece:
+         {
+         GET_IFACE(IMaterials,pMaterials);
+         GET_IFACE(IPointOfInterest,pPoi);
+         if ( pPoi->IsInClosureJoint(poi) )
+         {
+            value1 = pMaterials->GetClosureJointAgeAdjustedEc(poi.GetSegmentKey(),intervalIdx);
+         }
+         else
+         {
+            value1 = pMaterials->GetSegmentAgeAdjustedEc(poi.GetSegmentKey(),intervalIdx);
+         }
+
+         if ( pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
+         {
+            value2 = pMaterials->GetDeckAgeAdjustedEc(poi.GetSegmentKey(),intervalIdx);
+         }
+         break;
+         }
+
       default:
          ATLASSERT(false);
       }
@@ -571,6 +601,10 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
       return _T("Ec");
       break;
 
+   case Ece:
+      return _T("Age Adjusted Ec");
+      break;
+
    default:
       ATLASSERT(false);
    }
@@ -610,6 +644,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
       break;
 
    case Ec:
+   case Ece:
       strPropertyLabel1 += _T(" Girder");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
       if ( pIntervals->GetCompositeDeckInterval(girderKey) <= intervalIdx )

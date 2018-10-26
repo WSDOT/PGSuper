@@ -33,7 +33,6 @@
 
 #include <LRFD\RebarPool.h>
 
-#include <PgsExt\BridgeDescription2.h>
 
 #include "PGSuperDocBase.h"
 
@@ -105,9 +104,6 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    AddPage(&m_RebarPage);
    AddPage(&m_StirrupsPage);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
    // initialize the dialog data
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -116,17 +112,11 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_SegmentKey = segmentKey;
    m_SegmentID = pSegment->GetID();
 
+   m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
+
    m_StrandsPage.Init(m_Girder.GetSegment(segmentKey.segmentIndex));
 
-   // if statement short circuit evaluation can cause interface to not be used
-   GET_IFACE2_NOCHECK(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   GET_IFACE2_NOCHECK(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria); 
-
-   // don't add page if both hauling and lifting checks are disabled
-   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
-   {
-      AddPage( &m_LiftingPage );
-   }
+   AddPage( &m_LiftingPage );
 }
 
 void CGirderSegmentDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey)
@@ -217,9 +207,13 @@ void CGirderSegmentDlg::DestroyExtensionPages()
 txnTransaction* CGirderSegmentDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
+   {
       return m_Macro.CreateClone();
+   }
    else
+   {
       return NULL;
+   }
 }
 
 void CGirderSegmentDlg::NotifyExtensionPages()
@@ -356,9 +350,13 @@ BOOL CGirderSegmentDlg::OnInitDialog()
    ScreenToClient(&rect);
    CString strTxt;
    if ( m_bEditingInGirder )
+   {
       strTxt = _T("Copy to all segments in this girder");
+   }
    else
+   {
       strTxt.Format(_T("Copy to Segment %d of all girders in Group %d"),LABEL_SEGMENT(m_SegmentKey.segmentIndex),LABEL_GROUP(m_SegmentKey.groupIndex));
+   }
 
    m_CheckBox.Create(strTxt,WS_CHILD | WS_VISIBLE | BS_LEFTTEXT | BS_RIGHT | BS_AUTOCHECKBOX,rect,this,IDC_CHECKBOX);
    m_CheckBox.SetFont(GetFont());
@@ -400,5 +398,7 @@ LRESULT CGirderSegmentDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
 	}
 	else
+   {
 		return 0;
+   }
 }

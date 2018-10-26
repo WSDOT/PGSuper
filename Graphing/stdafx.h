@@ -34,5 +34,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include <afxwin.h>
+#include <afxcmn.h>
+
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\Keys.h>

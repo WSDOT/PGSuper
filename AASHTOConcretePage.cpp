@@ -77,22 +77,22 @@ void CAASHTOConcretePage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_Text(pDX, IDC_EC_K1, m_EccK1 );
-   DDV_GreaterThanZero(pDX,IDC_EC_K1,m_EccK1);
+   DDV_NonNegativeDouble(pDX,IDC_EC_K1,m_EccK1);
 
    DDX_Text(pDX, IDC_EC_K2, m_EccK2 );
-   DDV_GreaterThanZero(pDX,IDC_EC_K2,m_EccK2);
+   DDV_NonNegativeDouble(pDX,IDC_EC_K2,m_EccK2);
 
    DDX_Text(pDX, IDC_CREEP_K1, m_CreepK1 );
-   DDV_GreaterThanZero(pDX,IDC_CREEP_K1,m_CreepK1);
+   DDV_NonNegativeDouble(pDX,IDC_CREEP_K1,m_CreepK1);
 
    DDX_Text(pDX, IDC_CREEP_K2, m_CreepK2 );
-   DDV_GreaterThanZero(pDX,IDC_CREEP_K2,m_CreepK2);
+   DDV_NonNegativeDouble(pDX,IDC_CREEP_K2,m_CreepK2);
 
    DDX_Text(pDX, IDC_SHRINKAGE_K1, m_ShrinkageK1 );
-   DDV_GreaterThanZero(pDX,IDC_SHRINKAGE_K1,m_ShrinkageK1);
+   DDV_NonNegativeDouble(pDX,IDC_SHRINKAGE_K1,m_ShrinkageK1);
 
    DDX_Text(pDX, IDC_SHRINKAGE_K2, m_ShrinkageK2 );
-   DDV_GreaterThanZero(pDX,IDC_SHRINKAGE_K2,m_ShrinkageK2);
+   DDV_NonNegativeDouble(pDX,IDC_SHRINKAGE_K2,m_ShrinkageK2);
 }
 
 

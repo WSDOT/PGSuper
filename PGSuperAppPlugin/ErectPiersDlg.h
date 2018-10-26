@@ -4,6 +4,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\TemporarySupportData.h>
 #include <PgsExt\TimelineManager.h>
+#include <PgsExt\TimelineItemListBox.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
@@ -16,19 +17,17 @@ class CErectPiersDlg : public CDialog
 	DECLARE_DYNAMIC(CErectPiersDlg)
 
 public:
-	CErectPiersDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
+	CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CErectPiersDlg();
 
 // Dialog Data
 	enum { IDD = IDD_ERECT_PIERS };
-   CErectPiersActivity m_ErectPiers;
-   const CTimelineManager* m_pTimelineMgr;
+   CTimelineManager m_TimelineMgr;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-   void FillSourceList();
-   void FillTargetList();
+   void FillLists();
 
 	DECLARE_MESSAGE_MAP()
 
@@ -36,8 +35,11 @@ protected:
    const CBridgeDescription2* m_pBridgeDesc;
    EventIndexType m_EventIndex;
 
+   CTimelineItemListBox m_lbSource;
+   CTimelineItemListBox m_lbTarget;
+
 public:
    virtual BOOL OnInitDialog();
-   afx_msg void OnMoveRight();
-   afx_msg void OnMoveLeft();
+   afx_msg void OnMoveToTargetList();
+   afx_msg void OnMoveToSourceList();
 };

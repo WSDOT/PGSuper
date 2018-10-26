@@ -153,7 +153,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       {
          col = 0;
          (*pTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-         (*pTable)(row,col++) << pMaterials->GetSegmentConcreteAge(thisSegmentKey,intervalIdx);
+         (*pTable)(row,col++) << pMaterials->GetSegmentConcreteAge(thisSegmentKey,intervalIdx,pgsTypes::Middle);
          (*pTable)(row,col++) << stress.SetValue(pMaterials->GetSegmentFc(thisSegmentKey,intervalIdx));
          (*pTable)(row,col++) << modE.SetValue(pMaterials->GetSegmentEc(thisSegmentKey,intervalIdx));
          (*pTable)(row,col++) << pMaterials->GetSegmentCreepCoefficient(thisSegmentKey,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
@@ -229,7 +229,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          {
             col = 0;
             (*pTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-            (*pTable)(row,col++) << pMaterials->GetClosureJointConcreteAge(closureKey,intervalIdx);
+            (*pTable)(row,col++) << pMaterials->GetClosureJointConcreteAge(closureKey,intervalIdx,pgsTypes::Middle);
             (*pTable)(row,col++) << stress.SetValue(pMaterials->GetClosureJointFc(closureKey,intervalIdx));
             (*pTable)(row,col++) << modE.SetValue(pMaterials->GetClosureJointEc(closureKey,intervalIdx));
             (*pTable)(row,col++) << pMaterials->GetClosureJointCreepCoefficient(closureKey,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
@@ -305,7 +305,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    {
       col = 0;
       (*pTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-      (*pTable)(row,col++) << pMaterials->GetDeckConcreteAge(girderKey,intervalIdx);
+      (*pTable)(row,col++) << pMaterials->GetDeckConcreteAge(girderKey,intervalIdx,pgsTypes::Middle);
       (*pTable)(row,col++) << stress.SetValue(pMaterials->GetDeckFc(girderKey,intervalIdx));
       (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckEc(girderKey,intervalIdx));
       (*pTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(girderKey,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);

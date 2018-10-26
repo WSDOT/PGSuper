@@ -223,8 +223,7 @@ void CConcreteManager::ValidateConcrete()
             // for the LRFD stepped f'c concrete model, assume the jump from f'ci to f'c occurs
             // at hauling interval
             IntervalIndexType intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-            Float64 stepTime = pIntervals->GetStart(segmentKey,intervalIdx);
-
+            Float64 stepTime = pIntervals->GetTime(segmentKey,intervalIdx,pgsTypes::Start);
 
             matConcreteBase* pSegmentConcrete = CreateConcreteModel(_T("Segment Concrete"),pSegment->Material.Concrete,segment_casting_time,segment_cure_time,segment_age_at_release,stepTime,vsSegment);
             m_pSegmentConcrete.insert( std::make_pair(segmentKey,boost::shared_ptr<matConcreteBase>(pSegmentConcrete)) );
@@ -596,10 +595,6 @@ bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::Concre
 
 matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime,Float64 vs)
 {
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
    GET_IFACE(ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 
@@ -610,9 +605,12 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
    if ( loss_method == pgsTypes::TIME_STEP )
    {
       // for time step loss method, create concrete model based on time-dependent model type
-      switch( pSpecEntry->GetTimeDependentModel() )
+      switch( pLossParameters->GetTimeDependentModel() )
       {
-      case TDM_ACI209:
+      case pgsTypes::tdmAASHTO:
+         pConcrete = CreateTimeDependentLRFDConcreteModel(concrete,ageAtInitialLoading);
+         break;
+      case pgsTypes::tdmACI209:
          pConcrete = CreateACI209Model(concrete,ageAtInitialLoading);
          break;
       default:
@@ -623,7 +621,7 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
    else
    {
       // for a non-time-step method, use a simple pseudo time-dependent model
-      pConcrete = CreateLRFDConcreteModel(concrete,stepTime);
+      pConcrete = CreateLRFDConcreteModel(concrete,timeAtCasting+cureTime,stepTime);
    }
 
    // this is all on the base class so it can be done polymorphically
@@ -663,10 +661,9 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
       }
    }
 
-   // get the modulus of rupture. note that parameter 2 is NormalDensity in all cases. Since we are providing
-   // the coefficient, this parameter is ignored so it doesn't matter what we use.
-   Float64 frShear   = lrfdConcreteUtil::ModRupture(concrete.Fci,lrfdConcreteUtil::NormalDensity,GetShearFrCoefficient(concrete.Type));
-   Float64 frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fci,lrfdConcreteUtil::NormalDensity,GetFlexureFrCoefficient(concrete.Type));
+   // get the modulus of rupture.
+   Float64 frShear   = lrfdConcreteUtil::ModRupture(concrete.Fci,GetShearFrCoefficient(concrete.Type));
+   Float64 frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fci,GetFlexureFrCoefficient(concrete.Type));
 
    pReleaseConc->SetName(strName);
    pReleaseConc->SetFc(concrete.Fci);
@@ -696,10 +693,9 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
       }
    }
 
-   // get the modulus of rupture. note that parameter 2 is NormalDensity in all cases. Since we are providing
-   // the coefficient, this parameter is ignored so it doesn't matter what we use.
-   frShear   = lrfdConcreteUtil::ModRupture(concrete.Fc,lrfdConcreteUtil::NormalDensity,GetShearFrCoefficient(concrete.Type));
-   frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fc,lrfdConcreteUtil::NormalDensity,GetFlexureFrCoefficient(concrete.Type));
+   // get the modulus of rupture.
+   frShear   = lrfdConcreteUtil::ModRupture(concrete.Fc,GetShearFrCoefficient(concrete.Type));
+   frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fc,GetFlexureFrCoefficient(concrete.Type));
 
    pConcrete->SetName(strName);
    pConcrete->SetFc(concrete.Fc);
@@ -1154,7 +1150,7 @@ Float64 CConcreteManager::GetLWCDensityLimit()
 
 Float64 CConcreteManager::GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type)
 {
-   return lrfdConcreteUtil::ModRupture( fc, lrfdConcreteUtil::DensityType(type), GetFlexureFrCoefficient(type) );
+   return lrfdConcreteUtil::ModRupture( fc, GetFlexureFrCoefficient(type) );
 }
 
 Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type)
@@ -1174,7 +1170,7 @@ Float64 CConcreteManager::GetFlexureFrCoefficient(const CSegmentKey& segmentKey)
 
 Float64 CConcreteManager::GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type)
 {
-   return lrfdConcreteUtil::ModRupture( fc, lrfdConcreteUtil::DensityType(type), GetShearFrCoefficient(type) );
+   return lrfdConcreteUtil::ModRupture( fc, GetShearFrCoefficient(type) );
 }
 
 Float64 CConcreteManager::GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2)
@@ -1390,33 +1386,82 @@ matConcreteBase* CConcreteManager::GetClosureJointConcrete(const CClosureKey& cl
    return m_pClosureConcrete[closureKey].get();
 }
 
-matLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 stepTime)
+lrfdLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime)
 {
    // this concrete model is simple step function. fc and E are constant at f'ci and Eci from t = 0 to
-   // just before t = t_shipping. From t = t_shipping and beyond fc and E are f'c and Ec.
+   // just before t = stepTime. From t = stepTime and beyond fc and E are f'c and Ec.
    //
-   //
+   //     ^ f'c or Ec
    //     |
    //     |
-   //     |                        --------------------- f'c, Ec
-   //     |                        :
-   //     |                        :
-   //     |                        :
-   //     |                        :
-   //     |                        :
-   //     |-------------------------  f'ci, Eci
-   //     |
-   //     +------------------------+-------------------------
-   //                              t = t_shipping
+   //     |                        +-------------------- f'c, Ec
+   //     |                        |
+   //     |                        |
+   //     |                        |
+   //     |                        |
+   //     |                        |
+   //     |       +----------------+  f'ci, Eci
+   //     |       |
+   //     +-------+----------------+-------------------------> t = time
+   //             t = startTime    t = stepTime
 
-   matLRFDConcrete* pLRFDConcrete = new matLRFDConcrete();
+   lrfdLRFDConcrete* pLRFDConcrete = new lrfdLRFDConcrete();
 
    matConcreteEx initialConcrete, finalConcrete;
    CreateConcrete(concrete,_T(""),&initialConcrete,&finalConcrete);
    pLRFDConcrete->SetConcreteModels(initialConcrete,finalConcrete);
+   pLRFDConcrete->SetStartTime(startTime);
    pLRFDConcrete->SetStepTime(stepTime);
 
+   pLRFDConcrete->SetEcCorrectionFactors(concrete.EcK1,concrete.EcK2);
+   pLRFDConcrete->SetCreepCorrectionFactors(concrete.CreepK1,concrete.CreepK2);
+   pLRFDConcrete->SetShrinkageCorrectionFactors(concrete.ShrinkageK1,concrete.ShrinkageK2);
+
    return pLRFDConcrete;
+}
+
+lrfdLRFDTimeDependentConcrete* CConcreteManager::CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading)
+{
+   lrfdLRFDTimeDependentConcrete* pConcrete = new lrfdLRFDTimeDependentConcrete();
+
+   Float64 A,B;
+   if ( concrete.bACIUserParameters )
+   {
+      A = concrete.A;
+      B = concrete.B;
+   }
+   else
+   {
+      lrfdLRFDTimeDependentConcrete::GetModelParameters((matConcreteBase::CureMethod)concrete.CureMethod,
+                                                       (matConcreteBase::CementType)concrete.CementType,
+                                                       &A,&B);
+   }
+
+   pConcrete->SetA(A);
+   pConcrete->SetBeta(B);
+
+   if ( concrete.bBasePropertiesOnInitialValues )
+   {
+      // back out Fc28 and Ec28 based on properties at time of casting
+      pConcrete->SetFc28(concrete.Fci,ageAtInitialLoading);
+      pConcrete->UserEc28(concrete.bUserEci);
+      pConcrete->SetEc28(concrete.Eci,ageAtInitialLoading);
+   }
+   else
+   {
+      pConcrete->SetFc28(concrete.Fc);
+      pConcrete->UserEc28(concrete.bUserEc);
+      pConcrete->SetEc28(concrete.Ec);
+   }
+
+   pConcrete->SetEcCorrectionFactors(concrete.EcK1,concrete.EcK2);
+   pConcrete->SetCreepCorrectionFactors(concrete.CreepK1,concrete.CreepK2);
+   pConcrete->SetShrinkageCorrectionFactors(concrete.ShrinkageK1,concrete.ShrinkageK2);
+
+   pConcrete->SetShearModulusOfRuptureCoefficient(GetShearFrCoefficient(concrete.Type));
+   pConcrete->SetFlexureModulusOfRuptureCoefficient(GetFlexureFrCoefficient(concrete.Type));
+
+   return pConcrete;
 }
 
 matACI209Concrete* CConcreteManager::CreateACI209Model(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading)

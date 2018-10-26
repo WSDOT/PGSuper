@@ -257,7 +257,7 @@ void CMultiViewReportDlg::InitChapterListFromSpec()
 
 void CMultiViewReportDlg::InitFromRptSpec()
 {
-   boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
+   boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
    if (pRptSpec)
    {
       m_GirderKeys.clear();

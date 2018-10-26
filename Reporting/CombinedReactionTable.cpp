@@ -261,6 +261,8 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcCR, reactionLocation, minBAT, rtIncremental ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcSH, reactionLocation, maxBAT, rtIncremental ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcSH, reactionLocation, minBAT, rtIncremental ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcRE, reactionLocation, maxBAT, rtIncremental ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcRE, reactionLocation, minBAT, rtIncremental ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcPS, reactionLocation, maxBAT, rtIncremental ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcPS, reactionLocation, minBAT, rtIncremental ) );
          }
@@ -282,6 +284,8 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcCR, reactionLocation, minBAT, rtCumulative ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcSH, reactionLocation, maxBAT, rtCumulative ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcSH, reactionLocation, minBAT, rtCumulative ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcRE, reactionLocation, maxBAT, rtCumulative ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcRE, reactionLocation, minBAT, rtCumulative ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcPS, reactionLocation, maxBAT, rtCumulative ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcPS, reactionLocation, minBAT, rtCumulative ) );
          }
@@ -309,6 +313,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
          {
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcCR, reactionLocation, maxBAT, rtIncremental ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcSH, reactionLocation, maxBAT, rtIncremental ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcRE, reactionLocation, maxBAT, rtIncremental ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcPS, reactionLocation, maxBAT, rtIncremental ) );
          }
 
@@ -324,6 +329,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
          {
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcCR, reactionLocation, maxBAT, rtCumulative ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcSH, reactionLocation, maxBAT, rtCumulative ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcRE, reactionLocation, maxBAT, rtCumulative ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcPS, reactionLocation, maxBAT, rtCumulative ) );
          }
 
