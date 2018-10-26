@@ -48,6 +48,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CACI209CreepCoefficientChapterBuilder(const CACI209CreepCoefficientChapterBuilder&);
-   CACI209CreepCoefficientChapterBuilder& operator=(const CACI209CreepCoefficientChapterBuilder&);
+   CACI209CreepCoefficientChapterBuilder(const CACI209CreepCoefficientChapterBuilder&) = delete;
+   CACI209CreepCoefficientChapterBuilder& operator=(const CACI209CreepCoefficientChapterBuilder&) = delete;
 };

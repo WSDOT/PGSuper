@@ -78,7 +78,13 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    }
 
    std::vector<std::_tstring> special_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
-   if ( special_legal_loads.size() != 1 || special_legal_loads[0] != _T("Notional Rating Load (NRL)") )
+   if (special_legal_loads.size() != 1 || special_legal_loads[0] != _T("Notional Rating Load (NRL)"))
+   {
+      bIsWSDOTRating = false;
+   }
+
+   std::vector<std::_tstring> emergency_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Emergency);
+   if (emergency_legal_loads.size() != 1 || emergency_legal_loads[0] != _T("Emergency Vehicles"))
    {
       bIsWSDOTRating = false;
    }
@@ -226,7 +232,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       row++;
 
       (*pTable)(row,0) << _T("Rating Type: Legal");
-      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency)) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
       (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 
@@ -285,6 +291,17 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       }
       (*pTable)(row,1) << _T("");
       (*pTable)(row,2) << _T("Notional Rating Load (NRL)");
+      row++;
+
+      (*pTable)(row, 0) << _T("Legal Load Rating: Live Loads for Emergency Vehicles");
+      nameIter = emergency_legal_loads.begin();
+      nameIterEnd = emergency_legal_loads.end();
+      for (; nameIter != nameIterEnd; nameIter++)
+      {
+         (*pTable)(row, 1) << (*nameIter) << rptNewLine;
+      }
+      (*pTable)(row, 1) << _T("");
+      (*pTable)(row, 2) << _T("Emergency Vehicles");
       row++;
 
       (*pTable)(row,0) << _T("Rate for Service III Stress");
@@ -404,9 +421,16 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    llType = ::GetLiveLoadType(pgsTypes::lrLegal_Special);
    nVehicles = pProductLoads->GetVehicleCount(llType);
-   for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
+   for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Special,vehicleIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker, pTable, row++, pIArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Special, vehicleIdx), pDisplayUnits, pRemarks);
+   }
+
+   llType = ::GetLiveLoadType(pgsTypes::lrLegal_Emergency);
+   nVehicles = pProductLoads->GetVehicleCount(llType);
+   for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+   {
+      ReportRatingFactor(pBroker, pTable, row++, pIArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Emergency, vehicleIdx), pDisplayUnits, pRemarks);
    }
 
    // Current WSDOT default is to have no trucks in the Permit Routine case so there is nothing to report

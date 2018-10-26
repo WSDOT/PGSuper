@@ -41,7 +41,7 @@ public:
    // define some constants to return from Domodal
    enum {IDEDITLOAD=3000, IDDELETELOAD=3001};
 
-	CDealWithLoadDlg(CWnd* pParent = NULL);   // standard constructor
+	CDealWithLoadDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDealWithLoadDlg)
@@ -54,7 +54,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CDealWithLoadDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation

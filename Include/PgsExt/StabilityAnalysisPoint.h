@@ -39,11 +39,11 @@ public:
    void SetReferenceAttribute(PoiAttributeType refAttrib);
    PoiAttributeType GetReferenceAttribute() const;
 
-   virtual Float64 GetLocation() const;
+   virtual Float64 GetLocation() const override;
 
-   virtual std::_tstring  AsString(const unitmgtLengthData& lengthUnit,Float64 offset,bool bShowUnit) const;
+   virtual std::_tstring  AsString(const unitmgtLengthData& lengthUnit,Float64 offset,bool bShowUnit) const override;
 
-   virtual stbIAnalysisPoint* Clone() const;
+   virtual stbIAnalysisPoint* Clone() const override;
 
 protected:
    pgsPointOfInterest m_Poi;

@@ -160,7 +160,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
 
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-   while ( pPier != NULL )
+   while ( pPier != nullptr )
    {
       ColumnIndexType col = 0;
       PierIndexType pierIdx = pPier->GetIndex();
@@ -213,7 +213,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
       }
       else
       {
-         pPier = NULL;
+         pPier = nullptr;
       }
 
       row++;

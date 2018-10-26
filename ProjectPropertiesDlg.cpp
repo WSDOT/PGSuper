@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 // CProjectPropertiesDlg dialog
 
 
-CProjectPropertiesDlg::CProjectPropertiesDlg(CWnd* pParent /*=NULL*/)
+CProjectPropertiesDlg::CProjectPropertiesDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CProjectPropertiesDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CProjectPropertiesDlg)

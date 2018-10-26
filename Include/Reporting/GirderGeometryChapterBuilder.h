@@ -77,8 +77,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CGirderGeometryChapterBuilder(const CGirderGeometryChapterBuilder&);
-   CGirderGeometryChapterBuilder& operator=(const CGirderGeometryChapterBuilder&);
+   CGirderGeometryChapterBuilder(const CGirderGeometryChapterBuilder&) = delete;
+   CGirderGeometryChapterBuilder& operator=(const CGirderGeometryChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

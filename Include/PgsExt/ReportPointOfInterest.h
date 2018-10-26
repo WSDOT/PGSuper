@@ -54,7 +54,7 @@ public:
    rptPointOfInterest& operator = (const rptPointOfInterest& rOther);
 
    //------------------------------------------------------------------------
-   virtual rptReportContent* CreateClone() const;
+   virtual rptReportContent* CreateClone() const override;
 
    //------------------------------------------------------------------------
    virtual rptReportContent& SetValue(PoiAttributeType reference,const pgsPointOfInterest& poi);
@@ -77,7 +77,7 @@ public:
 
 protected:
    void MakeCopy(const rptPointOfInterest& rOther);
-   virtual void MakeAssignment(const rptPointOfInterest& rOther);
+   void MakeAssignment(const rptPointOfInterest& rOther);
 
 private:
    pgsPointOfInterest m_POI;

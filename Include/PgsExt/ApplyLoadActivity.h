@@ -71,7 +71,7 @@ public:
 
 protected:
    void MakeCopy(const CApplyLoadActivity& rOther);
-   virtual void MakeAssignment(const CApplyLoadActivity& rOther);
+   void MakeAssignment(const CApplyLoadActivity& rOther);
 
    void Update();
 

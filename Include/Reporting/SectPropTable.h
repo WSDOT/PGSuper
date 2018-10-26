@@ -81,7 +81,7 @@ protected:
    void MakeCopy(const CSectionPropertiesTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CSectionPropertiesTable& rOther);
+   void MakeAssignment(const CSectionPropertiesTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

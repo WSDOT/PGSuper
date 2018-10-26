@@ -33,7 +33,7 @@ class CMultiGirderSelectDlg : public CDialog
 	DECLARE_DYNAMIC(CMultiGirderSelectDlg)
 
 public:
-	CMultiGirderSelectDlg(CWnd* pParent = NULL);   // standard constructor
+	CMultiGirderSelectDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CMultiGirderSelectDlg();
 
 // Dialog Data

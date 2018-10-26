@@ -81,7 +81,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara <<color(Red)<<_T("Lifting analysis disabled in Project Criteria library entry. Fabrication optimization analysis not performed.")<<color(Black)<<rptNewLine;
+      *pPara <<color(Red)<<_T("Lifting analysis disabled in Project Criteria. Fabrication optimization analysis not performed.")<<color(Black)<<rptNewLine;
       return pChapter;
    }
 
@@ -90,7 +90,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. Fabrication optimization analysis not performed.")<<color(Black)<<rptNewLine;
+      *pPara <<color(Red)<<_T("Hauling analysis disabled in Project Criteria. Fabrication optimization analysis not performed.")<<color(Black)<<rptNewLine;
       return pChapter;
    }
 

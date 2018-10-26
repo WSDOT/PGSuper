@@ -35,7 +35,7 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
    CComPtr<ICatRegister> pICatReg = 0;
    HRESULT hr;
    hr = ::CoCreateInstance( CLSID_StdComponentCategoriesMgr,
-                            NULL,
+                            nullptr,
                             CLSCTX_INPROC_SERVER,
                             IID_ICatRegister,
                             (void**)&pICatReg );
@@ -55,7 +55,7 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
    CATID ID[nID];
    ID[0] = catid;
 
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    FamilyContainer::iterator found(m_Families.find(catid));
    if ( found == m_Families.end() )
@@ -68,7 +68,7 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
    BeamContainer& beams = found->second;
 
    CLSID clsid[1];
-   while ( pIEnumCLSID->Next(1,clsid,NULL) != S_FALSE )
+   while ( pIEnumCLSID->Next(1,clsid,nullptr) != S_FALSE )
    {
       LPOLESTR pszUserType;
       OleRegGetUserType(clsid[0],USERCLASSTYPE_SHORT,&pszUserType);
@@ -134,7 +134,7 @@ HRESULT CBeamFamilyManager::GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily
       {
          CLSID clsid = found->second;
          IBeamFamily* pFamily;
-         HRESULT hr = ::CoCreateInstance(clsid,NULL,CLSCTX_ALL,IID_IBeamFamily,(void**)&pFamily);
+         HRESULT hr = ::CoCreateInstance(clsid,nullptr,CLSCTX_ALL,IID_IBeamFamily,(void**)&pFamily);
          if ( FAILED(hr) )
             return hr;
 

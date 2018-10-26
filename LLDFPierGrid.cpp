@@ -370,7 +370,7 @@ BOOL CLLDFPierGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags
 	VERIFY(menu.LoadMenu(IDR_COPY_PASTE));
 
 	CMenu* pPopup = menu.GetSubMenu( 0 );
-	ASSERT( pPopup != NULL );
+	ASSERT( pPopup != nullptr );
 
    if (!CanPaste())
    {
@@ -588,7 +588,7 @@ BOOL CLLDFPierGrid::ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT n
          {
             CWnd* pWndNext = pDlg->GetNextDlgTabItem(m_pGridWnd);
 
-            if (pWndNext != NULL)
+            if (pWndNext != nullptr)
             {
                TRACE("SetFocus ");
                pWndNext->SetFocus();

@@ -40,5 +40,5 @@ public:
 
 protected:
    void MakeCopy(const CPretensionStressTable& rOther);
-   virtual void MakeAssignment(const CPretensionStressTable& rOther);
+   void MakeAssignment(const CPretensionStressTable& rOther);
 };

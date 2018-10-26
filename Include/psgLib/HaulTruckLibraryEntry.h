@@ -118,7 +118,7 @@ public:
 
 protected:
    void MakeCopy(const HaulTruckLibraryEntry& rOther);
-   virtual void MakeAssignment(const HaulTruckLibraryEntry& rOther);
+   void MakeAssignment(const HaulTruckLibraryEntry& rOther);
 
 private:
    Float64 m_Hbg; // height from roadway to bottom of girder

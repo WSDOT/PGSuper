@@ -58,8 +58,8 @@ protected:
 
 private:
    // Prevent accidental copying and assignment
-   CTexasIBNSParagraphBuilder(const CTexasIBNSParagraphBuilder&);
-   CTexasIBNSParagraphBuilder& operator=(const CTexasIBNSParagraphBuilder&);
+   CTexasIBNSParagraphBuilder(const CTexasIBNSParagraphBuilder&) = delete;
+   CTexasIBNSParagraphBuilder& operator=(const CTexasIBNSParagraphBuilder&) = delete;
 
    void WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits) const;
 };

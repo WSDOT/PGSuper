@@ -74,7 +74,7 @@ LPCTSTR CTexasIBNSChapterBuilder::GetName() const
 rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
-   if (pMultiGirderRptSpec != NULL)
+   if (pMultiGirderRptSpec != nullptr)
    {
       CComPtr<IBroker> pBroker;
       pMultiGirderRptSpec->GetBroker(&pBroker);
@@ -149,7 +149,7 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    ATLASSERT(false);
-   return NULL;
+   return nullptr;
 
 }
 

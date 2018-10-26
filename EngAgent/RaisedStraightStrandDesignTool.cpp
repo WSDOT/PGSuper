@@ -367,8 +367,8 @@ CLASS
 
 pgsRaisedStraightStrandDesignTool::pgsRaisedStraightStrandDesignTool(SHARED_LOGFILE lf, const GirderLibraryEntry* pGdrEntry):
 LOGFILE(lf),
-m_pBroker(NULL),
-m_StatusGroupID(NULL),
+m_pBroker(nullptr),
+m_StatusGroupID(INVALID_ID),
 m_pGdrEntry(pGdrEntry),
 m_StrandResequencer(pGdrEntry)
 {

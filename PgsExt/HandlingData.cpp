@@ -46,7 +46,7 @@ CHandlingData::CHandlingData()
    RightLiftPoint       = 0;
    LeadingSupportPoint  = 0;
    TrailingSupportPoint = 0;
-   pHaulTruckLibraryEntry = NULL;
+   pHaulTruckLibraryEntry = nullptr;
 }
 
 CHandlingData::CHandlingData(const CHandlingData& rOther)

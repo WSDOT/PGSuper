@@ -55,6 +55,8 @@
 
 #include <WBFLSTL.h>
 
+#include <algorithm>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -113,7 +115,7 @@ BOOL CAnalysisResultsGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
    UpdateGraphDefinitions();
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   ATLASSERT(m_pGraphController != NULL);
+   ATLASSERT(m_pGraphController != nullptr);
    if ( !m_pGraphController->Create(pParent,IDD_ANALYSISRESULTS_GRAPH_CONTROLLER, CBRS_LEFT, nID) )
    {
       TRACE0("Failed to create control bar\n");
@@ -135,7 +137,7 @@ void CAnalysisResultsGraphBuilder::DumpLBAM()
    AfxMessageBox(_T("Analysis Model Dump Complete"),MB_OK);
 }
 
-CGraphBuilder* CAnalysisResultsGraphBuilder::Clone()
+CGraphBuilder* CAnalysisResultsGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
    // the graph control window
@@ -443,6 +445,10 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
          strBase = _T("Legal Rating (Special)");
          break;
 
+      case pgsTypes::lltLegalRating_Emergency:
+         strBase = _T("Legal Rating (Emergency)");
+         break;
+
       case pgsTypes::lltPermitRating_Routine:
          strBase = _T("Permit Rating (Routine)");
          break;
@@ -464,6 +470,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       case pgsTypes::lltFatigue:
       case pgsTypes::lltLegalRating_Routine:
       case pgsTypes::lltLegalRating_Special:
+      case pgsTypes::lltLegalRating_Emergency:
       case pgsTypes::lltPermitRating_Routine:
       case pgsTypes::lltPermitRating_Special:
          action = ACTIONS_ALL;
@@ -514,9 +521,14 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       vLoadRatingTypes.push_back(pgsTypes::lltLegalRating_Routine);
    }
 
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
    {
       vLoadRatingTypes.push_back(pgsTypes::lltLegalRating_Special);
+   }
+
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+   {
+      vLoadRatingTypes.push_back(pgsTypes::lltLegalRating_Emergency);
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -556,6 +568,10 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
          strBase = _T("Legal Rating (Special)");
          break;
 
+      case pgsTypes::lltLegalRating_Emergency:
+         strBase = _T("Legal Rating (Emergency)");
+         break;
+
       case pgsTypes::lltPermitRating_Routine:
          strBase = _T("Permit Rating (Routine)");
          break;
@@ -577,6 +593,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       case pgsTypes::lltFatigue:
       case pgsTypes::lltLegalRating_Routine:
       case pgsTypes::lltLegalRating_Special:
+      case pgsTypes::lltLegalRating_Emergency:
       case pgsTypes::lltPermitRating_Routine:
       case pgsTypes::lltPermitRating_Special:
          action = ACTIONS_ALL;
@@ -653,9 +670,14 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Legal Rating, Routine)"), pgsTypes::lltLegalRating_Routine, vLoadRatingIntervals, ACTIONS_ALL) );
    }
 
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Legal Rating, Special)"), pgsTypes::lltLegalRating_Special, vLoadRatingIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Legal Rating, Special)"), pgsTypes::lltLegalRating_Special, vLoadRatingIntervals, ACTIONS_ALL));
+   }
+
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+   {
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Legal Rating, Emergency)"), pgsTypes::lltLegalRating_Emergency, vLoadRatingIntervals, ACTIONS_ALL));
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -712,10 +734,16 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Legal Rating, Routine)"),  pgsTypes::StrengthI_LegalRoutine, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
    }
 
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Special)"),            pgsTypes::StrengthI_LegalSpecial,                vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Special)"),  pgsTypes::StrengthI_LegalSpecial, graphCapacity, vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Special)"), pgsTypes::StrengthI_LegalSpecial, vLoadRatingIntervals, ACTIONS_MOMENT_SHEAR));
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Special)"), pgsTypes::StrengthI_LegalSpecial, graphCapacity, vLoadRatingIntervals, ACTIONS_SHEAR_ONLY));
+   }
+
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+   {
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Emergency)"), pgsTypes::StrengthI_LegalEmergency, vLoadRatingIntervals, ACTIONS_MOMENT_SHEAR));
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Emergency)"), pgsTypes::StrengthI_LegalEmergency, graphCapacity, vLoadRatingIntervals, ACTIONS_SHEAR_ONLY));
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -764,10 +792,16 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Legal Rating, Routine)"),pgsTypes::ServiceIII_LegalRoutine,graphAllowable, vLoadRatingIntervals) );
    }
 
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Special)"),   pgsTypes::ServiceIII_LegalSpecial,graphDemand,    vLoadRatingIntervals) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Legal Rating, Special)"),pgsTypes::ServiceIII_LegalSpecial,graphAllowable, vLoadRatingIntervals) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Special)"), pgsTypes::ServiceIII_LegalSpecial, graphDemand, vLoadRatingIntervals));
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Legal Rating, Special)"), pgsTypes::ServiceIII_LegalSpecial, graphAllowable, vLoadRatingIntervals));
+   }
+
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+   {
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Emergency)"), pgsTypes::ServiceIII_LegalEmergency, graphDemand, vLoadRatingIntervals));
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Allowable (Legal Rating, Emergency)"), pgsTypes::ServiceIII_LegalEmergency, graphAllowable, vLoadRatingIntervals));
    }
 }
 
@@ -2233,11 +2267,11 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          {
             if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, NULL, NULL);
+               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, nullptr, nullptr);
             }
             else
             {
-               pForces->GetLiveLoadAxial(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, NULL, NULL);
+               pForces->GetLiveLoadAxial(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, nullptr, nullptr);
             }
 
             AddGraphPoints(min_data_series, xVals, Pmin);
@@ -2321,11 +2355,11 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          {
             if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
+               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, nullptr, nullptr);
             }
             else
             {
-               pForces->GetLiveLoadMoment(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
+               pForces->GetLiveLoadMoment(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, nullptr, nullptr);
             }
 
             AddGraphPoints(min_data_series, xVals, Mmin);
@@ -2507,16 +2541,26 @@ void CAnalysisResultsGraphBuilder::GetSegmentXValues(const CGirderKey& girderKey
       const CSegmentKey& segmentKey = *segmentKeyIter;
 
       PoiAttributeType poiReference;
-      if ( intervalIdx == pIntervals->GetPrestressReleaseInterval(segmentKey) )
+      if (intervalIdx == pIntervals->GetPrestressReleaseInterval(segmentKey))
+      {
          poiReference = POI_RELEASED_SEGMENT;
-      else if ( intervalIdx == pIntervals->GetLiftSegmentInterval(segmentKey) )
+      }
+      else if (intervalIdx == pIntervals->GetLiftSegmentInterval(segmentKey))
+      {
          poiReference = POI_LIFT_SEGMENT;
-      else if ( intervalIdx == pIntervals->GetStorageInterval(segmentKey) )
+      }
+      else if (intervalIdx == pIntervals->GetStorageInterval(segmentKey))
+      {
          poiReference = POI_STORAGE_SEGMENT;
-      else if ( intervalIdx == pIntervals->GetHaulSegmentInterval(segmentKey) )
+      }
+      else if (intervalIdx == pIntervals->GetHaulSegmentInterval(segmentKey))
+      {
          poiReference = POI_HAUL_SEGMENT;
+      }
       else
+      {
          poiReference = POI_ERECTED_SEGMENT;
+      }
 
       std::vector<pgsPointOfInterest> vPoi1( pIPoi->GetPointsOfInterest(segmentKey,POI_0L | poiReference) );
       std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_10L | poiReference) );
@@ -3184,7 +3228,7 @@ void CAnalysisResultsGraphBuilder::CyStressCapacityGraph(IndexType graphIdx,cons
       const pgsFlexuralStressArtifact* pMaxArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,limitState,pgsTypes::Tension,    poi.GetID());
       const pgsFlexuralStressArtifact* pMinArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,limitState,pgsTypes::Compression,poi.GetID());
       Float64 maxcap, mincap;
-      if (pMaxArtifact != NULL)
+      if (pMaxArtifact != nullptr)
       {
          // compression is easy
          Float64 fTop = pMinArtifact->GetCapacity(pgsTypes::TopGirder);

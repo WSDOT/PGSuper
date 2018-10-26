@@ -54,8 +54,8 @@ public:
    static const DWORD  IDD;
 	//}}AFX_DATA
 protected:
-   std::auto_ptr<CShearSteelGrid> m_pGrid;
-   std::auto_ptr<CHorizShearGrid> m_pHorizGrid;
+   std::unique_ptr<CShearSteelGrid> m_pGrid;
+   std::unique_ptr<CHorizShearGrid> m_pHorizGrid;
 public:
    std::_tstring m_CurGrdName;
 

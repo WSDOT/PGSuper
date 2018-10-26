@@ -122,7 +122,7 @@ public:
    void Clear();
 
 private:
-   typedef std::set<CAnalysisResultsGraphDefinition> GraphDefinitionContainer;
+   typedef std::map<IDType,CAnalysisResultsGraphDefinition> GraphDefinitionContainer;
    typedef GraphDefinitionContainer::iterator GraphDefinitionIterator;
    typedef GraphDefinitionContainer::const_iterator ConstGraphDefinitionIterator;
    GraphDefinitionContainer m_Definitions;

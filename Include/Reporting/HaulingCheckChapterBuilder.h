@@ -78,8 +78,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CHaulingCheckChapterBuilder(const CHaulingCheckChapterBuilder&);
-   CHaulingCheckChapterBuilder& operator=(const CHaulingCheckChapterBuilder&);
+   CHaulingCheckChapterBuilder(const CHaulingCheckChapterBuilder&) = delete;
+   CHaulingCheckChapterBuilder& operator=(const CHaulingCheckChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

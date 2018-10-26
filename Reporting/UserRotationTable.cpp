@@ -119,7 +119,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    }
 
    // TRICKY: use adapter class to get correct reaction interfaces
-   std::auto_ptr<IProductReactionAdapter> pForcesAdapt =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
+   std::unique_ptr<IProductReactionAdapter> pForcesAdapt(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
 
    // User iterator to walk locations
    ReactionLocationIter iter = pForcesAdapt->GetReactionLocations(pBridge);

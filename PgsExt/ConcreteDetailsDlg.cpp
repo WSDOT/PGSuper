@@ -52,7 +52,7 @@ static char THIS_FILE[] = __FILE__;
 // CConcreteDetailsDlg dialog
 
 
-CConcreteDetailsDlg::CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters,bool bEnableCopyFromLibrary,CWnd* pParent /*=NULL*/,UINT iSelectPage/*=0*/)
+CConcreteDetailsDlg::CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters,bool bEnableCopyFromLibrary,CWnd* pParent /*=nullptr*/,UINT iSelectPage/*=0*/)
 	: CPropertySheet(_T("Concrete Details"),pParent, iSelectPage)
 {
 	//{{AFX_DATA_INIT(CConcreteDetailsDlg)
@@ -141,7 +141,7 @@ CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDen
        sysTokenizer::ParseDouble(strDensity,&density) &&
        sysTokenizer::ParseDouble(strK1,&k1) &&
        sysTokenizer::ParseDouble(strK2,&k2) &&
-       0 < density && 0 < fc && 0 < k1 && 0 < k2
+       0 <= density && 0 <= fc && 0 <= k1 && 0 <= k2
        )
    {
          CComPtr<IBroker> pBroker;

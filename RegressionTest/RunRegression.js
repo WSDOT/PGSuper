@@ -80,7 +80,7 @@ var DatumFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\
 var ErrorsExist = "FALSE";
 
 var concurrencyCount = 1; // keeps track of number of concurrent processes
-var maxConcurrencyCount = 6; // maximum number of concurrent processes
+var maxConcurrencyCount = 4; // maximum number of concurrent processes
 
 // make sure pgsuper.exe exists
 if (!FSO.FileExists(Application))
@@ -222,17 +222,25 @@ function RunTest (currFolder, currCommand)
                   cmd = Application + " /" + newCommand + " " + s + " " + outFile + " " + newSG.m_Span + " " + newSG.m_Girder;
                }
 
-               
-               if (RunMultipleFiles && fileCount != nPgsFiles) {
+
+               if (RunMultipleFiles && fileCount != nPgsFiles) 
+               {
                   // if we are running multiple files and this is not the last PGS file, add the spawning code
                   // don't ever want to do this for the last non-TOGA file. we must wait until the last non-TOGA
                   // file is done so that we don't change the library too soon
-               
-	               if (concurrencyCount < maxConcurrencyCount) {
+
+                   if (concurrencyCount < maxConcurrencyCount || 
+                       s.search("LRFrame2") != -1 ||
+                       s.search("I_5_SCIP") != -1 ||
+                       s.search("KEEHI_IV") != -1 ||
+                       s.search("ShearKeyLoadBog") != -1
+                       )
+	               {
         	          cmd = "cmd.exe /C START \"XYZ\" " + cmd
                 	  concurrencyCount++;
 	               }
-	               else {
+	               else 
+	               {
         	          concurrencyCount = 1;
 	               }
                }

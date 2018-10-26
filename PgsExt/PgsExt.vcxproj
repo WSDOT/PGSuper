@@ -1,0 +1,773 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|Win32">
+      <Configuration>Profile</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>PGSuperExt</ProjectName>
+    <ProjectGuid>{716009BE-959B-4338-80F5-69ABB0B12A91}</ProjectGuid>
+    <RootNamespace>PgsExt</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>\ARP\WBFL\Include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>\ARP\WBFL\Include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\Lib/PgsExt.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PgsExt\PgsExtLib.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>mfcs140u.lib</AdditionalDependencies>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\Lib/PgsExt.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>.\..\Lib/PgsExt.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PgsExt\PgsExtLib.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalDependencies>mfcs140u.lib</AdditionalDependencies>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\Lib/PgsExt.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\Lib/PgsExt.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILDPGSEXTLIB;_USRDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PgsExt\PgsExtLib.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\Lib/PgsExt.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>.\..\Lib/PgsExt.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILDPGSEXTLIB;_USRDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PgsExt\PgsExtLib.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalDependencies>mfcs140ud.lib;msvcrtd.lib</AdditionalDependencies>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\Lib/PgsExt.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\Lib/PgsExt.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>.\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PgsExt\PgsExtLib.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\Lib/PgsExt.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>.\..\Lib/PgsExt.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>.\;\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PgsExt\PgsExtLib.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX64</TargetMachine>
+      <Profile>true</Profile>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\Lib/PgsExt.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\MakePgz\unzip.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\MakePgz\UnzipPgz.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\MakePgz\zip.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="AASHTOConcretePage.cpp" />
+    <ClCompile Include="ACIConcretePage.cpp" />
+    <ClCompile Include="ACIParametersDlg.cpp" />
+    <ClCompile Include="ApplyLoadActivity.cpp" />
+    <ClCompile Include="BaseCommandLineInfo.cpp" />
+    <ClCompile Include="BoundaryConditionComboBox.cpp" />
+    <ClCompile Include="BoundaryConditionDlg.cpp" />
+    <ClCompile Include="BridgeDescription.cpp" />
+    <ClCompile Include="BridgeDescription2.cpp" />
+    <ClCompile Include="CapacityToDemand.cpp" />
+    <ClCompile Include="CastDeckActivity.cpp" />
+    <ClCompile Include="Catalog.cpp" />
+    <ClCompile Include="CatalogServer.cpp" />
+    <ClCompile Include="CatalogServerAppMixin.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CatalogServerDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CatalogServers.cpp" />
+    <ClCompile Include="CEBFIPConcretePage.cpp" />
+    <ClCompile Include="CEBFIPParamatersDlg.cpp" />
+    <ClCompile Include="ClosureJointData.cpp" />
+    <ClCompile Include="ColumnData.cpp" />
+    <ClCompile Include="ColumnFixityComboBox.cpp" />
+    <ClCompile Include="ConcreteDetailsDlg.cpp" />
+    <ClCompile Include="ConcreteGeneralPage.cpp" />
+    <ClCompile Include="ConcreteMaterial.cpp" />
+    <ClCompile Include="ConfigurePGSuperDlg.cpp" />
+    <ClCompile Include="ConstructabilityArtifact.cpp" />
+    <ClCompile Include="CopyConcreteEntry.cpp" />
+    <ClCompile Include="DebondArtifact.cpp" />
+    <ClCompile Include="DebondData.cpp" />
+    <ClCompile Include="DebondUtil.cpp" />
+    <ClCompile Include="DeckDescription.cpp" />
+    <ClCompile Include="DeckDescription2.cpp" />
+    <ClCompile Include="DeckPoint.cpp" />
+    <ClCompile Include="DeckRebarData.cpp" />
+    <ClCompile Include="DeflectionCheckArtifact.cpp" />
+    <ClCompile Include="DesignConfigUtil.cpp" />
+    <ClCompile Include="DistributedLoadData.cpp" />
+    <ClCompile Include="DuctSizeArtifact.cpp" />
+    <ClCompile Include="EditBridge.cpp" />
+    <ClCompile Include="ErectPiersActivity.cpp" />
+    <ClCompile Include="FlexuralCapacityArtifact.cpp" />
+    <ClCompile Include="FlexuralStressArtifact.cpp" />
+    <ClCompile Include="GirderArtifact.cpp" />
+    <ClCompile Include="GirderArtifactTool.cpp" />
+    <ClCompile Include="GirderData.cpp" />
+    <ClCompile Include="GirderDesignArtifact.cpp" />
+    <ClCompile Include="GirderGroupData.cpp" />
+    <ClCompile Include="GirderLabel.cpp" />
+    <ClCompile Include="GirderMaterial.cpp" />
+    <ClCompile Include="GirderModelFactory.cpp" />
+    <ClCompile Include="GirderSpacing.cpp" />
+    <ClCompile Include="GirderSpacing2.cpp" />
+    <ClCompile Include="GirderTypes.cpp" />
+    <ClCompile Include="HandlingData.cpp" />
+    <ClCompile Include="HaulingAnalysisArtifact.cpp" />
+    <ClCompile Include="HaunchShapeComboBox.cpp" />
+    <ClCompile Include="HoldDownForceArtifact.cpp" />
+    <ClCompile Include="InsertDeleteLoad.cpp" />
+    <ClCompile Include="IntervalTool.cpp" />
+    <ClCompile Include="KdotHaulingAnalysisArtifact.cpp" />
+    <ClCompile Include="Keys.cpp" />
+    <ClCompile Include="LiftHaulConstants.cpp" />
+    <ClCompile Include="LoadFactors.cpp" />
+    <ClCompile Include="LoadManager.cpp" />
+    <ClCompile Include="LongitudinalRebarData.cpp" />
+    <ClCompile Include="LongRebarInstance.cpp" />
+    <ClCompile Include="MacroTxn.cpp" />
+    <ClCompile Include="main.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="MomentLoadData.cpp" />
+    <ClCompile Include="MomentRatingArtifact.cpp" />
+    <ClCompile Include="PierData.cpp" />
+    <ClCompile Include="PierData2.cpp" />
+    <ClCompile Include="PoiArtifactKey.cpp" />
+    <ClCompile Include="PoiMap.cpp" />
+    <ClCompile Include="PoiMgr.cpp" />
+    <ClCompile Include="PointLoadData.cpp" />
+    <ClCompile Include="PointOfInterest.cpp" />
+    <ClCompile Include="PoiPairMap.cpp" />
+    <ClCompile Include="PrecastIGirderDetailingArtifact.cpp" />
+    <ClCompile Include="PrecastSegmentData.cpp" />
+    <ClCompile Include="Prompts.cpp" />
+    <ClCompile Include="PTData.cpp" />
+    <ClCompile Include="RailingSystem.cpp" />
+    <ClCompile Include="RatingArtifact.cpp" />
+    <ClCompile Include="RefinedAnalysisOptionsDlg.cpp" />
+    <ClCompile Include="RemoveTemporarySupportsActivity.cpp" />
+    <ClCompile Include="ReportPointOfInterest.cpp" />
+    <ClCompile Include="SegmentActivity.cpp" />
+    <ClCompile Include="SegmentArtifact.cpp" />
+    <ClCompile Include="SegmentDesignArtifact.cpp" />
+    <ClCompile Include="SegmentRelatedStatusItem.cpp" />
+    <ClCompile Include="SegmentStabilityArtifact.cpp" />
+    <ClCompile Include="SelectGirderDlg.cpp" />
+    <ClCompile Include="Selection.cpp" />
+    <ClCompile Include="SelectPOIDlg.cpp" />
+    <ClCompile Include="SelectSegmentDlg.cpp" />
+    <ClCompile Include="ServerDefinitionDlg.cpp" />
+    <ClCompile Include="ShearData.cpp" />
+    <ClCompile Include="ShearRatingArtifact.cpp" />
+    <ClCompile Include="ShearZoneData.cpp" />
+    <ClCompile Include="SpanData.cpp" />
+    <ClCompile Include="SpanData2.cpp" />
+    <ClCompile Include="SpanGirderRelatedStatusItem.cpp" />
+    <ClCompile Include="SplicedGirderData.cpp" />
+    <ClCompile Include="StabilityAnalysisPoint.cpp" />
+    <ClCompile Include="StatusItem.cpp" />
+    <ClCompile Include="StirrupCheckArtifact.cpp" />
+    <ClCompile Include="StirrupCheckAtPoisArtifact.cpp" />
+    <ClCompile Include="StirrupCheckAtZonesArtifact.cpp" />
+    <ClCompile Include="StrandData.cpp" />
+    <ClCompile Include="StrandSlopeArtifact.cpp" />
+    <ClCompile Include="StrandStressArtifact.cpp" />
+    <ClCompile Include="StressRatingArtifact.cpp" />
+    <ClCompile Include="StressTendonActivity.cpp" />
+    <ClCompile Include="TemplateManager.cpp" />
+    <ClCompile Include="TemporarySupportData.cpp" />
+    <ClCompile Include="TendonStressArtifact.cpp" />
+    <ClCompile Include="ThreadManager.cpp" />
+    <ClCompile Include="TimelineEvent.cpp" />
+    <ClCompile Include="TimelineItemListBox.cpp" />
+    <ClCompile Include="TimelineManager.cpp" />
+    <ClCompile Include="YieldStressRatioArtifact.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PgsExt.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Include\PgsExt\AASHTOConcretePage.h" />
+    <ClInclude Include="..\Include\PgsExt\ACIConcretePage.h" />
+    <ClInclude Include="..\Include\PgsExt\ApplyLoadActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\AutoLib.h" />
+    <ClInclude Include="..\Include\PgsExt\BaseCommandLineInfo.h" />
+    <ClInclude Include="..\Include\PgsExt\BoundaryConditionComboBox.h" />
+    <ClInclude Include="..\Include\PgsExt\BridgeDescription2.h" />
+    <ClInclude Include="..\Include\PgsExt\CapacityToDemand.h" />
+    <ClInclude Include="..\Include\PgsExt\CastDeckActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\CatalogServerAppMixin.h" />
+    <ClInclude Include="..\Include\PgsExt\CEBFIPConcretePage.h" />
+    <ClInclude Include="..\Include\PgsExt\ClosureJointData.h" />
+    <ClInclude Include="..\Include\PgsExt\ColumnData.h" />
+    <ClInclude Include="..\Include\PgsExt\ColumnFixityComboBox.h" />
+    <ClInclude Include="..\Include\PgsExt\ConcreteDetailsDlg.h" />
+    <ClInclude Include="..\Include\PgsExt\ConcreteGeneralPage.h" />
+    <ClInclude Include="..\Include\PgsExt\ConcreteMaterial.h" />
+    <ClInclude Include="..\Include\PgsExt\ConstructabilityArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\DebondArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\DebondData.h" />
+    <ClInclude Include="..\Include\PgsExt\DebondUtil.h" />
+    <ClInclude Include="..\Include\PgsExt\DeckDescription.h" />
+    <ClInclude Include="..\Include\PgsExt\DeckDescription2.h" />
+    <ClInclude Include="..\Include\PgsExt\DeckPoint.h" />
+    <ClInclude Include="..\Include\PgsExt\DeckRebarData.h" />
+    <ClInclude Include="..\Include\PgsExt\DeflectionCheckArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\DesignConfigUtil.h" />
+    <ClInclude Include="..\Include\PgsExt\DistributedLoadData.h" />
+    <ClInclude Include="..\Include\PgsExt\DuctSizeArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\EditBridge.h" />
+    <ClInclude Include="..\Include\PgsExt\ErectPiersActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\FlexuralCapacityArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\FlexuralStressArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderArtifactTool.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderData.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderDesignArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderGroupData.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderLabel.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderMaterial.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderModelFactory.h" />
+    <ClInclude Include="..\Include\PgsExt\GirderSpacing2.h" />
+    <ClInclude Include="..\Include\PgsExt\HandlingData.h" />
+    <ClInclude Include="..\Include\PgsExt\HaulingAnalysisArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\HaunchShapeComboBox.h" />
+    <ClInclude Include="..\Include\PgsExt\HoldDownForceArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\InsertDeleteLoad.h" />
+    <ClInclude Include="..\Include\PgsExt\IntervalTool.h" />
+    <ClInclude Include="..\Include\PgsExt\KdotHaulingAnalysisArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\Keys.h" />
+    <ClInclude Include="..\Include\PgsExt\LiftHaulConstants.h" />
+    <ClInclude Include="..\Include\PgsExt\LoadFactors.h" />
+    <ClInclude Include="..\Include\PgsExt\LoadManager.h" />
+    <ClInclude Include="..\Include\PgsExt\LongitudinalRebarData.h" />
+    <ClInclude Include="..\Include\PgsExt\LongRebarInstance.h" />
+    <ClInclude Include="..\Include\PgsExt\MacroTxn.h" />
+    <ClInclude Include="..\Include\PgsExt\MomentLoadData.h" />
+    <ClInclude Include="..\Include\PgsExt\MomentRatingArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\PgsExt.h" />
+    <ClInclude Include="..\Include\PgsExt\PgsExtExp.h" />
+    <ClInclude Include="..\Include\PgsExt\PgsExtLib.h" />
+    <ClInclude Include="..\Include\PgsExt\PierData2.h" />
+    <ClInclude Include="..\Include\PgsExt\PoiArtifactKey.h" />
+    <ClInclude Include="..\Include\PgsExt\PoiKey.h" />
+    <ClInclude Include="..\Include\PgsExt\PoiMap.h" />
+    <ClInclude Include="..\Include\PgsExt\PoiMgr.h" />
+    <ClInclude Include="..\Include\PgsExt\PointLoadData.h" />
+    <ClInclude Include="..\Include\PgsExt\PointOfInterest.h" />
+    <ClInclude Include="..\Include\PgsExt\PoiPairMap.h" />
+    <ClInclude Include="..\Include\PgsExt\PrecastIGirderDetailingArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\PrecastSegmentData.h" />
+    <ClInclude Include="..\Include\PgsExt\Prompts.h" />
+    <ClInclude Include="..\Include\PgsExt\PTData.h" />
+    <ClInclude Include="..\Include\PgsExt\RailingSystem.h" />
+    <ClInclude Include="..\Include\PgsExt\RatingArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\RemoveTemporarySupportsActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\ReportPointOfInterest.h" />
+    <ClInclude Include="..\Include\PgsExt\SegmentActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\SegmentArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\SegmentDesignArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\SegmentRelatedStatusItem.h" />
+    <ClInclude Include="..\Include\PgsExt\SegmentStabilityArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\Selection.h" />
+    <ClInclude Include="..\Include\PgsExt\ShearData.h" />
+    <ClInclude Include="..\Include\PgsExt\ShearRatingArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\ShearZoneData.h" />
+    <ClInclude Include="..\Include\PgsExt\SpanData2.h" />
+    <ClInclude Include="..\Include\PgsExt\SpanGirderRelatedStatusItem.h" />
+    <ClInclude Include="..\Include\PgsExt\SplicedGirderData.h" />
+    <ClInclude Include="..\Include\PgsExt\StabilityAnalysisPoint.h" />
+    <ClInclude Include="..\Include\PgsExt\StatusItem.h" />
+    <ClInclude Include="..\Include\PgsExt\StirrupCheckArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\StirrupCheckAtPoisArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\StirrupCheckAtZonesArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\StrandData.h" />
+    <ClInclude Include="..\Include\PgsExt\StrandSlopeArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\StrandStressArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\StressRatingArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\StressTendonActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\TemporarySupportData.h" />
+    <ClInclude Include="..\Include\PgsExt\TendonStressArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\ThreadManager.h" />
+    <ClInclude Include="..\Include\PgsExt\TimelineEvent.h" />
+    <ClInclude Include="..\Include\PgsExt\TimelineItemListBox.h" />
+    <ClInclude Include="..\Include\PgsExt\TimelineManager.h" />
+    <ClInclude Include="..\Include\PgsExt\YieldStressRatioArtifact.h" />
+    <ClInclude Include="..\MakePgz\unzip.h" />
+    <ClInclude Include="..\MakePgz\UnzipPgz.h" />
+    <ClInclude Include="..\MakePgz\zip.h" />
+    <ClInclude Include="ACIParametersDlg.h" />
+    <ClInclude Include="BoundaryConditionDlg.h" />
+    <ClInclude Include="BridgeDescription.h" />
+    <ClInclude Include="CatalogServerDlg.h" />
+    <ClInclude Include="CEBFIPParametersDlg.h" />
+    <ClInclude Include="ConfigurePGSuperDlg.h" />
+    <ClInclude Include="CopyConcreteEntry.h" />
+    <ClInclude Include="GirderSpacing.h" />
+    <ClInclude Include="GirderTypes.h" />
+    <ClInclude Include="PierData.h" />
+    <ClInclude Include="RefinedAnalysisOptionsDlg.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="SelectGirderDlg.h" />
+    <ClInclude Include="SelectPOIDlg.h" />
+    <ClInclude Include="SelectSegmentDlg.h" />
+    <ClInclude Include="ServerDefinitionDlg.h" />
+    <ClInclude Include="SpanData.h" />
+    <ClInclude Include="TemplateManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\bitmap1.bmp" />
+    <Image Include="res\bitmap2.bmp" />
+    <Image Include="res\ColumnFixity.bmp" />
+    <Image Include="res\Continuous.bmp" />
+    <Image Include="res\globe.ico" />
+    <Image Include="res\HaunchFilleted.bmp" />
+    <Image Include="res\HaunchSquare.bmp" />
+    <Image Include="res\Hinges.bmp" />
+    <Image Include="res\InteriorPierHinges.bmp" />
+    <Image Include="res\InteriorPierRollers.bmp" />
+    <Image Include="res\Rollers.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\psgLib\psgLib.vcxproj">
+      <Project>{3d4395a4-6da8-40b5-bd41-c21104290b15}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="PgsExt.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

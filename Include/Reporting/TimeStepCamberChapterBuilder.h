@@ -40,8 +40,8 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CTimeStepCamberChapterBuilder(const CTimeStepCamberChapterBuilder&);
-   CTimeStepCamberChapterBuilder& operator=(const CTimeStepCamberChapterBuilder&);
+   CTimeStepCamberChapterBuilder(const CTimeStepCamberChapterBuilder&) = delete;
+   CTimeStepCamberChapterBuilder& operator=(const CTimeStepCamberChapterBuilder&) = delete;
 
    rptRcTable* CreateStorageDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
    rptRcTable* CreateAfterErectionDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;

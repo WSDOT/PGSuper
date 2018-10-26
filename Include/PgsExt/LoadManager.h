@@ -93,7 +93,7 @@ public:
 
 protected:
    void MakeCopy(const CLoadManager& rOther);
-   virtual void MakeAssignment(const CLoadManager& rOther);
+   void MakeAssignment(const CLoadManager& rOther);
 
 private:
    CTimelineManager* m_pTimelineManager;

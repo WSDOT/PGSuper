@@ -38,7 +38,7 @@ class CSpanLengthDlg : public CDialog
 {
 // Construction
 public:
-	CSpanLengthDlg(CWnd* pParent = NULL);   // standard constructor
+	CSpanLengthDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSpanLengthDlg)
@@ -51,7 +51,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSpanLengthDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -64,7 +64,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CSpanLengthDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

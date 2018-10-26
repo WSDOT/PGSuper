@@ -94,7 +94,7 @@ dbgLogDumpContext m_Log;
    sysTime endTime; \
    LOG((endTime.Seconds() - startTime.Seconds()) << _T(" sec : ") << _T(#_x_)); }
 
-#define CLOSE_LOGFILE m_Log.SetLog(NULL,0)
+#define CLOSE_LOGFILE m_Log.SetLog(nullptr,0)
 
 #else
 
@@ -126,7 +126,7 @@ dbgLogDumpContext m_Log;
 #if defined ENABLE_LOGGING
 #define LOGGER m_Log
 #else
-#define LOGGER NULL
+#define LOGGER nullptr
 #endif
 
 #endif // INCLUDED_IFACE_TOOLS_H_

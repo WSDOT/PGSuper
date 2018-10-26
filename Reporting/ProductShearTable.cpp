@@ -181,6 +181,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       std::vector<sysSectionValue> minPermitLL, maxPermitLL;
       std::vector<sysSectionValue> minLegalRoutineLL, maxLegalRoutineLL;
       std::vector<sysSectionValue> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<sysSectionValue> minLegalEmergencyLL, maxLegalEmergencyLL;
       std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
       std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
 
@@ -195,6 +196,8 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       std::vector<VehicleIndexType> maxLegalRoutineLLtruck;
       std::vector<VehicleIndexType> minLegalSpecialLLtruck;
       std::vector<VehicleIndexType> maxLegalSpecialLLtruck;
+      std::vector<VehicleIndexType> minLegalEmergencyLLtruck;
+      std::vector<VehicleIndexType> maxLegalEmergencyLLtruck;
       std::vector<VehicleIndexType> minPermitRoutineLLtruck;
       std::vector<VehicleIndexType> maxPermitRoutineLLtruck;
       std::vector<VehicleIndexType> minPermitSpecialLLtruck;
@@ -256,10 +259,16 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
             pForces2->GetLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pForces2->GetLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
-            pForces2->GetLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadShear(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck);
+            pForces2->GetLiveLoadShear(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck);
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pForces2->GetLiveLoadShear(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, true, false, &dummy, &maxLegalEmergencyLL, &dummyTruck, &maxLegalEmergencyLLtruck);
+            pForces2->GetLiveLoadShear(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, true, false, &minLegalEmergencyLL, &dummy, &minLegalEmergencyLLtruck, &dummyTruck);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -486,20 +495,40 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
             }
 
             // Legal - Special
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               (*p_table)(row,col) << shear.SetValue( maxLegalSpecialLL[index] );
-               if ( bIndicateControllingLoad && 0 < maxLegalSpecialLLtruck.size() )
+               (*p_table)(row, col) << shear.SetValue(maxLegalSpecialLL[index]);
+               if (bIndicateControllingLoad && 0 < maxLegalSpecialLLtruck.size())
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << _T(")");
+                  (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << _T(")");
                }
 
                col++;
 
-               (*p_table)(row,col) << shear.SetValue( minLegalSpecialLL[index] );
-               if ( bIndicateControllingLoad && 0 < minLegalSpecialLLtruck.size() )
+               (*p_table)(row, col) << shear.SetValue(minLegalSpecialLL[index]);
+               if (bIndicateControllingLoad && 0 < minLegalSpecialLLtruck.size())
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << _T(")");
+                  (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << _T(")");
+               }
+
+               col++;
+            }
+
+            // Legal - Emergency
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               (*p_table)(row, col) << shear.SetValue(maxLegalEmergencyLL[index]);
+               if (bIndicateControllingLoad && 0 < maxLegalEmergencyLLtruck.size())
+               {
+                  (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << maxLegalEmergencyLLtruck[index] << _T(")");
+               }
+
+               col++;
+
+               (*p_table)(row, col) << shear.SetValue(minLegalEmergencyLL[index]);
+               if (bIndicateControllingLoad && 0 < minLegalEmergencyLLtruck.size())
+               {
+                  (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << minLegalEmergencyLLtruck[index] << _T(")");
                }
 
                col++;

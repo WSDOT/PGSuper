@@ -54,28 +54,28 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual void BuildTableAndNotes(rptChapter* pChapter, IBroker* pBroker,
+   virtual CChapterBuilder* Clone() const override;
+
+   //------------------------------------------------------------------------
+   void BuildTableAndNotes(rptChapter* pChapter, IBroker* pBroker,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,
                       pgsTypes::LimitState ls,
                       pgsTypes::StressType stress=pgsTypes::Tension) const;
 
    //------------------------------------------------------------------------
-   virtual void BuildTable(rptChapter* pChapter, IBroker* pBroker,
+   void BuildTable(rptChapter* pChapter, IBroker* pBroker,
                       const pgsSegmentArtifact* pFactoredGdrArtifact, const pgsSegmentArtifact* pUnfactoredGdrArtifact,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,
                       pgsTypes::LimitState ls,
                       pgsTypes::StressType stress=pgsTypes::Tension) const;
-
-   //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -93,8 +93,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CTogaStressChecksChapterBuilder(const CTogaStressChecksChapterBuilder&);
-   CTogaStressChecksChapterBuilder& operator=(const CTogaStressChecksChapterBuilder&);
+   CTogaStressChecksChapterBuilder(const CTogaStressChecksChapterBuilder&) = delete;
+   CTogaStressChecksChapterBuilder& operator=(const CTogaStressChecksChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -88,15 +88,15 @@ private:
 class CPGSuperPluginMgr : public CPGSuperPluginMgrBase
 {
 protected:
-   virtual CATID GetImporterCATID() {return CATID_PGSuperDataImporter;}
-   virtual CATID GetExporterCATID() {return CATID_PGSuperDataExporter;}
+   virtual CATID GetImporterCATID() override {return CATID_PGSuperDataImporter;}
+   virtual CATID GetExporterCATID() override {return CATID_PGSuperDataExporter;}
 };
 
 class CPGSplicePluginMgr : public CPGSuperPluginMgrBase
 {
 protected:
-   virtual CATID GetImporterCATID() {return CATID_PGSpliceDataImporter;}
-   virtual CATID GetExporterCATID() {return CATID_PGSpliceDataExporter;}
+   virtual CATID GetImporterCATID() override {return CATID_PGSpliceDataImporter;}
+   virtual CATID GetExporterCATID() override {return CATID_PGSpliceDataExporter;}
 };
 
 #endif // !defined(INCLUDED_PGSUPERIEPLUGINMGR_H_)

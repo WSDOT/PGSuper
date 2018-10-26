@@ -43,7 +43,7 @@
 
 IMPLEMENT_DYNAMIC(CTimelineEventDlg, CDialog)
 
-CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CTimelineEventDlg::IDD, pParent)
 {
    m_bEdit = bEditEvent;

@@ -68,7 +68,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
 {
    // Report for a single girder
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   if (pGirderRptSpec != NULL)
+   if (pGirderRptSpec != nullptr)
    {
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pGirderRptSpec,level);
 
@@ -86,7 +86,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
 
    // Report multiple girders
    CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
-   if (pMultiGirderRptSpec != NULL)
+   if (pMultiGirderRptSpec != nullptr)
    {
       const std::vector<CGirderKey>& girderKeys( pMultiGirderRptSpec->GetGirderKeys() );
 
@@ -134,7 +134,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
 
 
    ATLASSERT(false);
-   return NULL;
+   return nullptr;
 }
 
 rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CReportSpecification* pRptSpec,Uint16 level,

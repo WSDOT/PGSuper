@@ -56,7 +56,11 @@ public:
    virtual rptRcTable* BuildByVehicle(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const;
 
    //------------------------------------------------------------------------
-   // Builds the load posting table for a limit state
-   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const;
+   // Builds the load posting table for a a legal load rating (but not emergency vehicles)
+   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge) const;
+
+   //------------------------------------------------------------------------
+   // Builds the load posting table for emergency vehicles
+   virtual rptRcTable* BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const CGirderKey& girderKey) const;
 };
 

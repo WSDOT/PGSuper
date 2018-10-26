@@ -45,7 +45,7 @@ class CTrafficBarrierViewDialog : public CDialog
 {
 // Construction
 public:
-   CTrafficBarrierViewDialog(IShape* pShape, CWnd* pParent = NULL);   // standard constructor
+   CTrafficBarrierViewDialog(IShape* pShape, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CTrafficBarrierViewDialog)

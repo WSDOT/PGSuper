@@ -42,13 +42,14 @@ class PGSEXTCLASS CBoundaryConditionComboBox : public CComboBox
 public:
    CBoundaryConditionComboBox();
    
-   void Initialize(bool bIsBoundaryPier,const std::vector<pgsTypes::BoundaryConditionType>& connections);
+   void Initialize(bool bIsBoundaryPier,const std::vector<pgsTypes::BoundaryConditionType>& connections,bool bNoDeck=false);
    void SetPierType(int pierType);
 
-   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
 
 private:
    int AddBoundaryCondition(pgsTypes::BoundaryConditionType type);
    int m_PierType;
    bool m_bIsBoundaryPier;
+   bool m_bNoDeck;
 };

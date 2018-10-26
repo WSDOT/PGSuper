@@ -90,7 +90,7 @@ protected:
    void MakeCopy(const PGSuperCalculationSheet& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const PGSuperCalculationSheet& rOther);
+   void MakeAssignment(const PGSuperCalculationSheet& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

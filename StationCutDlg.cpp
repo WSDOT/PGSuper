@@ -49,7 +49,7 @@ m_UpperBound(upperBound)
 }
 
 
-CStationCutDlg::CStationCutDlg(CWnd* pParent /*=NULL*/)
+CStationCutDlg::CStationCutDlg(CWnd* pParent /*=nullptr*/)
 : CDialog(CStationCutDlg::IDD, pParent),
 m_Value(0.0),
 m_LowerBound(0.0),

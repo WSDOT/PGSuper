@@ -90,71 +90,71 @@ END_COM_MAP()
 
 // IAgentEx
 public:
-   STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker);
-	STDMETHOD(RegInterfaces)();
-	STDMETHOD(Init)();
-	STDMETHOD(Init2)();
-	STDMETHOD(Reset)();
-	STDMETHOD(ShutDown)();
-   STDMETHOD(GetClassID)(CLSID* pCLSID);
+   STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
+	STDMETHOD(RegInterfaces)() override;
+	STDMETHOD(Init)() override;
+	STDMETHOD(Init2)() override;
+	STDMETHOD(Reset)() override;
+	STDMETHOD(ShutDown)() override;
+   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
 
 // IUpdateTemplates
 public:
-   virtual bool UpdatingTemplates();
+   virtual bool UpdatingTemplates() override;
 
    // ISelection
 public:
-   virtual CSelection GetSelection();
-   virtual void ClearSelection();
-   virtual PierIndexType GetSelectedPier();
-   virtual SpanIndexType GetSelectedSpan();
-   virtual CGirderKey GetSelectedGirder();
-   virtual CSegmentKey GetSelectedSegment();
-   virtual CClosureKey GetSelectedClosureJoint();
-   virtual SupportIDType GetSelectedTemporarySupport();
-   virtual bool IsDeckSelected();
-   virtual bool IsAlignmentSelected();
-   virtual void SelectPier(PierIndexType pierIdx);
-   virtual void SelectSpan(SpanIndexType spanIdx);
-   virtual void SelectGirder(const CGirderKey& girderKey);
-   virtual void SelectSegment(const CSegmentKey& segmentKey);
-   virtual void SelectClosureJoint(const CClosureKey& closureKey);
-   virtual void SelectTemporarySupport(SupportIDType tsID);
-   virtual void SelectDeck();
-   virtual void SelectAlignment();
-   virtual Float64 GetSectionCutStation();
+   virtual CSelection GetSelection() override;
+   virtual void ClearSelection() override;
+   virtual PierIndexType GetSelectedPier() override;
+   virtual SpanIndexType GetSelectedSpan() override;
+   virtual CGirderKey GetSelectedGirder() override;
+   virtual CSegmentKey GetSelectedSegment() override;
+   virtual CClosureKey GetSelectedClosureJoint() override;
+   virtual SupportIDType GetSelectedTemporarySupport() override;
+   virtual bool IsDeckSelected() override;
+   virtual bool IsAlignmentSelected() override;
+   virtual void SelectPier(PierIndexType pierIdx) override;
+   virtual void SelectSpan(SpanIndexType spanIdx) override;
+   virtual void SelectGirder(const CGirderKey& girderKey) override;
+   virtual void SelectSegment(const CSegmentKey& segmentKey) override;
+   virtual void SelectClosureJoint(const CClosureKey& closureKey) override;
+   virtual void SelectTemporarySupport(SupportIDType tsID) override;
+   virtual void SelectDeck() override;
+   virtual void SelectAlignment() override;
+   virtual Float64 GetSectionCutStation() override;
 
 // IDocumentType
 public:
-   virtual bool IsPGSuperDocument() { return true; }
-   virtual bool IsPGSpliceDocument() { return false; }
+   virtual bool IsPGSuperDocument() override { return true; }
+   virtual bool IsPGSpliceDocument() override { return false; }
 
 // IVersionInfo
 public:
-   virtual CString GetVersionString(bool bIncludeBuildNumber = false);
-   virtual CString GetVersion(bool bIncludeBuildNumber = false);
+   virtual CString GetVersionString(bool bIncludeBuildNumber = false) override;
+   virtual CString GetVersion(bool bIncludeBuildNumber = false) override;
 
 // IGetTogaData
-   virtual const CTxDOTOptionalDesignData* GetTogaData();
+   virtual const CTxDOTOptionalDesignData* GetTogaData() override;
 
 // IGetTogaResults
-   virtual void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart);
-   virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart);
+   virtual void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) override;
+   virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) override;
 
-   virtual Float64 GetUltimateMomentCapacity();
-   virtual Float64 GetMaximumCamber();
+   virtual Float64 GetUltimateMomentCapacity() override;
+   virtual Float64 GetMaximumCamber() override;
 
-   virtual Float64 GetRequiredUltimateMoment();
-   virtual Float64 GetRequiredFc();
-   virtual Float64 GetRequiredFci();
+   virtual Float64 GetRequiredUltimateMoment() override;
+   virtual Float64 GetRequiredFc() override;
+   virtual Float64 GetRequiredFci() override;
 
-   virtual const pgsGirderArtifact* GetFabricatorDesignArtifact();
-   virtual Float64 GetFabricatorMaximumCamber();
+   virtual const pgsGirderArtifact* GetFabricatorDesignArtifact() override;
+   virtual Float64 GetFabricatorMaximumCamber() override;
 
-   virtual bool ShearPassed();
+   virtual bool ShearPassed() override;
 
 // ITxDataObserver
-   virtual void OnTxDotDataChanged(int change);
+   virtual void OnTxDotDataChanged(int change) override;
 
 
 private:

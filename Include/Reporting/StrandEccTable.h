@@ -83,7 +83,7 @@ protected:
    void MakeCopy(const CStrandEccTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CStrandEccTable& rOther);
+   void MakeAssignment(const CStrandEccTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

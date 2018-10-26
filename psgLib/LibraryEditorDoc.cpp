@@ -86,7 +86,7 @@ END_MESSAGE_MAP()
 CLibraryEditorDoc::CLibraryEditorDoc()
 {
    m_LibraryManager.SetName(_T("Master Libraries"));
-   m_pMyToolBar = NULL;
+   m_pMyToolBar = nullptr;
 
    // library editor doesn't use the status center
    CEAFStatusCenter& status_center = GetStatusCenter();
@@ -168,14 +168,14 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
       UINT tbID = pFrame->CreateToolBar(_T("Library"),GetPluginCommandManager());
       m_pMyToolBar = pFrame->GetToolBar(tbID);
-      m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,NULL);
-      m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,NULL,BTNS_DROPDOWN);
+      m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,nullptr);
+      m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,nullptr,BTNS_DROPDOWN);
    }
    else
    {
       // remove toolbar here
       pFrame->DestroyToolBar(m_pMyToolBar);
-      m_pMyToolBar = NULL;
+      m_pMyToolBar = nullptr;
    }
 
    // then call base class, which handles UI integration for
@@ -307,7 +307,7 @@ void CLibraryEditorDoc::OnImport()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	// ask user for file name
-   CFileDialog  fildlg(TRUE,_T("pgs"),NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
+   CFileDialog  fildlg(TRUE,_T("pgs"),nullptr,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
                    _T("PGSuper Project File (*.pgs)|*.pgs|PGSplice Project File (*.spl)|*.spl||"));
    INT_PTR stf = fildlg.DoModal();
    if (stf==IDOK)
@@ -323,7 +323,7 @@ void CLibraryEditorDoc::OnImport()
          // file can be deleted
 
          CComPtr<IStructuredLoad> pStrLoad;
-         HRESULT hr = ::CoCreateInstance( CLSID_StructuredLoad, NULL, CLSCTX_INPROC_SERVER, IID_IStructuredLoad, (void**)&pStrLoad );
+         HRESULT hr = ::CoCreateInstance( CLSID_StructuredLoad, nullptr, CLSCTX_INPROC_SERVER, IID_IStructuredLoad, (void**)&pStrLoad );
          if ( FAILED(hr) )
          {
             // We are not aggregating so we should CoCreateInstance should

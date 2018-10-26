@@ -127,7 +127,7 @@ protected:
    void MakeCopy(const pgsPrecastIGirderDetailingArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsPrecastIGirderDetailingArtifact& rOther);
+   void MakeAssignment(const pgsPrecastIGirderDetailingArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

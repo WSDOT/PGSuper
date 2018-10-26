@@ -82,44 +82,44 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    // that is passed to all the chapter builders
 
    // this report spec builder prompts for span #, girder # and chapter list
-   boost::shared_ptr<CReportSpecificationBuilder> pSpanRptSpecBuilder(           new CSpanReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder(    new CMultiGirderReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(      new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(         new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
+   std::shared_ptr<CReportSpecificationBuilder> pSpanRptSpecBuilder(             std::make_shared<CSpanReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder(    std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(      std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(         std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
 
    CreateMultiGirderSpecCheckReport();
 
    CreateMultiHaunchGeometryReport();
 
    // Design Outcome
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Design Outcome Report"),true); // hidden report
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Design Outcome Report"),true)); // hidden report
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   //pRptBuilder->AddTitlePageBuilder(NULL); // no title page for this report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDesignOutcomeChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDesignOutcomeChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    // Girder Comparison Report
-   pRptBuilder = new CReportBuilder(_T("Girder Comparison Report"));
+   pRptBuilder = std::make_unique<CReportBuilder>(_T("Girder Comparison Report"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderComparisonChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CGirderComparisonChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    // Fabrication Options Report
-   pRptBuilder = new CReportBuilder(_T("Fabrication Options Report"));
+   pRptBuilder = std::make_unique<CReportBuilder>(_T("Fabrication Options Report"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COptimizedFabricationChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new COptimizedFabricationChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    return S_OK;
 }
@@ -234,16 +234,16 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
       bHidden = false;
    }
 
-   BOOST_FOREACH(const std::_tstring strReportName,strReportNames)
+   for (const auto& strReportName : strReportNames)
    {
-      std::vector<boost::shared_ptr<CReportBuilder>> vRptBuilders;
+      std::vector<std::shared_ptr<CReportBuilder>> vRptBuilders;
       vRptBuilders.push_back( pRptMgr->GetReportBuilder(strReportName.c_str()) );
 
-      std::vector<boost::shared_ptr<CReportBuilder>>::iterator iter(vRptBuilders.begin());
-      std::vector<boost::shared_ptr<CReportBuilder>>::iterator end(vRptBuilders.end());
+      std::vector<std::shared_ptr<CReportBuilder>>::iterator iter(vRptBuilders.begin());
+      std::vector<std::shared_ptr<CReportBuilder>>::iterator end(vRptBuilders.end());
       for ( ; iter != end; iter++ )
       {
-         boost::shared_ptr<CReportBuilder> pRptBuilder(*iter);
+         std::shared_ptr<CReportBuilder> pRptBuilder(*iter);
          pRptBuilder->Hidden(bHidden);
       }
    }
@@ -251,10 +251,10 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    // Add time-step chapters the details report
    
    // Update details report to contain a couple of extra chapters
-   boost::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
+   std::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
-      VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
+      VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
    }
    else
    {

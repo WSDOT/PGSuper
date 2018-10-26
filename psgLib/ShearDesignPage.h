@@ -90,5 +90,5 @@ public:
    int m_LongReinfShearMethod;
 
 private:
-   std::auto_ptr<CShearBarsLegsGrid> m_pGrid;
+   std::unique_ptr<CShearBarsLegsGrid> m_pGrid;
 };

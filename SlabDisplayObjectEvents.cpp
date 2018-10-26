@@ -176,7 +176,7 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMe
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
+      pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,nullptr);
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
@@ -389,7 +389,7 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContex
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
+      pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,nullptr);
 
       const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pDoc->GetBridgeSectionViewCallbacks();
       std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());

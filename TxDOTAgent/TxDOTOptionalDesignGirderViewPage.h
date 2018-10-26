@@ -54,7 +54,7 @@ public:
    ITxDOTBrokerRetriever* m_pBrokerRetriever;
 
 // listen to data change events
-   virtual void OnTxDotDataChanged(int change);
+   virtual void OnTxDotDataChanged(int change) override;
 
    // our views need the document
    CTxDOTOptionalDesignDoc* m_pDocument;
@@ -65,15 +65,15 @@ public:
    void GetSpanAndGirderSelection(SpanIndexType* pSpan,GirderIndexType* pGirder);
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnSetActive();
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnSetActive() override;
+   virtual BOOL OnInitDialog() override;
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-   virtual void AssertValid() const;
+   virtual void AssertValid() const override;
    afx_msg void OnSize(UINT nType, int cx, int cy);
 
    // iCutLocation

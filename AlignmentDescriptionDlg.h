@@ -42,8 +42,8 @@ class CAlignmentDescriptionDlg : public CPropertySheet
 
 // Construction
 public:
-	CAlignmentDescriptionDlg(UINT nIDCaption, IBroker* pBroker,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CAlignmentDescriptionDlg(LPCTSTR pszCaption, IBroker* pBroker,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CAlignmentDescriptionDlg(UINT nIDCaption, IBroker* pBroker,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CAlignmentDescriptionDlg(LPCTSTR pszCaption, IBroker* pBroker,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
 // Attributes
 public:

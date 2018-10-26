@@ -252,7 +252,7 @@ protected:
    void MakeCopy(const ConcreteLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const ConcreteLibraryEntry& rOther);
+   void MakeAssignment(const ConcreteLibraryEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 

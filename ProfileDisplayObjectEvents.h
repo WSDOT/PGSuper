@@ -39,7 +39,7 @@ public:
 	CProfileDisplayObjectEvents(IBroker* pDoc,CBridgeModelViewChildFrame* pFrame,iDisplayObject* pDO);
    ~CProfileDisplayObjectEvents();
 
-   virtual void OnFinalRelease();
+   virtual void OnFinalRelease() override;
 
 protected:
 

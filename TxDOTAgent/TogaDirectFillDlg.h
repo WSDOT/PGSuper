@@ -31,29 +31,28 @@ class CTogaDirectFillDlg : public CDialog
 	DECLARE_DYNAMIC(CTogaDirectFillDlg)
 
 public:
-	CTogaDirectFillDlg(CWnd* pParent = NULL);   // standard constructor
+	CTogaDirectFillDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CTogaDirectFillDlg();
 
 // Dialog Data
 	enum { IDD = IDD_DIRECT_FILL_DLG };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 
 	DECLARE_MESSAGE_MAP()
 public:
    afx_msg void OnBnClickedSelectStrands();
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
    // We aren't a property page, but we need to act like one
-   virtual BOOL OnFillSetActive();
-   virtual BOOL OnFillKillActive();
-   virtual void SetGirderEntryName(LPCTSTR entryName);
-   virtual void SetSpanLength(Float64 length);
+   BOOL OnFillSetActive();
+   BOOL OnFillKillActive();
+   void SetGirderEntryName(LPCTSTR entryName);
+   void SetSpanLength(Float64 length);
 
-   void Init(CTxDOTOptionalDesignGirderData* pGirderData, ITxDOTBrokerRetriever* m_pBrokerRetriever, LPCTSTR entryName,
-             GirderIndexType girderIdx);
+   void Init(CTxDOTOptionalDesignGirderData* pGirderData, ITxDOTBrokerRetriever* m_pBrokerRetriever, LPCTSTR entryName, GirderIndexType girderIdx);
 
 private:
    void UpdateNoStrandsCtrls();

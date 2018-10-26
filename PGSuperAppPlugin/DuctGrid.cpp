@@ -549,18 +549,18 @@ void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
    {
       DuctIndexType first_duct_in_row = nWebs*(row - 1) + 1;
       DuctIndexType last_duct_in_row  = first_duct_in_row + nWebs - 1;
-      TCHAR label[10];
+      CString strLabel;
 
       if ( nWebs == 1 )
       {
-         _stprintf_s(label,sizeof(label)/sizeof(TCHAR),_T("%d"),first_duct_in_row);
+         strLabel.Format(_T("%d"), first_duct_in_row);
       }
       else
       {
-         _stprintf_s(label,sizeof(label)/sizeof(TCHAR),_T("%d - %d"),first_duct_in_row,last_duct_in_row);
+         strLabel.Format(_T("%d - %d"), first_duct_in_row,last_duct_in_row);
       }
 
-      SetValueRange(CGXRange(row,0),label);
+      SetValueRange(CGXRange(row,0),strLabel);
    }
 }
 
@@ -632,7 +632,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILibrary,pLib);
    const DuctLibraryEntry* pDuctEntry = pLib->GetDuctEntry(ductName);
-   if ( pDuctEntry == NULL )
+   if ( pDuctEntry == nullptr )
    {
       // sometimes the duct name comes back as the index into the choice list
       // get the duct entry another way
@@ -641,7 +641,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
       pLibNames->EnumDuctNames(&vNames);
       IndexType ductNameIdx = (IndexType)_tstol(ductName);
       pDuctEntry = pLib->GetDuctEntry(vNames[ductNameIdx].c_str());
-      if ( pDuctEntry == NULL )
+      if ( pDuctEntry == nullptr )
       {
          return;
       }

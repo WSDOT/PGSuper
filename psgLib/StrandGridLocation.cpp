@@ -104,7 +104,7 @@ CGirderGlobalStrandGrid::GlobalStrandGridEntry CStrandGridLocation::GetEntry()
 }
 
 
-CStrandGridLocation::CStrandGridLocation(CWnd* pParent /*=NULL*/)
+CStrandGridLocation::CStrandGridLocation(CWnd* pParent /*=nullptr*/)
 	: CDialog(CStrandGridLocation::IDD, pParent), m_Row(-1)
 {
 	//{{AFX_DATA_INIT(CStrandGridLocation)

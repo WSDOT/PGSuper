@@ -63,7 +63,7 @@ CBridgeDescription2::CBridgeDescription2()
    m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
    m_FilletType = pgsTypes::fttBridge;
 
-   m_pGirderLibraryEntry = NULL;
+   m_pGirderLibraryEntry = nullptr;
 
    // Set some reasonable defaults
    m_nGirders = 0;
@@ -98,7 +98,7 @@ CBridgeDescription2::CBridgeDescription2(const CBridgeDescription2& rOther)
    m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
    m_FilletType = pgsTypes::fttBridge;
 
-   m_pGirderLibraryEntry = NULL;
+   m_pGirderLibraryEntry = nullptr;
 
    m_nGirders = 0;
 
@@ -542,15 +542,15 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       // Sometime in the past, the bearing offset and end distance measurement types were inadvertantly allowed to be
       // unequal values between the back and ahead faces of the pier. The UI forces them to be the same.
       // Here we will check the values and make corrections as needed
-      BOOST_FOREACH(CPierData2* pPier,m_Piers)
+      for (const auto& pPier : m_Piers)
       {
-         if ( pPier->GetPrevSpan() == NULL )
+         if ( pPier->GetPrevSpan() == nullptr )
          {
             // this is the first pier so the back side needs to be set equal to the ahead side
             pPier->m_EndDistanceMeasurementType[pgsTypes::Back] = pPier->m_EndDistanceMeasurementType[pgsTypes::Ahead];
             pPier->m_BearingOffsetMeasurementType[pgsTypes::Back] = pPier->m_BearingOffsetMeasurementType[pgsTypes::Ahead];
          }
-         else if ( pPier->GetNextSpan() == NULL )
+         else if ( pPier->GetNextSpan() == nullptr )
          {
             // this is the last pier so the ahead side needs to be set equal to the back side
             pPier->m_EndDistanceMeasurementType[pgsTypes::Ahead] = pPier->m_EndDistanceMeasurementType[pgsTypes::Back];
@@ -958,7 +958,7 @@ void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSp
    if ( pierErectionEventIdx != INVALID_INDEX )
    {
       CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(pierErectionEventIdx);
-      ATLASSERT(pTimelineEvent != NULL); // bad pierErectionEventIdx ???
+      ATLASSERT(pTimelineEvent != nullptr); // bad pierErectionEventIdx ???
       pTimelineEvent->GetErectPiersActivity().Enable(true);
       pTimelineEvent->GetErectPiersActivity().AddPier(firstPier->GetID());
       pTimelineEvent->GetErectPiersActivity().AddPier(nextPier->GetID());
@@ -969,7 +969,7 @@ void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSp
 
 void CBridgeDescription2::AppendSpan(const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType pierErectionEventIdx)
 {
-   // Appends a new span to the end of the bridge. If pSpanData and/or pPierData is NULL, the
+   // Appends a new span to the end of the bridge. If pSpanData and/or pPierData is nullptr, the
    // new span/pier will be a copy of the last span/pier in the bridge. If bCreateNewGroup is true
    // a new girder group is created. This group will have the same number of girders as the last group
    // in the bridge. If the last group has more than one span, single segment girders will be created,
@@ -985,7 +985,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 {
    // Inserts a new span into the bridge. The new span is inserted at the pier defined by refPierIdx on 
    // the side of the pier defined by pierFace. newSpanLength defines the length of the new span.
-   // If pSpanData and/or pPierData is NULL, the new span/pier will be a copy of the last span/pier in 
+   // If pSpanData and/or pPierData is nullptr, the new span/pier will be a copy of the last span/pier in 
    // the bridge. If bCreateNewGroup is true a new girder group is created. A new group can only
    // be created if refPierIdx is the first/last pier in a group and the pierFace is not inside the group.
    // The new group will have the same number of girders as the adjacent group
@@ -1014,7 +1014,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    // Negative span length means that we take stationing from piers - better have pier data
    if ( newSpanLength <= 0 )
    {
-      if ( pPierData == NULL )
+      if ( pPierData == nullptr )
       {
          //ATLASSERT(false); // this should not happen... pPierData must reference a pier if newSpanLength is < 0.
          // RAB - 9/12/2013: I commented out the assert because it often fires when loading a bridge description from
@@ -1065,7 +1065,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    if ( bCreateNewGroup )
    {
       CGirderGroupData* pRefGroup = GetGirderGroup(m_Spans[refSpanIdx]);
-      ATLASSERT(pRefGroup != NULL);
+      ATLASSERT(pRefGroup != nullptr);
       if ( pRefGroup->GetPierIndex(pgsTypes::metStart) != refPierIdx &&
            pRefGroup->GetPierIndex(pgsTypes::metEnd)   != refPierIdx )
       {
@@ -1119,7 +1119,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       // pier is not defined... the reference pier is going to become an intermediate pier so 
       // copy the spacing from one side to another
 
-      if ( pierFace == pgsTypes::Ahead && m_Piers[refPierIdx]->GetNextSpan() == NULL )
+      if ( pierFace == pgsTypes::Ahead && m_Piers[refPierIdx]->GetNextSpan() == nullptr )
       {
          pRefPier->SetGirderSpacing(pgsTypes::Ahead,*(pRefPier->GetGirderSpacing(pgsTypes::Back)));
 
@@ -1160,7 +1160,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
          pRefPier->SetDiaphragmLoadType(pgsTypes::Ahead,pRefPier->GetDiaphragmLoadType(pgsTypes::Back));
          pRefPier->SetDiaphragmLoadLocation(pgsTypes::Ahead,pRefPier->GetDiaphragmLoadLocation(pgsTypes::Back));
       }
-      else if ( pierFace == pgsTypes::Back && m_Piers[refPierIdx]->GetPrevSpan() == NULL )
+      else if ( pierFace == pgsTypes::Back && m_Piers[refPierIdx]->GetPrevSpan() == nullptr )
       {
          pRefPier->SetGirderSpacing(pgsTypes::Back,*(pRefPier->GetGirderSpacing(pgsTypes::Ahead)));
 
@@ -1225,13 +1225,13 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
             }
          }
 
-         if ( pierFace == pgsTypes::Back && m_Piers[refPierIdx]->GetNextSpan() == NULL )
+         if ( pierFace == pgsTypes::Back && m_Piers[refPierIdx]->GetNextSpan() == nullptr )
          {
             // the new pier is an interior pier, but it got its information from the last pier
             // the spacing was only defined on the back side... copy the spacing to the ahead side
             pNewPier->SetGirderSpacing(pgsTypes::Ahead,*pNewPier->GetGirderSpacing(pgsTypes::Back));
          }
-         else if ( pierFace == pgsTypes::Ahead && m_Piers[refPierIdx]->GetPrevSpan() == NULL )
+         else if ( pierFace == pgsTypes::Ahead && m_Piers[refPierIdx]->GetPrevSpan() == nullptr )
          {
             // the new pier is an interior pier, but it got its information from the first pier
             // the spacing was only defined on the ahead side... copy the spacing to the back side
@@ -1437,7 +1437,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    {
       PierIndexType newPierID = pNewPier->GetID();
       CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(pierErectionEventIdx);
-      ATLASSERT(pTimelineEvent != NULL); // if it is NULL, pierErectionEventIdx was bad, event not defined
+      ATLASSERT(pTimelineEvent != nullptr); // if it is nullptr, pierErectionEventIdx was bad, event not defined
       pTimelineEvent->GetErectPiersActivity().Enable(true);
       pTimelineEvent->GetErectPiersActivity().AddPier(newPierID);
    }
@@ -1520,9 +1520,9 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    // adjacent groups so they can be updated below
    // (this update needs to happen after RenumberSpans is called)
    CPierData2* pRemovePier = m_Piers[removePierIdx];
-   CPierData2* pCommonPier = NULL;
-   CGirderGroupData* pPrevGroup = NULL;
-   CGirderGroupData* pNextGroup = NULL;
+   CPierData2* pCommonPier = nullptr;
+   CGirderGroupData* pPrevGroup = nullptr;
+   CGirderGroupData* pNextGroup = nullptr;
    if ( pRemovePier->IsBoundaryPier() )
    {
       pCommonPier = (rmPierType == pgsTypes::PrevPier ? m_Piers[removePierIdx+1] : m_Piers[removePierIdx-1]);
@@ -1672,8 +1672,8 @@ GroupIndexType CBridgeDescription2::CreateGirderGroup(GroupIndexType refGroupIdx
    SpanIndexType refSpanIdx = refPierIdx + (end == pgsTypes::metStart ? 1 : 0);
 
    // pointers to the piers at the start and end of the new group
-   CPierData2* pStartPier = (end == pgsTypes::metStart ? NULL : pRefGroup->GetPier(pgsTypes::metStart));
-   CPierData2* pEndPier   = (end == pgsTypes::metStart ? pRefGroup->GetPier(pgsTypes::metEnd) : NULL);
+   CPierData2* pStartPier = (end == pgsTypes::metStart ? nullptr : pRefGroup->GetPier(pgsTypes::metStart));
+   CPierData2* pEndPier   = (end == pgsTypes::metStart ? pRefGroup->GetPier(pgsTypes::metEnd) : nullptr);
    
    Float64 offset = 0; // the amount the piers and temporary supports must be
                        // offset to accomodate the new spans
@@ -1721,7 +1721,7 @@ CGirderGroupData* CBridgeDescription2::GetGirderGroup(GroupIndexType grpIdx)
 {
    if ( grpIdx == INVALID_INDEX || m_GirderGroups.size() <= grpIdx )
    {
-      return NULL; 
+      return nullptr; 
    }
 
    return m_GirderGroups[grpIdx];
@@ -1731,7 +1731,7 @@ const CGirderGroupData* CBridgeDescription2::GetGirderGroup(GroupIndexType grpId
 {
    if ( grpIdx == INVALID_INDEX || m_GirderGroups.size() <= grpIdx )
    {
-      return NULL; 
+      return nullptr; 
    }
 
    return m_GirderGroups[grpIdx];
@@ -1739,9 +1739,9 @@ const CGirderGroupData* CBridgeDescription2::GetGirderGroup(GroupIndexType grpId
 
 CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pSpan)
 {
-   if ( pSpan == NULL )
+   if ( pSpan == nullptr )
    {
-      return NULL;
+      return nullptr;
    }
 
    PierIndexType prevPierIdx = pSpan->GetPrevPier()->GetIndex();
@@ -1762,14 +1762,14 @@ CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pSpan)
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 const CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pSpan) const
 {
-   if ( pSpan == NULL )
+   if ( pSpan == nullptr )
    {
-      return NULL;
+      return nullptr;
    }
 
    PierIndexType prevPierIdx = pSpan->GetPrevPier()->GetIndex();
@@ -1789,7 +1789,7 @@ const CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pS
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 GroupIndexType CBridgeDescription2::GetGirderGroupCount() const
@@ -1860,14 +1860,14 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
 
       // If this is the first pier in the bridge, the next pier becomes the first pier
       // so remove the rebar at the next pier
-      if ( pPier->GetPrevSpan() == NULL )
+      if ( pPier->GetPrevSpan() == nullptr )
       {
          removeRebarPierIdx++;
       }
 
       // If this is the last pier in the bridge, the next to last pier becomes the last pier
       // so remove the rebar at the next to last pier
-      if ( pPier->GetNextSpan() == NULL )
+      if ( pPier->GetNextSpan() == nullptr )
       {
          removeRebarPierIdx--;
       }
@@ -1878,7 +1878,7 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
       m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
 
       delete pPier;
-      pPier = NULL;
+      pPier = nullptr;
    }
 
    // move all piers that occur after the last pier in the group to the left
@@ -1921,7 +1921,7 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
    {
       CSpanData2* pSpan = m_Spans[spanIdx];
       delete pSpan;
-      pSpan = NULL;
+      pSpan = nullptr;
    }
 
    // remove deleted slots from span vector
@@ -1929,7 +1929,7 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
 
    // delete group
    delete pGroup;
-   pGroup = NULL;
+   pGroup = nullptr;
 
    // remove slot from group vector
    m_GirderGroups.erase(m_GirderGroups.begin()+grpIdx);
@@ -1958,7 +1958,7 @@ CPierData2* CBridgeDescription2::GetPier(PierIndexType pierIdx)
      return m_Piers[pierIdx];
    }
 
-   return NULL;
+   return nullptr;
 }
 
 const CPierData2* CBridgeDescription2::GetPier(PierIndexType pierIdx) const
@@ -1968,7 +1968,7 @@ const CPierData2* CBridgeDescription2::GetPier(PierIndexType pierIdx) const
       return m_Piers[pierIdx];
    }
 
-   return NULL;
+   return nullptr;
 }
 
 CPierData2* CBridgeDescription2::FindPier(PierIDType pierID)
@@ -1985,7 +1985,7 @@ CPierData2* CBridgeDescription2::FindPier(PierIDType pierID)
    }
 
    ATLASSERT(false); // Pier not found
-   return NULL;
+   return nullptr;
 }
 
 const CPierData2* CBridgeDescription2::FindPier(PierIDType pierID) const
@@ -2002,7 +2002,7 @@ const CPierData2* CBridgeDescription2::FindPier(PierIDType pierID) const
    }
 
    ATLASSERT(false); // Pier not found
-   return NULL;
+   return nullptr;
 }
 
 CSpanData2* CBridgeDescription2::GetSpan(SpanIndexType spanIdx)
@@ -2012,7 +2012,7 @@ CSpanData2* CBridgeDescription2::GetSpan(SpanIndexType spanIdx)
      return m_Spans[spanIdx];
    }
 
-   return NULL;
+   return nullptr;
 }
 
 const CSpanData2* CBridgeDescription2::GetSpan(SpanIndexType spanIdx) const
@@ -2022,7 +2022,7 @@ const CSpanData2* CBridgeDescription2::GetSpan(SpanIndexType spanIdx) const
       return m_Spans[spanIdx];
    }
 
-   return NULL;
+   return nullptr;
 }
 
 
@@ -2153,7 +2153,7 @@ CTemporarySupportData* CBridgeDescription2::GetTemporarySupport(SupportIndexType
       return m_TemporarySupports[tsIdx];
    }
    
-   return NULL;
+   return nullptr;
 }
 
 const CTemporarySupportData* CBridgeDescription2::GetTemporarySupport(SupportIndexType tsIdx) const
@@ -2163,7 +2163,7 @@ const CTemporarySupportData* CBridgeDescription2::GetTemporarySupport(SupportInd
       return m_TemporarySupports[tsIdx];
    }
    
-   return NULL;
+   return nullptr;
 }
 
 CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportIDType tsID)
@@ -2180,7 +2180,7 @@ CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportIDType t
    }
    
    ATLASSERT(false); // not found
-   return NULL;
+   return nullptr;
 }
 
 const CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportIDType tsID) const
@@ -2197,7 +2197,7 @@ const CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportID
    }
    
    ATLASSERT(false); // temporary support not found
-   return NULL;
+   return nullptr;
 }
 
 SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexType tsIdx,const CTemporarySupportData& tsData)
@@ -2349,7 +2349,7 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
          EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
          if ( eventIdx != INVALID_INDEX )
          {
-            ATLASSERT(pClosure->GetPier() == NULL);
+            ATLASSERT(pClosure->GetPier() == nullptr);
             ATLASSERT(pClosure->GetTemporarySupport());
             CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(eventIdx);
             pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
@@ -2587,6 +2587,23 @@ GirderIndexType CBridgeDescription2::GetGirderCount() const
    return m_nGirders;
 }
 
+GirderIndexType CBridgeDescription2::GetMinGirderCount() const
+{
+   if (m_bSameNumberOfGirders)
+   {
+      return m_nGirders;
+   }
+   else
+   {
+      GirderIndexType nGirders = 0;
+      for (auto group : m_GirderGroups)
+      {
+         nGirders += group->GetGirderCount();
+      }
+      return nGirders;
+   }
+}
+
 void CBridgeDescription2::UseSameGirderForEntireBridge(bool bSame)
 {
    m_bSameGirderName = bSame;
@@ -2655,7 +2672,7 @@ void CBridgeDescription2::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry
       // girder entry changed...
       m_pGirderLibraryEntry = pEntry;
 
-      if ( m_pGirderLibraryEntry != NULL )
+      if ( m_pGirderLibraryEntry != nullptr )
       {
          CComPtr<IBeamFactory> beamFactory;
          m_pGirderLibraryEntry->GetBeamFactory(&beamFactory);
@@ -2922,7 +2939,7 @@ CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID)
    }
 
    ATLASSERT(false); // not found
-   return NULL;
+   return nullptr;
 }
 
 const CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID) const
@@ -2939,7 +2956,7 @@ const CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID) 
    }
 
    ATLASSERT(false); // not found
-   return NULL;
+   return nullptr;
 }
 
 CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID)
@@ -2961,7 +2978,7 @@ CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID)
    }
 
    ATLASSERT(false); // not found
-   return NULL;
+   return nullptr;
 }
 
 const CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID) const
@@ -2983,7 +3000,7 @@ const CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID) co
    }
 
    ATLASSERT(false); // not found
-   return NULL;
+   return nullptr;
 }
 
 CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID)
@@ -3010,7 +3027,7 @@ CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID)
    }
 
    ATLASSERT(false); // not found
-   return NULL;
+   return nullptr;
 }
 
 const CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID) const
@@ -3037,7 +3054,7 @@ const CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID)
    }
 
    ATLASSERT(false); // not found
-   return NULL;
+   return nullptr;
 }
 
 CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType closureID)
@@ -3065,7 +3082,7 @@ CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType closureID
    }
 
    ATLASSERT(false); // not found
-   return NULL;
+   return nullptr;
 }
 
 const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType closureID) const
@@ -3097,7 +3114,7 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bFillet)
@@ -3235,11 +3252,22 @@ std::vector<pgsTypes::BoundaryConditionType> CBridgeDescription2::GetBoundaryCon
 
    ATLASSERT(pPier->IsBoundaryPier());
 
+   // "before deck" connections are only applicable if the bridge has a deck
+   bool bHasDeck = m_Deck.DeckType != pgsTypes::sdtNone ? true : false;
+
    if ( pPier->HasCantilever() )
    {
-      connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
+      if (bHasDeck)
+      {
+         connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
+      }
+
       connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
-      connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
+
+      if (bHasDeck)
+      {
+         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
+      }
    }
    else
    {
@@ -3248,18 +3276,34 @@ std::vector<pgsTypes::BoundaryConditionType> CBridgeDescription2::GetBoundaryCon
       connectionTypes.push_back(pgsTypes::bctHinge);
       connectionTypes.push_back(pgsTypes::bctRoller);
       connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
-      connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
+      if (bHasDeck)
+      {
+         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
+      }
 
       if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
       {
          // all these connection types require that there is a span on 
          // both sides of this pier
          connectionTypes.push_back(pgsTypes::bctContinuousAfterDeck);
-         connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
+         if (bHasDeck)
+         {
+            connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
+         }
+
          connectionTypes.push_back(pgsTypes::bctIntegralAfterDeckHingeBack);
-         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeBack);
+
+         if (bHasDeck)
+         {
+            connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeBack);
+         }
+
          connectionTypes.push_back(pgsTypes::bctIntegralAfterDeckHingeAhead);
-         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeAhead);
+         
+         if (bHasDeck)
+         {
+            connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeAhead);
+         }
       }
    }
 
@@ -3551,7 +3595,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
 {
    const CDeckDescription2* pDeck = GetDeckDescription();
 
-   if ( pDeck->DeckType == pgsTypes::sdtNone || pDeck->DeckType == pgsTypes::sdtCompositeOverlay ) 
+   if ( pDeck->GetDeckType() == pgsTypes::sdtNone || pDeck->GetDeckType() == pgsTypes::sdtCompositeOverlay ) 
    {
       // there isn't a deck, estimate bridge width by adding the girder spacings
       Float64 max_spacing_width = -DBL_MAX;
@@ -3575,7 +3619,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                   m_pGirderLibraryEntry->GetBeamFactory(&factory);
                   
                   CComPtr<IGirderSection> gdrSection;
-                  factory->CreateGirderSection(NULL,INVALID_ID,m_pGirderLibraryEntry->GetDimensions(),-1,-1,&gdrSection);
+                  factory->CreateGirderSection(nullptr,INVALID_ID,m_pGirderLibraryEntry->GetDimensions(),-1,-1,&gdrSection);
 
                   Float64 Wtf;
                   gdrSection->get_TopWidth(&Wtf);
@@ -3621,7 +3665,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                         pGdrLibEntry->GetBeamFactory(&factory);
                         
                         CComPtr<IGirderSection> gdrSection;
-                        factory->CreateGirderSection(NULL,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
+                        factory->CreateGirderSection(nullptr,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
 
                         Float64 Wtf;
                         gdrSection->get_TopWidth(&Wtf);
@@ -3668,7 +3712,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                      pGdrLibEntry->GetBeamFactory(&factory);
                      
                      CComPtr<IGirderSection> gdrSection;
-                     factory->CreateGirderSection(NULL,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
+                     factory->CreateGirderSection(nullptr,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
 
                      Float64 Wtf;
                      gdrSection->get_TopWidth(&Wtf);
@@ -3700,7 +3744,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
             const CPierData2* pPier = GetPier(pierIdx);
             if ( pPier->HasSpacing() )
             {
-               if ( !pPier->IsBoundaryPier() && pPier->GetClosureJoint(0) != NULL )
+               if ( !pPier->IsBoundaryPier() && pPier->GetClosureJoint(0) != nullptr )
                {
                   // if there is a closure joint, only back spacing is valid
                   const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
@@ -3708,14 +3752,14 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                   max_spacing_width = Max(max_spacing_width,w);
                }
                
-               if ( pPier->GetPrevSpan() != NULL )
+               if ( pPier->GetPrevSpan() != nullptr )
                {
                   const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
                   Float64 w = pSpacing->GetSpacingWidth();
                   max_spacing_width = Max(max_spacing_width,w);
                }
 
-               if ( pPier->GetNextSpan() != NULL )
+               if ( pPier->GetNextSpan() != nullptr )
                {
                   const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Ahead);
                   Float64 w = pSpacing->GetSpacingWidth();
@@ -3938,7 +3982,7 @@ void CBridgeDescription2::RenumberSpans()
 
    SpanIndexType spanIdx = 0;
    PierIndexType pierIdx = 0;
-   CSpanData2* pPrevSpan = NULL;
+   CSpanData2* pPrevSpan = nullptr;
 
    CPierData2* pPrevPier = *pierIter++;
    ATLASSERT(pPrevPier->GetBridgeDescription() == this);
@@ -3967,7 +4011,7 @@ void CBridgeDescription2::RenumberSpans()
    CPierData2* pLastPier = m_Piers.back();
    ATLASSERT(pLastPier->GetBridgeDescription() == this);
 
-   pLastPier->SetSpans(pPrevSpan,NULL);
+   pLastPier->SetSpans(pPrevSpan,nullptr);
 }
 
 void CBridgeDescription2::UpdateTemporarySupports()
@@ -4002,9 +4046,9 @@ void CBridgeDescription2::UpdateTemporarySupports()
          {
             // temporary support is not in this span, move to the next span
             pSpan = pNextPier->GetNextSpan();
-            ATLASSERT(pSpan != NULL); // ran out of spans before temporary supports
+            ATLASSERT(pSpan != nullptr); // ran out of spans before temporary supports
 
-            if ( pSpan == NULL )
+            if ( pSpan == nullptr )
             {
                bDone = true;
             }
@@ -4023,7 +4067,7 @@ HRESULT CBridgeDescription2::LoadOldBridgeDescription(Float64 version,IStructure
    // Input is in an old format (the format is PGSuper before version 3.0 when we added PGSplice)
    // Use the old bridge description object to load the data
    ATLASSERT( version < 7 );
-   std::auto_ptr<CBridgeDescription> pBridgeDesc(new CBridgeDescription);
+   std::unique_ptr<CBridgeDescription> pBridgeDesc(std::make_unique<CBridgeDescription>());
    HRESULT hr = pBridgeDesc->Load(version,pStrLoad,pProgress);
    if ( FAILED(hr))
    {

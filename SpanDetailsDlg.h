@@ -45,15 +45,15 @@ class CSpanDetailsDlg : public CPropertySheet, public IEditSpanData
 
 // Construction
 public:
-	CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,const std::vector<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 	virtual ~CSpanDetailsDlg();
 
    // IEditSpanData
-   virtual SpanIndexType GetSpanCount() { return m_BridgeDesc.GetSpanCount(); }
-   virtual SpanIndexType GetSpan() { return m_pSpanData->GetIndex(); }
-   virtual pgsTypes::BoundaryConditionType GetConnectionType(pgsTypes::MemberEndType end);
-   virtual GirderIndexType GetGirderCount();
+   virtual SpanIndexType GetSpanCount() override { return m_BridgeDesc.GetSpanCount(); }
+   virtual SpanIndexType GetSpan() override { return m_pSpanData->GetIndex(); }
+   virtual pgsTypes::BoundaryConditionType GetConnectionType(pgsTypes::MemberEndType end) override;
+   virtual GirderIndexType GetGirderCount() override;
 
 // Attributes
 public:
@@ -68,7 +68,7 @@ public:
 
 // Implementation
 public:
-	virtual INT_PTR DoModal();
+	virtual INT_PTR DoModal() override;
 
 
    // Returns a macro transaction object that contains editing transactions
@@ -86,10 +86,10 @@ protected:
 
    void CommonInitPages();
    void InitPages();
-   void InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions);
    void Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx);
    void CreateExtensionPages();
-   void CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void CreateExtensionPages(const std::vector<EditBridgeExtension>& editBridgeExtensions);
    void DestroyExtensionPages();
 
    CBridgeDescription2 m_BridgeDesc; // this is the bridge we are operating on
@@ -114,7 +114,7 @@ protected:
 
    txnMacroTxn m_Macro;
    std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> m_ExtensionPages;
-   std::set<EditBridgeExtension> m_BridgeExtensionPages;
+   std::vector<EditBridgeExtension> m_BridgeExtensionPages;
    void NotifyExtensionPages();
    void NotifyBridgeExtensionPages();
 

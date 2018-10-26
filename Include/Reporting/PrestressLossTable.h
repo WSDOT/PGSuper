@@ -81,7 +81,7 @@ protected:
    void MakeCopy(const CPrestressLossTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CPrestressLossTable& rOther);
+   void MakeAssignment(const CPrestressLossTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

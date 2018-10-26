@@ -30,7 +30,7 @@ class CACIParametersDlg : public CDialog
 	DECLARE_DYNAMIC(CACIParametersDlg)
 
 public:
-	CACIParametersDlg(CWnd* pParent = NULL);   // standard constructor
+	CACIParametersDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CACIParametersDlg();
 
    Float64 m_t1;
@@ -43,11 +43,11 @@ public:
 	enum { IDD = IDD_ACI_PARAMETERS };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
    afx_msg void UpdateParameters();
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 };

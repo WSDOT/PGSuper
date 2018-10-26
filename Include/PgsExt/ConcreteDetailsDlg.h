@@ -39,7 +39,7 @@ class PGSEXTCLASS CConcreteDetailsDlg : public CPropertySheet
 {
 // Construction
 public:
-	CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters = true,bool bEnableCopyFromLibrary = true,CWnd* pParent = NULL,UINT iSelectPage=0);
+	CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters = true,bool bEnableCopyFromLibrary = true,CWnd* pParent = nullptr,UINT iSelectPage=0);
 
    // text strings to in in display units... Ec comes out in display units
    static CString UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2);
@@ -78,7 +78,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CConcreteDetailsDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

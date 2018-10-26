@@ -98,7 +98,7 @@ ReactionLocationContainer GetBearingReactionLocations(IntervalIndexType interval
       pBridge->GetGirderGroupPiers(grpIdx,&startPierIdx,&endPierIdx);
 
       std::vector<PierIndexType> vPiers = pBearing->GetBearingReactionPiers(intervalIdx,thisGirderKey);
-      BOOST_FOREACH(PierIndexType pierIdx,vPiers)
+      for (const auto& pierIdx : vPiers)
       {
          PierReactionFaceType face;
          if ( pierIdx == startPierIdx )
@@ -148,19 +148,7 @@ ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, 
 
       CGirderKey thisGirderKey(grpIdx,Min(girderKey.girderIndex,nGirders-1));
 
-      PierReactionFaceType face;
-      if ( pierIdx == startPierIdx )
-      {
-         face = rftAhead;
-      }
-      else if ( pierIdx == endPierIdx )
-      {
-         face = rftBack;
-      }
-      else
-      {
-         face = rftMid;
-      }
+      PierReactionFaceType face = rftMid; // pier reactions are always for the whole pier, not just a face
       ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey);
       container.push_back( location );
    }

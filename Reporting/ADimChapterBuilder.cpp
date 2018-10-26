@@ -76,7 +76,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      *pPara << _T("Slab Offset check disabled in Project Criteria library entry. No analysis performed.") << rptNewLine;
+      *pPara << _T("Slab Offset check disabled in Project Criteria. No analysis performed.") << rptNewLine;
       return pChapter;
    }
    else if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
@@ -107,8 +107,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    {
       CSpanKey spanKey(spanIdx, girderKey.girderIndex);
 
-      HAUNCHDETAILS haunch_details;
-      pGdrHaunch->GetHaunchDetails(spanKey,&haunch_details);
+      HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
 
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;

@@ -34,7 +34,7 @@ class CMultiGirderReportDlg : public CDialog
 	DECLARE_DYNAMIC(CMultiGirderReportDlg)
 
 public:
-	CMultiGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_MULTIGIRDERREPORT,CWnd* pParent = NULL);   // standard constructor
+	CMultiGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_MULTIGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CMultiGirderReportDlg();
 
 // Dialog Data
@@ -61,7 +61,7 @@ protected:
    const CReportDescription& m_RptDesc;
    IBroker* m_pBroker;
 
-   boost::shared_ptr<CReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
+   std::shared_ptr<CReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
 public:
 	// Generated message map functions

@@ -47,5 +47,5 @@ public:
 
 protected:
    void MakeCopy(const CDuctSizeCheckTable& rOther);
-   virtual void MakeAssignment(const CDuctSizeCheckTable& rOther);
+   void MakeAssignment(const CDuctSizeCheckTable& rOther);
 };

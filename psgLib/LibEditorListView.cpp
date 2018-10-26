@@ -200,10 +200,10 @@ bool CLibEditorListView::AddNewEntry()
    CDocument* pDoc = GetDocument();
    libISupportLibraryManager* pLibMgr = dynamic_cast<libISupportLibraryManager*>(pDoc);
    libLibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
-   ASSERT(plib_man != NULL);
+   ASSERT(plib_man != nullptr);
 
    libILibrary* plib = plib_man->GetLibrary(m_LibName);
-   ASSERT(plib != NULL);
+   ASSERT(plib != nullptr);
 
    std::_tstring name = plib->GetUniqueEntryName();
    if (plib->NewEntry(name.c_str()))
@@ -394,8 +394,8 @@ void CLibEditorListView::DuplicateEntry(libILibrary* plib, LPCTSTR entryName)
    else
    {
        //entry exists in other than target library - must  copy across library bounds
-      std::auto_ptr<libLibraryEntry> pent(plib->CreateEntryClone(entryName));
-      ASSERT(pent.get()!=0);
+      std::unique_ptr<libLibraryEntry> pent(plib->CreateEntryClone(entryName));
+      ASSERT(pent.get() != nullptr);
       VERIFY(ptarget_lib->AddEntry(*pent, the_name));
    }
 
@@ -711,7 +711,7 @@ int CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const l
    // if not, associate the default entry icon
    const ISupportIcon* isi = dynamic_cast<const ISupportIcon*>(pentry);
    HICON icon;
-   if (isi!=NULL)
+   if (isi!=nullptr)
    {
       icon = isi->GetIcon();
    }

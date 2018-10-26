@@ -98,7 +98,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
    // Fill up the table
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-   ATLASSERT(pool != NULL);
+   ATLASSERT(pool != nullptr);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
@@ -108,13 +108,13 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
-      ATLASSERT(pStirrupArtifact != NULL);
+      ATLASSERT(pStirrupArtifact != nullptr);
 
       CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
-         if ( psArtifact == NULL )
+         if ( psArtifact == nullptr )
          {
             continue;
          }

@@ -65,7 +65,7 @@ public:
 
 protected:
    void MakeCopy(const pgsGirderDesignArtifact& rOther);
-   virtual void MakeAssignment(const pgsGirderDesignArtifact& rOther);
+   void MakeAssignment(const pgsGirderDesignArtifact& rOther);
 
 private:
    CGirderKey m_GirderKey;

@@ -32,13 +32,13 @@ public:
                        CRuntimeClass* pDocClass,
                        CRuntimeClass* pFrameClass,
                        CRuntimeClass* pViewClass,
-                       HMENU hSharedMenu = NULL,
+                       HMENU hSharedMenu = nullptr,
                        int maxViewCount = -1);
 
    DECLARE_DYNAMIC(CPGSuperDocTemplate)
 
 protected:
-   virtual CString GetAppName() const;
-   virtual UINT GetTemplateIconResourceID() const;
-   virtual CString GetTemplateSuffix();
+   virtual CString GetAppName() const override;
+   virtual UINT GetTemplateIconResourceID() const override;
+   virtual CString GetTemplateSuffix() override;
 };

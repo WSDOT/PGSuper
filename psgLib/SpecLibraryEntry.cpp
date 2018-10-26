@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 56.0 
+#define CURRENT_VERSION 58.0 
 
 /****************************************************************************
 CLASS
@@ -245,7 +245,12 @@ m_HaulingWindType(pgsTypes::Speed),
 m_HaulingWindLoad(0),
 m_CentrifugalForceType(pgsTypes::Favorable),
 m_HaulingSpeed(0),
-m_TurningRadius(::ConvertToSysUnits(1000,unitMeasure::Feet))
+m_TurningRadius(::ConvertToSysUnits(1000,unitMeasure::Feet)),
+m_bCheckGirderInclination(true),
+m_InclinedGirder_BrgPadDeduction(::ConvertToSysUnits(1.0,unitMeasure::Inch)),
+m_InclinedGirder_FSmax(1.2),
+m_LiftingCamberMultiplier(1.0),
+m_HaulingCamberMultiplier(1.0)
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -501,6 +506,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxGirderSweepLifting"), m_MaxGirderSweepLifting);
    pSave->Property(_T("LiftingCamberMethod"),(Int32)m_LiftingCamberMethod); // added version 56
    pSave->Property(_T("LiftingCamberPercentEstimate"),m_LiftingCamberPercentEstimate); // added version 56
+   pSave->Property(_T("LiftingCamberMultiplier"), m_LiftingCamberMultiplier); // added version 58
    pSave->Property(_T("LiftingWindType"),(Int32)m_LiftingWindType); // added in version 56
    pSave->Property(_T("LiftingWindLoad"),m_LiftingWindLoad); // added in version 56
    pSave->Property(_T("LiftingStressesPlumbGirder"),m_LiftingStressesPlumbGirder); // added in version 56
@@ -513,6 +519,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("HaulingSupportPlacementTolerance"),m_HaulingSupportPlacementTolerance);
    pSave->Property(_T("HaulingCamberMethod"),(Int32)m_HaulingCamberMethod); // added version 56
    pSave->Property(_T("HaulingCamberPercentEstimate"),m_HaulingCamberPercentEstimate);
+   pSave->Property(_T("HaulingCamberMultiplier"), m_HaulingCamberMultiplier); // added version 58
    pSave->Property(_T("HaulingWindType"),(Int32)m_HaulingWindType); // added in version 56
    pSave->Property(_T("HaulingWindLoad"),m_HaulingWindLoad); // added in version 56
    pSave->Property(_T("CentrifugalForceType"),(Int32)m_CentrifugalForceType); // added in version 56
@@ -924,6 +931,11 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CheckBottomFlangeClearance"),m_bCheckBottomFlangeClearance);
    pSave->Property(_T("MinBottomFlangeClearance"),m_Cmin);
 
+   // added in version 57
+   pSave->Property(_T("CheckGirderInclination"), m_bCheckGirderInclination);
+   pSave->Property(_T("InclindedGirder_BrgPadDeduction"), m_InclinedGirder_BrgPadDeduction);
+   pSave->Property(_T("InclindedGirder_FSmax"), m_InclinedGirder_FSmax);
+
    pSave->EndUnit();
 
    return true;
@@ -1321,6 +1333,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         if (57 < version)
+         {
+            // added in version 58
+            if (!pLoad->Property(_T("LiftingCamberMultiplier"), &m_LiftingCamberMultiplier))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+
          if ( !pLoad->Property(_T("LiftingWindType"),&temp) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1429,6 +1450,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // in version 56 this value changed from a whole percentage to a fraction
          // e.g. 2% became 0.02
          m_HaulingCamberPercentEstimate /= 100;
+      }
+      if (57 < version)
+      {
+         // added in version 50
+         if (!pLoad->Property(_T("HaulingCamberMultiplier"), &m_HaulingCamberMultiplier))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
       }
 
       if ( 55 < version )
@@ -3877,6 +3906,21 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+
+      // added in version 57
+      if (56 < version)
+      {
+         if (!pLoad->Property(_T("CheckGirderInclination"), &m_bCheckGirderInclination))
+            THROW_LOAD(InvalidFileFormat, pLoad);
+
+         if (!pLoad->Property(_T("InclindedGirder_BrgPadDeduction"), &m_InclinedGirder_BrgPadDeduction))
+            THROW_LOAD(InvalidFileFormat, pLoad);
+
+         if (!pLoad->Property(_T("InclindedGirder_FSmax"), &m_InclinedGirder_FSmax))
+            THROW_LOAD(InvalidFileFormat, pLoad);
+      }
+
+
       if(!pLoad->EndUnit())
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -4001,6 +4045,15 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Bottom Flange Clearance Check Options are different"),_T(""),_T("")));
    }
+
+   if (m_bCheckGirderInclination != rOther.m_bCheckGirderInclination || 
+      (m_bCheckGirderInclination == true && (!::IsEqual(m_InclinedGirder_BrgPadDeduction, rOther.m_InclinedGirder_BrgPadDeduction) || !::IsEqual(m_InclinedGirder_FSmax, rOther.m_InclinedGirder_FSmax)))
+      )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Inclinded Girder Check Options are different"), _T(""), _T("")));
+   }
+
 
    if ( m_DesignStrandFillType != rOther.m_DesignStrandFillType )
    {
@@ -4242,6 +4295,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         !::IsEqual(m_MinCableInclination  , rOther.m_MinCableInclination) ||
         m_LiftingCamberMethod != rOther.m_LiftingCamberMethod ||
         (m_LiftingCamberMethod == pgsTypes::cmApproximate && !::IsEqual(m_LiftingCamberPercentEstimate, rOther.m_LiftingCamberPercentEstimate)) ||
+        (m_LiftingCamberMethod == pgsTypes::cmDirect && !::IsEqual(m_LiftingCamberMultiplier, rOther.m_LiftingCamberMultiplier)) ||
         m_LiftingWindType != rOther.m_LiftingWindType ||
         !::IsEqual(m_LiftingWindLoad,rOther.m_LiftingWindLoad) ||
         m_LiftingStressesPlumbGirder != rOther.m_LiftingStressesPlumbGirder
@@ -4301,6 +4355,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
             !::IsEqual(m_HaulingSupportPlacementTolerance, rOther.m_HaulingSupportPlacementTolerance) ||
             m_HaulingCamberMethod != rOther.m_HaulingCamberMethod ||
             (m_HaulingCamberMethod == pgsTypes::cmApproximate && !::IsEqual(m_HaulingCamberPercentEstimate, rOther.m_HaulingCamberPercentEstimate)) ||
+            (m_HaulingCamberMethod == pgsTypes::cmDirect && !::IsEqual(m_HaulingCamberMultiplier,rOther.m_HaulingCamberMultiplier)) ||
             m_HaulingWindType != rOther.m_HaulingWindType ||
             !::IsEqual(m_HaulingWindLoad,rOther.m_HaulingWindLoad) ||
             m_CentrifugalForceType != rOther.m_CentrifugalForceType ||
@@ -5138,6 +5193,16 @@ void SpecLibraryEntry::SetHaulingCamberPercentEstimate(Float64 per)
    m_HaulingCamberPercentEstimate = per;
 }
 
+Float64 SpecLibraryEntry::GetHaulingCamberMultiplier() const
+{
+   return m_HaulingCamberMultiplier;
+}
+
+void SpecLibraryEntry::SetHaulingCamberMultiplier(Float64 m)
+{
+   m_HaulingCamberMultiplier = m;
+}
+
 const COldHaulTruck* SpecLibraryEntry::GetOldHaulTruck() const
 {
    if ( m_bHasOldHaulTruck )
@@ -5146,7 +5211,7 @@ const COldHaulTruck* SpecLibraryEntry::GetOldHaulTruck() const
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -5342,6 +5407,16 @@ Float64 SpecLibraryEntry::GetLiftingCamberPercentEstimate() const
 void SpecLibraryEntry::SetLiftingCamberPercentEstimate(Float64 per)
 {
    m_LiftingCamberPercentEstimate = per;
+}
+
+Float64 SpecLibraryEntry::GetLiftingCamberMultiplier() const
+{
+   return m_LiftingCamberMultiplier;
+}
+
+void SpecLibraryEntry::SetLiftingCamberMultiplier(Float64 m)
+{
+   m_LiftingCamberMultiplier = m;
 }
 
 pgsTypes::WindType SpecLibraryEntry::GetLiftingWindType() const
@@ -6819,6 +6894,36 @@ Float64 SpecLibraryEntry::GetMinBottomFlangeClearance() const
    return m_Cmin;
 }
 
+void SpecLibraryEntry::CheckGirderInclination(bool bCheck)
+{
+   m_bCheckGirderInclination = bCheck;
+}
+
+bool SpecLibraryEntry::CheckGirderInclination() const
+{
+   return m_bCheckGirderInclination;
+}
+
+void SpecLibraryEntry::SetGirderInclinationBrgPadDeduction(Float64 brgPadDeduct)
+{
+   m_InclinedGirder_BrgPadDeduction = brgPadDeduct;
+}
+
+Float64 SpecLibraryEntry::GetGirderInclinationBrgPadDeduction() const
+{
+   return m_InclinedGirder_BrgPadDeduction;
+}
+
+void SpecLibraryEntry::SetGirderInclinationFactorOfSafety(Float64 fs)
+{
+   m_InclinedGirder_FSmax = fs;
+}
+
+Float64 SpecLibraryEntry::GetGirderInclinationFactorOfSafety() const
+{
+   return m_InclinedGirder_FSmax;
+}
+
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -6878,8 +6983,10 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_HaulingSupportPlacementTolerance = rOther.m_HaulingSupportPlacementTolerance;
    m_HaulingCamberMethod = rOther.m_HaulingCamberMethod;
    m_HaulingCamberPercentEstimate    = rOther.m_HaulingCamberPercentEstimate;
+   m_HaulingCamberMultiplier = rOther.m_HaulingCamberMultiplier;
    m_LiftingCamberMethod = rOther.m_LiftingCamberMethod;
    m_LiftingCamberPercentEstimate = rOther.m_LiftingCamberPercentEstimate;
+   m_LiftingCamberMultiplier = rOther.m_LiftingCamberMultiplier;
 
    m_LiftingWindType = rOther.m_LiftingWindType;
    m_LiftingWindLoad = rOther.m_LiftingWindLoad;
@@ -7133,6 +7240,10 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_bCheckBottomFlangeClearance = rOther.m_bCheckBottomFlangeClearance;
    m_Cmin = rOther.m_Cmin;
+
+   m_bCheckGirderInclination = rOther.m_bCheckGirderInclination;
+   m_InclinedGirder_BrgPadDeduction = rOther.m_InclinedGirder_BrgPadDeduction;
+   m_InclinedGirder_FSmax = rOther.m_InclinedGirder_FSmax;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)

@@ -76,8 +76,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CMultiGirderHaunchGeometryChapterBuilder(const CMultiGirderHaunchGeometryChapterBuilder&);
-   CMultiGirderHaunchGeometryChapterBuilder& operator=(const CMultiGirderHaunchGeometryChapterBuilder&);
+   CMultiGirderHaunchGeometryChapterBuilder(const CMultiGirderHaunchGeometryChapterBuilder&) = delete;
+   CMultiGirderHaunchGeometryChapterBuilder& operator=(const CMultiGirderHaunchGeometryChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

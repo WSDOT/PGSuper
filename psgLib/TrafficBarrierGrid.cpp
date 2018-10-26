@@ -73,7 +73,7 @@ BOOL CTrafficBarrierGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT 
    CTrafficBarrierDlg* pdlg = (CTrafficBarrierDlg*)GetParent();
    ASSERT (pdlg);
 
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
 	{
       pdlg->EnableMoveUp(FALSE);
       pdlg->EnableMoveDown(FALSE);
@@ -288,7 +288,7 @@ void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* poi
 
    ROWCOL nRow = 1;
    CComPtr<IPoint2d> point;
-   while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+   while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
    {
       Float64 x,y;
       point->get_X(&x);

@@ -90,7 +90,7 @@ protected:
    void MakeCopy(const CLongReinfShearCheck& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CLongReinfShearCheck& rOther);
+   void MakeAssignment(const CLongReinfShearCheck& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

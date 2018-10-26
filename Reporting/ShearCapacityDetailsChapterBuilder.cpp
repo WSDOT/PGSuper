@@ -451,7 +451,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
    CComPtr<IBeamFactory> pFactory;
    pGdrEntry->GetBeamFactory(&pFactory);
 
-   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->DeckType;
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
    std::_tstring strPicture = pFactory->GetShearDimensionsSchematicImage(deckType);
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strPicture);
@@ -695,7 +695,7 @@ void write_fpc_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys = pPoi->GetGirderKeys(vPoi);
-   BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+   for (const auto& girderKey : vGirderKeys)
    {
       DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
       ColumnIndexType nCols = (0 == nDucts ? 8 : 10);
@@ -959,7 +959,7 @@ void write_fpo_table(IBroker* pBroker,
       Float64 Kps, Kpt;
 
       GET_IFACE2(pBroker,IMaterials,pMaterial);
-      BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+      for (const auto& girderKey : vGirderKeys)
       {
          DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
@@ -976,7 +976,7 @@ void write_fpo_table(IBroker* pBroker,
             *pParagraph << _T("Strands") << rptNewLine;
          }
 
-         BOOST_FOREACH(CSegmentKey& segmentKey,vSegmentKeys)
+         for (const auto& segmentKey : vSegmentKeys)
          {
             if ( 1 < vSegmentKeys.size() )
             {
@@ -1025,7 +1025,7 @@ void write_fpo_table(IBroker* pBroker,
    {
       *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("fpo.png")) << rptNewLine;
 
-      BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+      for (const auto& girderKey : vGirderKeys)
       {
          DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
          ColumnIndexType nCols = (0 == nDucts ? 6 : 9);
@@ -1164,7 +1164,6 @@ void write_Fe_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    *pParagraph << Sub2(_T("F"),symbol(epsilon)) << _T(" [Eqn 5.8.3.4.2-3] - ") << GetLimitStateString(ls) << rptNewLine;
 
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Fe.png")) << rptNewLine;
@@ -1177,7 +1176,7 @@ void write_Fe_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys = pPoi->GetGirderKeys(vPoi);
-   BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+   for (const auto& girderKey : vGirderKeys)
    {
       if ( 1 < vGirderKeys.size() )
       {
@@ -1677,7 +1676,7 @@ void write_btsummary_table(IBroker* pBroker,
       GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
       std::vector<CGirderKey> vGirderKeys = pPoi->GetGirderKeys(vPoi);
-      BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+      for (const auto& girderKey : vGirderKeys)
       {
          if ( 1 < vGirderKeys.size() )
          {
@@ -1685,7 +1684,7 @@ void write_btsummary_table(IBroker* pBroker,
          }
 
          std::vector<CSegmentKey> vSegmentKeys = pPoi->GetSegmentKeys(vPoi,girderKey);
-         BOOST_FOREACH(CSegmentKey& segmentKey,vSegmentKeys)
+         for (const auto& segmentKey : vSegmentKeys)
          {
             Float64 ag = pMat->GetSegmentMaxAggrSize(segmentKey);
             if ( 1 < vSegmentKeys.size() )
@@ -2012,7 +2011,7 @@ void write_Vc_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
-   BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+   for (const auto& girderKey : vGirderKeys)
    {
       if ( 1 < vGirderKeys.size() )
       {
@@ -2020,7 +2019,7 @@ void write_Vc_table(IBroker* pBroker,
       }
 
       std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi,girderKey));
-      BOOST_FOREACH(CSegmentKey& segmentKey,vSegmentKeys)
+      for (const auto& segmentKey : vSegmentKeys)
       {
          if ( 1 < vSegmentKeys.size() )
          {
@@ -2203,7 +2202,7 @@ void write_Vci_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
-   BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+   for (const auto& girderKey : vGirderKeys)
    {
       if ( 1 < vGirderKeys.size() )
       {
@@ -2211,7 +2210,7 @@ void write_Vci_table(IBroker* pBroker,
       }
 
       std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi,girderKey));
-      BOOST_FOREACH(CSegmentKey& segmentKey,vSegmentKeys)
+      for (const auto& segmentKey : vSegmentKeys)
       {
          if ( 1 < vSegmentKeys.size() )
          {
@@ -2347,7 +2346,7 @@ void write_Vcw_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
-   BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+   for (const auto& girderKey : vGirderKeys)
    {
       if ( 1 < vGirderKeys.size() )
       {
@@ -2355,7 +2354,7 @@ void write_Vcw_table(IBroker* pBroker,
       }
 
       std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi,girderKey));
-      BOOST_FOREACH(CSegmentKey& segmentKey,vSegmentKeys)
+      for (const auto& segmentKey : vSegmentKeys)
       {
          if ( 1 < vSegmentKeys.size() )
          {
@@ -2486,7 +2485,7 @@ void write_theta_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
-   BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
+   for (const auto& girderKey : vGirderKeys)
    {
       if ( 1 < vGirderKeys.size() )
       {
@@ -2494,7 +2493,7 @@ void write_theta_table(IBroker* pBroker,
       }
 
       std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi,girderKey));
-      BOOST_FOREACH(CSegmentKey& segmentKey,vSegmentKeys)
+      for (const auto& segmentKey : vSegmentKeys)
       {
          if ( 1 < vSegmentKeys.size() )
          {

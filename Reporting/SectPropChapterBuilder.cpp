@@ -348,7 +348,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                   std::sort(vIntervals.begin(),vIntervals.end());
                   vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
                   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-                  BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+                  for (const auto& intervalIdx : vIntervals)
                   {
                      pgsTypes::SectionPropertyType spType1 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformedNoncomposite);
                      pgsTypes::SectionPropertyType spType2 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
@@ -389,7 +389,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                      vIntervals.push_back(pIntervals->GetLiveLoadInterval());
                      std::sort(vIntervals.begin(),vIntervals.end());
                      vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
-                     BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+                     for (const auto& intervalIdx : vIntervals)
                      {
                         rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
                         *pPara << pTable << rptNewLine;

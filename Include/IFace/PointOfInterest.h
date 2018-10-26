@@ -96,6 +96,10 @@ interface IPointOfInterest : public IUnknown
    // The returned vector of POI does not include POIs that are in adjacent segments
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterestInRange(Float64 XpoiLeft,const pgsPointOfInterest& poi,Float64 XpoiRight) = 0;
 
+   // Returns the pier index associated with the poi. The poi must have POI_BOUNDARY_PIER attribute set.
+   // If this POI is not associated with a pier, INVALID_INDEX is returned.
+   virtual PierIndexType GetPier(const pgsPointOfInterest& poi) = 0;
+
    // takes a vector of poi that span multiple segments and breaks it up into a list of
    // vectors with each vector having poi that belong to a single segment
    virtual std::list<std::vector<pgsPointOfInterest>> GroupBySegment(const std::vector<pgsPointOfInterest>& vPoi) = 0;

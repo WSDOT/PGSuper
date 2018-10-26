@@ -382,10 +382,10 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
             pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,limitState,pgsTypes::Tension,poi.GetID());
          }
 
-         ATLASSERT(pArtifact != NULL);
-         if ( pArtifact == NULL )
+         ATLASSERT(pArtifact != nullptr);
+         if ( pArtifact == nullptr )
          {
-            // safety net just incase we get a NULL pointer during release builds
+            // safety net just incase we get a nullptr pointer during release builds
             continue;
          }
 

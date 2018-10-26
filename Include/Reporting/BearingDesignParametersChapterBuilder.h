@@ -77,8 +77,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CBearingDesignParametersChapterBuilder(const CBearingDesignParametersChapterBuilder&);
-   CBearingDesignParametersChapterBuilder& operator=(const CBearingDesignParametersChapterBuilder&);
+   CBearingDesignParametersChapterBuilder(const CBearingDesignParametersChapterBuilder&) = delete;
+   CBearingDesignParametersChapterBuilder& operator=(const CBearingDesignParametersChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

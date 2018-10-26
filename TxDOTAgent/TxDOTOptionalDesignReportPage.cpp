@@ -39,8 +39,8 @@ IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignReportPage, CPropertyPage)
 
 CTxDOTOptionalDesignReportPage::CTxDOTOptionalDesignReportPage()
 	: CPropertyPage(CTxDOTOptionalDesignReportPage::IDD),
-   m_pData(NULL),
-   m_pBrokerRetriever(NULL),
+   m_pData(nullptr),
+   m_pBrokerRetriever(nullptr),
    m_ChangeStatus(0)
 {
 
@@ -50,7 +50,7 @@ CTxDOTOptionalDesignReportPage::~CTxDOTOptionalDesignReportPage()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = boost::shared_ptr<CReportBrowser>();
+      m_pBrowser = nullptr;
    }
 }
 
@@ -112,7 +112,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
          CEAFAutoProgress ap(pProgress);
          pProgress->UpdateMessage(_T("Building Report"));
 
-         if (m_pBrowser==NULL)
+         if (m_pBrowser==nullptr)
          {
             // Create a new browser
             CreateNewBrowser(pBroker);
@@ -124,14 +124,14 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
             m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
 
             // Already have a browser, just need to update headers and footers and re-marry report
-            boost::shared_ptr<CReportSpecification> brRptSpec = m_pBrowser->GetReportSpecification();
+            std::shared_ptr<CReportSpecification> brRptSpec = m_pBrowser->GetReportSpecification();
             brRptSpec->SetLeftHeader(m_pRptSpec->GetLeftHeader().c_str());
             brRptSpec->SetCenterHeader(m_pRptSpec->GetCenterHeader().c_str());
             brRptSpec->SetLeftFooter(m_pRptSpec->GetLeftFooter().c_str());
             brRptSpec->SetCenterFooter(m_pRptSpec->GetCenterFooter().c_str());
 
-            boost::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
-            boost::shared_ptr<rptReport> pReport = pBuilder->CreateReport( m_pRptSpec );
+            std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+            std::shared_ptr<rptReport> pReport = pBuilder->CreateReport( m_pRptSpec );
             m_pBrowser->UpdateReport( pReport, true );
          }
 
@@ -161,7 +161,7 @@ void CTxDOTOptionalDesignReportPage::DisplayErrorMode(TxDOTBrokerRetrieverExcept
    // go into error mode - delete browser and displaymessage
 
    m_BrowserPlaceholder.ShowWindow(SW_HIDE);
-   m_pBrowser = boost::shared_ptr<CReportBrowser>();
+   m_pBrowser = nullptr;
 
    CString msg;
    msg.Format(_T("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center"),exc.Message);
@@ -189,15 +189,14 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
    GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   boost::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
-   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),m_pRptSpec,nullSpecBuilder);
+   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),m_pRptSpec,std::shared_ptr<CReportSpecificationBuilder>());
    m_pBrowser->Size(rect.Size());
 
    // resize browser window
    this->SendMessage(WM_SIZE);
 }
 
-boost::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(IReportManager* pReportMgr)
+std::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(IReportManager* pReportMgr)
 {
    int curidx = m_ReportCombo.GetCurSel();
    ASSERT(curidx==0 || curidx==1);
@@ -207,9 +206,9 @@ boost::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSe
 
    // Get our report description
    CReportDescription rptDesc = pReportMgr->GetReportDescription(spec_name);
-   boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   boost::shared_ptr<CReportSpecification> pDefRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
-   boost::shared_ptr<CGirderReportSpecification> pGirderRptSpec = boost::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pDefRptSpec);
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<CReportSpecification> pDefRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+   std::shared_ptr<CGirderReportSpecification> pGirderRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pDefRptSpec);
    pGirderRptSpec->SetGirderKey(CGirderKey(TOGA_SPAN,TOGA_FABR_GDR));
 
    // Set report header and footer for printing

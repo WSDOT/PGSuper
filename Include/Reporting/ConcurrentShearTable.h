@@ -83,7 +83,7 @@ protected:
    void MakeCopy(const CConcurrentShearTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CConcurrentShearTable& rOther);
+   void MakeAssignment(const CConcurrentShearTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -25,7 +25,7 @@ class CCastClosureJointDlg : public CDialog
 	DECLARE_DYNAMIC(CCastClosureJointDlg)
 
 public:
-	CCastClosureJointDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
+	CCastClosureJointDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CCastClosureJointDlg();
 
 // Dialog Data

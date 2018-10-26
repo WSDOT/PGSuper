@@ -37,14 +37,14 @@ public:
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Strategy,iTogaSupportDrawStrategy)
-//      STDMETHOD_(void,SetSupport)(ISupport* jnt, long supportID);
+//      STDMETHOD_(void,SetSupport)(ISupport* jnt, long supportID) override;
    END_INTERFACE_PART(Strategy)
 
    BEGIN_INTERFACE_PART(DrawPointStrategy,iDrawPointStrategy)
-      STDMETHOD_(void,Draw)(iPointDisplayObject* pDO,CDC* pDC);
-      STDMETHOD_(void,DrawDragImage)(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint);
-      STDMETHOD_(void,DrawHighlite)(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite);
-      STDMETHOD_(void,GetBoundingBox)(iPointDisplayObject* pDO, IRect2d** rect);
+      STDMETHOD_(void,Draw)(iPointDisplayObject* pDO,CDC* pDC) override;
+      STDMETHOD_(void,DrawDragImage)(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint) override;
+      STDMETHOD_(void,DrawHighlite)(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite) override;
+      STDMETHOD_(void,GetBoundingBox)(iPointDisplayObject* pDO, IRect2d** rect) override;
    END_INTERFACE_PART(DrawPointStrategy)
 
 private:
@@ -54,7 +54,7 @@ private:
 
    CComPtr<IPoint2d> m_CachePoint;
 
-   virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* loc);
+   void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* loc);
    void GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64 *psy);
    void GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy);
 };

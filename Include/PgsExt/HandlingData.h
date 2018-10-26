@@ -68,7 +68,7 @@ public:
 
 protected:
    void MakeCopy(const CHandlingData& rOther);
-   virtual void MakeAssignment(const CHandlingData& rOther);
+   void MakeAssignment(const CHandlingData& rOther);
 };
 
 #endif // INCLUDED_PGSEXT_HANDLINGDATA_H_

@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 // CRenameLibraryEntry dialog
 
 
-CRenameLibraryEntry::CRenameLibraryEntry(CWnd* pParent /*=NULL*/)
+CRenameLibraryEntry::CRenameLibraryEntry(CWnd* pParent /*=nullptr*/)
 	: CDialog(CRenameLibraryEntry::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CRenameLibraryEntry)

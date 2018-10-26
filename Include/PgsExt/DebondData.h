@@ -35,7 +35,7 @@ public:
    CDebondData();
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress) const;
 
    bool operator==(const CDebondData& rOther) const; 
    bool operator!=(const CDebondData& rOther) const;

@@ -138,7 +138,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    }
 
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
+   std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
 
    // Fill up the table
    GET_IFACE2(pBroker,IProductForces,pProductForces);
@@ -506,30 +506,58 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             }
 
             // Legal Rating - Special
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
+               if (reactionDecider.DoReport(loadRatingIntervalIdx))
                {
-                  pProductForces->GetLiveLoadRotation( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-                  (*p_table)(row,col) << rotation.SetValue( max );
-                  if ( bIndicateControllingLoad && 0 <= maxConfig )
+                  pProductForces->GetLiveLoadRotation(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                  (*p_table)(row, col) << rotation.SetValue(max);
+                  if (bIndicateControllingLoad && 0 <= maxConfig)
                   {
-                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
+                     (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
                   }
                   col++;
 
-                  pProductForces->GetLiveLoadRotation( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-                  (*p_table)(row,col) << rotation.SetValue( min );
-                  if ( bIndicateControllingLoad && 0 <= minConfig )
+                  pProductForces->GetLiveLoadRotation(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                  (*p_table)(row, col) << rotation.SetValue(min);
+                  if (bIndicateControllingLoad && 0 <= minConfig)
                   {
-                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << _T(")");
+                     (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << _T(")");
                   }
                   col++;
                }
                else
                {
-                  (*p_table)(row,col++) << RPT_NA;
-                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row, col++) << RPT_NA;
+                  (*p_table)(row, col++) << RPT_NA;
+               }
+            }
+
+            // Legal Rating - Emergency
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               if (reactionDecider.DoReport(loadRatingIntervalIdx))
+               {
+                  pProductForces->GetLiveLoadRotation(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                  (*p_table)(row, col) << rotation.SetValue(max);
+                  if (bIndicateControllingLoad && 0 <= maxConfig)
+                  {
+                     (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << maxConfig << _T(")");
+                  }
+                  col++;
+
+                  pProductForces->GetLiveLoadRotation(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                  (*p_table)(row, col) << rotation.SetValue(min);
+                  if (bIndicateControllingLoad && 0 <= minConfig)
+                  {
+                     (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << minConfig << _T(")");
+                  }
+                  col++;
+               }
+               else
+               {
+                  (*p_table)(row, col++) << RPT_NA;
+                  (*p_table)(row, col++) << RPT_NA;
                }
             }
 
@@ -775,29 +803,56 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             }
 
             // Legal Rating - Special
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
+               if (reactionDecider.DoReport(loadRatingIntervalIdx))
                {
-                  pProductForces->GetLiveLoadRotation( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-                  (*p_table)(row,col) << rotation.SetValue( max );
-                  if ( bIndicateControllingLoad && 0 <= maxConfig )
+                  pProductForces->GetLiveLoadRotation(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                  (*p_table)(row, col) << rotation.SetValue(max);
+                  if (bIndicateControllingLoad && 0 <= maxConfig)
                   {
-                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
+                     (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
                   }
                   col++;
 
-                  (*p_table)(row,col) << rotation.SetValue( min );
-                  if ( bIndicateControllingLoad && 0 <= minConfig )
+                  (*p_table)(row, col) << rotation.SetValue(min);
+                  if (bIndicateControllingLoad && 0 <= minConfig)
                   {
-                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << _T(")");
+                     (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << _T(")");
                   }
                   col++;
                }
                else
                {
-                  (*p_table)(row,col++) << RPT_NA;
-                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row, col++) << RPT_NA;
+                  (*p_table)(row, col++) << RPT_NA;
+               }
+            }
+
+            // Legal Rating - Emergency
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               if (reactionDecider.DoReport(loadRatingIntervalIdx))
+               {
+                  pProductForces->GetLiveLoadRotation(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                  (*p_table)(row, col) << rotation.SetValue(max);
+                  if (bIndicateControllingLoad && 0 <= maxConfig)
+                  {
+                     (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << maxConfig << _T(")");
+                  }
+                  col++;
+
+                  (*p_table)(row, col) << rotation.SetValue(min);
+                  if (bIndicateControllingLoad && 0 <= minConfig)
+                  {
+                     (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << minConfig << _T(")");
+                  }
+                  col++;
+               }
+               else
+               {
+                  (*p_table)(row, col++) << RPT_NA;
+                  (*p_table)(row, col++) << RPT_NA;
                }
             }
 

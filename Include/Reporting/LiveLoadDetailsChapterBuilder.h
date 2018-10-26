@@ -57,8 +57,8 @@ private:
    bool m_bDesign, m_bRating;
 
    // Prevent accidental copying and assignment
-   CLiveLoadDetailsChapterBuilder(const CLiveLoadDetailsChapterBuilder&);
-   CLiveLoadDetailsChapterBuilder& operator=(const CLiveLoadDetailsChapterBuilder&);
+   CLiveLoadDetailsChapterBuilder(const CLiveLoadDetailsChapterBuilder&) = delete;
+   CLiveLoadDetailsChapterBuilder& operator=(const CLiveLoadDetailsChapterBuilder&) = delete;
 
    static void ReportLiveLoad(IBroker* pBroker, std::_tstring& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
 };

@@ -32,7 +32,7 @@ public:
    DECLARE_DYNCREATE(CStressHistoryGraphController);
 
 protected:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
    void UpdateGraph();
 
 	//{{AFX_MSG(CStressHistoryGraphController)

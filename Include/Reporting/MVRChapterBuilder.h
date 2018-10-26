@@ -61,8 +61,8 @@ private:
    bool m_bRating;
 
    // Prevent accidental copying and assignment
-   CMVRChapterBuilder(const CMVRChapterBuilder&);
-   CMVRChapterBuilder& operator=(const CMVRChapterBuilder&);
+   CMVRChapterBuilder(const CMVRChapterBuilder&) = delete;
+   CMVRChapterBuilder& operator=(const CMVRChapterBuilder&) = delete;
 };
 
 #endif // INCLUDED_MVRCHAPTERBUILDER_H_

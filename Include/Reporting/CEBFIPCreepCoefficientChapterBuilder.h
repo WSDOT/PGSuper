@@ -48,6 +48,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CCEBFIPCreepCoefficientChapterBuilder(const CCEBFIPCreepCoefficientChapterBuilder&);
-   CCEBFIPCreepCoefficientChapterBuilder& operator=(const CCEBFIPCreepCoefficientChapterBuilder&);
+   CCEBFIPCreepCoefficientChapterBuilder(const CCEBFIPCreepCoefficientChapterBuilder&) = delete;
+   CCEBFIPCreepCoefficientChapterBuilder& operator=(const CCEBFIPCreepCoefficientChapterBuilder&) = delete;
 };

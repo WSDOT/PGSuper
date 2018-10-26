@@ -436,7 +436,7 @@ const pgsKdotHaulingStressAnalysisArtifact* pgsKdotHaulingAnalysisArtifact::GetH
    found = m_HaulingStressAnalysisArtifacts.find( poi );
    if ( found == m_HaulingStressAnalysisArtifacts.end() )
    {
-      return NULL;
+      return nullptr;
    }
 
    return &(*found).second;
@@ -464,7 +464,7 @@ Float64 pgsKdotHaulingAnalysisArtifact::GetDesignOverhang() const
 
 pgsHaulingAnalysisArtifact* pgsKdotHaulingAnalysisArtifact::Clone() const
 {
-   std::auto_ptr<pgsKdotHaulingAnalysisArtifact> clone(new pgsKdotHaulingAnalysisArtifact());
+   std::unique_ptr<pgsKdotHaulingAnalysisArtifact> clone(std::make_unique<pgsKdotHaulingAnalysisArtifact>());
    *clone = *this;
 
    return clone.release();
@@ -494,7 +494,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
+      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria. No analysis performed.")<<color(Black)<<rptNewLine;
       return;
    }
 
@@ -601,7 +601,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    }
    else
    {
-      *p << symbol(INFINITY) << rptNewLine;
+      *p << symbol(infinity) << rptNewLine;
    }
 
    *p << RPT_FC << _T(" required for Tensile stress without sufficient reinforcement = ");
@@ -611,7 +611,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    }
    else
    {
-      *p << symbol(INFINITY) << rptNewLine;
+      *p << symbol(infinity) << rptNewLine;
    }
 
    *p << RPT_FC << _T(" required for Tensile stress with sufficient reinforcement to resist the tensile force in the concrete = ");
@@ -621,7 +621,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    }
    else
    {
-      *p << symbol(INFINITY) << rptNewLine;
+      *p << symbol(infinity) << rptNewLine;
    }
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(7,_T(""));
@@ -667,7 +667,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
       const pgsKdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
 
-      if (pStressArtifact == NULL)
+      if (pStressArtifact == nullptr)
       {
          ATLASSERT(false); // this should not happen
          continue;
@@ -764,7 +764,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
+      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria. No analysis performed.")<<color(Black)<<rptNewLine;
    }
 
    *p << Sub2(_T("l"),_T("g")) << _T(" = Overall Length of girder = ")<<loc.SetValue(this->GetGirderLength())<<_T(" ")<<loc.GetUnitTag()<<rptNewLine;
@@ -918,7 +918,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
 
       const pgsKdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
 
-      if(pStressArtifact == NULL)
+      if(pStressArtifact == nullptr)
       {
          ATLASSERT(false);
          continue;

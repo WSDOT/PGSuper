@@ -78,22 +78,22 @@ END_COM_MAP()
 
 // IInitialize
 public:
-   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
+   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) override;
 
 // IPsBeamLossEngineer
 public:
-   virtual void Init(BeamTypes beamType) { m_BeamType = beamType; }
+   virtual void Init(BeamTypes beamType)  override { m_BeamType = beamType; }
 
 // IPsLossEngineer
 public:
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx);
-   virtual void ClearDesignLosses();
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx);
-   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
-   virtual void GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA);
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
+   virtual void ClearDesignLosses() override;
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
+   virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
+   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
+   virtual void GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
 
 private:
    IBroker* m_pBroker;
@@ -104,7 +104,7 @@ private:
 
    // Losses are cached for two different cases:
    // 1) This data structure caches losses for the current project data
-   std::map<PoiIDKey,LOSSDETAILS> m_PsLosses;
+   std::map<PoiIDType,LOSSDETAILS> m_PsLosses;
 
    // 2) This data structure is for design cases. It caches the most recently
    //    computed losses

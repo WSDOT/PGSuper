@@ -89,7 +89,7 @@ inline pgsTypes::DistributionFactorMethod GetDfMethodForInt(int method)
 /////////////////////////////////////////////////////////////////////////////
 // CLiveLoadDistFactorsDlg dialog
 
-CLiveLoadDistFactorsDlg::CLiveLoadDistFactorsDlg(CWnd* pParent /*=NULL*/)
+CLiveLoadDistFactorsDlg::CLiveLoadDistFactorsDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CLiveLoadDistFactorsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CLiveLoadDistFactorsDlg)
@@ -205,7 +205,7 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
 
       pgrid->CustomInit(ispan,bNegMoments);
 
-      m_GirderGrids.push_back( boost::shared_ptr<CLLDFGrid>(pgrid) );
+      m_GirderGrids.push_back( std::shared_ptr<CLLDFGrid>(pgrid) );
    }
 
    // Init Pier grids
@@ -222,7 +222,7 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
 
       pgrid->CustomInit(pierIdx);
 
-      m_PierGrids.push_back( boost::shared_ptr<CLLDFPierGrid>(pgrid) );
+      m_PierGrids.push_back( std::shared_ptr<CLLDFPierGrid>(pgrid) );
    }
 
 	CDialog::OnInitDialog();
@@ -433,7 +433,7 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
                   nGirdersAhead = pGroup->GetGirderCount();
                }
 
-               if( pSpanBack != NULL && pg.Girder < nGirdersBack)
+               if( pSpanBack != nullptr && pg.Girder < nGirdersBack)
                {
                   lldf_Back.pgNMService= pLLDF->GetNegMomentDistFactorAtPier(pg.Pier, pg.Girder, pgsTypes::ServiceI,pgsTypes::Back);
                   lldf_Back.pgRService = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::ServiceI);
@@ -441,7 +441,7 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
                   lldf_Back.pgRFatigue = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::FatigueI);
                }
 
-               if( pSpanAhead != NULL && pg.Girder < nGirdersAhead)
+               if( pSpanAhead != nullptr && pg.Girder < nGirdersAhead)
                {
                   lldf_Ahead.pgNMService= pLLDF->GetNegMomentDistFactorAtPier(pg.Pier, pg.Girder, pgsTypes::ServiceI,pgsTypes::Ahead);
                   lldf_Ahead.pgRService = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::ServiceI);

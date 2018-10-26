@@ -78,8 +78,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   COptimizedFabricationChapterBuilder(const COptimizedFabricationChapterBuilder&);
-   COptimizedFabricationChapterBuilder& operator=(const COptimizedFabricationChapterBuilder&);
+   COptimizedFabricationChapterBuilder(const COptimizedFabricationChapterBuilder&) = delete;
+   COptimizedFabricationChapterBuilder& operator=(const COptimizedFabricationChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

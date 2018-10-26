@@ -498,7 +498,7 @@ rptParagraph* create_table1_design(IBroker* pBroker,
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
-         if ( psArtifact == NULL )
+         if ( psArtifact == nullptr )
          {
             continue;
          }
@@ -598,7 +598,7 @@ rptParagraph* create_table2_design(IBroker* pBroker,
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
-         if ( psArtifact == NULL )
+         if ( psArtifact == nullptr )
             continue;
 
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
@@ -680,7 +680,7 @@ rptParagraph* create_table3_design(IBroker* pBroker,
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
-         if ( psArtifact == NULL )
+         if ( psArtifact == nullptr )
             continue;
 
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();

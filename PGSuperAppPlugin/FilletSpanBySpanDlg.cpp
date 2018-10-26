@@ -30,7 +30,7 @@
 
 IMPLEMENT_DYNAMIC(CFilletSpanBySpanDlg, CDialog)
 
-CFilletSpanBySpanDlg::CFilletSpanBySpanDlg(CWnd* pParent /*=NULL*/)
+CFilletSpanBySpanDlg::CFilletSpanBySpanDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CFilletSpanBySpanDlg::IDD, pParent),
    m_bFirstActive(true)
 {

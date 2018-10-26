@@ -116,5 +116,5 @@ protected:
    void MakeCopy(const CConcreteMaterial& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CConcreteMaterial& rOther);
+   void MakeAssignment(const CConcreteMaterial& rOther);
 };

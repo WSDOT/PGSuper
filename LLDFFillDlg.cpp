@@ -35,9 +35,9 @@
 
 IMPLEMENT_DYNAMIC(CLLDFFillDlg, CDialog)
 
-CLLDFFillDlg::CLLDFFillDlg(CWnd* pParent /*=NULL*/)
+CLLDFFillDlg::CLLDFFillDlg(CWnd* pParent /*=nullptr*/)
    : CDialog(CLLDFFillDlg::IDD, pParent)
-     , m_pBridgeDesc(NULL)
+     , m_pBridgeDesc(nullptr)
      , m_UserInputValue(1.0)
      , m_GIRDER_SPAN_INT(0)
      , m_GIRDER_GIRDER_INT(0)

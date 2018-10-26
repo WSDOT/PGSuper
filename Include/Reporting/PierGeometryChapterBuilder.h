@@ -76,8 +76,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CPierGeometryChapterBuilder(const CPierGeometryChapterBuilder&);
-   CPierGeometryChapterBuilder& operator=(const CPierGeometryChapterBuilder&);
+   CPierGeometryChapterBuilder(const CPierGeometryChapterBuilder&) = delete;
+   CPierGeometryChapterBuilder& operator=(const CPierGeometryChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -39,7 +39,7 @@ public:
 	enum { IDD = IDD_TS_GENERAL };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
    void FillEventList();
    EventIndexType CreateEvent();
 
@@ -53,8 +53,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnSetActive();
+   virtual BOOL OnInitDialog() override;
+   virtual BOOL OnSetActive() override;
    afx_msg void OnSupportTypeChanged();
    afx_msg void OnErectionEventChanged();
    afx_msg void OnErectionEventChanging();

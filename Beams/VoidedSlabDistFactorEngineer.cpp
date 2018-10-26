@@ -126,7 +126,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
       (*pChapter) << pPara;
       (*pPara) << GetComputationDescription(girderKey,
                                             strGirderName,
-                                            pDeck->DeckType,
+                                            pDeck->GetDeckType(),
                                             pDeck->TransverseConnectivity);
 
       pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -346,6 +346,9 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
          std::_tstring superscript;
 
          rptRcScalar scalar2 = scalar;
+         rptRcScalar scalar3 = scalar;
+
+         Float64 mpf;
 
          //////////////////////////////////////////////////////////////
          // Moments
@@ -359,21 +362,27 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
             (*pChapter) << pPara;
 
             superscript = (pier1_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
-            (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier1_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier1_lldf.gM1.mg/1.2);
+            mpf = pier1_lldf.gM1.GetMultiplePresenceFactor();
+            (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier1_lldf.gM1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(pier1_lldf.gM1.mg / mpf);
          }
 
          // Positive moment DF
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
-         if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
+         if (bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd)
+         {
             (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+         }
          else
+         {
             (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+         }
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
          superscript = (span_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
-         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gM1.mg/1.2);
+         mpf = span_lldf.gM1.GetMultiplePresenceFactor();
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gM1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(span_lldf.gM1.mg / mpf);
 
          if ( bContinuousAtEnd || bIntegralAtEnd )
          {
@@ -397,7 +406,8 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
          (*pChapter) << pPara;
 
          superscript = (span_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gV1.mg/1.2);
+         mpf = span_lldf.gV1.GetMultiplePresenceFactor();
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(span_lldf.gV1.mg / mpf);
 
          //////////////////////////////////////////////////////////////
          // Reactions
@@ -409,7 +419,8 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
          (*pChapter) << pPara;
 
          superscript = (reaction1_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction1_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction1_lldf.gR1.mg/1.2);
+         mpf = reaction1_lldf.gR1.GetMultiplePresenceFactor();
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction1_lldf.gR1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(reaction1_lldf.gR1.mg / mpf);
 
            ///////
 
@@ -420,7 +431,8 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
          (*pChapter) << pPara;
 
          superscript = (reaction2_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction2_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction2_lldf.gR1.mg/1.2);
+         mpf = reaction2_lldf.gR1.GetMultiplePresenceFactor();
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction2_lldf.gR1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(reaction2_lldf.gR1.mg / mpf);
       }
    } // next span
 }

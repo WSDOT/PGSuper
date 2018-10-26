@@ -81,7 +81,7 @@ protected:
    void MakeCopy(const CCastingYardStressTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CCastingYardStressTable& rOther);
+   void MakeAssignment(const CCastingYardStressTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

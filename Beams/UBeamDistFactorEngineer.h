@@ -64,16 +64,16 @@ END_COM_MAP()
 
 public:
    // IUBeamDistFactorEngineer
-   virtual void Init(bool bTypeB, bool bisSpreadSlab);
+   virtual void Init(bool bTypeB, bool bisSpreadSlab) override;
 
    // IDistFactorEngineer
-//   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-//   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr);
-//   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
-//   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr);
-//   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr);
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
+//   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) override;
+//   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr) override;
+//   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr) override;
+//   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr) override;
+//   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr) override;
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
+   virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
 
 private:
    lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,UBEAM_LLDFDETAILS* plldf);

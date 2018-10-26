@@ -56,10 +56,10 @@ class CSpecMainSheet : public CPropertySheet
 public:
 	CSpecMainSheet( SpecLibraryEntry& rentry, UINT nIDCaption, 
       bool allowEditing,
-      CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+      CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 	CSpecMainSheet( SpecLibraryEntry& rentry, LPCTSTR pszCaption, 
       bool allowEditing,
-      CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+      CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
 // Attributes
 public:

@@ -51,7 +51,7 @@ CTxDOTOptionalDesignDocProxyAgent::CTxDOTOptionalDesignDocProxyAgent():
 m_NeedValidate(true),
 m_GirderArtifact(CSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0))
 {
-   m_pTxDOTOptionalDesignDoc = NULL;
+   m_pTxDOTOptionalDesignDoc = nullptr;
 }
 
 CTxDOTOptionalDesignDocProxyAgent::~CTxDOTOptionalDesignDocProxyAgent()
@@ -571,14 +571,14 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       // Ultimate Moment
       const pgsFlexuralCapacityArtifact* pFabCap;
       pFabCap = m_GirderArtifact.FindPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,fabr_ms_poi);
-      ATLASSERT(pFabCap != NULL);
+      ATLASSERT(pFabCap != nullptr);
 
       m_UltimateMomentCapacity = pFabCap->GetCapacity();
 
       // Required from original model
       const pgsFlexuralCapacityArtifact* pOrigCap;
       pOrigCap = pOriginalGdrArtifact->FindPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,orig_ms_poi);
-      ATLASSERT(pOrigCap != NULL);
+      ATLASSERT(pOrigCap != nullptr);
 
       m_RequiredUltimateMoment = Max(pOrigCap->GetDemand(),pOrigCap->GetMinCapacity());
 

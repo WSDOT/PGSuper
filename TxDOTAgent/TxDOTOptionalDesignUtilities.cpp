@@ -114,7 +114,8 @@ OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStra
             StrandRowIter srit = strandrows.find(srow);
             if (srit != strandrows.end())
             {
-               srit->fillListString += fill_char;
+               StrandRow& row(const_cast<StrandRow&>(*srit));
+               row.fillListString += fill_char;
             }
             else
             {
@@ -153,7 +154,8 @@ OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStra
             StrandRowIter srit = strandrows.find(srow);
             if (srit != strandrows.end())
             {
-               srit->fillListString += fill_char;
+               StrandRow& row(const_cast<StrandRow&>(*srit));
+               row.fillListString += fill_char;
             }
             else
             {

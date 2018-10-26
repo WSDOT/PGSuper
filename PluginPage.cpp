@@ -104,7 +104,7 @@ bool CPluginPage::InitList()
    CATID ID[nID];
 
    ID[0] = m_CATID;
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    const int nPlugins = 5;
    CLSID clsid[nPlugins]; 

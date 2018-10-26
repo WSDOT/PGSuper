@@ -43,8 +43,8 @@ GRID_IMPLEMENT_REGISTER(CParabolicDuctGrid, CS_DBLCLKS, 0, 0, 0);
 CParabolicDuctGrid::CParabolicDuctGrid()
 {
 //   RegisterClass();
-   m_pGirder = NULL;
-   m_pCallback = NULL;
+   m_pGirder = nullptr;
+   m_pCallback = nullptr;
 }
 
 CParabolicDuctGrid::~CParabolicDuctGrid()

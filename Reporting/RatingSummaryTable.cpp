@@ -659,7 +659,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
    std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
    if ( strName == NO_LIVE_LOAD_DEFINED )
    {
-      return NULL;
+      return nullptr;
    }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -795,7 +795,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
    return pTable;
 }
 
-rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const
+rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge) const
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -815,10 +815,12 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirder
    (*table)(0,0) << _T("Vehicle");
    (*table)(0,1) << COLHDR(_T("Vehicle Weight"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
    (*table)(0,2) << _T("RF");
-   (*table)(0,3) << COLHDR(_T("Safe Load Capacity"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+   (*table)(0,3) << COLHDR(_T("Safe Load Capacity (RT)"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
    (*table)(0,4) << COLHDR(_T("Safe Posting Load"),  rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
 
    bool bLoadPostingRequired = false;
+   bool bMustCloseBridge = false; // MBE 6A.8.1 and .3 - bridges not capable of carrying a minimum gross live load of weight of three tons must be closed.
+   Float64 RTmin = ::ConvertToSysUnits(3.0, unitMeasure::Ton);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
@@ -849,7 +851,12 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirder
             (*table)(row,col++) << RF_PASS(rating_factor,RF);
          }
 
-         (*table)(row,col++) << tonnage.SetValue(::FloorOff(W*RF,0.01));
+         Float64 RT = ::FloorOff(W*RF, 0.01);
+         if (RT < RTmin || RF < 0.3) // RF < 0.3 is from MBE C6A.8.3
+         {
+            bMustCloseBridge = true;
+         }
+         (*table)(row,col++) << tonnage.SetValue(RT);
 
          if ( RF < 1 )
          {
@@ -880,8 +887,119 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirder
    if ( !bLoadPostingRequired )
    {
       delete table;
-      table = NULL;
+      table = nullptr;
    }
+
+   *pbMustCloseBridge = bMustCloseBridge;
+   return table;
+}
+
+rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const CGirderKey& girderKey) const
+{
+   GET_IFACE2(pBroker, IArtifact, pArtifact);
+
+   const pgsRatingArtifact* pEV2Artifact = pArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Emergency, 0);
+   const pgsRatingArtifact* pEV3Artifact = pArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Emergency, 1);
+
+   Float64 RF2 = pEV2Artifact->GetRatingFactor();
+   Float64 RF3 = pEV3Artifact->GetRatingFactor();
+
+   if (1.0 <= RF3)
+   {
+      // if RF for Type EV3 is OK, no load posting required
+      return nullptr;
+   }
+
+
+   Float64 wgtEV2 = ::ConvertToSysUnits(57.5, unitMeasure::Kip);
+   Float64 wgtEV3 = ::ConvertToSysUnits(86.0, unitMeasure::Kip);
+
+   Float64 axleEV2 = ::ConvertToSysUnits(33.5, unitMeasure::Kip);
+   Float64 tandemEV3 = ::ConvertToSysUnits(62.0, unitMeasure::Kip);
+
+   ATLASSERT(RF3 < 1.0);
+
+   Float64 W2, W3, GVW;
+   if (RF2 < 1.0)
+   {
+      W2 = RF2*axleEV2;
+      W3 = RF3*tandemEV3;
+      GVW = Min(RF2*wgtEV2, RF3*wgtEV3);
+   }
+   else
+   {
+      W2 = axleEV2;
+      W3 = RF3*tandemEV3;
+      GVW = RF3*wgtEV3;
+   }
+
+
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   INIT_UV_PROTOTYPE(rptForceUnitValue, tonnage, pDisplayUnits->GetTonnageUnit(), false);
+   rptCapacityToDemand rating_factor;
+
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(7, _T("Emergency Vehicle Load Posting"));
+
+   table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+   RowIndexType row = 0;
+
+   table->SetNumberOfHeaderRows(2);
+
+   table->SetColumnSpan(0, col, 2);
+   table->SetColumnSpan(0, col + 1, SKIP_CELL);
+
+   (*table)(0, col) << _T("Type EV2");
+   (*table)(1, col++) << COLHDR(_T("Weight"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+   (*table)(1, col++) << _T("RF");
+
+   table->SetColumnSpan(0, col, 2);
+   table->SetColumnSpan(0, col + 1, SKIP_CELL);
+
+   (*table)(0, col) << _T("Type EV3");
+   (*table)(1, col++) << COLHDR(_T("Weight"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+   (*table)(1, col++) << _T("RF");
+
+   table->SetRowSpan(0, col, 2);
+   table->SetRowSpan(1, col, SKIP_CELL);
+   (*table)(0, col++) << COLHDR(_T("Single Axle"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+
+   table->SetRowSpan(0, col, 2);
+   table->SetRowSpan(1, col, SKIP_CELL);
+   (*table)(0, col++) << COLHDR(_T("Tandem"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+
+   table->SetRowSpan(0, col, 2);
+   table->SetRowSpan(1, col, SKIP_CELL);
+   (*table)(0, col++) << COLHDR(_T("Gross"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+
+   row = table->GetNumberOfHeaderRows();
+   col = 0;
+   (*table)(row, col++) << tonnage.SetValue(wgtEV2);
+   if (RF2 < 1.0)
+   {
+      (*table)(row, col++) << RF_FAIL(rating_factor, RF2);
+   }
+   else
+   {
+      (*table)(row, col++) << RF_PASS(rating_factor, RF2);
+   }
+
+   (*table)(row, col++) << tonnage.SetValue(wgtEV3);
+   if (RF3 < 1.0)
+   {
+      (*table)(row, col++) << RF_FAIL(rating_factor, RF3);
+   }
+   else
+   {
+      (*table)(row, col++) << RF_PASS(rating_factor, RF3);
+   }
+
+   (*table)(row, col++) << tonnage.SetValue(W2);
+   (*table)(row, col++) << tonnage.SetValue(W3);
+   (*table)(row, col++) << tonnage.SetValue(GVW);
 
    return table;
 }

@@ -41,6 +41,7 @@
 #include <Details.h>
 
 #include <numeric>
+#include <algorithm>
 
 #define USE_ALL_POI
 //#if defined _DEBUG
@@ -218,7 +219,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
 const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx)
 {
    ATLASSERT(false); // not doing design with Time Step method... therefore this should never be called
-   return NULL;
+   return nullptr;
 }
 
 void CTimeStepLossEngineer::ClearDesignLosses()
@@ -1014,7 +1015,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    CComPtr<IEnumRebarSectionItem> enum_items;
    rebar_section->get__EnumRebarSectionItem(&enum_items);
    CComPtr<IRebarSectionItem> item;
-   while ( enum_items->Next(1,&item,NULL) != S_FALSE )
+   while ( enum_items->Next(1,&item,nullptr) != S_FALSE )
    {
       TIME_STEP_REBAR tsRebar;
 
@@ -3651,7 +3652,8 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
          // if temporary supports are removed after this closure becomes composite then deflections happen at this poi
          // count the number of intervals in the vTSRemovalIntervals vector that are greater than compositeClosureIntervalIdx... if there is 1 or more
          // temporary support removal effects this poi
-         bool bTSRemovedAfterCompositeClosure = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),std::bind2nd(std::greater_equal<IntervalIndexType>(),compositeClosureIntervalIdx)));
+         bool bTSRemovedAfterCompositeClosure = (0 < std::count_if(vTSRemovalIntervals.begin(), vTSRemovalIntervals.end(), 
+            [&compositeClosureIntervalIdx](const auto& intervalIdx) {return compositeClosureIntervalIdx <= intervalIdx;}));
          
          if ( bDoesDeadLoadOfSegmentEffectThisClosure || (bIsTempSupportRemovalInterval && bTSRemovedAfterCompositeClosure) )
          {
@@ -3679,7 +3681,8 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
       // if temporary supports are removed after this segment is erected then deflections happen at this poi
       // count the number of intervals in the vTSRemovalIntervals vector that are greater or equal than erectSegmentIntervalIdx... if there is 1 or more
       // temporary support removal effects this poi
-      bool bTSRemovedAfterSegmentErection = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),std::bind2nd(std::greater_equal<IntervalIndexType>(),erectSegmentIntervalIdx)));
+      bool bTSRemovedAfterSegmentErection = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),
+         [&erectSegmentIntervalIdx](const auto& intervalIdx) {return erectSegmentIntervalIdx <= intervalIdx;}));
 
       if ( intervalIdx == releasePrestressIntervalIdx || // load first introduced
            intervalIdx == storageIntervalIdx || // supports move
@@ -3705,7 +3708,9 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
    // at the deck casting interval and any interval when a temporary support is removed after
    // the slab (and related) dead load is applied
    IntervalIndexType castDeckIntervalIdx = m_pIntervals->GetCastDeckInterval();
-   bool bTSRemovedAfterDeckCasting = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),std::bind2nd(std::greater<IntervalIndexType>(),castDeckIntervalIdx)));
+   bool bTSRemovedAfterDeckCasting = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),
+      [&castDeckIntervalIdx](const auto& intervalIdx) {return castDeckIntervalIdx < intervalIdx;}));
+
    if ( intervalIdx == castDeckIntervalIdx || (bIsTempSupportRemovalInterval && bTSRemovedAfterDeckCasting) )
    {
       vProductForces.push_back(pgsTypes::pftDiaphragm); // verify this... are there cases when we don't apply a diaphragm load?
@@ -3744,7 +3749,9 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
    }
 
    IntervalIndexType installOverlayIntervalIdx = m_pIntervals->GetOverlayInterval();
-   bool bTSRemovedAfterOverlayInstallation = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),std::bind2nd(std::greater<IntervalIndexType>(),installOverlayIntervalIdx)));
+   bool bTSRemovedAfterOverlayInstallation = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),
+      [&installOverlayIntervalIdx](const auto& intervalIdx) {return installOverlayIntervalIdx < intervalIdx;}));
+
    if ( intervalIdx == installOverlayIntervalIdx || 
        (bIsTempSupportRemovalInterval && bTSRemovedAfterOverlayInstallation)
       )
@@ -3753,7 +3760,9 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
    }
 
    IntervalIndexType installRailingSystemIntervalIdx = m_pIntervals->GetInstallRailingSystemInterval();
-   bool bTSRemovedAfterRailingSystemInstalled = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),std::bind2nd(std::greater<IntervalIndexType>(),installRailingSystemIntervalIdx)));
+   bool bTSRemovedAfterRailingSystemInstalled = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),
+      [&installRailingSystemIntervalIdx](const auto& intervalIdx) {return installRailingSystemIntervalIdx < intervalIdx;}));
+
    if ( intervalIdx == installRailingSystemIntervalIdx || 
         (bIsTempSupportRemovalInterval && bTSRemovedAfterRailingSystemInstalled)
       )
@@ -3789,7 +3798,8 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
 
       std::vector<IntervalIndexType> vUserLoadIntervals = m_pIntervals->GetUserDefinedLoadIntervals(spanKey,pfType);
       // remove all intervals that occur after this interval
-      vUserLoadIntervals.erase(std::remove_if(vUserLoadIntervals.begin(),vUserLoadIntervals.end(),std::bind2nd(std::greater<IntervalIndexType>(),intervalIdx)),vUserLoadIntervals.end());
+      vUserLoadIntervals.erase(std::remove_if(vUserLoadIntervals.begin(),vUserLoadIntervals.end(),
+         [&intervalIdx](const auto& iIdx) {return intervalIdx < iIdx;}), vUserLoadIntervals.end());
 
       bool bIsUserDefinedLoadInterval = false;
       bool bIsTSRemovedAfterUserDefinedLoad = false;
@@ -3806,7 +3816,9 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
 
          // count the number of temporary support removal intervals that occur after the loading interval
          // if it is greater than zero this loading is applied when a temporary support is removed
-         bool bTSRemovedAfterLoadingApplied = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),std::bind2nd(std::greater<IntervalIndexType>(),loadingIntervalIdx)));
+         bool bTSRemovedAfterLoadingApplied = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),
+            [&loadingIntervalIdx](const auto& intervalIdx) {return loadingIntervalIdx < intervalIdx;}));
+
          if ( bTSRemovedAfterLoadingApplied )
          {
             bIsTSRemovedAfterUserDefinedLoad = true;

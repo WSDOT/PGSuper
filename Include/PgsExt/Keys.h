@@ -95,6 +95,7 @@ public:
    CTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx);
    CTendonKey(GirderIDType girderID,DuctIndexType ductIdx);
    CTendonKey(const CTendonKey& other);
+   CTendonKey& operator=(const CTendonKey& other);
    bool operator==(const CTendonKey& other) const;
    bool operator<(const CTendonKey& other) const;
 

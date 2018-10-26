@@ -145,15 +145,15 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    if ( !pDX->m_bSaveAndValidate )
    {
       CString strMeasure;
-      if ( pSegment->GetPrevSegment() == NULL && pSegment->GetNextSegment() == NULL )
+      if ( pSegment->GetPrevSegment() == nullptr && pSegment->GetNextSegment() == nullptr )
       {
          strMeasure = _T("Measured between end faces of segment");
       }
-      else if ( pSegment->GetPrevSegment() == NULL )
+      else if ( pSegment->GetPrevSegment() == nullptr )
       {
          strMeasure = _T("Measured from start face of segment to CL Closure Joint");
       }
-      else if ( pSegment->GetNextSegment() == NULL )
+      else if ( pSegment->GetNextSegment() == nullptr )
       {
          strMeasure = _T("Measured from CL Closure Joint to end face of segment");
       }
@@ -873,7 +873,7 @@ BOOL CGirderSegmentGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* 
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.GetBuffer();
-      pTTT->hinst = NULL;
+      pTTT->hinst = nullptr;
       return TRUE;
    }
    return FALSE;
@@ -1399,7 +1399,7 @@ void CGirderSegmentGeneralPage::InitBottomFlangeDepthControls()
    CComPtr<IBeamFactory> factory;
    pLibEntry->GetBeamFactory(&factory);
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(factory);
-   ATLASSERT(splicedBeamFactory != NULL); // spliced girders must support the ISplicedBeamFactory interface
+   ATLASSERT(splicedBeamFactory != nullptr); // spliced girders must support the ISplicedBeamFactory interface
    if ( !splicedBeamFactory || !splicedBeamFactory->CanBottomFlangeDepthVary() )
    {
       // bottom flange depth is not variable... hide the controls

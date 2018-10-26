@@ -154,7 +154,7 @@ void CPGSAppPluginBase::UpdateDocTemplates()
    // Search for the CPGSuperDocTemplate object
    CEAFDocManager* pDocMgr = (CEAFDocManager*)(pApp->m_pDocManager);
    POSITION pos = pDocMgr->GetFirstDocTemplatePosition();
-   while ( pos != NULL )
+   while ( pos != nullptr )
    {
       POSITION templatePos = pos;
       CDocTemplate* pDocTemplate = pDocMgr->GetNextDocTemplate(pos);
@@ -180,8 +180,8 @@ BOOL CPGSAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo
    // doesn't know about this plug-in at the time the command line parameters are parsed
    //
    // Re-parse the parameters with our own command line information object
-   std::auto_ptr<CPGSBaseCommandLineInfo> pgsCmdInfo(CreateCommandLineInfo());
-   if ( pgsCmdInfo.get() != NULL )
+   std::unique_ptr<CPGSBaseCommandLineInfo> pgsCmdInfo(CreateCommandLineInfo());
+   if ( pgsCmdInfo.get() != nullptr )
    {
       EAFGetApp()->ParseCommandLine(*pgsCmdInfo);
       cmdInfo = *pgsCmdInfo;
@@ -212,7 +212,7 @@ BOOL CPGSAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo
 
    // If we get this far and there is one parameter and it isn't a file name and it isn't handled -OR-
    // if there is more than one parameter and it isn't handled there is something wrong
-   if ( ((pgsCmdInfo.get() != NULL && 1 == pgsCmdInfo->m_Count && pgsCmdInfo->m_nShellCommand != CCommandLineInfo::FileOpen) || (1 <  pgsCmdInfo->m_Count)) && !bHandled )
+   if ( ((pgsCmdInfo.get() != nullptr && 1 == pgsCmdInfo->m_Count && pgsCmdInfo->m_nShellCommand != CCommandLineInfo::FileOpen) || (1 <  pgsCmdInfo->m_Count)) && !bHandled )
    {
       cmdInfo.m_bError = TRUE;
       bHandled = TRUE;

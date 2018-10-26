@@ -32,12 +32,12 @@ static char THIS_FILE[] = __FILE__;
 
 CLoadManager::CLoadManager()
 {
-   m_pTimelineManager = NULL;
+   m_pTimelineManager = nullptr;
 }
 
 CLoadManager::CLoadManager(const CLoadManager& rOther)
 {
-   m_pTimelineManager = NULL;
+   m_pTimelineManager = nullptr;
    MakeCopy(rOther);
 }
 
@@ -300,7 +300,7 @@ const CPointLoadData* CLoadManager::FindPointLoad(LoadIDType loadID) const
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 bool CLoadManager::UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey)
@@ -394,7 +394,7 @@ const CDistributedLoadData* CLoadManager::FindDistributedLoad(LoadIDType loadID)
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 bool CLoadManager::UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
@@ -487,7 +487,7 @@ const CMomentLoadData* CLoadManager::FindMomentLoad(LoadIDType loadID) const
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 bool CLoadManager::UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
@@ -542,7 +542,7 @@ void CLoadManager::DeleteMomentLoad(CollectionIndexType idx,CSpanKey* pKey)
 
 bool CLoadManager::HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase lcType) const
 {
-   BOOST_FOREACH(const CPointLoadData& pntLd,m_PointLoads)
+   for (const auto& pntLd : m_PointLoads)
    {
       if ( pntLd.m_LoadCase == lcType )
       {
@@ -550,7 +550,7 @@ bool CLoadManager::HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase l
       }
    }
 
-   BOOST_FOREACH(const CDistributedLoadData& distLd,m_DistributedLoads)
+   for (const auto& distLd : m_DistributedLoads)
    {
       if ( distLd.m_LoadCase == lcType )
       {
@@ -558,7 +558,7 @@ bool CLoadManager::HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase l
       }
    }
 
-   BOOST_FOREACH(const CMomentLoadData& momLd,m_MomentLoads)
+   for (const auto& momLd : m_MomentLoads)
    {
       if ( momLd.m_LoadCase == lcType )
       {
@@ -619,7 +619,7 @@ CString CLoadManager::FixBadLoads()
    std::vector<CPointLoadData>::iterator newPointLoadEnd = std::remove_if(m_PointLoads.begin(),m_PointLoads.end(),IsBadLoad<CPointLoadData>);
    std::vector<CDistributedLoadData>::iterator newDistributedLoadEnd = std::remove_if(m_DistributedLoads.begin(),m_DistributedLoads.end(),IsBadLoad<CDistributedLoadData>);
    std::vector<CMomentLoadData>::iterator newMomentLoadEnd = std::remove_if(m_MomentLoads.begin(),m_MomentLoads.end(),IsBadLoad<CMomentLoadData>);
-   g_pTimelineMgr = NULL;
+   g_pTimelineMgr = nullptr;
 
    std::vector<CString> vDeletedLoads;
    if ( newPointLoadEnd != m_PointLoads.end() )
@@ -724,7 +724,7 @@ CString CLoadManager::FixBadLoads()
    if ( 0 < vDeletedLoads.size() )
    {
       strBadLoads = (_T("The following loads could no longer be modeled and have been deleted:"));
-      BOOST_FOREACH(CString& str,vDeletedLoads)
+      for (const auto& str : vDeletedLoads)
       {
          strBadLoads += _T("\r\n") + str;
       }

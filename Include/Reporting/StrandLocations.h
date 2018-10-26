@@ -69,5 +69,5 @@ protected:
    void MakeCopy(const CStrandLocations& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CStrandLocations& rOther);
+   void MakeAssignment(const CStrandLocations& rOther);
 };

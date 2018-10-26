@@ -46,8 +46,8 @@ public:
 protected:
    bool m_bUseACIParameters;
 
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual BOOL OnInitDialog();
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	virtual BOOL OnInitDialog() override;
 
    afx_msg void OnHelp();
    afx_msg void OnUserParameters();

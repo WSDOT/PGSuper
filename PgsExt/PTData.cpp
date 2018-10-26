@@ -79,7 +79,7 @@ CDuctGeometry::OffsetType GetOffsetType(VARIANT& var)
 ////////////////////////////////////////////
 CDuctGeometry::CDuctGeometry()
 {
-   m_pGirder = NULL;
+   m_pGirder = nullptr;
 }
 
 CDuctGeometry::CDuctGeometry(const CDuctGeometry& rOther)
@@ -895,7 +895,7 @@ HRESULT COffsetDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 //////////////////////////////////////////////////////////////////////////////
 CDuctData::CDuctData()
 {
-   m_pPTData = NULL;
+   m_pPTData = nullptr;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -917,7 +917,7 @@ CDuctData::CDuctData()
 
 CDuctData::CDuctData(const CSplicedGirderData* pGirder)
 {
-   m_pPTData = NULL;
+   m_pPTData = nullptr;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -1064,7 +1064,7 @@ void CDuctData::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx)
 HRESULT CDuctData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    CComVariant var;
-   ATLASSERT(m_pPTData != NULL);
+   ATLASSERT(m_pPTData != nullptr);
 
    pStrLoad->BeginUnit(_T("Duct"));
 
@@ -1181,7 +1181,7 @@ HRESULT CDuctData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 //======================== LIFECYCLE  =======================================
 CPTData::CPTData()
 {
-   m_pGirder = NULL;
+   m_pGirder = nullptr;
 
    nTempStrands   = 0;
    PjTemp         = 0;
@@ -1196,7 +1196,7 @@ CPTData::CPTData()
 
 CPTData::CPTData(const CPTData& rOther)
 {
-   m_pGirder = NULL;
+   m_pGirder = nullptr;
    MakeCopy(rOther);
 }
 
@@ -1425,7 +1425,7 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    HRESULT hr = S_OK;
    CComVariant var;
 
-   ATLASSERT(m_pGirder != NULL);
+   ATLASSERT(m_pGirder != nullptr);
 
    hr = pStrLoad->BeginUnit(_T("PTData"));
    if ( FAILED(hr) )
@@ -1581,7 +1581,7 @@ void CPTData::MakeCopy(const CPTData& rOther)
    // set the timeline events for PT. capture the current events for
    // our current PT data.
    std::vector<EventIndexType> vEvents;
-   if ( rOther.GetGirder() == NULL )
+   if ( rOther.GetGirder() == nullptr )
    {
       // capture the timeline events for the current ducts
       CTimelineManager* pTimelineMgr = GetTimelineManager();
@@ -1646,7 +1646,7 @@ CTimelineManager* CPTData::GetTimelineManager()
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 void CPTData::RemoveFromTimeline()
@@ -1702,7 +1702,7 @@ void CPTData::UpdateTimeline(const CDuctData& otherDuct,DuctIndexType ductIdx,Ev
       const CSplicedGirderData* pOtherGirder = otherDuct.GetGirder();
 
       EventIndexType eventIdx;
-      if( pOtherGirder == NULL )
+      if( pOtherGirder == nullptr )
       {
          // the other set of ducts isn't associated with a girder so we'll assume it isn't in the timeline
          eventIdx = defaultEventIdx;

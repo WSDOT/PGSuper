@@ -95,7 +95,7 @@ void txnEditClosureJoint::Undo()
    std::set<txnEditClosureJointData>::iterator end(m_OldData.end());
    for ( ; iter != end; iter++ )
    {
-      txnEditClosureJointData& oldData = *iter;
+      const txnEditClosureJointData& oldData = *iter;
       SetClosureJointData(oldData.m_ClosureKey,oldData);
    }
 

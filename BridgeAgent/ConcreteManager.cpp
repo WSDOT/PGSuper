@@ -67,11 +67,11 @@ void CConcreteManager::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
 
 void CConcreteManager::Reset()
 {
-   m_pDeckConc = std::auto_ptr<matConcreteBase>(0);
+   m_pDeckConc = std::unique_ptr<matConcreteBase>(nullptr);
    m_pClosureConcrete.clear();
    m_pSegmentConcrete.clear();
-   m_pRailingConc[pgsTypes::tboLeft]  = std::auto_ptr<matConcreteBase>(0);
-   m_pRailingConc[pgsTypes::tboRight] = std::auto_ptr<matConcreteBase>(0);
+   m_pRailingConc[pgsTypes::tboLeft]  = std::unique_ptr<matConcreteBase>(nullptr);
+   m_pRailingConc[pgsTypes::tboRight] = std::unique_ptr<matConcreteBase>(nullptr);
 
    m_bIsValidated              = false;
    m_bIsSegmentValidated       = false;
@@ -94,7 +94,7 @@ void CConcreteManager::ValidateConcrete()
    //
    //////////////////////////////////////////////////////////////////////////////
    const CDeckDescription2* pDeck = m_pBridgeDesc->GetDeckDescription();
-   if ( pDeck->DeckType != pgsTypes::sdtNone )
+   if ( pDeck->GetDeckType() != pgsTypes::sdtNone )
    {
       Float64 modE;
       if ( pDeck->Concrete.bUserEc )
@@ -216,7 +216,7 @@ void CConcreteManager::ValidateConcrete()
             Float64 stepTime = segment_casting_time + 28;
 
             matConcreteBase* pSegmentConcrete = CreateConcreteModel(_T("Segment Concrete"),pSegment->Material.Concrete,segment_casting_time,segment_cure_time,segment_age_at_release,stepTime);
-            m_pSegmentConcrete.insert( std::make_pair(segmentKey,boost::shared_ptr<matConcreteBase>(pSegmentConcrete)) );
+            m_pSegmentConcrete.insert( std::make_pair(segmentKey,std::shared_ptr<matConcreteBase>(pSegmentConcrete)) );
 
             if ( segIdx < nSegments-1 )
             {
@@ -237,7 +237,7 @@ void CConcreteManager::ValidateConcrete()
                Float64 closure_step_time = closure_casting_time + closure_age_at_continuity;
 
                matConcreteBase* pClosureConcrete = CreateConcreteModel(_T("Closure Concrete"),pClosure->GetConcrete(),closure_casting_time,closure_cure_time,closure_age_at_continuity,closure_step_time);
-               m_pClosureConcrete.insert( std::make_pair(segmentKey,boost::shared_ptr<matConcreteBase>(pClosureConcrete)) );
+               m_pClosureConcrete.insert( std::make_pair(segmentKey,std::shared_ptr<matConcreteBase>(pClosureConcrete)) );
             }
          }
       }
@@ -275,7 +275,7 @@ void CConcreteManager::ValidateConcrete()
 
          matConcrete* pPierConcrete = new matConcrete(_T("Pier Concrete"),concrete.Fc,concrete.StrengthDensity,modE);
          pPierConcrete->SetType((matConcrete::Type)concrete.Type);
-         m_pPierConcrete.insert( std::make_pair(pierIdx,boost::shared_ptr<matConcrete>(pPierConcrete)) );
+         m_pPierConcrete.insert( std::make_pair(pierIdx,std::shared_ptr<matConcrete>(pPierConcrete)) );
       }
    }
 
@@ -331,7 +331,7 @@ void CConcreteManager::ValidateConcrete()
    }
 
    // Check Deck concrete
-   if ( pDeck->DeckType != pgsTypes::sdtNone )
+   if ( pDeck->GetDeckType() != pgsTypes::sdtNone )
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       GET_IFACE(ILimits,pLimits);
@@ -535,7 +535,7 @@ void CConcreteManager::ValidateDeckConcrete()
       return;
    }
 
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       GET_IFACE(ISectionProperties,pSectProp);
       Float64 S = pSectProp->GetDeckSurfaceArea();
@@ -550,7 +550,7 @@ void CConcreteManager::ValidateDeckConcrete()
    m_bIsDeckValidated = true;
 }
 
-void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey)
+void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey)
 {
    ATLASSERT(elementType == pgsConcreteStrengthStatusItem::GirderSegment || elementType == pgsConcreteStrengthStatusItem::ClosureJoint);
    GET_IFACE(ILimits,pLimits);
@@ -1054,7 +1054,7 @@ Float64 CConcreteManager::GetClosureJointShrinkageK2(const CSegmentKey& closureK
 pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType()
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return (pgsTypes::ConcreteType)m_pDeckConc->GetType();
    }
@@ -1067,7 +1067,7 @@ pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType()
 bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength()
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->HasAggSplittingStrength();
    }
@@ -1080,7 +1080,7 @@ bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength()
 Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength()
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetAggSplittingStrength();
    }
@@ -1093,7 +1093,7 @@ Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength()
 Float64 CConcreteManager::GetDeckStrengthDensity()
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetStrengthDensity();
    }
@@ -1106,7 +1106,7 @@ Float64 CConcreteManager::GetDeckStrengthDensity()
 Float64 CConcreteManager::GetDeckWeightDensity()
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetWeightDensity();
    }
@@ -1119,7 +1119,7 @@ Float64 CConcreteManager::GetDeckWeightDensity()
 Float64 CConcreteManager::GetDeckMaxAggrSize()
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetMaxAggregateSize();
    }
@@ -1221,11 +1221,11 @@ Float64 CConcreteManager::GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation
 
 Float64 CConcreteManager::GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
 {
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetRailingSystemFreeShrinkageStrainDetails(orientation,t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetRailingSystemFreeShrinkageStrainDetails(orientation,t);
    return pDetails->esh;
 }
 
-boost::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
@@ -1239,7 +1239,7 @@ Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarr
    return m_pRailingConc[orientation]->GetCreepCoefficient(t,tla);
 }
 
-boost::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla)
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla)
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
@@ -1263,12 +1263,12 @@ matConcreteBase* CConcreteManager::GetRailingSystemConcrete(pgsTypes::TrafficBar
 matConcrete* CConcreteManager::GetPierConcrete(PierIndexType pierIdx)
 {
    ValidateConcrete();
-   std::map<PierIndexType,boost::shared_ptr<matConcrete>>::iterator found(m_pPierConcrete.find(pierIdx));
+   std::map<PierIndexType,std::shared_ptr<matConcrete>>::iterator found(m_pPierConcrete.find(pierIdx));
    if ( found == m_pPierConcrete.end() )
    {
       // pier concrete models only exist for "physical" piers
       ATLASSERT(false);
-      return NULL;
+      return nullptr;
    }
 
    return found->second.get();
@@ -1314,7 +1314,7 @@ Float64 CConcreteManager::GetClosureJointLambda(const CClosureKey& closureKey)
 
 Float64 CConcreteManager::GetDeckLambda()
 {
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pDeckConc.get());
       const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pDeckConc.get());
@@ -1416,7 +1416,7 @@ Float64 CConcreteManager::GetShearFrCoefficient(const CSegmentKey& segmentKey)
 Float64 CConcreteManager::GetDeckCastingTime()
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetTimeAtCasting();
    }
@@ -1429,7 +1429,7 @@ Float64 CConcreteManager::GetDeckCastingTime()
 Float64 CConcreteManager::GetDeckFc(Float64 t)
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetFc(t);
    }
@@ -1442,7 +1442,7 @@ Float64 CConcreteManager::GetDeckFc(Float64 t)
 Float64 CConcreteManager::GetDeckEc(Float64 t)
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetEc(t);
    }
@@ -1455,7 +1455,7 @@ Float64 CConcreteManager::GetDeckEc(Float64 t)
 Float64 CConcreteManager::GetDeckFlexureFr(Float64 t)
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetFlexureFr(t);
    }
@@ -1468,7 +1468,7 @@ Float64 CConcreteManager::GetDeckFlexureFr(Float64 t)
 Float64 CConcreteManager::GetDeckShearFr(Float64 t)
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetShearFr(t);
    }
@@ -1480,7 +1480,7 @@ Float64 CConcreteManager::GetDeckShearFr(Float64 t)
 
 Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
 {
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetDeckFreeShrinkageStrainDetails(t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetDeckFreeShrinkageStrainDetails(t);
    if ( pDetails )
    {
       return pDetails->esh;
@@ -1491,17 +1491,17 @@ Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
    }
 }
 
-boost::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeShrinkageStrainDetails(Float64 t)
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeShrinkageStrainDetails(Float64 t)
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetFreeShrinkageStrainDetails(t);
    }
    else
    {
-      return boost::shared_ptr<matConcreteBaseShrinkageDetails>();
+      return nullptr;
    }
 }
 
@@ -1509,7 +1509,7 @@ Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetCreepCoefficient(t,tla);
    }
@@ -1519,17 +1519,17 @@ Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
    }
 }
 
-boost::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoefficientDetails(Float64 t,Float64 tla)
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoefficientDetails(Float64 t,Float64 tla)
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return m_pDeckConc->GetCreepCoefficientDetails(t,tla);
    }
    else
    {
-      return boost::shared_ptr<matConcreteBaseCreepDetails>();
+      return nullptr;
    }
 }
 
@@ -1537,7 +1537,7 @@ Float64 CConcreteManager::GetDeckAgingCoefficient(Float64 timeOfLoading)
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   if ( m_pDeckConc.get() != nullptr )
    {
       return GetConcreteAgingCoefficient(m_pDeckConc.get(),timeOfLoading);
    }
@@ -1586,11 +1586,11 @@ Float64 CConcreteManager::GetSegmentShearFr(const CSegmentKey& segmentKey,Float6
 
 Float64 CConcreteManager::GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t)
 {
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetSegmentFreeShrinkageStrainDetails(segmentKey,t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetSegmentFreeShrinkageStrainDetails(segmentKey,t);
    return pDetails->esh;
 }
 
-boost::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t)
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t)
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
@@ -1604,7 +1604,7 @@ Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentK
    return m_pSegmentConcrete[segmentKey]->GetCreepCoefficient(t,tla);
 }
 
-boost::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla)
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla)
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
@@ -1657,11 +1657,11 @@ Float64 CConcreteManager::GetClosureJointEc(const CClosureKey& closureKey,Float6
 
 Float64 CConcreteManager::GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t)
 {
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetClosureJointFreeShrinkageStrainDetails(closureKey,t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetClosureJointFreeShrinkageStrainDetails(closureKey,t);
    return pDetails->esh;
 }
 
-boost::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t)
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
@@ -1675,7 +1675,7 @@ Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& clo
    return m_pClosureConcrete[closureKey]->GetCreepCoefficient(t,tla);
 }
 
-boost::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla)
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla)
 {
    ValidateConcrete();
    ValidateSegmentConcrete();

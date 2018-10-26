@@ -48,7 +48,7 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CEquilibriumCheckChapterBuilder(const CEquilibriumCheckChapterBuilder&);
-   CEquilibriumCheckChapterBuilder& operator=(const CEquilibriumCheckChapterBuilder&);
+   CEquilibriumCheckChapterBuilder(const CEquilibriumCheckChapterBuilder&) = delete;
+   CEquilibriumCheckChapterBuilder& operator=(const CEquilibriumCheckChapterBuilder&) = delete;
 };
 

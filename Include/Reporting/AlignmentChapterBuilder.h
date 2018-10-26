@@ -78,8 +78,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CAlignmentChapterBuilder(const CAlignmentChapterBuilder&);
-   CAlignmentChapterBuilder& operator=(const CAlignmentChapterBuilder&);
+   CAlignmentChapterBuilder(const CAlignmentChapterBuilder&) = delete;
+   CAlignmentChapterBuilder& operator=(const CAlignmentChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

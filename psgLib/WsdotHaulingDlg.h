@@ -31,7 +31,7 @@ class CWsdotHaulingDlg : public CDialog
 	DECLARE_DYNAMIC(CWsdotHaulingDlg)
 
 public:
-	CWsdotHaulingDlg(CWnd* pParent = NULL);   // standard constructor
+	CWsdotHaulingDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CWsdotHaulingDlg();
 
 // Dialog Data

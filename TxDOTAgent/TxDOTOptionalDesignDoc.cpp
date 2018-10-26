@@ -395,8 +395,8 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
          // set up the toolbar here
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
          m_pMyToolBar = pFrame->GetToolBar(tbID);
-         m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
-         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
+         m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,nullptr);
+         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   nullptr,BTNS_DROPDOWN);
       }
 
       // use our status bar
@@ -408,10 +408,10 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
    {
       // remove toolbar here
       pFrame->DestroyToolBar(m_pMyToolBar);
-      m_pMyToolBar = NULL;
+      m_pMyToolBar = nullptr;
 
       // put the status bar back the way it was
-      pFrame->SetStatusBar(NULL);
+      pFrame->SetStatusBar(nullptr);
    }
 
    // then call base class, which handles UI integration for
@@ -590,7 +590,7 @@ HRESULT CTxDOTOptionalDesignDoc::WriteTheDocument(IStructuredSave* pStrSave)
    if (!m_InExportMode)
    {
       // save our own data
-      HRESULT res = m_ProjectData.Save(pStrSave,NULL);
+      HRESULT res = m_ProjectData.Save(pStrSave,nullptr);
       return res;
    }
    else
@@ -602,7 +602,7 @@ HRESULT CTxDOTOptionalDesignDoc::WriteTheDocument(IStructuredSave* pStrSave)
 
 HRESULT CTxDOTOptionalDesignDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
 {
-   HRESULT res = m_ProjectData.Load(pStrLoad,NULL);
+   HRESULT res = m_ProjectData.Load(pStrLoad,nullptr);
    return res;
 
    //return CEAFBrokerDocument::LoadTheDocument(pStrLoad);
@@ -644,7 +644,7 @@ void CTxDOTOptionalDesignDoc::OnFileExportPgsuperModel()
       return;
 
    // Need an updated broker with all input data set in it
-   IBroker* pBroker(NULL);
+   IBroker* pBroker(nullptr);
    try
    {
       pBroker = GetUpdatedBroker();
@@ -696,12 +696,12 @@ void CTxDOTOptionalDesignDoc::OnFileExportPgsuperModel()
 BOOL CTxDOTOptionalDesignDoc::UpdateCurrentViewInputData()
 {
    POSITION pos = GetFirstViewPosition();
-   if (pos != NULL)
+   if (pos != nullptr)
    {
       CView* pView = GetNextView(pos);
       CTxDOTOptionalDesignView* pTView = dynamic_cast<CTxDOTOptionalDesignView*>(pView);
       ASSERT(pTView);
-      if (pTView!=NULL)
+      if (pTView!=nullptr)
       {
          return pTView->UpdateCurrentPageData();
       }
@@ -976,7 +976,7 @@ void CTxDOTOptionalDesignDoc::MarryPGSuperTemplateWithBroker(LPCTSTR lpszPathNam
       // NOTE: this scoping block is here for a reason. The IStructuredLoad must be
       //       destroyed before the file can be deleted.
       CComPtr<IStructuredLoad> pStrLoad;
-      hr = ::CoCreateInstance( CLSID_StructuredLoad, NULL, CLSCTX_INPROC_SERVER, IID_IStructuredLoad, (void**)&pStrLoad );
+      hr = ::CoCreateInstance( CLSID_StructuredLoad, nullptr, CLSCTX_INPROC_SERVER, IID_IStructuredLoad, (void**)&pStrLoad );
       if ( FAILED(hr) )
       {
          // We are not aggregating so we should CoCreateInstance should
@@ -1054,7 +1054,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    CString gdr_name = m_ProjectData.GetGirderEntryName();
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(gdr_name);
 
-   if (pGdrEntry==NULL)
+   if (pGdrEntry==nullptr)
    {
       TxDOTBrokerRetrieverException exc;
       CString stmp;
@@ -1157,7 +1157,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
          is_spread = false;
          bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniformAdjacent);
          bridgeDesc.SetGirderSpacing(spacing-minSpc); // input value is joint width
-         pDeck->DeckType = sdt;
+         pDeck->SetDeckType(sdt);
       }
    }
 
@@ -1176,14 +1176,14 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 
       bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniform);
       bridgeDesc.SetGirderSpacing(spacing);
-      pDeck->DeckType = pgsTypes::sdtCompositeCIP;
+      pDeck->SetDeckType(pgsTypes::sdtCompositeCIP);
    }
 
    // connections
    // Left
    CString conL_name = m_ProjectData.GetLeftConnectionEntryName();
    const ConnectionLibraryEntry* pConLEntry = pLib->GetConnectionEntry(conL_name);
-   if (pConLEntry==NULL)
+   if (pConLEntry==nullptr)
    {
       TxDOTBrokerRetrieverException exc;
       CString stmp;
@@ -1204,7 +1204,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    // Right
    CString conR_name = m_ProjectData.GetRightConnectionEntryName();
    const ConnectionLibraryEntry* pConREntry = pLib->GetConnectionEntry(conR_name);
-   if (pConREntry==NULL)
+   if (pConREntry==nullptr)
    {
       TxDOTBrokerRetrieverException exc;
       CString stmp;
@@ -1431,7 +1431,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
       strands.SetStrandMaterial(strandType, pPool->GetStrand(grade,type,coating,size));
-      ASSERT(strands.GetStrandMaterial(strandType) != NULL);
+      ASSERT(strands.GetStrandMaterial(strandType) != nullptr);
    }
 
    // Set seed data

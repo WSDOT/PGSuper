@@ -132,10 +132,10 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_FC, m_LeftRailingSystem.Concrete.Fc, pDisplayUnits->GetStressUnit() );
-      DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_EC, m_LeftRailingSystem.Concrete.Ec, pDisplayUnits->GetModEUnit() );
-      DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_FC, m_RightRailingSystem.Concrete.Fc, pDisplayUnits->GetStressUnit() );
-      DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_EC, m_RightRailingSystem.Concrete.Ec, pDisplayUnits->GetModEUnit() );
+      DDV_UnitValueZeroOrMore( pDX, IDC_LEFT_FC, m_LeftRailingSystem.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+      DDV_UnitValueZeroOrMore( pDX, IDC_LEFT_EC, m_LeftRailingSystem.Concrete.Ec, pDisplayUnits->GetModEUnit() );
+      DDV_UnitValueZeroOrMore( pDX, IDC_RIGHT_FC, m_RightRailingSystem.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+      DDV_UnitValueZeroOrMore( pDX, IDC_RIGHT_EC, m_RightRailingSystem.Concrete.Ec, pDisplayUnits->GetModEUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate && m_LeftRailingSystem.Concrete.bUserEc )
@@ -830,13 +830,13 @@ BOOL CBridgeDescRailingSystemPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESUL
       case IDC_LEFT_MORE:
          UpdateLeftConcreteParametersToolTip();
          pTTT->lpszText = m_strToolTip[pgsTypes::tboLeft].GetBuffer();
-         pTTT->hinst = NULL;
+         pTTT->hinst = nullptr;
          break;
 
       case IDC_RIGHT_MORE:
          UpdateRightConcreteParametersToolTip();
          pTTT->lpszText = m_strToolTip[pgsTypes::tboRight].GetBuffer();
-         pTTT->hinst = NULL;
+         pTTT->hinst = nullptr;
          break;
 
       default:

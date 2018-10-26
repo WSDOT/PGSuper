@@ -205,6 +205,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       std::vector<Float64> fTopMinLegalRoutineLL, fBotMinLegalRoutineLL;
       std::vector<Float64> fTopMaxLegalSpecialLL, fBotMaxLegalSpecialLL;
       std::vector<Float64> fTopMinLegalSpecialLL, fBotMinLegalSpecialLL;
+      std::vector<Float64> fTopMaxLegalEmergencyLL, fBotMaxLegalEmergencyLL;
+      std::vector<Float64> fTopMinLegalEmergencyLL, fBotMinLegalEmergencyLL;
       std::vector<Float64> fTopMaxPermitRoutineLL, fBotMaxPermitRoutineLL;
       std::vector<Float64> fTopMinPermitRoutineLL, fBotMinPermitRoutineLL;
       std::vector<Float64> fTopMaxPermitSpecialLL, fBotMaxPermitSpecialLL;
@@ -299,10 +301,16 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
             pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalRoutineLL, &dummy1, &fBotMinLegalRoutineLL, &dummy2);
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
             pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxLegalSpecialLL, &dummy2, &fBotMaxLegalSpecialLL);
             pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalSpecialLL, &dummy1, &fBotMinLegalSpecialLL, &dummy2);
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxLegalEmergencyLL, &dummy2, &fBotMaxLegalEmergencyLL);
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalEmergencyLL, &dummy1, &fBotMinLegalEmergencyLL, &dummy2);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -566,14 +574,25 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
                col++;
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
-               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalSpecialLL[index]);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalSpecialLL[index]);
                col++;
 
-               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
-               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalSpecialLL[index]);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalSpecialLL[index]);
+               col++;
+            }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalEmergencyLL[index]) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalEmergencyLL[index]);
+               col++;
+
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalEmergencyLL[index]) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalEmergencyLL[index]);
                col++;
             }
 

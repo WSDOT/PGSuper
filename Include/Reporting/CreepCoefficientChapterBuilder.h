@@ -80,8 +80,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CCreepCoefficientChapterBuilder(const CCreepCoefficientChapterBuilder&);
-   CCreepCoefficientChapterBuilder& operator=(const CCreepCoefficientChapterBuilder&);
+   CCreepCoefficientChapterBuilder(const CCreepCoefficientChapterBuilder&) = delete;
+   CCreepCoefficientChapterBuilder& operator=(const CCreepCoefficientChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -304,7 +304,7 @@ public:
 
 protected:
    void MakeCopy(const pgsSegmentDesignArtifact& rOther);
-   virtual void MakeAssignment(const pgsSegmentDesignArtifact& rOther);
+   void MakeAssignment(const pgsSegmentDesignArtifact& rOther);
 
 private:
    Outcome m_Outcome;

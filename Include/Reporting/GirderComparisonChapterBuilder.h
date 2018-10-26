@@ -77,8 +77,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CGirderComparisonChapterBuilder(const CGirderComparisonChapterBuilder&);
-   CGirderComparisonChapterBuilder& operator=(const CGirderComparisonChapterBuilder&);
+   CGirderComparisonChapterBuilder(const CGirderComparisonChapterBuilder&) = delete;
+   CGirderComparisonChapterBuilder& operator=(const CGirderComparisonChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

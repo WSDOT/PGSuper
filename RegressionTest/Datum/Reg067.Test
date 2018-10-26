@@ -6,6 +6,9 @@
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
 Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Tensile stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
 Tension stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -25,6 +28,9 @@ Hauling checks failed
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
 Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Tensile stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
 Tension stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)

@@ -44,13 +44,13 @@ CTimeStepDetailsReportSpecificationBuilder::~CTimeStepDetailsReportSpecification
 {
 }
 
-boost::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for span, girder, and chapter list
    // initialize dialog for the current cut location
-   boost::shared_ptr<CTimeStepDetailsReportSpecification> pInitRptSpec( boost::dynamic_pointer_cast<CTimeStepDetailsReportSpecification>(pOldRptSpec) );
+   std::shared_ptr<CTimeStepDetailsReportSpecification> pInitRptSpec( std::dynamic_pointer_cast<CTimeStepDetailsReportSpecification>(pOldRptSpec) );
 
    pgsPointOfInterest initial_poi;
    if ( pInitRptSpec )
@@ -82,18 +82,18 @@ boost::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuild
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      std::shared_ptr<CReportSpecification> pNewRptSpec;
       if(pInitRptSpec)
       {
-         boost::shared_ptr<CTimeStepDetailsReportSpecification> pNewGRptSpec = boost::shared_ptr<CTimeStepDetailsReportSpecification>( new CTimeStepDetailsReportSpecification(*pInitRptSpec) );
+         std::shared_ptr<CTimeStepDetailsReportSpecification> pNewGRptSpec(std::make_shared<CTimeStepDetailsReportSpecification>(*pInitRptSpec) );
 
          pNewGRptSpec->SetOptions(dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval());
 
-         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
       }
       else
       {
-         pNewRptSpec = boost::shared_ptr<CTimeStepDetailsReportSpecification>( new CTimeStepDetailsReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval()) );
+         pNewRptSpec = std::make_shared<CTimeStepDetailsReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval());
       }
 
       rptDesc.ConfigureReportSpecification(pNewRptSpec);
@@ -101,12 +101,11 @@ boost::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuild
       return pNewRptSpec;
    }
 
-   return boost::shared_ptr<CReportSpecification>();
+   return nullptr;
 }
 
-boost::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
 {
    // always prompt
-   boost::shared_ptr<CReportSpecification> nullSpec;
-   return CreateReportSpec(rptDesc,nullSpec);
+   return CreateReportSpec(rptDesc,std::shared_ptr<CReportSpecification>());
 }

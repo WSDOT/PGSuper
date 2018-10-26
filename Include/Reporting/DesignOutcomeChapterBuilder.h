@@ -77,8 +77,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CDesignOutcomeChapterBuilder(const CDesignOutcomeChapterBuilder&);
-   CDesignOutcomeChapterBuilder& operator=(const CDesignOutcomeChapterBuilder&);
+   CDesignOutcomeChapterBuilder(const CDesignOutcomeChapterBuilder&) = delete;
+   CDesignOutcomeChapterBuilder& operator=(const CDesignOutcomeChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

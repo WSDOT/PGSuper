@@ -45,7 +45,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAASHTOConcretePage)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 	CEdit	m_ctrlK1;
 	CEdit	m_ctrlK2;
@@ -66,8 +66,8 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CAASHTOConcretePage)
-	virtual BOOL OnInitDialog();
-   virtual BOOL OnSetActive();
+	virtual BOOL OnInitDialog() override;
+   virtual BOOL OnSetActive() override;
 	afx_msg void OnHelp();
    afx_msg void OnAggSplittingStrengthClicked();
 	//}}AFX_MSG

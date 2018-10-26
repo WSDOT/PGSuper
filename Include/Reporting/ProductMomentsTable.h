@@ -86,7 +86,7 @@ protected:
    void MakeCopy(const CProductMomentsTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CProductMomentsTable& rOther);
+   void MakeAssignment(const CProductMomentsTable& rOther);
 
 };
 
@@ -320,12 +320,20 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
          (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
       }
 
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("* Legal Special");
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"),   M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
+         p_table->SetColumnSpan(0, row1col, 2);
+         (*p_table)(0, row1col++) << _T("* Legal Special");
+         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         p_table->SetColumnSpan(0, row1col, 2);
+         (*p_table)(0, row1col++) << _T("* Legal Emergency");
+         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )

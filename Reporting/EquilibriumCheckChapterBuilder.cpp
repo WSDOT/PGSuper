@@ -286,7 +286,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       *pPara << _T("Temporary Strand dP = ") << force.SetValue(dP) << rptNewLine;
 
       DuctIndexType ductIdx = 0;
-      BOOST_FOREACH(const TIME_STEP_STRAND& tendon,tsDetails.Tendons)
+      for(const auto& tendon : tsDetails.Tendons)
       {
          dP = tendon.dPi[pfType];
          sum_dP += dP;
@@ -368,7 +368,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       *pPara << _T("Temporary Strand dM = ") << moment.SetValue(dM) << rptNewLine;
 
       DuctIndexType ductIdx = 0;
-      BOOST_FOREACH(const TIME_STEP_STRAND& tendon,tsDetails.Tendons)
+      for (const auto& tendon : tsDetails.Tendons)
       {
          dP = tendon.dPi[pfType];
          dM = dP*(tsDetails.Ytr - tendon.Ys);

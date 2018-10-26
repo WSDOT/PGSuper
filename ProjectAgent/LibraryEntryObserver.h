@@ -87,14 +87,14 @@ public:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   virtual void Update(ConcreteLibraryEntry* pSubject, Int32 hint);
-   virtual void Update(GirderLibraryEntry* pSubject, Int32 hint);
-   virtual void Update(SpecLibraryEntry* pSubject, Int32 hint);
-   virtual void Update(RatingLibraryEntry* pSubject, Int32 hint);
-   virtual void Update(TrafficBarrierEntry* pSubject, Int32 hint);
-   virtual void Update(LiveLoadLibraryEntry* pSubject,Int32 hint);
-   virtual void Update(DuctLibraryEntry* pSubject,Int32 hint);
-   virtual void Update(HaulTruckLibraryEntry* pSubject,Int32 hint);
+   virtual void Update(ConcreteLibraryEntry* pSubject, Int32 hint) override;
+   virtual void Update(GirderLibraryEntry* pSubject, Int32 hint) override;
+   virtual void Update(SpecLibraryEntry* pSubject, Int32 hint) override;
+   virtual void Update(RatingLibraryEntry* pSubject, Int32 hint) override;
+   virtual void Update(TrafficBarrierEntry* pSubject, Int32 hint) override;
+   virtual void Update(LiveLoadLibraryEntry* pSubject,Int32 hint) override;
+   virtual void Update(DuctLibraryEntry* pSubject,Int32 hint) override;
+   virtual void Update(HaulTruckLibraryEntry* pSubject,Int32 hint) override;
 
    // GROUP: ACCESS
    void SetAgent(CProjectAgentImp* pAgent);
@@ -117,8 +117,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   pgsLibraryEntryObserver(const pgsLibraryEntryObserver&);
-   pgsLibraryEntryObserver& operator=(const pgsLibraryEntryObserver&);
+   pgsLibraryEntryObserver(const pgsLibraryEntryObserver&) = delete;
+   pgsLibraryEntryObserver& operator=(const pgsLibraryEntryObserver&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -125,7 +125,7 @@ public:
 
 protected:
    void MakeCopy(const CTimelineEvent& rOther);
-   virtual void MakeAssignment(const CTimelineEvent& rOther);
+   void MakeAssignment(const CTimelineEvent& rOther);
 
    CTimelineManager* m_pTimelineMgr; // weak reference
    void SetTimelineManager(CTimelineManager* pTimelineMgr);

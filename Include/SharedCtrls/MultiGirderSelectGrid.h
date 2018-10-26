@@ -54,7 +54,7 @@ public:
 	//{{AFX_VIRTUAL(CMultiGirderSelectGrid)
 	//}}AFX_VIRTUAL
 
-	GRID_API virtual void OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, const CRect& rectDraw, const CGXStyle& style);
+	GRID_API virtual void OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, const CRect& rectDraw, const CGXStyle& style) override;
 
 // Implementation
 public:
@@ -70,9 +70,9 @@ protected:
    afx_msg UINT OnGetDlgCode();
 
    // virtual overrides for grid
-   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
-   virtual BOOL ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT nRepCnt, UINT flags);
-   virtual void OnChangedSelection(const CGXRange* pRange, BOOL, BOOL);
+   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt) override;
+   virtual BOOL ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT nRepCnt, UINT flags) override;
+   virtual void OnChangedSelection(const CGXRange* pRange, BOOL, BOOL) override;
 
 public:
    // custom stuff for grid

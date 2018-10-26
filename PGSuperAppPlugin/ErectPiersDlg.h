@@ -17,7 +17,7 @@ class CErectPiersDlg : public CDialog
 	DECLARE_DYNAMIC(CErectPiersDlg)
 
 public:
-	CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
+	CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CErectPiersDlg();
 
 // Dialog Data

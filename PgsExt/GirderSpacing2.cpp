@@ -647,21 +647,21 @@ CLASS
 ****************************************************************************/
 CGirderSpacing2::CGirderSpacing2()
 {
-   m_pPier = NULL;
-   m_pTempSupport = NULL;
+   m_pPier = nullptr;
+   m_pTempSupport = nullptr;
 }
 
 CGirderSpacing2::CGirderSpacing2(const CGirderSpacing2& rOther)
 {
-   m_pPier = NULL;
-   m_pTempSupport = NULL;
+   m_pPier = nullptr;
+   m_pTempSupport = nullptr;
    MakeCopy(rOther);
 }
 
 CGirderSpacing2::CGirderSpacing2(const CGirderSpacingData2& rOther)
 {
-   m_pPier = NULL;
-   m_pTempSupport = NULL;
+   m_pPier = nullptr;
+   m_pTempSupport = nullptr;
    CGirderSpacingData2::MakeCopy(rOther);
 }
 
@@ -683,7 +683,7 @@ CGirderSpacing2& CGirderSpacing2::operator= (const CGirderSpacing2& rOther)
 void CGirderSpacing2::SetPier(const CPierData2* pPier)
 {
    m_pPier = pPier;
-   m_pTempSupport = NULL;
+   m_pTempSupport = nullptr;
 }
 
 const CPierData2* CGirderSpacing2::GetPier() const
@@ -694,7 +694,7 @@ const CPierData2* CGirderSpacing2::GetPier() const
 void CGirderSpacing2::SetTemporarySupport(const CTemporarySupportData* pTS)
 {
    m_pTempSupport = pTS;
-   m_pPier = NULL;
+   m_pPier = nullptr;
 }
 
 const CTemporarySupportData* CGirderSpacing2::GetTemporarySupport() const
@@ -705,7 +705,7 @@ const CTemporarySupportData* CGirderSpacing2::GetTemporarySupport() const
 pgsTypes::MeasurementType CGirderSpacing2::GetMeasurementType() const
 {
    const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
-   if ( m_pTempSupport == NULL && pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
+   if ( m_pTempSupport == nullptr && pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
    {
       return pBridgeDesc->GetMeasurementType();
    }
@@ -718,7 +718,7 @@ pgsTypes::MeasurementType CGirderSpacing2::GetMeasurementType() const
 pgsTypes::MeasurementLocation CGirderSpacing2::GetMeasurementLocation() const
 {
    const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
-   if ( m_pTempSupport == NULL && pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
+   if ( m_pTempSupport == nullptr && pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
    {
       return pBridgeDesc->GetMeasurementLocation();
    }
@@ -883,7 +883,7 @@ SpacingIndexType CGirderSpacing2::GetSpacingCount() const
             pGroup = pBridgeDesc->GetGirderGroup(m_pTempSupport->GetSpan());
          }
 
-         if ( pGroup == NULL )
+         if ( pGroup == nullptr )
          {
             return CGirderSpacingData2::GetSpacingCount();
          }
@@ -943,7 +943,7 @@ const CBridgeDescription2* CGirderSpacing2::GetBridgeDescription() const
       return m_pTempSupport->GetSpan()->GetBridgeDescription();
    }
 
-   return NULL;
+   return nullptr;
 }
 
 Float64 CGirderSpacing2::GetSpacingWidth() const
@@ -1031,7 +1031,7 @@ const CGirderGroupData* CGirderSpacing2::GetGirderGroup() const
    else
    {
       // spacing data is not hooked up to a bridge model
-      return NULL;
+      return nullptr;
    }
 
    const CGirderGroupData* pGroup = GetBridgeDescription()->GetGirderGroup(pSpan);

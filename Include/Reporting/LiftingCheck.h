@@ -71,5 +71,5 @@ protected:
    void MakeCopy(const CLiftingCheck& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CLiftingCheck& rOther);
+   void MakeAssignment(const CLiftingCheck& rOther);
 };

@@ -40,7 +40,7 @@ class CSpanGirderReportDlg : public CDialog
 	DECLARE_DYNAMIC(CSpanGirderReportDlg)
 
 public:
-	CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = NULL);   // standard constructor
+	CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSpanGirderReportDlg();
 
 // Dialog Data
@@ -66,7 +66,7 @@ protected:
    IBroker* m_pBroker;
    RptDialogMode m_Mode;
 
-   boost::shared_ptr<CReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
+   std::shared_ptr<CReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
 public:
 	// Generated message map functions

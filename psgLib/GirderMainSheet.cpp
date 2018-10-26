@@ -73,7 +73,7 @@ void CGirderMainSheet::SetBeamFactory(IBeamFactory* pFactory)
 bool CGirderMainSheet::IsSplicedGirder()
 {
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_Entry.m_pBeamFactory);
-   return (splicedBeamFactory == NULL ? false : true);
+   return (splicedBeamFactory == nullptr ? false : true);
 }
 
 void CGirderMainSheet::UpdatePropertyPages()
@@ -185,7 +185,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
          Float64 value = _tstof(strValue);
 
          const unitLength* pUnit = *unit_iter;
-         if ( pUnit != NULL )
+         if ( pUnit != nullptr )
             value = ::ConvertToSysUnits(value,*pUnit);
 
          m_Entry.SetDimension(*name_iter,value,true);
@@ -219,7 +219,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
          Float64 value = m_Entry.GetDimension(name);
 
          const unitLength* pUnit = *unit_iter;
-         if ( pUnit != NULL )
+         if ( pUnit != nullptr )
          {
             value = ::ConvertFromSysUnits(value,*pUnit);
 

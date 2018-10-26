@@ -76,7 +76,7 @@ eafTypes::StatusSeverityType pgsAlignmentDescriptionStatusCallback::GetSeverity(
 void pgsAlignmentDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsAlignmentDescriptionStatusItem* pItem = dynamic_cast<pgsAlignmentDescriptionStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    if ( AfxMessageBox( pStatusItem->GetDescription(), MB_OK ) == IDOK )
    {
@@ -119,7 +119,7 @@ eafTypes::StatusSeverityType pgsConcreteStrengthStatusCallback::GetSeverity()
 void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsConcreteStrengthStatusItem* pItem = dynamic_cast<pgsConcreteStrengthStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    GET_IFACE(IEditByUI,pEdit);
 
@@ -178,7 +178,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    pgsPointLoadStatusItem* pItem = dynamic_cast<pgsPointLoadStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CDealWithLoadDlg dlg;
    dlg.m_Message = pItem->GetDescription();
@@ -247,7 +247,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    pgsDistributedLoadStatusItem* pItem = dynamic_cast<pgsDistributedLoadStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CDealWithLoadDlg dlg;
    dlg.m_Message = pItem->GetDescription();
@@ -316,7 +316,7 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    pgsMomentLoadStatusItem* pItem = dynamic_cast<pgsMomentLoadStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CDealWithLoadDlg dlg;
    dlg.m_Message = pItem->GetDescription();

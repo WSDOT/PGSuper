@@ -31,7 +31,7 @@
 
 IMPLEMENT_DYNAMIC(CEccentricityDlg, CDialog)
 
-CEccentricityDlg::CEccentricityDlg(CWnd* pParent /*=NULL*/)
+CEccentricityDlg::CEccentricityDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CEccentricityDlg::IDD, pParent)
    , m_Message(_T(""))
 {

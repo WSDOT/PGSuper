@@ -152,432 +152,433 @@ BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
    CONNECTION_POINT_ENTRY( IID_IEventsSink )
 END_CONNECTION_POINT_MAP()
 
-   StatusCallbackIDType m_scidGirderDescriptionWarning;
+   StatusCallbackIDType m_scidBridgeDescriptionInfo;
    StatusCallbackIDType m_scidBridgeDescriptionWarning;
+   StatusCallbackIDType m_scidGirderDescriptionWarning;
    StatusCallbackIDType m_scidRebarStrengthWarning;
    StatusCallbackIDType m_scidLoadDescriptionWarning;
 
 // IAgent
 public:
-	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker);
-   STDMETHOD(RegInterfaces)();
-	STDMETHOD(Init)();
-	STDMETHOD(Reset)();
-	STDMETHOD(ShutDown)();
-   STDMETHOD(Init2)();
-   STDMETHOD(GetClassID)(CLSID* pCLSID);
+	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
+   STDMETHOD(RegInterfaces)() override;
+	STDMETHOD(Init)() override;
+	STDMETHOD(Reset)() override;
+	STDMETHOD(ShutDown)() override;
+   STDMETHOD(Init2)() override;
+   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
 
 // IAgentPersist
 public:
-	STDMETHOD(Load)(/*[in]*/ IStructuredLoad* pStrLoad);
-	STDMETHOD(Save)(/*[in]*/ IStructuredSave* pStrSave);
+	STDMETHOD(Load)(/*[in]*/ IStructuredLoad* pStrLoad) override;
+	STDMETHOD(Save)(/*[in]*/ IStructuredSave* pStrSave) override;
 
 // IProjectProperties
 public:
-   virtual LPCTSTR GetBridgeName() const;
-   virtual void SetBridgeName(LPCTSTR name);
-   virtual LPCTSTR GetBridgeID() const;
-   virtual void SetBridgeID(LPCTSTR bid);
-   virtual LPCTSTR GetJobNumber() const;
-   virtual void SetJobNumber(LPCTSTR jid);
-   virtual LPCTSTR GetEngineer() const;
-   virtual void SetEngineer(LPCTSTR eng);
-   virtual LPCTSTR GetCompany() const;
-   virtual void SetCompany(LPCTSTR company);
-   virtual LPCTSTR GetComments() const;
-   virtual void SetComments(LPCTSTR comments);
+   virtual LPCTSTR GetBridgeName() const override;
+   virtual void SetBridgeName(LPCTSTR name) override;
+   virtual LPCTSTR GetBridgeID() const override;
+   virtual void SetBridgeID(LPCTSTR bid) override;
+   virtual LPCTSTR GetJobNumber() const override;
+   virtual void SetJobNumber(LPCTSTR jid) override;
+   virtual LPCTSTR GetEngineer() const override;
+   virtual void SetEngineer(LPCTSTR eng) override;
+   virtual LPCTSTR GetCompany() const override;
+   virtual void SetCompany(LPCTSTR company) override;
+   virtual LPCTSTR GetComments() const override;
+   virtual void SetComments(LPCTSTR comments) override;
 
 // IEnvironment
 public:
-   virtual enumExposureCondition GetExposureCondition() const;
-	virtual void SetExposureCondition(enumExposureCondition newVal);
-	virtual Float64 GetRelHumidity() const;
-	virtual void SetRelHumidity(Float64 newVal);
+   virtual enumExposureCondition GetExposureCondition() const override;
+	virtual void SetExposureCondition(enumExposureCondition newVal) override;
+	virtual Float64 GetRelHumidity() const override;
+	virtual void SetRelHumidity(Float64 newVal) override;
 
 // IRoadwayData
 public:
-   virtual void SetAlignmentData2(const AlignmentData2& data);
-   virtual AlignmentData2 GetAlignmentData2() const;
-   virtual void SetProfileData2(const ProfileData2& data);
-   virtual ProfileData2 GetProfileData2() const;
-   virtual void SetRoadwaySectionData(const RoadwaySectionData& data);
-   virtual RoadwaySectionData GetRoadwaySectionData() const;
+   virtual void SetAlignmentData2(const AlignmentData2& data) override;
+   virtual AlignmentData2 GetAlignmentData2() const override;
+   virtual void SetProfileData2(const ProfileData2& data) override;
+   virtual ProfileData2 GetProfileData2() const override;
+   virtual void SetRoadwaySectionData(const RoadwaySectionData& data) override;
+   virtual RoadwaySectionData GetRoadwaySectionData() const override;
 
 // IBridgeDescription
 public:
-   virtual const CBridgeDescription2* GetBridgeDescription();
-   virtual void SetBridgeDescription(const CBridgeDescription2& desc);
-   virtual const CDeckDescription2* GetDeckDescription();
-   virtual void SetDeckDescription(const CDeckDescription2& deck);
-   virtual SpanIndexType GetSpanCount();
-   virtual const CSpanData2* GetSpan(SpanIndexType spanIdx);
-   virtual void SetSpan(SpanIndexType spanIdx,const CSpanData2& spanData);
-   virtual PierIndexType GetPierCount();
-   virtual const CPierData2* GetPier(PierIndexType pierIdx);
-   virtual const CPierData2* FindPier(PierIDType pierID);
-   virtual void SetPierByIndex(PierIndexType pierIdx,const CPierData2& PierData);
-   virtual void SetPierByID(PierIDType pierID,const CPierData2& PierData);
-   virtual SupportIndexType GetTemporarySupportCount();
-   virtual const CTemporarySupportData* GetTemporarySupport(SupportIndexType tsIdx);
-   virtual const CTemporarySupportData* FindTemporarySupport(SupportIDType tsID);
-   virtual void SetTemporarySupportByIndex(SupportIndexType tsIdx,const CTemporarySupportData& tsData);
-   virtual void SetTemporarySupportByID(SupportIDType tsID,const CTemporarySupportData& tsData);
-   virtual GroupIndexType GetGirderGroupCount();
-   virtual const CGirderGroupData* GetGirderGroup(GroupIndexType grpIdx);
-   virtual const CSplicedGirderData* GetGirder(const CGirderKey& girderKey);
-   virtual const CSplicedGirderData* FindGirder(GirderIDType gdrID);
-   virtual void SetGirder(const CGirderKey& girderKey,const CSplicedGirderData& splicedGirder);
-   virtual const CPTData* GetPostTensioning(const CGirderKey& girderKey);
-   virtual void SetPostTensioning(const CGirderKey& girderKey,const CPTData& ptData);
-   virtual const CPrecastSegmentData* GetPrecastSegmentData(const CSegmentKey& segmentKey);
-   virtual void SetPrecastSegmentData(const CSegmentKey& segmentKey,const CPrecastSegmentData& segment);
-   virtual const CClosureJointData* GetClosureJointData(const CSegmentKey& closureKey);
-   virtual void SetClosureJointData(const CSegmentKey& closureKey,const CClosureJointData& closure);
-   virtual void SetSpanLength(SpanIndexType spanIdx,Float64 newLength);
-   virtual void MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);
-   virtual SupportIndexType MoveTemporarySupport(SupportIndexType tsIdx,Float64 newStation);
-   virtual void SetMeasurementType(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementType mt);
-   virtual void SetMeasurementLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation ml);
-   virtual void SetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType face,const CGirderSpacing2& spacing);
-   virtual void SetGirderSpacingAtStartOfGroup(GroupIndexType groupIdx,const CGirderSpacing2& spacing);
-   virtual void SetGirderSpacingAtEndOfGroup(GroupIndexType groupIdx,const CGirderSpacing2& spacing);
-   virtual void SetGirderName(const CGirderKey& girderKey, LPCTSTR strGirderName);
-   virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup);
-   virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders);
-   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::BoundaryConditionType connectionType);
-   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx);
-   virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan);
-   virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace, Float64 spanLength, const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx);
-   virtual void InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureJointEventIdx);
-   virtual void DeleteTemporarySupportByIndex(SupportIndexType tsIdx);
-   virtual void DeleteTemporarySupportByID(SupportIDType tsID);
-   virtual void SetLiveLoadDistributionFactorMethod(pgsTypes::DistributionFactorMethod method);
-   virtual pgsTypes::DistributionFactorMethod GetLiveLoadDistributionFactorMethod();
-   virtual void UseSameNumberOfGirdersInAllGroups(bool bUseSame);
-   virtual bool UseSameNumberOfGirdersInAllGroups();
-   virtual void SetGirderCount(GirderIndexType nGirders);
-   virtual void UseSameGirderForEntireBridge(bool bSame);
-   virtual bool UseSameGirderForEntireBridge();
-   virtual void SetGirderName(LPCTSTR strGirderName);
-   virtual void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs);
-   virtual pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
-   virtual void SetGirderSpacing(Float64 spacing);
-   virtual void SetMeasurementType(pgsTypes::MeasurementType mt);
-   virtual pgsTypes::MeasurementType GetMeasurementType();
-   virtual void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
-   virtual pgsTypes::MeasurementLocation GetMeasurementLocation();
-   virtual void SetWearingSurfaceType(pgsTypes::WearingSurfaceType wearingSurfaceType);
-   virtual void SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType);
-   virtual void SetSlabOffset(Float64 slabOffset);
-   virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, Float64 offset);
-   virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset);
-   virtual Float64 GetSlabOffset(GroupIndexType grpidx, PierIndexType pierIdx, GirderIndexType gdrIdx);
-   virtual pgsTypes::SlabOffsetType GetSlabOffsetType();
-   virtual void SetFilletType(pgsTypes::FilletType offsetType);
-   virtual pgsTypes::FilletType GetFilletType();
-   virtual void SetFillet( Float64 Fillet);
-   virtual void SetFillet(SpanIndexType spanIdx, Float64 offset);
-   virtual void SetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 offset);
-   virtual Float64 GetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx);
-   virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx);
-   virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx);
-   virtual const CTimelineManager* GetTimelineManager();
-   virtual void SetTimelineManager(const CTimelineManager& timelineMbr);
-   virtual EventIndexType AddTimelineEvent(const CTimelineEvent& timelineEvent);
-   virtual EventIndexType GetEventCount();
-   virtual const CTimelineEvent* GetEventByIndex(EventIndexType eventIdx);
-   virtual const CTimelineEvent* GetEventByID(EventIDType eventID);
-   virtual void SetEventByIndex(EventIndexType eventIdx,const CTimelineEvent& stage);
-   virtual void SetEventByID(EventIDType eventID,const CTimelineEvent& stage);
-   virtual void SetSegmentConstructionEventByIndex(const CSegmentKey& segmentKey,EventIndexType eventIdx);
-   virtual void SetSegmentConstructionEventByID(const CSegmentKey& segmentKey,EventIDType eventID);
-   virtual EventIndexType GetSegmentConstructionEventIndex(const CSegmentKey& segmentKey);
-   virtual EventIDType GetSegmentConstructionEventID(const CSegmentKey& segmentKey);
-   virtual EventIndexType GetPierErectionEvent(PierIndexType pierIdx);
-   virtual void SetPierErectionEventByIndex(PierIndexType pierIdx,EventIndexType eventIdx);
-   virtual void SetPierErectionEventByID(PierIndexType pierIdx,IDType eventID);
-   virtual void SetTempSupportEventsByIndex(SupportIndexType tsIdx,EventIndexType erectIdx,EventIndexType removeIdx);
-   virtual void SetTempSupportEventsByID(SupportIDType tsID,EventIndexType erectIdx,EventIndexType removeIdx);
-   virtual void SetSegmentErectionEventByIndex(const CSegmentKey& segmentKey,EventIndexType eventIdx);
-   virtual void SetSegmentErectionEventByID(const CSegmentKey& segmentKey,EventIDType eventID);
-   virtual EventIndexType GetSegmentErectionEventIndex(const CSegmentKey& segmentKey);
-   virtual EventIDType GetSegmentErectionEventID(const CSegmentKey& segmentKey);
-   virtual void SetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType constructionEventIdx,EventIndexType erectionEventIdx);
-   virtual void SetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType constructionEventID,EventIDType erectionEventID);
-   virtual void GetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType* constructionEventIdx,EventIndexType* erectionEventIdx);
-   virtual void GetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType* constructionEventID,EventIDType* erectionEventID);
-   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx);
-   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx);
-   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx);
-   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID);
-   virtual EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx);
-   virtual EventIDType GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx);
-   virtual void SetStressTendonEventByIndex(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIndexType eventIdx);
-   virtual void SetStressTendonEventByID(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIDType eventID);
-   virtual EventIndexType GetCastDeckEventIndex();
-   virtual EventIDType GetCastDeckEventID();
-   virtual int SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline);
-   virtual int SetCastDeckEventByID(EventIDType eventID,bool bAdjustTimeline);
-   virtual EventIndexType GetRailingSystemLoadEventIndex();
-   virtual EventIDType GetRailingSystemLoadEventID();
-   virtual void SetRailingSystemLoadEventByIndex(EventIndexType eventIdx);
-   virtual void SetRailingSystemLoadEventByID(EventIDType eventID);
-   virtual EventIndexType GetOverlayLoadEventIndex();
-   virtual EventIDType GetOverlayLoadEventID();
-   virtual void SetOverlayLoadEventByIndex(EventIndexType eventIdx);
-   virtual void SetOverlayLoadEventByID(EventIDType eventID);
-   virtual EventIndexType GetLiveLoadEventIndex();
-   virtual EventIDType GetLiveLoadEventID();
-   virtual void SetLiveLoadEventByIndex(EventIndexType eventIdx);
-   virtual void SetLiveLoadEventByID(EventIDType eventID);
-   virtual GroupIDType GetGroupID(GroupIndexType groupIdx);
-   virtual GirderIDType GetGirderID(const CGirderKey& girderKey);
-   virtual SegmentIDType GetSegmentID(const CSegmentKey& segmentKey);
+   virtual const CBridgeDescription2* GetBridgeDescription() override;
+   virtual void SetBridgeDescription(const CBridgeDescription2& desc) override;
+   virtual const CDeckDescription2* GetDeckDescription() override;
+   virtual void SetDeckDescription(const CDeckDescription2& deck) override;
+   virtual SpanIndexType GetSpanCount() override;
+   virtual const CSpanData2* GetSpan(SpanIndexType spanIdx) override;
+   virtual void SetSpan(SpanIndexType spanIdx,const CSpanData2& spanData) override;
+   virtual PierIndexType GetPierCount() override;
+   virtual const CPierData2* GetPier(PierIndexType pierIdx) override;
+   virtual const CPierData2* FindPier(PierIDType pierID) override;
+   virtual void SetPierByIndex(PierIndexType pierIdx,const CPierData2& PierData) override;
+   virtual void SetPierByID(PierIDType pierID,const CPierData2& PierData) override;
+   virtual SupportIndexType GetTemporarySupportCount() override;
+   virtual const CTemporarySupportData* GetTemporarySupport(SupportIndexType tsIdx) override;
+   virtual const CTemporarySupportData* FindTemporarySupport(SupportIDType tsID) override;
+   virtual void SetTemporarySupportByIndex(SupportIndexType tsIdx,const CTemporarySupportData& tsData) override;
+   virtual void SetTemporarySupportByID(SupportIDType tsID,const CTemporarySupportData& tsData) override;
+   virtual GroupIndexType GetGirderGroupCount() override;
+   virtual const CGirderGroupData* GetGirderGroup(GroupIndexType grpIdx) override;
+   virtual const CSplicedGirderData* GetGirder(const CGirderKey& girderKey) override;
+   virtual const CSplicedGirderData* FindGirder(GirderIDType gdrID) override;
+   virtual void SetGirder(const CGirderKey& girderKey,const CSplicedGirderData& splicedGirder) override;
+   virtual const CPTData* GetPostTensioning(const CGirderKey& girderKey) override;
+   virtual void SetPostTensioning(const CGirderKey& girderKey,const CPTData& ptData) override;
+   virtual const CPrecastSegmentData* GetPrecastSegmentData(const CSegmentKey& segmentKey) override;
+   virtual void SetPrecastSegmentData(const CSegmentKey& segmentKey,const CPrecastSegmentData& segment) override;
+   virtual const CClosureJointData* GetClosureJointData(const CSegmentKey& closureKey) override;
+   virtual void SetClosureJointData(const CSegmentKey& closureKey,const CClosureJointData& closure) override;
+   virtual void SetSpanLength(SpanIndexType spanIdx,Float64 newLength) override;
+   virtual void MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption) override;
+   virtual SupportIndexType MoveTemporarySupport(SupportIndexType tsIdx,Float64 newStation) override;
+   virtual void SetMeasurementType(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementType mt) override;
+   virtual void SetMeasurementLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation ml) override;
+   virtual void SetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType face,const CGirderSpacing2& spacing) override;
+   virtual void SetGirderSpacingAtStartOfGroup(GroupIndexType groupIdx,const CGirderSpacing2& spacing) override;
+   virtual void SetGirderSpacingAtEndOfGroup(GroupIndexType groupIdx,const CGirderSpacing2& spacing) override;
+   virtual void SetGirderName(const CGirderKey& girderKey, LPCTSTR strGirderName) override;
+   virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup) override;
+   virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders) override;
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::BoundaryConditionType connectionType) override;
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx) override;
+   virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan) override;
+   virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace, Float64 spanLength, const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx) override;
+   virtual void InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureJointEventIdx) override;
+   virtual void DeleteTemporarySupportByIndex(SupportIndexType tsIdx) override;
+   virtual void DeleteTemporarySupportByID(SupportIDType tsID) override;
+   virtual void SetLiveLoadDistributionFactorMethod(pgsTypes::DistributionFactorMethod method) override;
+   virtual pgsTypes::DistributionFactorMethod GetLiveLoadDistributionFactorMethod() override;
+   virtual void UseSameNumberOfGirdersInAllGroups(bool bUseSame) override;
+   virtual bool UseSameNumberOfGirdersInAllGroups() override;
+   virtual void SetGirderCount(GirderIndexType nGirders) override;
+   virtual void UseSameGirderForEntireBridge(bool bSame) override;
+   virtual bool UseSameGirderForEntireBridge() override;
+   virtual void SetGirderName(LPCTSTR strGirderName) override;
+   virtual void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs) override;
+   virtual pgsTypes::SupportedBeamSpacing GetGirderSpacingType() override;
+   virtual void SetGirderSpacing(Float64 spacing) override;
+   virtual void SetMeasurementType(pgsTypes::MeasurementType mt) override;
+   virtual pgsTypes::MeasurementType GetMeasurementType() override;
+   virtual void SetMeasurementLocation(pgsTypes::MeasurementLocation ml) override;
+   virtual pgsTypes::MeasurementLocation GetMeasurementLocation() override;
+   virtual void SetWearingSurfaceType(pgsTypes::WearingSurfaceType wearingSurfaceType) override;
+   virtual void SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType) override;
+   virtual void SetSlabOffset(Float64 slabOffset) override;
+   virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, Float64 offset) override;
+   virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset) override;
+   virtual Float64 GetSlabOffset(GroupIndexType grpidx, PierIndexType pierIdx, GirderIndexType gdrIdx) override;
+   virtual pgsTypes::SlabOffsetType GetSlabOffsetType() override;
+   virtual void SetFilletType(pgsTypes::FilletType offsetType) override;
+   virtual pgsTypes::FilletType GetFilletType() override;
+   virtual void SetFillet( Float64 Fillet) override;
+   virtual void SetFillet(SpanIndexType spanIdx, Float64 offset) override;
+   virtual void SetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 offset) override;
+   virtual Float64 GetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx) override;
+   virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) override;
+   virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx) override;
+   virtual const CTimelineManager* GetTimelineManager() override;
+   virtual void SetTimelineManager(const CTimelineManager& timelineMbr) override;
+   virtual EventIndexType AddTimelineEvent(const CTimelineEvent& timelineEvent) override;
+   virtual EventIndexType GetEventCount() override;
+   virtual const CTimelineEvent* GetEventByIndex(EventIndexType eventIdx) override;
+   virtual const CTimelineEvent* GetEventByID(EventIDType eventID) override;
+   virtual void SetEventByIndex(EventIndexType eventIdx,const CTimelineEvent& stage) override;
+   virtual void SetEventByID(EventIDType eventID,const CTimelineEvent& stage) override;
+   virtual void SetSegmentConstructionEventByIndex(const CSegmentKey& segmentKey,EventIndexType eventIdx) override;
+   virtual void SetSegmentConstructionEventByID(const CSegmentKey& segmentKey,EventIDType eventID) override;
+   virtual EventIndexType GetSegmentConstructionEventIndex(const CSegmentKey& segmentKey) override;
+   virtual EventIDType GetSegmentConstructionEventID(const CSegmentKey& segmentKey) override;
+   virtual EventIndexType GetPierErectionEvent(PierIndexType pierIdx) override;
+   virtual void SetPierErectionEventByIndex(PierIndexType pierIdx,EventIndexType eventIdx) override;
+   virtual void SetPierErectionEventByID(PierIndexType pierIdx,IDType eventID) override;
+   virtual void SetTempSupportEventsByIndex(SupportIndexType tsIdx,EventIndexType erectIdx,EventIndexType removeIdx) override;
+   virtual void SetTempSupportEventsByID(SupportIDType tsID,EventIndexType erectIdx,EventIndexType removeIdx) override;
+   virtual void SetSegmentErectionEventByIndex(const CSegmentKey& segmentKey,EventIndexType eventIdx) override;
+   virtual void SetSegmentErectionEventByID(const CSegmentKey& segmentKey,EventIDType eventID) override;
+   virtual EventIndexType GetSegmentErectionEventIndex(const CSegmentKey& segmentKey) override;
+   virtual EventIDType GetSegmentErectionEventID(const CSegmentKey& segmentKey) override;
+   virtual void SetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType constructionEventIdx,EventIndexType erectionEventIdx) override;
+   virtual void SetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType constructionEventID,EventIDType erectionEventID) override;
+   virtual void GetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType* constructionEventIdx,EventIndexType* erectionEventIdx) override;
+   virtual void GetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType* constructionEventID,EventIDType* erectionEventID) override;
+   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx) override;
+   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx) override;
+   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx) override;
+   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID) override;
+   virtual EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
+   virtual EventIDType GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
+   virtual void SetStressTendonEventByIndex(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIndexType eventIdx) override;
+   virtual void SetStressTendonEventByID(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIDType eventID) override;
+   virtual EventIndexType GetCastDeckEventIndex() override;
+   virtual EventIDType GetCastDeckEventID() override;
+   virtual int SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline) override;
+   virtual int SetCastDeckEventByID(EventIDType eventID,bool bAdjustTimeline) override;
+   virtual EventIndexType GetRailingSystemLoadEventIndex() override;
+   virtual EventIDType GetRailingSystemLoadEventID() override;
+   virtual void SetRailingSystemLoadEventByIndex(EventIndexType eventIdx) override;
+   virtual void SetRailingSystemLoadEventByID(EventIDType eventID) override;
+   virtual EventIndexType GetOverlayLoadEventIndex() override;
+   virtual EventIDType GetOverlayLoadEventID() override;
+   virtual void SetOverlayLoadEventByIndex(EventIndexType eventIdx) override;
+   virtual void SetOverlayLoadEventByID(EventIDType eventID) override;
+   virtual EventIndexType GetLiveLoadEventIndex() override;
+   virtual EventIDType GetLiveLoadEventID() override;
+   virtual void SetLiveLoadEventByIndex(EventIndexType eventIdx) override;
+   virtual void SetLiveLoadEventByID(EventIDType eventID) override;
+   virtual GroupIDType GetGroupID(GroupIndexType groupIdx) override;
+   virtual GirderIDType GetGirderID(const CGirderKey& girderKey) override;
+   virtual SegmentIDType GetSegmentID(const CSegmentKey& segmentKey) override;
 
 // ISegmentData 
 public:
-   virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const;
-   virtual void SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pmat);
+   virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const override;
+   virtual void SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pmat) override;
 
-   virtual const CGirderMaterial* GetSegmentMaterial(const CSegmentKey& segmentKey) const;
-   virtual void SetSegmentMaterial(const CSegmentKey& segmentKey,const CGirderMaterial& material);
+   virtual const CGirderMaterial* GetSegmentMaterial(const CSegmentKey& segmentKey) const override;
+   virtual void SetSegmentMaterial(const CSegmentKey& segmentKey,const CGirderMaterial& material) override;
 
-   virtual const CStrandData* GetStrandData(const CSegmentKey& segmentKey);
-   virtual void SetStrandData(const CSegmentKey& segmentKey,const CStrandData& strands);
+   virtual const CStrandData* GetStrandData(const CSegmentKey& segmentKey) override;
+   virtual void SetStrandData(const CSegmentKey& segmentKey,const CStrandData& strands) override;
 
-   virtual const CHandlingData* GetHandlingData(const CSegmentKey& segmentKey);
-   virtual void SetHandlingData(const CSegmentKey& segmentKey,const CHandlingData& handling);
+   virtual const CHandlingData* GetHandlingData(const CSegmentKey& segmentKey) override;
+   virtual void SetHandlingData(const CSegmentKey& segmentKey,const CHandlingData& handling) override;
 
 // IShear
 public:
-   virtual std::_tstring GetSegmentStirrupMaterial(const CSegmentKey& segmentKey) const;
-   virtual void GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade);
-   virtual void SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade);
-   virtual const CShearData2* GetSegmentShearData(const CSegmentKey& segmentKey) const;
-   virtual void SetSegmentShearData(const CSegmentKey& segmentKey,const CShearData2& data);
-   virtual std::_tstring GetClosureJointStirrupMaterial(const CClosureKey& closureKey) const;
-   virtual void GetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
-   virtual void SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade);
-   virtual const CShearData2* GetClosureJointShearData(const CClosureKey& closureKey) const;
-   virtual void SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& data);
+   virtual std::_tstring GetSegmentStirrupMaterial(const CSegmentKey& segmentKey) const override;
+   virtual void GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) override;
+   virtual void SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade) override;
+   virtual const CShearData2* GetSegmentShearData(const CSegmentKey& segmentKey) const override;
+   virtual void SetSegmentShearData(const CSegmentKey& segmentKey,const CShearData2& data) override;
+   virtual std::_tstring GetClosureJointStirrupMaterial(const CClosureKey& closureKey) const override;
+   virtual void GetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) override;
+   virtual void SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade) override;
+   virtual const CShearData2* GetClosureJointShearData(const CClosureKey& closureKey) const override;
+   virtual void SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& data) override;
 
 // ILongitudinalRebar
 public:
-   virtual std::_tstring GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey) const;
-   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade);
-   virtual void SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade);
-   virtual const CLongitudinalRebarData* GetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey) const;
-   virtual void SetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey,const CLongitudinalRebarData& data);
+   virtual std::_tstring GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey) const override;
+   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) override;
+   virtual void SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade) override;
+   virtual const CLongitudinalRebarData* GetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey) const override;
+   virtual void SetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey,const CLongitudinalRebarData& data) override;
 
-   virtual std::_tstring GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey) const;
-   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
-   virtual void SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade);
-   virtual const CLongitudinalRebarData* GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const;
-   virtual void SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data);
+   virtual std::_tstring GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey) const override;
+   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) override;
+   virtual void SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade) override;
+   virtual const CLongitudinalRebarData* GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const override;
+   virtual void SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data) override;
 
 // ISpecification
 public:
-   virtual std::_tstring GetSpecification();
-   virtual void SetSpecification(const std::_tstring& spec);
-   virtual void GetTrafficBarrierDistribution(GirderIndexType* pNGirders,pgsTypes::TrafficBarrierDistribution* pDistType);
-   virtual Uint16 GetMomentCapacityMethod();
-   virtual void SetAnalysisType(pgsTypes::AnalysisType analysisType);
-   virtual pgsTypes::AnalysisType GetAnalysisType();
-   virtual std::vector<arDesignOptions> GetDesignOptions(const CGirderKey& girderKey);
-   virtual bool IsSlabOffsetDesignEnabled();
-   virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType();
-   virtual pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType();
-   virtual Float64 GetCamberTolerance();
+   virtual std::_tstring GetSpecification() override;
+   virtual void SetSpecification(const std::_tstring& spec) override;
+   virtual void GetTrafficBarrierDistribution(GirderIndexType* pNGirders,pgsTypes::TrafficBarrierDistribution* pDistType) override;
+   virtual Uint16 GetMomentCapacityMethod() override;
+   virtual void SetAnalysisType(pgsTypes::AnalysisType analysisType) override;
+   virtual pgsTypes::AnalysisType GetAnalysisType() override;
+   virtual std::vector<arDesignOptions> GetDesignOptions(const CGirderKey& girderKey) override;
+   virtual bool IsSlabOffsetDesignEnabled() override;
+   virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() override;
+   virtual pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() override;
+   virtual Float64 GetCamberTolerance() override;
 
 // IRatingSpecification
 public:
-   virtual bool AlwaysLoadRate();
-   virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType);
-   virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable);
-   virtual std::_tstring GetRatingSpecification();
-   virtual void SetADTT(Int16 adtt);
-   virtual Int16 GetADTT();
-   virtual void SetRatingSpecification(const std::_tstring& spec);
-   virtual void IncludePedestrianLiveLoad(bool bInclude);
-   virtual bool IncludePedestrianLiveLoad();
-   virtual void SetGirderConditionFactor(const CSegmentKey& segmentKey,pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor);
-   virtual void GetGirderConditionFactor(const CSegmentKey& segmentKey,pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor);
-   virtual Float64 GetGirderConditionFactor(const CSegmentKey& segmentKey);
-   virtual void SetDeckConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor);
-   virtual void GetDeckConditionFactor(pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor);
-   virtual Float64 GetDeckConditionFactor();
-   virtual void SetSystemFactorFlexure(Float64 sysFactor);
-   virtual Float64 GetSystemFactorFlexure();
-   virtual void SetSystemFactorShear(Float64 sysFactor);
-   virtual Float64 GetSystemFactorShear();
-   virtual void SetDeadLoadFactor(pgsTypes::LimitState ls,Float64 gDC);
-   virtual Float64 GetDeadLoadFactor(pgsTypes::LimitState ls);
-   virtual void SetWearingSurfaceFactor(pgsTypes::LimitState ls,Float64 gDW);
-   virtual Float64 GetWearingSurfaceFactor(pgsTypes::LimitState ls);
-   virtual void SetCreepFactor(pgsTypes::LimitState ls,Float64 gCR);
-   virtual Float64 GetCreepFactor(pgsTypes::LimitState ls);
-   virtual void SetShrinkageFactor(pgsTypes::LimitState ls,Float64 gSH);
-   virtual Float64 GetShrinkageFactor(pgsTypes::LimitState ls);
-   virtual void SetRelaxationFactor(pgsTypes::LimitState ls,Float64 gRE);
-   virtual Float64 GetRelaxationFactor(pgsTypes::LimitState ls);
-   virtual void SetSecondaryEffectsFactor(pgsTypes::LimitState ls,Float64 gPS);
-   virtual Float64 GetSecondaryEffectsFactor(pgsTypes::LimitState ls);
-   virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL);
-   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false);
-   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false);
-   virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t);
-   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType);
-   virtual void RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress);
-   virtual bool RateForStress(pgsTypes::LoadRatingType ratingType);
-   virtual void RateForShear(pgsTypes::LoadRatingType ratingType,bool bRateForShear);
-   virtual bool RateForShear(pgsTypes::LoadRatingType ratingType);
-   virtual void ExcludeLegalLoadLaneLoading(bool bExclude);
-   virtual bool ExcludeLegalLoadLaneLoading();
-   virtual void CheckYieldStress(pgsTypes::LoadRatingType ratingType,bool bCheckYieldStress);
-   virtual bool CheckYieldStress(pgsTypes::LoadRatingType ratingType);
-   virtual void SetYieldStressLimitCoefficient(Float64 x);
-   virtual Float64 GetYieldStressLimitCoefficient();
-   virtual void SetSpecialPermitType(pgsTypes::SpecialPermitType type);
-   virtual pgsTypes::SpecialPermitType GetSpecialPermitType();
-   virtual Float64 GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig);
-   virtual Float64 GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType);
-   virtual Float64 GetReactionStrengthLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx);
-   virtual Float64 GetReactionServiceLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx);
+   virtual bool AlwaysLoadRate() override;
+   virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) override;
+   virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable) override;
+   virtual std::_tstring GetRatingSpecification() override;
+   virtual void SetADTT(Int16 adtt) override;
+   virtual Int16 GetADTT() override;
+   virtual void SetRatingSpecification(const std::_tstring& spec) override;
+   virtual void IncludePedestrianLiveLoad(bool bInclude) override;
+   virtual bool IncludePedestrianLiveLoad() override;
+   virtual void SetGirderConditionFactor(const CSegmentKey& segmentKey,pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor) override;
+   virtual void GetGirderConditionFactor(const CSegmentKey& segmentKey,pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) override;
+   virtual Float64 GetGirderConditionFactor(const CSegmentKey& segmentKey) override;
+   virtual void SetDeckConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor) override;
+   virtual void GetDeckConditionFactor(pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) override;
+   virtual Float64 GetDeckConditionFactor() override;
+   virtual void SetSystemFactorFlexure(Float64 sysFactor) override;
+   virtual Float64 GetSystemFactorFlexure() override;
+   virtual void SetSystemFactorShear(Float64 sysFactor) override;
+   virtual Float64 GetSystemFactorShear() override;
+   virtual void SetDeadLoadFactor(pgsTypes::LimitState ls,Float64 gDC) override;
+   virtual Float64 GetDeadLoadFactor(pgsTypes::LimitState ls) override;
+   virtual void SetWearingSurfaceFactor(pgsTypes::LimitState ls,Float64 gDW) override;
+   virtual Float64 GetWearingSurfaceFactor(pgsTypes::LimitState ls) override;
+   virtual void SetCreepFactor(pgsTypes::LimitState ls,Float64 gCR) override;
+   virtual Float64 GetCreepFactor(pgsTypes::LimitState ls) override;
+   virtual void SetShrinkageFactor(pgsTypes::LimitState ls,Float64 gSH) override;
+   virtual Float64 GetShrinkageFactor(pgsTypes::LimitState ls) override;
+   virtual void SetRelaxationFactor(pgsTypes::LimitState ls,Float64 gRE) override;
+   virtual Float64 GetRelaxationFactor(pgsTypes::LimitState ls) override;
+   virtual void SetSecondaryEffectsFactor(pgsTypes::LimitState ls,Float64 gPS) override;
+   virtual Float64 GetSecondaryEffectsFactor(pgsTypes::LimitState ls) override;
+   virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL) override;
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) override;
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) override;
+   virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t) override;
+   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) override;
+   virtual void RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress) override;
+   virtual bool RateForStress(pgsTypes::LoadRatingType ratingType) override;
+   virtual void RateForShear(pgsTypes::LoadRatingType ratingType,bool bRateForShear) override;
+   virtual bool RateForShear(pgsTypes::LoadRatingType ratingType) override;
+   virtual void ExcludeLegalLoadLaneLoading(bool bExclude) override;
+   virtual bool ExcludeLegalLoadLaneLoading() override;
+   virtual void CheckYieldStress(pgsTypes::LoadRatingType ratingType,bool bCheckYieldStress) override;
+   virtual bool CheckYieldStress(pgsTypes::LoadRatingType ratingType) override;
+   virtual void SetYieldStressLimitCoefficient(Float64 x) override;
+   virtual Float64 GetYieldStressLimitCoefficient() override;
+   virtual void SetSpecialPermitType(pgsTypes::SpecialPermitType type) override;
+   virtual pgsTypes::SpecialPermitType GetSpecialPermitType() override;
+   virtual Float64 GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig) override;
+   virtual Float64 GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType) override;
+   virtual Float64 GetReactionStrengthLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) override;
+   virtual Float64 GetReactionServiceLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) override;
 
 // ILibraryNames
 public:
-   virtual void EnumGdrConnectionNames( std::vector<std::_tstring>* pNames ) const;
-   virtual void EnumGirderNames( std::vector<std::_tstring>* pNames ) const;
-   virtual void EnumGirderNames( LPCTSTR strGirderFamily, std::vector<std::_tstring>* pNames ) const;
-   virtual void EnumConcreteNames( std::vector<std::_tstring>* pNames ) const;
-   virtual void EnumDiaphragmNames( std::vector<std::_tstring>* pNames ) const;
-   virtual void EnumTrafficBarrierNames( std::vector<std::_tstring>* pNames ) const;
-   virtual void EnumSpecNames( std::vector<std::_tstring>* pNames) const;
-   virtual void EnumRatingCriteriaNames( std::vector<std::_tstring>* pNames) const;
-   virtual void EnumLiveLoadNames( std::vector<std::_tstring>* pNames) const;
-   virtual void EnumDuctNames( std::vector<std::_tstring>* pNames ) const;
-   virtual void EnumHaulTruckNames( std::vector<std::_tstring>* pNames) const;
-   virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames );
-   virtual void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory);
+   virtual void EnumGdrConnectionNames( std::vector<std::_tstring>* pNames ) const override;
+   virtual void EnumGirderNames( std::vector<std::_tstring>* pNames ) const override;
+   virtual void EnumGirderNames( LPCTSTR strGirderFamily, std::vector<std::_tstring>* pNames ) const override;
+   virtual void EnumConcreteNames( std::vector<std::_tstring>* pNames ) const override;
+   virtual void EnumDiaphragmNames( std::vector<std::_tstring>* pNames ) const override;
+   virtual void EnumTrafficBarrierNames( std::vector<std::_tstring>* pNames ) const override;
+   virtual void EnumSpecNames( std::vector<std::_tstring>* pNames) const override;
+   virtual void EnumRatingCriteriaNames( std::vector<std::_tstring>* pNames) const override;
+   virtual void EnumLiveLoadNames( std::vector<std::_tstring>* pNames) const override;
+   virtual void EnumDuctNames( std::vector<std::_tstring>* pNames ) const override;
+   virtual void EnumHaulTruckNames( std::vector<std::_tstring>* pNames) const override;
+   virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames ) override;
+   virtual void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory) override;
 
 // ILibrary
 public:
-   virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr);
-   virtual psgLibraryManager* GetLibraryManager(); 
-   virtual const ConnectionLibraryEntry* GetConnectionEntry(LPCTSTR lpszName ) const;
-   virtual const GirderLibraryEntry* GetGirderEntry( LPCTSTR lpszName ) const;
-   virtual const ConcreteLibraryEntry* GetConcreteEntry( LPCTSTR lpszName ) const;
-   virtual const DiaphragmLayoutEntry* GetDiaphragmEntry( LPCTSTR lpszName ) const;
-   virtual const TrafficBarrierEntry* GetTrafficBarrierEntry( LPCTSTR lpszName ) const;
-   virtual const SpecLibraryEntry* GetSpecEntry( LPCTSTR lpszName ) const;
-   virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( LPCTSTR lpszName ) const;
-   virtual const DuctLibraryEntry* GetDuctEntry( LPCTSTR lpszName ) const;
-   virtual const HaulTruckLibraryEntry* GetHaulTruckEntry(LPCTSTR lpszName) const;
-   virtual ConcreteLibrary&        GetConcreteLibrary();
-   virtual ConnectionLibrary&      GetConnectionLibrary();
-   virtual GirderLibrary&          GetGirderLibrary();
-   virtual DiaphragmLayoutLibrary& GetDiaphragmLayoutLibrary();
-   virtual TrafficBarrierLibrary&  GetTrafficBarrierLibrary();
-   virtual SpecLibrary*            GetSpecLibrary();
-   virtual LiveLoadLibrary*        GetLiveLoadLibrary();
-   virtual DuctLibrary*            GetDuctLibrary();
-   virtual HaulTruckLibrary*       GetHaulTruckLibrary();
-   virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const;
-   virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const;
-   virtual RatingLibrary* GetRatingLibrary();
-   virtual const RatingLibrary* GetRatingLibrary() const;
-   virtual const RatingLibraryEntry* GetRatingEntry( LPCTSTR lpszName ) const;
+   virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr) override;
+   virtual psgLibraryManager* GetLibraryManager() override; 
+   virtual const ConnectionLibraryEntry* GetConnectionEntry(LPCTSTR lpszName ) const override;
+   virtual const GirderLibraryEntry* GetGirderEntry( LPCTSTR lpszName ) const override;
+   virtual const ConcreteLibraryEntry* GetConcreteEntry( LPCTSTR lpszName ) const override;
+   virtual const DiaphragmLayoutEntry* GetDiaphragmEntry( LPCTSTR lpszName ) const override;
+   virtual const TrafficBarrierEntry* GetTrafficBarrierEntry( LPCTSTR lpszName ) const override;
+   virtual const SpecLibraryEntry* GetSpecEntry( LPCTSTR lpszName ) const override;
+   virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( LPCTSTR lpszName ) const override;
+   virtual const DuctLibraryEntry* GetDuctEntry( LPCTSTR lpszName ) const override;
+   virtual const HaulTruckLibraryEntry* GetHaulTruckEntry(LPCTSTR lpszName) const override;
+   virtual ConcreteLibrary&        GetConcreteLibrary() override;
+   virtual ConnectionLibrary&      GetConnectionLibrary() override;
+   virtual GirderLibrary&          GetGirderLibrary() override;
+   virtual DiaphragmLayoutLibrary& GetDiaphragmLayoutLibrary() override;
+   virtual TrafficBarrierLibrary&  GetTrafficBarrierLibrary() override;
+   virtual SpecLibrary*            GetSpecLibrary() override;
+   virtual LiveLoadLibrary*        GetLiveLoadLibrary() override;
+   virtual DuctLibrary*            GetDuctLibrary() override;
+   virtual HaulTruckLibrary*       GetHaulTruckLibrary() override;
+   virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const override;
+   virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const override;
+   virtual RatingLibrary* GetRatingLibrary() override;
+   virtual const RatingLibrary* GetRatingLibrary() const override;
+   virtual const RatingLibraryEntry* GetRatingEntry( LPCTSTR lpszName ) const override;
 
 // ILoadModifiers
 public:
-   virtual void SetDuctilityFactor(Level level,Float64 value);
-   virtual void SetImportanceFactor(Level level,Float64 value);
-   virtual void SetRedundancyFactor(Level level,Float64 value);
-   virtual Float64 GetDuctilityFactor();
-   virtual Float64 GetImportanceFactor();
-   virtual Float64 GetRedundancyFactor();
-   virtual Level GetDuctilityLevel();
-   virtual Level GetImportanceLevel();
-   virtual Level GetRedundancyLevel();
+   virtual void SetDuctilityFactor(Level level,Float64 value) override;
+   virtual void SetImportanceFactor(Level level,Float64 value) override;
+   virtual void SetRedundancyFactor(Level level,Float64 value) override;
+   virtual Float64 GetDuctilityFactor() override;
+   virtual Float64 GetImportanceFactor() override;
+   virtual Float64 GetRedundancyFactor() override;
+   virtual Level GetDuctilityLevel() override;
+   virtual Level GetImportanceLevel() override;
+   virtual Level GetRedundancyLevel() override;
 
 // ISegmentLifting
 public:
-   virtual Float64 GetLeftLiftingLoopLocation(const CSegmentKey& segmentKey);
-   virtual Float64 GetRightLiftingLoopLocation(const CSegmentKey& segmentKey);
-   virtual void SetLiftingLoopLocations(const CSegmentKey& segmentKey, Float64 left,Float64 right);
+   virtual Float64 GetLeftLiftingLoopLocation(const CSegmentKey& segmentKey) override;
+   virtual Float64 GetRightLiftingLoopLocation(const CSegmentKey& segmentKey) override;
+   virtual void SetLiftingLoopLocations(const CSegmentKey& segmentKey, Float64 left,Float64 right) override;
 
 // ISegmentHauling
 public:
-   virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey);
-   virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey);
-   virtual void SetTruckSupportLocations(const CSegmentKey& segmentKey, Float64 leftLoc,Float64 rightLoc);
-   virtual LPCTSTR GetHaulTruck(const CSegmentKey& segmentKey);
-   virtual void SetHaulTruck(const CSegmentKey& segmentKey,LPCTSTR lpszHaulTruck);
+   virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey) override;
+   virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey) override;
+   virtual void SetTruckSupportLocations(const CSegmentKey& segmentKey, Float64 leftLoc,Float64 rightLoc) override;
+   virtual LPCTSTR GetHaulTruck(const CSegmentKey& segmentKey) override;
+   virtual void SetHaulTruck(const CSegmentKey& segmentKey,LPCTSTR lpszHaulTruck) override;
 
 // IImportProjectLibrary
 public:
-   virtual bool ImportProjectLibraries(IStructuredLoad* pLoad);
+   virtual bool ImportProjectLibraries(IStructuredLoad* pLoad) override;
 
 // IUserDefinedLoadData
 public:
-   virtual bool HasUserDC(const CGirderKey& girderKey);
-   virtual bool HasUserDW(const CGirderKey& girderKey);
-   virtual bool HasUserLLIM(const CGirderKey& girderKey);
-   virtual CollectionIndexType GetPointLoadCount() const;
-   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld);
-   virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const;
-   virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const;
-   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld);
-   virtual void DeletePointLoad(CollectionIndexType idx);
+   virtual bool HasUserDC(const CGirderKey& girderKey) override;
+   virtual bool HasUserDW(const CGirderKey& girderKey) override;
+   virtual bool HasUserLLIM(const CGirderKey& girderKey) override;
+   virtual CollectionIndexType GetPointLoadCount() const override;
+   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) override;
+   virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const override;
+   virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const override;
+   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld) override;
+   virtual void DeletePointLoad(CollectionIndexType idx) override;
 
-   virtual CollectionIndexType GetDistributedLoadCount() const;
-   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld);
-   virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const;
-   virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const;
-   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld);
-   virtual void DeleteDistributedLoad(CollectionIndexType idx);
+   virtual CollectionIndexType GetDistributedLoadCount() const override;
+   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) override;
+   virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const override;
+   virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const override;
+   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld) override;
+   virtual void DeleteDistributedLoad(CollectionIndexType idx) override;
 
-   virtual CollectionIndexType GetMomentLoadCount() const;
-   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld);
-   virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const;
-   virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const;
-   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld);
-   virtual void DeleteMomentLoad(CollectionIndexType idx);
+   virtual CollectionIndexType GetMomentLoadCount() const override;
+   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) override;
+   virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const override;
+   virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const override;
+   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld) override;
+   virtual void DeleteMomentLoad(CollectionIndexType idx) override;
 
-   virtual void SetConstructionLoad(Float64 load);
-   virtual Float64 GetConstructionLoad() const;
+   virtual void SetConstructionLoad(Float64 load) override;
+   virtual Float64 GetConstructionLoad() const override;
 
 // ILiveLoads
 public:
-   virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType);
-   virtual PedestrianLoadApplicationType GetPedestrianLoadApplication(pgsTypes::LiveLoadType llType);
-   virtual void SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad);
-   virtual std::vector<std::_tstring> GetLiveLoadNames(pgsTypes::LiveLoadType llType);
-   virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names);
-   virtual Float64 GetTruckImpact(pgsTypes::LiveLoadType llType);
-   virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,Float64 impact);
-   virtual Float64 GetLaneImpact(pgsTypes::LiveLoadType llType);
-   virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact);
-   virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action);
-   virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction();
-   virtual std::_tstring GetLLDFSpecialActionText(); // get common string for ignore roa case
-   virtual bool IgnoreLLDFRangeOfApplicability(); // true if action is to ignore ROA
+   virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType) override;
+   virtual PedestrianLoadApplicationType GetPedestrianLoadApplication(pgsTypes::LiveLoadType llType) override;
+   virtual void SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad) override;
+   virtual std::vector<std::_tstring> GetLiveLoadNames(pgsTypes::LiveLoadType llType) override;
+   virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names) override;
+   virtual Float64 GetTruckImpact(pgsTypes::LiveLoadType llType) override;
+   virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,Float64 impact) override;
+   virtual Float64 GetLaneImpact(pgsTypes::LiveLoadType llType) override;
+   virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact) override;
+   virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action) override;
+   virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction() override;
+   virtual std::_tstring GetLLDFSpecialActionText() override; // get common string for ignore roa case
+   virtual bool IgnoreLLDFRangeOfApplicability() override; // true if action is to ignore ROA
 
 // IEvents
 public:
-   virtual void HoldEvents();
-   virtual void FirePendingEvents();
-   virtual void CancelPendingEvents();
+   virtual void HoldEvents() override;
+   virtual void FirePendingEvents() override;
+   virtual void CancelPendingEvents() override;
 
 // ILimits
 public:
-   virtual Float64 GetMaxSlabFc(pgsTypes::ConcreteType concType);
-   virtual Float64 GetMaxSegmentFci(pgsTypes::ConcreteType concType);
-   virtual Float64 GetMaxSegmentFc(pgsTypes::ConcreteType concType);
-   virtual Float64 GetMaxClosureFci(pgsTypes::ConcreteType concType);
-   virtual Float64 GetMaxClosureFc(pgsTypes::ConcreteType concType);
-   virtual Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType);
-   virtual Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType concType);
+   virtual Float64 GetMaxSlabFc(pgsTypes::ConcreteType concType) override;
+   virtual Float64 GetMaxSegmentFci(pgsTypes::ConcreteType concType) override;
+   virtual Float64 GetMaxSegmentFc(pgsTypes::ConcreteType concType) override;
+   virtual Float64 GetMaxClosureFci(pgsTypes::ConcreteType concType) override;
+   virtual Float64 GetMaxClosureFc(pgsTypes::ConcreteType concType) override;
+   virtual Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType) override;
+   virtual Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType concType) override;
 
 // ILoadFactors
 public:
@@ -586,53 +587,53 @@ public:
 
 // IEventMap
 public:
-   virtual CComBSTR GetEventName(EventIndexType eventIdx);  
-   virtual EventIndexType GetEventIndex(CComBSTR bstrEvent);
+   virtual CComBSTR GetEventName(EventIndexType eventIdx) override;  
+   virtual EventIndexType GetEventIndex(CComBSTR bstrEvent) override;
 
 // IEffectiveFlangeWidth
 public:
-   virtual bool IgnoreEffectiveFlangeWidthLimits();
-   virtual void IgnoreEffectiveFlangeWidthLimits(bool bIgnore);
+   virtual bool IgnoreEffectiveFlangeWidthLimits() override;
+   virtual void IgnoreEffectiveFlangeWidthLimits(bool bIgnore) override;
 
 // ILossParameters
 public:
-   virtual pgsTypes::LossMethod GetLossMethod();
-   virtual pgsTypes::TimeDependentModel GetTimeDependentModel();
-   virtual void IgnoreCreepEffects(bool bIgnore);
-   virtual bool IgnoreCreepEffects();
-   virtual void IgnoreShrinkageEffects(bool bIgnore);
-   virtual bool IgnoreShrinkageEffects();
-   virtual void IgnoreRelaxationEffects(bool bIgnore);
-   virtual bool IgnoreRelaxationEffects();
-   virtual void IgnoreTimeDependentEffects(bool bIgnoreCreep,bool bIgnoreShrinkage,bool bIgnoreRelaxation);
-   virtual void SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
-   virtual void GetTendonPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction);
-   virtual void SetTemporaryStrandPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
-   virtual void GetTemporaryStrandPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction);
-   virtual void UseGeneralLumpSumLosses(bool bLumpSum);
-   virtual bool UseGeneralLumpSumLosses();
-   virtual Float64 GetBeforeXferLosses();
-   virtual void SetBeforeXferLosses(Float64 loss);
-   virtual Float64 GetAfterXferLosses();
-   virtual void SetAfterXferLosses(Float64 loss);
-   virtual Float64 GetLiftingLosses();
-   virtual void SetLiftingLosses(Float64 loss);
-   virtual Float64 GetShippingLosses();
-   virtual void SetShippingLosses(Float64 loss);
-   virtual Float64 GetBeforeTempStrandRemovalLosses();
-   virtual void SetBeforeTempStrandRemovalLosses(Float64 loss);
-   virtual Float64 GetAfterTempStrandRemovalLosses();
-   virtual void SetAfterTempStrandRemovalLosses(Float64 loss);
-   virtual Float64 GetAfterDeckPlacementLosses();
-   virtual void SetAfterDeckPlacementLosses(Float64 loss);
-   virtual Float64 GetAfterSIDLLosses();
-   virtual void SetAfterSIDLLosses(Float64 loss);
-   virtual Float64 GetFinalLosses();
-   virtual void SetFinalLosses(Float64 loss);
+   virtual pgsTypes::LossMethod GetLossMethod() override;
+   virtual pgsTypes::TimeDependentModel GetTimeDependentModel() override;
+   virtual void IgnoreCreepEffects(bool bIgnore) override;
+   virtual bool IgnoreCreepEffects() override;
+   virtual void IgnoreShrinkageEffects(bool bIgnore) override;
+   virtual bool IgnoreShrinkageEffects() override;
+   virtual void IgnoreRelaxationEffects(bool bIgnore) override;
+   virtual bool IgnoreRelaxationEffects() override;
+   virtual void IgnoreTimeDependentEffects(bool bIgnoreCreep,bool bIgnoreShrinkage,bool bIgnoreRelaxation) override;
+   virtual void SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction) override;
+   virtual void GetTendonPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction) override;
+   virtual void SetTemporaryStrandPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction) override;
+   virtual void GetTemporaryStrandPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction) override;
+   virtual void UseGeneralLumpSumLosses(bool bLumpSum) override;
+   virtual bool UseGeneralLumpSumLosses() override;
+   virtual Float64 GetBeforeXferLosses() override;
+   virtual void SetBeforeXferLosses(Float64 loss) override;
+   virtual Float64 GetAfterXferLosses() override;
+   virtual void SetAfterXferLosses(Float64 loss) override;
+   virtual Float64 GetLiftingLosses() override;
+   virtual void SetLiftingLosses(Float64 loss) override;
+   virtual Float64 GetShippingLosses() override;
+   virtual void SetShippingLosses(Float64 loss) override;
+   virtual Float64 GetBeforeTempStrandRemovalLosses() override;
+   virtual void SetBeforeTempStrandRemovalLosses(Float64 loss) override;
+   virtual Float64 GetAfterTempStrandRemovalLosses() override;
+   virtual void SetAfterTempStrandRemovalLosses(Float64 loss) override;
+   virtual Float64 GetAfterDeckPlacementLosses() override;
+   virtual void SetAfterDeckPlacementLosses(Float64 loss) override;
+   virtual Float64 GetAfterSIDLLosses() override;
+   virtual void SetAfterSIDLLosses(Float64 loss) override;
+   virtual Float64 GetFinalLosses() override;
+   virtual void SetFinalLosses(Float64 loss) override;
 
 // IValidate
 public:
-   virtual UINT Orientation(LPCTSTR lpszOrientation);
+   virtual UINT Orientation(LPCTSTR lpszOrientation) override;
 
 #ifdef _DEBUG
    bool AssertValid() const;
@@ -689,11 +690,11 @@ private:
    Float64 m_gPS[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
    Float64 m_gLL[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
 
-   Float64 m_AllowableTensionCoefficient[6]; // index is load rating type
-   bool    m_bCheckYieldStress[6]; // index is load rating type
-   bool    m_bRateForStress[6]; // index is load rating type
-   bool    m_bRateForShear[6]; // index is load rating type
-   bool    m_bEnableRating[6]; // index is load rating type
+   Float64 m_AllowableTensionCoefficient[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
+   bool    m_bCheckYieldStress[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
+   bool    m_bRateForStress[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
+   bool    m_bRateForShear[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
+   bool    m_bEnableRating[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
    Int16 m_ADTT; // < 0 = Unknown
    Float64 m_AllowableYieldStressCoefficient; // fr <= xfy for Service I permit rating
 
@@ -728,9 +729,9 @@ private:
    struct LiveLoadSelection
    {
       std::_tstring                 EntryName;
-      const LiveLoadLibraryEntry* pEntry; // NULL if this is a system defined live load (HL-93)
+      const LiveLoadLibraryEntry* pEntry; // nullptr if this is a system defined live load (HL-93)
 
-      LiveLoadSelection() { pEntry = NULL; }
+      LiveLoadSelection() { pEntry = nullptr; }
 
       bool operator==(const LiveLoadSelection& other) const
       { return pEntry == other.pEntry; }
@@ -743,9 +744,9 @@ private:
    typedef LiveLoadSelectionContainer::iterator LiveLoadSelectionIterator;
 
    // index is pgsTypes::LiveLoadTypes constant
-   LiveLoadSelectionContainer m_SelectedLiveLoads[8];
-   Float64 m_TruckImpact[8];
-   Float64 m_LaneImpact[8];
+   LiveLoadSelectionContainer m_SelectedLiveLoads[pgsTypes::lltLiveLoadTypeCount];
+   Float64 m_TruckImpact[pgsTypes::lltLiveLoadTypeCount];
+   Float64 m_LaneImpact[pgsTypes::lltLiveLoadTypeCount];
    PedestrianLoadApplicationType m_PedestrianLoadApplicationType[3]; // lltDesign, lltPermit, lltFatigue only
 
    std::vector<std::_tstring> m_ReservedLiveLoads; // reserved live load names (names not found in library)

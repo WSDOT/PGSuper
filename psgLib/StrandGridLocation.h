@@ -37,7 +37,7 @@ class CStrandGridLocation : public CDialog
 {
 // Construction
 public:
-	CStrandGridLocation(CWnd* pParent = NULL);   // standard constructor
+	CStrandGridLocation(CWnd* pParent = nullptr);   // standard constructor
 
    void SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGridEntry& Entry, bool UseHarpedGrid, pgsTypes::AdjustableStrandType adjustableStrandType);
    CGirderGlobalStrandGrid::GlobalStrandGridEntry GetEntry();

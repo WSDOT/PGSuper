@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 // CDealWithLoadDlg dialog
 
 
-CDealWithLoadDlg::CDealWithLoadDlg(CWnd* pParent /*=NULL*/)
+CDealWithLoadDlg::CDealWithLoadDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CDealWithLoadDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CDealWithLoadDlg)

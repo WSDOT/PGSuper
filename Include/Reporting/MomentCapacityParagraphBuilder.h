@@ -72,8 +72,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CMomentCapacityParagraphBuilder(const CMomentCapacityParagraphBuilder&);
-   CMomentCapacityParagraphBuilder& operator=(const CMomentCapacityParagraphBuilder&);
+   CMomentCapacityParagraphBuilder(const CMomentCapacityParagraphBuilder&) = delete;
+   CMomentCapacityParagraphBuilder& operator=(const CMomentCapacityParagraphBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -40,10 +40,10 @@ IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignGirderViewPage, CPropertyPage)
 
 CTxDOTOptionalDesignGirderViewPage::CTxDOTOptionalDesignGirderViewPage()
 	: CPropertyPage(CTxDOTOptionalDesignGirderViewPage::IDD),
-   m_pData(NULL),
-   m_pBrokerRetriever(NULL),
-   m_pElevationView(NULL),
-   m_pSectionView(NULL),
+   m_pData(nullptr),
+   m_pBrokerRetriever(nullptr),
+   m_pElevationView(nullptr),
+   m_pSectionView(nullptr),
    m_ChangeStatus(0),
    m_CurrentCutLocation(0),
    m_CutLocation(Center),
@@ -90,8 +90,8 @@ BOOL CTxDOTOptionalDesignGirderViewPage::OnSetActive()
          m_pElevationView->ShowWindow(SW_SHOW);
 
          // any change forces an update
-         m_pElevationView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
-         m_pSectionView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
+         m_pElevationView->OnUpdate(nullptr, HINT_GIRDERCHANGED, nullptr);
+         m_pSectionView->OnUpdate(nullptr, HINT_GIRDERCHANGED, nullptr);
 
          // our data is updated
          m_ChangeStatus = 0;
@@ -300,8 +300,8 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateCutLocation(CutLocation cutLoc,Fl
    m_CutLocation = cutLoc;
 
    UpdateBar();
-   m_pElevationView->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
-   m_pSectionView->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
+   m_pElevationView->OnUpdate(nullptr, HINT_GIRDERVIEWSECTIONCUTCHANGED, nullptr);
+   m_pSectionView->OnUpdate(nullptr, HINT_GIRDERVIEWSECTIONCUTCHANGED, nullptr);
 }
 
 void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
@@ -442,8 +442,8 @@ void CTxDOTOptionalDesignGirderViewPage::OnCbnSelchangeSelectedGirder()
    else
       m_SelectedGirder = TOGA_FABR_GDR;
 
-   m_pElevationView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
-   m_pSectionView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
+   m_pElevationView->OnUpdate(nullptr, HINT_GIRDERCHANGED, nullptr);
+   m_pSectionView->OnUpdate(nullptr, HINT_GIRDERCHANGED, nullptr);
 }
 
 void CTxDOTOptionalDesignGirderViewPage::OnBnClickedSectionCut()

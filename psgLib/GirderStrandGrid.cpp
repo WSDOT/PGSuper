@@ -85,7 +85,7 @@ BOOL CGirderStrandGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nF
 	   VERIFY(menu.LoadMenu(IDR_STRAIGHT_POPUP));
 
 	   CMenu* pPopup = menu.GetSubMenu( 0 );
-	   ASSERT( pPopup != NULL );
+	   ASSERT( pPopup != nullptr );
 
 	   // display the menu
 	   ClientToScreen(&pt);
@@ -330,7 +330,7 @@ void CGirderStrandGrid::FillGrid(IPoint2dCollection* points)
       CComPtr<IPoint2d> point;
       CComPtr<IEnumPoint2d> enumpoints;
       points->get__Enum(&enumpoints);
-      while ( enumpoints->Next(1,&point,NULL) != S_FALSE )
+      while ( enumpoints->Next(1,&point,nullptr) != S_FALSE )
       {
          Float64 x,y;
          point->get_X(&x);

@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 // CRefinedAnalysisOptionsDlg dialog
 
 
-CRefinedAnalysisOptionsDlg::CRefinedAnalysisOptionsDlg(CWnd* pParent /*=NULL*/)
+CRefinedAnalysisOptionsDlg::CRefinedAnalysisOptionsDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CRefinedAnalysisOptionsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CRefinedAnalysisOptionsDlg)

@@ -41,7 +41,7 @@ public:
    enum RefinedAnalysisOption {lldfDefault=-1,lldfDirectInput, lldfIgnore, lldfIgnoreLever, lldfForceLever};
 // Construction
 public:
-	CRefinedAnalysisOptionsDlg(CWnd* pParent = NULL);   // standard constructor
+	CRefinedAnalysisOptionsDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CRefinedAnalysisOptionsDlg)
@@ -55,7 +55,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CRefinedAnalysisOptionsDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -63,7 +63,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CRefinedAnalysisOptionsDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

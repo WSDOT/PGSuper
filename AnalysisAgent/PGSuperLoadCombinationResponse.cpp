@@ -116,7 +116,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeForces(/*[in]*/BSTR LoadCom
             right_config->put_LiveLoadFactor(gLL_right_new);
 
             CComQIPtr<IConcurrentLoadCombinationResponse> concurrent_response(m_LCResponseDelegate);
-            ATLASSERT(concurrent_response != NULL);
+            ATLASSERT(concurrent_response != nullptr);
 
             CComPtr<ISectionResult3Ds> left_results_new, right_results_new;
             PoiIDType poiID;
@@ -192,7 +192,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeDeflections(/*[in]*/BSTR Lo
             right_config->put_LiveLoadFactor(gLL_right_new);
 
             CComQIPtr<IConcurrentLoadCombinationResponse> concurrent_response(m_LCResponseDelegate);
-            ATLASSERT(concurrent_response != NULL);
+            ATLASSERT(concurrent_response != nullptr);
 
             CComPtr<ISectionResult3Ds> left_results_new, right_results_new;
             PoiIDType poiID;
@@ -267,7 +267,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeReactions(/*[in]*/BSTR Load
             config->put_LiveLoadFactor(gLL_left_new);
 
             CComQIPtr<IConcurrentLoadCombinationResponse> concurrent_response(m_LCResponseDelegate);
-            ATLASSERT(concurrent_response != NULL);
+            ATLASSERT(concurrent_response != nullptr);
 
             CComPtr<IResult3Ds> results_new;
             PoiIDType poiID;
@@ -339,7 +339,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeSupportDeflections(/*[in]*/
             config->put_LiveLoadFactor(gLL_left_new);
 
             CComQIPtr<IConcurrentLoadCombinationResponse> concurrent_response(m_LCResponseDelegate);
-            ATLASSERT(concurrent_response != NULL);
+            ATLASSERT(concurrent_response != nullptr);
 
             CComPtr<IResult3Ds> results_new;
             PoiIDType poiID;
@@ -412,7 +412,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeStresses(/*[in]*/BSTR LoadC
             right_config->put_LiveLoadFactor(gLL_right_new);
 
             CComQIPtr<IConcurrentLoadCombinationResponse> concurrent_response(m_LCResponseDelegate);
-            ATLASSERT(concurrent_response != NULL);
+            ATLASSERT(concurrent_response != nullptr);
 
             CComPtr<ISectionStressResults> left_results_new, right_results_new;
             PoiIDType poiID;

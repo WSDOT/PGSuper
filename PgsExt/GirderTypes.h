@@ -99,7 +99,7 @@ public:
 
 protected:
    void MakeCopy(const CGirderTypes& rOther);
-   virtual void MakeAssignment(const CGirderTypes& rOther);
+   void MakeAssignment(const CGirderTypes& rOther);
 
 private:
    std::vector<CGirderData> m_GirderData;

@@ -36,7 +36,7 @@ public:
 	DECLARE_DYNAMIC(CTxDOTOptionalDesignStandardFillDlg)
 
 public:
-	CTxDOTOptionalDesignStandardFillDlg(CWnd* pParent = NULL);   // standard constructor
+	CTxDOTOptionalDesignStandardFillDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CTxDOTOptionalDesignStandardFillDlg();
 
 // Dialog Data
@@ -59,19 +59,19 @@ public:
    void UpdateControls();
 
    // common girder dialog calls
-   virtual void SetGirderEntryName(LPCTSTR entryName);
-   virtual BOOL OnFillSetActive();
-   virtual BOOL OnFillKillActive();
+   void SetGirderEntryName(LPCTSTR entryName);
+   BOOL OnFillSetActive();
+   BOOL OnFillKillActive();
 
    bool m_bFirstActive;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
    afx_msg void OnCbnSelchangeOptNumStrands();
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
    afx_msg void OnBnClickedOptCompute();
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);

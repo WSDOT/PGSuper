@@ -222,11 +222,11 @@ public:
    AvailableStrandsInRowContainer ComputeAvailableStrandRows(const GirderLibraryEntry* pGdrEntry); 
 
    // This nasty function checks that input strandrows can fit into the master library entry,
-   // and if pCloneGdrEntry!=NULL copies the strand locations into the clone. 
+   // and if pCloneGdrEntry!=nullptr copies the strand locations into the clone. 
    // false is returned if an error occurs and rErrMsg will give a descriptive error.
    bool CheckAndBuildStrandRows(const GirderLibraryEntry* pMasterGdrEntry, 
                                 const StrandRowContainer& rClRows, const StrandRowContainer& rEndRows, 
-                                CString& rErrMsg, GirderLibraryEntry* pCloneGdrEntry=NULL); 
+                                CString& rErrMsg, GirderLibraryEntry* pCloneGdrEntry=nullptr); 
 
 
    static void  GetGlobalStrandCoordinate(const GirderLibraryEntry* pGdrEntry, StrandIndexType globalIdx, Float64* pX, Float64* pY);

@@ -59,7 +59,7 @@ public:
 
 protected:
    void MakeCopy(const CDuctGeometry& rOther);
-   virtual void MakeAssignment(const CDuctGeometry& rOther);
+   void MakeAssignment(const CDuctGeometry& rOther);
 
    const CSplicedGirderData* m_pGirder;
 };
@@ -122,7 +122,7 @@ public:
 
 protected:
    void MakeCopy(const CLinearDuctGeometry& rOther);
-   virtual void MakeAssignment(const CLinearDuctGeometry& rOther);
+   void MakeAssignment(const CLinearDuctGeometry& rOther);
 
    MeasurementType m_MeasurementType;
 
@@ -212,7 +212,7 @@ public:
 
 private:
    void MakeCopy(const CParabolicDuctGeometry& rOther);
-   virtual void MakeAssignment(const CParabolicDuctGeometry& rOther);
+   void MakeAssignment(const CParabolicDuctGeometry& rOther);
 
    struct HighPoint
    {
@@ -541,7 +541,7 @@ protected:
    std::vector<CDuctData> m_Ducts;
 
    void MakeCopy(const CPTData& rOther);
-   virtual void MakeAssignment(const CPTData& rOther);
+   void MakeAssignment(const CPTData& rOther);
 
 private:
    CSplicedGirderData* m_pGirder; // weak reference

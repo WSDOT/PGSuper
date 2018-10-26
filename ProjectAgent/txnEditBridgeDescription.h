@@ -29,12 +29,12 @@ public:
    txnEditBridgeDescription(IBroker* pBroker,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
    ~txnEditBridgeDescription(void);
 
-   virtual bool Execute();
-   virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
-   virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool Execute() override;
+   virtual void Undo() override;
+   virtual txnTransaction* CreateClone() const override;
+   virtual std::_tstring Name() const override;
+   virtual bool IsUndoable() override;
+   virtual bool IsRepeatable() override;
 
 private:
    void Execute(int i);

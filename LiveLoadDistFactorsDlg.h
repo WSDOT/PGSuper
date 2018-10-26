@@ -67,7 +67,7 @@ class CLiveLoadDistFactorsDlg : public CDialog
 {
 // Construction
 public:
-	CLiveLoadDistFactorsDlg(CWnd* pParent = NULL);   // standard constructor
+	CLiveLoadDistFactorsDlg(CWnd* pParent = nullptr);   // standard constructor
 	~CLiveLoadDistFactorsDlg();
 
 // Dialog Data
@@ -92,14 +92,14 @@ protected:
    // User-input girder grid
    CGXTabWnd m_GirderTabWnd;
 
-   typedef std::vector< boost::shared_ptr<CLLDFGrid> > GirderGridList;
+   typedef std::vector< std::shared_ptr<CLLDFGrid> > GirderGridList;
    typedef GirderGridList::iterator GirderGridIterator;
    GirderGridList m_GirderGrids;
 
    // User-input pier grid
    CGXTabWnd m_PierTabWnd;
 
-   typedef std::vector< boost::shared_ptr<CLLDFPierGrid> > PierGridList;
+   typedef std::vector< std::shared_ptr<CLLDFPierGrid> > PierGridList;
    typedef PierGridList::iterator PierGridIterator;
    PierGridList m_PierGrids;
 

@@ -35,10 +35,10 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSnapView)
 	public:
-	//virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = NULL);
-	virtual void OnInitialUpdate();
+	//virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = nullptr) override;
+	virtual void OnInitialUpdate() override;
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 public:
@@ -53,10 +53,10 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 protected:
-	virtual void OnDraw(CDC* pDC);      // default does nothing
-   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
-   virtual BOOL DestroyWindow();
-   virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual void OnDraw(CDC* pDC) override;      // default does nothing
+   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
+   virtual BOOL DestroyWindow() override;
+   virtual BOOL PreTranslateMessage(MSG* pMsg) override;
 
 	// property sheet is wired to MDI child frame and is not displayed
 	CPropertySheet* m_pPropSheet;
@@ -73,6 +73,6 @@ protected:
 public:
 
 #if defined _DEBUG
-   virtual void AssertValid() const;
+   virtual void AssertValid() const override;
 #endif
 };

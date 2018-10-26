@@ -44,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 
-CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
    m_Group  = 0;
@@ -353,19 +353,19 @@ void CSpanGirderReportDlg::InitFromRptSpec()
 {
    if ( m_Mode == SpanAndChapters )
    {
-      boost::shared_ptr<CSpanReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CSpanReportSpecification>(m_pInitRptSpec);
+      std::shared_ptr<CSpanReportSpecification> pRptSpec = std::dynamic_pointer_cast<CSpanReportSpecification>(m_pInitRptSpec);
       m_Group = pRptSpec->GetSpan();
    }
    else if ( m_Mode == SpanGirderAndChapters )
    {
-      boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CGirderReportSpecification>(m_pInitRptSpec);
+      std::shared_ptr<CGirderReportSpecification> pRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification>(m_pInitRptSpec);
       const CGirderKey& girderKey(pRptSpec->GetGirderKey());
       m_Group = girderKey.groupIndex;
       m_Girder = girderKey.girderIndex;
    }
    else if ( m_Mode == GirderAndChapters )
    {
-      boost::shared_ptr<CGirderLineReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CGirderLineReportSpecification>(m_pInitRptSpec);
+      std::shared_ptr<CGirderLineReportSpecification> pRptSpec = std::dynamic_pointer_cast<CGirderLineReportSpecification>(m_pInitRptSpec);
       m_Girder = int(pRptSpec->GetGirderIndex());
    }
    else if ( m_Mode == ChaptersOnly )

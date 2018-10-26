@@ -60,11 +60,11 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    // virtual overrides for grid
-   virtual int GetColWidth(ROWCOL nCol);
-   virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
-   virtual void OnClickedButtonRowCol(ROWCOL nHitRow, ROWCOL nHitCol);
-   virtual void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey);
-   virtual BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol);
+   virtual int GetColWidth(ROWCOL nCol) override;
+   virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol) override;
+   virtual void OnClickedButtonRowCol(ROWCOL nHitRow, ROWCOL nHitCol) override;
+   virtual void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey) override;
+   virtual BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol) override;
 
 public:
    // custom stuff for grid
@@ -73,7 +73,7 @@ public:
    void OnAddRow();
    void OnRemoveSelectedRows();
 
-   // Updates the strand grid data. If pDX is NULL, it gets the
+   // Updates the strand grid data. If pDX is nullptr, it gets the
    // strand row data from the grid, however the data is not validated.
    void UpdateStrandData(CDataExchange* pDX,CStrandData* pStrands);
 

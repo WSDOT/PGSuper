@@ -84,7 +84,7 @@ protected:
    void MakeCopy(const CFlexuralCapacityCheckTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CFlexuralCapacityCheckTable& rOther);
+   void MakeAssignment(const CFlexuralCapacityCheckTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

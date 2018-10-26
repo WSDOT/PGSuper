@@ -112,6 +112,9 @@ interface ISegmentLiftingSpecCriteria : IUnknown
    // This parameter is only valid if GetLiftingCamberMethod returns pgsTypes::cmApproximate
    virtual Float64 GetLiftingIncreaseInCgForCamber() = 0;
 
+   // Factor to modify basic camber value when direct camber method is used
+   virtual Float64 GetLiftingCamberMultiplier() = 0;
+
    virtual pgsTypes::WindType GetLiftingWindType() = 0;
    virtual Float64 GetLiftingWindLoad() = 0;
 
@@ -194,6 +197,9 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    // to account for camber. (returns 1.02 for a 2% increase)
    // This parameter is only valid if GetHaulingCamberMethod returns pgsTypes::cmApproximate
    virtual Float64 GetHaulingIncreaseInCgForCamber() = 0;
+
+   // Factor to modify basic camber value when direct camber method is used
+   virtual Float64 GetHaulingCamberMultiplier() = 0;
 
    virtual Float64 GetAllowableDistanceBetweenSupports(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetAllowableLeadingOverhang(const CSegmentKey& segmentKey) = 0;

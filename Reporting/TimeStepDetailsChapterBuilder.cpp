@@ -166,7 +166,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    {
       CGirderKey prevGirderKey;
       std::vector<pgsTypes::ProductForceType> vLoads;
-      BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
+      for (const auto& poi : vPoi)
       {
          if ( pTSDRptSpec->ReportAtAllLocations() )
          {
@@ -1357,7 +1357,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
       rowIdx++;
 
       // Girder Rebar
-      BOOST_FOREACH(const TIME_STEP_REBAR& tsRebar,tsDetails.GirderRebar)
+      for (const auto& tsRebar : tsDetails.GirderRebar)
       {
          (*pTable)(rowIdx++,colIdx) << force.SetValue(tsRebar.dPi[pfType]);
       }
@@ -1386,7 +1386,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
       }
 
       // Tendons
-      BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
+      for (const auto& tsTendon : tsDetails.Tendons)
       {
          (*pTable)(rowIdx++,colIdx) << force.SetValue(tsTendon.dPi[pfType]);
       }
@@ -1406,7 +1406,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    rowIdx++;
 
    // Girder Rebar
-   BOOST_FOREACH(const TIME_STEP_REBAR& tsRebar,tsDetails.GirderRebar)
+   for (const auto& tsRebar : tsDetails.GirderRebar)
    {
       (*pTable)(rowIdx++,colIdx) << force.SetValue(tsRebar.dP);
    }
@@ -1435,7 +1435,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    }
 
    // Tendons
-   BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
+   for (const auto& tsTendon : tsDetails.Tendons)
    {
       (*pTable)(rowIdx++,colIdx) << force.SetValue(tsTendon.dP);
    }
@@ -1456,7 +1456,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    rowIdx++;
 
    // Girder Rebar
-   BOOST_FOREACH(const TIME_STEP_REBAR& tsRebar,tsDetails.GirderRebar)
+   for (const auto& tsRebar : tsDetails.GirderRebar)
    {
       (*pTable)(rowIdx++,colIdx) << force.SetValue(tsRebar.P);
    }
@@ -1485,7 +1485,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    }
 
    // Tendons
-   BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
+   for (const auto& tsTendon : tsDetails.Tendons)
    {
       (*pTable)(rowIdx++,colIdx) << force.SetValue(tsTendon.P);
    }
@@ -1605,7 +1605,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtIncremental]);
 
       // Tendons
-      BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
+      for (const auto& tsTendon : tsDetails.Tendons)
       {
          (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
       }
@@ -1630,7 +1630,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_bot_deck[rtIncremental]);
 
    // Tendons
-   BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
+   for (const auto& tsTendon : tsDetails.Tendons)
    {
       (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsTendon.dfpe);
    }
@@ -1655,7 +1655,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_bot_deck[rtCumulative]);
 
    // Tendons
-   BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
+   for (const auto& tsTendon : tsDetails.Tendons)
    {
       (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsTendon.fpe);
    }

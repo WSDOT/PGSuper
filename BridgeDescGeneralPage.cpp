@@ -174,7 +174,13 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    ////////////////////////////////////////////////
    // Deck and Railing System
    ////////////////////////////////////////////////
-	DDX_CBItemData(pDX, IDC_DECK_TYPE, pParent->m_BridgeDesc.GetDeckDescription()->DeckType);
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+	DDX_CBItemData(pDX, IDC_DECK_TYPE, deckType);
+   if (pDX->m_bSaveAndValidate)
+   {
+      pParent->m_BridgeDesc.GetDeckDescription()->SetDeckType(deckType);
+   }
+
  	DDX_CBItemData(pDX, IDC_GIRDER_CONNECTIVITY, pParent->m_BridgeDesc.GetDeckDescription()->TransverseConnectivity);
 
    if ( pDX->m_bSaveAndValidate )
@@ -853,7 +859,7 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
    }
    else
    {
-      deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+      deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
    }
 
    pcbDeck->ResetContent();
@@ -882,7 +888,7 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
    else
    {
       pcbDeck->SetCurSel(0);
-      pParent->m_BridgeDesc.GetDeckDescription()->DeckType = deckTypes.front();
+      pParent->m_BridgeDesc.GetDeckDescription()->SetDeckType(deckTypes.front());
       OnDeckTypeChanged();
    }
 }
@@ -1010,7 +1016,7 @@ void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
 {
    m_MinGirderCount = m_Factory->GetMinimumBeamCount();
 
-   if ( m_NumGdrSpinner.GetSafeHwnd() != NULL )
+   if ( m_NumGdrSpinner.GetSafeHwnd() != nullptr )
    {
       m_NumGdrSpinner.SetRange(short(m_MinGirderCount),MAX_GIRDERS_PER_SPAN);
    }
@@ -1304,9 +1310,9 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
       pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints.clear();
    }
    
-   pParent->m_BridgeDesc.GetDeckDescription()->DeckType = newDeckType;
+   pParent->m_BridgeDesc.GetDeckDescription()->SetDeckType(newDeckType);
 
-   if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP || pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay )
+   if (newDeckType == pgsTypes::sdtCompositeCIP || newDeckType == pgsTypes::sdtCompositeOverlay )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
       Float64 fillet = pParent->m_BridgeDesc.GetMaxFillet();
@@ -1322,7 +1328,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          }
       }
    }
-   else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP )
+   else if (newDeckType == pgsTypes::sdtCompositeSIP )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
       Float64 fillet = pParent->m_BridgeDesc.GetMaxFillet();
@@ -1401,7 +1407,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          pGdrEntry->GetBeamFactory(&factory);
 
          Float64 min, max;
-         factory->GetAllowableSpacingRange(dimensions,pParent->m_BridgeDesc.GetDeckDescription()->DeckType,m_GirderSpacingType,&min,&max);
+         factory->GetAllowableSpacingRange(dimensions,pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType(),m_GirderSpacingType,&min,&max);
 
          Float64 min1 = min*startSkewCorrection;
          Float64 max1 = max*startSkewCorrection;
@@ -1512,7 +1518,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    CComboBox* pCBGirders = (CComboBox*)GetDlgItem(IDC_GDR_TYPE);
    int sel = pCBGirders->GetCurSel();
 
-   const GirderLibraryEntry* pGdrEntry = NULL;
+   const GirderLibraryEntry* pGdrEntry = nullptr;
    if ( sel == CB_ERR )
    {
       pGdrEntry = pLib->GetGirderEntry(m_GirderName);
@@ -1675,7 +1681,7 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
          ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
          pTTT->lpszText = m_strToolTipText.LockBuffer();
-         pTTT->hinst = NULL;
+         pTTT->hinst = nullptr;
          return TRUE;
       }
       else

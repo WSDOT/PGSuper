@@ -82,7 +82,7 @@ protected:
    void MakeCopy(const CProductStressTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CProductStressTable& rOther);
+   void MakeAssignment(const CProductStressTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

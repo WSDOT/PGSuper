@@ -71,11 +71,11 @@ public:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE);
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey);
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang);
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId);
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE);
+   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) override;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) override;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) override;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) override;
+   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE) override;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -96,11 +96,11 @@ private:
 
    // GROUP: LIFECYCLE
    // can't construct without a broker
-   pgsKdotGirderHaulingChecker();
+   pgsKdotGirderHaulingChecker() = delete;
 
    // Prevent accidental copying and assignment
-   pgsKdotGirderHaulingChecker(const pgsKdotGirderHaulingChecker&);
-   pgsKdotGirderHaulingChecker& operator=(const pgsKdotGirderHaulingChecker&);
+   pgsKdotGirderHaulingChecker(const pgsKdotGirderHaulingChecker&) = delete;
+   pgsKdotGirderHaulingChecker& operator=(const pgsKdotGirderHaulingChecker&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

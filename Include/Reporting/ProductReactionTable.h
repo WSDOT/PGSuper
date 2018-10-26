@@ -87,7 +87,7 @@ protected:
    void MakeCopy(const CProductReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CProductReactionTable& rOther);
+   void MakeAssignment(const CProductReactionTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

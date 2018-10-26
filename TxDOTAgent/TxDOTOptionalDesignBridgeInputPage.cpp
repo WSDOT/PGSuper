@@ -40,8 +40,8 @@ IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignBridgeInputPage, CPropertyPage)
 
 CTxDOTOptionalDesignBridgeInputPage::CTxDOTOptionalDesignBridgeInputPage()
 	: CPropertyPage(CTxDOTOptionalDesignBridgeInputPage::IDD),
-   m_pBrokerRetriever(NULL),
-   m_pData(NULL)
+   m_pBrokerRetriever(nullptr),
+   m_pData(nullptr)
 {
 }
 
@@ -63,7 +63,7 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    CPropertyPage::DoDataExchange(pDX);
 
    CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
-   if (pBroker==NULL)
+   if (pBroker==nullptr)
       return;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -322,7 +322,7 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
    GirderLibrary* pGdrLib = m_pBrokerRetriever->GetGirderLibrary();
 
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pGdrLib->GetEntry(girderEntry));
-   if (pGdrEntry==NULL)
+   if (pGdrEntry==nullptr)
    {
       ASSERT(0);
       CString msg, stmp;
@@ -347,7 +347,7 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
    ConnectionLibrary* pConnLib = m_pBrokerRetriever->GetConnectionLibrary();
 
    const ConnectionLibraryEntry* pConnEntry = dynamic_cast<const ConnectionLibraryEntry*>(pConnLib->GetEntry(leftConnEntry));
-   if (pConnEntry==NULL)
+   if (pConnEntry==nullptr)
    {
       CString msg, stmp;
       stmp.LoadString(IDS_CONN_ERROR);
@@ -357,7 +357,7 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
    }
 
    pConnEntry = dynamic_cast<const ConnectionLibraryEntry*>(pConnLib->GetEntry(rightConnEntry));
-   if (pConnEntry==NULL)
+   if (pConnEntry==nullptr)
    {
       CString msg, stmp;
       stmp.LoadString(IDS_CONN_ERROR);
@@ -448,7 +448,7 @@ void CTxDOTOptionalDesignBridgeInputPage::OnCbnSelchangeProjectCriteria()
 
       SpecLibrary* pLib = m_pBrokerRetriever->GetSpecLibrary();
       const SpecLibraryEntry* pEntry = (const SpecLibraryEntry*)pLib->GetEntry(libname);
-      if (pEntry!=NULL)
+      if (pEntry!=nullptr)
       {
          Float64 factor = pEntry->GetAtReleaseCompressionStressFactor();
          CString msg;

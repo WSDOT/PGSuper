@@ -200,7 +200,7 @@ void CUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
 
    CComQIPtr<IShape> shape(gdrSection);
    ATLASSERT(shape);
-   segment->AddShape(shape,material,NULL);
+   segment->AddShape(shape,material,nullptr);
 
    ssmbr->AddSegment(segment);
 }

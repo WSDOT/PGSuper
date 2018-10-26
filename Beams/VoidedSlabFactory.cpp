@@ -77,7 +77,7 @@ HRESULT CVoidedSlabFactory::FinalConstruct()
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Void Diameter
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Void Spacing
-   m_DimUnits[0].push_back(NULL);                     // Number of Voids
+   m_DimUnits[0].push_back(nullptr);                     // Number of Voids
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Max joint size
 
    // US Units
@@ -85,7 +85,7 @@ HRESULT CVoidedSlabFactory::FinalConstruct()
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W
    m_DimUnits[1].push_back(&unitMeasure::Inch); // Void Diameter
    m_DimUnits[1].push_back(&unitMeasure::Inch); // Void Spacing
-   m_DimUnits[1].push_back(NULL);               // Number of Voids
+   m_DimUnits[1].push_back(nullptr);               // Number of Voids
    m_DimUnits[1].push_back(&unitMeasure::Inch); // Max joint size
 
    return S_OK;
@@ -182,7 +182,7 @@ void CVoidedSlabFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType status
 
    CComQIPtr<IShape> shape(gdrSection);
    ATLASSERT(shape);
-   segment->AddShape(shape,material,NULL);
+   segment->AddShape(shape,material,nullptr);
 
    ssmbr->AddSegment(segment);
 }
@@ -207,8 +207,8 @@ void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupID
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    // use passed value if not null
-   pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pDeck->DeckType;
-   pgsTypes::SupportedBeamSpacing spacingType = (pSpacingType!=NULL) ? *pSpacingType : pBridgeDesc->GetGirderSpacingType();
+   pgsTypes::SupportedDeckType deckType = (pDeckType!=nullptr) ? *pDeckType : pDeck->GetDeckType();
+   pgsTypes::SupportedBeamSpacing spacingType = (pSpacingType!=nullptr) ? *pSpacingType : pBridgeDesc->GetGirderSpacingType();
 
    if (spacingType==pgsTypes::sbsUniformAdjacent || spacingType==pgsTypes::sbsGeneralAdjacent || spacingType==pgsTypes::sbsConstantAdjacent)
    {

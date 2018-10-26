@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 // exportCADData dialog
 
 /*--------------------------------------------------------------------*/
-exportCADData::exportCADData(IBroker* pBroker,CWnd* pParent /*=NULL*/)
+exportCADData::exportCADData(IBroker* pBroker,CWnd* pParent /*=nullptr*/)
 	: CDialog(exportCADData::IDD, pParent)
 {
    m_pBroker  = pBroker;

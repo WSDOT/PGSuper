@@ -66,7 +66,7 @@ public:
 
 protected:
    void MakeCopy(const CMomentLoadData& rOther);
-   virtual void MakeAssignment(const CMomentLoadData& rOther);
+   void MakeAssignment(const CMomentLoadData& rOther);
 };
 
 #endif // !defined(AFX_MOMENTLOADDATA_H__83982300_F548_44FC_B84A_A7C9731FE381__INCLUDED_)

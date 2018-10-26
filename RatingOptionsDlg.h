@@ -36,7 +36,7 @@ class CRatingOptionsDlg : public CPropertySheet, public IEditLoadRatingOptions
 	DECLARE_DYNAMIC(CRatingOptionsDlg)
 
 public:
-	CRatingOptionsDlg(CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CRatingOptionsDlg(CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 	virtual ~CRatingOptionsDlg();
 
    // IEditLoadRatingOptions
@@ -55,7 +55,7 @@ public:
 
 // Implementation
 public:
-	virtual INT_PTR DoModal();
+	virtual INT_PTR DoModal() override;
 
 
    // Returns a macro transaction object that contains editing transactions

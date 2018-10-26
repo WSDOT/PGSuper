@@ -89,7 +89,7 @@ protected:
    void MakeCopy(const CVehicularLoadReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CVehicularLoadReactionTable& rOther);
+   void MakeAssignment(const CVehicularLoadReactionTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

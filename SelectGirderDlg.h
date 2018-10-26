@@ -37,7 +37,7 @@ class CSelectGirderDlg : public CDialog
 {
 // Construction
 public:
-	CSelectGirderDlg(	IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
+	CSelectGirderDlg(	IBroker* pBroker, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSelectGirderDlg)
@@ -52,7 +52,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSelectGirderDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -60,7 +60,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CSelectGirderDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
    void OnGroupChanged();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

@@ -34,8 +34,8 @@ public:
    CPGSpliceTitlePageBuilder(const CPGSpliceTitlePageBuilder& other);
    ~CPGSpliceTitlePageBuilder(void);
 
-   virtual rptChapter* Build(boost::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual bool NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual rptChapter* Build(std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual bool NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec);
 
    CTitlePageBuilder* Clone() const;
 

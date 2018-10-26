@@ -141,7 +141,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
          SupportIndexType tsIdx = pBridgeDesc->MoveTemporarySupport(pParent->m_pTS->GetIndex(),m_Station);
 
          pParent->m_pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
-         ATLASSERT(pParent->m_pTS != NULL);
+         ATLASSERT(pParent->m_pTS != nullptr);
       }
    }
 }

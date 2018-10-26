@@ -90,7 +90,7 @@ protected:
    void MakeCopy(const CCamberTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CCamberTable& rOther);
+   void MakeAssignment(const CCamberTable& rOther);
 
    void GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,std::vector<pgsPointOfInterest>* pvPoiRelease,std::vector<pgsPointOfInterest>* pvPoiStorage,std::vector<pgsPointOfInterest>* pvPoiErected) const;
    // GROUP: ACCESS

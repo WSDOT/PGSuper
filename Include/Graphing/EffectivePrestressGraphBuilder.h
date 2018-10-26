@@ -34,15 +34,15 @@ public:
    CEffectivePrestressGraphBuilder(const CEffectivePrestressGraphBuilder& other);
    virtual ~CEffectivePrestressGraphBuilder();
 
-   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
-   virtual CGraphBuilder* Clone();
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
+   virtual CGraphBuilder* Clone() const override;
 
-   virtual void UpdateXAxis();
-   virtual void UpdateYAxis();
+   virtual void UpdateXAxis() override;
+   virtual void UpdateYAxis() override;
 
 protected:
-   virtual CGirderGraphControllerBase* CreateGraphController();
-   virtual bool UpdateNow();
+   virtual CGirderGraphControllerBase* CreateGraphController() override;
+   virtual bool UpdateNow() override;
 
    DECLARE_MESSAGE_MAP()
 
@@ -51,5 +51,5 @@ protected:
    void UpdatePosttensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx);
    void UpdatePretensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx);
 
-   virtual IntervalIndexType GetBeamDrawInterval();
+   virtual IntervalIndexType GetBeamDrawInterval() override;
 };

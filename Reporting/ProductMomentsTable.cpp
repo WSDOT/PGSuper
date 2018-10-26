@@ -69,6 +69,10 @@ std::_tstring LiveLoadPrefix(pgsTypes::LiveLoadType llType)
       strPrefix = _T("S");
       break;
 
+   case pgsTypes::lltLegalRating_Emergency:
+      strPrefix = _T("E");
+      break;
+
    case pgsTypes::lltPermitRating_Routine:
       strPrefix = _T("PR");
       break;
@@ -76,6 +80,9 @@ std::_tstring LiveLoadPrefix(pgsTypes::LiveLoadType llType)
    case pgsTypes::lltPermitRating_Special:
       strPrefix = _T("PS");
       break;
+
+   default:
+      ATLASSERT(false);
    }
 
    return strPrefix;
@@ -161,6 +168,16 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& 
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
             *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << j << _T(") ") << *iter << rptNewLine;
+         }
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltLegalRating_Emergency, girderKey);
+         j = 0;
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++)
+         {
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << j << _T(") ") << *iter << rptNewLine;
          }
       }
 
@@ -338,7 +355,12 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
          nCols += 2;
       }
 
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
+      {
+         nCols += 2;
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
       {
          nCols += 2;
       }
@@ -496,6 +518,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
       std::vector<Float64> minPermitLL, maxPermitLL;
       std::vector<Float64> minLegalRoutineLL, maxLegalRoutineLL;
       std::vector<Float64> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<Float64> minLegalEmergencyLL, maxLegalEmergencyLL;
       std::vector<Float64> minPermitRoutineLL, maxPermitRoutineLL;
       std::vector<Float64> minPermitSpecialLL, maxPermitSpecialLL;
 
@@ -510,6 +533,8 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
       std::vector<VehicleIndexType> maxLegalRoutineLLtruck;
       std::vector<VehicleIndexType> minLegalSpecialLLtruck;
       std::vector<VehicleIndexType> maxLegalSpecialLLtruck;
+      std::vector<VehicleIndexType> minLegalEmergencyLLtruck;
+      std::vector<VehicleIndexType> maxLegalEmergencyLLtruck;
       std::vector<VehicleIndexType> minPermitRoutineLLtruck;
       std::vector<VehicleIndexType> maxPermitRoutineLLtruck;
       std::vector<VehicleIndexType> minPermitSpecialLLtruck;
@@ -573,10 +598,16 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
             pForces2->GetLiveLoadMoment( lastIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pForces2->GetLiveLoadMoment( lastIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
-            pForces2->GetLiveLoadMoment( lastIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadMoment(lastIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck);
+            pForces2->GetLiveLoadMoment(lastIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck);
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pForces2->GetLiveLoadMoment(lastIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, true, false, &dummy, &maxLegalEmergencyLL, &dummyTruck, &maxLegalEmergencyLLtruck);
+            pForces2->GetLiveLoadMoment(lastIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, true, false, &minLegalEmergencyLL, &dummy, &minLegalEmergencyLLtruck, &dummyTruck);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -823,6 +854,26 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
                if ( bIndicateControllingLoad && 0 < minLegalSpecialLLtruck.size() )
                {
                   (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << _T(")");
+               }
+
+               col++;
+            }
+
+            // Legal - Emergency
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               (*p_table)(row, col) << moment.SetValue(maxLegalEmergencyLL[index]);
+               if (bIndicateControllingLoad && 0 < maxLegalEmergencyLLtruck.size())
+               {
+                  (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << maxLegalEmergencyLLtruck[index] << _T(")");
+               }
+
+               col++;
+
+               (*p_table)(row, col) << moment.SetValue(minLegalEmergencyLL[index]);
+               if (bIndicateControllingLoad && 0 < minLegalEmergencyLLtruck.size())
+               {
+                  (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Emergency) << minLegalEmergencyLLtruck[index] << _T(")");
                }
 
                col++;

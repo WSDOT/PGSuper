@@ -37,7 +37,7 @@ class CResolveGirderSpacingDlg : public CDialog
 {
 // Construction
 public:
-	CResolveGirderSpacingDlg(CWnd* pParent = NULL);   // standard constructor
+	CResolveGirderSpacingDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CResolveGirderSpacingDlg)
@@ -56,7 +56,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CResolveGirderSpacingDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -64,7 +64,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CResolveGirderSpacingDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

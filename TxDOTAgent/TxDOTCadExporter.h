@@ -67,12 +67,11 @@ END_COM_MAP()
 
 // IPGSDataImporter
 public:
-   STDMETHOD(Init)(UINT nCmdID);
-   STDMETHOD(GetName)(/*[out,retval]*/BSTR*  bstrText);
-   STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText);
-   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp);
-   STDMETHOD(GetCommandHintText)(BSTR*  bstrText);
-   STDMETHOD(Export)(/*[in]*/IBroker* pBroker);
+   STDMETHOD(Init)(UINT nCmdID) override;
+   STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText) override;
+   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) override;
+   STDMETHOD(GetCommandHintText)(BSTR*  bstrText) override;
+   STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(TxDOTCadExporter), CTxDOTCadExporter)

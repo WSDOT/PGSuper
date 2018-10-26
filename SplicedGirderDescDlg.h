@@ -38,14 +38,14 @@ class CSplicedGirderDescDlg : public CPropertySheet, public IEditSplicedGirderDa
 
 // Construction
 public:
-	CSplicedGirderDescDlg(const CGirderKey& girderKey,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CSplicedGirderDescDlg(const CGirderKey& girderKey,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
    // IEditSplicedGirderData
    const CGirderKey& GetGirderKey() { return m_GirderKey; }
 
 
-   const std::set<EditSplicedGirderExtension>& GetExtensionPages() const;
-   std::set<EditSplicedGirderExtension>& GetExtensionPages();
+   const std::vector<EditSplicedGirderExtension>& GetExtensionPages() const;
+   std::vector<EditSplicedGirderExtension>& GetExtensionPages();
 
 // Attributes
 public:
@@ -65,14 +65,14 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSplicedGirderDescDlg)
 	public:
-	virtual BOOL OnInitDialog();
-   virtual void DoDataExchange(CDataExchange* pDX);
+	virtual BOOL OnInitDialog() override;
+   virtual void DoDataExchange(CDataExchange* pDX) override;
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	virtual ~CSplicedGirderDescDlg();
-	virtual INT_PTR DoModal();
+	virtual INT_PTR DoModal() override;
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
@@ -85,7 +85,7 @@ protected:
 
 
    txnMacroTxn m_Macro;
-   std::set<EditSplicedGirderExtension> m_ExtensionPages;
+   std::vector<EditSplicedGirderExtension> m_ExtensionPages;
    void NotifyExtensionPages();
 
 

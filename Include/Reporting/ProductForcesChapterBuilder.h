@@ -46,7 +46,7 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CProductForcesChapterBuilder(const CProductForcesChapterBuilder&);
-   CProductForcesChapterBuilder& operator=(const CProductForcesChapterBuilder&);
+   CProductForcesChapterBuilder(const CProductForcesChapterBuilder&) = delete;
+   CProductForcesChapterBuilder& operator=(const CProductForcesChapterBuilder&) = delete;
 };
 

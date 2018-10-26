@@ -59,9 +59,9 @@ public:
 
 protected:
    void MakeCopy(const CTemporarySupportActivityBase& rOther);
-   virtual void MakeAssignment(const CTemporarySupportActivityBase& rOther);
+   void MakeAssignment(const CTemporarySupportActivityBase& rOther);
 
-   virtual LPCTSTR GetUnitName() = 0;
+   virtual LPCTSTR GetUnitName() const = 0;
 
    bool m_bEnabled;
    std::vector<SupportIDType> m_TempSupports;
@@ -70,5 +70,5 @@ protected:
 class PGSEXTCLASS CRemoveTemporarySupportsActivity : public CTemporarySupportActivityBase
 {
 protected:
-   virtual LPCTSTR GetUnitName() { return _T("RemoveTemporarySupports"); }
+   virtual LPCTSTR GetUnitName() const { return _T("RemoveTemporarySupports"); }
 };

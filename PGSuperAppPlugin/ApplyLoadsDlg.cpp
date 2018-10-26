@@ -38,7 +38,7 @@
 
 IMPLEMENT_DYNAMIC(CApplyLoadsDlg, CDialog)
 
-CApplyLoadsDlg::CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CApplyLoadsDlg::CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CApplyLoadsDlg::IDD, pParent)
 {
    m_TimelineMgr = timelineMgr;

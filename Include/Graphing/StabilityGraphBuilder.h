@@ -36,12 +36,12 @@ public:
    CStabilityGraphBuilder(const CStabilityGraphBuilder& other);
    virtual ~CStabilityGraphBuilder();
 
-   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
-   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
-   virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
-   virtual CGraphBuilder* Clone();
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID) override;
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
+   virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC) override;
+   virtual CGraphBuilder* Clone() const override;
 
-   virtual CEAFGraphControlWindow* GetGraphControlWindow();
+   virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
 
 protected:
 
@@ -61,7 +61,7 @@ protected:
 
    void UpdateXAxis();
 
-   virtual bool UpdateNow();
+   virtual bool UpdateNow() override;
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
 
    void DrawTheGraph(CWnd* pGraphWnd,CDC* pDC);

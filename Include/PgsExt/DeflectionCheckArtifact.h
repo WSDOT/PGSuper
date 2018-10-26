@@ -110,7 +110,7 @@ protected:
    void MakeCopy(const pgsDeflectionCheckArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsDeflectionCheckArtifact& rOther);
+   void MakeAssignment(const pgsDeflectionCheckArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

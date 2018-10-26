@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CCatalogServerDlg dialog
 
-CCatalogServerDlg::CCatalogServerDlg(CWnd* pParent /*=NULL*/)
+CCatalogServerDlg::CCatalogServerDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CCatalogServerDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CCatalogServerDlg)
@@ -46,7 +46,7 @@ CCatalogServerDlg::CCatalogServerDlg(CWnd* pParent /*=NULL*/)
 }
 
 
-CCatalogServerDlg::CCatalogServerDlg(const CString& strExt,const CString& appName,CWnd* pParent /*=NULL*/)
+CCatalogServerDlg::CCatalogServerDlg(const CString& strExt,const CString& appName,CWnd* pParent /*=nullptr*/)
 	: CDialog(CCatalogServerDlg::IDD, pParent),m_TemplateFileExt(strExt),
    m_AppName(appName)
 {

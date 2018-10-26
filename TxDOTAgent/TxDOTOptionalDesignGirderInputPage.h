@@ -48,7 +48,7 @@ public:
    ITxDOTBrokerRetriever* m_pBrokerRetriever;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 
@@ -57,7 +57,7 @@ public:
 
 // ITxDataObserver
 public:
-   virtual void OnTxDotDataChanged(int change);
+   virtual void OnTxDotDataChanged(int change) override;
    bool m_GirderTypeChanged;
 
 private:
@@ -96,7 +96,7 @@ private:
 
 
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
    afx_msg void OnCbnSelchangeOptStrandType();
    afx_msg void OnCbnSelchangeOptFilltypeCombo();
 
@@ -104,8 +104,8 @@ public:
    afx_msg void OnCbnSelchangeOrigNumStrands();
    afx_msg void OnCbnSelchangeOrgFilltypeCombo();
 
-   virtual BOOL OnSetActive();
-   virtual BOOL OnKillActive();
+   virtual BOOL OnSetActive() override;
+   virtual BOOL OnKillActive() override;
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
    afx_msg void OnHelpFinder();

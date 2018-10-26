@@ -82,7 +82,7 @@ protected:
    void MakeCopy(const CHoldDownForceCheck& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CHoldDownForceCheck& rOther);
+   void MakeAssignment(const CHoldDownForceCheck& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

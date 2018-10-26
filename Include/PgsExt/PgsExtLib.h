@@ -26,8 +26,6 @@
 #include <PGSuperAll.h>
 #include <WBFLAtlExt.h>
 
-#include <atlbase.h>
-
 #include <Units\Units.h>
 #include <System\System.h>
 #include <LRFD\LRFD.h>

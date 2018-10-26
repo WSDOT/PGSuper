@@ -142,7 +142,7 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
    CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-   pMenu->LoadMenu(IDR_GIRDER_CTX,NULL);
+   pMenu->LoadMenu(IDR_GIRDER_CTX,nullptr);
 
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
    {
@@ -150,18 +150,18 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
       CString strDesignGirder;
       pMenu->GetMenuString(ID_GIRDERVIEW_DESIGNGIRDERDIRECT,strDesignGirder,MF_BYCOMMAND);
       UINT nPos = pMenu->FindMenuItem(strDesignGirder);
-      pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,NULL); // remove the separater before "Design Girder"
-      pMenu->RemoveMenu(ID_GIRDERVIEW_DESIGNGIRDERDIRECT,MF_BYCOMMAND,NULL);
-      pMenu->RemoveMenu(ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET,MF_BYCOMMAND,NULL);
+      pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,nullptr); // remove the separater before "Design Girder"
+      pMenu->RemoveMenu(ID_GIRDERVIEW_DESIGNGIRDERDIRECT,MF_BYCOMMAND,nullptr);
+      pMenu->RemoveMenu(ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET,MF_BYCOMMAND,nullptr);
 
       // PGSplice does not use moment loads
-      pMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,NULL);
+      pMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,nullptr);
 
       // In the context of the whole view, harp points don't make sense for spliced girder bridges
       // Each segment can have harp points... to which segment are we refering? Each segment
       // can have a different number of harp points as well.
-      pMenu->RemoveMenu(ID_LEFT_HP,MF_BYCOMMAND,NULL);
-      pMenu->RemoveMenu(ID_RIGHT_HP,MF_BYCOMMAND,NULL);
+      pMenu->RemoveMenu(ID_LEFT_HP,MF_BYCOMMAND,nullptr);
+      pMenu->RemoveMenu(ID_RIGHT_HP,MF_BYCOMMAND,nullptr);
    }
 
 #pragma Reminder("REVIEW: context menu items incorrect if less that two harp points")
@@ -183,23 +183,19 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    if ( pThis->m_bGirderElevation )
    {
-      const std::map<IDType,IGirderElevationViewEventCallback*>& callbacks = pDoc->GetGirderElevationViewCallbacks();
-      std::map<IDType,IGirderElevationViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IGirderElevationViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      const auto& callbacks = pDoc->GetGirderElevationViewCallbacks();
+      for ( const auto& callback : callbacks )
       {
-         IGirderElevationViewEventCallback* pCallback = callbackIter->second;
+         IGirderElevationViewEventCallback* pCallback = callback.second;
          pCallback->OnBackgroundContextMenu(pMenu);
       }
    }
    else
    {
-      const std::map<IDType,IGirderSectionViewEventCallback*>& callbacks = pDoc->GetGirderSectionViewCallbacks();
-      std::map<IDType,IGirderSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IGirderSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      const auto& callbacks = pDoc->GetGirderSectionViewCallbacks();
+      for ( const auto& callback : callbacks)
       {
-         IGirderSectionViewEventCallback* pCallback = callbackIter->second;
+         IGirderSectionViewEventCallback* pCallback = callback.second;
          pCallback->OnBackgroundContextMenu(pMenu);
       }
    }

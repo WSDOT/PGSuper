@@ -113,7 +113,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacity(IntervalIndexType intervalId
                                                     SHEARCAPACITYDETAILS* pscd)
 {
    // get known information
-   VERIFY(GetInformation(intervalIdx, limitState, poi, NULL, pscd));
+   VERIFY(GetInformation(intervalIdx, limitState, poi, nullptr, pscd));
    ComputeShearCapacityDetails(intervalIdx,limitState,poi,pscd);
 }
 
@@ -316,20 +316,25 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
 
    Float64 neff;
    Float64 eps, Pps;
-   if ( pConfig )
-   {
-      eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, *pConfig, pgsTypes::Permanent, &neff);
+   eps = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig, &neff);
 
-      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, *pConfig)
-         + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End,*pConfig);
-   }
-   else
-   {
-      eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &neff);
+   Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx, pgsTypes::End, pConfig)
+      + pPsForce->GetPrestressForce(poi, pgsTypes::Straight, finalIntervalIdx, pgsTypes::End, pConfig);
 
-      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End)
-          + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End);
-   }
+   //if ( pConfig )
+   //{
+   //   eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, pConfig, pgsTypes::Permanent, &neff);
+
+   //   Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, pConfig)
+   //      + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End, pConfig);
+   //}
+   //else
+   //{
+   //   eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &neff);
+
+   //   Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End)
+   //       + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End);
+   //}
 
 
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if there are tendons
@@ -519,7 +524,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // Determine if the tension side is on the top half or bottom half of the girder
    // The flexural tension side is on the bottom when the maximum (positive) bending moment
    // exceeds the minimum (negative) bending moment
-   bool bTensionOnBottom = ( fabs(Mu_min) <= fabs(Mu_max) ? true : false);
+   bool bTensionOnBottom = ( IsLE(fabs(Mu_min),fabs(Mu_max),0.0001) ? true : false);
    pscd->bTensionBottom = bTensionOnBottom;
 
    // axial force
@@ -568,7 +573,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
 
 
    // material props
-   if ( pConfig == NULL )
+   if ( pConfig == nullptr )
    {
       pscd->fc = pMaterial->GetSegmentDesignFc(segmentKey,intervalIdx);
       pscd->Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
@@ -623,7 +628,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    Float64 nl;
    Float64 abar;
    Float64 avs;
-   if ( pConfig == NULL )
+   if ( pConfig == nullptr )
    {
       avs = pStirrups->GetVertStirrupAvs(poi, &size, &abar, &nl, &s);
    }
@@ -702,33 +707,23 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    GET_IFACE(IGirder,pGdr);
 
    // vertical component of prestress force
-   if (pConfig == NULL)
+   pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi, intervalIdx, pgsTypes::End, pConfig);
+   if (pConfig == nullptr)
    {
-      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End);
       pscd->Vpt = pPTForce->GetVerticalTendonForce(poi,intervalIdx,pgsTypes::End,ALL_DUCTS);
    }
    else
    {
-      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End,*pConfig);
-
       // if there is a config, this is a pretensioned bridge so no tendons.
       pscd->Vpt = 0;
    }
    pscd->Vp = pscd->Vps + pscd->Vpt;
 
-   MOMENTCAPACITYDETAILS capdet;
-   if (pConfig == NULL)
-   {
-      pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, (pscd->bTensionBottom ? true : false), &capdet);
-   }
-   else
-   {
-      pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, *pConfig, (pscd->bTensionBottom ? true : false), &capdet);
-   }
+   const MOMENTCAPACITYDETAILS* pCapdet = pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, (pscd->bTensionBottom ? true : false), pConfig);
 
-   pscd->de        = capdet.de_shear; // see PCI BDM 8.4.1.2
-   pscd->MomentArm = capdet.MomentArm;
-   pscd->PhiMu     = capdet.Phi;
+   pscd->de        = pCapdet->de_shear; // see PCI BDM 8.4.1.2
+   pscd->MomentArm = pCapdet->MomentArm;
+   pscd->PhiMu     = pCapdet->Phi;
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -770,7 +765,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    }
 
    GET_IFACE(IShearCapacity,pShearCapacity);
-   if (pConfig == NULL)
+   if (pConfig == nullptr)
    {
       pscd->fpc = pShearCapacity->GetFpc(poi);
       pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
@@ -778,7 +773,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    else
    {
       pscd->fpc = pShearCapacity->GetFpc(poi, *pConfig);
-      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,*pConfig);
+      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pConfig);
    }
 
    if ( bAfter1999 )
@@ -803,7 +798,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
 
    // prestress area - factor for development length
    Float64 apsu = 0;
-   if (pConfig == NULL)
+   if (pConfig == nullptr)
    {
       if ( pscd->bTensionBottom )
       {
@@ -821,11 +816,11 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
       // factor in CBridgeAgentImp::GetApsTensionSide where the accurate method is used only in end zones.
       if ( pscd->bTensionBottom )
       {
-         apsu = pStrandGeometry->GetApsBottomHalf(poi,*pConfig,dlaApproximate);
+         apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaApproximate,pConfig);
       }
       else                                                             
       {
-         apsu = pStrandGeometry->GetApsTopHalf(poi,*pConfig,dlaApproximate);
+         apsu = pStrandGeometry->GetApsTopHalf(poi,dlaApproximate,pConfig);
       }
    }
 
@@ -841,7 +836,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    }
 
 #if defined _DEBUG
-   if ( pConfig != NULL )
+   if ( pConfig != nullptr )
    {
       ATLASSERT(IsZero(pscd->Apt)); // if we have a config, we better not have a tendon
    }
@@ -853,7 +848,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
 
    // cracking moment parameters for LRFD simplified method
    CRACKINGMOMENTDETAILS mcr_details;
-   if ( pConfig == NULL )
+   if ( pConfig == nullptr )
    {
       pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,(pscd->bTensionBottom ? true : false),&mcr_details);
    }
@@ -1095,9 +1090,9 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          Float64 dv    = pscd->dv;
          Float64 bv    = pscd->bv;
 
-         const unitLength* pLengthUnit = NULL;
-         const unitStress* pStressUnit = NULL;
-         const unitForce*  pForceUnit  = NULL;
+         const unitLength* pLengthUnit = nullptr;
+         const unitStress* pStressUnit = nullptr;
+         const unitForce*  pForceUnit  = nullptr;
          Float64 K; // main coefficient in equaion 5.8.3.3-3
          Float64 Kfct; // coefficient for fct if LWC
          if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )

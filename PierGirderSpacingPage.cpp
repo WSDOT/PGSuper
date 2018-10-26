@@ -690,7 +690,7 @@ GirderIndexType CPierGirderSpacingPage::GetMinGirderCount(pgsTypes::PierFaceType
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
    CGirderGroupData* pGirderGroup = pParent->m_pPier->GetGirderGroup(pierFace);
 
-   if ( pGirderGroup == NULL )
+   if ( pGirderGroup == nullptr )
    {
       return 2;
    }
@@ -1000,10 +1000,10 @@ void CPierGirderSpacingPage::UpdateGirderSpacingText()
    bInputSpacing[pgsTypes::Ahead] = m_GirderSpacingGrid[pgsTypes::Ahead].InputSpacing();
    bInputSpacing[pgsTypes::Back]  = m_GirderSpacingGrid[pgsTypes::Back].InputSpacing();
 
-   if ( pParent->m_pSpan[pgsTypes::Back] == NULL )
+   if ( pParent->m_pSpan[pgsTypes::Back] == nullptr )
       bInputSpacing[pgsTypes::Back] = true;
 
-   if ( pParent->m_pSpan[pgsTypes::Ahead] == NULL )
+   if ( pParent->m_pSpan[pgsTypes::Ahead] == nullptr )
       bInputSpacing[pgsTypes::Ahead] = true;
 
    BOOL bEnable = TRUE;
@@ -1117,8 +1117,8 @@ void CPierGirderSpacingPage::InitSpacingBack(CPierDetailsDlg* pParent,bool bUse)
                                                               pgsTypes::Back,
                                                               pParent->m_pPier->GetIndex(),
                                                               skew_angle,
-                                                              pParent->m_pSpan[pgsTypes::Ahead] == NULL ? true : false,
-                                                              pParent->m_pPier->GetBridgeDescription()->GetDeckDescription()->DeckType);
+                                                              pParent->m_pSpan[pgsTypes::Ahead] == nullptr ? true : false,
+                                                              pParent->m_pPier->GetBridgeDescription()->GetDeckDescription()->GetDeckType());
 
       m_RefGirderIdx[pgsTypes::Back]        = pGirderSpacing->GetRefGirder();
       m_RefGirderOffset[pgsTypes::Back]     = pGirderSpacing->GetRefGirderOffset();
@@ -1155,8 +1155,8 @@ void CPierGirderSpacingPage::InitSpacingAhead(CPierDetailsDlg* pParent,bool bUse
                                                                pgsTypes::Ahead,
                                                                pParent->m_pPier->GetIndex(),
                                                                skew_angle,
-                                                               pParent->m_pSpan[pgsTypes::Back] == NULL ? true : false,
-                                                               pParent->m_pPier->GetBridgeDescription()->GetDeckDescription()->DeckType);
+                                                               pParent->m_pSpan[pgsTypes::Back] == nullptr ? true : false,
+                                                               pParent->m_pPier->GetBridgeDescription()->GetDeckDescription()->GetDeckType());
 
       m_RefGirderIdx[pgsTypes::Ahead]        = pGirderSpacing->GetRefGirder();
       m_RefGirderOffset[pgsTypes::Ahead]     = pGirderSpacing->GetRefGirderOffset();

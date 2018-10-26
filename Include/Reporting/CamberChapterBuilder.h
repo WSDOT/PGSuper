@@ -40,6 +40,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CCamberChapterBuilder(const CCamberChapterBuilder&);
-   CCamberChapterBuilder& operator=(const CCamberChapterBuilder&);
+   CCamberChapterBuilder(const CCamberChapterBuilder&) = delete;
+   CCamberChapterBuilder& operator=(const CCamberChapterBuilder&) = delete;
 };

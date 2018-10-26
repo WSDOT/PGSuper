@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="SpecAgent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpecAgentImp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpecAgent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpecAgentImp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\ResistanceFactors.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\Allowables.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\GirderHandlingSpecCriteria.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\InterfaceShearRequirements.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\PrecastIGirderDetailsSpec.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\TransverseReinforcementSpec.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="SpecAgent.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SpecAgent.def" />
+    <None Include="SpecAgent.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{0d325e8c-7161-43c0-9543-657fa3cf47c5}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{c969d829-e9d8-4e0b-a422-04a8fda02580}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{a7f94218-045a-4de0-b461-3270f6f017cc}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="IFace">
+      <UniqueIdentifier>{9b875843-2429-4b59-ac05-ffd0b073ff8a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SpecAgent.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

@@ -157,7 +157,7 @@ protected:
    void MakeCopy(const pgsStrandStressArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsStrandStressArtifact& rOther);
+   void MakeAssignment(const pgsStrandStressArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

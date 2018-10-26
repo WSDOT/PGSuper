@@ -112,7 +112,7 @@ static HRESULT GetPrevNumStrands(StrandIndexType currNum, IIndexArray* array, St
 //////////////////////////////////////////////////////////////////////
 
 CStrandFiller::CStrandFiller():
-m_pGdrEntry(NULL),
+m_pGdrEntry(nullptr),
 m_NeedToCompute(true)
 {
    m_TempArray.CoCreateInstance(CLSID_IndexArray);

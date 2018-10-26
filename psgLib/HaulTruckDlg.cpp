@@ -34,7 +34,7 @@
 
 IMPLEMENT_DYNAMIC(CHaulTruckDlg, CDialog)
 
-CHaulTruckDlg::CHaulTruckDlg(bool allowEditing,CWnd* pParent /*=NULL*/)
+CHaulTruckDlg::CHaulTruckDlg(bool allowEditing,CWnd* pParent /*=nullptr*/)
 	: CDialog(CHaulTruckDlg::IDD, pParent),
    m_bAllowEditing(allowEditing)
 {

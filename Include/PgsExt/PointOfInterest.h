@@ -360,7 +360,12 @@ public:
    // Returns true if this poi has attributes
    bool HasAttributes() const;
 
+   // At same location within tolerance
    bool AtSamePlace(const pgsPointOfInterest& other) const;
+
+   // At same location withing exacting tolerance
+   bool AtExactSamePlace(const pgsPointOfInterest& other) const;
+
 
    // Returns a string of attribute codes.
    std::_tstring GetAttributes(PoiAttributeType reference,bool bIncludeMarkup) const;
@@ -371,7 +376,7 @@ protected:
    void MakeCopy(const pgsPointOfInterest& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsPointOfInterest& rOther);
+   void MakeAssignment(const pgsPointOfInterest& rOther);
 
    //------------------------------------------------------------------------
    // utility functions for inserting and extracting tenth point information

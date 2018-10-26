@@ -94,8 +94,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CUserDefinedLoadsChapterBuilder(const CUserDefinedLoadsChapterBuilder&);
-   CUserDefinedLoadsChapterBuilder& operator=(const CUserDefinedLoadsChapterBuilder&);
+   CUserDefinedLoadsChapterBuilder(const CUserDefinedLoadsChapterBuilder&) = delete;
+   CUserDefinedLoadsChapterBuilder& operator=(const CUserDefinedLoadsChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

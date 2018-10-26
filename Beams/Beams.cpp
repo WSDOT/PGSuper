@@ -216,8 +216,8 @@ END_OBJECT_MAP()
 class CBeamsApp : public CWinApp
 {
 public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 };
 
 CBeamsApp theApp;

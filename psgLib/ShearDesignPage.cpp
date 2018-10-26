@@ -48,7 +48,7 @@ CShearDesignPage::CShearDesignPage()
    , m_bBarsProvideConfinement(FALSE)
    , m_LongReinfShearMethod(0)
 {
-   m_pGrid = std::auto_ptr<CShearBarsLegsGrid>(new CShearBarsLegsGrid());
+   m_pGrid = std::make_unique<CShearBarsLegsGrid>();
 }
 
 CShearDesignPage::~CShearDesignPage()

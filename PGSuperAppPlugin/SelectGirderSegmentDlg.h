@@ -30,7 +30,7 @@ class CSelectGirderSegmentDlg : public CDialog
 	DECLARE_DYNAMIC(CSelectGirderSegmentDlg)
 
 public:
-	CSelectGirderSegmentDlg(CWnd* pParent = NULL);   // standard constructor
+	CSelectGirderSegmentDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSelectGirderSegmentDlg();
 
 // Dialog Data
@@ -41,10 +41,10 @@ public:
    SegmentIndexType m_Segment;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
    afx_msg void OnGroupChanged();
 };

@@ -140,7 +140,7 @@ protected:
    void MakeCopy(const pgsDebondArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsDebondArtifact& rOther);
+   void MakeAssignment(const pgsDebondArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

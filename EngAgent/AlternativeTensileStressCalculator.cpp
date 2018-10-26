@@ -269,7 +269,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
          pgsTypes::ConcreteType conc_type;
          Float64 fci, fct;
          bool isfct;
-         if ( pConfig == NULL )
+         if ( pConfig == nullptr )
          {
             CClosureKey closureKey;
             if ( m_pPoi->IsInClosureJoint(poi,&closureKey) )
@@ -299,7 +299,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
          rebar_section->get__EnumRebarSectionItem(&enumItems);
 
          CComPtr<IRebarSectionItem> item;
-         while ( enumItems->Next(1,&item,NULL) != S_FALSE )
+         while ( enumItems->Next(1,&item,nullptr) != S_FALSE )
          {
             CComPtr<IRebar> rebar;
             item->get_Rebar(&rebar);

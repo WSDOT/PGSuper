@@ -57,13 +57,13 @@ SpanIndexType CSpanReportHint::GetSpan()
 int CSpanReportHint::IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
    CSpanReportSpecification* pSpanRptSpec = dynamic_cast<CSpanReportSpecification*>(pRptSpec);
-   if ( pSpanRptSpec == NULL )
+   if ( pSpanRptSpec == nullptr )
    {
       return -1;
    }
 
    CSpanReportHint* pSpanRptHint = dynamic_cast<CSpanReportHint*>(pHint);
-   if ( pSpanRptHint == NULL )
+   if ( pSpanRptHint == nullptr )
    {
       return -1;
    }
@@ -107,7 +107,7 @@ GirderIndexType CGirderLineReportHint::GetGirderIndex() const
 int CGirderLineReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
    CGirderLineReportHint* pGirderRptHint = dynamic_cast<CGirderLineReportHint*>(pHint);
-   if ( pGirderRptHint == NULL )
+   if ( pGirderRptHint == nullptr )
    {
       return -1;
    }
@@ -118,20 +118,20 @@ int CGirderLineReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* p
    }
 
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   if ( pGdrRptSpec != NULL )
+   if ( pGdrRptSpec != nullptr )
    {
       return (pGirderRptHint->m_GroupIdx == pGdrRptSpec->GetGroupIndex() && pGirderRptHint->m_GirderIdx == pGdrRptSpec->GetGirderIndex() ? 1 : 0);
    }
    else
    {
       CMultiGirderReportSpecification* pMGdrRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
-      if ( pMGdrRptSpec != NULL )
+      if ( pMGdrRptSpec != nullptr )
       {
          return pMGdrRptSpec->IsMyGirder(CGirderKey(pGirderRptHint->m_GroupIdx,pGirderRptHint->m_GirderIdx));
       }
 
       CMultiViewSpanGirderReportSpecification* pMVGdrRptSpec = dynamic_cast<CMultiViewSpanGirderReportSpecification*>(pRptSpec);
-      if ( pMVGdrRptSpec != NULL )
+      if ( pMVGdrRptSpec != nullptr )
       {
          return pMVGdrRptSpec->IsMyGirder(CGirderKey(pGirderRptHint->m_GroupIdx ,pGirderRptHint->m_GirderIdx));
       }
@@ -175,20 +175,20 @@ const CGirderKey& CGirderReportHint::GetGirderKey() const
 int CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
    CGirderReportHint* pGirderRptHint = dynamic_cast<CGirderReportHint*>(pHint);
-   if ( pGirderRptHint == NULL )
+   if ( pGirderRptHint == nullptr )
    {
       return -1;
    }
 
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   if ( pGirderRptSpec != NULL )
+   if ( pGirderRptSpec != nullptr )
    {
       return (pGirderRptHint->m_GirderKey == pGirderRptSpec->GetGirderKey() ? 1 : 0);
    }
    else
    {
       CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
-      if ( pMultiGirderRptSpec != NULL )
+      if ( pMultiGirderRptSpec != nullptr )
       {
          return pMultiGirderRptSpec->IsMyGirder(pGirderRptHint->m_GirderKey);
       }

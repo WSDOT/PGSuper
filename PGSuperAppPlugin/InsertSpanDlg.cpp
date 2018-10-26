@@ -46,7 +46,7 @@ static char THIS_FILE[] = __FILE__;
 // CInsertSpanDlg dialog
 
 
-CInsertSpanDlg::CInsertSpanDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pParent /*=NULL*/)
+CInsertSpanDlg::CInsertSpanDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pParent /*=nullptr*/)
 	: CDialog(CInsertSpanDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CInsertSpanDlg)
@@ -181,7 +181,7 @@ BOOL CInsertSpanDlg::OnInitDialog()
       else
       {
          pSpan = m_pBridgeDesc->GetSpan(m_RefPierIdx-1);
-         if ( pSpan == NULL )
+         if ( pSpan == nullptr )
          {
             pSpan = m_pBridgeDesc->GetSpan(m_RefPierIdx);
          }
@@ -220,8 +220,8 @@ void CInsertSpanDlg::OnPierChanged()
 
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
 
-      const CGirderGroupData* pPrevGroup = NULL;
-      const CGirderGroupData* pNextGroup = NULL;
+      const CGirderGroupData* pPrevGroup = nullptr;
+      const CGirderGroupData* pNextGroup = nullptr;
 
       if ( pPier->GetPrevSpan() )
          pPrevGroup = m_pBridgeDesc->GetGirderGroup(pPier->GetPrevSpan());
@@ -229,7 +229,7 @@ void CInsertSpanDlg::OnPierChanged()
       if ( pPier->GetNextSpan() )
          pNextGroup = m_pBridgeDesc->GetGirderGroup(pPier->GetNextSpan());
 
-      ATLASSERT(pPrevGroup != NULL || pNextGroup != NULL);
+      ATLASSERT(pPrevGroup != nullptr || pNextGroup != nullptr);
       CWnd* pGroup = GetDlgItem(IDC_NEW_GROUP);
       if ( pPrevGroup != pNextGroup )
       {

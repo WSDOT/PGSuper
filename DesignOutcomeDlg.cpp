@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CDesignOutcomeDlg dialog
-CDesignOutcomeDlg::CDesignOutcomeDlg(boost::shared_ptr<CMultiGirderReportSpecification>& pRptSpec,const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim, CWnd* pParent /*=NULL*/)
+CDesignOutcomeDlg::CDesignOutcomeDlg(std::shared_ptr<CMultiGirderReportSpecification>& pRptSpec,const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim, CWnd* pParent /*=nullptr*/)
 	: CDialog(CDesignOutcomeDlg::IDD, pParent), m_pRptSpec(pRptSpec), 
    m_GirderKeys(girderKeys), 
    m_DesignADimType(designADim), 
@@ -299,8 +299,8 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    m_pRptSpec->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
-   boost::shared_ptr<CReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
-   boost::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
+   std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
    m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
 
    // restore the size of the window
@@ -310,7 +310,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
       if (pApp->ReadWindowPlacement(CString("Settings"),CString("DesignOutcome"),&wp))
       {
          CRect rect(wp.rcNormalPosition);
-         SetWindowPos(NULL,0,0,rect.Size().cx,rect.Size().cy,SWP_NOMOVE);
+         SetWindowPos(nullptr,0,0,rect.Size().cx,rect.Size().cy,SWP_NOMOVE);
       }
    }
 
@@ -322,7 +322,7 @@ void CDesignOutcomeDlg::CleanUp()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = boost::shared_ptr<CReportBrowser>();
+      m_pBrowser = std::shared_ptr<CReportBrowser>();
    }
 
    // save the size of the window

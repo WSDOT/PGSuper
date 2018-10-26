@@ -233,7 +233,7 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
       CPGSDocBase* pPGSDoc = (CPGSDocBase*)pDoc;
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSDoc->GetPluginCommandManager());
-      pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
+      pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,nullptr);
 
       if ( pPGSDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
       {
@@ -241,9 +241,9 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
          CString strDesignGirder;
          pMenu->GetMenuString(ID_PROJECT_DESIGNGIRDERDIRECT,strDesignGirder,MF_BYCOMMAND);
          UINT nPos = pMenu->FindMenuItem(strDesignGirder);
-         pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,NULL); // remove the separater before "Design Girder"
-         pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECT,MF_BYCOMMAND,NULL);
-         pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET,MF_BYCOMMAND,NULL);
+         pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,nullptr); // remove the separater before "Design Girder"
+         pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECT,MF_BYCOMMAND,nullptr);
+         pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET,MF_BYCOMMAND,nullptr);
       }
 
       pPGSDoc->BuildReportMenu(pMenu,true);
@@ -537,11 +537,11 @@ STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnContex
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
       {
-         pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
+         pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,nullptr);
       }
       else
       {
-         pMenu->LoadMenu(IDR_SELECTED_GIRDER_SEGMENT_CONTEXT,NULL);
+         pMenu->LoadMenu(IDR_SELECTED_GIRDER_SEGMENT_CONTEXT,nullptr);
       }
 
       pPGSuperDoc->BuildReportMenu(pMenu,true);
@@ -759,11 +759,11 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
 
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
       {
-         pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
+         pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,nullptr);
       }
       else if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
       {
-         pMenu->LoadMenu(IDR_SELECTED_GIRDERLINE_CONTEXT,NULL);
+         pMenu->LoadMenu(IDR_SELECTED_GIRDERLINE_CONTEXT,nullptr);
 
          CEAFMenu* pSegmentMenu = pMenu->CreatePopupMenu(0,_T("Edit Segment"));
          CComPtr<IBroker> pBroker;
@@ -777,7 +777,7 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
             UINT uID = ID_EDIT_SEGMENT_MIN + (UINT)segIdx;
             if ( uID <= ID_EDIT_SEGMENT_MAX )
             {
-               pSegmentMenu->AppendMenu(uID,strMenuItem,NULL);
+               pSegmentMenu->AppendMenu(uID,strMenuItem,nullptr);
             }
          }
       }

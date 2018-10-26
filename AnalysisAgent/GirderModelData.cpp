@@ -33,11 +33,11 @@ CGirderModelData::CGirderModelData(CGirderModelManager *pParent,GirderIndexType 
 
    // create minimum model enveloper and initialize it (no models just yet)
    m_MinModelEnveloper.CoCreateInstance(CLSID_LBAMModelEnveloper);
-   m_MinModelEnveloper->Initialize(NULL,atForce,optMinimize);
+   m_MinModelEnveloper->Initialize(nullptr,atForce,optMinimize);
 
    // create maximum model enveloper and initialize it (no models just yet)
    m_MaxModelEnveloper.CoCreateInstance(CLSID_LBAMModelEnveloper);
-   m_MaxModelEnveloper->Initialize(NULL,atForce,optMaximize);
+   m_MaxModelEnveloper->Initialize(nullptr,atForce,optMaximize);
 }
 
 CGirderModelData::CGirderModelData(const CGirderModelData& other)
@@ -70,20 +70,20 @@ void CGirderModelData::CreateAnalysisEngine(ILBAMModel* theModel,pgsTypes::Bridg
    HRESULT hr = CComObject<CPGSuperLoadCombinationResponse>::CreateInstance(&pLCResponse);
    CComQIPtr<ILoadCombinationResponse> load_combo_response(pLCResponse);
 
-   // initialize the engine with default values (NULL), except for the vehicular response enveloper
+   // initialize the engine with default values (nullptr), except for the vehicular response enveloper
    engine->InitializeEx(theModel,atForce,
-                        NULL, // load group response
-                        NULL, // unit load response
-                        NULL, // influence line response
-                        NULL, // analysis pois
-                        NULL, // basic vehicular response
-                        NULL, // live load model response
+                        nullptr, // load group response
+                        nullptr, // unit load response
+                        nullptr, // influence line response
+                        nullptr, // analysis pois
+                        nullptr, // basic vehicular response
+                        nullptr, // live load model response
                         envelopedVehicularResponse,
-                        NULL, // load case response
-                        load_combo_response/*NULL*/, // load combination response
-                        NULL, // concurrent load combination response
-                        NULL, // live load negative moment response
-                        NULL); // contraflexure response
+                        nullptr, // load case response
+                        load_combo_response/*nullptr*/, // load combination response
+                        nullptr, // concurrent load combination response
+                        nullptr, // live load negative moment response
+                        nullptr); // contraflexure response
 
    // get the various response interfaces from the engine so we don't have to do it over and over again
    engine->get_LoadGroupResponse(&pLoadGroupResponse[bat]);
@@ -145,7 +145,7 @@ void CGirderModelData::AddSimpleModel(ILBAMModel* pModel)
 
    CComQIPtr<IEnvelopingStrategy> strategy(pDeflLiveLoadResponse[pgsTypes::SimpleSpan]);
    strategy->get_Strategy(&pDeflEnvelopedVehicularResponse[pgsTypes::SimpleSpan]);
-   ATLASSERT(pDeflEnvelopedVehicularResponse[pgsTypes::SimpleSpan]!=NULL);
+   ATLASSERT(pDeflEnvelopedVehicularResponse[pgsTypes::SimpleSpan]!=nullptr);
 }
 
 void CGirderModelData::AddContinuousModel(ILBAMModel* pContModel)
@@ -193,7 +193,7 @@ void CGirderModelData::AddContinuousModel(ILBAMModel* pContModel)
 
    CComQIPtr<IEnvelopingStrategy> strategy(pDeflLiveLoadResponse[pgsTypes::ContinuousSpan]);
    strategy->get_Strategy(&pDeflEnvelopedVehicularResponse[pgsTypes::ContinuousSpan]);
-   ATLASSERT(pDeflEnvelopedVehicularResponse[pgsTypes::ContinuousSpan]!=NULL);
+   ATLASSERT(pDeflEnvelopedVehicularResponse[pgsTypes::ContinuousSpan]!=nullptr);
 
 
 

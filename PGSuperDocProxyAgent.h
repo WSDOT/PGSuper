@@ -154,191 +154,191 @@ public:
 
 // IBridgeDescriptionEventSink
 public:
-   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint);
-   virtual HRESULT OnGirderFamilyChanged();
-   virtual HRESULT OnGirderChanged(const CGirderKey& girderKey,Uint32 lHint);
-   virtual HRESULT OnLiveLoadChanged();
-   virtual HRESULT OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName);
-   virtual HRESULT OnConstructionLoadChanged();
+   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) override;
+   virtual HRESULT OnGirderFamilyChanged() override;
+   virtual HRESULT OnGirderChanged(const CGirderKey& girderKey,Uint32 lHint) override;
+   virtual HRESULT OnLiveLoadChanged() override;
+   virtual HRESULT OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName) override;
+   virtual HRESULT OnConstructionLoadChanged() override;
 
 // IEnvironmentEventSink
 public:
-   virtual HRESULT OnExposureConditionChanged();
-   virtual HRESULT OnRelHumidityChanged();
+   virtual HRESULT OnExposureConditionChanged() override;
+   virtual HRESULT OnRelHumidityChanged() override;
 
 // IProjectPropertiesEventSink
 public:
-   virtual HRESULT OnProjectPropertiesChanged();
+   virtual HRESULT OnProjectPropertiesChanged() override;
 
 // IEAFDisplayUnitsEventSink
 public:
-   virtual HRESULT OnUnitsChanging();
-   virtual HRESULT OnUnitsChanged(eafTypes::UnitMode newUnitsMode);
+   virtual HRESULT OnUnitsChanging() override;
+   virtual HRESULT OnUnitsChanged(eafTypes::UnitMode newUnitsMode) override;
 
 // ISpecificationEventSink
 public:
-   virtual HRESULT OnSpecificationChanged();
-   virtual HRESULT OnAnalysisTypeChanged();
+   virtual HRESULT OnSpecificationChanged() override;
+   virtual HRESULT OnAnalysisTypeChanged() override;
 
 // IRatingSpecificationEventSink
 public:
-   virtual HRESULT OnRatingSpecificationChanged();
+   virtual HRESULT OnRatingSpecificationChanged() override;
 
 // ILoadModifersEventSink
 public:
-   virtual HRESULT OnLoadModifiersChanged();
+   virtual HRESULT OnLoadModifiersChanged() override;
 
 // ILossParametersEventSink
 public:
-   virtual HRESULT OnLossParametersChanged();
+   virtual HRESULT OnLossParametersChanged() override;
 
 // ILibraryConflictSink
 public:
-   virtual HRESULT OnLibraryConflictResolved();
+   virtual HRESULT OnLibraryConflictResolved() override;
 
 // IUpdateTemplates
 public:
-   virtual bool UpdatingTemplates();
+   virtual bool UpdatingTemplates() override;
 
 // IUIEvents
 public:
-   virtual void HoldEvents(bool bHold=true);
-   virtual void FirePendingEvents();
-   virtual void CancelPendingEvents();
-   virtual void FireEvent(CView* pSender = NULL,LPARAM lHint = 0,boost::shared_ptr<CObject> pHint = boost::shared_ptr<CObject>());
+   virtual void HoldEvents(bool bHold=true) override;
+   virtual void FirePendingEvents() override;
+   virtual void CancelPendingEvents() override;
+   virtual void FireEvent(CView* pSender = nullptr,LPARAM lHint = 0,std::shared_ptr<CObject> pHint = nullptr) override;
 
 // IVersionInfo
 public:
-   virtual CString GetVersionString(bool bIncludeBuildNumber=false);
-   virtual CString GetVersion(bool bIncludeBuildNumber=false);
+   virtual CString GetVersionString(bool bIncludeBuildNumber=false) override;
+   virtual CString GetVersion(bool bIncludeBuildNumber=false) override;
 
 
 // ISelection
 public:
-   virtual CSelection GetSelection();
-   virtual void ClearSelection();
-   virtual PierIndexType GetSelectedPier();
-   virtual SpanIndexType GetSelectedSpan();
-   virtual CGirderKey GetSelectedGirder();
-   virtual CSegmentKey GetSelectedSegment();
-   virtual CClosureKey GetSelectedClosureJoint();
-   virtual SupportIDType GetSelectedTemporarySupport();
-   virtual bool IsDeckSelected();
-   virtual bool IsAlignmentSelected();
-   virtual void SelectPier(PierIndexType pierIdx);
-   virtual void SelectSpan(SpanIndexType spanIdx);
-   virtual void SelectGirder(const CGirderKey& girderKey);
-   virtual void SelectSegment(const CSegmentKey& segmentKey);
-   virtual void SelectClosureJoint(const CClosureKey& closureKey);
-   virtual void SelectTemporarySupport(SupportIDType tsID);
-   virtual void SelectDeck();
-   virtual void SelectAlignment();
-   virtual Float64 GetSectionCutStation();
+   virtual CSelection GetSelection() override;
+   virtual void ClearSelection() override;
+   virtual PierIndexType GetSelectedPier() override;
+   virtual SpanIndexType GetSelectedSpan() override;
+   virtual CGirderKey GetSelectedGirder() override;
+   virtual CSegmentKey GetSelectedSegment() override;
+   virtual CClosureKey GetSelectedClosureJoint() override;
+   virtual SupportIDType GetSelectedTemporarySupport() override;
+   virtual bool IsDeckSelected() override;
+   virtual bool IsAlignmentSelected() override;
+   virtual void SelectPier(PierIndexType pierIdx) override;
+   virtual void SelectSpan(SpanIndexType spanIdx) override;
+   virtual void SelectGirder(const CGirderKey& girderKey) override;
+   virtual void SelectSegment(const CSegmentKey& segmentKey) override;
+   virtual void SelectClosureJoint(const CClosureKey& closureKey) override;
+   virtual void SelectTemporarySupport(SupportIDType tsID) override;
+   virtual void SelectDeck() override;
+   virtual void SelectAlignment() override;
+   virtual Float64 GetSectionCutStation() override;
 
 // IEditByUI
 public:
-   virtual void EditBridgeDescription(int nPage);
-   virtual void EditAlignmentDescription(int nPage);
-   virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage);
-   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage);
-   virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage);
-   virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
-   virtual bool EditPierDescription(PierIndexType pierIdx, int nPage);
-   virtual void EditLiveLoads();
-   virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
-   virtual bool EditPointLoad(CollectionIndexType loadIdx);
-   virtual bool EditDistributedLoad(CollectionIndexType loadIdx);
-   virtual bool EditMomentLoad(CollectionIndexType loadIdx);
-   virtual UINT GetStdToolBarID();
-   virtual UINT GetLibToolBarID();
-   virtual UINT GetHelpToolBarID();
-   virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey);
-   virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey);
-   virtual void AddPointLoad(const CPointLoadData& loadData);
-   virtual void DeletePointLoad(CollectionIndexType loadIdx);
-   virtual void AddDistributedLoad(const CDistributedLoadData& loadData);
-   virtual void DeleteDistributedLoad(CollectionIndexType loadIdx);
-   virtual void AddMomentLoad(const CMomentLoadData& loadData);
-   virtual void DeleteMomentLoad(CollectionIndexType loadIdx);
-   virtual void EditEffectiveFlangeWidth();
-   virtual void SelectProjectCriteria();
+   virtual void EditBridgeDescription(int nPage) override;
+   virtual void EditAlignmentDescription(int nPage) override;
+   virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) override;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) override;
+   virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) override;
+   virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) override;
+   virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) override;
+   virtual void EditLiveLoads() override;
+   virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) override;
+   virtual bool EditPointLoad(CollectionIndexType loadIdx) override;
+   virtual bool EditDistributedLoad(CollectionIndexType loadIdx) override;
+   virtual bool EditMomentLoad(CollectionIndexType loadIdx) override;
+   virtual UINT GetStdToolBarID() override;
+   virtual UINT GetLibToolBarID() override;
+   virtual UINT GetHelpToolBarID() override;
+   virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey) override;
+   virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey) override;
+   virtual void AddPointLoad(const CPointLoadData& loadData) override;
+   virtual void DeletePointLoad(CollectionIndexType loadIdx) override;
+   virtual void AddDistributedLoad(const CDistributedLoadData& loadData) override;
+   virtual void DeleteDistributedLoad(CollectionIndexType loadIdx) override;
+   virtual void AddMomentLoad(const CMomentLoadData& loadData) override;
+   virtual void DeleteMomentLoad(CollectionIndexType loadIdx) override;
+   virtual void EditEffectiveFlangeWidth() override;
+   virtual void SelectProjectCriteria() override;
 
 // IDesign
 public:
-   virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey);
+   virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey) override;
 
 // IViews
 public:
-   virtual void CreateGirderView(const CGirderKey& girderKey);
-   virtual void CreateBridgeModelView();
-   virtual void CreateLoadsView();
-   virtual void CreateLibraryEditorView();
-   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPromptForSpec=TRUE);
-   virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport);
-   virtual void CreateGraphView(CollectionIndexType graphIdx);
-   virtual void BuildGraphMenu(CEAFMenu* pMenu);
-   virtual long GetBridgeModelEditorViewKey();
-   virtual long GetGirderModelEditorViewKey();
-   virtual long GetLibraryEditorViewKey();
-   virtual long GetReportViewKey();
-   virtual long GetGraphingViewKey();
-   virtual long GetLoadsViewKey();
+   virtual void CreateGirderView(const CGirderKey& girderKey) override;
+   virtual void CreateBridgeModelView() override;
+   virtual void CreateLoadsView() override;
+   virtual void CreateLibraryEditorView() override;
+   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPromptForSpec=TRUE) override;
+   virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport) override;
+   virtual void CreateGraphView(CollectionIndexType graphIdx) override;
+   virtual void BuildGraphMenu(CEAFMenu* pMenu) override;
+   virtual long GetBridgeModelEditorViewKey() override;
+   virtual long GetGirderModelEditorViewKey() override;
+   virtual long GetLibraryEditorViewKey() override;
+   virtual long GetReportViewKey() override;
+   virtual long GetGraphingViewKey() override;
+   virtual long GetLoadsViewKey() override;
 
-   virtual void GetBridgeViewSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
-   virtual void SetBridgeViewSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx);
-   virtual Float64 GetBridgeViewCutStation();
-   virtual void SetBridgeViewCutStation(Float64 station);
+   virtual void GetBridgeViewSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) override;
+   virtual void SetBridgeViewSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx) override;
+   virtual Float64 GetBridgeViewCutStation() override;
+   virtual void SetBridgeViewCutStation(Float64 station) override;
 
 // IRegisterViewEvents
 public:
-   virtual IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
-   virtual IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
-   virtual IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback);
-   virtual IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback);
-   virtual IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
-   virtual IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
-   virtual bool UnregisterBridgePlanViewCallback(IDType ID);
-   virtual bool UnregisterBridgeSectionViewCallback(IDType ID);
-   virtual bool UnregisterAlignmentPlanViewCallback(IDType ID);
-   virtual bool UnregisterAlignmentProfileViewCallback(IDType ID);
-   virtual bool UnregisterGirderElevationViewCallback(IDType ID);
-   virtual bool UnregisterGirderSectionViewCallback(IDType ID);
+   virtual IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback) override;
+   virtual IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback) override;
+   virtual IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback) override;
+   virtual IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback) override;
+   virtual IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback) override;
+   virtual IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback) override;
+   virtual bool UnregisterBridgePlanViewCallback(IDType ID) override;
+   virtual bool UnregisterBridgeSectionViewCallback(IDType ID) override;
+   virtual bool UnregisterAlignmentPlanViewCallback(IDType ID) override;
+   virtual bool UnregisterAlignmentProfileViewCallback(IDType ID) override;
+   virtual bool UnregisterGirderElevationViewCallback(IDType ID) override;
+   virtual bool UnregisterGirderSectionViewCallback(IDType ID) override;
 
 // IExtendUI
 public:
-   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
-   virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
-   virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
-   virtual IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback);
-   virtual bool UnregisterEditPierCallback(IDType ID);
-   virtual bool UnregisterEditSpanCallback(IDType ID);
-   virtual bool UnregisterEditBridgeCallback(IDType ID);
-   virtual bool UnregisterEditLoadRatingOptionsCallback(IDType ID);
+   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback) override;
+   virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback) override;
+   virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback) override;
+   virtual IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback) override;
+   virtual bool UnregisterEditPierCallback(IDType ID) override;
+   virtual bool UnregisterEditSpanCallback(IDType ID) override;
+   virtual bool UnregisterEditBridgeCallback(IDType ID) override;
+   virtual bool UnregisterEditLoadRatingOptionsCallback(IDType ID) override;
 
 // IExtendPGSuperUI
 public:
-   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
-   virtual bool UnregisterEditGirderCallback(IDType ID);
+   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback) override;
+   virtual bool UnregisterEditGirderCallback(IDType ID) override;
 
 // IExtendPGSpliceUI
 public:
-   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
-   virtual IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
-   virtual IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback);
-   virtual IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback);
-   virtual bool UnregisterEditTemporarySupportCallback(IDType ID);
-   virtual bool UnregisterEditSplicedGirderCallback(IDType ID);
-   virtual bool UnregisterEditSegmentCallback(IDType ID);
-   virtual bool UnregisterEditClosureJointCallback(IDType ID);
+   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback) override;
+   virtual IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback) override;
+   virtual IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback) override;
+   virtual IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback) override;
+   virtual bool UnregisterEditTemporarySupportCallback(IDType ID) override;
+   virtual bool UnregisterEditSplicedGirderCallback(IDType ID) override;
+   virtual bool UnregisterEditSegmentCallback(IDType ID) override;
+   virtual bool UnregisterEditClosureJointCallback(IDType ID) override;
 
 // IDocumentType
 public:
-   virtual bool IsPGSuperDocument();
-   virtual bool IsPGSpliceDocument();
+   virtual bool IsPGSuperDocument() override;
+   virtual bool IsPGSpliceDocument() override;
 
 // IDocumentUnitSystem
 public:
-   virtual void GetUnitServer(IUnitServer** ppUnitServer);
+   virtual void GetUnitServer(IUnitServer** ppUnitServer) override;
 
 private:
    DECLARE_EAF_AGENT_DATA;
@@ -362,7 +362,7 @@ private:
    {
       CView* pSender;
       LPARAM lHint;
-      boost::shared_ptr<CObject> pHint;
+      std::shared_ptr<CObject> pHint;
    };
    std::vector<UIEvent> m_UIEvents;
 

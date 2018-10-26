@@ -34,9 +34,9 @@ static char THIS_FILE[] = __FILE__;
 
 CGirderGroupData::CGirderGroupData()
 {
-   m_pBridge                     = NULL;
-   m_pPier[pgsTypes::metStart]   = NULL;
-   m_pPier[pgsTypes::metEnd]     = NULL;
+   m_pBridge                     = nullptr;
+   m_pPier[pgsTypes::metStart]   = nullptr;
+   m_pPier[pgsTypes::metEnd]     = nullptr;
 
    m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
    m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
@@ -48,8 +48,8 @@ CGirderGroupData::CGirderGroupData(CBridgeDescription2* pBridge)
 {
    m_pBridge      = pBridge;
 
-   m_pPier[pgsTypes::metStart]   = NULL;
-   m_pPier[pgsTypes::metEnd]     = NULL;
+   m_pPier[pgsTypes::metStart]   = nullptr;
+   m_pPier[pgsTypes::metEnd]     = nullptr;
 
    m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
    m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
@@ -77,9 +77,9 @@ CGirderGroupData::CGirderGroupData(CPierData2* pStartPier,CPierData2* pEndPier)
 
 CGirderGroupData::CGirderGroupData(const CGirderGroupData& rOther)
 {
-   m_pBridge                     = NULL;
-   m_pPier[pgsTypes::metStart]   = NULL;
-   m_pPier[pgsTypes::metEnd]     = NULL;
+   m_pBridge                     = nullptr;
+   m_pPier[pgsTypes::metStart]   = nullptr;
+   m_pPier[pgsTypes::metEnd]     = nullptr;
 
    m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
    m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
@@ -91,8 +91,8 @@ CGirderGroupData::CGirderGroupData(const CGirderGroupData& rOther)
 
 CGirderGroupData::~CGirderGroupData()
 {
-   m_pPier[pgsTypes::metStart]   = NULL;
-   m_pPier[pgsTypes::metEnd]     = NULL;
+   m_pPier[pgsTypes::metStart]   = nullptr;
+   m_pPier[pgsTypes::metEnd]     = nullptr;
 
    m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
    m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
@@ -217,9 +217,9 @@ const CBridgeDescription2* CGirderGroupData::GetBridgeDescription() const
 
 void CGirderGroupData::SetPier(pgsTypes::MemberEndType end,CPierData2* pPier)
 {
-   ATLASSERT(pPier != NULL);
+   ATLASSERT(pPier != nullptr);
 
-   CGirderSpacing2* pOldSpacing = NULL;
+   CGirderSpacing2* pOldSpacing = nullptr;
    pgsTypes::PierFaceType pierFace = (end == pgsTypes::metStart ? pgsTypes::Ahead : pgsTypes::Back);
    if ( m_pPier[end] && m_pPier[end]->GetGirderSpacing(pierFace)->GetSpacingCount() != pPier->GetGirderSpacing(pierFace)->GetSpacingCount() )
    {
@@ -257,7 +257,7 @@ void CGirderGroupData::SetPier(pgsTypes::MemberEndType end,CPierData2* pPier)
    }
 
 #if defined _DEBUG
-   if ( m_pBridge != NULL )
+   if ( m_pBridge != nullptr )
    {
       ATLASSERT(m_pBridge == pPier->GetBridgeDescription());
    }
@@ -319,7 +319,7 @@ CPierData2* CGirderGroupData::GetPier(PierIndexType pierIdx)
    PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
    if ( pierIdx < startPierIdx && GetPierIndex(pgsTypes::metEnd) < pierIdx )
    {
-      return NULL; // pier isn't part of this girder group
+      return nullptr; // pier isn't part of this girder group
    }
 
    CPierData2* pPier = m_pPier[pgsTypes::metStart];
@@ -336,7 +336,7 @@ const CPierData2* CGirderGroupData::GetPier(PierIndexType pierIdx) const
    PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
    if ( pierIdx < startPierIdx && GetPierIndex(pgsTypes::metEnd) < pierIdx )
    {
-      return NULL; // pier isn't part of this girder group
+      return nullptr; // pier isn't part of this girder group
    }
 
    const CPierData2* pPier = m_pPier[pgsTypes::metStart];
@@ -357,7 +357,7 @@ PierIndexType CGirderGroupData::GetPierIndex(pgsTypes::MemberEndType end) const
    }
    else
    {
-      ATLASSERT(m_pPier[end] == NULL);
+      ATLASSERT(m_pPier[end] == nullptr);
       return m_PierIndex[end];
    }
 }
@@ -371,7 +371,7 @@ CGirderGroupData* CGirderGroupData::GetPrevGirderGroup()
       return pGroup;
    }
 
-   return NULL;
+   return nullptr;
 }
 
 const CGirderGroupData* CGirderGroupData::GetPrevGirderGroup() const
@@ -383,7 +383,7 @@ const CGirderGroupData* CGirderGroupData::GetPrevGirderGroup() const
       return pGroup;
    }
 
-   return NULL;
+   return nullptr;
 }
 
 CGirderGroupData* CGirderGroupData::GetNextGirderGroup()
@@ -395,7 +395,7 @@ CGirderGroupData* CGirderGroupData::GetNextGirderGroup()
       return pGroup;
    }
 
-   return NULL;
+   return nullptr;
 }
 
 const CGirderGroupData* CGirderGroupData::GetNextGirderGroup() const
@@ -407,7 +407,7 @@ const CGirderGroupData* CGirderGroupData::GetNextGirderGroup() const
       return pGroup;
    }
 
-   return NULL;
+   return nullptr;
 }
 
 void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
@@ -514,7 +514,7 @@ void CGirderGroupData::RemoveGirders(GirderIndexType nGirdersToRemove)
       CSplicedGirderData* pSplicedGirder = *iter;
       pSplicedGirder->Clear();
       delete pSplicedGirder;
-      pSplicedGirder = NULL;
+      pSplicedGirder = nullptr;
 
       m_GirderTypeGroups.back().second--;
       if ( m_GirderTypeGroups.back().second < m_GirderTypeGroups.back().first )
@@ -624,7 +624,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
    CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
    CPierData2* pEndPier   = m_pPier[pgsTypes::metEnd];
    PierIndexType endPierIdx = pEndPier->GetIndex();
-   for ( CPierData2* pPier = pStartPier; pPier != NULL && pPier->GetIndex() <= endPierIdx;  )
+   for ( CPierData2* pPier = pStartPier; pPier != nullptr && pPier->GetIndex() <= endPierIdx;  )
    {
       if ( pPier == pStartPier )
       {
@@ -646,7 +646,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
       }
       else
       {
-         pPier = NULL;
+         pPier = nullptr;
       }
    }
 }
@@ -672,7 +672,7 @@ CSplicedGirderData* CGirderGroupData::GetGirder(GirderIndexType gdrIdx)
 {
    if ( gdrIdx < 0 || m_Girders.size() <= gdrIdx )
    {
-      return NULL;
+      return nullptr;
    }
 
    return m_Girders[gdrIdx];
@@ -682,7 +682,7 @@ const CSplicedGirderData* CGirderGroupData::GetGirder(GirderIndexType gdrIdx) co
 {
    if ( gdrIdx < 0 || m_Girders.size() <= gdrIdx )
    {
-      return NULL;
+      return nullptr;
    }
 
    return m_Girders[gdrIdx];
@@ -737,7 +737,7 @@ Float64 CGirderGroupData::GetSlabOffset(PierIndexType pierIdx,GirderIndexType gd
       }
       else if ( slabOffsetType == pgsTypes::sotPier )
       {
-         if ( m_pBridge->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         if ( m_pBridge->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
          {
             return 0;
          }
@@ -753,7 +753,7 @@ Float64 CGirderGroupData::GetSlabOffset(PierIndexType pierIdx,GirderIndexType gd
       }
       else
       {
-         if ( m_pBridge->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         if ( m_pBridge->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
          {
             return 0;
          }
@@ -1492,8 +1492,8 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
       m_GroupID  = rOther.m_GroupID;
    }
 
-   m_pPier[pgsTypes::metStart] = NULL;
-   m_pPier[pgsTypes::metEnd]   = NULL;
+   m_pPier[pgsTypes::metStart] = nullptr;
+   m_pPier[pgsTypes::metEnd]   = nullptr;
    m_PierIndex[pgsTypes::metStart] = rOther.GetPierIndex(pgsTypes::metStart);
    m_PierIndex[pgsTypes::metEnd]   = rOther.GetPierIndex(pgsTypes::metEnd);
    UpdatePiers();
@@ -1526,8 +1526,8 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
          myGirderID = pMyGirder->GetID();
          vOldGirders.push_back(pMyGirder);
       }
-      pMyGirder = NULL;
-      *myGirderIter = NULL;
+      pMyGirder = nullptr;
+      *myGirderIter = nullptr;
 
       const CSplicedGirderData* pOtherGirder = *otherGirderIter;
       CSplicedGirderData* pNewGirder = new CSplicedGirderData(this);
@@ -1595,7 +1595,7 @@ void CGirderGroupData::Clear()
 
 void CGirderGroupData::UpdatePiers()
 {
-   if ( m_pBridge != NULL && (m_pPier[pgsTypes::metStart] == NULL || m_pPier[pgsTypes::metEnd] == NULL) )
+   if ( m_pBridge != nullptr && (m_pPier[pgsTypes::metStart] == nullptr || m_pPier[pgsTypes::metEnd] == nullptr) )
    {
       ATLASSERT(m_PierIndex[pgsTypes::metStart] != INVALID_INDEX);
       ATLASSERT(m_PierIndex[pgsTypes::metEnd]   != INVALID_INDEX);

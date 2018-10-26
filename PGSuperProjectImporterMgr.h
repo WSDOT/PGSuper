@@ -28,8 +28,8 @@ class CPGSuperProjectImporterMgr : public CPGSProjectImporterMgrBase
 public:
    CPGSuperProjectImporterMgr();
 
-   virtual LPCTSTR GetAppName();
+   virtual LPCTSTR GetAppName() override;
 
 protected:
-   virtual CATID GetProjectImporterCATID();
+   virtual CATID GetProjectImporterCATID() override;
 };

@@ -43,7 +43,7 @@ class CConnectionEntryDlg : public CDialog
 {
 // Construction
 public:
-	CConnectionEntryDlg(bool allowEditing, CWnd* pParent = NULL);   // standard constructor
+	CConnectionEntryDlg(bool allowEditing, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CConnectionEntryDlg)

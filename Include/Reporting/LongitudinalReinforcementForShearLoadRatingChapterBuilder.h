@@ -56,6 +56,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CLongitudinalReinforcementForShearLoadRatingChapterBuilder(const CLongitudinalReinforcementForShearLoadRatingChapterBuilder&);
-   CLongitudinalReinforcementForShearLoadRatingChapterBuilder& operator=(const CLongitudinalReinforcementForShearLoadRatingChapterBuilder&);
+   CLongitudinalReinforcementForShearLoadRatingChapterBuilder(const CLongitudinalReinforcementForShearLoadRatingChapterBuilder&) = delete;
+   CLongitudinalReinforcementForShearLoadRatingChapterBuilder& operator=(const CLongitudinalReinforcementForShearLoadRatingChapterBuilder&) = delete;
 };

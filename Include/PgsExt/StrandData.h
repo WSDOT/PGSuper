@@ -262,7 +262,7 @@ public:
 
 protected:
    void MakeCopy(const CStrandData& rOther);
-   virtual void MakeAssignment(const CStrandData& rOther);
+   void MakeAssignment(const CStrandData& rOther);
 
    StrandIndexType ProcessDirectFillData(const CDirectStrandFillCollection& rInCollection, CDirectStrandFillCollection& rLocalCollection);
    void ProcessStrandRowData();

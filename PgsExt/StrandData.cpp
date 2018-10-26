@@ -1464,7 +1464,7 @@ const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillStraight() co
    else
    {
       ATLASSERT(false);
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -1492,7 +1492,7 @@ const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillHarped() cons
    else
    {
       ATLASSERT(false);
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -1519,7 +1519,7 @@ const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillTemporary() c
    else
    {
       ATLASSERT(false);
-      return NULL;
+      return nullptr;
    }
 }
 

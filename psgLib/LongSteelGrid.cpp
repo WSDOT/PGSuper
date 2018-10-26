@@ -90,7 +90,7 @@ BOOL CLongSteelGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlag
 	VERIFY(menu.LoadMenu(IDR_ADD_DELETE_POPUP));
 
 	CMenu* pPopup = menu.GetSubMenu( 0 );
-	ASSERT( pPopup != NULL );
+	ASSERT( pPopup != nullptr );
 
 	// display the menu
 	ClientToScreen(&pt);
@@ -170,7 +170,7 @@ void CLongSteelGrid::Removerows()
 
 void CLongSteelGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 {
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
 	{
 		pCmdUI->Enable(FALSE);
 		return;

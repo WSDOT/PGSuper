@@ -34,7 +34,7 @@ class CBridgeEditorAlignmentSettingsPage : public CPropertyPage
 {
 // Construction
 public:
-	CBridgeEditorAlignmentSettingsPage(CWnd* pParent = NULL);   // standard constructor
+	CBridgeEditorAlignmentSettingsPage(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CBridgeEditorAlignmentSettingsPage)

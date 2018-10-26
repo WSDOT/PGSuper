@@ -48,10 +48,10 @@ CLASS
 CPierData::CPierData()
 {
    m_PierIdx = INVALID_INDEX;
-   m_pPrevSpan = NULL;
-   m_pNextSpan = NULL;
+   m_pPrevSpan = nullptr;
+   m_pNextSpan = nullptr;
 
-   m_pBridgeDesc = NULL;
+   m_pBridgeDesc = nullptr;
 
    m_Station     = 0.0;
    Orientation = Normal;
@@ -81,10 +81,10 @@ CPierData::CPierData()
 
 CPierData::CPierData(const CPierData& rOther)
 {
-   m_pPrevSpan = NULL;
-   m_pNextSpan = NULL;
+   m_pPrevSpan = nullptr;
+   m_pNextSpan = nullptr;
 
-   m_pBridgeDesc = NULL;
+   m_pBridgeDesc = nullptr;
 
    m_Station   = 0.0;
    Orientation = Normal;
@@ -285,7 +285,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
          angleFormatter->put_CondensedFormat(VARIANT_TRUE);
          angleFormatter->put_Signed(VARIANT_FALSE);
 
-         angleFormatter->Format(Angle,NULL,&bstrOrientation);
+         angleFormatter->Format(Angle,nullptr,&bstrOrientation);
          m_strOrientation = OLE2T(bstrOrientation);
          break;
       
@@ -294,7 +294,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
          dirFormatter->put_CondensedFormat(VARIANT_TRUE);
          dirFormatter->put_BearingFormat(VARIANT_TRUE);
 
-         dirFormatter->Format(Angle,NULL,&bstrOrientation);
+         dirFormatter->Format(Angle,nullptr,&bstrOrientation);
          m_strOrientation = OLE2T(bstrOrientation);
          break;
 
@@ -702,7 +702,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,ILibrary, pLib );
 
-         if ( m_pBridgeDesc == NULL || m_pBridgeDesc && m_pPrevSpan )
+         if ( m_pBridgeDesc == nullptr || m_pBridgeDesc && m_pPrevSpan )
          {
             const ConnectionLibraryEntry* pConnEntry = pLib->GetConnectionEntry(strConnection[pgsTypes::Back].c_str());
             m_GirderEndDistance[pgsTypes::Back]            = pConnEntry->GetGirderEndDistance();
@@ -716,14 +716,14 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
             m_DiaphragmLoadType[pgsTypes::Back]            = pConnEntry->GetDiaphragmLoadType();
             m_DiaphragmLoadLocation[pgsTypes::Back]        = pConnEntry->GetDiaphragmLoadLocation();
 
-            if ( m_pNextSpan == NULL )
+            if ( m_pNextSpan == nullptr )
             {
                m_EndDistanceMeasurementType[pgsTypes::Ahead] = m_EndDistanceMeasurementType[pgsTypes::Back];
                m_BearingOffsetMeasurementType[pgsTypes::Ahead] = m_BearingOffsetMeasurementType[pgsTypes::Back];
             }
          }
 
-         if ( m_pBridgeDesc == NULL || m_pBridgeDesc && m_pNextSpan )
+         if ( m_pBridgeDesc == nullptr || m_pBridgeDesc && m_pNextSpan )
          {
             const ConnectionLibraryEntry* pConnEntry = pLib->GetConnectionEntry(strConnection[pgsTypes::Ahead].c_str());
             m_GirderEndDistance[pgsTypes::Ahead]            = pConnEntry->GetGirderEndDistance();
@@ -737,7 +737,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
             m_DiaphragmLoadType[pgsTypes::Ahead]            = pConnEntry->GetDiaphragmLoadType();
             m_DiaphragmLoadLocation[pgsTypes::Ahead]        = pConnEntry->GetDiaphragmLoadLocation();
 
-            if ( m_pPrevSpan == NULL )
+            if ( m_pPrevSpan == nullptr )
             {
                m_EndDistanceMeasurementType[pgsTypes::Back] = m_EndDistanceMeasurementType[pgsTypes::Ahead];
                m_BearingOffsetMeasurementType[pgsTypes::Back] = m_BearingOffsetMeasurementType[pgsTypes::Ahead];
@@ -1375,14 +1375,14 @@ GirderIndexType CPierData::GetLldfGirderCount() const
    GirderIndexType ahead(0), back(0);
 
    const CSpanData* pAhead = GetSpan(pgsTypes::Ahead);
-   if (pAhead!=NULL)
+   if (pAhead!=nullptr)
       ahead = pAhead->GetGirderCount();
 
    const CSpanData* pBack = GetSpan(pgsTypes::Back);
-   if (pBack!=NULL)
+   if (pBack!=nullptr)
       back = pBack->GetGirderCount();
 
-   if (pBack==NULL && pAhead==NULL)
+   if (pBack==nullptr && pAhead==nullptr)
    {
       ATLASSERT(false); // function called before bridge tied together - no good
       return 0;
@@ -1395,10 +1395,10 @@ GirderIndexType CPierData::GetLldfGirderCount() const
 
 bool CPierData::IsAbutment() const
 {
-   return (m_pPrevSpan == NULL || m_pNextSpan == NULL) ? true : false;
+   return (m_pPrevSpan == nullptr || m_pNextSpan == nullptr) ? true : false;
 }
 
 bool CPierData::IsPier() const
 {
-   return (m_pPrevSpan != NULL && m_pNextSpan != NULL) ? true : false;
+   return (m_pPrevSpan != nullptr && m_pNextSpan != nullptr) ? true : false;
 }

@@ -175,7 +175,7 @@ void CTimelineGrid::Refresh()
       AddEvent(pTimelineEvent,pNextTimelineEvent);
    }
    const CTimelineEvent* pTimelineEvent = pParent->m_TimelineManager.GetEventByIndex(nEvents-1);
-   AddEvent(pTimelineEvent,NULL);
+   AddEvent(pTimelineEvent,nullptr);
 
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 

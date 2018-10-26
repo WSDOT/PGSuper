@@ -41,19 +41,19 @@ class CTOGAGirderSelectStrandsDlg : public CDialog
 	DECLARE_DYNAMIC(CTOGAGirderSelectStrandsDlg)
 
 public:
-	CTOGAGirderSelectStrandsDlg(CWnd* pParent = NULL);   // standard constructor
+	CTOGAGirderSelectStrandsDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CTOGAGirderSelectStrandsDlg();
 
 // Dialog Data
 	enum { IDD = IDD_GIRDER_SELECT_STRANDS };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-   virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+   virtual BOOL PreTranslateMessage(MSG* pMsg) override;
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);

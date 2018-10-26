@@ -20,7 +20,7 @@ public:
 
 IMPLEMENT_DYNAMIC(CStressTendonDlg, CDialog)
 
-CStressTendonDlg::CStressTendonDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CStressTendonDlg::CStressTendonDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CStressTendonDlg::IDD, pParent),
    m_EventIndex(eventIdx),
    m_bReadOnly(bReadOnly)

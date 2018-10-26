@@ -31,7 +31,7 @@ class CHaunchByGirderDlg : public CDialog
 	DECLARE_DYNAMIC(CHaunchByGirderDlg)
 
 public:
-	CHaunchByGirderDlg(CWnd* pParent = NULL);   // standard constructor
+	CHaunchByGirderDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CHaunchByGirderDlg();
 
    void UploadData(const HaunchInputData& rData);

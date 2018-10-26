@@ -91,7 +91,7 @@ public:
 
 protected:
    void MakeCopy(const CRailingSystem& rOther);
-   virtual void MakeAssignment(const CRailingSystem& rOther);
+   void MakeAssignment(const CRailingSystem& rOther);
 
    const TrafficBarrierEntry* pExteriorRailing;
    const TrafficBarrierEntry* pInteriorRailing;

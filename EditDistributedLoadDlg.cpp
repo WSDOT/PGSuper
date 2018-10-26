@@ -51,7 +51,7 @@ static char THIS_FILE[] = __FILE__;
 // CEditDistributedLoadDlg dialog
 
 
-CEditDistributedLoadDlg::CEditDistributedLoadDlg(const CDistributedLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/)
+CEditDistributedLoadDlg::CEditDistributedLoadDlg(const CDistributedLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent /*=nullptr*/)
 	: CDialog(CEditDistributedLoadDlg::IDD, pParent),
    m_Load(load),
    m_TimelineMgr(*pTimelineMgr)

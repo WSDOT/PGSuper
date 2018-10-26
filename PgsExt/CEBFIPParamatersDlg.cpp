@@ -35,7 +35,7 @@
 
 IMPLEMENT_DYNAMIC(CCEBFIPParametersDlg, CDialog)
 
-CCEBFIPParametersDlg::CCEBFIPParametersDlg(CWnd* pParent /*=NULL*/)
+CCEBFIPParametersDlg::CCEBFIPParametersDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CCEBFIPParametersDlg::IDD, pParent)
 {
    m_fc1 = ::ConvertToSysUnits(4.0,unitMeasure::KSI);

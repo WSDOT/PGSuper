@@ -40,7 +40,7 @@ public:
       cstRectangle
    };
 
-   CColumnData(CPierData2* pPier = NULL);
+   CColumnData(CPierData2* pPier = nullptr);
    CColumnData(const CColumnData& rOther); 
    virtual ~CColumnData();
 
@@ -85,7 +85,7 @@ protected:
    void MakeCopy(const CColumnData& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CColumnData& rOther);
+   void MakeAssignment(const CColumnData& rOther);
 
 private:
    CPierData2* m_pPier;

@@ -124,7 +124,7 @@ public:
 
 protected:
    void MakeCopy(const CTemporarySupportData& rOther,bool bCopyDataOnly);
-   virtual void MakeAssignment(const CTemporarySupportData& rOther);
+   void MakeAssignment(const CTemporarySupportData& rOther);
 
 private:
    SupportIDType m_ID;

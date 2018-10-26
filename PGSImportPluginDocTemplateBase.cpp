@@ -67,7 +67,7 @@ CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMe
 {
    USES_CONVERSION;
 
-   m_pProjectImporterMgr = NULL;
+   m_pProjectImporterMgr = nullptr;
 }
 
 CPGSImportPluginDocTemplateBase::~CPGSImportPluginDocTemplateBase()
@@ -113,7 +113,7 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
    // Hold the UI events (release in CPGSuperDoc::OnCreateFinalize)
    CComPtr<IBroker> broker;
    EAFGetBroker(&broker);
-   ATLASSERT(broker != NULL);
+   ATLASSERT(broker != nullptr);
    GET_IFACE2(broker,IEvents,pEvents);
    GET_IFACE2(broker,IUIEvents,pUIEvents);
    pEvents->HoldEvents();
@@ -166,7 +166,7 @@ BOOL CPGSImportPluginDocTemplateBase::GetDocString(CString& rString,enum DocStri
 
 CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterManager() const
 {
-   if ( m_pProjectImporterMgr == NULL )
+   if ( m_pProjectImporterMgr == nullptr )
    {
       m_pProjectImporterMgr = CreateProjectImporterMgr();
 
@@ -183,7 +183,7 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
 
          HICON hIcon;
          importer->GetIcon(&hIcon);
-         m_TemplateGroup.AddItem( new CMyTemplateItem((CEAFDocTemplate*)this,OLE2T(bstrText),NULL,hIcon,importer) );
+         m_TemplateGroup.AddItem( new CMyTemplateItem((CEAFDocTemplate*)this,OLE2T(bstrText),nullptr,hIcon,importer) );
       }
    }
 

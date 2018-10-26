@@ -394,7 +394,7 @@ DEFINE_GUID(IID_ISegmentData,
 interface ISegmentData : IUnknown
 {
    virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const = 0;
-   virtual void SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pmat)=0;
+   virtual void SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pmat) = 0;
 
    virtual const CGirderMaterial* GetSegmentMaterial(const CSegmentKey& segmentKey) const = 0;
    virtual void SetSegmentMaterial(const CSegmentKey& segmentKey,const CGirderMaterial& material) = 0;
@@ -562,8 +562,8 @@ DEFINE_GUID(IID_ILibrary,
 0x34172AE0, 0x3781, 0x11d2, 0x8E, 0xC1, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
 interface ILibrary : IUnknown
 {
-   virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr)=0; 
-   virtual psgLibraryManager* GetLibraryManager()=0; 
+   virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr) = 0; 
+   virtual psgLibraryManager* GetLibraryManager() = 0; 
    virtual const ConnectionLibraryEntry* GetConnectionEntry(LPCTSTR lpszName ) const = 0;
    virtual const GirderLibraryEntry* GetGirderEntry( LPCTSTR lpszName ) const = 0;
    virtual const ConcreteLibraryEntry* GetConcreteEntry( LPCTSTR lpszName ) const = 0;
@@ -713,7 +713,7 @@ DEFINE_GUID(IID_IImportProjectLibrary,
 0x916b4250, 0x3efd, 0x11d3, 0xad, 0x94, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
 interface IImportProjectLibrary : IUnknown
 {
-   virtual bool ImportProjectLibraries(IStructuredLoad* pLoad)=0;
+   virtual bool ImportProjectLibraries(IStructuredLoad* pLoad) = 0;
 };
 
 /*****************************************************************************
@@ -735,7 +735,7 @@ interface IUserDefinedLoadData : IUnknown
    // point loads
    virtual CollectionIndexType GetPointLoadCount() const = 0;
    // add point load and return current count
-   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld)= 0;
+   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) = 0;
    virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const = 0;
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const = 0;
    virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld) = 0;
@@ -744,7 +744,7 @@ interface IUserDefinedLoadData : IUnknown
    // distributed loads
    virtual CollectionIndexType GetDistributedLoadCount() const = 0;
    // add distributed load and return current count
-   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld)= 0;
+   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) = 0;
    virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const = 0;
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const = 0;
    virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld) = 0;
@@ -753,7 +753,7 @@ interface IUserDefinedLoadData : IUnknown
    // moment loads
    virtual CollectionIndexType GetMomentLoadCount() const = 0;
    // add moment load and return current count
-   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld)= 0;
+   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) = 0;
    virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const = 0;
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const = 0;
    virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld) = 0;
@@ -818,7 +818,7 @@ interface IUIEvents : IUnknown
    virtual void HoldEvents(bool bHold=true) = 0;
    virtual void FirePendingEvents() = 0;
    virtual void CancelPendingEvents() = 0;
-   virtual void FireEvent(CView* pSender = NULL,LPARAM lHint = 0,boost::shared_ptr<CObject> pHint = boost::shared_ptr<CObject>()) = 0;
+   virtual void FireEvent(CView* pSender = nullptr,LPARAM lHint = 0,std::shared_ptr<CObject> pHint = nullptr) = 0;
 };
 
 /*****************************************************************************
@@ -889,8 +889,8 @@ interface ILiveLoads : IUnknown
    virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact) = 0;
    virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action) = 0;
    virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction() = 0;
-   virtual std::_tstring GetLLDFSpecialActionText()=0; // get common string for ignore roa case
-   virtual bool IgnoreLLDFRangeOfApplicability()=0; // true if action is to ignore ROA
+   virtual std::_tstring GetLLDFSpecialActionText() = 0; // get common string for ignore roa case
+   virtual bool IgnoreLLDFRangeOfApplicability() = 0; // true if action is to ignore ROA
 };
 
 // {483673C2-9F4E-40ec-9DC2-6B36B0D34498}
@@ -1220,7 +1220,7 @@ INTERFACE
    IValidate
 *****************************************************************************/
 #define VALIDATE_SUCCESS 0
-#define VALIDATE_INVALID 1 // the string is bad (NULL or blank)
+#define VALIDATE_INVALID 1 // the string is bad (nullptr or blank)
 #define VALIDATE_SKEW_ANGLE 2
 
 // {C3D02F95-D861-483d-8A41-11FC3A16D77F}

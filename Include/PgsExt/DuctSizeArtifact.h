@@ -66,7 +66,7 @@ protected:
    void MakeCopy(const pgsDuctSizeArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsDuctSizeArtifact& rOther);
+   void MakeAssignment(const pgsDuctSizeArtifact& rOther);
 
 private:
    Float64 m_Apt;

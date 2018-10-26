@@ -46,16 +46,16 @@ public:
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Events,iDisplayMgrEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseMove)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayMgr* pDisplayMgr,UINT nFlags,short zDelta,CPoint point);
-      STDMETHOD_(bool,OnKeyDown)(iDisplayMgr* pDisplayMgr,UINT nChar, UINT nRepCnt, UINT nFlags);
-      STDMETHOD_(bool,OnContextMenu)(iDisplayMgr* pDisplayMgr,CWnd* pWnd,CPoint point);
+      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnLButtonDown)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnRButtonDown)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnLButtonUp)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnRButtonUp)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnMouseMove)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnMouseWheel)(iDisplayMgr* pDisplayMgr,UINT nFlags,short zDelta,CPoint point) override;
+      STDMETHOD_(bool,OnKeyDown)(iDisplayMgr* pDisplayMgr,UINT nChar, UINT nRepCnt, UINT nFlags) override;
+      STDMETHOD_(bool,OnContextMenu)(iDisplayMgr* pDisplayMgr,CWnd* pWnd,CPoint point) override;
    END_INTERFACE_PART(Events)
 
 public:

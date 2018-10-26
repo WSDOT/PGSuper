@@ -108,7 +108,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   rptParagraph* p = NULL;
+   rptParagraph* p = nullptr;
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -169,9 +169,9 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
          GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-         rptRcTable* pReleaseLayoutTable = NULL;
-         rptRcTable* pStorageLayoutTable = NULL;
-         rptRcTable* pLayoutTable        = NULL;
+         rptRcTable* pReleaseLayoutTable = nullptr;
+         rptRcTable* pStorageLayoutTable = nullptr;
+         rptRcTable* pLayoutTable        = nullptr;
          SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
          if ( 1 < nSegments )
          {
@@ -461,7 +461,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
          // when we go to C++ 11, use the std::itoa algorithm
       }
-      BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+      for (const auto& intervalIdx : vIntervals)
       {
          p = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << p;

@@ -116,7 +116,7 @@ void CBeamDimensionGrid::Removerows()
 
 void CBeamDimensionGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 {
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
 	{
 		pCmdUI->Enable(FALSE);
 		return;

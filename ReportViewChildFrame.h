@@ -47,13 +47,13 @@ public:
 				LPCTSTR lpszWindowName,
 				DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 				const RECT& rect = rectDefault,
-				CMDIFrameWnd* pParentWnd = NULL,
-				CCreateContext* pContext = NULL);
+				CMDIFrameWnd* pParentWnd = nullptr,
+				CCreateContext* pContext = nullptr);
    //}}AFX_VIRTUAL
 
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid() const override;
+	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
 // Implementation

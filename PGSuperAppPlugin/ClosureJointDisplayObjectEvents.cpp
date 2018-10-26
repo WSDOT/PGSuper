@@ -225,7 +225,7 @@ STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnContextMenu(iDi
       CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      pMenu->AppendMenu(ID_EDIT_CLOSURE,_T("Edit"),NULL);
+      pMenu->AppendMenu(ID_EDIT_CLOSURE,_T("Edit"),nullptr);
 
       std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;

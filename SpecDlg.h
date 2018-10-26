@@ -39,7 +39,7 @@ class CSpecDlg : public CDialog
 {
 // Construction
 public:
-   CSpecDlg(CWnd* pParent = NULL);   // standard constructor
+   CSpecDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSpecDlg)
@@ -52,7 +52,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSpecDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -61,7 +61,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CSpecDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	afx_msg void OnHelp();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

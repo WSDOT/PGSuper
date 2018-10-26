@@ -21,13 +21,10 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "DistributedLoadDrawStrategyImpl.h"
 #include "mfcdual.h"
-#include <IFace\Project.h> 
-#include "EditDistributedLoadDlg.h"
-#include <PgsExt\InsertDeleteLoad.h>
-
+#include <IFace\EditByUI.h> 
 #include <MathEx.h>
 
 #ifdef _DEBUG
@@ -529,32 +526,12 @@ CSize GetLArrowSize(iCoordinateMap* pMap)
 
 void CDistributedLoadDrawStrategyImpl::EditLoad()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IUserDefinedLoadData, pUdl);
-
-   ATLASSERT(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetDistributedLoadCount());
-
-   const CDistributedLoadData* pLoad = pUdl->GetDistributedLoad(m_LoadIndex);
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoad->m_ID);
-
-	CEditDistributedLoadDlg dlg(*pLoad,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      if (*pLoad != dlg.m_Load || eventID != dlg.m_EventID)
-      {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(m_LoadIndex,*pLoad,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-         txnTxnManager::GetInstance()->Execute(pTxn);
-      }
-   }
+   GET_IFACE(IEditByUI, pEditByUI);
+   pEditByUI->EditDistributedLoad(m_LoadIndex);
 }
 
 void CDistributedLoadDrawStrategyImpl::DeleteLoad()
 {
-   txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(m_LoadIndex);
-   txnTxnManager::GetInstance()->Execute(pTxn);
+   GET_IFACE(IEditByUI, pEditByUI);
+   pEditByUI->DeleteDistributedLoad(m_LoadIndex);
 }

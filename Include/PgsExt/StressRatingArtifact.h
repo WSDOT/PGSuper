@@ -124,7 +124,7 @@ public:
 
 protected:
    void MakeCopy(const pgsStressRatingArtifact& rOther);
-   virtual void MakeAssignment(const pgsStressRatingArtifact& rOther);
+   void MakeAssignment(const pgsStressRatingArtifact& rOther);
 
    mutable bool m_bRFComputed;
    mutable Float64 m_RF;

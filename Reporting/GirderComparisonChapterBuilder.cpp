@@ -346,7 +346,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       m_Elevation(elevation)
       {;}
 
-      StrandIndexType GetNumDebonds()
+      StrandIndexType GetNumDebonds() const
       {
          StrandIndexType num=0;
          for (DebondSectionSetIter it=m_DebondSections.begin(); it!=m_DebondSections.end(); it++)
@@ -420,7 +420,7 @@ DebondComparison::DebondStatus DebondComparison::Init(SpanIndexType span, Girder
       for (StrandIndexType istrand=0; istrand<num_strands; istrand++)
       {
          Float64 dist_start, dist_end;
-         if (pStrandGeometry->IsStrandDebonded(segmentKey, istrand, pgsTypes::Straight, &dist_start, &dist_end))
+         if (pStrandGeometry->IsStrandDebonded(segmentKey, istrand, pgsTypes::Straight, nullptr, &dist_start, &dist_end))
          {
             total_num_debonded++;
 
@@ -442,12 +442,14 @@ DebondComparison::DebondStatus DebondComparison::Init(SpanIndexType span, Girder
                if (section_iter!=row_iter->m_DebondSections.end())
                {
                   // existing section/row with debonds - increment count
-                  section_iter->m_DebondCount++;
+                  DebondSectionData& data(const_cast<DebondSectionData&>(*section_iter));
+                  data.m_DebondCount++;
                }
                else
                {
                   // new section location in row
-                  row_iter->m_DebondSections.insert(section_data);
+                  DebondRowData& rowData(const_cast<DebondRowData&>(*row_iter));
+                  rowData.m_DebondSections.insert(section_data);
                }
             }
             else
@@ -560,7 +562,10 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
             if (!first)(*p_table)(row,col) << rptNewLine;
             (*p_table)(row,col++) << dim.SetValue( riter->m_Elevation );
 
-            if (!first)(*p_table)(row,col) << rptNewLine;
+            if (!first)
+            {
+               (*p_table)(row, col) << rptNewLine;
+            }
             (*p_table)(row,col++) << riter->GetNumDebonds();
 
             // cycle through each section and see if we have debonds there

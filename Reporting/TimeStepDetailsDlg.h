@@ -32,7 +32,7 @@ class CTimeStepDetailsDlg : public CDialog
 	DECLARE_DYNAMIC(CTimeStepDetailsDlg)
 
 public:
-	CTimeStepDetailsDlg(IBroker* pBroker,boost::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent = NULL);   // standard constructor
+	CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CTimeStepDetailsDlg();
 
 // Dialog Data
@@ -49,7 +49,7 @@ protected:
 
 private:
    IBroker* m_pBroker;
-   boost::shared_ptr<CTimeStepDetailsReportSpecification> m_pRptSpec;
+   std::shared_ptr<CTimeStepDetailsReportSpecification> m_pRptSpec;
 
    pgsPointOfInterest m_InitialPOI;
    CGirderKey m_GirderKey;

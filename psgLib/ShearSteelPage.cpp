@@ -56,8 +56,8 @@ m_bAllowRestoreDefaults(false)
 
    CPropertyPage::Construct(CShearSteelPage::IDD,IDS_GIRDER_SHEAR);
 
-   m_pGrid = std::auto_ptr<CShearSteelGrid>(new CShearSteelGrid());
-   m_pHorizGrid = std::auto_ptr<CHorizShearGrid>(new CHorizShearGrid());
+   m_pGrid = std::make_unique<CShearSteelGrid>();
+   m_pHorizGrid = std::make_unique<CHorizShearGrid>();
 
 	//{{AFX_DATA_INIT(CShearSteelPage)
 	//}}AFX_DATA_INIT

@@ -65,9 +65,9 @@ DEFINE_GUID(IID_ISegmentLifting,
 interface ISegmentLifting : IUnknown
 {
    // location of lifting loop measured from end of girder
-   virtual Float64 GetLeftLiftingLoopLocation(const CSegmentKey& segmentKey)=0;
-   virtual Float64 GetRightLiftingLoopLocation(const CSegmentKey& segmentKey)=0;
-   virtual void SetLiftingLoopLocations(const CSegmentKey& segmentKey, Float64 left,Float64 right)=0;
+   virtual Float64 GetLeftLiftingLoopLocation(const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetRightLiftingLoopLocation(const CSegmentKey& segmentKey) = 0;
+   virtual void SetLiftingLoopLocations(const CSegmentKey& segmentKey, Float64 left,Float64 right) = 0;
 };
 
 
@@ -86,9 +86,9 @@ DEFINE_GUID(IID_ISegmentHauling,
 interface ISegmentHauling : IUnknown
 {
    // location of truck support location measured from end of girder
-   virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey)=0;
-   virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey)=0;
-   virtual void SetTruckSupportLocations(const CSegmentKey& segmentKey, Float64 leading,Float64 trailing)=0;
+   virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey) = 0;
+   virtual void SetTruckSupportLocations(const CSegmentKey& segmentKey, Float64 leading,Float64 trailing) = 0;
    virtual LPCTSTR GetHaulTruck(const CSegmentKey& segmentKey) = 0;
    virtual void SetHaulTruck(const CSegmentKey& segmentKey,LPCTSTR lpszHaulTruck) = 0;
 };

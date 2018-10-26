@@ -55,7 +55,7 @@ void pgsVSRatioStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    pgsVSRatioStatusItem* pItem = dynamic_cast<pgsVSRatioStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CString strMsg;
    strMsg.Format(_T("%s: %s"),SEGMENT_LABEL(pItem->m_SegmentKey),pItem->GetDescription());

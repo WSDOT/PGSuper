@@ -19,7 +19,7 @@
 
 IMPLEMENT_DYNAMIC(CErectPiersDlg, CDialog)
 
-CErectPiersDlg::CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CErectPiersDlg::CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CErectPiersDlg::IDD, pParent),
    m_EventIndex(eventIdx),
    m_bReadOnly(bReadOnly)

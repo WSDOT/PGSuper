@@ -495,7 +495,7 @@ Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType,
    ATLASSERT(rangeLength<gdrLength/2.0); // This function was designed for splitting zone, which should never be too long
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-   ATLASSERT(pool != NULL);
+   ATLASSERT(pool != nullptr);
 
    Float64 Av=0.0;
    Float64 endloc=0.0;
@@ -554,7 +554,7 @@ Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType
    {
       // Search in reverse from right end
       lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-      ATLASSERT(pool != NULL);
+      ATLASSERT(pool != nullptr);
 
       Float64 endloc=0.0;
       for(STIRRUPCONFIG::ShearZoneConstReverseIterator itl = config.ShearZones.rbegin(); itl != config.ShearZones.rend(); itl++)
@@ -608,7 +608,7 @@ void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matRebar::Type
    *pEndAv   = 0.0; 
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-   ATLASSERT(pool != NULL);
+   ATLASSERT(pool != nullptr);
 
    if (config.SplittingBarSize != matRebar::bsNone)
    {

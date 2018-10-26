@@ -57,6 +57,6 @@ protected:
 
 private:
    // Prevent accidental copying and assignment
-   CTendonGeometryChapterBuilder(const CTendonGeometryChapterBuilder&);
-   CTendonGeometryChapterBuilder& operator=(const CTendonGeometryChapterBuilder&);
+   CTendonGeometryChapterBuilder(const CTendonGeometryChapterBuilder&) = delete;
+   CTendonGeometryChapterBuilder& operator=(const CTendonGeometryChapterBuilder&) = delete;
 };

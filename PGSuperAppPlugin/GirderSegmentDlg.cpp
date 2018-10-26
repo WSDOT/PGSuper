@@ -49,7 +49,7 @@ CGirderSegmentDlg::CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,cons
    Init(pBridgeDesc,segmentKey);
 }
 
-CGirderSegmentDlg::CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd, UINT iSelectPage) :
+CGirderSegmentDlg::CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd, UINT iSelectPage) :
 CPropertySheet(_T(""),pParentWnd,iSelectPage)
 {
    m_bEditingInGirder = true;
@@ -125,7 +125,7 @@ void CGirderSegmentDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegme
    CreateExtensionPages();
 }
 
-void CGirderSegmentDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
+void CGirderSegmentDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
    CommonInit(pBridgeDesc,segmentKey);
    CreateExtensionPages(editSplicedGirderExtensions);
@@ -151,12 +151,13 @@ void CGirderSegmentDlg::CreateExtensionPages()
    }
 }
 
-void CGirderSegmentDlg::CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
+void CGirderSegmentDlg::CreateExtensionPages(const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_SplicedGirderExtensionPages = editSplicedGirderExtensions;
+   std::sort(m_SplicedGirderExtensionPages.begin(), m_SplicedGirderExtensionPages.end());
 
 
    std::map<IDType,IEditSegmentCallback*> callbacks = pDoc->GetEditSegmentCallbacks();
@@ -166,7 +167,7 @@ void CGirderSegmentDlg::CreateExtensionPages(const std::set<EditSplicedGirderExt
    {
       IEditSegmentCallback* pEditSegmentCallback = callbackIter->second;
       IDType editSplicedGirderCallbackID = pEditSegmentCallback->GetEditSplicedGirderCallbackID();
-      CPropertyPage* pPage = NULL;
+      CPropertyPage* pPage = nullptr;
       if ( editSplicedGirderCallbackID == INVALID_ID )
       {
          pPage = pEditSegmentCallback->CreatePropertyPage(this);
@@ -175,7 +176,7 @@ void CGirderSegmentDlg::CreateExtensionPages(const std::set<EditSplicedGirderExt
       {
          EditSplicedGirderExtension key;
          key.callbackID = editSplicedGirderCallbackID;
-         std::set<EditSplicedGirderExtension>::const_iterator found(m_SplicedGirderExtensionPages.find(key));
+         std::vector<EditSplicedGirderExtension>::const_iterator found(std::find(m_SplicedGirderExtensionPages.begin(),m_SplicedGirderExtensionPages.end(),key));
          if ( found != m_SplicedGirderExtensionPages.end() )
          {
             const EditSplicedGirderExtension& extension = *found;
@@ -212,7 +213,7 @@ txnTransaction* CGirderSegmentDlg::GetExtensionPageTransaction()
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -254,7 +255,7 @@ void CGirderSegmentDlg::NotifySplicedGirderExtensionPages()
       {
          EditSplicedGirderExtension key;
          key.callbackID = editSplicedGirderCallbackID;
-         std::set<EditSplicedGirderExtension>::iterator found(m_SplicedGirderExtensionPages.find(key));
+         std::vector<EditSplicedGirderExtension>::iterator found(std::find(m_SplicedGirderExtensionPages.begin(),m_SplicedGirderExtensionPages.end(),key));
          if ( found != m_SplicedGirderExtensionPages.end() )
          {
             EditSplicedGirderExtension& extension = *found;
@@ -278,7 +279,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
    if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
    {
       // first get in girderdata format
-      const CDirectStrandFillCollection* pDirectFillData(NULL);
+      const CDirectStrandFillCollection* pDirectFillData(nullptr);
       if (type==pgsTypes::Straight)
       {
          pDirectFillData = pSegment->Strands.GetDirectStrandFillStraight();
@@ -297,7 +298,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
       ConfigStrandFillVector vec(pStrandGeometry->ComputeStrandFill(m_Girder.GetGirderName(), type, 0));
       StrandIndexType gridsize = vec.size();
 
-      if(pDirectFillData!=NULL)
+      if(pDirectFillData!=nullptr)
       {
          CDirectStrandFillCollection::const_iterator it = pDirectFillData->begin();
          CDirectStrandFillCollection::const_iterator itend = pDirectFillData->end();
@@ -392,7 +393,7 @@ LRESULT CGirderSegmentDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );

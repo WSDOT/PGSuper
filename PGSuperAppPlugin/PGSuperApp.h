@@ -32,8 +32,8 @@ class CPGSuperAppPluginApp : public CWinApp
 public:
 
 // Overrides
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 
    CString GetVersion(bool bIncludeBuildNumber) const;
 

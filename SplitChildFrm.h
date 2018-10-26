@@ -46,15 +46,15 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSplitChildFrame)
 	protected:
-	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
+	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) override;
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	virtual ~CSplitChildFrame();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid() const override;
+	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
 // Generated message map functions
@@ -64,10 +64,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    // pure virtual class to get runtime class of bottom pane
-   virtual CRuntimeClass* GetLowerPaneClass() const =0;
+   virtual CRuntimeClass* GetLowerPaneClass() const = 0;
 
    // Get the fraction that the top frame takes of the client window
-   virtual Float64 GetTopFrameFraction() const =0;
+   virtual Float64 GetTopFrameFraction() const = 0;
 
 
    BOOL m_bPanesCreated;

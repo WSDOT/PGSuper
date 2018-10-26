@@ -139,7 +139,7 @@ public:
 
 protected:
    void MakeCopy(const pgsFlexuralStressArtifact& rOther);
-   virtual void MakeAssignment(const pgsFlexuralStressArtifact& rOther);
+   void MakeAssignment(const pgsFlexuralStressArtifact& rOther);
 
 private:
    pgsPointOfInterest m_Poi;

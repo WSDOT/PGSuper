@@ -116,7 +116,7 @@ rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(CR
       }
    }
 
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
@@ -142,6 +142,18 @@ rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(CR
          if ( pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
          {
             CLongReinfShearCheck().Build(pChapter,pBroker,girderKey,pgsTypes::StrengthI_LegalSpecial,pDisplayUnits);
+         }
+         else
+         {
+            (*pPara) << _T("Shear rating not computed") << rptNewLine;
+         }
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         if (pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency))
+         {
+            CLongReinfShearCheck().Build(pChapter, pBroker, girderKey, pgsTypes::StrengthI_LegalEmergency, pDisplayUnits);
          }
          else
          {

@@ -105,7 +105,7 @@ public:
 
 protected:
    void MakeCopy(const CGirderSpacingData& rOther);
-   virtual void MakeAssignment(const CGirderSpacingData& rOther);
+   void MakeAssignment(const CGirderSpacingData& rOther);
 
    pgsTypes::MeasurementType m_MeasurementType;
    pgsTypes::MeasurementLocation m_MeasurementLocation;
@@ -134,23 +134,23 @@ public:
 
    void SetSpan(const CSpanData* pSpan);
 
-   virtual pgsTypes::MeasurementType GetMeasurementType() const;
-   virtual pgsTypes::MeasurementLocation GetMeasurementLocation() const;
-   virtual GirderIndexType GetRefGirder() const;
-   virtual Float64 GetRefGirderOffset() const;
-   virtual pgsTypes::OffsetMeasurementType GetRefGirderOffsetType() const;
-   virtual void SetGirderSpacing(GroupIndexType grpIdx,Float64 s);
-   virtual GroupIndexType GetSpacingGroupCount() const;
-   virtual void GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const;
-   virtual SpacingIndexType GetSpacingCount() const;
-   virtual Float64 GetGirderSpacing(SpacingIndexType spacingIdx) const;
+   virtual pgsTypes::MeasurementType GetMeasurementType() const override;
+   virtual pgsTypes::MeasurementLocation GetMeasurementLocation() const override;
+   virtual GirderIndexType GetRefGirder() const override;
+   virtual Float64 GetRefGirderOffset() const override;
+   virtual pgsTypes::OffsetMeasurementType GetRefGirderOffsetType() const override;
+   virtual void SetGirderSpacing(GroupIndexType grpIdx,Float64 s) override;
+   virtual GroupIndexType GetSpacingGroupCount() const override;
+   virtual void GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const override;
+   virtual SpacingIndexType GetSpacingCount() const override;
+   virtual Float64 GetGirderSpacing(SpacingIndexType spacingIdx) const override;
 
 protected:
    friend CSpanData;
    const CSpanData* m_pSpan;
 
    void MakeCopy(const CGirderSpacing& rOther);
-   virtual void MakeAssignment(const CGirderSpacing& rOther);
+   void MakeAssignment(const CGirderSpacing& rOther);
 };
 
 #endif // INCLUDED_PGSEXT_GIRDERSPACING_H_

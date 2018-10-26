@@ -32,7 +32,7 @@
 
 #include <EAF\EAFInterfaceCache.h>
 
-#include <boost\shared_ptr.hpp>
+#include <memory>
 
 #include <map>
 
@@ -69,22 +69,22 @@ END_CONNECTION_POINT_MAP()
 
 // IAgent
 public:
-	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker);
-   STDMETHOD(RegInterfaces)();
-	STDMETHOD(Init)();
-	STDMETHOD(Reset)();
-	STDMETHOD(ShutDown)();
-   STDMETHOD(Init2)();
-   STDMETHOD(GetClassID)(CLSID* pCLSID);
+	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
+   STDMETHOD(RegInterfaces)() override;
+	STDMETHOD(Init)() override;
+	STDMETHOD(Reset)() override;
+	STDMETHOD(ShutDown)() override;
+   STDMETHOD(Init2)() override;
+   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
 
 protected:
    // CReporterBase implementation
-   virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true);
+   virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true) override;
 
 // ISpecificationEventSink
 public:
-   virtual HRESULT OnSpecificationChanged();
-   virtual HRESULT OnAnalysisTypeChanged();
+   virtual HRESULT OnSpecificationChanged() override;
+   virtual HRESULT OnAnalysisTypeChanged() override;
 
 private:
    DECLARE_EAF_AGENT_DATA;

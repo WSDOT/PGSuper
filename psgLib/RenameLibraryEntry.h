@@ -36,7 +36,7 @@ class CRenameLibraryEntry : public CDialog
 {
 // Construction
 public:
-	CRenameLibraryEntry(CWnd* pParent = NULL);   // standard constructor
+	CRenameLibraryEntry(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CRenameLibraryEntry)

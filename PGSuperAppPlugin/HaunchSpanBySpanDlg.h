@@ -31,7 +31,7 @@ class CHaunchSpanBySpanDlg : public CDialog
 	DECLARE_DYNAMIC(CHaunchSpanBySpanDlg)
 
 public:
-	CHaunchSpanBySpanDlg(CWnd* pParent = NULL);   // standard constructor
+	CHaunchSpanBySpanDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CHaunchSpanBySpanDlg();
 
 // Dialog Data

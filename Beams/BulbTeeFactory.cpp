@@ -154,7 +154,7 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType stat
    beam->put_W3(w3);
    beam->put_W4(w4);
 
-   if ( pBroker == NULL )
+   if ( pBroker == nullptr )
    {
       beam->put_W5(wmax);
    }
@@ -252,7 +252,7 @@ void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,c
       segment.CoCreateInstance(CLSID_ThickenedFlangeBulbTeeSegment);
    }
 
-   ATLASSERT(segment != NULL);
+   ATLASSERT(segment != nullptr);
 
    // Build up the beam shape
    // Beam materials
@@ -292,7 +292,7 @@ void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,c
       CComQIPtr<IShape> shape(gdrSection);
       ATLASSERT(shape);
 
-      prisSegment->AddShape(shape,material,NULL);
+      prisSegment->AddShape(shape,material,nullptr);
    }
    else
    {
@@ -309,7 +309,7 @@ void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,c
       CComQIPtr<IShape> shape(gdrSection);
       ATLASSERT(shape);
 
-      bulbTeeSegment->AddShape(shape,material,NULL);
+      bulbTeeSegment->AddShape(shape,material,nullptr);
    }
 
 
@@ -358,11 +358,11 @@ void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType
    Int16 method = pSpecEntry->GetLiveLoadDistributionMethod();
 
    // use passed values if not null
-   pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pDeck->DeckType;
+   pgsTypes::SupportedDeckType deckType = (pDeckType!=nullptr) ? *pDeckType : pDeck->GetDeckType();
 
    ATLASSERT(deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtCompositeOverlay); // no spread bulb t's
 
-   pgsTypes::AdjacentTransverseConnectivity connect = (pConnect!=NULL) ? *pConnect : pDeck->TransverseConnectivity;
+   pgsTypes::AdjacentTransverseConnectivity connect = (pConnect!=nullptr) ? *pConnect : pDeck->TransverseConnectivity;
 
    // for composite attached beams, we want to use WSDOT type k
    bool useIBeam = ( method==LLDF_WSDOT && connect == pgsTypes::atcConnectedAsUnit && deckType == pgsTypes::sdtCompositeOverlay );

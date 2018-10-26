@@ -192,7 +192,7 @@ public:
 
 protected:
    void MakeCopy(const CGirderGroupData& rOther,bool bCopyOnlyData);
-   virtual void MakeAssignment(const CGirderGroupData& rOther);
+   void MakeAssignment(const CGirderGroupData& rOther);
 
 private:
    GroupIndexType m_GroupIdx;

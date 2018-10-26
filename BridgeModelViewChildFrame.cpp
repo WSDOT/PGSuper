@@ -156,7 +156,7 @@ CBridgePlanView* CBridgeModelViewChildFrame::GetBridgePlanView()
    {
       return (CBridgePlanView*)pView;
    }
-   return NULL;
+   return nullptr;
 }
 
 CBridgeSectionView* CBridgeModelViewChildFrame::GetBridgeSectionView() 
@@ -166,7 +166,7 @@ CBridgeSectionView* CBridgeModelViewChildFrame::GetBridgeSectionView()
    {
       return (CBridgeSectionView*)pView;
    }
-   return NULL;
+   return nullptr;
 }
 
 CAlignmentPlanView* CBridgeModelViewChildFrame::GetAlignmentPlanView()
@@ -176,7 +176,7 @@ CAlignmentPlanView* CBridgeModelViewChildFrame::GetAlignmentPlanView()
    {
       return (CAlignmentPlanView*)pView;
    }
-   return NULL;
+   return nullptr;
 }
 
 CAlignmentProfileView* CBridgeModelViewChildFrame::GetAlignmentProfileView()
@@ -186,7 +186,7 @@ CAlignmentProfileView* CBridgeModelViewChildFrame::GetAlignmentProfileView()
    {
       return (CAlignmentProfileView*)pView;
    }
-   return NULL;
+   return nullptr;
 }
 
 CBridgeViewPane* CBridgeModelViewChildFrame::GetUpperView()
@@ -394,8 +394,8 @@ void CBridgeModelViewChildFrame::UpdateCutLocation(Float64 cut)
    m_CurrentCutLocation = ForceIntoRange(start,m_CurrentCutLocation,end);
 
 //   UpdateBar();
-   GetUpperView()->OnUpdate(NULL, HINT_BRIDGEVIEWSECTIONCUTCHANGED, NULL);
-   GetLowerView()->OnUpdate(NULL, HINT_BRIDGEVIEWSECTIONCUTCHANGED, NULL);
+   GetUpperView()->OnUpdate(nullptr, HINT_BRIDGEVIEWSECTIONCUTCHANGED, nullptr);
+   GetLowerView()->OnUpdate(nullptr, HINT_BRIDGEVIEWSECTIONCUTCHANGED, nullptr);
 }
    
 Float64 CBridgeModelViewChildFrame::GetCurrentCutLocation()

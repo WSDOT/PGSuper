@@ -50,14 +50,14 @@ CPrecastSegmentData::CPrecastSegmentData(CSplicedGirderData* pGirder)
 
    m_pGirder = pGirder;
 
-   m_pSpanData[pgsTypes::metStart] = NULL;
-   m_pSpanData[pgsTypes::metEnd]   = NULL;
+   m_pSpanData[pgsTypes::metStart] = nullptr;
+   m_pSpanData[pgsTypes::metEnd]   = nullptr;
 
    m_SpanIdx[pgsTypes::metStart] = INVALID_INDEX;
    m_SpanIdx[pgsTypes::metEnd] = INVALID_INDEX;
 
-   m_pStartClosure = NULL;
-   m_pEndClosure = NULL;
+   m_pStartClosure = nullptr;
+   m_pEndClosure = nullptr;
 }
 
 CPrecastSegmentData::CPrecastSegmentData(const CPrecastSegmentData& rOther)
@@ -100,16 +100,16 @@ void CPrecastSegmentData::Init()
       EndBlockWidth[j] = 0;
    }
 
-   m_pGirder = NULL;
+   m_pGirder = nullptr;
 
-   m_pSpanData[pgsTypes::metStart] = NULL;
-   m_pSpanData[pgsTypes::metEnd]   = NULL;
+   m_pSpanData[pgsTypes::metStart] = nullptr;
+   m_pSpanData[pgsTypes::metEnd]   = nullptr;
 
    m_SpanIdx[pgsTypes::metStart] = INVALID_INDEX;
    m_SpanIdx[pgsTypes::metEnd] = INVALID_INDEX;
 
-   m_pStartClosure = NULL;
-   m_pEndClosure = NULL;
+   m_pStartClosure = nullptr;
+   m_pEndClosure = nullptr;
 }
 
 void CPrecastSegmentData::SetGirder(CSplicedGirderData* pGirder)
@@ -153,7 +153,7 @@ const CSpanData2* CPrecastSegmentData::GetSpan(pgsTypes::MemberEndType endType) 
 
 SpanIndexType CPrecastSegmentData::GetSpanIndex(pgsTypes::MemberEndType endType) const
 {
-   return (m_pSpanData[endType] != NULL ? m_pSpanData[endType]->GetIndex() : m_SpanIdx[endType]);
+   return (m_pSpanData[endType] != nullptr ? m_pSpanData[endType]->GetIndex() : m_SpanIdx[endType]);
 }
 
 void CPrecastSegmentData::SetStartClosure(CClosureJointData* pClosure)
@@ -188,18 +188,18 @@ CClosureJointData* CPrecastSegmentData::GetEndClosure()
 
 const CPrecastSegmentData* CPrecastSegmentData::GetPrevSegment() const
 {
-   return m_pStartClosure == NULL ? NULL : m_pStartClosure->GetLeftSegment();
+   return m_pStartClosure == nullptr ? nullptr : m_pStartClosure->GetLeftSegment();
 }
 
 const CPrecastSegmentData* CPrecastSegmentData::GetNextSegment() const
 {
-   return m_pEndClosure == NULL ? NULL : m_pEndClosure->GetRightSegment();
+   return m_pEndClosure == nullptr ? nullptr : m_pEndClosure->GetRightSegment();
 }
 
 void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,const CPierData2** ppPier,const CTemporarySupportData** ppTS) const
 {
-   *ppPier = NULL;
-   *ppTS = NULL;
+   *ppPier = nullptr;
+   *ppTS = nullptr;
    if ( endType == pgsTypes::metStart )
    {
       if ( m_pStartClosure )
@@ -240,8 +240,8 @@ void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,const CPier
 
 void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,CPierData2** ppPier,CTemporarySupportData** ppTS)
 {
-   *ppPier = NULL;
-   *ppTS = NULL;
+   *ppPier = nullptr;
+   *ppTS = nullptr;
    if ( endType == pgsTypes::metStart )
    {
       if ( m_pStartClosure )
@@ -282,8 +282,8 @@ void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,CPierData2*
 
 void CPrecastSegmentData::GetStations(Float64* pStartStation,Float64* pEndStation) const
 {
-   const CPierData2* pPier = NULL;
-   const CTemporarySupportData* pTS = NULL;
+   const CPierData2* pPier = nullptr;
+   const CTemporarySupportData* pTS = nullptr;
    GetSupport(pgsTypes::metStart,&pPier,&pTS);
    if ( pPier )
    {
@@ -617,14 +617,14 @@ bool CPrecastSegmentData::IsDropIn() const
       const CTemporarySupportData* pTS2;
       GetSupport(pgsTypes::metEnd,&pPier2,&pTS2);
 
-      if ( GetPrevSegment() == NULL && pPier1 && pTS2 && pTS2->GetSupportType() == pgsTypes::StrongBack)
+      if ( GetPrevSegment() == nullptr && pPier1 && pTS2 && pTS2->GetSupportType() == pgsTypes::StrongBack)
       {
          // this is the first segment and it supported by a pier at the start and a TS at the end, and the end is a strong back
          // then this segment hangs on the next segment so treat it as a drop-in segment
          return true;
       }
 
-      if ( GetNextSegment() == NULL && pTS1 && pPier2 && pTS1->GetSupportType() == pgsTypes::StrongBack )
+      if ( GetNextSegment() == nullptr && pTS1 && pPier2 && pTS1->GetSupportType() == pgsTypes::StrongBack )
       {
          // this is the last segment and it supported by a TS at the start and a pier at the end, and the start is a strong back
          // then this segment hangs on the previous segment so treat it as a drop-in segment
@@ -829,8 +829,8 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       else
       {
          // resolve references later
-         m_pSpanData[pgsTypes::metStart] = NULL;
-         m_pSpanData[pgsTypes::metEnd]   = NULL;
+         m_pSpanData[pgsTypes::metStart] = nullptr;
+         m_pSpanData[pgsTypes::metEnd]   = nullptr;
 
          m_SpanIdx[pgsTypes::metStart] = startSpanIdx;
          m_SpanIdx[pgsTypes::metEnd]   = endSpanIdx;
@@ -1091,12 +1091,12 @@ void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyI
          pgsTypes::MemberEndType endType = pgsTypes::MemberEndType(i);
          if ( rOther.m_pSpanData[endType] )
          {
-            m_pSpanData[endType] = NULL;
+            m_pSpanData[endType] = nullptr;
             m_SpanIdx[endType] = rOther.m_pSpanData[endType]->GetIndex();
          }
          else
          {
-            m_pSpanData[endType] = NULL;
+            m_pSpanData[endType] = nullptr;
             m_SpanIdx[endType] = rOther.m_SpanIdx[endType];
          }
       }
@@ -1163,8 +1163,8 @@ Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
 void CPrecastSegmentData::AdjustAdjacentSegment()
 {
    // Force the ends of this segment and the adjacent segments to match in height
-   CPrecastSegmentData* pPrevSegment = NULL;
-   CPrecastSegmentData* pNextSegment = NULL;
+   CPrecastSegmentData* pPrevSegment = nullptr;
+   CPrecastSegmentData* pNextSegment = nullptr;
    if ( m_pStartClosure )
    {
       pPrevSegment = m_pStartClosure->GetLeftSegment();
@@ -1194,18 +1194,18 @@ void CPrecastSegmentData::AdjustAdjacentSegment()
 
 void CPrecastSegmentData::ResolveReferences()
 {
-   if ( m_pGirder == NULL )
+   if ( m_pGirder == nullptr )
    {
       return;
    }
 
-   if ( m_pGirder->GetGirderGroup() == NULL )
+   if ( m_pGirder->GetGirderGroup() == nullptr )
    {
       return;
    }
 
    const CBridgeDescription2* pBridge = m_pGirder->GetGirderGroup()->GetBridgeDescription();
-   if ( pBridge == NULL )
+   if ( pBridge == nullptr )
    {
       return;
    }
@@ -1257,7 +1257,7 @@ LPCTSTR CPrecastSegmentData::GetSegmentVariation(pgsTypes::SegmentVariationType 
       ATLASSERT(false); // is there a new variation type?
    }
 
-   return NULL;
+   return nullptr;
 }
 
 #if defined _DEBUG
@@ -1267,18 +1267,18 @@ LPCTSTR CPrecastSegmentData::GetSegmentVariation(pgsTypes::SegmentVariationType 
 #define _DEBUG
 void CPrecastSegmentData::AssertValid()
 {
-   // if any of these first 3 checks are NULL, then this segment isn't an a structure so it can't be validated
-   if ( m_pGirder == NULL )
+   // if any of these first 3 checks are nullptr, then this segment isn't an a structure so it can't be validated
+   if ( m_pGirder == nullptr )
    {
       return;
    }
 
-   if ( m_pGirder->GetGirderGroup() == NULL )
+   if ( m_pGirder->GetGirderGroup() == nullptr )
    {
       return;
    }
 
-   if ( m_pGirder->GetGirderGroup()->GetBridgeDescription() == NULL )
+   if ( m_pGirder->GetGirderGroup()->GetBridgeDescription() == nullptr )
    {
       return;
    }

@@ -77,8 +77,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CDevLengthDetailsChapterBuilder(const CDevLengthDetailsChapterBuilder&);
-   CDevLengthDetailsChapterBuilder& operator=(const CDevLengthDetailsChapterBuilder&);
+   CDevLengthDetailsChapterBuilder(const CDevLengthDetailsChapterBuilder&) = delete;
+   CDevLengthDetailsChapterBuilder& operator=(const CDevLengthDetailsChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

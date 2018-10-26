@@ -46,7 +46,7 @@ public:
    mathFunction2d* Clone() const
    {
       ASSERT(false); // should never get here
-      return NULL;
+      return nullptr;
    }
 
 private:

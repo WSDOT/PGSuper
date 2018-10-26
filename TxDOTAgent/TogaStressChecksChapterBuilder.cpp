@@ -291,7 +291,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    // get allowable stresses
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(fabrSegmentKey);
 
-   const pgsFlexuralStressArtifact* pFactoredStressArtifact(NULL);
+   const pgsFlexuralStressArtifact* pFactoredStressArtifact(nullptr);
 
    Float64 allowable_tension;
    Float64 allowable_tension_with_rebar;

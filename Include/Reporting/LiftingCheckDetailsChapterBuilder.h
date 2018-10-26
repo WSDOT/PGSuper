@@ -57,6 +57,6 @@ protected:
 
 private:
    // Prevent accidental copying and assignment
-   CLiftingCheckDetailsChapterBuilder(const CLiftingCheckDetailsChapterBuilder&);
-   CLiftingCheckDetailsChapterBuilder& operator=(const CLiftingCheckDetailsChapterBuilder&);
+   CLiftingCheckDetailsChapterBuilder(const CLiftingCheckDetailsChapterBuilder&) = delete;
+   CLiftingCheckDetailsChapterBuilder& operator=(const CLiftingCheckDetailsChapterBuilder&) = delete;
 };

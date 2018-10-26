@@ -25,7 +25,7 @@
 #include <WBFLCore.h>
 #include "GirderTypes.h"
 #include "GirderSpacing.h"
-#include <boost\shared_ptr.hpp>
+#include <memory>
 
 class CPierData;
 class CBridgeDescription;
@@ -53,7 +53,7 @@ LOG
 class CSpanData
 {
 public:
-   CSpanData(SpanIndexType spanIdx = -1,CBridgeDescription* pBridge=NULL,CPierData* pPrevPier=NULL,CPierData* pNextPier=NULL);
+   CSpanData(SpanIndexType spanIdx = -1,CBridgeDescription* pBridge=nullptr,CPierData* pPrevPier=nullptr,CPierData* pNextPier=nullptr);
    CSpanData(const CSpanData& rOther);
    ~CSpanData();
 
@@ -125,7 +125,7 @@ public:
 
 protected:
    void MakeCopy(const CSpanData& rOther);
-   virtual void MakeAssignment(const CSpanData& rOther);
+   void MakeAssignment(const CSpanData& rOther);
 
 private:
    SpanIndexType m_SpanIdx;

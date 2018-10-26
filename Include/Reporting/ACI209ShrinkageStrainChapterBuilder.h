@@ -48,6 +48,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CACI209ShrinkageStrainChapterBuilder(const CACI209ShrinkageStrainChapterBuilder&);
-   CACI209ShrinkageStrainChapterBuilder& operator=(const CACI209ShrinkageStrainChapterBuilder&);
+   CACI209ShrinkageStrainChapterBuilder(const CACI209ShrinkageStrainChapterBuilder&) = delete;
+   CACI209ShrinkageStrainChapterBuilder& operator=(const CACI209ShrinkageStrainChapterBuilder&) = delete;
 };

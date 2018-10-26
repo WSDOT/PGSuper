@@ -37,7 +37,7 @@
 
 IMPLEMENT_DYNAMIC(CEditHaunchDlg, CDialog)
 
-CEditHaunchDlg::CEditHaunchDlg(const CBridgeDescription2* pBridgeDesc, CWnd* pParent /*=NULL*/)
+CEditHaunchDlg::CEditHaunchDlg(const CBridgeDescription2* pBridgeDesc, CWnd* pParent /*=nullptr*/)
 	: CDialog(CEditHaunchDlg::IDD, pParent),
    m_pBridgeDesc(pBridgeDesc),
    m_HaunchShape(pgsTypes::hsSquare),
@@ -72,7 +72,7 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
    {
       // Get min A value and build error message for too small of A
       Float64 minA = m_pBridgeDesc->GetDeckDescription()->GrossDepth;
-      if (pgsTypes::sdtCompositeSIP == m_pBridgeDesc->GetDeckDescription()->DeckType)
+      if (pgsTypes::sdtCompositeSIP == m_pBridgeDesc->GetDeckDescription()->GetDeckType())
       {
          minA += m_pBridgeDesc->GetDeckDescription()->PanelDepth;
       }
@@ -228,7 +228,7 @@ void CEditHaunchDlg::InitializeData()
    m_WasDataIntialized = true;
 
    const CDeckDescription2* pDeck = m_pBridgeDesc->GetDeckDescription();
-   ATLASSERT(pDeck->DeckType!= pgsTypes::sdtNone); // should not be able to edit haunch if no deck
+   ATLASSERT(pDeck->GetDeckType()!= pgsTypes::sdtNone); // should not be able to edit haunch if no deck
 
    // Take data from project and fill our local data structures
    // Fill all slab offset types with values depending on initial type

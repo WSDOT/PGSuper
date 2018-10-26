@@ -56,10 +56,10 @@ CPierData2::CPierData2()
    m_PierIdx = INVALID_INDEX;
    m_PierID  = INVALID_INDEX;
 
-   m_pPrevSpan = NULL;
-   m_pNextSpan = NULL;
+   m_pPrevSpan = nullptr;
+   m_pNextSpan = nullptr;
 
-   m_pBridgeDesc = NULL;
+   m_pBridgeDesc = nullptr;
 
    m_Station     = 0.0;
    Orientation = Normal;
@@ -126,10 +126,10 @@ CPierData2::CPierData2(const CPierData2& rOther)
    m_PierIdx = INVALID_INDEX;
    m_PierID  = INVALID_INDEX;
 
-   m_pPrevSpan = NULL;
-   m_pNextSpan = NULL;
+   m_pPrevSpan = nullptr;
+   m_pNextSpan = nullptr;
 
-   m_pBridgeDesc = NULL;
+   m_pBridgeDesc = nullptr;
 
    m_Station   = 0.0;
    Orientation = Normal;
@@ -404,7 +404,7 @@ bool CPierData2::operator!=(const CPierData2& rOther) const
    return !operator==(rOther);
 }
 
-LPCTSTR CPierData2::AsString(pgsTypes::BoundaryConditionType type)
+LPCTSTR CPierData2::AsString(pgsTypes::BoundaryConditionType type,bool bNoDeck)
 {
    switch(type)
    { 
@@ -415,27 +415,43 @@ LPCTSTR CPierData2::AsString(pgsTypes::BoundaryConditionType type)
       return _T("Roller");
 
    case pgsTypes::bctContinuousAfterDeck:
-      return _T("Continuous after deck placement");
+      if ( bNoDeck )
+         return _T("Continuous");
+      else
+         return _T("Continuous after deck placement");
 
    case pgsTypes::bctContinuousBeforeDeck:
+      ATLASSERT(bNoDeck == false); // "before deck" not valid for no deck types
       return _T("Continuous before deck placement");
 
    case pgsTypes::bctIntegralAfterDeck:
-      return _T("Integral after deck placement");
+      if ( bNoDeck )
+         return _T("Integral");
+      else
+         return _T("Integral after deck placement");
 
    case pgsTypes::bctIntegralBeforeDeck:
+      ATLASSERT(bNoDeck == false); // "before deck" not valid for no deck types
       return _T("Integral before deck placement");
 
    case pgsTypes::bctIntegralAfterDeckHingeBack:
-      return _T("Hinged on back side; Integral on ahead side after deck placement");
+      if ( bNoDeck )
+         return _T("Hinged on back side; Integral on ahead side");
+      else
+         return _T("Hinged on back side; Integral on ahead side after deck placement");
 
    case pgsTypes::bctIntegralBeforeDeckHingeBack:
+      ATLASSERT(bNoDeck == false); // "before deck" not valid for no deck types
       return _T("Hinged on back side; Integral on ahead side before deck placement");
 
    case pgsTypes::bctIntegralAfterDeckHingeAhead:
-      return _T("Integral on back side after deck placement; Hinged on ahead side");
+      if ( bNoDeck )
+         return _T("Integral on back side; Hinged on ahead side");
+      else
+         return _T("Integral on back side after deck placement; Hinged on ahead side");
 
    case pgsTypes::bctIntegralBeforeDeckHingeAhead:
+      ATLASSERT(bNoDeck == false); // "before deck" not valid for no deck types
       return _T("Integral on back side before deck placement; Hinged on ahead side");
    
    default:
@@ -1383,12 +1399,12 @@ const CSpanData2* CPierData2::GetSpan(pgsTypes::PierFaceType face) const
 
 CGirderGroupData* CPierData2::GetPrevGirderGroup()
 {
-   return m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pPrevSpan) : NULL;
+   return m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pPrevSpan) : nullptr;
 }
 
 CGirderGroupData* CPierData2::GetNextGirderGroup()
 {
-   return m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pNextSpan) : NULL;
+   return m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pNextSpan) : nullptr;
 }
 
 CGirderGroupData* CPierData2::GetGirderGroup(pgsTypes::PierFaceType face)
@@ -1398,12 +1414,12 @@ CGirderGroupData* CPierData2::GetGirderGroup(pgsTypes::PierFaceType face)
 
 const CGirderGroupData* CPierData2::GetPrevGirderGroup() const
 {
-   return (m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pPrevSpan) : NULL);
+   return (m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pPrevSpan) : nullptr);
 }
 
 const CGirderGroupData* CPierData2::GetNextGirderGroup() const
 {
-   return (m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pNextSpan) : NULL);
+   return (m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pNextSpan) : nullptr);
 }
 
 const CGirderGroupData* CPierData2::GetGirderGroup(pgsTypes::PierFaceType face) const
@@ -1524,7 +1540,7 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
       // add the closure joint casting events to the timeline manager.
       CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
       CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(castClosureJointEvent);
-      ATLASSERT(pTimelineEvent != NULL);
+      ATLASSERT(pTimelineEvent != nullptr);
       pTimelineEvent->GetCastClosureJointActivity().AddPier(GetID());
 
       m_GirderSpacing[pgsTypes::Back].SetGirderCount(nGirders);
@@ -1604,21 +1620,21 @@ CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx)
    if ( IsBoundaryPier() )
    {
       ATLASSERT(false); // why are you asking for a closure joint at a boundary pier? it doesn't have one
-      return NULL;
+      return nullptr;
    }
 
    if ( m_SegmentConnectionType == pgsTypes::psctContinuousSegment || m_SegmentConnectionType == pgsTypes::psctIntegralSegment )
    {
-      return NULL;
+      return nullptr;
    }
 
    // If there is a closure at this pier, then this pier is in the middle of a group
    // so the group on the ahead and back side of this pier are the same. There can't
    // be a closure here if this is an end pier
    CGirderGroupData* pGroup = GetGirderGroup(pgsTypes::Ahead); // get on ahead side... could be back side
-   if ( pGroup == NULL )
+   if ( pGroup == nullptr )
    {
-      return NULL;
+      return nullptr;
    }
 
    CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
@@ -1635,7 +1651,7 @@ CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx)
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) const
@@ -1643,21 +1659,21 @@ const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) con
    if ( IsBoundaryPier() )
    {
       ATLASSERT(false); // why are you asking for a closure joint at a boundary pier? it doesn't have one
-      return NULL;
+      return nullptr;
    }
 
    if ( m_SegmentConnectionType == pgsTypes::psctContinuousSegment || m_SegmentConnectionType == pgsTypes::psctIntegralSegment )
    {
-      return NULL;
+      return nullptr;
    }
 
    // If there is a closure at this pier, then this pier is in the middle of a group
    // so the group on the ahead and back side of this pier are the same. There can't
    // be a closure here if this is an end pier
    const CGirderGroupData* pGroup = GetGirderGroup(pgsTypes::Ahead); // get on ahead side... could be back side
-   if ( pGroup == NULL )
+   if ( pGroup == nullptr )
    {
-      return NULL;
+      return nullptr;
    }
 
    const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
@@ -1674,7 +1690,7 @@ const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) con
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 pgsTypes::PierModelType CPierData2::GetPierModelType() const
@@ -1767,7 +1783,7 @@ void CPierData2::GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhan
 Float64 CPierData2::GetXBeamLength() const
 {
    Float64 L = 0;
-   BOOST_FOREACH(Float64 s,m_ColumnSpacing)
+   for (const auto& s : m_ColumnSpacing)
    {
       L += s;
    }
@@ -1849,7 +1865,7 @@ Float64 CPierData2::GetColumnSpacing(SpacingIndexType spaceIdx) const
 Float64 CPierData2::GetColumnSpacingWidth() const
 {
    Float64 w = 0;
-   BOOST_FOREACH(Float64 s,m_ColumnSpacing)
+   for (const auto& s : m_ColumnSpacing)
    {
       w += s;
    }
@@ -2049,7 +2065,7 @@ void CPierData2::IsIntegral(bool* pbLeft,bool* pbRight) const
 
 bool CPierData2::IsAbutment() const
 {
-   return (m_pPrevSpan == NULL || m_pNextSpan == NULL) ? true : false;
+   return (m_pPrevSpan == nullptr || m_pNextSpan == nullptr) ? true : false;
 }
 
 bool CPierData2::IsPier() const
@@ -2063,7 +2079,7 @@ bool CPierData2::IsInteriorPier() const
    // is interior to the group.
    const CGirderGroupData* pPrevGroup = GetPrevGirderGroup();
    const CGirderGroupData* pNextGroup = GetNextGirderGroup();
-   if ( pPrevGroup == NULL && pNextGroup == NULL )
+   if ( pPrevGroup == nullptr && pNextGroup == nullptr )
    {
       return false;
    }
@@ -2089,7 +2105,7 @@ bool CPierData2::HasSpacing() const
    {
       // spacing data is at the ends of segments, which is at the piers and temporary supports
       // there is spacing data if this is a boundary pier or if this is an interior pier and there is a closure joint
-      return ( IsBoundaryPier() || (IsInteriorPier() && GetClosureJoint(0) != NULL) ) ? true : false;
+      return ( IsBoundaryPier() || (IsInteriorPier() && GetClosureJoint(0) != nullptr) ) ? true : false;
    }
 }
 
@@ -2217,7 +2233,7 @@ GirderIndexType CPierData2::GetLldfGirderCount() const
       nGirdersBack = pGroup->GetGirderCount();
    }
 
-   if (pBack == NULL && pAhead == NULL)
+   if (pBack == nullptr && pAhead == nullptr)
    {
       ATLASSERT(false); // function called before bridge tied together - no good
       return 0;
@@ -2316,8 +2332,8 @@ void CPierData2::AssertValid() const
 {
    // Girder spacing is either attached to this pier or nothing
    // can't be attached to temporary support
-   ATLASSERT(m_GirderSpacing[pgsTypes::Back].GetTemporarySupport()  == NULL);
-   ATLASSERT(m_GirderSpacing[pgsTypes::Ahead].GetTemporarySupport() == NULL);
+   ATLASSERT(m_GirderSpacing[pgsTypes::Back].GetTemporarySupport()  == nullptr);
+   ATLASSERT(m_GirderSpacing[pgsTypes::Ahead].GetTemporarySupport() == nullptr);
 
    // Spacing owned by this pier must reference this pier
    ATLASSERT(m_GirderSpacing[pgsTypes::Back].GetPier()  == this);
@@ -2342,8 +2358,8 @@ void CPierData2::AssertValid() const
    }
    else
    {
-      _ASSERT(m_pPrevSpan == NULL);
-      _ASSERT(m_pNextSpan == NULL);
+      _ASSERT(m_pPrevSpan == nullptr);
+      _ASSERT(m_pNextSpan == nullptr);
    }
 }
 #endif

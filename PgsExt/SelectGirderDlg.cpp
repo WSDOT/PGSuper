@@ -34,7 +34,7 @@
 
 IMPLEMENT_DYNAMIC(CSelectGirderDlg, CDialog)
 
-CSelectGirderDlg::CSelectGirderDlg(CWnd* pParent /*=NULL*/)
+CSelectGirderDlg::CSelectGirderDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectGirderDlg::IDD, pParent)
 {
 

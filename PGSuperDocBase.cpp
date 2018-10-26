@@ -319,9 +319,9 @@ m_bAutoCalcEnabled(true)
 
    m_bShowProjectProperties = true;
 
-   m_pPGSuperDocProxyAgent = NULL;
+   m_pPGSuperDocProxyAgent = nullptr;
 
-   m_pPluginMgr = NULL;
+   m_pPluginMgr = nullptr;
 
    m_CallbackID = 0;
 
@@ -345,7 +345,7 @@ CPGSDocBase::~CPGSDocBase()
    m_DocUnitSystem.Release();
    m_pPluginMgr->UnloadPlugins();
    delete m_pPluginMgr;
-   m_pPluginMgr = NULL;
+   m_pPluginMgr = nullptr;
    AfxOleUnlockApp();
 }
 
@@ -500,7 +500,7 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
    {
       txnTransaction* pTxn = new txnEditPier(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
       txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
-      if ( pExtensionTxn != NULL )
+      if ( pExtensionTxn != nullptr )
       {
          txnMacroTxn* pMacro = new pgsMacroTxn;
          pMacro->Name(pTxn->Name());
@@ -787,7 +787,7 @@ void CPGSDocBase::AddPointLoad(const CPointLoadData& loadData)
    CEditPointLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -811,7 +811,7 @@ bool CPGSDocBase::EditPointLoad(CollectionIndexType loadIdx)
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -825,7 +825,6 @@ void CPGSDocBase::DeletePointLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    txnDeletePointLoad* pTxn = new txnDeletePointLoad(loadIdx);
 
    GET_IFACE(IEAFTransactions,pTransactions);
@@ -842,7 +841,7 @@ void CPGSDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
    CEditDistributedLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,&dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,&dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -866,7 +865,7 @@ bool CPGSDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -880,7 +879,6 @@ void CPGSDocBase::DeleteDistributedLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(loadIdx);
 
    GET_IFACE(IEAFTransactions,pTransactions);
@@ -897,7 +895,7 @@ void CPGSDocBase::AddMomentLoad(const CMomentLoadData& loadData)
    CEditMomentLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -921,7 +919,7 @@ bool CPGSDocBase::EditMomentLoad(CollectionIndexType loadIdx)
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -935,7 +933,6 @@ void CPGSDocBase::DeleteMomentLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(loadIdx);
 
    GET_IFACE(IEAFTransactions,pTransactions);
@@ -1601,8 +1598,8 @@ void CPGSDocBase::OnCreateFinalize()
 	      UINT emailPos = pFileMenu->FindMenuItem(strEmail);
 	
 	      // remove the email command and the adjacent separator
-	      pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
-	      pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
+	      pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,nullptr);
+	      pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,nullptr);
       }
    }
 */
@@ -1843,7 +1840,7 @@ void CPGSDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup
    AfxMessageBox(msg );
 }
 
-void CPGSDocBase::OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup)
+void CPGSDocBase::OnErrorRenamingSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup)
 {
    CString msg;
 
@@ -2353,12 +2350,14 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Legal.IM_Truck_Special = pLiveLoads->GetTruckImpact(pgsTypes::lltLegalRating_Special);
    oldData.m_Legal.IM_Lane_Special  = pLiveLoads->GetLaneImpact( pgsTypes::lltLegalRating_Special);
    oldData.m_Legal.RoutineNames     = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
-   oldData.m_Legal.SpecialNames     = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
-   
+   oldData.m_Legal.SpecialNames = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
+   oldData.m_Legal.EmergencyNames = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Emergency);
+
    oldData.m_Legal.StrengthI_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalRoutine);
    oldData.m_Legal.StrengthI_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalRoutine);
    oldData.m_Legal.StrengthI_LL_Routine = pSpec->GetLiveLoadFactor(      pgsTypes::StrengthI_LegalRoutine);
-   oldData.m_Legal.StrengthI_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::StrengthI_LegalSpecial);
+   oldData.m_Legal.StrengthI_LL_Special = pSpec->GetLiveLoadFactor(pgsTypes::StrengthI_LegalSpecial);
+   oldData.m_Legal.StrengthI_LL_Emergency = pSpec->GetLiveLoadFactor(pgsTypes::StrengthI_LegalEmergency);
    oldData.m_Legal.StrengthI_CR         = pSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalSpecial);
    oldData.m_Legal.StrengthI_SH         = pSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalSpecial);
    oldData.m_Legal.StrengthI_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::StrengthI_LegalSpecial);
@@ -2366,7 +2365,8 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Legal.ServiceIII_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalRoutine);
    oldData.m_Legal.ServiceIII_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalRoutine);
    oldData.m_Legal.ServiceIII_LL_Routine = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceIII_LegalRoutine);
-   oldData.m_Legal.ServiceIII_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceIII_LegalSpecial);
+   oldData.m_Legal.ServiceIII_LL_Special = pSpec->GetLiveLoadFactor(pgsTypes::ServiceIII_LegalSpecial);
+   oldData.m_Legal.ServiceIII_LL_Emergency = pSpec->GetLiveLoadFactor(pgsTypes::ServiceIII_LegalEmergency);
    oldData.m_Legal.ServiceIII_CR         = pSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalSpecial);
    oldData.m_Legal.ServiceIII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
    oldData.m_Legal.ServiceIII_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_LegalSpecial);
@@ -2728,7 +2728,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
    CComPtr<ICatRegister> pICatReg = 0;
    HRESULT hr;
    hr = ::CoCreateInstance( CLSID_StdComponentCategoriesMgr,
-                            NULL,
+                            nullptr,
                             CLSCTX_INPROC_SERVER,
                             IID_ICatRegister,
                             (void**)&pICatReg );
@@ -2749,7 +2749,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
       pGdrEntry->GetBeamFactory(&beamFactory);
       CLSID clsid = beamFactory->GetFamilyCLSID();
 
-      HRESULT result = pICatInfo->IsClassOfCategories(clsid,1,&catid,0,NULL);
+      HRESULT result = pICatInfo->IsClassOfCategories(clsid,1,&catid,0,nullptr);
       if ( result == S_FALSE )
       { 
          gdrLib.RemoveEntry(strName.c_str());
@@ -3042,7 +3042,7 @@ void CPGSDocBase::OnImportProjectLibrary()
    strFilter2.Format(_T("%s|%s||"),strFilter,strFilterExt);
 
 	// ask user for file name
-   CFileDialog  fileDlg(TRUE,NULL,NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,strFilter2);
+   CFileDialog  fileDlg(TRUE,nullptr,nullptr,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,strFilter2);
    if (fileDlg.DoModal() == IDOK)
    {
       CString rPath;
@@ -3065,7 +3065,7 @@ void CPGSDocBase::OnImportProjectLibrary()
          // file can be deleted
 
          CComPtr<IStructuredLoad> pStrLoad;
-         HRESULT hr = ::CoCreateInstance( CLSID_StructuredLoad, NULL, CLSCTX_INPROC_SERVER, IID_IStructuredLoad, (void**)&pStrLoad );
+         HRESULT hr = ::CoCreateInstance( CLSID_StructuredLoad, nullptr, CLSCTX_INPROC_SERVER, IID_IStructuredLoad, (void**)&pStrLoad );
          if ( FAILED(hr) )
          {
             // We are not aggregating so we should CoCreateInstance should
@@ -3115,7 +3115,7 @@ void CPGSDocBase::OnImportProjectLibrary()
 
       SetModifiedFlag();
       AFX_MANAGE_STATE(AfxGetAppModuleState());
-      UpdateAllViews(NULL, HINT_LIBRARYCHANGED);
+      UpdateAllViews(nullptr, HINT_LIBRARYCHANGED);
 
       AfxMessageBox(_T("Done getting library entries"));
    }
@@ -3159,55 +3159,20 @@ void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRang
 
 void CPGSDocBase::OnAddPointload() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
    CPointLoadData load;
-   CEditPointLoadDlg dlg( load, pTimelineMgr );
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
-   }
+   AddPointLoad(load);
 }
 
-/*-------------------------------------------------------------------*/
 void CPGSDocBase::OnAddDistributedLoad() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
    CDistributedLoadData load;
-	CEditDistributedLoadDlg dlg(load,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
-   }
-	
+   AddDistributedLoad(load);
 }
 
 void CPGSDocBase::OnAddMomentLoad() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
    CMomentLoadData load;
-	CEditMomentLoadDlg dlg(load,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
-   }
+   AddMomentLoad(load);
 }
 
 void CPGSDocBase::OnConstructionLoads()
@@ -3623,7 +3588,7 @@ void CPGSDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
    CView* pView = EAFGetActiveView();
 
    // command doesn't apply if there isn't an active view
-   if ( pView == NULL )
+   if ( pView == nullptr )
    {
       pCmdUI->Enable(FALSE);
       return;
@@ -3742,7 +3707,7 @@ void CPGSDocBase::OnOptionsLabels()
          AFX_MANAGE_STATE(AfxGetAppModuleState());
 
          pgsGirderLabel::UseAlphaLabel(bUseAlpha);
-         UpdateAllViews(NULL,HINT_GIRDERLABELFORMATCHANGED);
+         UpdateAllViews(nullptr,HINT_GIRDERLABELFORMATCHANGED);
       }
    }
 }
@@ -3880,14 +3845,14 @@ void CPGSDocBase::PopulateReportMenu()
    ASSERT( 0 <= viewPos );
 
    CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
-   ASSERT( pViewMenu != NULL );
+   ASSERT( pViewMenu != nullptr );
 
    UINT reportsPos = pViewMenu->FindMenuItem(_T("&Reports"));
    ASSERT( 0 <= reportsPos );
 
    // Get the reports menu
    CEAFMenu* pReportsMenu = pViewMenu->GetSubMenu(reportsPos);
-   ASSERT(pReportsMenu != NULL);
+   ASSERT(pReportsMenu != nullptr);
 
    CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
 }
@@ -3900,14 +3865,14 @@ void CPGSDocBase::PopulateGraphMenu()
    ASSERT( 0 <= viewPos );
 
    CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
-   ASSERT( pViewMenu != NULL );
+   ASSERT( pViewMenu != nullptr );
 
    UINT graphsPos = pViewMenu->FindMenuItem(_T("Gr&aphs"));
    ASSERT( 0 <= graphsPos );
 
    // Get the graphs menu
    CEAFMenu* pGraphMenu = pViewMenu->GetSubMenu(graphsPos);
-   ASSERT(pGraphMenu != NULL);
+   ASSERT(pGraphMenu != nullptr);
 
    CEAFBrokerDocument::PopulateGraphMenu(pGraphMenu);
 }
@@ -4063,7 +4028,7 @@ void CPGSDocBase::BrokerShutDown()
 {
    CEAFBrokerDocument::BrokerShutDown();
 
-   m_pPGSuperDocProxyAgent = NULL;
+   m_pPGSuperDocProxyAgent = nullptr;
 }
 
 void CPGSDocBase::OnStatusChanged()
@@ -4133,7 +4098,7 @@ BOOL CPGSDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
 
    GET_IFACE(IEAFToolbars,pToolBars);
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
-   int idx = pToolBar->CommandToIndex(ID_VIEW_GRAPHS,NULL);
+   int idx = pToolBar->CommandToIndex(ID_VIEW_GRAPHS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
@@ -4173,7 +4138,7 @@ BOOL CPGSDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 
    GET_IFACE(IEAFToolbars,pToolBars);
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
-   int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,NULL);
+   int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
@@ -4190,7 +4155,7 @@ void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
    USES_CONVERSION;
 
 
-   if ( pCmdUI->m_pMenu == NULL && pCmdUI->m_pSubMenu == NULL )
+   if ( pCmdUI->m_pMenu == nullptr && pCmdUI->m_pSubMenu == nullptr )
    {
       return;
    }
@@ -4231,7 +4196,7 @@ void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
          pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
 
          const CBitmap* pBmp = m_pPluginMgr->GetImporterBitmap(idx);
-         pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,NULL);
+         pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,nullptr);
 
    	   pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
 
@@ -4247,7 +4212,7 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
    USES_CONVERSION;
 
 
-   if ( pCmdUI->m_pMenu == NULL && pCmdUI->m_pSubMenu == NULL )
+   if ( pCmdUI->m_pMenu == nullptr && pCmdUI->m_pSubMenu == nullptr )
    {
       return;
    }
@@ -4287,7 +4252,7 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
          pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
 
          const CBitmap* pBmp = m_pPluginMgr->GetExporterBitmap(idx);
-         pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,NULL);
+         pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,nullptr);
 
          pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
          pCmdUI->m_nIndex++;

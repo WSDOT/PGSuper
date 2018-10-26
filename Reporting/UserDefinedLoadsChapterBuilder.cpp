@@ -210,7 +210,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
       const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(intervalIdx, spanKey);
-      if ( ppl != NULL )
+      if ( ppl != nullptr )
       {
          IndexType npl = ppl->size();
 
@@ -312,7 +312,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
       const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(intervalIdx, spanKey);
-      if (ppl != NULL)
+      if (ppl != nullptr)
       {
          IndexType npl = ppl->size();
          for (IndexType ipl = 0; ipl < npl; ipl++)
@@ -414,7 +414,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
       const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(intervalIdx, spanKey);
-      if (ppl != NULL)
+      if (ppl != nullptr)
       {
          IndexType npl = ppl->size();
 

@@ -150,7 +150,7 @@ void CPGSpliceDoc::DoIntegrateWithUI(BOOL bIntegrate)
 
       GET_IFACE(IEAFToolbars,pToolBars);
       CEAFToolBar* pToolBar = pToolBars->GetToolBar(nID);
-      pToolBar->CreateDropDownButton(ID_EDIT_SEGMENT,NULL,BTNS_WHOLEDROPDOWN);
+      pToolBar->CreateDropDownButton(ID_EDIT_SEGMENT,nullptr,BTNS_WHOLEDROPDOWN);
    }
 }
 
@@ -201,7 +201,7 @@ BOOL CPGSpliceDoc::OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr)
 
    GET_IFACE(IEAFToolbars,pToolBars);
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
-   int idx = pToolBar->CommandToIndex(ID_EDIT_SEGMENT,NULL);
+   int idx = pToolBar->CommandToIndex(ID_EDIT_SEGMENT,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
@@ -459,7 +459,7 @@ void CPGSpliceDoc::OnInsertTemporarySupport()
       txnTransaction* pTxn = new txnInsertTemporarySupport(dlg.GetTemporarySupport(),*pBridgeDesc,*dlg.GetBridgeDescription());
 
       txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
-      if ( pExtensionTxn != NULL )
+      if ( pExtensionTxn != nullptr )
       {
          txnMacroTxn* pMacro = new txnMacroTxn;
          pMacro->Name(pTxn->Name());
@@ -646,7 +646,7 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
       txnTransaction* pTxn = new txnEditTemporarySupport(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
 
       txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
-      if ( pExtensionTxn != NULL )
+      if ( pExtensionTxn != nullptr )
       {
          txnMacroTxn* pMacro = new txnMacroTxn;
          pMacro->Name(pTxn->Name());
@@ -683,7 +683,7 @@ BOOL CPGSpliceDoc::InitMainMenu()
    CEAFMenu* pMainMenu = GetMainMenu();
    UINT position = pMainMenu->FindMenuItem(_T("L&oads"));
    CEAFMenu* pLoadMenu = pMainMenu->GetSubMenu(position);
-   pLoadMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,NULL);
+   pLoadMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,nullptr);
 
    return TRUE;
 }

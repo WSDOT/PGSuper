@@ -88,7 +88,7 @@ public:
    // =================================================================================
 
    // Returns a consistent string name for a pier connection type.
-   static LPCTSTR AsString(pgsTypes::BoundaryConditionType type);
+   static LPCTSTR AsString(pgsTypes::BoundaryConditionType type,bool bNoDeck=false);
 
    // Returns a consistent string name for a pier segment connection type.
    static LPCTSTR AsString(pgsTypes::PierSegmentConnectionType type);
@@ -185,7 +185,7 @@ public:
    CGirderSpacing2* GetGirderSpacing(pgsTypes::PierFaceType pierFace);
    const CGirderSpacing2* GetGirderSpacing(pgsTypes::PierFaceType pierFace) const;
 
-   // Get a closure joint associated with this pier. Returns NULL if there isn't a closure joint.
+   // Get a closure joint associated with this pier. Returns nullptr if there isn't a closure joint.
    CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
    const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
 
@@ -297,7 +297,7 @@ protected:
    void MakeCopy(const CPierData2& rOther,bool bCopyDataOnly);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CPierData2& rOther);
+   void MakeAssignment(const CPierData2& rOther);
 
 private:
    typedef enum PierOrientation { Normal, Skew, Bearing } PierOrientation;

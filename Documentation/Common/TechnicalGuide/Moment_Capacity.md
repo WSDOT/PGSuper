@@ -35,7 +35,7 @@ The figure below shows the equilibrium state from which the nominal moment capac
 
 The strain <span style="font-family:Symbol">e</span><sub>2</sub> is the strain in the prestressing steel at the effective level of prestress. The strain <span style="font-family:Symbol">e</span><sub>1</sub> is the strain associated with the flexure of the cross section. The resultant compressive force, C, acts at the centroid of the compression region. The tensile force T, acts at the location of the resultant of the strand forces.
 
-> NOTE: <i>d<sub>e</sub></i> is the "effective depth from the extreme compression fiber to the centroid of the tensile force in the tensile reinforcement". Strands that are further away from the extreme compression fibers are strained more that those strands that are closer. This results in the centroid of the resultant tensile force being lower in the cross section than the geometric centroid of the prestressing strands..
+> NOTE: <i>d<sub>e</sub></i> is the "effective depth from the extreme compression fiber to the centroid of the tensile force in the tensile reinforcement". Strands that are further away from the extreme compression fibers are strained more that those strands that are closer. This results in the centroid of the resultant tensile force being lower in the cross section than the geometric centroid of the prestressing strands.
 
 Cross Section Geometry and Materials Used for Calculating Capacities
 ---------------------------------------------------------------------
@@ -66,6 +66,12 @@ The maximum amount of reinforcement is limited such that c/d<sub>e</sub> <= 0.42
 There is a sudden drop in usable capacity when c/d<sub>e</sub> transitions from just below 0.42 to just over 0.42. Furthermore, the equations in LRFD C5.7.3.3.1 do not adequately account for the different concrete materials in the deck and girder. WSDOT uses a variable capacity reduction factor method for dealing with this situation.
 
 If the design criteria in this program is set to use the WSDOT BDM method of computing the capacity of over-reinforced sections, the nominal capacity will be computed using the strain compatibility analysis as described above. Then a reduced capacity reduction factor will be computed by
+
+Concrete Strength at Continuity Diaphragms
+------------------------------------------
+LRFD 5.14.1.4.10 allows the moment capacity of continuity diaphragms to be based on the strength of the concrete in the precast girders. The reason for this is explained in C5.14.1.4.10. The use of the increased concrete strength is permitted because the continuity diaphragm concrete between girder ends is confined by the girder and the continuity diaphragm extends beyond the girders. 
+
+The girder concrete strength is used in the computation of moment capacity at continity diaphragms when the width of the diaphragm exceeds the distance between the ends of girders on either side of the pier by 5% and when the girder spacing and layout on the back and ahead sides of the pier are exactly the same.
 
 References
 ------------

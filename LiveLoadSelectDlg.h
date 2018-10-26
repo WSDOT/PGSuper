@@ -40,7 +40,7 @@ class CLiveLoadSelectDlg : public CDialog
 public:
    CLiveLoadSelectDlg(std::vector< std::_tstring>& allNames, std::vector< std::_tstring>& dsgnNames,
                       std::vector< std::_tstring>& fatigueNames,
-                      std::vector< std::_tstring>& str2Names, CWnd* pParent = NULL);   // standard constructor
+                      std::vector< std::_tstring>& str2Names, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CLiveLoadSelectDlg)

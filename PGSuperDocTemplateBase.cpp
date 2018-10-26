@@ -110,7 +110,7 @@ void CPGSuperDocTemplateBase::FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pG
    strIconFile += strIconRootName;
 
    strIconFile += _T(".ico");
-   HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
+   HICON hIcon = (HICON)::LoadImage(nullptr,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
    if ( hIcon )
    {
       folderIcon = hIcon;
@@ -163,7 +163,7 @@ void CPGSuperDocTemplateBase::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGrou
 
       CString strIconFile = finder.GetFilePath();
       strIconFile.Replace(strTemplateSuffix,_T("ico"));
-      HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
+      HICON hIcon = (HICON)::LoadImage(nullptr,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
       if ( hIcon )
          fileIcon = hIcon;
 

@@ -11,7 +11,7 @@ class CConstructSegmentsDlg : public CDialog
 	DECLARE_DYNAMIC(CConstructSegmentsDlg)
 
 public:
-	CConstructSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
+	CConstructSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CConstructSegmentsDlg();
 
    // Dialog Data

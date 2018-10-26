@@ -176,7 +176,7 @@ public:
 
 protected:
    void MakeCopy(const CPointLoadData& rOther);
-   virtual void MakeAssignment(const CPointLoadData& rOther);
+   void MakeAssignment(const CPointLoadData& rOther);
 };
 
 #endif // !defined(AFX_POINTLOADDATA_H__9A3E66DC_E7F7_494B_A4FC_CE1C68668647__INCLUDED_)

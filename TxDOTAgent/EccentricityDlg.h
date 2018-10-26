@@ -30,14 +30,14 @@ class CEccentricityDlg : public CDialog
 	DECLARE_DYNAMIC(CEccentricityDlg)
 
 public:
-	CEccentricityDlg(CWnd* pParent = NULL);   // standard constructor
+	CEccentricityDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CEccentricityDlg();
 
 // Dialog Data
 	enum { IDD = IDD_ECC_DLG };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:

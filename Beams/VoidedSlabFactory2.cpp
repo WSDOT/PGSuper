@@ -91,7 +91,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    // SI Units
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H 
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W
-   m_DimUnits[0].push_back(NULL);                     // Number of Voids
+   m_DimUnits[0].push_back(nullptr);                     // Number of Voids
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D1
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D2
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H1
@@ -107,7 +107,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    // US Units
    m_DimUnits[1].push_back(&unitMeasure::Inch); // H 
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W
-   m_DimUnits[1].push_back(NULL);               // Number of Voids
+   m_DimUnits[1].push_back(nullptr);               // Number of Voids
    m_DimUnits[1].push_back(&unitMeasure::Inch); // D1
    m_DimUnits[1].push_back(&unitMeasure::Inch); // D2
    m_DimUnits[1].push_back(&unitMeasure::Inch); // H1
@@ -235,7 +235,7 @@ void CVoidedSlab2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statu
 
    CComQIPtr<IShape> shape(section);
    ATLASSERT(shape);
-   segment->AddShape(shape,material,NULL);
+   segment->AddShape(shape,material,nullptr);
 
    ssmbr->AddSegment(segment);
 }
@@ -277,8 +277,8 @@ void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupI
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    // use passed value if not null
-   pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pDeck->DeckType;
-   pgsTypes::SupportedBeamSpacing spacingType = (pSpacingType!=NULL) ? *pSpacingType : pBridgeDesc->GetGirderSpacingType();
+   pgsTypes::SupportedDeckType deckType = (pDeckType!=nullptr) ? *pDeckType : pDeck->GetDeckType();
+   pgsTypes::SupportedBeamSpacing spacingType = (pSpacingType!=nullptr) ? *pSpacingType : pBridgeDesc->GetGirderSpacingType();
    
    if (spacingType==pgsTypes::sbsUniformAdjacent || spacingType==pgsTypes::sbsGeneralAdjacent || spacingType==pgsTypes::sbsConstantAdjacent)
    {

@@ -76,6 +76,6 @@ protected:
    void MakeCopy(const CProductAxialTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CProductAxialTable& rOther);
+   void MakeAssignment(const CProductAxialTable& rOther);
 
 };

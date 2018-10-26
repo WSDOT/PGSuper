@@ -52,13 +52,13 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual CChapterBuilder* Clone() const override;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -76,8 +76,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CTexasPrestressSummaryChapterBuilder(const CTexasPrestressSummaryChapterBuilder&);
-   CTexasPrestressSummaryChapterBuilder& operator=(const CTexasPrestressSummaryChapterBuilder&);
+   CTexasPrestressSummaryChapterBuilder(const CTexasPrestressSummaryChapterBuilder&) = delete;
+   CTexasPrestressSummaryChapterBuilder& operator=(const CTexasPrestressSummaryChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

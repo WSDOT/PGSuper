@@ -108,6 +108,6 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, const 
    else
    {
       delete pParagraph;
-      return NULL;
+      return nullptr;
    }
 }

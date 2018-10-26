@@ -142,6 +142,9 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
          }
       }
 
+      bool bFutureOverlay = pBridge->IsFutureOverlay();
+      IntervalIndexType overlayIntervalIdx = !bFutureOverlay ? INVALID_INDEX : pIntervals->GetOverlayInterval();
+
       // loop for beam and deck stresses
       for ( int i = 0; i < 2; i++ )
       {
@@ -240,6 +243,54 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                rFailures.push_back(os.str());
             }
 
+            if (FlexureStressFailures(pBroker, segmentKey, compositeDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, pArtifact, bBeamStresses))
+            {
+               std::_tostringstream os;
+               os << _T("Tensile stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(compositeDeckIntervalIdx);
+               if (bBeamStresses && 1 < nSegments)
+               {
+                  os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
+               }
+               else if (!bBeamStresses)
+               {
+                  os << _T(" for Deck");
+               }
+               rFailures.push_back(os.str());
+            }
+
+            if (bFutureOverlay)
+            {
+               if (FlexureStressFailures(pBroker, segmentKey, overlayIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression, pArtifact, bBeamStresses))
+               {
+                  std::_tostringstream os;
+                  os << _T("Compression stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(overlayIntervalIdx);
+                  if (bBeamStresses && 1 < nSegments)
+                  {
+                     os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
+                  }
+                  else if (!bBeamStresses)
+                  {
+                     os << _T(" for Deck");
+                  }
+                  rFailures.push_back(os.str());
+               }
+
+               if (FlexureStressFailures(pBroker, segmentKey, overlayIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, pArtifact, bBeamStresses))
+               {
+                  std::_tostringstream os;
+                  os << _T("Tensile stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(overlayIntervalIdx);
+                  if (bBeamStresses && 1 < nSegments)
+                  {
+                     os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
+                  }
+                  else if (!bBeamStresses)
+                  {
+                     os << _T(" for Deck");
+                  }
+                  rFailures.push_back(os.str());
+               }
+            }
+
             GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
             if ( pAllowable->CheckFinalDeadLoadTensionStress() )
             {
@@ -330,13 +381,13 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
             // spliced girder
             GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
             std::vector<IntervalIndexType> vIntervals( pIntervals->GetSpecCheckIntervals(segmentKey) );
-            BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+            for (const auto& intervalIdx : vIntervals)
             {
                std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates(intervalIdx));
                for ( int st = 0; st < 2; st++ ) // loop over Compression/Tension
                {
                   pgsTypes::StressType stressType = (pgsTypes::StressType)st;
-                  BOOST_FOREACH(pgsTypes::LimitState limitState,vLimitStates)
+                  for (const auto& limitState : vLimitStates)
                   {
                      if ( pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,stressType) )
                      {
@@ -659,7 +710,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
 
       // Lifting
       const stbLiftingCheckArtifact* pLifting = pArtifact->GetLiftingCheckArtifact();
-      if (pLifting!=NULL && !pLifting->Passed() )
+      if (pLifting!=nullptr && !pLifting->Passed() )
       {
          CString strMsg;
          if ( 1 < nSegments )
@@ -675,7 +726,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
 
       // Hauling
       const pgsHaulingAnalysisArtifact* pHauling = pArtifact->GetHaulingAnalysisArtifact();
-      if ( pHauling != NULL && !pHauling->Passed() )
+      if ( pHauling != nullptr && !pHauling->Passed() )
       {
          CString strMsg;
          if ( 1 < nSegments )
@@ -728,7 +779,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
    {
       IndexType index = spanIdx - startSpanIdx;
       const pgsDeflectionCheckArtifact* pDef = pGirderArtifact->GetDeflectionCheckArtifact(index);
-      if (pDef!=NULL && !pDef->Passed())
+      if (pDef!=nullptr && !pDef->Passed())
       {
          if (referToDetails)
          {

@@ -177,10 +177,11 @@ inline void TxDOTDebondTool::Compute()
          curr_row_it = new_iter.first;
       }
 
-      curr_row_it->m_NumTotalStrands++; // add our strand to row
+      RowData& rowData(const_cast<RowData&>(*curr_row_it));
+      rowData.m_NumTotalStrands++; // add our strand to row
 
       Float64 startLoc, endLoc;
-      if( m_pStrandGeometry->IsStrandDebonded(m_SegmentKey,idx, pgsTypes::Straight, &startLoc, &endLoc) )
+      if( m_pStrandGeometry->IsStrandDebonded(m_SegmentKey,idx, pgsTypes::Straight, nullptr, &startLoc, &endLoc) )
       {
          if (!IsEqual(startLoc,m_GirderLength-endLoc))
          {
@@ -194,7 +195,7 @@ inline void TxDOTDebondTool::Compute()
             // try to find section in row
             SectionData bogus_section;
             bogus_section.m_XLoc = startLoc;
-            RowData& row = *curr_row_it;
+            RowData& row = const_cast<RowData&>(*curr_row_it);
             SectionListIter sit = row.m_Sections.find(bogus_section);
             if (sit==row.m_Sections.end())
             {
@@ -208,7 +209,7 @@ inline void TxDOTDebondTool::Compute()
             }
             else
             {
-               SectionData& rsect = *sit;
+               SectionData& rsect = const_cast<SectionData&>(*sit);
                rsect.m_NumDebonds++;
             }
          }
@@ -232,7 +233,8 @@ inline void TxDOTDebondTool::Compute()
       RowListIter curr_row_it = m_Rows.find( bogus_row );
       if (curr_row_it != m_Rows.end())
       {
-         curr_row_it->m_NumTotalStrands++; // add our strand to row
+         RowData& rowData(const_cast<RowData&>(*curr_row_it));
+         rowData.m_NumTotalStrands++; // add our strand to row
       }
    }
 

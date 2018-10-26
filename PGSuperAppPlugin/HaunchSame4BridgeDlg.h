@@ -31,7 +31,7 @@ class CHaunchSame4BridgeDlg : public CDialog
 	DECLARE_DYNAMIC(CHaunchSame4BridgeDlg)
 
 public:
-	CHaunchSame4BridgeDlg(CWnd* pParent = NULL);   // standard constructor
+	CHaunchSame4BridgeDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CHaunchSame4BridgeDlg();
 
    void DownloadData(Float64 minA, CString& minValError,HaunchInputData* pData,CDataExchange* pDX);

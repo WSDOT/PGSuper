@@ -78,8 +78,8 @@ private:
    bool m_bCapacityOnly;
 
    // Prevent accidental copying and assignment
-   CMomentCapacityDetailsChapterBuilder(const CMomentCapacityDetailsChapterBuilder&);
-   CMomentCapacityDetailsChapterBuilder& operator=(const CMomentCapacityDetailsChapterBuilder&);
+   CMomentCapacityDetailsChapterBuilder(const CMomentCapacityDetailsChapterBuilder&) = delete;
+   CMomentCapacityDetailsChapterBuilder& operator=(const CMomentCapacityDetailsChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

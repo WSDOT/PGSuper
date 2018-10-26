@@ -170,9 +170,9 @@ void CTimelineItemListBox::OnDestroy()
    {
       CTimelineItemDataPtr* pItemData = (CTimelineItemDataPtr*)GetItemDataPtr(i);
       delete pItemData;
-      pItemData = NULL;
-      SetItemDataPtr(i,NULL);
+      pItemData = nullptr;
+      SetItemDataPtr(i,nullptr);
    }
 
-   m_pBuddy = NULL;
+   m_pBuddy = nullptr;
 }

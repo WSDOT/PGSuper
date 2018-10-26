@@ -168,7 +168,7 @@ protected:
    void MakeCopy(const CXSectionData& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CXSectionData& rOther);
+   void MakeAssignment(const CXSectionData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -75,6 +75,6 @@ private:
    bool m_ReferToDetailsReport;
 
    // Prevent accidental copying and assignment
-   CSpecCheckSummaryChapterBuilder(const CSpecCheckSummaryChapterBuilder&);
-   CSpecCheckSummaryChapterBuilder& operator=(const CSpecCheckSummaryChapterBuilder&);
+   CSpecCheckSummaryChapterBuilder(const CSpecCheckSummaryChapterBuilder&) = delete;
+   CSpecCheckSummaryChapterBuilder& operator=(const CSpecCheckSummaryChapterBuilder&) = delete;
 };

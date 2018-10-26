@@ -48,7 +48,7 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CInternalForceChapterBuilder(const CInternalForceChapterBuilder&);
-   CInternalForceChapterBuilder& operator=(const CInternalForceChapterBuilder&);
+   CInternalForceChapterBuilder(const CInternalForceChapterBuilder&) = delete;
+   CInternalForceChapterBuilder& operator=(const CInternalForceChapterBuilder&) = delete;
 };
 

@@ -78,8 +78,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CSectPropChapterBuilder(const CSectPropChapterBuilder&);
-   CSectPropChapterBuilder& operator=(const CSectPropChapterBuilder&);
+   CSectPropChapterBuilder(const CSectPropChapterBuilder&) = delete;
+   CSectPropChapterBuilder& operator=(const CSectPropChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

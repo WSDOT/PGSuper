@@ -38,8 +38,8 @@ class CCatalogServerDlg : public CDialog
 {
 // Construction
 public:
-	CCatalogServerDlg(CWnd* pParent = NULL);   // standard constructor
-	CCatalogServerDlg(const CString& strExt,const CString& appName,CWnd* pParent = NULL);   // standard constructor
+	CCatalogServerDlg(CWnd* pParent = nullptr);   // standard constructor
+	CCatalogServerDlg(const CString& strExt,const CString& appName,CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCatalogServerDlg)
@@ -57,7 +57,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CCatalogServerDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -70,7 +70,7 @@ protected:
 	afx_msg void OnAdd();
 	afx_msg void OnDelete();
 	afx_msg void OnEdit();
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	afx_msg void OnDblclkServers();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

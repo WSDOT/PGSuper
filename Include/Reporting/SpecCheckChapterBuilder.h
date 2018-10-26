@@ -76,8 +76,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CSpecCheckChapterBuilder(const CSpecCheckChapterBuilder&);
-   CSpecCheckChapterBuilder& operator=(const CSpecCheckChapterBuilder&);
+   CSpecCheckChapterBuilder(const CSpecCheckChapterBuilder&) = delete;
+   CSpecCheckChapterBuilder& operator=(const CSpecCheckChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

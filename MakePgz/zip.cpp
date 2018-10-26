@@ -372,8 +372,8 @@ typedef struct ct_data {
 
 typedef struct tree_desc {
     ct_data *dyn_tree;      // the dynamic tree
-    ct_data *static_tree;   // corresponding static tree or NULL
-    const int *extra_bits;  // extra bits for each code or NULL
+    ct_data *static_tree;   // corresponding static tree or nullptr
+    const int *extra_bits;  // extra bits for each code or nullptr
     int     extra_base;     // base index for extra_bits
     int     elems;          // max number of elements in the tree
     int     max_length;     // max bit length for the codes
@@ -458,7 +458,7 @@ class TTreeState
 TTreeState::TTreeState()
 { tree_desc a = {dyn_ltree, static_ltree, extra_lbits, LITERALS+1, L_CODES, MAX_BITS, 0};  l_desc = a;
   tree_desc b = {dyn_dtree, static_dtree, extra_dbits, 0,          D_CODES, MAX_BITS, 0};  d_desc = b;
-  tree_desc c = {bl_tree, NULL,       extra_blbits, 0,         BL_CODES, MAX_BL_BITS, 0};  bl_desc = c;
+  tree_desc c = {bl_tree, nullptr,       extra_blbits, 0,         BL_CODES, MAX_BL_BITS, 0};  bl_desc = c;
   last_lit=0;
   last_dist=0;
   last_flags=0;
@@ -1195,18 +1195,18 @@ ulg flush_block(TState &state,char *buf, ulg stored_len, int eof)
     // possibility since the code's cleaner if no changes are allowed.
     //if (stored_len <= opt_lenb && eof && state.ts.cmpr_bytelen == 0L
     //   && state.ts.cmpr_len_bits == 0L && state.seekable)
-    //{   // && state.ts.file_method != NULL
+    //{   // && state.ts.file_method != nullptr
     //    // Since LIT_BUFSIZE <= 2*WSIZE, the input data must be there:
-    //    Assert(state,buf!=NULL,"block vanished");
+    //    Assert(state,buf!=nullptr,"block vanished");
     //    copy_block(state,buf, (unsigned)stored_len, 0); // without header
     //    state.ts.cmpr_bytelen = stored_len;
     //    Assert(state,false,"unimplemented *state.ts.file_method = STORE;");
     //    //*state.ts.file_method = STORE;
     //}
     //else
-    if (stored_len+4 <= opt_lenb && buf != (char*)NULL) {
+    if (stored_len+4 <= opt_lenb && buf != (char*)nullptr) {
                        /* 4: two words for the lengths */
-        /* The test buf != NULL is only necessary if LIT_BUFSIZE > WSIZE.
+        /* The test buf != nullptr is only necessary if LIT_BUFSIZE > WSIZE.
          * Otherwise we can't have processed more than WSIZE input bytes since
          * the last block flush, because compression would have been
          * successful. If LIT_BUFSIZE <= WSIZE, it is never too late to
@@ -1757,7 +1757,7 @@ void fill_window(TState &state)
  */
 #define FLUSH_BLOCK(state,eof) \
    flush_block(state,state.ds.block_start >= 0L ? (char*)&state.ds.window[(unsigned)state.ds.block_start] : \
-                (char*)NULL, (long)state.ds.strstart - state.ds.block_start, (eof))
+                (char*)nullptr, (long)state.ds.strstart - state.ds.block_start, (eof))
 
 /* ===========================================================================
  * Processes a new input file and return its compressed length. This
@@ -2099,7 +2099,7 @@ const ulg crc_table[256] = {
 #define DO8(buf)  DO4(buf); DO4(buf)
 
 ulg crc32(ulg crc, const uch *buf, extent len)
-{ if (buf==NULL) return 0L;
+{ if (buf==nullptr) return 0L;
   crc = crc ^ 0xffffffffL;
   while (len >= 8) {DO8(buf); len -= 8;}
   if (len) do {DO1(buf);} while (--len);
@@ -2185,11 +2185,11 @@ ZRESULT GetFileInfo(HANDLE hf, ulg *attr, long *size, iztimes *times, ulg *times
   a|=0x01000000;      // readable
   if (fa&FILE_ATTRIBUTE_READONLY) {} else a|=0x00800000; // writeable
   // now just a small heuristic to check if it's an executable:
-  DWORD red, hsize=GetFileSize(hf,NULL); if (hsize>40)
-  { SetFilePointer(hf,0,NULL,FILE_BEGIN); unsigned short magic; ReadFile(hf,&magic,sizeof(magic),&red,NULL);
-    SetFilePointer(hf,36,NULL,FILE_BEGIN); unsigned long hpos;  ReadFile(hf,&hpos,sizeof(hpos),&red,NULL);
+  DWORD red, hsize=GetFileSize(hf,nullptr); if (hsize>40)
+  { SetFilePointer(hf,0,nullptr,FILE_BEGIN); unsigned short magic; ReadFile(hf,&magic,sizeof(magic),&red,nullptr);
+    SetFilePointer(hf,36,nullptr,FILE_BEGIN); unsigned long hpos;  ReadFile(hf,&hpos,sizeof(hpos),&red,nullptr);
     if (magic==0x54AD && hsize>hpos+4+20+28)
-    { SetFilePointer(hf,hpos,NULL,FILE_BEGIN); unsigned long signature; ReadFile(hf,&signature,sizeof(signature),&red,NULL);
+    { SetFilePointer(hf,hpos,nullptr,FILE_BEGIN); unsigned long signature; ReadFile(hf,&signature,sizeof(signature),&red,nullptr);
       if (signature==IMAGE_DOS_SIGNATURE || signature==IMAGE_OS2_SIGNATURE
          || signature==IMAGE_OS2_SIGNATURE_LE || signature==IMAGE_NT_SIGNATURE)
       { a |= 0x00400000; // executable
@@ -2197,16 +2197,16 @@ ZRESULT GetFileInfo(HANDLE hf, ulg *attr, long *size, iztimes *times, ulg *times
     }
   }
   //
-  if (attr!=NULL) *attr = a;
-  if (size!=NULL) *size = hsize;
-  if (times!=NULL)
+  if (attr!=nullptr) *attr = a;
+  if (size!=nullptr) *size = hsize;
+  if (times!=nullptr)
   { // lutime_t is 32bit number of seconds elapsed since 0:0:0GMT, Jan1, 1970.
     // but FILETIME is 64bit number of 100-nanosecs since Jan1, 1601
     times->atime = filetime2timet(bhi.ftLastAccessTime);
     times->mtime = filetime2timet(bhi.ftLastWriteTime);
     times->ctime = filetime2timet(bhi.ftCreationTime);
   }
-  if (timestamp!=NULL)
+  if (timestamp!=nullptr)
   { WORD dosdate,dostime;
     filetime2dosdatetime(bhi.ftLastWriteTime,&dosdate,&dostime);
     *timestamp = (WORD)dostime | (((DWORD)dosdate)<<16);
@@ -2307,7 +2307,7 @@ ZRESULT TZip::Create(void *z,unsigned int len,DWORD flags)
   }
   else if (flags==ZIP_FILENAME)
   { const TCHAR *fn = (const TCHAR*)z;
-    hfout = CreateFile(fn,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+    hfout = CreateFile(fn,GENERIC_WRITE,0,nullptr,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,nullptr);
     if (hfout==INVALID_HANDLE_VALUE) {hfout=0; return ZR_NOFILE;}
     ocanseek=true;
     ooffset=0;
@@ -2319,8 +2319,8 @@ ZRESULT TZip::Create(void *z,unsigned int len,DWORD flags)
     if (size==0) return ZR_MEMSIZE;
     if (z!=0) obuf=(char*)z;
     else
-    { hmapout = CreateFileMapping(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,size,NULL);
-      if (hmapout==NULL) return ZR_NOALLOC;
+    { hmapout = CreateFileMapping(INVALID_HANDLE_VALUE,nullptr,PAGE_READWRITE,0,size,nullptr);
+      if (hmapout==nullptr) return ZR_NOALLOC;
       obuf = (char*)MapViewOfFile(hmapout,FILE_MAP_ALL_ACCESS,0,0,size);
       if (obuf==0) {CloseHandle(hmapout); hmapout=0; return ZR_NOALLOC;}
     }
@@ -2360,7 +2360,7 @@ unsigned int TZip::write(const char *buf,unsigned int size)
     return size;
   }
   else if (hfout!=0)
-  { DWORD writ; WriteFile(hfout,srcbuf,size,&writ,NULL);
+  { DWORD writ; WriteFile(hfout,srcbuf,size,&writ,nullptr);
     return writ;
   }
   oerr=ZR_NOTINITED; return 0;
@@ -2374,7 +2374,7 @@ bool TZip::oseek(unsigned int pos)
     return true;
   }
   else if (hfout!=0)
-  { SetFilePointer(hfout,pos+ooffset,NULL,FILE_BEGIN);
+  { SetFilePointer(hfout,pos+ooffset,nullptr,FILE_BEGIN);
     return true;
   }
   oerr=ZR_NOTINITED; return 0;
@@ -2385,9 +2385,9 @@ ZRESULT TZip::GetMemory(void **pbuf, unsigned long *plen)
   // of all their adding. In any case, we have to add the central
   // directory now, otherwise the memory we tell them won't be complete.
   if (!hasputcen) AddCentral(); hasputcen=true;
-  if (pbuf!=NULL) *pbuf=(void*)obuf;
-  if (plen!=NULL) *plen=writ;
-  if (obuf==NULL) return ZR_NOTMMAP;
+  if (pbuf!=nullptr) *pbuf=(void*)obuf;
+  if (plen!=nullptr) *plen=writ;
+  if (obuf==nullptr) return ZR_NOTMMAP;
   return ZR_OK;
 }
 
@@ -2407,7 +2407,7 @@ ZRESULT TZip::Close()
 ZRESULT TZip::open_file(const TCHAR *fn)
 { hfin=0; bufin=0; selfclosehf=false; crc=CRCVAL_INITIAL; isize=0; csize=0; ired=0;
   if (fn==0) return ZR_ARGS;
-  HANDLE hf = CreateFile(fn,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,0,NULL);
+  HANDLE hf = CreateFile(fn,GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,0,nullptr);
   if (hf==INVALID_HANDLE_VALUE) return ZR_NOFILE;
   ZRESULT res = open_handle(hf,0);
   if (res!=ZR_OK) {CloseHandle(hf); return res;}
@@ -2421,7 +2421,7 @@ ZRESULT TZip::open_handle(HANDLE hf,unsigned int len)
   if (res!=0xFFFFFFFF)
   { ZRESULT res = GetFileInfo(hf,&attr,&isize,&times,&timestamp);
     if (res!=ZR_OK) return res;
-    SetFilePointer(hf,0,NULL,FILE_BEGIN); // because GetFileInfo will have screwed it up
+    SetFilePointer(hf,0,nullptr,FILE_BEGIN); // because GetFileInfo will have screwed it up
     iseekable=true; hfin=hf;
     return ZR_OK;
   }
@@ -2491,7 +2491,7 @@ unsigned TZip::read(char *buf, unsigned size)
   }
   else if (hfin!=0)
   { DWORD red;
-    BOOL ok = ReadFile(hfin,buf,size,&red,NULL);
+    BOOL ok = ReadFile(hfin,buf,size,&red,nullptr);
     if (!ok) return 0;
     ired += red;
     crc = crc32(crc, (uch*)buf, red);
@@ -2516,7 +2516,7 @@ ZRESULT TZip::ideflate(TZipFileInfo *zfi)
   // stack breaks if we try to put it all on the stack. It will be deleted lazily
   state->err=0;
   state->readfunc=sread; state->flush_outbuf=sflush;
-  state->param=this; state->level=8; state->seekable=iseekable; state->err=NULL;
+  state->param=this; state->level=8; state->seekable=iseekable; state->err=nullptr;
   // the following line will make ct_init realise it has to perform the init
   state->ts.static_dtree[0].dl.len = 0;
   // Thanks to Alvin77 for this crucial fix:
@@ -2528,7 +2528,7 @@ ZRESULT TZip::ideflate(TZipFileInfo *zfi)
   lm_init(*state,state->level, &zfi->flg);
   ulg sz = deflate(*state);
   csize=sz;
-  ZRESULT r=ZR_OK; if (state->err!=NULL) r=ZR_FLATE;
+  ZRESULT r=ZR_OK; if (state->err!=nullptr) r=ZR_FLATE;
   return r;
 }
 
@@ -2576,7 +2576,7 @@ ZRESULT TZip::Add(const TCHAR *odstzn, void *src,unsigned int len, DWORD flags)
   // then the compressed data, and possibly an extended local header.
 
   // Initialize the local header
-  TZipFileInfo zfi; zfi.nxt=NULL;
+  TZipFileInfo zfi; zfi.nxt=nullptr;
   strcpy(zfi.name,"");
 #ifdef UNICODE
   WideCharToMultiByte(CP_UTF8,0,dstzn,-1,zfi.iname,MAX_PATH,0,0);
@@ -2586,9 +2586,9 @@ ZRESULT TZip::Add(const TCHAR *odstzn, void *src,unsigned int len, DWORD flags)
   zfi.nam=strlen(zfi.iname);
   if (needs_trailing_slash) {strcat(zfi.iname,"/"); zfi.nam++;}
   strcpy(zfi.zname,"");
-  zfi.extra=NULL; zfi.ext=0;   // extra header to go after this compressed data, and its length
-  zfi.cextra=NULL; zfi.cext=0; // extra header to go in the central end-of-zip directory, and its length
-  zfi.comment=NULL; zfi.com=0; // comment, and its length
+  zfi.extra=nullptr; zfi.ext=0;   // extra header to go after this compressed data, and its length
+  zfi.cextra=nullptr; zfi.cext=0; // extra header to go in the central end-of-zip directory, and its length
+  zfi.comment=nullptr; zfi.com=0; // comment, and its length
   zfi.mark = 1;
   zfi.dosflag = 0;
   zfi.att = (ush)BINARY;
@@ -2689,8 +2689,8 @@ ZRESULT TZip::Add(const TCHAR *odstzn, void *src,unsigned int len, DWORD flags)
   // Keep a copy of the zipfileinfo, for our end-of-zip directory
   char *cextra = new char[zfi.cext]; memcpy(cextra,zfi.cextra,zfi.cext); zfi.cextra=cextra;
   TZipFileInfo *pzfi = new TZipFileInfo; memcpy(pzfi,&zfi,sizeof(zfi));
-  if (zfis==NULL) zfis=pzfi;
-  else {TZipFileInfo *z=zfis; while (z->nxt!=NULL) z=z->nxt; z->nxt=pzfi;}
+  if (zfis==nullptr) zfis=pzfi;
+  else {TZipFileInfo *z=zfis; while (z->nxt!=nullptr) z=z->nxt; z->nxt=pzfi;}
   return ZR_OK;
 }
 
@@ -2700,7 +2700,7 @@ ZRESULT TZip::AddCentral()
   ulg pos_at_start_of_central = writ;
   //ulg tot_unc_size=0, tot_compressed_size=0;
   bool okay=true;
-  for (TZipFileInfo *zfi=zfis; zfi!=NULL; )
+  for (TZipFileInfo *zfi=zfis; zfi!=nullptr; )
   { if (okay)
     { int res = putcentral(zfi, swrite,this);
       if (res!=ZE_OK) okay=false;
@@ -2717,7 +2717,7 @@ ZRESULT TZip::AddCentral()
   }
   ulg center_size = writ - pos_at_start_of_central;
   if (okay)
-  { int res = putend(numentries, center_size, pos_at_start_of_central+ooffset, 0, NULL, swrite,this);
+  { int res = putend(numentries, center_size, pos_at_start_of_central+ooffset, 0, nullptr, swrite,this);
     if (res!=ZE_OK) okay=false;
     writ += 4 + ENDHEAD + 0;
   }

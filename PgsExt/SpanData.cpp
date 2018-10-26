@@ -48,7 +48,7 @@ CSpanData::CSpanData(SpanIndexType spanIdx,CBridgeDescription* pBridgeDesc,CPier
 
 CSpanData::CSpanData(const CSpanData& rOther)
 {
-   Init(rOther.GetSpanIndex(),NULL,NULL,NULL);
+   Init(rOther.GetSpanIndex(),nullptr,nullptr,nullptr);
    MakeCopy(rOther);
 }
 
@@ -869,13 +869,13 @@ void CSpanData::AssertValid()
 {
    if ( m_pBridgeDesc )
    {
-      _ASSERT(m_pPrevPier != NULL);
-      _ASSERT(m_pNextPier != NULL);
+      _ASSERT(m_pPrevPier != nullptr);
+      _ASSERT(m_pNextPier != nullptr);
    }
    else
    {
-      _ASSERT(m_pPrevPier == NULL);
-      _ASSERT(m_pNextPier == NULL);
+      _ASSERT(m_pPrevPier == nullptr);
+      _ASSERT(m_pNextPier == nullptr);
    }
 }
 #endif

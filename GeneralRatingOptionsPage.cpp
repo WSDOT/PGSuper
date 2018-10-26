@@ -185,7 +185,7 @@ BOOL CGeneralRatingOptionsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* 
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.GetBuffer();
-      pTTT->hinst = NULL;
+      pTTT->hinst = nullptr;
       return TRUE;
    }
    return FALSE;

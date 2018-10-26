@@ -1,0 +1,1325 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|Win32">
+      <Configuration>Profile</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>PGSuper</ProjectName>
+    <ProjectGuid>{2055203D-02FC-4D11-BDF0-411E9F465E93}</ProjectGuid>
+    <RootNamespace>PGSuperAppPlugin</RootNamespace>
+    <Keyword>AtlProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)PGSuperAppPlugin.tlb</TypeLibraryName>
+      <HeaderFileName>PGSuperAppPlugin_i.h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>PGSuperAppPlugin_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>PGSuperAppPlugin_p.c</ProxyFileName>
+      <ValidateAllParameters>true</ValidateAllParameters>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>-Zm111 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PGSuperAppPlugin\StdAfx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copying files to BridgeLink</Message>
+      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)PGSuperAppPlugin.tlb</TypeLibraryName>
+      <HeaderFileName>PGSuperAppPlugin_i.h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>PGSuperAppPlugin_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>PGSuperAppPlugin_p.c</ProxyFileName>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>-Zm111 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PGSuperAppPlugin\StdAfx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copying files to BridgeLink</Message>
+      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)PGSuperAppPlugin.tlb</TypeLibraryName>
+      <HeaderFileName>PGSuperAppPlugin_i.h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>PGSuperAppPlugin_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>PGSuperAppPlugin_p.c</ProxyFileName>
+      <ValidateAllParameters>true</ValidateAllParameters>
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PGSuperAppPlugin\StdAfx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copying files to BridgeLink</Message>
+      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)PGSuperAppPlugin.tlb</TypeLibraryName>
+      <HeaderFileName>PGSuperAppPlugin_i.h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>PGSuperAppPlugin_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>PGSuperAppPlugin_p.c</ProxyFileName>
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PGSuperAppPlugin\StdAfx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copying files to BridgeLink</Message>
+      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)PGSuperAppPlugin.tlb</TypeLibraryName>
+      <HeaderFileName>PGSuperAppPlugin_i.h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>PGSuperAppPlugin_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>PGSuperAppPlugin_p.c</ProxyFileName>
+      <ValidateAllParameters>true</ValidateAllParameters>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PGSuperAppPlugin\StdAfx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copying files to BridgeLink</Message>
+      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)PGSuperAppPlugin.tlb</TypeLibraryName>
+      <HeaderFileName>PGSuperAppPlugin_i.h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>PGSuperAppPlugin_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>PGSuperAppPlugin_p.c</ProxyFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PGSuperAppPlugin\StdAfx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX64</TargetMachine>
+      <Profile>true</Profile>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copying files to BridgeLink</Message>
+      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
+xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\AbutmentConnectionsPage.cpp" />
+    <ClCompile Include="..\AlignmentDescriptionDlg.cpp" />
+    <ClCompile Include="..\AlignmentDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\AlignmentPlanView.cpp" />
+    <ClCompile Include="..\AlignmentProfileView.cpp" />
+    <ClCompile Include="..\BridgeDescDeckDetailsPage.cpp" />
+    <ClCompile Include="..\BridgeDescDeckPointGrid.cpp" />
+    <ClCompile Include="..\BridgeDescDeckRebarGrid.cpp" />
+    <ClCompile Include="..\BridgeDescDeckReinforcementPage.cpp" />
+    <ClCompile Include="..\BridgeDescDlg.cpp" />
+    <ClCompile Include="..\BridgeDescEnvironmental.cpp" />
+    <ClCompile Include="..\BridgeDescFramingGrid.cpp" />
+    <ClCompile Include="..\BridgeDescFramingPage.cpp" />
+    <ClCompile Include="..\BridgeDescGeneralPage.cpp" />
+    <ClCompile Include="..\BridgeDescGirderMaterialsPage.cpp" />
+    <ClCompile Include="..\BridgeDescLiftingPage.cpp" />
+    <ClCompile Include="..\BridgeDescLongitudinalRebar.cpp" />
+    <ClCompile Include="..\BridgeDescLongRebarGrid.cpp" />
+    <ClCompile Include="..\BridgeDescPrestressPage.cpp" />
+    <ClCompile Include="..\BridgeDescRailingSystemPage.cpp" />
+    <ClCompile Include="..\BridgeDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\BridgeEditorAlignmentSettingsPage.cpp" />
+    <ClCompile Include="..\BridgeEditorPlanSettingsPage.cpp" />
+    <ClCompile Include="..\BridgeEditorProfileSettingsPage.cpp" />
+    <ClCompile Include="..\BridgeEditorSectionPage.cpp" />
+    <ClCompile Include="..\BridgeEditorSettingsSheet.cpp" />
+    <ClCompile Include="..\BridgeModelViewChildFrame.cpp" />
+    <ClCompile Include="..\BridgePlanView.cpp" />
+    <ClCompile Include="..\BridgeSectionCutDisplayImpl.cpp" />
+    <ClCompile Include="..\BridgeSectionView.cpp" />
+    <ClCompile Include="..\BridgeViewPane.cpp" />
+    <ClCompile Include="..\BridgeViewPrintJob.cpp" />
+    <ClCompile Include="..\ChildFrm.cpp" />
+    <ClCompile Include="..\ColumnLayoutGrid.cpp" />
+    <ClCompile Include="..\ConnectionDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\ConstructionLoadDlg.cpp" />
+    <ClCompile Include="..\convert.cpp" />
+    <ClCompile Include="..\CopyGirderDlg.cpp" />
+    <ClCompile Include="..\CopyGirderPropertiesCallbacks.cpp" />
+    <ClCompile Include="..\CrownSlopeGrid.cpp" />
+    <ClCompile Include="..\CrownSlopePage.cpp" />
+    <ClCompile Include="..\DebondDlg.cpp" />
+    <ClCompile Include="..\DebondGrid.cpp" />
+    <ClCompile Include="..\DesignGirder.cpp" />
+    <ClCompile Include="..\DesignGirderDlg.cpp" />
+    <ClCompile Include="..\DesignOutcomeDlg.cpp" />
+    <ClCompile Include="..\DesignRatingPage.cpp" />
+    <ClCompile Include="..\DisplayObjectFactory.cpp" />
+    <ClCompile Include="..\DistributedLoadDrawStrategyImpl.cpp" />
+    <ClCompile Include="..\EditAlignment.cpp" />
+    <ClCompile Include="..\EditAnalysisType.cpp" />
+    <ClCompile Include="..\EditBoundaryConditions.cpp" />
+    <ClCompile Include="..\EditConstructionLoad.cpp" />
+    <ClCompile Include="..\EditDistributedLoadDlg.cpp" />
+    <ClCompile Include="..\EditEffectiveFlangeWidth.cpp" />
+    <ClCompile Include="..\EditEnvironment.cpp" />
+    <ClCompile Include="..\EditGirder.cpp" />
+    <ClCompile Include="..\EditLiveLoad.cpp" />
+    <ClCompile Include="..\EditLLDF.cpp" />
+    <ClCompile Include="..\EditLoadFactors.cpp" />
+    <ClCompile Include="..\EditLoadModifiers.cpp" />
+    <ClCompile Include="..\EditLoadsChildFrm.cpp" />
+    <ClCompile Include="..\EditLoadsView.cpp" />
+    <ClCompile Include="..\EditMomentLoadDlg.cpp" />
+    <ClCompile Include="..\EditPier.cpp" />
+    <ClCompile Include="..\EditPierStation.cpp" />
+    <ClCompile Include="..\EditPointLoadDlg.cpp" />
+    <ClCompile Include="..\EditProjectCriteria.cpp" />
+    <ClCompile Include="..\EditProjectProperties.cpp" />
+    <ClCompile Include="..\EditRatingCriteria.cpp" />
+    <ClCompile Include="..\EditSpan.cpp" />
+    <ClCompile Include="..\EditSpanLength.cpp" />
+    <ClCompile Include="..\EnvironmentDlg.cpp" />
+    <ClCompile Include="..\GeneralRatingOptionsPage.cpp" />
+    <ClCompile Include="..\GirderDescDlg.cpp" />
+    <ClCompile Include="..\GirderDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\GirderDropSite.cpp" />
+    <ClCompile Include="..\GirderEditorElevationSettingsPage.cpp" />
+    <ClCompile Include="..\GirderEditorSectionSettingsPage.cpp" />
+    <ClCompile Include="..\GirderEditorSettingsSheet.cpp" />
+    <ClCompile Include="..\GirderLabelFormatDlg.cpp" />
+    <ClCompile Include="..\GirderLayoutPage.cpp" />
+    <ClCompile Include="..\GirderModelChildFrame.cpp" />
+    <ClCompile Include="..\GirderModelElevationView.cpp" />
+    <ClCompile Include="..\GirderModelSectionView.cpp" />
+    <ClCompile Include="..\GirderNameGrid.cpp" />
+    <ClCompile Include="..\GirderSelectStrandsDlg.cpp" />
+    <ClCompile Include="..\GirderSelectStrandsPage.cpp" />
+    <ClCompile Include="..\GirderSpacingGrid.cpp" />
+    <ClCompile Include="..\GirderViewPrintJob.cpp" />
+    <ClCompile Include="..\GMDisplayMgrEventsImpl.cpp" />
+    <ClCompile Include="..\GraphView.cpp" />
+    <ClCompile Include="..\GraphViewChildFrame.cpp" />
+    <ClCompile Include="..\HorizontalAlignmentGrid.cpp" />
+    <ClCompile Include="..\HorizontalAlignmentPage.cpp" />
+    <ClCompile Include="..\InplaceEditDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\InplacePierStationEditEvents.cpp" />
+    <ClCompile Include="..\InplaceSpanLengthEditEvents.cpp" />
+    <ClCompile Include="..\InsertDeleteSpan.cpp" />
+    <ClCompile Include="..\LegalRatingPage.cpp" />
+    <ClCompile Include="..\LiveLoadDistFactorsDlg.cpp" />
+    <ClCompile Include="..\LiveLoadSelectDlg.cpp" />
+    <ClCompile Include="..\LLDFFillDlg.cpp" />
+    <ClCompile Include="..\LLDFGrid.cpp" />
+    <ClCompile Include="..\LLDFPierGrid.cpp" />
+    <ClCompile Include="..\mfcdual.cpp" />
+    <ClCompile Include="..\MomentLoadDrawStrategyImpl.cpp" />
+    <ClCompile Include="..\MovePierDlg.cpp" />
+    <ClCompile Include="..\MultiGirderSelectDlg.cpp" />
+    <ClCompile Include="..\PermitRatingPage.cpp" />
+    <ClCompile Include="..\PGSImportPluginDocTemplateBase.cpp" />
+    <ClCompile Include="..\PGSpliceAppPlugin.cpp" />
+    <ClCompile Include="..\PGSpliceCommandLineInfo.cpp" />
+    <ClCompile Include="..\PGSpliceDoc.cpp" />
+    <ClCompile Include="..\PGSpliceDocTemplate.cpp" />
+    <ClCompile Include="..\PGSpliceImportPluginDocTemplate.cpp" />
+    <ClCompile Include="..\PGSpliceProjectImporterAppPlugin.cpp" />
+    <ClCompile Include="..\PGSpliceProjectImporterMgr.cpp" />
+    <ClCompile Include="..\PGSProjectImporterAppPluginBase.cpp" />
+    <ClCompile Include="..\PGSProjectImporterMgrBase.cpp" />
+    <ClCompile Include="..\PGSuperAppPlugin.cpp" />
+    <ClCompile Include="..\PGSuperBaseAppPlugin.cpp" />
+    <ClCompile Include="..\PGSuperCalculationSheet.cpp" />
+    <ClCompile Include="..\PGSuperCommandLineInfo.cpp" />
+    <ClCompile Include="..\PGSuperDoc.cpp" />
+    <ClCompile Include="..\PGSuperDocBase.cpp" />
+    <ClCompile Include="..\PGSuperDocProxyAgent.cpp" />
+    <ClCompile Include="..\PGSuperDocTemplate.cpp" />
+    <ClCompile Include="..\PGSuperDocTemplateBase.cpp" />
+    <ClCompile Include="..\PGSuperImportPluginDocTemplate.cpp" />
+    <ClCompile Include="..\PGSuperPluginMgr.cpp" />
+    <ClCompile Include="..\PGSuperProjectImporterAppPlugin.cpp" />
+    <ClCompile Include="..\PGSuperProjectImporterMgr.cpp" />
+    <ClCompile Include="..\PGSuperStatusBar.cpp" />
+    <ClCompile Include="..\PGSuperTemplateManager.cpp" />
+    <ClCompile Include="..\PGSuperUnits.cpp" />
+    <ClCompile Include="..\PierConnectionsPage.cpp" />
+    <ClCompile Include="..\PierDetailsDlg.cpp" />
+    <ClCompile Include="..\PierDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\PierGirderSpacingPage.cpp" />
+    <ClCompile Include="..\PierLayoutPage.cpp" />
+    <ClCompile Include="..\PierLocationPage.cpp" />
+    <ClCompile Include="..\PluginManagerDlg.cpp" />
+    <ClCompile Include="..\PluginPage.cpp" />
+    <ClCompile Include="..\PointLoadDrawStrategyImpl.cpp" />
+    <ClCompile Include="..\ProfileDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\ProfileGrid.cpp" />
+    <ClCompile Include="..\ProfilePage.cpp" />
+    <ClCompile Include="..\ProjectPropertiesDlg.cpp" />
+    <ClCompile Include="..\RatingOptionsDlg.cpp" />
+    <ClCompile Include="..\ReportView.cpp" />
+    <ClCompile Include="..\ReportViewChildFrame.cpp" />
+    <ClCompile Include="..\ResolveGirderSpacingDlg.cpp" />
+    <ClCompile Include="..\SectionCutDisplayImpl.cpp" />
+    <ClCompile Include="..\SectionCutDlg.cpp" />
+    <ClCompile Include="..\SectionCutDlgEx.cpp" />
+    <ClCompile Include="..\SelectGirderDlg.cpp" />
+    <ClCompile Include="..\SelectItemDlg.cpp" />
+    <ClCompile Include="..\SharedCtrls\MultiGirderSelectGrid.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ShearSteelPage2.cpp" />
+    <ClCompile Include="..\SlabDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\SpanDetailsDlg.cpp" />
+    <ClCompile Include="..\SpanDisplayObjectEvents.cpp" />
+    <ClCompile Include="..\SpanLayoutPage.cpp" />
+    <ClCompile Include="..\SpanLengthDlg.cpp" />
+    <ClCompile Include="..\SpanLengthGrid.cpp" />
+    <ClCompile Include="..\SpecDlg.cpp" />
+    <ClCompile Include="..\SplicedGirderDescDlg.cpp" />
+    <ClCompile Include="..\SplitChildFrm.cpp" />
+    <ClCompile Include="..\StationCutDlg.cpp" />
+    <ClCompile Include="..\StrandFillGrid.cpp" />
+    <ClCompile Include="..\StructuralAnalysisMethodDlg.cpp" />
+    <ClCompile Include="..\SupportDrawStrategyImpl.cpp" />
+    <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="ActivityGrid.cpp" />
+    <ClCompile Include="ApplyLoadsDlg.cpp" />
+    <ClCompile Include="CastClosureJointDlg.cpp" />
+    <ClCompile Include="CastDeckDlg.cpp" />
+    <ClCompile Include="ClosureJointDisplayObjectEvents.cpp" />
+    <ClCompile Include="ClosureJointDlg.cpp" />
+    <ClCompile Include="ClosureJointGeneralPage.cpp" />
+    <ClCompile Include="ClosureJointGeometryPage.cpp" />
+    <ClCompile Include="ClosureJointLongitudinalReinforcementPage.cpp" />
+    <ClCompile Include="ClosureJointStirrupsPage.cpp" />
+    <ClCompile Include="ConstructSegmentsDlg.cpp" />
+    <ClCompile Include="dllmain.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+    </ClCompile>
+    <ClCompile Include="DrawPrecastSegmentControl.cpp" />
+    <ClCompile Include="DrawStrandControl.cpp" />
+    <ClCompile Include="DrawTendonsControl.cpp" />
+    <ClCompile Include="DuctGrid.cpp" />
+    <ClCompile Include="EditBridge.cpp" />
+    <ClCompile Include="EditClosureJoint.cpp" />
+    <ClCompile Include="EditGirderline.cpp" />
+    <ClCompile Include="EditHaunchDlg.cpp" />
+    <ClCompile Include="EditLossParameters.cpp" />
+    <ClCompile Include="EditPrecastSegment.cpp" />
+    <ClCompile Include="EditTemporarySupport.cpp" />
+    <ClCompile Include="EditTemporarySupportStation.cpp" />
+    <ClCompile Include="EditTimeline.cpp" />
+    <ClCompile Include="EditTimelineDlg.cpp" />
+    <ClCompile Include="ErectPiersDlg.cpp" />
+    <ClCompile Include="ErectSegmentsDlg.cpp" />
+    <ClCompile Include="FilletByGirderDlg.cpp" />
+    <ClCompile Include="FilletGirderGrid.cpp" />
+    <ClCompile Include="FilletGrid.cpp" />
+    <ClCompile Include="FilletSame4BridgeDlg.cpp" />
+    <ClCompile Include="FilletSpanBySpanDlg.cpp" />
+    <ClCompile Include="FilletSpanGrid.cpp" />
+    <ClCompile Include="GirderGrid.cpp" />
+    <ClCompile Include="GirderSegmentDlg.cpp" />
+    <ClCompile Include="GirderSegmentGeneralPage.cpp" />
+    <ClCompile Include="GirderSegmentLongitudinalRebarPage.cpp" />
+    <ClCompile Include="GirderSegmentSpacingPage.cpp" />
+    <ClCompile Include="GirderSegmentStirrupsPage.cpp" />
+    <ClCompile Include="GirderSegmentStrandsPage.cpp" />
+    <ClCompile Include="HaunchByGirderDlg.cpp" />
+    <ClCompile Include="HaunchGirderGrid.cpp" />
+    <ClCompile Include="HaunchSame4BridgeDlg.cpp" />
+    <ClCompile Include="HaunchSpanBySpanDlg.cpp" />
+    <ClCompile Include="HaunchSpanGrid.cpp" />
+    <ClCompile Include="InplaceTemporarySupportStationEditEvents.cpp" />
+    <ClCompile Include="InsertDeleteTemporarySupport.cpp" />
+    <ClCompile Include="InsertSpanDlg.cpp" />
+    <ClCompile Include="LinearDuctDlg.cpp" />
+    <ClCompile Include="LinearDuctGrid.cpp" />
+    <ClCompile Include="LoadFactorsDlg.cpp" />
+    <ClCompile Include="LossParametersDlg.cpp" />
+    <ClCompile Include="OffsetDuctDlg.cpp" />
+    <ClCompile Include="OffsetDuctGrid.cpp" />
+    <ClCompile Include="ParabolicDuctDlg.cpp" />
+    <ClCompile Include="ParabolicDuctGrid.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="PGSpliceComponentInfo.cpp" />
+    <ClCompile Include="PGSuperAppPlugin_i.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+    </ClCompile>
+    <ClCompile Include="PGSuperComponentInfo.cpp" />
+    <ClCompile Include="PostTensioningPage.cpp" />
+    <ClCompile Include="PretensioningPage.cpp" />
+    <ClCompile Include="RemoveTempSupportsDlg.cpp" />
+    <ClCompile Include="SegmentSpacingGrid.cpp" />
+    <ClCompile Include="SelectClosureJointDlg.cpp" />
+    <ClCompile Include="SelectGirderSegmentDlg.cpp" />
+    <ClCompile Include="SlabOffsetGrid.cpp" />
+    <ClCompile Include="SplicedGirderGeneralPage.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StrandGrid.cpp" />
+    <ClCompile Include="StressTendonDlg.cpp" />
+    <ClCompile Include="TemporarySupportDisplayObjectEvents.cpp" />
+    <ClCompile Include="TemporarySupportDlg.cpp" />
+    <ClCompile Include="TemporarySupportDrawStrategyImpl.cpp" />
+    <ClCompile Include="TemporarySupportLayoutPage.cpp" />
+    <ClCompile Include="TimelineEventDlg.cpp" />
+    <ClCompile Include="TimelineGrid.cpp" />
+    <ClCompile Include="TimeStepPropertiesPage.cpp" />
+    <ClCompile Include="Utilities.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\PGSplice.tip" />
+    <None Include="..\PGSuper.tip" />
+    <None Include="..\res\Connection_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="..\res\Connection_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="..\res\Connection_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="..\res\Connection_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="..\res\Connection_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="..\res\Connection_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="..\res\Connection_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="..\res\Connection_BrgAlongNormal_EndAlongNormalFromPier.emf" />
+    <None Include="..\res\HaulingOverhangs.emf" />
+    <None Include="PGSuperAppPlugin.def" />
+    <None Include="PGSuperAppPlugin.rgs" />
+    <None Include="res\Closure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="res\Closure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="res\Closure_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="res\Closure_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="res\Closure_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="res\Closure_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="res\Closure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="res\Closure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
+    <None Include="res\CLPier_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="res\CLPier_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="res\CLPier_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="res\CLPier_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="res\CLPier_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="res\CLPier_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="res\CLPier_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="res\CLPier_BrgAlongNormal_EndAlongNormalFromPier.emf" />
+    <None Include="res\ContinuousSegment.emf" />
+    <None Include="res\EA_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="res\EA_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="res\EA_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="res\EA_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="res\EA_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="res\EA_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="res\EA_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="res\EA_BrgAlongNormal_EndAlongNormalFromPier.emf" />
+    <None Include="res\MatchCast_BrgAlongGdr.emf" />
+    <None Include="res\MatchCast_BrgAlongNormal.emf" />
+    <None Include="res\PGSpliceAppPluginImpl.rgs" />
+    <None Include="res\PGSpliceComponentInfo.rgs" />
+    <None Include="res\PGSpliceProjectImporterAppPlugin.rgs" />
+    <None Include="res\PGSuperAppPluginImpl.rgs" />
+    <None Include="res\PGSuperComponentInfo.rgs" />
+    <None Include="res\PGSuperProjectImporterAppPlugin.rgs" />
+    <None Include="res\PierContinuousSegment.emf" />
+    <None Include="res\PierLayout.emf" />
+    <None Include="res\SA_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="res\SA_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="res\SA_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="res\SA_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="res\SA_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="res\SA_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="res\SA_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="res\SA_BrgAlongNormal_EndAlongNormalFromPier.emf" />
+    <None Include="res\StrandSpacing.emf" />
+    <None Include="res\TempSupportContinuousSegment.emf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="PGSuperAppPlugin.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\AbutmentConnectionsPage.h" />
+    <ClInclude Include="..\AlignmentDescriptionDlg.h" />
+    <ClInclude Include="..\AlignmentDisplayObjectEvents.h" />
+    <ClInclude Include="..\AlignmentPlanView.h" />
+    <ClInclude Include="..\AlignmentProfileView.h" />
+    <ClInclude Include="..\BridgeDescDeckDetailsPage.h" />
+    <ClInclude Include="..\BridgeDescDeckPointGrid.h" />
+    <ClInclude Include="..\BridgeDescDeckRebarGrid.h" />
+    <ClInclude Include="..\BridgeDescDeckReinforcementPage.h" />
+    <ClInclude Include="..\BridgeDescDlg.h" />
+    <ClInclude Include="..\BridgeDescEnvironmental.h" />
+    <ClInclude Include="..\BridgeDescFramingGrid.h" />
+    <ClInclude Include="..\BridgeDescFramingPage.h" />
+    <ClInclude Include="..\BridgeDescGeneralPage.h" />
+    <ClInclude Include="..\BridgeDescGirderMaterialsPage.h" />
+    <ClInclude Include="..\BridgeDescLiftingPage.h" />
+    <ClInclude Include="..\BridgeDescLongitudinalRebar.h" />
+    <ClInclude Include="..\BridgeDescLongRebarGrid.h" />
+    <ClInclude Include="..\BridgeDescPrestressPage.h" />
+    <ClInclude Include="..\BridgeDescRailingSystemPage.h" />
+    <ClInclude Include="..\BridgeDisplayObjectEvents.h" />
+    <ClInclude Include="..\BridgeEditorAlignmentSettingsPage.h" />
+    <ClInclude Include="..\BridgeEditorPlanSettingsPage.h" />
+    <ClInclude Include="..\BridgeEditorProfileSettingsPage.h" />
+    <ClInclude Include="..\BridgeEditorSectionPage.h" />
+    <ClInclude Include="..\BridgeEditorSettingsSheet.h" />
+    <ClInclude Include="..\BridgeModelViewChildFrame.h" />
+    <ClInclude Include="..\BridgePlanView.h" />
+    <ClInclude Include="..\BridgeSectionCutDisplayImpl.h" />
+    <ClInclude Include="..\BridgeSectionView.h" />
+    <ClInclude Include="..\BridgeViewPane.h" />
+    <ClInclude Include="..\BridgeViewPrintJob.h" />
+    <ClInclude Include="..\ChildFrm.h" />
+    <ClInclude Include="..\ColumnLayoutGrid.h" />
+    <ClInclude Include="..\ConnectionDisplayObjectEvents.h" />
+    <ClInclude Include="..\ConstructionLoadDlg.h" />
+    <ClInclude Include="..\convert.h" />
+    <ClInclude Include="..\CopyGirderDlg.h" />
+    <ClInclude Include="..\CopyGirderPropertiesCallbacks.h" />
+    <ClInclude Include="..\CPPGSuperDocProxyAgent.h" />
+    <ClInclude Include="..\CrownSlopeGrid.h" />
+    <ClInclude Include="..\CrownSlopePage.h" />
+    <ClInclude Include="..\DebondDlg.h" />
+    <ClInclude Include="..\DebondGrid.h" />
+    <ClInclude Include="..\DesignGirder.h" />
+    <ClInclude Include="..\DesignGirderDlg.h" />
+    <ClInclude Include="..\DesignOutcomeDlg.h" />
+    <ClInclude Include="..\DesignRatingPage.h" />
+    <ClInclude Include="..\DisplayObjectFactory.h" />
+    <ClInclude Include="..\DistributedLoadDrawStrategy.h" />
+    <ClInclude Include="..\DistributedLoadDrawStrategyImpl.h" />
+    <ClInclude Include="..\Documentation\PGSuper.hh" />
+    <ClInclude Include="..\EditAlignment.h" />
+    <ClInclude Include="..\EditBoundaryConditions.h" />
+    <ClInclude Include="..\EditConstructionLoad.h" />
+    <ClInclude Include="..\EditDistributedLoadDlg.h" />
+    <ClInclude Include="..\EditEffectiveFlangeWidth.h" />
+    <ClInclude Include="..\EditEnvironment.h" />
+    <ClInclude Include="..\EditGirder.h" />
+    <ClInclude Include="..\EditLiveLoad.h" />
+    <ClInclude Include="..\EditLLDF.h" />
+    <ClInclude Include="..\EditLoadFactors.h" />
+    <ClInclude Include="..\EditLoadModifiers.h" />
+    <ClInclude Include="..\EditLoadsChildFrm.h" />
+    <ClInclude Include="..\EditLoadsView.h" />
+    <ClInclude Include="..\EditMomentLoadDlg.h" />
+    <ClInclude Include="..\EditPier.h" />
+    <ClInclude Include="..\EditPierStation.h" />
+    <ClInclude Include="..\EditPointLoadDlg.h" />
+    <ClInclude Include="..\EditProjectCriteria.h" />
+    <ClInclude Include="..\EditProjectProperties.h" />
+    <ClInclude Include="..\EditRatingCriteria.h" />
+    <ClInclude Include="..\EditSpan.h" />
+    <ClInclude Include="..\EditSpanLength.h" />
+    <ClInclude Include="..\EnvironmentDlg.h" />
+    <ClInclude Include="..\GeneralRatingOptionsPage.h" />
+    <ClInclude Include="..\GevEditLoad.h" />
+    <ClInclude Include="..\GirderDescDlg.h" />
+    <ClInclude Include="..\GirderDisplayObjectEvents.h" />
+    <ClInclude Include="..\GirderDropSite.h" />
+    <ClInclude Include="..\GirderEditorElevationSettingsPage.h" />
+    <ClInclude Include="..\GirderEditorSectionSettingsPage.h" />
+    <ClInclude Include="..\GirderEditorSettingsSheet.h" />
+    <ClInclude Include="..\GirderLabelFormatDlg.h" />
+    <ClInclude Include="..\GirderLayoutPage.h" />
+    <ClInclude Include="..\GirderModelChildFrame.h" />
+    <ClInclude Include="..\GirderModelElevationView.h" />
+    <ClInclude Include="..\GirderModelSectionView.h" />
+    <ClInclude Include="..\GirderNameGrid.h" />
+    <ClInclude Include="..\GirderSelectStrandsDlg.h" />
+    <ClInclude Include="..\GirderSelectStrandsPage.h" />
+    <ClInclude Include="..\GirderSpacingGrid.h" />
+    <ClInclude Include="..\GirderViewPrintJob.h" />
+    <ClInclude Include="..\GMDisplayMgrEventsImpl.h" />
+    <ClInclude Include="..\GraphView.h" />
+    <ClInclude Include="..\GraphViewChildFrame.h" />
+    <ClInclude Include="..\Hints.h" />
+    <ClInclude Include="..\HorizontalAlignmentGrid.h" />
+    <ClInclude Include="..\HorizontalAlignmentPage.h" />
+    <ClInclude Include="..\Include\Details.h" />
+    <ClInclude Include="..\Include\IFace\Design.h" />
+    <ClInclude Include="..\Include\IFace\DocumentType.h" />
+    <ClInclude Include="..\Include\IFace\DrawBridgeSettings.h" />
+    <ClInclude Include="..\Include\IFace\EditByUI.h" />
+    <ClInclude Include="..\Include\IFace\ExtendUI.h" />
+    <ClInclude Include="..\Include\IFace\Selection.h" />
+    <ClInclude Include="..\Include\IFace\Tools.h" />
+    <ClInclude Include="..\Include\IFace\UpdateTemplates.h" />
+    <ClInclude Include="..\Include\IFace\VersionInfo.h" />
+    <ClInclude Include="..\Include\IFace\ViewEvents.h" />
+    <ClInclude Include="..\Include\IFace\Views.h" />
+    <ClInclude Include="..\Include\PGSComponentInfo.h" />
+    <ClInclude Include="..\Include\PGSpliceCatCom.h" />
+    <ClInclude Include="..\Include\PGSuperAll.h" />
+    <ClInclude Include="..\Include\PGSuperCatCom.h" />
+    <ClInclude Include="..\Include\PGSuperColors.h" />
+    <ClInclude Include="..\Include\PGSuperComponentInfo.h" />
+    <ClInclude Include="..\Include\PGSuperDebug.h" />
+    <ClInclude Include="..\Include\PGSuperTypes.h" />
+    <ClInclude Include="..\Include\PGSuperUnits.h" />
+    <ClInclude Include="..\Include\PGSuperVersion.h" />
+    <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />
+    <ClInclude Include="..\InplaceEditDisplayObjectEvents.h" />
+    <ClInclude Include="..\InplacePierStationEditEvents.h" />
+    <ClInclude Include="..\InplaceSpanLengthEditEvents.h" />
+    <ClInclude Include="..\InsertDeleteSpan.h" />
+    <ClInclude Include="..\LegalRatingPage.h" />
+    <ClInclude Include="..\LiveLoadDistFactorsDlg.h" />
+    <ClInclude Include="..\LiveLoadSelectDlg.h" />
+    <ClInclude Include="..\LLDFFillDlg.h" />
+    <ClInclude Include="..\LLDFGrid.h" />
+    <ClInclude Include="..\LLDFPierGrid.h" />
+    <ClInclude Include="..\MomentLoadDrawStrategy.h" />
+    <ClInclude Include="..\MomentLoadDrawStrategyImpl.h" />
+    <ClInclude Include="..\MovePierDlg.h" />
+    <ClInclude Include="..\MultiGirderSelectDlg.h" />
+    <ClInclude Include="..\PermitRatingPage.h" />
+    <ClInclude Include="..\PGSImportPluginDocTemplateBase.h" />
+    <ClInclude Include="..\PGSpliceAppPlugin.h" />
+    <ClInclude Include="..\PGSpliceCommandLineInfo.h" />
+    <ClInclude Include="..\PGSpliceDoc.h" />
+    <ClInclude Include="..\PGSpliceDocTemplate.h" />
+    <ClInclude Include="..\PGSpliceImportPluginDocTemplate.h" />
+    <ClInclude Include="..\PGSpliceProjectImporterAppPlugin.h" />
+    <ClInclude Include="..\PGSpliceProjectImporterMgr.h" />
+    <ClInclude Include="..\PGSProjectImporterAppPluginBase.h" />
+    <ClInclude Include="..\PGSProjectImporterMgrBase.h" />
+    <ClInclude Include="..\PGSuperAppPlugin.h" />
+    <ClInclude Include="..\PGSuperBaseAppPlugin.h" />
+    <ClInclude Include="..\PGSuperCalculationSheet.h" />
+    <ClInclude Include="..\PGSuperCommandLineInfo.h" />
+    <ClInclude Include="..\PGSuperDoc.h" />
+    <ClInclude Include="..\PGSuperDocBase.h" />
+    <ClInclude Include="..\PGSuperDocProxyAgent.h" />
+    <ClInclude Include="..\PGSuperDocTemplate.h" />
+    <ClInclude Include="..\PGSuperDocTemplateBase.h" />
+    <ClInclude Include="..\PGSuperException.h" />
+    <ClInclude Include="..\PGSuperImportPluginDocTemplate.h" />
+    <ClInclude Include="..\PGSuperPluginMgr.h" />
+    <ClInclude Include="..\PGSuperProjectImporterAppPlugin.h" />
+    <ClInclude Include="..\PGSuperProjectImporterMgr.h" />
+    <ClInclude Include="..\PGSuperStatusBar.h" />
+    <ClInclude Include="..\PGSuperTemplateManager.h" />
+    <ClInclude Include="..\PierConnectionsPage.h" />
+    <ClInclude Include="..\PierDetailsDlg.h" />
+    <ClInclude Include="..\PierDisplayObjectEvents.h" />
+    <ClInclude Include="..\PierGirderSpacingPage.h" />
+    <ClInclude Include="..\PierLayoutPage.h" />
+    <ClInclude Include="..\PierLocationPage.h" />
+    <ClInclude Include="..\PluginManagerDlg.h" />
+    <ClInclude Include="..\PluginPage.h" />
+    <ClInclude Include="..\PointLoadDrawStrategy.h" />
+    <ClInclude Include="..\PointLoadDrawStrategyImpl.h" />
+    <ClInclude Include="..\ProfileDisplayObjectEvents.h" />
+    <ClInclude Include="..\ProfileGrid.h" />
+    <ClInclude Include="..\ProfilePage.h" />
+    <ClInclude Include="..\ProjectPropertiesDlg.h" />
+    <ClInclude Include="..\RatingOptionsDlg.h" />
+    <ClInclude Include="..\ReportView.h" />
+    <ClInclude Include="..\ReportViewChildFrame.h" />
+    <ClInclude Include="..\ResolveGirderSpacingDlg.h" />
+    <ClInclude Include="..\SectionCutDisplayImpl.h" />
+    <ClInclude Include="..\SectionCutDlg.h" />
+    <ClInclude Include="..\SectionCutDlgEx.h" />
+    <ClInclude Include="..\SectionCutDrawStrategy.h" />
+    <ClInclude Include="..\SelectGirderDlg.h" />
+    <ClInclude Include="..\SelectItemDlg.h" />
+    <ClInclude Include="..\ShearSteelPage2.h" />
+    <ClInclude Include="..\SlabDisplayObjectEvents.h" />
+    <ClInclude Include="..\SpanDetailsDlg.h" />
+    <ClInclude Include="..\SpanDisplayObjectEvents.h" />
+    <ClInclude Include="..\SpanLayoutPage.h" />
+    <ClInclude Include="..\SpanLengthDlg.h" />
+    <ClInclude Include="..\SpanLengthGrid.h" />
+    <ClInclude Include="..\SpecDlg.h" />
+    <ClInclude Include="..\SplicedGirderDescDlg.h" />
+    <ClInclude Include="..\SplitChildFrm.h" />
+    <ClInclude Include="..\StationCutDlg.h" />
+    <ClInclude Include="..\StrandFillGrid.h" />
+    <ClInclude Include="..\StructuralAnalysisMethodDlg.h" />
+    <ClInclude Include="..\SupportDrawStrategy.h" />
+    <ClInclude Include="..\SupportDrawStrategyImpl.h" />
+    <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="ActivityGrid.h" />
+    <ClInclude Include="ApplyLoadsDlg.h" />
+    <ClInclude Include="CastClosureJointDlg.h" />
+    <ClInclude Include="CastDeckDlg.h" />
+    <ClInclude Include="ClosureJointDisplayObjectEvents.h" />
+    <ClInclude Include="ClosureJointDlg.h" />
+    <ClInclude Include="ClosureJointGeneralPage.h" />
+    <ClInclude Include="ClosureJointGeometryPage.h" />
+    <ClInclude Include="ClosureJointLongitudinalReinforcementPage.h" />
+    <ClInclude Include="ClosureJointStirrupsPage.h" />
+    <ClInclude Include="ConstructSegmentsDlg.h" />
+    <ClInclude Include="dllmain.h" />
+    <ClInclude Include="DrawPrecastSegmentControl.h" />
+    <ClInclude Include="DrawStrandControl.h" />
+    <ClInclude Include="DrawTendonsControl.h" />
+    <ClInclude Include="DuctGrid.h" />
+    <ClInclude Include="EditBridge.h" />
+    <ClInclude Include="EditClosureJoint.h" />
+    <ClInclude Include="EditGirderline.h" />
+    <ClInclude Include="EditHaunchDlg.h" />
+    <ClInclude Include="EditLossParameters.h" />
+    <ClInclude Include="EditPrecastSegment.h" />
+    <ClInclude Include="EditTemporarySupport.h" />
+    <ClInclude Include="EditTemporarySupportStation.h" />
+    <ClInclude Include="EditTimeline.h" />
+    <ClInclude Include="EditTimelineDlg.h" />
+    <ClInclude Include="ErectPiersActivity.h" />
+    <ClInclude Include="ErectPiersDlg.h" />
+    <ClInclude Include="ErectSegmentsDlg.h" />
+    <ClInclude Include="FilletByGirderDlg.h" />
+    <ClInclude Include="FilletGirderGrid.h" />
+    <ClInclude Include="FilletGrid.h" />
+    <ClInclude Include="FilletSame4BridgeDlg.h" />
+    <ClInclude Include="FilletSpanBySpanDlg.h" />
+    <ClInclude Include="FilletSpanGrid.h" />
+    <ClInclude Include="GirderGrid.h" />
+    <ClInclude Include="GirderSegmentDlg.h" />
+    <ClInclude Include="GirderSegmentGeneralPage.h" />
+    <ClInclude Include="GirderSegmentLongitudinalRebarPage.h" />
+    <ClInclude Include="GirderSegmentSpacingPage.h" />
+    <ClInclude Include="GirderSegmentStirrupsPage.h" />
+    <ClInclude Include="GirderSegmentStrandsPage.h" />
+    <ClInclude Include="HaunchByGirderDlg.h" />
+    <ClInclude Include="HaunchGirderGrid.h" />
+    <ClInclude Include="HaunchSame4BridgeDlg.h" />
+    <ClInclude Include="HaunchSpanBySpanDlg.h" />
+    <ClInclude Include="HaunchSpanGrid.h" />
+    <ClInclude Include="InplaceTemporarySupportStationEditEvents.h" />
+    <ClInclude Include="InsertDeleteTemporarySupport.h" />
+    <ClInclude Include="InsertSpanDlg.h" />
+    <ClInclude Include="LinearDuctDlg.h" />
+    <ClInclude Include="LinearDuctGrid.h" />
+    <ClInclude Include="LoadFactorsDlg.h" />
+    <ClInclude Include="LossParametersDlg.h" />
+    <ClInclude Include="OffsetDuctDlg.h" />
+    <ClInclude Include="OffsetDuctGrid.h" />
+    <ClInclude Include="ParabolicDuctDlg.h" />
+    <ClInclude Include="ParabolicDuctGrid.h" />
+    <ClInclude Include="PGSpliceComponentInfo.h" />
+    <ClInclude Include="PGSuperApp.h" />
+    <ClInclude Include="PGSuperAppPlugin_i.h" />
+    <ClInclude Include="PGSuperComponentInfo.h" />
+    <ClInclude Include="PostTensioningPage.h" />
+    <ClInclude Include="PretensioningPage.h" />
+    <ClInclude Include="RemoveTempSupportsDlg.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="SegmentSpacingGrid.h" />
+    <ClInclude Include="SelectClosureJointDlg.h" />
+    <ClInclude Include="SelectGirderSegmentDlg.h" />
+    <ClInclude Include="SlabOffsetGrid.h" />
+    <ClInclude Include="SplicedGirderGeneralPage.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StrandGrid.h" />
+    <ClInclude Include="StressTendonDlg.h" />
+    <ClInclude Include="TemporarySupportDisplayObjectEvents.h" />
+    <ClInclude Include="TemporarySupportDlg.h" />
+    <ClInclude Include="TemporarySupportDrawStrategyImpl.h" />
+    <ClInclude Include="TemporarySupportLayoutPage.h" />
+    <ClInclude Include="TimelineEventDlg.h" />
+    <ClInclude Include="TimelineGrid.h" />
+    <ClInclude Include="TimeStepPropertiesPage.h" />
+    <ClInclude Include="Utilities.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\AnalysisResultsView.ico" />
+    <Image Include="..\res\Bridge.ico" />
+    <Image Include="..\res\Bridge2.ico" />
+    <Image Include="..\res\bss.ico" />
+    <Image Include="..\res\colhdr.bmp" />
+    <Image Include="..\res\Continuous.bmp" />
+    <Image Include="..\res\CopyProperties.ico" />
+    <Image Include="..\res\DefaultEntry.ico" />
+    <Image Include="..\res\distributed_load.ico" />
+    <Image Include="..\res\EditBridge.ico" />
+    <Image Include="..\res\EditGirder.ico" />
+    <Image Include="..\res\edit_loa.ico" />
+    <Image Include="..\res\folder_closed.ico" />
+    <Image Include="..\res\folder_open.ico" />
+    <Image Include="..\res\GirderDesigner.bmp" />
+    <Image Include="..\res\GirderView.ico" />
+    <Image Include="..\res\HelpToolbar.bmp" />
+    <Image Include="..\res\Hinges.bmp" />
+    <Image Include="..\res\LibEntryInUse.bmp" />
+    <Image Include="..\res\LibEntryInUseAndReadOnly.bmp" />
+    <Image Include="..\res\LibEntryReadOnly.bmp" />
+    <Image Include="..\res\LibraryToolbar.bmp" />
+    <Image Include="..\res\library_manager.ico" />
+    <Image Include="..\res\LiveLoad.ico" />
+    <Image Include="..\res\moment.ico" />
+    <Image Include="..\res\moment_l.bmp" />
+    <Image Include="..\res\north_ar.bmp" />
+    <Image Include="..\res\PGSpliceDoc.ico" />
+    <Image Include="..\res\PGSpliceTemplate.ico" />
+    <Image Include="..\res\PGSpliceToolbar.bmp" />
+    <Image Include="..\res\PGSuper.ico" />
+    <Image Include="..\res\PGSuperDoc.ico" />
+    <Image Include="..\res\PGSuperTemplate.ico" />
+    <Image Include="..\res\PGSuperToolbar.bmp" />
+    <Image Include="..\res\pgs_template.ico" />
+    <Image Include="..\res\point_load.ico" />
+    <Image Include="..\res\RatingFactor.ico" />
+    <Image Include="..\res\ReportView.ico" />
+    <Image Include="..\res\Rollers.bmp" />
+    <Image Include="..\res\Stable.ico" />
+    <Image Include="..\res\Toolbar.bmp" />
+    <Image Include="..\res\txdot.ico" />
+    <Image Include="..\res\warning2.ico" />
+    <Image Include="..\res\Wsdot.ico" />
+    <Image Include="res\bss.ico" />
+    <Image Include="res\GirderDesigner.bmp" />
+    <Image Include="res\KDOT.ico" />
+    <Image Include="res\PGSuper.ico" />
+    <Image Include="res\txdot.ico" />
+    <Image Include="res\Wsdot.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PGSuperAppPlugin.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AnalysisAgent\AnalysisAgent.vcxproj">
+      <Project>{13860d0c-a73b-4ea6-bce6-5f84fc9bbce8}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Beams\Beams.vcxproj">
+      <Project>{3dbe87d2-ceed-457b-b345-7748084d947d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\BridgeAgent\BridgeAgent.vcxproj">
+      <Project>{69be1b6c-489e-4103-8e2e-82d2ef3258e5}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\EngAgent\EngAgent.vcxproj">
+      <Project>{b8979601-544d-41d7-a6a2-20a03e2473a4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\GraphingAgent\GraphingAgent.vcxproj">
+      <Project>{30dd6886-34ba-48bd-9bb6-08e8cd79cad7}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Graphing\Graphing.vcxproj">
+      <Project>{a29f3c02-af58-4e29-a791-caa5a1ce28b6}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\KDOTExport\KDOTExport.vcxproj">
+      <Project>{c6f6e6a6-916e-491d-a1df-dc1e8814c3fb}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\MakePgz\MakePgz.vcxproj">
+      <Project>{e8657e0c-0dad-4abd-a464-7a8e8b890e6f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
+      <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\PGSuperIDL\PGSuperIDL.vcxproj">
+      <Project>{8042f343-0709-45cc-90a6-97be1a70fc37}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\ProjectAgent\ProjectAgent.vcxproj">
+      <Project>{a69bd69e-07d6-4326-b25a-938bec2bb378}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\psgLib\psgLib.vcxproj">
+      <Project>{3d4395a4-6da8-40b5-bd41-c21104290b15}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\ReportAgent\ReportAgent.vcxproj">
+      <Project>{57419822-088f-4e75-9542-1eaae2df49ce}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Reporting\Reporting.vcxproj">
+      <Project>{4a38b3b0-7c87-40e8-bf6a-9d1b4051ff71}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\SpecAgent\SpecAgent.vcxproj">
+      <Project>{e9acc1b7-6de0-492e-a16b-0e5075074116}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\TestAgent\TestAgent.vcxproj">
+      <Project>{ecc654ce-c51a-4cfb-ad3d-1e07ed946fa5}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\TxDOTAgent\TxDOTAgent.vcxproj">
+      <Project>{ea3bf272-0798-41e6-9a93-36392910e839}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\WSDOTAgent\WSDOTAgent.vcxproj">
+      <Project>{69436331-72bb-4359-9bca-61ba092d2516}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="PGSuperAppPlugin.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

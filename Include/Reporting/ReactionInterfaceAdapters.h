@@ -78,7 +78,7 @@ public:
    virtual Float64 GetReaction(IntervalIndexType intervalIdx, const ReactionLocation& rLocation, pgsTypes::ProductForceType pfType, pgsTypes::BridgeAnalysisType bat) = 0;
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
-                                    VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
+                                    VehicleIndexType* pMinConfig = nullptr,VehicleIndexType* pMaxConfig = nullptr) = 0;
 };
 
 /////////////////////////////////////////
@@ -97,7 +97,7 @@ public:
    virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat);
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
-                                    VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);
+                                    VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr);
 
 private:
    IReactions* m_pReactions;
@@ -121,7 +121,7 @@ public:
    virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat);
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
-                                    VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);
+                                    VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr);
 private:
    IBearingDesign* m_pBearingDesign;
    CGirderKey m_GirderKey;

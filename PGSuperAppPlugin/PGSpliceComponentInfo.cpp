@@ -78,7 +78,7 @@ HICON CPGSpliceComponentInfo::GetIcon()
 bool CPGSpliceComponentInfo::HasMoreInfo()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   return (pEAFDoc == NULL ? false : pEAFDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? true : false);
+   return (pEAFDoc == nullptr ? false : pEAFDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? true : false);
 }
 
 void CPGSpliceComponentInfo::OnMoreInfo()

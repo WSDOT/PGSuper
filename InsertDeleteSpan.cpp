@@ -82,7 +82,7 @@ bool txnInsertSpan::Execute()
       pPier->GetGirderEndDistance(face,&m_EndDist[face],&m_EndDistMeasure[face]);
    }
 
-   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,NULL,NULL,m_bCreateNewGroup,m_PierErectionEventIndex);
+   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,nullptr,nullptr,m_bCreateNewGroup,m_PierErectionEventIndex);
 
    pEvents->FirePendingEvents();
 

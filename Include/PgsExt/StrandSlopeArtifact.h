@@ -104,7 +104,7 @@ protected:
    void MakeCopy(const pgsStrandSlopeArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsStrandSlopeArtifact& rOther);
+   void MakeAssignment(const pgsStrandSlopeArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

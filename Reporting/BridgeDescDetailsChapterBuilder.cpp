@@ -196,7 +196,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    const TrafficBarrierEntry* pLftInt = pBridgeDesc->GetLeftRailingSystem()->GetInteriorRailing();
    const TrafficBarrierEntry* pRgtInt = pBridgeDesc->GetRightRailingSystem()->GetInteriorRailing();
-   if (NULL != pLftInt)
+   if (nullptr != pLftInt)
    {
       if ( pLftInt != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing()  &&
            pLftInt != pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing()  )
@@ -205,7 +205,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
       }
    }
 
-   if (NULL != pRgtInt)
+   if (nullptr != pRgtInt)
    {
       if ( pRgtInt != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing()  &&
            pRgtInt != pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing() &&
@@ -608,7 +608,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    points->get__Enum(&enum_points);
    CComPtr<IPoint2d> point;
    long i = 1;
-   while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+   while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
    {
       Float64 x,y;
       point->get_X(&x);
@@ -714,8 +714,8 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
 
    lrfdRebarPool* pPool = lrfdRebarPool::GetInstance();
 
-   const matRebar* pDeckRebar = NULL;
-   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   const matRebar* pDeckRebar = nullptr;
+   if ( pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
    {
       pDeckRebar = pPool->GetRebar(pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarType,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarGrade,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarSize);
    }
@@ -726,7 +726,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
    const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(pDeckRebar == NULL ? 2 : 3);
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(pDeckRebar == nullptr ? 2 : 3);
    *pPara << pLayoutTable << rptNewLine;
 
    ColumnIndexType nCols = pLayoutTable->GetNumberOfColumns();

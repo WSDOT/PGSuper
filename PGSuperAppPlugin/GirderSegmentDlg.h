@@ -39,8 +39,8 @@ class CGirderSegmentDlg : public CPropertySheet, public IEditSegmentData
 	DECLARE_DYNAMIC(CGirderSegmentDlg)
 
 public:
-	CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
    // IEditSegmentData
    virtual const CSegmentKey& GetSegmentKey() { return m_SegmentKey; }
@@ -69,16 +69,16 @@ protected:
 
    void CommonInit(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey);
    void Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey);
-   void Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions);
    void CreateExtensionPages();
-   void CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void CreateExtensionPages(const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions);
    void DestroyExtensionPages();
 
    bool m_bEditingInGirder;
 
    txnMacroTxn m_Macro;
    std::vector<std::pair<IEditSegmentCallback*,CPropertyPage*>> m_ExtensionPages;
-   std::set<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
+   std::vector<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
    void NotifyExtensionPages();
    void NotifySplicedGirderExtensionPages();
 

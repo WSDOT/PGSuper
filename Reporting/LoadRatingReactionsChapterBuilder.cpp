@@ -75,9 +75,14 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(CReportSpecification* pRpt
       live_load_types.push_back(pgsTypes::lltLegalRating_Routine);
    }
 
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
    {
       live_load_types.push_back(pgsTypes::lltLegalRating_Special);
+   }
+
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+   {
+      live_load_types.push_back(pgsTypes::lltLegalRating_Emergency);
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -140,6 +145,10 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(CReportSpecification* pRpt
       else if ( llType == pgsTypes::lltLegalRating_Special )
       {
          *p << _T("AASHTO Legal Rating Specialized Hauling Vehicle Individual Vehicle Live Load Response") << rptNewLine;
+      }
+      else if (llType == pgsTypes::lltLegalRating_Emergency)
+      {
+         *p << _T("Emergency Vehicle Individual Vehicle Live Load Response") << rptNewLine;
       }
       else if ( llType == pgsTypes::lltPermitRating_Routine )
       {

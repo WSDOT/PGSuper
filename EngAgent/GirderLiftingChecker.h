@@ -72,7 +72,7 @@ public:
    // GROUP: OPERATIONS
    void CheckLifting(const CSegmentKey& segmentKey,stbLiftingCheckArtifact* pArtifact);
    void AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact);
-   void AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId, stbLiftingCheckArtifact* pArtifact, const stbLiftingStabilityProblem** ppStabilityProblem = NULL);
+   void AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId, stbLiftingCheckArtifact* pArtifact, const stbLiftingStabilityProblem** ppStabilityProblem = nullptr);
    pgsDesignCodes::OutcomeType DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId,stbLiftingCheckArtifact* pArtifact,const stbLiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE);
 
    // GROUP: ACCESS
@@ -95,15 +95,15 @@ private:
 
    // GROUP: LIFECYCLE
    // can't construct without a broker
-   pgsGirderLiftingChecker();
+   pgsGirderLiftingChecker() = delete;
 
    // Prevent accidental copying and assignment
-   pgsGirderLiftingChecker(const pgsGirderLiftingChecker&);
-   pgsGirderLiftingChecker& operator=(const pgsGirderLiftingChecker&);
+   pgsGirderLiftingChecker(const pgsGirderLiftingChecker&) = delete;
+   pgsGirderLiftingChecker& operator=(const pgsGirderLiftingChecker&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,stbLiftingCheckArtifact* pArtifact,const stbLiftingStabilityProblem** ppStabilityProblem = NULL);
+   void AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,stbLiftingCheckArtifact* pArtifact,const stbLiftingStabilityProblem** ppStabilityProblem = nullptr);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

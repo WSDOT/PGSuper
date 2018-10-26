@@ -60,4 +60,6 @@
 
 #include <PgsExt\GirderLabel.h>
 
+#include <OpenBridgeML.hxx>
+
 using namespace ATL;

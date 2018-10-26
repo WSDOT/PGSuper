@@ -182,42 +182,42 @@ void CGirderModelSectionView::CreateDisplayLists()
 
    // Create display lists
    CComPtr<iDisplayList> straight_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&straight_strand_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&straight_strand_list);
    straight_strand_list->SetID(STRAIGHT_STRAND_LIST);
    dispMgr->AddDisplayList(straight_strand_list);
 
    CComPtr<iDisplayList> harped_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&harped_strand_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&harped_strand_list);
    harped_strand_list->SetID(HARPED_STRAND_LIST);
    dispMgr->AddDisplayList(harped_strand_list);
 
    CComPtr<iDisplayList> temp_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&temp_strand_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&temp_strand_list);
    temp_strand_list->SetID(TEMP_STRAND_LIST);
    dispMgr->AddDisplayList(temp_strand_list);
 
    CComPtr<iDisplayList> duct_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&duct_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&duct_list);
    duct_list->SetID(DUCT_LIST);
    dispMgr->AddDisplayList(duct_list);
 
    CComPtr<iDisplayList> long_reinf_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&long_reinf_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&long_reinf_list);
    long_reinf_list->SetID(LONG_REINF_LIST);
    dispMgr->AddDisplayList(long_reinf_list);
 
    CComPtr<iDisplayList> cg_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&cg_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&cg_list);
    cg_list->SetID(CG_LIST);
    dispMgr->AddDisplayList(cg_list);
 
    CComPtr<iDisplayList> dimension_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&dimension_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dimension_list);
    dimension_list->SetID(DIMENSION_LIST);
    dispMgr->AddDisplayList(dimension_list);
 
    CComPtr<iDisplayList> section_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&section_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&section_list);
    section_list->SetID(SECTION_LIST);
    dispMgr->AddDisplayList(section_list);
 }
@@ -301,11 +301,11 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
 
    CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
    doPnt->SetID(1);
 
    CComPtr<iShapeDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_ShapeDrawStrategy,NULL,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
+   ::CoCreateInstance(CLSID_ShapeDrawStrategy,nullptr,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
    doPnt->SetDrawingStrategy(strategy);
 
    // Get the shape in Girder Section Coordinates so that it is in the same coordinate system
@@ -392,13 +392,13 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
    Float64 diameter = pStrand->GetNominalDiameter();
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,NULL,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
+   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
    strategy->SetColor(STRAND_FILL_COLOR);
    strategy->SetPointType(ptCircle);
    strategy->SetPointSize(diameter);
 
    CComPtr<iSimpleDrawPointStrategy> debond_strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,NULL,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&debond_strategy);
+   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&debond_strategy);
    debond_strategy->SetColor(DEBOND_FILL_COLOR);
    debond_strategy->SetPointType(ptCircle);
    debond_strategy->SetPointSize(diameter);
@@ -420,7 +420,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
       points->get_Item(strandPointIdx,&p);
 
       CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
       doPnt->SetPosition(p,FALSE,FALSE);
       doPnt->SetID(strandPointIdx);
 
@@ -456,7 +456,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
       points->get_Item(strandPointIdx,&p);
 
       CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
       doPnt->SetPosition(p,FALSE,FALSE);
       doPnt->SetID(strandPointIdx);
       doPnt->SetDrawingStrategy(strategy);
@@ -489,7 +489,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
          points->get_Item(strandPointIdx,&p);
 
          CComPtr<iPointDisplayObject> doPnt;
-         ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+         ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
          doPnt->SetPosition(p,FALSE,FALSE);
          doPnt->SetID(strandPointIdx);
          doPnt->SetDrawingStrategy(strategy);
@@ -534,7 +534,7 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
       pTendonGeom->GetDuctPoint(girderKey,Xg,ductIdx,&pnt);
 
       CComPtr<iTextBlock> textBlock;
-      ::CoCreateInstance(CLSID_TextBlock,NULL,CLSCTX_ALL,IID_iTextBlock,(void**)&textBlock);
+      ::CoCreateInstance(CLSID_TextBlock,nullptr,CLSCTX_ALL,IID_iTextBlock,(void**)&textBlock);
 
       textBlock->SetText(strStrands);
       textBlock->SetPosition(pnt);
@@ -556,7 +556,7 @@ void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBr
    pDL->Clear();
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,NULL,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
+   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
    strategy->SetColor(REBAR_COLOR);
    strategy->SetPointType(ptCircle);
 
@@ -572,13 +572,13 @@ void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBr
 
    // Bars are measured in Girder Section Coordinates
    CComPtr<IRebarSectionItem> item;
-   while ( enum_items->Next(1,&item,NULL) != S_FALSE )
+   while ( enum_items->Next(1,&item,nullptr) != S_FALSE )
    {
       CComPtr<IPoint2d> p;
       item->get_Location(&p);
 
       CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
       doPnt->SetPosition(p,FALSE,FALSE);
       doPnt->SetID(id++);
       doPnt->SetDrawingStrategy(strategy);
@@ -630,12 +630,12 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc,IBroker* p
    point->Move(0,Yb - (Hg+ecc));
 
    CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
    doPnt->SetID(1);
    doPnt->SetPosition(point,FALSE,FALSE);
 
    CComPtr<iTargetDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_TargetDrawStrategy,NULL,CLSCTX_ALL,IID_iTargetDrawStrategy,(void**)&strategy);
+   ::CoCreateInstance(CLSID_TargetDrawStrategy,nullptr,CLSCTX_ALL,IID_iTargetDrawStrategy,(void**)&strategy);
    CRect rc;
    GetClientRect(&rc);
    strategy->SetRadius(rc.Width()/80);
@@ -684,12 +684,12 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBr
    CComPtr<iDimensionLine> doDimLineLeftOverhang;
    CComPtr<iDimensionLine> doDimLineRightOverhang;
 
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineTopFlangeWidth);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineBottomFlangeWidth);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineHeight);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineCGPS);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineLeftOverhang);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineRightOverhang);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineTopFlangeWidth);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineBottomFlangeWidth);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineHeight);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineCGPS);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineLeftOverhang);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineRightOverhang);
 
    doDimLineTopFlangeWidth->SetID(0);
    doDimLineBottomFlangeWidth->SetID(1);
@@ -1051,7 +1051,7 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
       AfxFormatString1(msg,IDS_E_UPDATE,m_ErrorMsg.c_str());
 
       CFont font;
-      CFont* pOldFont = NULL;
+      CFont* pOldFont = nullptr;
       if ( font.CreatePointFont(100,_T("Arial"),pDC) )
       {
          pOldFont = pDC->SelectObject(&font);
@@ -1076,7 +1076,7 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
    {
       CString msg(_T("Select a girder to display"));
       CFont font;
-      CFont* pOldFont = NULL;
+      CFont* pOldFont = nullptr;
       if ( font.CreatePointFont(100,_T("Arial"),pDC) )
       {
          pOldFont = pDC->SelectObject(&font);

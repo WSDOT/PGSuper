@@ -91,7 +91,7 @@ public:
    static UINT ms_Format;
 
 private:
-   virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc);
+   void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc);
    void GetBoundingBox(iPointDisplayObject* pDO, Float64 Xgl, 
                        Float64* top, Float64* left, Float64* right, Float64* bottom);
    Float64 GetGirderHeight(Float64 Xgl);

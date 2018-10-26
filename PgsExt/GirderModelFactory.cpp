@@ -34,26 +34,9 @@ static char THIS_FILE[] = __FILE__;
 
 PoiIDType pgsGirderModelFactory::ms_FemModelPoiID = 0;
 
-// predicate compare method
-bool ComparePoiLocation(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2)
-{
-   if ( !poi1.GetSegmentKey().IsEqual(poi2.GetSegmentKey()) )
-   {
-      return false;
-   }
-
-   if ( !IsEqual(poi1.GetDistFromStart(),poi2.GetDistFromStart()) )
-   {
-      return false;
-   }
-
-   return true;
-}
-
 pgsGirderModelFactory::pgsGirderModelFactory(void)
 {
 }
-
 
 pgsGirderModelFactory::~pgsGirderModelFactory(void)
 {
@@ -73,23 +56,22 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,                 
                                  pgsPoiPairMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
                                  )
 {
-   // Build the model... always model the cantilevers in the geometry of the FEM model
-   BuildModel(pBroker, intervalIdx, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, true, true, vPOI, ppModel);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
+
+   // Build the model... always model the cantilevers in the geometry of the FEM model
+   BuildModel(pBroker, intervalIdx, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, vPOI, ppModel);
 
    ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel);
 
    ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel, pPoiMap);
 }
 
-void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,
-                                          Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
-                                          LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
-                                          const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel)
+void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType intervalIdx, const CSegmentKey& segmentKey,
+   Float64 segmentLength, Float64 leftSupportLoc, Float64 rightSupportLoc, Float64 E,
+   LoadCaseIDType lcidGirder, const std::vector<pgsPointOfInterest>& vPOI, IFem2dModel** ppModel)
 {
-   if ( *ppModel )
+   if (*ppModel)
    {
       (*ppModel)->Clear();
    }
@@ -108,48 +90,113 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
 
    // sometimes we loose the released segment POI at 0L and 1.0L in the call to RemovePointsOfInterest above
    // these are key POI so include them here so we are guarenteed to have them.
-   std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE);
+   std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE);
    ATLASSERT(vPoi.size() == 1);
-   xsPOI.push_back(vPoi.front());
-   vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_END_FACE);
-   ATLASSERT(vPoi.size() == 1);
-   xsPOI.push_back(vPoi.front());
+   if ( xsPOI.empty() || !vPoi.front().AtExactSamePlace(xsPOI.front()) ) // don't add duplicates
+   {
+      xsPOI.insert(xsPOI.begin(),vPoi.front());
+   }
 
+   vPoi = pPoi->GetPointsOfInterest(segmentKey, POI_END_FACE);
+   ATLASSERT(vPoi.size() == 1);
+   if ( !vPoi.front().AtExactSamePlace(xsPOI.back()) ) // don't add duplicates
+   {
+      xsPOI.push_back(vPoi.front());
+   }
 
    // add support locations if there aren't already POIs at those locations
-   bool bLeftSupportLoc  = true;
+   bool bLeftSupportLoc = true;
    bool bRightSupportLoc = true;
    std::vector<pgsPointOfInterest>::iterator xsIter(xsPOI.begin());
    std::vector<pgsPointOfInterest>::iterator xsIterEnd(xsPOI.end());
-   for ( ; xsIter != xsIterEnd && (bLeftSupportLoc == true || bRightSupportLoc == true); xsIter++ )
+   for (; xsIter != xsIterEnd && (bLeftSupportLoc == true || bRightSupportLoc == true); xsIter++)
    {
       pgsPointOfInterest& poi(*xsIter);
-      if ( IsEqual(leftSupportLoc,poi.GetDistFromStart()) )
+      if (IsEqual(leftSupportLoc, poi.GetDistFromStart()))
       {
          bLeftSupportLoc = false;
+         PoiAttributeType atr = poi.GetNonReferencedAttributes();
+         atr |= POI_INTERMEDIATE_PIER;
+         poi.SetNonReferencedAttributes(atr);
       }
 
-      if ( IsEqual(rightSupportLoc,poi.GetDistFromStart()) )
+      if (IsEqual(rightSupportLoc, poi.GetDistFromStart()))
       {
          bRightSupportLoc = false;
+         PoiAttributeType atr = poi.GetNonReferencedAttributes();
+         atr |= POI_INTERMEDIATE_PIER;
+         poi.SetNonReferencedAttributes(atr);
       }
    }
 
-   if ( bLeftSupportLoc )
+   if (bLeftSupportLoc)
    {
-      xsPOI.push_back(pgsPointOfInterest(segmentKey,leftSupportLoc));
+      xsPOI.push_back(pgsPointOfInterest(segmentKey, leftSupportLoc,POI_INTERMEDIATE_PIER));
    }
 
-   if ( bRightSupportLoc )
+   if (bRightSupportLoc)
    {
-      xsPOI.push_back(pgsPointOfInterest(segmentKey,rightSupportLoc));
+      xsPOI.push_back(pgsPointOfInterest(segmentKey, rightSupportLoc,POI_INTERMEDIATE_PIER));
    }
 
    // sort the POI
-   std::sort(xsPOI.begin(),xsPOI.end());
-   xsPOI.erase(std::unique(xsPOI.begin(),xsPOI.end(),ComparePoiLocation),xsPOI.end()); // eliminate any duplicates
+   std::sort(xsPOI.begin(), xsPOI.end());
+
+   // This is the same tolerance as used in the LBAM's use of LAYOUT_TOLERANCE
+   Float64 otol = xsPOI.back().GetDistFromStart() / 10000.00;
+
+   // eliminate any very close duplicates, but not support members
+   std::vector<pgsPointOfInterest>::iterator rightIter(xsPOI.begin());
+   std::vector<pgsPointOfInterest>::iterator leftIter(rightIter++);
+   while(rightIter != xsPOI.end())
+   {
+      bool didErase = false;
+      PoiIDType lid = leftIter->GetID();
+      PoiIDType rid = rightIter->GetID();
+      if (IsEqual(leftIter->GetDistFromStart(), rightIter->GetDistFromStart(), otol))
+      {
+         // POI's are very close, blast one that's not a support or a duplicate
+         if (lid>=0 && lid==rid)
+         {
+            // Weed duplicates out. Should be blocked from code above
+            ATLASSERT(0);
+            xsPOI.erase(leftIter);
+            didErase = true;
+         }
+         else if (!leftIter->HasAttribute(POI_INTERMEDIATE_PIER) &&  !leftIter->HasAttribute(POI_BOUNDARY_PIER) && !leftIter->HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) )
+         {
+            rightIter->MergeAttributes(*leftIter);
+            xsPOI.erase(leftIter);
+            didErase = true;
+         }
+         else if (!rightIter->HasAttribute(POI_INTERMEDIATE_PIER) &&  !rightIter->HasAttribute(POI_BOUNDARY_PIER) && !rightIter->HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) )
+         {
+            leftIter->MergeAttributes(*rightIter);
+            xsPOI.erase(rightIter);
+            didErase = true;
+         }
+      }
+
+      if (didErase)
+      {
+         leftIter = xsPOI.begin(); // inefficient, but have to restart to recoup left iterator in proper order
+         rightIter = leftIter;
+         rightIter++;
+      }
+      else
+      {
+         leftIter++;
+         rightIter++;
+      }
+   }
+
+   // The decision to create fem members for cantilevers is based on numerical stability and not on whether loads are to be applied
+   bool bDoModelLeftCantilever  = leftSupportLoc > otol;
+   bool bDoModelRightCantilever = segmentLength - rightSupportLoc > otol;
+
 
    // layout the joints
+   bool bFoundLeftSupport(false), bFoundRightSupport(false);
    JointIDType jntID = 0;
    CComPtr<IFem2dJointCollection> joints;
    (*ppModel)->get_Joints(&joints);
@@ -159,8 +206,8 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
    {
       pgsPointOfInterest& poi( *jointIter );
       Float64 Xpoi = poi.GetDistFromStart();
-      if ( (!bModelLeftCantilever && (Xpoi < leftSupportLoc)) || 
-           (!bModelRightCantilever && (rightSupportLoc < Xpoi)) )
+      if ( (!bDoModelLeftCantilever && (Xpoi < leftSupportLoc)) || 
+           (!bDoModelRightCantilever && (rightSupportLoc < Xpoi)) )
       {
          // location is before or after the left/right support and we arn't modeling
          // the cantilevers... next joint
@@ -171,38 +218,22 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
       joints->Create(jntID++,Xpoi,0,&jnt);
 
       // set boundary conditions if this is a support joint
-      if ( IsEqual(Xpoi,leftSupportLoc) )
+      if ( !bFoundLeftSupport && IsEqual(Xpoi,leftSupportLoc) )
       {
          jnt->Support();
          jnt->ReleaseDof(jrtFx);
          jnt->ReleaseDof(jrtMz);
+         bFoundLeftSupport = true;
       }
-      else if ( IsEqual(Xpoi,rightSupportLoc) )
+      else if ( !bFoundRightSupport && IsEqual(Xpoi,rightSupportLoc) )
       {
          jnt->Support();
          jnt->ReleaseDof(jrtMz);
-      }
-
-      if ( poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) )
-      {
-         // jump over the right face
-         jointIter++;
-
-         if ( jointIter == jointIterEnd )
-         {
-            break;
-         }
-
-         if ( IsEqual(jointIter->GetDistFromStart(),rightSupportLoc) )
-         {
-            ATLASSERT(jointIter->HasAttribute(POI_SECTCHANGE_RIGHTFACE));
-            // the right face is at the support... that means this joint
-            // has to be the right support
-            jnt->Support();
-            jnt->ReleaseDof(jrtMz);
-         }
+         bFoundRightSupport = true;
       }
    }
+
+   ATLASSERT(bFoundLeftSupport && bFoundRightSupport); // model will be unstable
 
    // create members
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
@@ -233,8 +264,8 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
       pgsPointOfInterest& prevPoi( *prevJointIter );
       pgsPointOfInterest& poi( *jointIter );
 
-      if ( (!bModelLeftCantilever  && (prevPoi.GetDistFromStart() < leftSupportLoc)) || 
-           (!bModelRightCantilever && (rightSupportLoc <= prevPoi.GetDistFromStart())) )
+      if ( (!bDoModelLeftCantilever  && (prevPoi.GetDistFromStart() < leftSupportLoc)) || 
+           (!bDoModelRightCantilever && (rightSupportLoc <= prevPoi.GetDistFromStart())) )
       {
          // location is before or after the left/right support and we aren't modeling
          // the cantilevers... next member
@@ -246,18 +277,6 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
 
       prevJntID++;
       jntID++;
-
-      if ( poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) )
-      {
-         // if we are at an abrupt section change, jump ahead
-         prevJointIter++;
-         jointIter++;
-
-         if ( jointIter == jointIterEnd )
-         {
-            break;
-         }
-      }
    }
 }
 
@@ -464,14 +483,18 @@ void pgsGirderModelFactory::FindMember(IFem2dModel* pModel,Float64 distFromStart
    CComPtr<IFem2dMemberCollection> members;
    pModel->get_Members(&members);
 
+   CollectionIndexType mbrcnt;
+   members->get_Count(&mbrcnt);
+
    CComPtr<IFem2dJointCollection> joints;
    pModel->get_Joints(&joints);
 
    CComPtr<IFem2dEnumMember> enumMembers;
    members->get__EnumElements(&enumMembers);
 
+   CollectionIndexType idx = 0;
    CComPtr<IFem2dMember> mbr;
-   while ( enumMembers->Next(1,&mbr,NULL) != S_FALSE )
+   while ( enumMembers->Next(1,&mbr,nullptr) != S_FALSE )
    {
       CComPtr<IFem2dJoint> j1, j2;
       JointIDType jntID1, jntID2;
@@ -491,8 +514,21 @@ void pgsGirderModelFactory::FindMember(IFem2dModel* pModel,Float64 distFromStart
          *pDistFromStartOfMbr = distFromStartOfModel - x1;
          return;
       }
+      else if (idx==0 && distFromStartOfModel<x1) // next cases are for short cantilevers where fem model is not generated
+      {
+         mbr->get_ID(pMbrID);
+         *pDistFromStartOfMbr = 0.0;
+         return;
+      }
+      else if (idx==mbrcnt-1 && distFromStartOfModel>x2)
+      {
+         mbr->get_ID(pMbrID);
+         *pDistFromStartOfMbr = x2-x1;
+         return;
+      }
 
       mbr.Release();
+      idx++;
    }
 
    ATLASSERT(false); // didn't find a solution
@@ -563,7 +599,47 @@ PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,cons
       prevLocation = location;
    }
 
-   // poi not on model. should never happen
+   // POI is not on model. This can happen if the POI is before or after the support and cantilevers are not modelled
+   // First check left end
+   Float64 location;
+   CComPtr<IFem2dJoint> lftjnt;
+   joints->get_Item(0,&lftjnt);
+   lftjnt->get_X(&location);
+
+   if (poi_dist_from_start < location)
+   {
+      VARIANT_BOOL is_support;
+      lftjnt->IsSupport(&is_support);
+      ATLASSERT(is_support); // remember, we are assuming no cantilever here
+
+      CComPtr<IFem2dPOI> objPOI;
+      PoiIDType femID = ms_FemModelPoiID++;
+
+      HRESULT hr = pois->Create(femID,0,0.0,&objPOI); // left end of first member
+      ATLASSERT(SUCCEEDED(hr));
+      return PoiIDPairType(femID, femID);
+   }
+
+   // Now check right end
+   CComPtr<IFem2dJoint> rgtjnt;
+   joints->get_Item(nJoints-1,&rgtjnt);
+   rgtjnt->get_X(&location);
+
+   if (poi_dist_from_start > location)
+   {
+      VARIANT_BOOL is_support;
+      rgtjnt->IsSupport(&is_support);
+      ATLASSERT(is_support); // remember, we are assuming no cantilever here
+
+      CComPtr<IFem2dPOI> objPOI;
+      PoiIDType femID = ms_FemModelPoiID++;
+
+      HRESULT hr = pois->Create(femID,nJoints-2,-1.0,&objPOI); // left end of first member
+      ATLASSERT(SUCCEEDED(hr));
+      return PoiIDPairType(femID, femID);
+   }
+
+   // poi not found. should never happen
    ATLASSERT(0); 
    return PoiIDPairType(INVALID_ID,INVALID_ID);
 }

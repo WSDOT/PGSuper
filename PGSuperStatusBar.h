@@ -40,12 +40,12 @@ public:
 	CPGSuperStatusBar();
 	virtual ~CPGSuperStatusBar();
 
-   virtual void GetStatusIndicators(const UINT** lppIDArray,int* pnIDCount);
-   virtual BOOL SetStatusIndicators(const UINT* lpIDArray, int nIDCount);
+   virtual void GetStatusIndicators(const UINT** lppIDArray,int* pnIDCount) override;
+   virtual BOOL SetStatusIndicators(const UINT* lpIDArray, int nIDCount) override;
 
    int GetAnalysisModePaneIndex();
 
-   virtual void Reset();
+   virtual void Reset() override;
 
    void SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType);
 

@@ -118,7 +118,7 @@ protected:
    void MakeCopy(const CCombinedReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CCombinedReactionTable& rOther);
+   void MakeAssignment(const CCombinedReactionTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

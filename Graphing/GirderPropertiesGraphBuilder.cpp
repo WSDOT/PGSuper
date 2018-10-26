@@ -86,11 +86,11 @@ int CGirderPropertiesGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
 BOOL CGirderPropertiesGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   ATLASSERT(m_pGraphController != NULL);
+   ATLASSERT(m_pGraphController != nullptr);
    return m_pGraphController->Create(pParent,IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER, CBRS_LEFT, nID);
 }
 
-CGraphBuilder* CGirderPropertiesGraphBuilder::Clone()
+CGraphBuilder* CGirderPropertiesGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
    // the graph control window
@@ -139,7 +139,7 @@ bool CGirderPropertiesGraphBuilder::UpdateNow()
 void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
 {
    delete m_pYFormat;
-   m_pYFormat = NULL;
+   m_pYFormat = nullptr;
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 

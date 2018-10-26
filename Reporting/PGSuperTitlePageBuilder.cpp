@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
    pgsSegmentRelatedStatusItem* pSegmentStatusItem = dynamic_cast<pgsSegmentRelatedStatusItem*>(pItem);
-   if (pSegmentStatusItem != NULL)
+   if (pSegmentStatusItem != nullptr)
    {
       if ( nSegments == ALL_SEGMENTS )
       {
@@ -108,13 +108,13 @@ CTitlePageBuilder* CPGSuperTitlePageBuilder::Clone() const
    return new CPGSuperTitlePageBuilder(*this);
 }
 
-bool CPGSuperTitlePageBuilder::NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec)
+bool CPGSuperTitlePageBuilder::NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec)
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>& pRptSpec)
+rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& pRptSpec)
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
@@ -132,14 +132,14 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    *pTitlePage << pPara;
 
    // Determine if the report spec has span/girder information
-   boost::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = boost::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
-   boost::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = boost::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
-   boost::shared_ptr<CGirderLineReportSpecification> pGirderLineRptSpec = boost::dynamic_pointer_cast<CGirderLineReportSpecification,CReportSpecification>(pRptSpec);
+   std::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = std::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
+   std::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = std::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
+   std::shared_ptr<CGirderLineReportSpecification> pGirderLineRptSpec = std::dynamic_pointer_cast<CGirderLineReportSpecification,CReportSpecification>(pRptSpec);
 
    CGirderKey girderKey;
 
    bool bGirderReport = true;
-   if ( pGirderRptSpec != NULL )
+   if ( pGirderRptSpec != nullptr )
    {
       girderKey = pGirderRptSpec->GetGirderKey();
       GroupIndexType grpIdx  = girderKey.groupIndex;
@@ -155,13 +155,13 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
          *pPara << _T("For") << rptNewLine;
          *pPara << _T("Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
       }
-      else if ( gdrIdx != NULL )
+      else if ( gdrIdx != INVALID_INDEX )
       {
          *pPara << _T("For") << rptNewLine;
          *pPara << _T("Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
       }
    }
-   else if ( pSpanRptSpec != NULL )
+   else if ( pSpanRptSpec != nullptr )
    {
       SpanIndexType spanIdx = pSpanRptSpec->GetSpan();
       if ( spanIdx != INVALID_INDEX )
@@ -170,7 +170,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
       }
    }
-   else if ( pGirderLineRptSpec != NULL )
+   else if ( pGirderLineRptSpec != nullptr )
    {
       bGirderReport = false;
       GirderIndexType gdrIdx = pGirderLineRptSpec->GetGirderIndex();
@@ -285,13 +285,13 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    *pTitlePage << p;
 
    // girder seed data comparison
-   if ( pGirderRptSpec != NULL || pSpanRptSpec != NULL )
+   if ( pGirderRptSpec != nullptr || pSpanRptSpec != nullptr )
    {
       if ( girderKey.groupIndex != INVALID_INDEX )
       {
          p = CGirderSeedDataComparisonParagraph().Build(m_pBroker,girderKey);
 
-         if (p != NULL)
+         if (p != nullptr)
          {
             // only report if we have data
             *pTitlePage << p;

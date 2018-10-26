@@ -1,0 +1,716 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|Win32">
+      <Configuration>Profile</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>PGSuperBeams</ProjectName>
+    <ProjectGuid>{3DBE87D2-CEED-457B-B345-7748084D947D}</ProjectGuid>
+    <RootNamespace>Beams</RootNamespace>
+    <Keyword>AtlProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>F:\boost_1_63_0;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Regex\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\RWUXTheme\Include;C:\Program Files\AASHTOWare\VirtisOpis63\include;F:\Apache\xalan-builds\XALANCPKG-11-31-X86-VC90\include;F:\CodeSynthesis XSD 3.3\include;F:\Coin3d\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>F:\boost_1_63_0;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Regex\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\RWUXTheme\Include;C:\Program Files\AASHTOWare\VirtisOpis63\include;F:\Apache\xalan-builds\XALANCPKG-11-31-X64-VC90\include;F:\Apache\xalan-builds\XERCESCPKG-31-X64-VC90\include;F:\CodeSynthesis XSD 3.3\include;F:\Coin3d\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>F:\boost_1_63_0;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Regex\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\RWUXTheme\Include;C:\Program Files\AASHTOWare\VirtisOpis63\include;F:\Apache\xalan-builds\XALANCPKG-11-31-X86-VC90\include;F:\CodeSynthesis XSD 3.3\include;F:\Coin3d\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>F:\boost_1_63_0;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Regex\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\RWUXTheme\Include;C:\Program Files\AASHTOWare\VirtisOpis63\include;F:\Apache\xalan-builds\XALANCPKG-11-31-X64-VC90\include;F:\Apache\xalan-builds\XERCESCPKG-31-X64-VC90\include;F:\CodeSynthesis XSD 3.3\include;F:\Coin3d\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <TypeLibraryName>.\Debug/Beams.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Zm600  %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;BUILDBEAMSLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Beams.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/Beams.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>.\Debug/Beams.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Zm600  %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;BUILDBEAMSLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Beams.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/Beams.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <TypeLibraryName>.\Release/Beams.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Zm600  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Beams.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/Beams.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>.\Release/Beams.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Zm600  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Beams.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/Beams.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <TypeLibraryName>.\Release/Beams.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Zm600  %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Release/Beams.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Beams.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/Beams.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <CustomBuildStep>
+      <Message />
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>.\Release/Beams.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Zm600  %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Release/Beams.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <RegisterOutput>true</RegisterOutput>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Beams.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX64</TargetMachine>
+      <Profile>true</Profile>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/Beams.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Include\Beams\AutoLib.h" />
+    <ClInclude Include="..\Include\Beams\BeamsExp.h" />
+    <ClInclude Include="..\Include\Beams\Helper.h" />
+    <ClInclude Include="..\Include\Beams\Interfaces.h" />
+    <ClInclude Include="..\Include\IFace\AgeAdjustedMaterial.h" />
+    <ClInclude Include="..\Include\IFace\BeamFactory.h" />
+    <ClInclude Include="..\Include\IFace\BeamFamily.h" />
+    <ClInclude Include="..\Include\IFace\DistFactorEngineer.h" />
+    <ClInclude Include="..\Include\IFace\PsLossEngineer.h" />
+    <ClInclude Include="..\Include\Plugins\BeamFactoryCATID.h" />
+    <ClInclude Include="..\Include\Plugins\BeamFamilyCLSID.h" />
+    <ClInclude Include="..\Include\Plugins\CLSID.h" />
+    <ClInclude Include="AgeAdjustedMaterial.h" />
+    <ClInclude Include="BeamFamilyImpl.h" />
+    <ClInclude Include="BoxBeamDistFactorEngineer.h" />
+    <ClInclude Include="BoxBeamFactory.h" />
+    <ClInclude Include="BoxBeamFactory2.h" />
+    <ClInclude Include="BoxBeamFactoryImpl.h" />
+    <ClInclude Include="BulbTeeDistFactorEngineer.h" />
+    <ClInclude Include="BulbTeeFactory.h" />
+    <ClInclude Include="ChangeOfConcreteStressTable.h" />
+    <ClInclude Include="CreepAndShrinkageTable.h" />
+    <ClInclude Include="CreepAtDeckPlacementTable.h" />
+    <ClInclude Include="CreepAtFinalTable.h" />
+    <ClInclude Include="CreepAtHaulingTable.h" />
+    <ClInclude Include="DeckedSlabBeamFactory.h" />
+    <ClInclude Include="DeckShrinkageLossTable.h" />
+    <ClInclude Include="DistFactorEngineerImpl.h" />
+    <ClInclude Include="DoubleTeeFactory.h" />
+    <ClInclude Include="EffectivePrestressTable.h" />
+    <ClInclude Include="EffectOfPostTensionedTemporaryStrandsTable.h" />
+    <ClInclude Include="ElasticGainDueToDeckPlacementTable.h" />
+    <ClInclude Include="ElasticGainDueToLiveLoadTable.h" />
+    <ClInclude Include="ElasticGainDueToSIDLTable.h" />
+    <ClInclude Include="ElasticShorteningTable.h" />
+    <ClInclude Include="FinalPrestressLossTable.h" />
+    <ClInclude Include="FrictionLossTable.h" />
+    <ClInclude Include="IBeamDistFactorEngineer.h" />
+    <ClInclude Include="IBeamFactory.h" />
+    <ClInclude Include="IBeamFactoryImp.h" />
+    <ClInclude Include="MultiWeb2Factory.h" />
+    <ClInclude Include="MultiWebDistFactorEngineer.h" />
+    <ClInclude Include="MultiWebFactory.h" />
+    <ClInclude Include="NUBeamFactory.h" />
+    <ClInclude Include="PostTensionInteractionTable.h" />
+    <ClInclude Include="PostTensionTimeDependentLossesAtShippingTable.h" />
+    <ClInclude Include="PsBeamLossEngineer.h" />
+    <ClInclude Include="PsLossEngineer.h" />
+    <ClInclude Include="RelaxationAftertransferTable.h" />
+    <ClInclude Include="RelaxationAtDeckPlacementTable.h" />
+    <ClInclude Include="RelaxationAtFinalTable.h" />
+    <ClInclude Include="RelaxationAtHaulingTable.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="ShrinkageAtDeckPlacementTable.h" />
+    <ClInclude Include="ShrinkageAtFinalTable.h" />
+    <ClInclude Include="ShrinkageAtHaulingTable.h" />
+    <ClInclude Include="SplicedIBeamFactoryImpl.h" />
+    <ClInclude Include="SplicedNUBeamFactoryImpl.h" />
+    <ClInclude Include="SplicedUBeamFactory.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="StrandMoverImpl.h" />
+    <ClInclude Include="TaperedIBeamFactory.h" />
+    <ClInclude Include="TemporaryStrandRemovalTable.h" />
+    <ClInclude Include="TimeDependentLossesAtDeckPlacementTable.h" />
+    <ClInclude Include="TimeDependentLossesAtShippingTable.h" />
+    <ClInclude Include="TimeDependentLossesTable.h" />
+    <ClInclude Include="TimeDependentLossFinalTable.h" />
+    <ClInclude Include="TimeStepLossEngineer.h" />
+    <ClInclude Include="TotalPrestressLossTable.h" />
+    <ClInclude Include="TxDOT2013ChangeOfConcreteStressTable.h" />
+    <ClInclude Include="TxDOT2013CreepAndShrinkageTable.h" />
+    <ClInclude Include="TxDOT2013RelaxationAftertransferTable.h" />
+    <ClInclude Include="TxDOT2013TimeDependentLossesTable.h" />
+    <ClInclude Include="TxDotDoubleTFactory.h" />
+    <ClInclude Include="UBeam2Factory.h" />
+    <ClInclude Include="UBeamDistFactorEngineer.h" />
+    <ClInclude Include="UBeamFactory.h" />
+    <ClInclude Include="UBeamHelpers.h" />
+    <ClInclude Include="VoidedSlab2DistFactorEngineer.h" />
+    <ClInclude Include="VoidedSlabDistFactorEngineer.h" />
+    <ClInclude Include="VoidedSlabDistFactorEngineerTypes.h" />
+    <ClInclude Include="VoidedSlabFactory.h" />
+    <ClInclude Include="VoidedSlabFactory2.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AgeAdjustedMaterial.rgs" />
+    <None Include="Beams.def" />
+    <None Include="BoxBeamDistFactorEngineer.rgs" />
+    <None Include="BoxBeamFactory.rgs" />
+    <None Include="BoxBeamFactory2.rgs" />
+    <None Include="BoxBeamFamily.rgs" />
+    <None Include="BulbTeeDistFactorEngineer.rgs" />
+    <None Include="BulbTeeFactory.rgs" />
+    <None Include="BulbTeeFamily.rgs" />
+    <None Include="DeckedSlabBeamFactory.rgs" />
+    <None Include="DeckedSlabBeamFamily.rgs" />
+    <None Include="DoubleTeeFactory.rgs" />
+    <None Include="DoubleTeeFamily.rgs" />
+    <None Include="IBeamDistFactorEngineer.rgs" />
+    <None Include="IBeamFactory.rgs" />
+    <None Include="IBeamFamily.rgs" />
+    <None Include="MultiWeb2Factory.rgs" />
+    <None Include="MultiWebfactory.rgs" />
+    <None Include="MultiWebFamily.rgs" />
+    <None Include="NUBeamFactory.rgs" />
+    <None Include="PsBeamLossEngineer.rgs" />
+    <None Include="Res\BoxBeam.emf" />
+    <None Include="Res\BoxBeam2.emf" />
+    <None Include="Res\BulbTee.emf" />
+    <None Include="Res\DeckedSlabBeam.emf" />
+    <None Include="Res\DoubleTee.emf" />
+    <None Include="Res\IBeam.emf" />
+    <None Include="Res\MultiWeb.emf" />
+    <None Include="Res\MultiWeb2.emf" />
+    <None Include="Res\NUbeam.emf" />
+    <None Include="Res\SplicedIBeam.emf" />
+    <None Include="Res\SplicedNUBeam.emf" />
+    <None Include="Res\TaperedIBeam.emf" />
+    <None Include="Res\txdotdou.emf" />
+    <None Include="Res\UBeam.emf" />
+    <None Include="Res\UBeam2.emf" />
+    <None Include="Res\VoidedSlab.emf" />
+    <None Include="Res\VoidedSlab2.emf" />
+    <None Include="SplicedIBeamFactory.rgs" />
+    <None Include="SplicedIBeamFamily.rgs" />
+    <None Include="SplicedNUBeamFactory.rgs" />
+    <None Include="SplicedUBeamFactory.rgs" />
+    <None Include="SplicedUBeamFamily.rgs" />
+    <None Include="StrandMoverImpl.rgs" />
+    <None Include="TaperedIBeamFactory.rgs" />
+    <None Include="TimeStepLossEngineer.rgs" />
+    <None Include="TxDotDoubleTFactory.rgs" />
+    <None Include="UBeam2Factory.rgs" />
+    <None Include="UBeamDistFactorEngineer.rgs" />
+    <None Include="UBeamFactory.rgs" />
+    <None Include="UBeamFamily.rgs" />
+    <None Include="VoidedSlab2DistFactorEngineer.rgs" />
+    <None Include="VoidedSlabDistFactorEngineer.rgs" />
+    <None Include="VoidedSlabFactory.rgs" />
+    <None Include="VoidedSlabFactory2.rgs" />
+    <None Include="VoidedSlabFamily.rgs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Res\boxbeam.ico" />
+    <Image Include="res\boxbeam2.ico" />
+    <Image Include="Res\bulb_tee.ico" />
+    <Image Include="res\DeckedSlab.ico" />
+    <Image Include="Res\ico00001.ico" />
+    <Image Include="Res\ico00002.ico" />
+    <Image Include="Res\ico00003.ico" />
+    <Image Include="Res\ico00004.ico" />
+    <Image Include="Res\icon1.ico" />
+    <Image Include="Res\SplicedIBeam.ico" />
+    <Image Include="Res\SplicedNUBeam.ico" />
+    <Image Include="Res\SplicedUBeam.ico" />
+    <Image Include="Res\texas_u.ico" />
+    <Image Include="Res\txdotdou.ico" />
+    <Image Include="Res\voided_slab.ico" />
+    <Image Include="Res\voided_slab2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AgeAdjustedMaterial.cpp" />
+    <ClCompile Include="BeamFamilyImpl.cpp" />
+    <ClCompile Include="Beams.cpp" />
+    <ClCompile Include="BoxBeamDistFactorEngineer.cpp" />
+    <ClCompile Include="BoxBeamFactory.cpp" />
+    <ClCompile Include="BoxBeamFactory2.cpp" />
+    <ClCompile Include="BoxBeamFactoryImpl.cpp" />
+    <ClCompile Include="BulbTeeDistFactorEngineer.cpp" />
+    <ClCompile Include="BulbTeeFactory.cpp" />
+    <ClCompile Include="ChangeOfConcreteStressTable.cpp" />
+    <ClCompile Include="CreepAndShrinkageTable.cpp" />
+    <ClCompile Include="CreepAtDeckPlacementTable.cpp" />
+    <ClCompile Include="CreepAtFinalTable.cpp" />
+    <ClCompile Include="CreepAtHaulingTable.cpp" />
+    <ClCompile Include="DeckedSlabBeamFactory.cpp" />
+    <ClCompile Include="DeckShrinkageLossTable.cpp" />
+    <ClCompile Include="DoubleTeeFactory.cpp" />
+    <ClCompile Include="EffectivePrestressTable.cpp" />
+    <ClCompile Include="EffectOfPostTensionedTemporaryStrandsTable.cpp" />
+    <ClCompile Include="ElasticGainDueToDeckPlacementTable.cpp" />
+    <ClCompile Include="ElasticGainDueToLiveLoadTable.cpp" />
+    <ClCompile Include="ElasticGainDueToSIDLTable.cpp" />
+    <ClCompile Include="ElasticShorteningTable.cpp" />
+    <ClCompile Include="FinalPrestressLossTable.cpp" />
+    <ClCompile Include="FrictionLossTable.cpp" />
+    <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="IBeamDistFactorEngineer.cpp" />
+    <ClCompile Include="IBeamFactoryImp.cpp" />
+    <ClCompile Include="MultiWeb2Factory.cpp" />
+    <ClCompile Include="MultiWebDistFactorEngineer.cpp" />
+    <ClCompile Include="MultiWebFactory.cpp" />
+    <ClCompile Include="NUBeamFactory.cpp" />
+    <ClCompile Include="PostTensionInteractionTable.cpp" />
+    <ClCompile Include="PostTensionTimeDependentLossesAtShippingTable.cpp" />
+    <ClCompile Include="PsBeamLossEngineer.cpp" />
+    <ClCompile Include="PsLossEngineer.cpp" />
+    <ClCompile Include="RelaxationAftertransferTable.cpp" />
+    <ClCompile Include="RelaxationAtDeckPlacementTable.cpp" />
+    <ClCompile Include="RelaxationAtFinalTable.cpp" />
+    <ClCompile Include="RelaxationAtHaulingTable.cpp" />
+    <ClCompile Include="ShrinkageAtDeckPlacementTable.cpp" />
+    <ClCompile Include="ShrinkageAtFinalTable.cpp" />
+    <ClCompile Include="ShrinkageAtHaulingTable.cpp" />
+    <ClCompile Include="SplicedIBeamFactoryImpl.cpp" />
+    <ClCompile Include="SplicedNUBeamFactoryImpl.cpp" />
+    <ClCompile Include="SplicedUBeamFactory.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StrandMoverImpl.cpp" />
+    <ClCompile Include="TaperedIBeamFactory.cpp" />
+    <ClCompile Include="TemporaryStrandRemovalTable.cpp" />
+    <ClCompile Include="TimeDependentLossesAtDeckPlacementTable.cpp" />
+    <ClCompile Include="TimeDependentLossesAtShippingTable.cpp" />
+    <ClCompile Include="TimeDependentLossesTable.cpp" />
+    <ClCompile Include="TimeDependentLossFinalTable.cpp" />
+    <ClCompile Include="TimeStepLossEngineer.cpp" />
+    <ClCompile Include="TotalPrestressLossTable.cpp" />
+    <ClCompile Include="TxDOT2013ChangeOfConcreteStressTable.cpp" />
+    <ClCompile Include="TxDOT2013CreepAndShrinkageTable.cpp" />
+    <ClCompile Include="TxDOT2013RelaxationAftertransferTable.cpp" />
+    <ClCompile Include="TxDOT2013TimeDependentLossesTable.cpp" />
+    <ClCompile Include="TxDotDoubleTFactory.cpp" />
+    <ClCompile Include="UBeam2Factory.cpp" />
+    <ClCompile Include="UBeamDistFactorEngineer.cpp" />
+    <ClCompile Include="UBeamFactory.cpp" />
+    <ClCompile Include="UBeamHelpers.cpp" />
+    <ClCompile Include="VoidedSlab2DistFactorEngineer.cpp" />
+    <ClCompile Include="VoidedSlabDistFactorEngineer.cpp" />
+    <ClCompile Include="VoidedSlabFactory.cpp" />
+    <ClCompile Include="VoidedSlabFactory2.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Beams.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
+      <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

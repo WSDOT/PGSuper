@@ -81,7 +81,7 @@ STDMETHODIMP CProfileDisplayObjectEvents::XEvents::QueryInterface(
 
 void CProfileDisplayObjectEvents::EditProfile()
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_PROJECT_PROFILE,NULL);
+   m_pFrame->SendMessage(WM_COMMAND,ID_PROJECT_PROFILE,0);
 }
 
 /////////////////////////////////////////////////////////////////////////////

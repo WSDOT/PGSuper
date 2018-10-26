@@ -40,7 +40,7 @@ public:
    
    void Initialize(pgsTypes::HaunchShapeType type);
 
-   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
 
    pgsTypes::HaunchShapeType m_HaunchShape;
 };

@@ -51,9 +51,9 @@ public:
    virtual ~CTxDOTCommandLineInfo();
 
    // derive new version to parse new commands
-   virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
+   virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast) override;
 
-   virtual CString GetUsageMessage();
+   virtual CString GetUsageMessage() override;
 
    // txDOT CAD report from command line
    bool  m_DoTxCadReport;
@@ -70,10 +70,10 @@ public:
 
 private:
    CString GetUsageString();
-   virtual LPCTSTR GetAppName() const;
+   virtual LPCTSTR GetAppName() const override;
 
    // Prevent accidental copying and assignment
-   CTxDOTCommandLineInfo(const CTxDOTCommandLineInfo&);
-   CTxDOTCommandLineInfo& operator=(const CTxDOTCommandLineInfo&);
+   CTxDOTCommandLineInfo(const CTxDOTCommandLineInfo&) = delete;
+   CTxDOTCommandLineInfo& operator=(const CTxDOTCommandLineInfo&) = delete;
 };
 

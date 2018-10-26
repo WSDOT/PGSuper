@@ -67,7 +67,7 @@ static char THIS_FILE[] = __FILE__;
 // CSectionViewDialog dialog
 
 
-CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isEnd,CWnd* pParent /*=NULL*/)
+CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isEnd,CWnd* pParent /*=nullptr*/)
 	: CDialog(CSectionViewDialog::IDD, pParent)
 {
    m_pGirderEntry = pEntry;
@@ -83,10 +83,10 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    GirderLibraryEntry::Dimensions dimensions = m_pGirderEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrSection;
-   pFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,dimensions,-1.0,-1.0,&gdrSection);
+   pFactory->CreateGirderSection(nullptr,DUMMY_AGENT_ID,dimensions,-1.0,-1.0,&gdrSection);
 
    gdrSection.QueryInterface(&m_pShape);
-   ATLASSERT(m_pShape != NULL);
+   ATLASSERT(m_pShape != nullptr);
 
 // only use strandmover view for debugging
 #ifdef _DEBUG

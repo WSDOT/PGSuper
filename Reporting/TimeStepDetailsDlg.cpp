@@ -37,7 +37,7 @@
 
 IMPLEMENT_DYNAMIC(CTimeStepDetailsDlg, CDialog)
 
-CTimeStepDetailsDlg::CTimeStepDetailsDlg(IBroker* pBroker,boost::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
+CTimeStepDetailsDlg::CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CTimeStepDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)
@@ -151,7 +151,7 @@ void CTimeStepDetailsDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,m_GirderKey.girderIndex,ALL_SEGMENTS));
-   if (m_Slider.GetSafeHwnd() != NULL )
+   if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
                                                    // subtract one so we don't go past the end of the array

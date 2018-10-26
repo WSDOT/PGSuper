@@ -68,8 +68,8 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CTestAgentApp)
 	public:
-    virtual BOOL InitInstance();
-    virtual int ExitInstance();
+    virtual BOOL InitInstance() override;
+    virtual int ExitInstance() override;
 	//}}AFX_VIRTUAL
 
 	//{{AFX_MSG(CTestAgentApp)

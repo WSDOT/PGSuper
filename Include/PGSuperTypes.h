@@ -257,6 +257,8 @@ typedef struct pgsTypes
                      StrengthII_PermitSpecial = 17,
                      ServiceI_PermitSpecial = 18,
                      ServiceIII_PermitSpecial = 19, // for WSDOT BDM Load Rating Requiements (See BDM Chapter 13)
+                     StrengthI_LegalEmergency = 20,
+                     ServiceIII_LegalEmergency = 21,
                      LimitStateCount // this should always be the last one as it will define the total number of limit states
                    } LimitState; 
 
@@ -298,8 +300,10 @@ typedef struct pgsTypes
       lltPedestrian = 3,   // for pedestrian loads to be combined in any limit state
       lltLegalRating_Routine = 4,  // for legal load ratings for routine commercial traffic
       lltLegalRating_Special = 5,  // for legal load ratings for specialized hauling vehicles
-      lltPermitRating_Routine = 6,  // for routine permit load ratings
-      lltPermitRating_Special = 7   // for special permit load ratings
+      lltLegalRating_Emergency = 6, // for legal load ratings for emergency vehicles
+      lltPermitRating_Routine = 7,  // for routine permit load ratings
+      lltPermitRating_Special = 8,   // for special permit load ratings
+      lltLiveLoadTypeCount
    } LiveLoadType;
 
    typedef enum LiveLoadApplicabilityType { llaEntireStructure, llaContraflexure, llaNegMomentAndInteriorPierReaction } LiveLoadApplicabilityType;
@@ -524,8 +528,10 @@ typedef struct pgsTypes
       lrDesign_Operating,  // design rating at the operating level
       lrLegal_Routine,     // legal rating for routine commercial traffic
       lrLegal_Special,     // legal rating for specialized hauling vehicles
+      lrLegal_Emergency,   // legal rating for emergency vehicles
       lrPermit_Routine,    // routine permit ratings
-      lrPermit_Special     // special permit ratings
+      lrPermit_Special,     // special permit ratings
+      lrLoadRatingTypeCount
    } LoadRatingType;
 
    typedef enum SpecialPermitType
@@ -1267,7 +1273,7 @@ void MakeCopy( const GDRCONFIG& rOther )
    StirrupConfig = rOther.StirrupConfig;
 }
 
-virtual void MakeAssignment( const GDRCONFIG& rOther )
+void MakeAssignment( const GDRCONFIG& rOther )
 {
    MakeCopy( rOther );
 }
@@ -1277,7 +1283,7 @@ virtual void MakeAssignment( const GDRCONFIG& rOther )
 class HaulTruckLibraryEntry;
 struct HANDLINGCONFIG
 {
-   HANDLINGCONFIG() { pHaulTruckEntry = NULL; }
+   HANDLINGCONFIG() { bIgnoreGirderConfig = true; pHaulTruckEntry = nullptr; }
 
    bool bIgnoreGirderConfig; // set true, the GdrConfig is ignored and the current parameters are used
                              // only the overhang parameters are used from this config.
@@ -1460,6 +1466,11 @@ inline pgsTypes::LiveLoadType LiveLoadTypeFromLimitState(pgsTypes::LimitState ls
       llType = pgsTypes::lltLegalRating_Special;
       break;
 
+   case pgsTypes::StrengthI_LegalEmergency:
+   case pgsTypes::ServiceIII_LegalEmergency:
+      llType = pgsTypes::lltLegalRating_Emergency;
+      break;
+
    case pgsTypes::StrengthII_PermitRoutine:
    case pgsTypes::ServiceI_PermitRoutine:
       llType = pgsTypes::lltPermitRating_Routine;
@@ -1485,8 +1496,10 @@ inline bool IsRatingLimitState(pgsTypes::LimitState ls)
         ls == pgsTypes::ServiceIII_Operating ||
         ls == pgsTypes::StrengthI_LegalRoutine ||
         ls == pgsTypes::StrengthI_LegalSpecial ||
+        ls == pgsTypes::StrengthI_LegalEmergency ||
         ls == pgsTypes::ServiceIII_LegalRoutine ||
         ls == pgsTypes::ServiceIII_LegalSpecial ||
+        ls == pgsTypes::ServiceIII_LegalEmergency ||
         ls == pgsTypes::StrengthII_PermitRoutine ||
         ls == pgsTypes::ServiceI_PermitRoutine ||
         ls == pgsTypes::StrengthII_PermitSpecial ||
@@ -1507,7 +1520,8 @@ inline bool IsStrengthILimitState(pgsTypes::LimitState ls)
         ls == pgsTypes::StrengthI_Inventory    ||
         ls == pgsTypes::StrengthI_Operating    ||
         ls == pgsTypes::StrengthI_LegalRoutine ||
-        ls == pgsTypes::StrengthI_LegalSpecial
+        ls == pgsTypes::StrengthI_LegalSpecial ||
+        ls == pgsTypes::StrengthI_LegalEmergency
       )
    {
       return true;
@@ -1541,6 +1555,7 @@ inline bool IsStrengthLimitState(pgsTypes::LimitState ls)
         ls == pgsTypes::StrengthI_Operating    ||
         ls == pgsTypes::StrengthI_LegalRoutine ||
         ls == pgsTypes::StrengthI_LegalSpecial ||
+        ls == pgsTypes::StrengthI_LegalEmergency ||
         ls == pgsTypes::StrengthII_PermitRoutine ||
         ls == pgsTypes::StrengthII_PermitSpecial 
       )
@@ -1570,6 +1585,7 @@ inline bool IsServiceIIILimitState(pgsTypes::LimitState ls)
            ls == pgsTypes::ServiceIII_Operating ||
            ls == pgsTypes::ServiceIII_LegalRoutine ||
            ls == pgsTypes::ServiceIII_LegalSpecial ||
+           ls == pgsTypes::ServiceIII_LegalEmergency ||
            ls == pgsTypes::ServiceIII_PermitRoutine ||
            ls == pgsTypes::ServiceIII_PermitSpecial) ? true : false;
 }
@@ -1579,7 +1595,8 @@ inline bool IsRatingLiveLoad(pgsTypes::LiveLoadType llType)
    if ( llType == pgsTypes::lltDesign              || // doubles as a design and rating live load
         llType == pgsTypes::lltLegalRating_Routine ||
         llType == pgsTypes::lltLegalRating_Special ||
-        llType == pgsTypes::lltPermitRating_Routine || 
+        llType == pgsTypes::lltLegalRating_Emergency ||
+        llType == pgsTypes::lltPermitRating_Routine ||
         llType == pgsTypes::lltPermitRating_Special
       )
    {
@@ -1624,6 +1641,11 @@ inline pgsTypes::LoadRatingType RatingTypeFromLimitState(pgsTypes::LimitState ls
       ratingType = pgsTypes::lrLegal_Special;
       break;
 
+   case pgsTypes::StrengthI_LegalEmergency:
+   case pgsTypes::ServiceIII_LegalEmergency:
+      ratingType = pgsTypes::lrLegal_Emergency;
+      break;
+
    case pgsTypes::StrengthII_PermitRoutine:
    case pgsTypes::ServiceI_PermitRoutine:
    case pgsTypes::ServiceIII_PermitRoutine:
@@ -1665,6 +1687,10 @@ inline pgsTypes::LimitState GetStrengthLimitStateType(pgsTypes::LoadRatingType r
       ls = pgsTypes::StrengthI_LegalSpecial;
       break;
 
+   case pgsTypes::lrLegal_Emergency:
+      ls = pgsTypes::StrengthI_LegalEmergency;
+      break;
+
    case pgsTypes::lrPermit_Routine:
       ls = pgsTypes::StrengthII_PermitRoutine;
       break;
@@ -1701,6 +1727,10 @@ inline pgsTypes::LimitState GetServiceLimitStateType(pgsTypes::LoadRatingType ra
       ls = pgsTypes::ServiceIII_LegalSpecial;
       break;
 
+   case pgsTypes::lrLegal_Emergency:
+      ls = pgsTypes::ServiceIII_LegalEmergency;
+      break;
+
    case pgsTypes::lrPermit_Routine:
       ls = pgsTypes::ServiceIII_PermitRoutine;
       break;
@@ -1732,6 +1762,10 @@ inline pgsTypes::LiveLoadType GetLiveLoadType(pgsTypes::LoadRatingType ratingTyp
 
    case pgsTypes::lrLegal_Special:
       llType = pgsTypes::lltLegalRating_Special;
+      break;
+
+   case pgsTypes::lrLegal_Emergency:
+      llType = pgsTypes::lltLegalRating_Emergency;
       break;
 
    case pgsTypes::lrPermit_Routine:
@@ -1768,6 +1802,10 @@ inline CString GetLiveLoadTypeName(pgsTypes::LiveLoadType llType)
 
    case pgsTypes::lltLegalRating_Special:
       strName = "Legal Load - Specialized Hauling Vehicles";
+      break;
+
+   case pgsTypes::lltLegalRating_Emergency:
+      strName = "Legal Load - Emergency Vehicles";
       break;
 
    case pgsTypes::lltPedestrian:
@@ -1818,7 +1856,12 @@ inline bool IsDesignRatingType(pgsTypes::LoadRatingType ratingType)
 
 inline bool IsLegalRatingType(pgsTypes::LoadRatingType ratingType)
 {
-   return (ratingType == pgsTypes::lrLegal_Routine || ratingType == pgsTypes::lrLegal_Special) ? true : false;
+   return (ratingType == pgsTypes::lrLegal_Routine || ratingType == pgsTypes::lrLegal_Special || ratingType == pgsTypes::lrLegal_Emergency) ? true : false;
+}
+
+inline bool IsEmergencyRatingType(pgsTypes::LoadRatingType ratingType)
+{
+   return (ratingType == pgsTypes::lrLegal_Emergency ? true : false);
 }
 
 inline bool IsPermitRatingType(pgsTypes::LoadRatingType ratingType)
@@ -1881,4 +1924,53 @@ inline std::_tstring GetDesignTypeName(arFlexuralDesignType type)
    return std::_tstring(_T("Unknown Design Type"));
 }
 
+
+inline bool IsNoDeckBoundaryCondition(pgsTypes::BoundaryConditionType bc)
+{
+   // All "before deck" boundary conditions are not "No Deck" boundary conditions
+   return (bc == pgsTypes::bctHinge ||
+      bc == pgsTypes::bctRoller ||
+      bc == pgsTypes::bctContinuousAfterDeck ||
+      bc == pgsTypes::bctIntegralAfterDeck ||
+      bc == pgsTypes::bctIntegralAfterDeckHingeBack ||
+      bc == pgsTypes::bctIntegralAfterDeckHingeAhead);
+}
+
+inline pgsTypes::BoundaryConditionType GetNoDeckBoundaryCondition(pgsTypes::BoundaryConditionType bc)
+{
+   // convert the provided boundary condition to its equivalent no deck boundary condition
+   switch (bc)
+   {
+   case pgsTypes::bctContinuousBeforeDeck:
+      bc = pgsTypes::bctContinuousAfterDeck;
+      break;
+
+   case pgsTypes::bctIntegralBeforeDeck:
+      bc = pgsTypes::bctIntegralAfterDeck;
+      break;
+
+   case pgsTypes::bctIntegralBeforeDeckHingeBack:
+      bc = pgsTypes::bctIntegralAfterDeckHingeBack;
+      break;
+
+   case pgsTypes::bctIntegralBeforeDeckHingeAhead:
+      bc = pgsTypes::bctIntegralAfterDeckHingeAhead;
+      break;
+   }
+
+   return bc;
+}
+
+inline bool IsContinuousBoundaryCondition(pgsTypes::BoundaryConditionType bc)
+{
+   if (bc == pgsTypes::bctContinuousAfterDeck || bc == pgsTypes::bctContinuousBeforeDeck ||
+      bc == pgsTypes::bctIntegralAfterDeck || bc == pgsTypes::bctIntegralBeforeDeck)
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
 #endif // INCLUDED_PGSUPERTYPES_H_

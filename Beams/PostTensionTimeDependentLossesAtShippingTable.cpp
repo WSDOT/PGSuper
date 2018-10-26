@@ -53,7 +53,7 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   CPostTensionTimeDependentLossesAtShippingTable* table = NULL;
+   CPostTensionTimeDependentLossesAtShippingTable* table = nullptr;
 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);

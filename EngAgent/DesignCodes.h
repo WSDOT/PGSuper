@@ -58,7 +58,7 @@ public:
 
    bool GetOutcome(OutcomeType outcome)
    {
-      return m_Outcomes.at(outcome);
+      return m_Outcomes[outcome];
    }
 
    bool DidGirderChange()
@@ -68,29 +68,29 @@ public:
 
    bool DidConcreteChange()
    {
-      return m_Outcomes.at(FcChanged) || m_Outcomes.at(FciChanged);
+      return m_Outcomes[FcChanged] || m_Outcomes[FciChanged];
    }
 
    bool DidFinalConcreteStrengthChange()
    {
-      return m_Outcomes.at(FcChanged);
+      return m_Outcomes[FcChanged];
    }
 
    bool DidStrandsChange()
    {
-      return m_Outcomes.at(PermanentStrandsChanged) || 
-             m_Outcomes.at(TemporaryStrandsChanged) ||
-             m_Outcomes.at(RaisedStraightStrands);
+      return m_Outcomes[PermanentStrandsChanged] || 
+             m_Outcomes[TemporaryStrandsChanged] ||
+             m_Outcomes[RaisedStraightStrands];
    }
 
    bool DidRetainStrandProportioning()
    {
-      return m_Outcomes.at(RetainStrandProportioning);
+      return m_Outcomes[RetainStrandProportioning];
    }
 
    bool DidRaiseStraightStrands()
    {
-      return m_Outcomes.at(RaisedStraightStrands);
+      return m_Outcomes[RaisedStraightStrands];
    }
 
    // if true, everything is good... keep going

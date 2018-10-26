@@ -40,7 +40,7 @@ GRID_IMPLEMENT_REGISTER(CStrandRowGrid, CS_DBLCLKS, 0, 0, 0);
 // CStrandRowGrid
 
 CStrandRowGrid::CStrandRowGrid():
-m_pHandler(NULL)
+m_pHandler(nullptr)
 {
 //   RegisterClass();
 }

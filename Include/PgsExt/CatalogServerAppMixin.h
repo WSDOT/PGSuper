@@ -44,10 +44,10 @@ public:
 
    virtual BOOL UseConfigurationCallback() { return TRUE; }
 
-//   virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
+//   virtual BOOL UpdateProgramSettings(BOOL bFirstRun) override;
 
-   virtual CPropertyPage* CreatePropertyPage();
-   virtual void OnOK(CPropertyPage* pPage);
+   virtual CPropertyPage* CreatePropertyPage() override;
+   virtual void OnOK(CPropertyPage* pPage) override;
 
 public:
    CCatalogServerAppMixin(void);

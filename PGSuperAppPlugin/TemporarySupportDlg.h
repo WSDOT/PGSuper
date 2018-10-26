@@ -14,18 +14,18 @@ class CTemporarySupportDlg : public CPropertySheet, public IEditTemporarySupport
 	DECLARE_DYNAMIC(CTemporarySupportDlg)
 
 public:
-	CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx, CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx,const std::vector<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
    virtual ~CTemporarySupportDlg();
 
-   virtual BOOL OnInitDialog();
-	virtual INT_PTR DoModal();
+   virtual BOOL OnInitDialog() override;
+	virtual INT_PTR DoModal() override;
 
    CBridgeDescription2* GetBridgeDescription();
 
    // IEditTemporarySupportData
-   virtual SupportIndexType GetTemporarySupport();
+   virtual SupportIndexType GetTemporarySupport() override;
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
@@ -37,11 +37,11 @@ protected:
 
    void CommonInitPages();
    void InitPages();
-   void InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions);
    void Init(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx);
 
    void CreateExtensionPages();
-   void CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void CreateExtensionPages(const std::vector<EditBridgeExtension>& editBridgeExtensions);
    void DestroyExtensionPages();
 
    CBridgeDescription2 m_BridgeDesc;
@@ -57,7 +57,7 @@ protected:
 
    txnMacroTxn m_Macro;
    std::vector<std::pair<IEditTemporarySupportCallback*,CPropertyPage*>> m_ExtensionPages;
-   std::set<EditBridgeExtension> m_BridgeExtensionPages;
+   std::vector<EditBridgeExtension> m_BridgeExtensionPages; // sorted based on callback ID
    void NotifyExtensionPages();
    void NotifyBridgeExtensionPages();
 };

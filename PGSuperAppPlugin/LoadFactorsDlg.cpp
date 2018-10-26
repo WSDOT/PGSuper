@@ -35,7 +35,7 @@
 
 IMPLEMENT_DYNAMIC(CLoadFactorsDlg, CDialog)
 
-CLoadFactorsDlg::CLoadFactorsDlg(CWnd* pParent /*=NULL*/)
+CLoadFactorsDlg::CLoadFactorsDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CLoadFactorsDlg::IDD, pParent)
 {
 

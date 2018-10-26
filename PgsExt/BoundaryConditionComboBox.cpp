@@ -46,14 +46,15 @@ void CBoundaryConditionComboBox::SetPierType(int pierType)
 
 int CBoundaryConditionComboBox::AddBoundaryCondition(pgsTypes::BoundaryConditionType type)
 {
-   int idx = AddString( CPierData2::AsString(type) );
+   int idx = AddString( CPierData2::AsString(type,m_bNoDeck) );
    SetItemData(idx,(DWORD)type);
    return idx;
 }
 
-void CBoundaryConditionComboBox::Initialize(bool bIsBoundaryPier,const std::vector<pgsTypes::BoundaryConditionType>& connections)
+void CBoundaryConditionComboBox::Initialize(bool bIsBoundaryPier,const std::vector<pgsTypes::BoundaryConditionType>& connections,bool bNoDeck)
 {
    m_bIsBoundaryPier = bIsBoundaryPier;
+   m_bNoDeck = bNoDeck;
 
    int curSel = GetCurSel();
    pgsTypes::BoundaryConditionType currentType;
@@ -94,7 +95,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    pgsTypes::BoundaryConditionType boundaryConditionType = (pgsTypes::BoundaryConditionType)(lpDrawItemStruct->itemData);
-   CString strText = CPierData2::AsString(boundaryConditionType);
+   CString strText = CPierData2::AsString(boundaryConditionType, m_bNoDeck);
 
    CDC dc;
    dc.Attach(lpDrawItemStruct->hDC);

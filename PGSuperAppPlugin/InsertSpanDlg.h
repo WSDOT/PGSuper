@@ -35,7 +35,7 @@ class CInsertSpanDlg : public CDialog
 {
 // Construction
 public:
-   CInsertSpanDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pParent = NULL);   // standard constructor
+   CInsertSpanDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSpecDlg)

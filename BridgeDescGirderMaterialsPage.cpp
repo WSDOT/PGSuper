@@ -367,7 +367,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    EnableToolTips(TRUE);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   if ( pIBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+   if ( pIBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
    {
       // disable slab offset input if there isn't a deck
       GetDlgItem(IDC_CB_SLABOFFSET)->EnableWindow(FALSE);
@@ -964,7 +964,7 @@ BOOL CGirderDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.GetBuffer();
-      pTTT->hinst = NULL;
+      pTTT->hinst = nullptr;
       return TRUE;
    }
    return FALSE;

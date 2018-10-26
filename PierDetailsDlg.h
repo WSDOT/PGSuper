@@ -49,18 +49,18 @@ class CPierDetailsDlg : public CPropertySheet, public IEditPierData
 
 // Construction
 public:
-	CPierDetailsDlg(const CBridgeDescription2* pBridgeDesc,PierIndexType pierIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CPierDetailsDlg(const CBridgeDescription2* pBridgeDesc,PierIndexType pierIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CPierDetailsDlg(const CBridgeDescription2* pBridgeDesc,PierIndexType pierIdx,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CPierDetailsDlg(const CBridgeDescription2* pBridgeDesc,PierIndexType pierIdx,const std::vector<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 	virtual ~CPierDetailsDlg();
    
    CBridgeDescription2* GetBridgeDescription();
 
 // interface IEditPierData
-   virtual CPierData2* GetPierData() {return m_pPier;}
-   virtual PierIndexType GetPierCount() { return m_BridgeDesc.GetPierCount(); }
-   virtual PierIndexType GetPier() { return m_pPier->GetIndex(); }
-   virtual pgsTypes::BoundaryConditionType GetConnectionType();
-   virtual GirderIndexType GetGirderCount(pgsTypes::PierFaceType face);
+   virtual CPierData2* GetPierData() override {return m_pPier;}
+   virtual PierIndexType GetPierCount() override { return m_BridgeDesc.GetPierCount(); }
+   virtual PierIndexType GetPier() override { return m_pPier->GetIndex(); }
+   virtual pgsTypes::BoundaryConditionType GetConnectionType() override;
+   virtual GirderIndexType GetGirderCount(pgsTypes::PierFaceType face) override;
 
 // Attributes
 public:
@@ -78,7 +78,7 @@ public:
 
 // Implementation
 public:
-	virtual INT_PTR DoModal();
+	virtual INT_PTR DoModal() override;
 
 	// Generated message map functions
 protected:
@@ -90,11 +90,11 @@ protected:
 
    void CommonInitPages();
    void InitPages();
-   void InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions);
    void Init(const CBridgeDescription2* pBridge,PierIndexType pierIdx);
 
    void CreateExtensionPages();
-   void CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void CreateExtensionPages(const std::vector<EditBridgeExtension>& editBridgeExtensions);
    void DestroyExtensionPages();
 
    CBridgeDescription2 m_BridgeDesc; // this is the bridge we are operating on
@@ -123,7 +123,7 @@ private:
 
    txnMacroTxn m_Macro;
    std::vector<std::pair<IEditPierCallback*,CPropertyPage*>> m_ExtensionPages;
-   std::set<EditBridgeExtension> m_BridgeExtensionPages;
+   std::vector<EditBridgeExtension> m_BridgeExtensionPages;
    void NotifyExtensionPages();
    void NotifyBridgeExtensionPages();
 };

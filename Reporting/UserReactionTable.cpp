@@ -105,16 +105,16 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   std::auto_ptr<IProductReactionAdapter> pForces;
+   std::unique_ptr<IProductReactionAdapter> pForces;
    if( tableType == PierReactionsTable )
    {
       GET_IFACE2(pBroker,IReactions,pReactions);
-      pForces = std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pReactions,girderKey));
+      pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions,girderKey);
    }
    else
    {
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-      pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
+      pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey);
    }
 
    // User iterator to walk locations

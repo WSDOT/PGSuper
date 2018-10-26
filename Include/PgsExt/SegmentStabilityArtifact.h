@@ -43,19 +43,25 @@ public:
 
    void SetGlobalGirderStabilityApplicability(bool bSet);
    bool IsGlobalGirderStabilityApplicable() const;
-   void SetGlobalGirderStabilityParameters(Float64 Wbottom,Float64 Ybottom,Float64 Orientation);
-   void GetGlobalGirderStabilityParameters(Float64 *Wbottom,Float64 *Ybottom,Float64 *Orientation) const;
+   void SetTargetFactorOfSafety(Float64 fs);
+   Float64 GetTargetFactorOfSafety() const;
+   void SetGlobalGirderStabilityParameters(Float64 Wbottom,Float64 brgPadDeduct,Float64 Ybottom,Float64 Orientation,Float64 Zo);
+   void GetGlobalGirderStabilityParameters(Float64 *Wbottom,Float64* brgPadDeduct,Float64 *Ybottom,Float64 *Orientation,Float64* Zo) const;
    Float64 GetMaxGirderIncline() const;
+   Float64 GetFactorOfSafety() const;
 
    bool Passed() const;
 
 protected:
    void MakeCopy(const pgsSegmentStabilityArtifact& rOther);
-   virtual void MakeAssignment(const pgsSegmentStabilityArtifact& rOther);
+   void MakeAssignment(const pgsSegmentStabilityArtifact& rOther);
 
 private:
    bool m_bIsGlobalGirderStabilityApplicable;
    Float64 m_Wbottom;
+   Float64 m_BrgPadDeduct;
    Float64 m_Ybottom;
    Float64 m_Orientation;
+   Float64 m_Zo;
+   Float64 m_FS;
 };

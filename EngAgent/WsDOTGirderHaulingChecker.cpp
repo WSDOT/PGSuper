@@ -143,13 +143,13 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::CheckHauling(const CSe
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
 pgsHaulingAnalysisArtifact*  pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey)
 {
-   std::auto_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(new pgsWsdotHaulingAnalysisArtifact());
+   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
 
    HANDLINGCONFIG dummy_config;
    GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
@@ -160,7 +160,7 @@ pgsHaulingAnalysisArtifact*  pgsWsdotGirderHaulingChecker::AnalyzeHauling(const 
 
 pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang)
 {
-   std::auto_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(new pgsWsdotHaulingAnalysisArtifact());
+   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
 
    HANDLINGCONFIG dummy_config;
    dummy_config.bIgnoreGirderConfig = true;
@@ -175,7 +175,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::AnalyzeHauling(const C
 
 pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig,ISegmentHaulingDesignPointsOfInterest* pPOId)
 {
-   std::auto_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(new pgsWsdotHaulingAnalysisArtifact());
+   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
    AnalyzeHauling(segmentKey,true,haulConfig,pPOId,pArtifact.get());
 
    return pArtifact.release();
@@ -195,7 +195,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
 pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
 {
    LOG(_T("Entering pgsWsdotGirderHaulingChecker::DesignHauling"));
-   std::auto_ptr<pgsWsdotHaulingAnalysisArtifact> artifact(new pgsWsdotHaulingAnalysisArtifact);
+   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> artifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
 
    // Get all of the haul trucks that have sufficient capacity to carry the girder
    GET_IFACE(ISectionProperties,pSectProps);
@@ -206,7 +206,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    std::vector<const HaulTruckLibraryEntry*> vHaulTrucks;
    GET_IFACE(ILibrary,pLib);
    const HaulTruckLibraryEntry* pMaxCapacityTruck = pLib->GetHaulTruckEntry(names.front().c_str()); // keep track of the truck with the max capacity
-   BOOST_FOREACH(const std::_tstring& strHaulTruckName,names)
+   for (const auto& strHaulTruckName : names)
    {
       const HaulTruckLibraryEntry* pHaulTruck = pLib->GetHaulTruckEntry(strHaulTruckName.c_str());
       if ( CompareHaulTrucks(pMaxCapacityTruck,pHaulTruck) )
@@ -248,7 +248,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    Float64 min_overhang_start = pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart);
    Float64 min_overhang_end   = pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metEnd);
 
-   BOOST_FOREACH(const HaulTruckLibraryEntry* pHaulTruck,vHaulTrucks)
+   for (const auto& pHaulTruck : vHaulTrucks)
    {
       LOG(_T("Attempting design for haul truck ") << pHaulTruck->GetName().c_str());
       shipping_config.pHaulTruckEntry = pHaulTruck;

@@ -41,17 +41,17 @@ END_COM_MAP()
 
 // IPGSDataExporter
 public:
-   STDMETHOD(Init)(UINT nCmdID);
-   STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText);
-   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp);
-   STDMETHOD(GetCommandHintText)(BSTR*  bstrText);
-   STDMETHOD(Export)(/*[in]*/IBroker* pBroker);
+   STDMETHOD(Init)(UINT nCmdID) override;
+   STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText) override;
+   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) override;
+   STDMETHOD(GetCommandHintText)(BSTR*  bstrText) override;
+   STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
 
 // IPGSDocumentation
 public:
-   STDMETHOD(GetDocumentationSetName)(BSTR* pbstrName);
-   STDMETHOD(LoadDocumentationMap)();
-   STDMETHOD(GetDocumentLocation)(UINT nHID,BSTR* pbstrURL);
+   STDMETHOD(GetDocumentationSetName)(BSTR* pbstrName) override;
+   STDMETHOD(LoadDocumentationMap)() override;
+   STDMETHOD(GetDocumentLocation)(UINT nHID,BSTR* pbstrURL) override;
 
 private:
    Float64 m_BearingHeight;

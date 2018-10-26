@@ -11,7 +11,7 @@ class CStressTendonDlg : public CDialog
 	DECLARE_DYNAMIC(CStressTendonDlg)
 
 public:
-	CStressTendonDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
+	CStressTendonDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CStressTendonDlg();
 
 // Dialog Data
@@ -21,7 +21,7 @@ public:
    EventIndexType m_EventIndex;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
    void FillLists();
 
    CTimelineItemListBox m_lbSource;
@@ -32,7 +32,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
    afx_msg void OnMoveToTargetList();
    afx_msg void OnMoveToSourceList();
    afx_msg void OnHelp();

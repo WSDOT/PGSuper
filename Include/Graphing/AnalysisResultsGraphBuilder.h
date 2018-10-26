@@ -37,9 +37,9 @@ public:
    CAnalysisResultsGraphBuilder(const CAnalysisResultsGraphBuilder& other);
    virtual ~CAnalysisResultsGraphBuilder();
 
-   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
 
-   virtual CGraphBuilder* Clone();
+   virtual CGraphBuilder* Clone() const override;
 
    void UpdateGraphDefinitions();
    std::vector<std::pair<std::_tstring,IDType>> GetLoadings(IntervalIndexType intervalIdx,ActionType actionType);
@@ -49,13 +49,13 @@ public:
    void DumpLBAM();
 
 protected:
-   std::auto_ptr<grGraphColor> m_pGraphColor;
+   std::unique_ptr<grGraphColor> m_pGraphColor;
    std::set<IndexType> m_UsedDataLabels; // keeps track of the graph data labels that have already been used so we don't get duplicates in the legend
 
    void Init();
 
-   virtual CGirderGraphControllerBase* CreateGraphController();
-   virtual bool UpdateNow();
+   virtual CGirderGraphControllerBase* CreateGraphController() override;
+   virtual bool UpdateNow() override;
 
    void UpdateYAxisUnits();
    void UpdateXAxisTitle();
@@ -84,9 +84,9 @@ protected:
    void CyStressCapacityGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
    void DeckShrinkageStressGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
 
-   virtual IntervalIndexType GetBeamDrawInterval();
+   virtual IntervalIndexType GetBeamDrawInterval() override;
 
-   std::auto_ptr<CAnalysisResultsGraphDefinitions> m_pGraphDefinitions;
+   std::unique_ptr<CAnalysisResultsGraphDefinitions> m_pGraphDefinitions;
 
    DECLARE_MESSAGE_MAP()
 

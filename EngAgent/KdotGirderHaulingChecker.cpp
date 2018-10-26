@@ -93,7 +93,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::CheckHauling(const CSeg
       ATLASSERT(pHaulingSpecCriteria->GetHaulingAnalysisMethod()==pgsTypes::hmKDOT);
 
       // Run analysis to get check results
-      std::auto_ptr<pgsHaulingAnalysisArtifact> artifact( AnalyzeHauling(segmentKey) );
+      std::unique_ptr<pgsHaulingAnalysisArtifact> artifact( AnalyzeHauling(segmentKey) );
 
       pgsKdotHaulingAnalysisArtifact* kart = dynamic_cast<pgsKdotHaulingAnalysisArtifact*>(artifact.get()); // eating our own dog food here
 
@@ -109,7 +109,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::CheckHauling(const CSeg
       bool success;
 
       // Design
-      std::auto_ptr<pgsHaulingAnalysisArtifact> dartifact( this->DesignHauling( segmentKey, config, true, false, pPOId,  &success, LOGFILE) );
+      std::unique_ptr<pgsHaulingAnalysisArtifact> dartifact( this->DesignHauling( segmentKey, config, true, false, pPOId,  &success, LOGFILE) );
 
       pgsKdotHaulingAnalysisArtifact* dkart = dynamic_cast<pgsKdotHaulingAnalysisArtifact*>(dartifact.get());
 
@@ -124,7 +124,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::CheckHauling(const CSeg
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -132,7 +132,7 @@ pgsHaulingAnalysisArtifact*  pgsKdotGirderHaulingChecker::AnalyzeHauling(const C
 {
    GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
 
-   std::auto_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(new pgsKdotHaulingAnalysisArtifact());
+   std::unique_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsKdotHaulingAnalysisArtifact>());
 
    HANDLINGCONFIG dummy_config;
    AnalyzeHauling(segmentKey,false,dummy_config,pSegmentHaulingPointsOfInterest,pArtifact.get());
@@ -142,7 +142,7 @@ pgsHaulingAnalysisArtifact*  pgsKdotGirderHaulingChecker::AnalyzeHauling(const C
 
 pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang)
 {
-   std::auto_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(new pgsKdotHaulingAnalysisArtifact());
+   std::unique_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsKdotHaulingAnalysisArtifact>());
    GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
    HANDLINGCONFIG dummy_config;
    dummy_config.bIgnoreGirderConfig = true;
@@ -154,7 +154,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::AnalyzeHauling(const CS
 
 pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig,ISegmentHaulingDesignPointsOfInterest* pPOId)
 {
-   std::auto_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(new pgsKdotHaulingAnalysisArtifact());
+   std::unique_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsKdotHaulingAnalysisArtifact>());
    AnalyzeHauling(segmentKey,true,haulConfig,pPOId,pArtifact.get());
 
    return pArtifact.release();
@@ -235,7 +235,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
    // Assume the best
    *bSuccess = true;
 
-   std::auto_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(new pgsKdotHaulingAnalysisArtifact);
+   std::unique_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsKdotHaulingAnalysisArtifact>());
 
    // Get range of values for truck support locations
    GET_IFACE(IBridge,pBridge);
@@ -568,12 +568,12 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
 
       if ( bUseConfig && !haulConfig.bIgnoreGirderConfig )
       {
-         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,haulSegmentIntervalIdx,pgsTypes::Middle,haulConfig.GdrConfig);
-         he = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,haulConfig.GdrConfig,pgsTypes::Harped, &nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,haulSegmentIntervalIdx,pgsTypes::Middle,haulConfig.GdrConfig);
-         se = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,haulConfig.GdrConfig,pgsTypes::Straight,&nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::Middle,haulConfig.GdrConfig);
-         te = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,haulConfig.GdrConfig,pgsTypes::Temporary,&nft);
+         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,haulSegmentIntervalIdx,pgsTypes::Middle, &haulConfig.GdrConfig);
+         he = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Harped,&haulConfig.GdrConfig, &nfh);
+         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,haulSegmentIntervalIdx,pgsTypes::Middle,&haulConfig.GdrConfig);
+         se = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Straight,&haulConfig.GdrConfig,&nfs);
+         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::Middle,&haulConfig.GdrConfig);
+         te = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Temporary,&haulConfig.GdrConfig,&nft);
       }
       else
       {
@@ -632,7 +632,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       Float64 Yna, At, T, AsReqd, AsProvd;
       bool isAdequateBar;
  
-      const GDRCONFIG* pConfig = (bUseConfig && !haulConfig.bIgnoreGirderConfig ) ? &(haulConfig.GdrConfig) : NULL;
+      const GDRCONFIG* pConfig = (bUseConfig && !haulConfig.bIgnoreGirderConfig ) ? &(haulConfig.GdrConfig) : nullptr;
 
       Float64 fAllow = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, ft_mo, fb_mo, fLowTensAllowable, fHighTensAllowable,
                                                                       &Yna, &At, &T, &AsProvd, &AsReqd, &isAdequateBar);

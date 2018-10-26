@@ -139,13 +139,13 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
-      ATLASSERT(pStirrupArtifact != NULL);
+      ATLASSERT(pStirrupArtifact != nullptr);
 
       CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
-         if ( psArtifact == NULL )
+         if ( psArtifact == nullptr )
          {
             continue;
          }
@@ -175,7 +175,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          }
          else
          {
-            (*table)(row,col++) << symbol(INFINITY);
+            (*table)(row,col++) << symbol(infinity);
          }
 
          (*table)(row,col++) << dim.SetValue( pArtifact->GetSmax() );

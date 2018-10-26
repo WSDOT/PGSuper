@@ -81,7 +81,7 @@ protected:
    void MakeCopy(const CStrandStressCheckTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CStrandStressCheckTable& rOther);
+   void MakeAssignment(const CStrandStressCheckTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -207,7 +207,7 @@ void CDeckedSlabBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType st
    }
 
    CComQIPtr<IShape> shape(section);
-   segment->AddShape(shape,material,NULL);
+   segment->AddShape(shape,material,nullptr);
 
    ssmbr->AddSegment(segment);
 }

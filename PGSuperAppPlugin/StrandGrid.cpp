@@ -768,7 +768,7 @@ void CStrandGrid::OnAddRow()
    CStrandRow strandRow;
    AppendRow(strandRow);
 
-   OnChangedSelection(NULL,FALSE,FALSE);
+   OnChangedSelection(nullptr,FALSE,FALSE);
 
    CGirderSegmentStrandsPage* pParent = (CGirderSegmentStrandsPage*)GetParent();
    ASSERT(pParent);
@@ -788,7 +788,7 @@ void CStrandGrid::OnRemoveSelectedRows()
       }
    }
 
-   OnChangedSelection(NULL,FALSE,FALSE);
+   OnChangedSelection(nullptr,FALSE,FALSE);
 
    CGirderSegmentStrandsPage* pParent = (CGirderSegmentStrandsPage*)GetParent();
    ASSERT(pParent);
@@ -807,9 +807,9 @@ void CStrandGrid::OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDraggi
 
 void CStrandGrid::UpdateStrandData(CDataExchange* pDX,CStrandData* pStrands)
 {
-   if ( pDX == NULL || pDX->m_bSaveAndValidate )
+   if ( pDX == nullptr || pDX->m_bSaveAndValidate )
    {
-      // if pDX is NULL or if m_bSaveAndValidate is true
+      // if pDX is nullptr or if m_bSaveAndValidate is true
       // we are getting data out of the grid
       CStrandRowCollection strandRows;
       ROWCOL nRows = GetRowCount();

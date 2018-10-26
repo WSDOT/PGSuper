@@ -303,7 +303,7 @@ void CGirderSegmentStrandsPage::OnUpdateStraightStrandPjEdit()
 
 void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit,UINT nUnit,pgsTypes::StrandType strandType)
 {
-   m_Grid.UpdateStrandData(NULL,&(m_pSegment->Strands));
+   m_Grid.UpdateStrandData(nullptr,&(m_pSegment->Strands));
 
    StrandIndexType nStrands = m_pSegment->Strands.GetStrandCount(strandType);
 
@@ -471,7 +471,7 @@ void CGirderSegmentStrandsPage::InitPjackEdits()
 
 void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType)
 {
-   m_Grid.UpdateStrandData(NULL,&(m_pSegment->Strands));
+   m_Grid.UpdateStrandData(nullptr,&(m_pSegment->Strands));
 
    StrandIndexType nStrands = m_pSegment->Strands.GetStrandCount(strandType);
 
@@ -537,7 +537,7 @@ void CGirderSegmentStrandsPage::EnableRemoveButton(BOOL bEnable)
 
 void CGirderSegmentStrandsPage::OnChange()
 {
-   m_Grid.UpdateStrandData(NULL,&(m_pSegment->Strands));
+   m_Grid.UpdateStrandData(nullptr,&(m_pSegment->Strands));
 
    CString strLabel;
    strLabel.Format(_T("Straight Strands (%d)"),m_pSegment->Strands.GetStrandCount(pgsTypes::Straight));
@@ -561,13 +561,13 @@ void CGirderSegmentStrandsPage::OnChange()
    GetDlgItem(IDC_EXTENDED_STRANDS_LABEL)->SetWindowText(strLabel);
 
 
-   IndexType nDebondingStart = m_pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metStart,NULL);
-   nDebondingStart += m_pSegment->Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metStart,NULL);
-   nDebondingStart += m_pSegment->Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metStart,NULL);
+   IndexType nDebondingStart = m_pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metStart,nullptr);
+   nDebondingStart += m_pSegment->Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metStart,nullptr);
+   nDebondingStart += m_pSegment->Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metStart,nullptr);
 
-   IndexType nDebondingEnd = m_pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metEnd,NULL);
-   nDebondingEnd += m_pSegment->Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metEnd,NULL);
-   nDebondingEnd += m_pSegment->Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metEnd,NULL);
+   IndexType nDebondingEnd = m_pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metEnd,nullptr);
+   nDebondingEnd += m_pSegment->Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metEnd,nullptr);
+   nDebondingEnd += m_pSegment->Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metEnd,nullptr);
 
    strLabel.Format(_T("Debonded Strands (Start %d, End %d)"),nDebondingStart,nDebondingEnd);
    GetDlgItem(IDC_DEBONDED_STRANDS_LABEL)->SetWindowText(strLabel);

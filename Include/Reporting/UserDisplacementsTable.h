@@ -83,7 +83,7 @@ protected:
    void MakeCopy(const CUserDeflectionsTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CUserDeflectionsTable& rOther);
+   void MakeAssignment(const CUserDeflectionsTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

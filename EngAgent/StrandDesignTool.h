@@ -309,10 +309,10 @@ public:
    pgsPointOfInterest GetDebondSamplingPOI(IntervalIndexType intervalIdx) const;
    // interface ISegmentLiftingDesignPointsOfInterest
    // locations of points of interest
-   virtual std::vector<pgsPointOfInterest> GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 overhang,PoiAttributeType attrib,Uint32 mode);
+   virtual std::vector<pgsPointOfInterest> GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 overhang,PoiAttributeType attrib,Uint32 mode) override;
 
    //ISegmentLiftingDesignPointsOfInterest
-   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
+   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) override;
 
    // Concrete
    ////////////
@@ -443,7 +443,7 @@ private:
    pgsPoiMgr m_PoiMgr;
 
    // Tool for dealing with raised straight strand design - only used if this is the design type
-   boost::shared_ptr<pgsRaisedStraightStrandDesignTool> m_pRaisedStraightStrandDesignTool;
+   std::shared_ptr<pgsRaisedStraightStrandDesignTool> m_pRaisedStraightStrandDesignTool;
 
    // Classes to store information on what controlled concrete strength or number of strands
    // and to control when to set values. 

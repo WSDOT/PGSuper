@@ -59,6 +59,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CFinalLossesChapterBuilder(const CFinalLossesChapterBuilder&);
-   CFinalLossesChapterBuilder& operator=(const CFinalLossesChapterBuilder&);
+   CFinalLossesChapterBuilder(const CFinalLossesChapterBuilder&) = delete;
+   CFinalLossesChapterBuilder& operator=(const CFinalLossesChapterBuilder&) = delete;
 };

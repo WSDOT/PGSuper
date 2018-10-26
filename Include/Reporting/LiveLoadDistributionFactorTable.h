@@ -70,5 +70,5 @@ protected:
    void MakeCopy(const CLiveLoadDistributionFactorTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CLiveLoadDistributionFactorTable& rOther);
+   void MakeAssignment(const CLiveLoadDistributionFactorTable& rOther);
 };

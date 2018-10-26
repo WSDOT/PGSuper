@@ -78,21 +78,36 @@ void CLiftingCheck::Build(rptChapter* pChapter,
                           IBroker* pBroker,const CGirderKey& girderKey,
                           IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
-      CSegmentKey thisSegmentKey(girderKey,segIdx);
-      const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-      const stbIGirder* pStabilityModel = pGirder->GetSegmentStabilityModel(thisSegmentKey);
-      const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
-      Float64 Ll, Lr;
-      pStabilityProblem->GetSupportLocations(&Ll,&Lr);
-      stbLiftingStabilityReporter reporter;
-      reporter.BuildSpecCheckChapter(pStabilityModel,pStabilityProblem,pArtifact,pChapter,_T("Location from<BR/>Left Pick Point"),Ll);
-   } // next segment
+      GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IGirder, pGirder);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         CSegmentKey thisSegmentKey(girderKey, segIdx);
+         const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
+         const stbIGirder* pStabilityModel = pGirder->GetSegmentStabilityModel(thisSegmentKey);
+         const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
+         Float64 Ll, Lr;
+         pStabilityProblem->GetSupportLocations(&Ll, &Lr);
+         stbLiftingStabilityReporter reporter;
+         reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
+      } // next segment
+   }
+   else
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pTitle;
+      *pTitle << _T("Check for Lifting in Casting Yard") << rptNewLine;
+
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+
+      *p << color(Red) << _T("Lifting analysis disabled in Project Criteria. No analysis performed.") << color(Black) << rptNewLine;
+   }
 }
 
 void CLiftingCheck::MakeCopy(const CLiftingCheck& rOther)

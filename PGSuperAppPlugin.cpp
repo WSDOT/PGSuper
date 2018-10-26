@@ -125,7 +125,7 @@ BOOL CPGSuperAppPlugin::Init(CEAFApp* pParent)
    // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
    m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPER) );
 
-   if ( m_hMenuShared == NULL )
+   if ( m_hMenuShared == nullptr )
       return FALSE;
 
    if ( !EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode )
@@ -176,7 +176,7 @@ std::vector<CEAFDocTemplate*> CPGSuperAppPlugin::CreateDocTemplates()
 
    CPGSuperDocTemplate* pTemplate = new CPGSuperDocTemplate(
 		IDR_PGSUPER,
-      NULL,
+      nullptr,
 		RUNTIME_CLASS(CPGSuperDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
@@ -324,7 +324,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
    CATID ID[nID];
 
    ID[0] = CATID_PGSuperExtensionAgent;
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    const int nPlugins = 5;
    CLSID clsid[nPlugins]; 
@@ -422,7 +422,7 @@ CString CPGSuperAppPlugin::GetCacheFolder()
    CEAFApp* pParentApp = EAFGetApp();
 
    TCHAR buffer[MAX_PATH];
-   BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
+   BOOL bResult = ::SHGetSpecialFolderPath(nullptr,buffer,CSIDL_APPDATA,FALSE);
 
    if ( !bResult )
    {

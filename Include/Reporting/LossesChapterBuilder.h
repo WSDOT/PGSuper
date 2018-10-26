@@ -78,8 +78,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CLossesChapterBuilder(const CLossesChapterBuilder&);
-   CLossesChapterBuilder& operator=(const CLossesChapterBuilder&);
+   CLossesChapterBuilder(const CLossesChapterBuilder&) = delete;
+   CLossesChapterBuilder& operator=(const CLossesChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

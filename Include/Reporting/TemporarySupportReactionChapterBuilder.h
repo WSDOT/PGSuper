@@ -53,6 +53,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CTemporarySupportReactionChapterBuilder(const CTemporarySupportReactionChapterBuilder&);
-   CTemporarySupportReactionChapterBuilder& operator=(const CTemporarySupportReactionChapterBuilder&);
+   CTemporarySupportReactionChapterBuilder(const CTemporarySupportReactionChapterBuilder&) = delete;
+   CTemporarySupportReactionChapterBuilder& operator=(const CTemporarySupportReactionChapterBuilder&) = delete;
 };

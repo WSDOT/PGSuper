@@ -49,13 +49,13 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual CChapterBuilder* Clone() const override;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -73,8 +73,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CTogaLongSectionChapterBuilder(const CTogaLongSectionChapterBuilder&);
-   CTogaLongSectionChapterBuilder& operator=(const CTogaLongSectionChapterBuilder&);
+   CTogaLongSectionChapterBuilder(const CTogaLongSectionChapterBuilder&) = delete;
+   CTogaLongSectionChapterBuilder& operator=(const CTogaLongSectionChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -54,6 +54,6 @@ private:
    bool m_bRating;
 
    // Prevent accidental copying and assignment
-   CProjectCriteriaChapterBuilder(const CProjectCriteriaChapterBuilder&);
-   CProjectCriteriaChapterBuilder& operator=(const CProjectCriteriaChapterBuilder&);
+   CProjectCriteriaChapterBuilder(const CProjectCriteriaChapterBuilder&) = delete;
+   CProjectCriteriaChapterBuilder& operator=(const CProjectCriteriaChapterBuilder&) = delete;
 };

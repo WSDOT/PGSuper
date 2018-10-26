@@ -171,7 +171,7 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
       GetCombinedResultsPoi(pBroker,girderKey,intervalIdx,&vPoi,&refAttribute);
 
       RowIndexType rowIdx = pTable->GetNumberOfHeaderRows();
-      BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
+      for (const auto& poi : vPoi)
       {
          colIdx = 0;
 

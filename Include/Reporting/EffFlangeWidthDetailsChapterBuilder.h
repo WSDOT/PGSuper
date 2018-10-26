@@ -77,8 +77,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CEffFlangeWidthDetailsChapterBuilder(const CEffFlangeWidthDetailsChapterBuilder&);
-   CEffFlangeWidthDetailsChapterBuilder& operator=(const CEffFlangeWidthDetailsChapterBuilder&);
+   CEffFlangeWidthDetailsChapterBuilder(const CEffFlangeWidthDetailsChapterBuilder&) = delete;
+   CEffFlangeWidthDetailsChapterBuilder& operator=(const CEffFlangeWidthDetailsChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -39,8 +39,11 @@ pgsSegmentStabilityArtifact::pgsSegmentStabilityArtifact():
 m_bIsGlobalGirderStabilityApplicable(false)
 {
    m_Wbottom = 0;
+   m_BrgPadDeduct = 0;
+   m_Zo = 0;
    m_Ybottom = 1;
    m_Orientation = 0;
+   m_FS = 1.2;
 }
 
 pgsSegmentStabilityArtifact::pgsSegmentStabilityArtifact(const pgsSegmentStabilityArtifact& rOther)
@@ -72,23 +75,45 @@ bool pgsSegmentStabilityArtifact::IsGlobalGirderStabilityApplicable() const
    return m_bIsGlobalGirderStabilityApplicable;
 }
 
-void pgsSegmentStabilityArtifact::SetGlobalGirderStabilityParameters(Float64 Wbottom,Float64 Ybottom,Float64 Orientation)
+void pgsSegmentStabilityArtifact::SetTargetFactorOfSafety(Float64 fs)
 {
-   m_Wbottom = Wbottom;
-   m_Ybottom = Ybottom;
-   m_Orientation = Orientation;
+   m_FS = fs;
 }
 
-void pgsSegmentStabilityArtifact::GetGlobalGirderStabilityParameters(Float64 *Wbottom,Float64 *Ybottom,Float64 *Orientation) const
+Float64 pgsSegmentStabilityArtifact::GetTargetFactorOfSafety() const
+{
+   return m_FS;
+}
+
+void pgsSegmentStabilityArtifact::SetGlobalGirderStabilityParameters(Float64 Wbottom,Float64 brgPadDeduct,Float64 Ybottom,Float64 Orientation,Float64 Zo)
+{
+   m_Wbottom = Wbottom;
+   m_BrgPadDeduct = brgPadDeduct;
+   m_Ybottom = Ybottom;
+   m_Orientation = Orientation;
+   m_Zo = Zo;
+}
+
+void pgsSegmentStabilityArtifact::GetGlobalGirderStabilityParameters(Float64 *Wbottom,Float64* brgPadDeduct,Float64 *Ybottom,Float64 *Orientation,Float64* Zo) const
 {
    *Wbottom     = m_Wbottom;
+   *brgPadDeduct = m_BrgPadDeduct;
    *Ybottom     = m_Ybottom;
    *Orientation = m_Orientation;
+   *Zo          = m_Zo;
+}
+
+Float64 pgsSegmentStabilityArtifact::GetFactorOfSafety() const
+{
+   Float64 theta_max = GetMaxGirderIncline();
+   Float64 theta = m_Orientation;
+   Float64 FS = theta_max / theta;
+   return FS;
 }
 
 Float64 pgsSegmentStabilityArtifact::GetMaxGirderIncline() const
 {
-   return fabs(m_Wbottom/(6*m_Ybottom)); // resultant in middle-1/3 of bottom
+   return fabs((m_Wbottom-m_BrgPadDeduct)/(6*(m_Zo + m_Ybottom))); // resultant at kern point
 }
 
 bool pgsSegmentStabilityArtifact::Passed() const
@@ -98,18 +123,19 @@ bool pgsSegmentStabilityArtifact::Passed() const
       return true;
    }
 
-   // maximum incline to have the result of the girder dead load reaction within
-   // the middle third of the girder
-   Float64 maxIncline = GetMaxGirderIncline();
-   return (maxIncline < m_Orientation) ? false : true;
+   Float64 fs = GetFactorOfSafety();
+   return (m_FS <= fs) ? true : false;
 }
 
 void pgsSegmentStabilityArtifact::MakeCopy(const pgsSegmentStabilityArtifact& rOther)
 {
    m_bIsGlobalGirderStabilityApplicable = rOther.m_bIsGlobalGirderStabilityApplicable;
    m_Wbottom = rOther.m_Wbottom;
+   m_BrgPadDeduct = rOther.m_BrgPadDeduct;
    m_Ybottom = rOther.m_Ybottom;
    m_Orientation = rOther.m_Orientation;
+   m_Zo = rOther.m_Zo;
+   m_FS = rOther.m_FS;
 }
 
 void pgsSegmentStabilityArtifact::MakeAssignment(const pgsSegmentStabilityArtifact& rOther)

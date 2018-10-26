@@ -341,6 +341,15 @@ girderKey(other.girderKey),ductIdx(other.ductIdx),girderID(other.girderID)
    ATLASSERT(ductIdx != INVALID_INDEX);
 }
 
+CTendonKey& CTendonKey::operator=(const CTendonKey& other)
+{
+   girderID  = other.girderID;
+   girderKey = other.girderKey;
+   ductIdx   = other.ductIdx;
+
+   return *this;
+}
+
 bool CTendonKey::operator==(const CTendonKey& other) const
 {
    if ( girderID == INVALID_ID )

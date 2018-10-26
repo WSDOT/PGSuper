@@ -38,7 +38,7 @@ static char THIS_FILE[] = __FILE__;
 // CBridgeEditorProfileSettingsPage dialog
 
 
-CBridgeEditorProfileSettingsPage::CBridgeEditorProfileSettingsPage(CWnd* pParent /*=NULL*/)
+CBridgeEditorProfileSettingsPage::CBridgeEditorProfileSettingsPage(CWnd* pParent /*=nullptr*/)
 	: CPropertyPage(CBridgeEditorProfileSettingsPage::IDD)
 {
 	//{{AFX_DATA_INIT(CBridgeEditorProfileSettingsPage)

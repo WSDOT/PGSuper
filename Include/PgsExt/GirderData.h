@@ -154,7 +154,7 @@ protected:
    void MakeCopy(const CGirderData& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CGirderData& rOther);
+   void MakeAssignment(const CGirderData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

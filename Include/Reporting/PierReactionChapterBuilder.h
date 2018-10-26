@@ -53,6 +53,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CPierReactionChapterBuilder(const CPierReactionChapterBuilder&);
-   CPierReactionChapterBuilder& operator=(const CPierReactionChapterBuilder&);
+   CPierReactionChapterBuilder(const CPierReactionChapterBuilder&) = delete;
+   CPierReactionChapterBuilder& operator=(const CPierReactionChapterBuilder&) = delete;
 };

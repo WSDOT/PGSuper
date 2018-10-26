@@ -166,7 +166,7 @@ BOOL CAbutmentConnectionsPage::OnInitDialog()
 
    m_BoundaryConditionType = m_pPier->GetBoundaryConditionType();
 
-   pgsTypes::PierFaceType face = (m_pPier->GetPrevSpan() == NULL ? pgsTypes::Ahead : pgsTypes::Back);
+   pgsTypes::PierFaceType face = (m_pPier->GetPrevSpan() == nullptr ? pgsTypes::Ahead : pgsTypes::Back);
    m_pPier->GetBearingOffset(face,&m_BearingOffset,&m_BearingOffsetMeasurementType);
    m_pPier->GetGirderEndDistance(face,&m_EndDistance,&m_EndDistanceMeasurementType);
    m_SupportWidth = m_pPier->GetSupportWidth(face);
@@ -318,7 +318,7 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
    const int StartPier = PIERTYPE_START;
    const int IntPier   = PIERTYPE_INTERMEDIATE;
    const int EndPier   = PIERTYPE_END;
-   int pierType = (pPrevSpan != NULL && pNextSpan != NULL ? IntPier : (pPrevSpan == NULL ? StartPier : EndPier));
+   int pierType = (pPrevSpan != nullptr && pNextSpan != nullptr ? IntPier : (pPrevSpan == nullptr ? StartPier : EndPier));
 
    CString strName;
    if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )

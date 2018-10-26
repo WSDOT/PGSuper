@@ -1922,6 +1922,12 @@ Float64 CSpecAgentImp::GetLiftingIncreaseInCgForCamber()
    return pSpec->GetLiftingCamberPercentEstimate();
 }
 
+Float64 CSpecAgentImp::GetLiftingCamberMultiplier()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetLiftingCamberMultiplier();
+}
+
 pgsTypes::WindType CSpecAgentImp::GetLiftingWindType()
 {
    const SpecLibraryEntry* pSpec = GetSpec();
@@ -2183,6 +2189,12 @@ Float64 CSpecAgentImp::GetHaulingIncreaseInCgForCamber()
    return pSpec->GetHaulingCamberPercentEstimate();
 }
 
+Float64 CSpecAgentImp::GetHaulingCamberMultiplier()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetHaulingCamberMultiplier();
+}
+
 Float64 CSpecAgentImp::GetRollStiffness(const CSegmentKey& segmentKey)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -2385,7 +2397,7 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
    criteria.MinFScr = GetHaulingCrackingFs();
    criteria.MinFSf  = GetHaulingRolloverFs();
 
-   if (haulConfig.pHaulTruckEntry == NULL )
+   if (haulConfig.pHaulTruckEntry == nullptr )
    {
       criteria.MaxClearSpan       = GetAllowableDistanceBetweenSupports(segmentKey);
       criteria.MaxLeadingOverhang = GetAllowableLeadingOverhang(segmentKey);

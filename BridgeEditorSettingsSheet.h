@@ -42,8 +42,8 @@ class CBridgeEditorSettingsSheet : public CPropertySheet
 
 // Construction
 public:
-	CBridgeEditorSettingsSheet(UINT nIDCaption, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CBridgeEditorSettingsSheet(LPCTSTR pszCaption, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CBridgeEditorSettingsSheet(UINT nIDCaption, CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CBridgeEditorSettingsSheet(LPCTSTR pszCaption, CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
 // Attributes
 public:

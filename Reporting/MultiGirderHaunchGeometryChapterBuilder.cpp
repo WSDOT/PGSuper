@@ -62,7 +62,7 @@ rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(CReportSpecification
    CComPtr<IBroker> pBroker;
 
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   if (pGirderRptSpec!=NULL)
+   if (pGirderRptSpec!=nullptr)
    {
       pGirderRptSpec->GetBroker(&pBroker);
       girder_list.push_back( pGirderRptSpec->GetGirderKey() );

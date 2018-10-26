@@ -80,8 +80,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CBridgeAnalysisChapterBuilder(const CBridgeAnalysisChapterBuilder&);
-   CBridgeAnalysisChapterBuilder& operator=(const CBridgeAnalysisChapterBuilder&);
+   CBridgeAnalysisChapterBuilder(const CBridgeAnalysisChapterBuilder&) = delete;
+   CBridgeAnalysisChapterBuilder& operator=(const CBridgeAnalysisChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

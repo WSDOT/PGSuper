@@ -54,6 +54,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CCrackedSectionDetailsChapterBuilder(const CCrackedSectionDetailsChapterBuilder&);
-   CCrackedSectionDetailsChapterBuilder& operator=(const CCrackedSectionDetailsChapterBuilder&);
+   CCrackedSectionDetailsChapterBuilder(const CCrackedSectionDetailsChapterBuilder&) = delete;
+   CCrackedSectionDetailsChapterBuilder& operator=(const CCrackedSectionDetailsChapterBuilder&) = delete;
 };

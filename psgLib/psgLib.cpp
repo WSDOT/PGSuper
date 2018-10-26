@@ -110,8 +110,8 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPsgLibApp)
 	public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 	//}}AFX_VIRTUAL
 
 	//{{AFX_MSG(CPsgLibApp)
@@ -348,7 +348,7 @@ bool do_make_saveable_copy(const libILibrary& lib, libILibrary* ptempLib)
       // they are referenced
       if (lib.IsEditingEnabled(key) || lib.GetEntryRefCount(key)>0)
       {
-         std::auto_ptr<libLibraryEntry> pent(lib.CreateEntryClone(key));
+         std::unique_ptr<libLibraryEntry> pent(lib.CreateEntryClone(key));
          if (!ptempLib->AddEntry(*pent, key))
          {
             return false;

@@ -72,19 +72,19 @@ class ITxDOTBrokerRetriever
 public:
    // Update the broker and return it to caller.
    // NOTE: Do not hold on to this pointer while document data can be changed.
-   virtual IBroker* GetUpdatedBroker()=0;
+   virtual IBroker* GetUpdatedBroker() = 0;
 
    // Get broker without updating input data
-   virtual IBroker* GetClassicBroker()=0;
+   virtual IBroker* GetClassicBroker() = 0;
 
    // Get girder library without updating broker
-   virtual GirderLibrary* GetGirderLibrary()=0;
+   virtual GirderLibrary* GetGirderLibrary() = 0;
 
    // Get girder connection library without updating broker
-   virtual ConnectionLibrary* GetConnectionLibrary()=0;
+   virtual ConnectionLibrary* GetConnectionLibrary() = 0;
 
    // Master library
-   virtual SpecLibrary* GetSpecLibrary()=0;
+   virtual SpecLibrary* GetSpecLibrary() = 0;
 };
 
 

@@ -79,8 +79,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CCastingYardRebarRequirementChapterBuilder(const CCastingYardRebarRequirementChapterBuilder&);
-   CCastingYardRebarRequirementChapterBuilder& operator=(const CCastingYardRebarRequirementChapterBuilder&);
+   CCastingYardRebarRequirementChapterBuilder(const CCastingYardRebarRequirementChapterBuilder&) = delete;
+   CCastingYardRebarRequirementChapterBuilder& operator=(const CCastingYardRebarRequirementChapterBuilder&) = delete;
 
    void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
    void BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;

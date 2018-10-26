@@ -518,7 +518,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    Float64 C = 0;
-   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   if ( pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
    {
       C = pCamber->GetScreedCamber( poiMidSpan ) ;
       (*pTable)(++row,0) << _T("Screed Camber, C");
@@ -539,7 +539,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Dmax_Average    = (1+Cfactor)/2*Dmax_UpperBound;
 
 
-   (*pTable)(++row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
+   (*pTable)(++row,0) << _T("Lower bound @ ")<< min_days<<_T(" days");
    if ( Dmin_LowerBound < 0 )
    {
       (*pTable)(row,1) << color(Red) << gdim.SetValue(Dmin_LowerBound) << color(Black);
@@ -549,7 +549,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row,1) << gdim.SetValue(Dmin_LowerBound);
    }
 
-   (*pTable)(++row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
+   (*pTable)(++row,0) << _T("Upper bound @ ")<< max_days<<_T(" days");
    if ( Dmax_UpperBound < 0 )
    {
       (*pTable)(row,1) << color(Red) << gdim.SetValue(Dmax_UpperBound) << color(Black);
@@ -624,7 +624,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    const pgsHaulingAnalysisArtifact* pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
-   if ( pHaulingArtifact != NULL )
+   if ( pHaulingArtifact != nullptr )
    {
       const stbHaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
       bool bDirectCamber;
@@ -642,7 +642,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    const stbLiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
-   if (pLiftArtifact!=NULL)
+   if (pLiftArtifact!=nullptr)
    {
       GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
       Float64 L = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
@@ -650,7 +650,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row  ,1) << glength.SetValue(L);
    }
 
-   if ( pHaulingArtifact != NULL )
+   if ( pHaulingArtifact != nullptr )
    {
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -691,7 +691,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
 
-   if ( pSpecEntry->CheckGirderSag() && pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   if ( pSpecEntry->CheckGirderSag() && pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
    {
       std::_tstring camberType;
       Float64 D = 0;
@@ -793,7 +793,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       *p << _T("### Reinforcement details could not be listed.") << rptNewLine;
    }
 
-   if ( pSegment->HandlingData.pHaulTruckLibraryEntry == NULL )
+   if ( pSegment->HandlingData.pHaulTruckLibraryEntry == nullptr )
    {
       *p << _T("++ Shipping analysis not performed") << rptNewLine;
    }

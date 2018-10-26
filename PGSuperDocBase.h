@@ -76,16 +76,16 @@ protected: // create from serialization only
 
 // CBrokerDocument over-rides
 protected:
-   virtual BOOL Init();
-   virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
-   virtual void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu);
-   virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType);
-   virtual void ShowCustomReportDefinitionHelp();
+   virtual BOOL Init() override;
+   virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit) override; 
+   virtual void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu) override;
+   virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType) override;
+   virtual void ShowCustomReportDefinitionHelp() override;
 
 // CEAFAutoCalcDocMixin over-rides
 public:
-   virtual bool IsAutoCalcEnabled() const;
-   virtual void EnableAutoCalc(bool bEnable);
+   virtual bool IsAutoCalcEnabled() const override;
+   virtual void EnableAutoCalc(bool bEnable) override;
 
 // Operations
 public:
@@ -110,9 +110,9 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPGSDocBase)
 	public:
-	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName);
-   virtual void OnCloseDocument();
-	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
+	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
+   virtual void OnCloseDocument() override;
+	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
 	//}}AFX_VIRTUAL
 
    void UpdateAnalysisTypeStatusIndicator();
@@ -120,21 +120,21 @@ public:
    void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
    void OnLiveLoads();
 
-   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
+   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const override;
+   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
 // Implementation
 public:
 	virtual ~CPGSDocBase();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid() const override;
+	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
    // ISupportLibraryManager
-   virtual CollectionIndexType GetNumberOfLibraryManagers() const;
-   virtual libLibraryManager* GetLibraryManager(CollectionIndexType num);
-   virtual libLibraryManager* GetTargetLibraryManager();
+   virtual CollectionIndexType GetNumberOfLibraryManagers() const override;
+   virtual libLibraryManager* GetLibraryManager(CollectionIndexType num) override;
+   virtual libLibraryManager* GetTargetLibraryManager() override;
 
    void EditBridgeDescription(int nPage);
    void EditAlignmentDescription(int nPage);
@@ -186,7 +186,7 @@ public:
    void SetGirderEditorSettings(UINT settings);
 
    // called when the UI Hints have been reset
-   virtual void ResetUIHints();
+   virtual void ResetUIHints() override;
 
    bool ShowProjectPropertiesOnNewProject();
    void ShowProjectPropertiesOnNewProject(bool bShow);
@@ -320,60 +320,60 @@ protected:
    StatusCallbackIDType m_scidInformationalError;
    StatusGroupIDType m_StatusGroupID;
 
-   virtual void LoadToolbarState();
-   virtual void SaveToolbarState();
+   virtual void LoadToolbarState() override;
+   virtual void SaveToolbarState() override;
 
-   virtual void OnCreateInitialize();
-   virtual void OnCreateFinalize();
+   virtual void OnCreateInitialize() override;
+   virtual void OnCreateFinalize() override;
 
    virtual LPCTSTR GetTemplateExtension() = 0;
    virtual CATID GetComponentInfoCategoryID() = 0;
 
-   virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-   virtual BOOL OpenTheDocument(LPCTSTR lpszPathName);
+   virtual BOOL OnOpenDocument(LPCTSTR lpszPathName) override;
+   virtual BOOL OpenTheDocument(LPCTSTR lpszPathName) override;
 
-   virtual void HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName );
-   virtual void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName );
+   virtual void HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
+   virtual void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
 
-   virtual HRESULT ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName);
-   virtual void HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName );
+   virtual HRESULT ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName) override;
+   virtual void HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
 
-   virtual CString GetRootNodeName();
-   virtual Float64 GetRootNodeVersion();
+   virtual CString GetRootNodeName() override;
+   virtual Float64 GetRootNodeVersion() override;
 
-   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad);
-   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave);
+   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
+   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
 
-   virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
-   virtual void OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
+   virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;
+   virtual void OnErrorRenamingSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;
 
-   virtual void LoadDocumentSettings();
-   virtual void SaveDocumentSettings();
+   virtual void LoadDocumentSettings() override;
+   virtual void SaveDocumentSettings() override;
 
-   virtual void LoadDocumentationMap();
-   virtual CString GetDocumentationRootLocation();
-   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL);
+   virtual void LoadDocumentationMap() override;
+   virtual CString GetDocumentationRootLocation() override;
+   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL) override;
 
-   virtual void OnLogFileOpened(); // called when the log file is first opened
+   virtual void OnLogFileOpened() override; // called when the log file is first opened
 
-   virtual void BrokerShutDown();
-   virtual void OnStatusChanged();
+   virtual void BrokerShutDown() override;
+   virtual void OnStatusChanged() override;
 
-   virtual BOOL CreateBroker();
-   virtual HINSTANCE GetResourceInstance();
+   virtual BOOL CreateBroker() override;
+   virtual HINSTANCE GetResourceInstance() override;
 
    BOOL UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir);
 
-   virtual CString GetToolbarSectionName();
+   virtual CString GetToolbarSectionName() override;
 
-   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt);
-   virtual void CreateGraphView(CollectionIndexType graphIdx);
+   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt) override;
+   virtual void CreateGraphView(CollectionIndexType graphIdx) override;
 
-   virtual void DeleteContents();
+   virtual void DeleteContents() override;
 
    virtual CATID GetBeamFamilyCategoryID() = 0;
 
-   virtual BOOL LoadAgents();
+   virtual BOOL LoadAgents() override;
 
 // Generated message map functions
 protected:

@@ -48,8 +48,8 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CLRFDCreepCoefficientChapterBuilder(const CLRFDCreepCoefficientChapterBuilder&);
-   CLRFDCreepCoefficientChapterBuilder& operator=(const CLRFDCreepCoefficientChapterBuilder&);
+   CLRFDCreepCoefficientChapterBuilder(const CLRFDCreepCoefficientChapterBuilder&) = delete;
+   CLRFDCreepCoefficientChapterBuilder& operator=(const CLRFDCreepCoefficientChapterBuilder&) = delete;
 
    rptParagraph* Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
    rptParagraph* Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;

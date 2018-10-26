@@ -31,7 +31,7 @@ class CKdotHaulingDlg : public CDialog
 	DECLARE_DYNAMIC(CKdotHaulingDlg)
 
 public:
-	CKdotHaulingDlg(CWnd* pParent = NULL);   // standard constructor
+	CKdotHaulingDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CKdotHaulingDlg();
 
 // Dialog Data

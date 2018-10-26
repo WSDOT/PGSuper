@@ -49,8 +49,8 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CPointOfInterestChapterBuilder(const CPointOfInterestChapterBuilder&);
-   CPointOfInterestChapterBuilder& operator=(const CPointOfInterestChapterBuilder&);
+   CPointOfInterestChapterBuilder(const CPointOfInterestChapterBuilder&) = delete;
+   CPointOfInterestChapterBuilder& operator=(const CPointOfInterestChapterBuilder&) = delete;
 
 
    void ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,IBroker* pBroker,IPointOfInterest* pPoi,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;

@@ -46,7 +46,7 @@ CSpanData2::CSpanData2(SpanIndexType spanIdx,CBridgeDescription2* pBridgeDesc,CP
 
 CSpanData2::CSpanData2(const CSpanData2& rOther)
 {
-   Init(rOther.GetIndex(),NULL,NULL,NULL);
+   Init(rOther.GetIndex(),nullptr,nullptr,nullptr);
    MakeCopy(rOther,true /* copy only data*/ );
 }
 
@@ -624,7 +624,7 @@ Float64 CSpanData2::GetSpanLength() const
 std::vector<const CTemporarySupportData*> CSpanData2::GetTemporarySupports() const
 {
    std::vector<const CTemporarySupportData*> vTS;
-   if ( m_pBridgeDesc != NULL )
+   if ( m_pBridgeDesc != nullptr )
    {
       SupportIndexType nTS = m_pBridgeDesc->GetTemporarySupportCount();
       for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
@@ -642,7 +642,7 @@ std::vector<const CTemporarySupportData*> CSpanData2::GetTemporarySupports() con
 std::vector<CTemporarySupportData*> CSpanData2::GetTemporarySupports()
 {
    std::vector<CTemporarySupportData*> vTS;
-   if ( m_pBridgeDesc != NULL )
+   if ( m_pBridgeDesc != nullptr )
    {
       SupportIndexType nTS = m_pBridgeDesc->GetTemporarySupportCount();
       for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
@@ -724,15 +724,15 @@ void CSpanData2::AssertValid()
 {
    if ( m_pBridgeDesc )
    {
-      _ASSERT(m_pPrevPier != NULL);
-      _ASSERT(m_pNextPier != NULL);
+      _ASSERT(m_pPrevPier != nullptr);
+      _ASSERT(m_pNextPier != nullptr);
       _ASSERT(m_pPrevPier->GetNextSpan() == this);
       _ASSERT(m_pNextPier->GetPrevSpan() == this);
    }
    else
    {
-      _ASSERT(m_pPrevPier == NULL);
-      _ASSERT(m_pNextPier == NULL);
+      _ASSERT(m_pPrevPier == nullptr);
+      _ASSERT(m_pNextPier == nullptr);
    }
 }
 #endif

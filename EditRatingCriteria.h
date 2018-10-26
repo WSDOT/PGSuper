@@ -78,14 +78,18 @@ class txnLegalRatingData
 public:
    std::vector<std::_tstring> RoutineNames;
    std::vector<std::_tstring> SpecialNames;
+   std::vector<std::_tstring> EmergencyNames;
    Float64 IM_Truck_Routine;
    Float64 IM_Lane_Routine;
    Float64 IM_Truck_Special;
    Float64 IM_Lane_Special;
+   Float64 IM_Truck_Emergency;
+   Float64 IM_Lane_Emergency;
    Float64 StrengthI_DC;
    Float64 StrengthI_DW;
    Float64 StrengthI_LL_Routine;
    Float64 StrengthI_LL_Special;
+   Float64 StrengthI_LL_Emergency;
    Float64 StrengthI_CR;
    Float64 StrengthI_SH;
    Float64 StrengthI_PS;
@@ -93,6 +97,7 @@ public:
    Float64 ServiceIII_DW;
    Float64 ServiceIII_LL_Routine;
    Float64 ServiceIII_LL_Special;
+   Float64 ServiceIII_LL_Emergency;
    Float64 ServiceIII_CR;
    Float64 ServiceIII_SH;
    Float64 ServiceIII_PS;

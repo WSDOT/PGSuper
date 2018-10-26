@@ -70,8 +70,8 @@ END_OBJECT_MAP()
 class CReportAgentApp : public CWinApp
 {
 public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 };
 
 CReportAgentApp theApp;

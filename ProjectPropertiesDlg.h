@@ -37,7 +37,7 @@ class CProjectPropertiesDlg : public CDialog
 {
 // Construction
 public:
-	CProjectPropertiesDlg(CWnd* pParent = NULL);   // standard constructor
+	CProjectPropertiesDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CProjectPropertiesDlg)
@@ -56,7 +56,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CProjectPropertiesDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation

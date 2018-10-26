@@ -31,7 +31,7 @@
 #include <PgsExt\TemporarySupportData.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\LongitudinalRebarData.h>
-#include <boost\shared_ptr.hpp>
+#include <memory>
 
 /*****************************************************************************
 CLASS 
@@ -52,7 +52,7 @@ public:
    // Closure objects are associated with either a pier or a temporary support.
    // Use GetPier and GetTemporarySupport to return the associated object.
 
-   CClosureJointData(CSplicedGirderData* pGirder=NULL);
+   CClosureJointData(CSplicedGirderData* pGirder=nullptr);
    CClosureJointData(CSplicedGirderData* pGirder,CTemporarySupportData* pTempSupport);
    CClosureJointData(CSplicedGirderData* pGirder,CPierData2* pPier);
    CClosureJointData(CSplicedGirderData* pGirder,const CClosureJointData& rOther);
@@ -118,7 +118,7 @@ public:
 
 protected:
    void MakeCopy(const CClosureJointData& rOther,bool bCopyDataOnly);
-   virtual void MakeAssignment(const CClosureJointData& rOther);
+   void MakeAssignment(const CClosureJointData& rOther);
    void ResolveReferences();
 
    CSplicedGirderData* m_pGirder; // weak reference to girder this closure is a part of

@@ -37,7 +37,7 @@ static const int ENDBOX_CTRLS[] = {IDC_GROUP2, IDC_HEADING2, IDC_X_LABEL2, IDC_Y
 
 IMPLEMENT_DYNAMIC(CStrandGenerationDlg, CDialog)
 
-CStrandGenerationDlg::CStrandGenerationDlg(CWnd* pParent /*=NULL*/)
+CStrandGenerationDlg::CStrandGenerationDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CStrandGenerationDlg::IDD, pParent)
 {
    m_bDelete = false;

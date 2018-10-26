@@ -32,7 +32,7 @@
 
 IMPLEMENT_DYNAMIC(CFilletByGirderDlg, CDialog)
 
-CFilletByGirderDlg::CFilletByGirderDlg(CWnd* pParent /*=NULL*/)
+CFilletByGirderDlg::CFilletByGirderDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CFilletByGirderDlg::IDD, pParent),
    m_bFirstActive(true)
 {

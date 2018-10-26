@@ -75,42 +75,43 @@ END_CONNECTION_POINT_MAP()
 
    CMyCmdTarget m_MyCmdTarget;
 
-   virtual CString GetAppName() const  { return CString("TOGA"); }
-   virtual CString GetDefaultCatalogServerName() const  { return CString("TxDOT"); }
-   virtual CString GetDefaultCatalogName()  const  { return CString("TxDOT"); }
+   virtual CString GetAppName() const  override { return CString("TOGA"); }
+   virtual CString GetDefaultCatalogServerName() const  override { return CString("TxDOT"); }
+   virtual CString GetDefaultCatalogName()  const  override { return CString("TxDOT"); }
 
-   virtual CString GetTemplateFileExtension();
-   virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
    virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const;
-   virtual void CTxDOTAppPlugin::UpdateDocTemplates();
 
-   virtual CString GetDefaultMasterLibraryFile();
-   virtual CString GetDefaultWorkgroupTemplateFolder();
+   virtual CString GetTemplateFileExtension() override;
+   virtual const CRuntimeClass* GetDocTemplateRuntimeClass() override;
+   virtual void CTxDOTAppPlugin::UpdateDocTemplates() override;
+
+   virtual CString GetDefaultMasterLibraryFile() override;
+   virtual CString GetDefaultWorkgroupTemplateFolder() override;
 
 // IEAFAppPlugin
 public:
-   virtual BOOL Init(CEAFApp* pParent);
-   virtual void Terminate();
-   virtual void IntegrateWithUI(BOOL bIntegrate);
-   virtual std::vector<CEAFDocTemplate*> CreateDocTemplates();
-   virtual HMENU GetSharedMenuHandle();
-   virtual CString GetName();
-   virtual CString GetDocumentationSetName();
-   virtual CString GetDocumentationURL();
-   virtual CString GetDocumentationMapFile();
-   virtual void LoadDocumentationMap();
-   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL);
+   virtual BOOL Init(CEAFApp* pParent) override;
+   virtual void Terminate() override;
+   virtual void IntegrateWithUI(BOOL bIntegrate) override;
+   virtual std::vector<CEAFDocTemplate*> CreateDocTemplates() override;
+   virtual HMENU GetSharedMenuHandle() override;
+   virtual CString GetName() override;
+   virtual CString GetDocumentationSetName() override;
+   virtual CString GetDocumentationURL() override;
+   virtual CString GetDocumentationMapFile() override;
+   virtual void LoadDocumentationMap() override;
+   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL) override;
 
 // IEAFAppCommandLine
 public:
-   virtual CString GetUsageMessage();
-   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo &cmdInfo);
+   virtual CString GetUsageMessage() override;
+   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo &cmdInfo) override;
 
 // IEAFCommandCallback
 public:
-   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
-   virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
+   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo) override;
+   virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const override;
+   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
 public:
    void UpdateTemplates();

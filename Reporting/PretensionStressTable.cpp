@@ -170,7 +170,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
+   for (const auto& poi : vPoi)
    {
       col = 0;
 

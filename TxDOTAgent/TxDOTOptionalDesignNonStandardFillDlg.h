@@ -33,7 +33,7 @@ class CTxDOTOptionalDesignNonStandardFillDlg : public CDialog, public StrandRowG
 	DECLARE_DYNAMIC(CTxDOTOptionalDesignNonStandardFillDlg)
 
 public:
-	CTxDOTOptionalDesignNonStandardFillDlg(CWnd* pParent = NULL);   // standard constructor
+	CTxDOTOptionalDesignNonStandardFillDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CTxDOTOptionalDesignNonStandardFillDlg();
 
    void Init(CTxDOTOptionalDesignGirderData* pGirderData, ITxDOTBrokerRetriever* pBrokerRetriever);
@@ -52,16 +52,16 @@ private:
    bool m_UseDepressed; // was used in previous version of toga to show only one grid if all straight strands
    bool m_bFirstActive;
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
    // We aren't a property page, but we need to act like one
-   virtual BOOL OnFillSetActive();
-   virtual BOOL OnFillKillActive();
+   BOOL OnFillSetActive();
+   BOOL OnFillKillActive();
 
    void DoUseDepressed(bool useDepr);
 

@@ -97,7 +97,7 @@ void txnEditPrecastSegment::Undo()
    std::set<txnEditPrecastSegmentData>::iterator end(m_OldSegmentData.end());
    for ( ; iter != end; iter++ )
    {
-      txnEditPrecastSegmentData& oldSegmentData = *iter;
+      const txnEditPrecastSegmentData& oldSegmentData = *iter;
       SetSegmentData(oldSegmentData.m_SegmentKey,oldSegmentData);
    }
 

@@ -162,7 +162,7 @@ public:
    const CGirderGroupData* GetGirderGroup(GroupIndexType grpIdx) const;
 
    // Returns the girder group that contains pSpan. 
-   // don't use NULL for the span object, otherwise you will get group 0
+   // don't use nullptr for the span object, otherwise you will get group 0
    CGirderGroupData* GetGirderGroup(const CSpanData2* pSpan);
    const CGirderGroupData* GetGirderGroup(const CSpanData2* pSpan) const;
 
@@ -242,6 +242,9 @@ public:
 
    // Returns the number of girders in all groups. The result is meaningless if UseSameNumberOfGirdersInAllGroups is false
    GirderIndexType GetGirderCount() const;
+
+   // Returns the number of girders in the group with the least number of girders
+   GirderIndexType GetMinGirderCount() const;
 
    // =================================================================================
    // Girder Type
@@ -375,7 +378,7 @@ public:
 
 protected:
    void MakeCopy(const CBridgeDescription2& rOther);
-   virtual void MakeAssignment(const CBridgeDescription2& rOther);
+   void MakeAssignment(const CBridgeDescription2& rOther);
 
 private:
    SupportIDType m_TempSupportID; // generates unique ID's for temporary supports

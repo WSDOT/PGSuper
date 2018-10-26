@@ -44,6 +44,9 @@
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\PrecastSegmentData.h>
 
+#include <iterator>
+#include <algorithm>
+
 CSegmentModelManager::CSegmentModelManager(SHARED_LOGFILE lf,IBroker* pBroker) :
 LOGFILE(lf),m_pBroker(pBroker)
 {
@@ -203,7 +206,7 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
    }
 
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   for(const auto& pfType : pfTypes)
    {
       Float64 Rl, Rr;
       if ( pfType == pgsTypes::pftSecondaryEffects || pfType == pgsTypes::pftPostTensioning )
@@ -579,7 +582,7 @@ Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,LoadingC
    }
 
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   for( const auto& pfType : pfTypes)
    {
       LoadCaseIDType lcid = GetLoadCaseID(pfType);
       R += GetReaction(intervalIdx,lcid,pierIdx,girderKey,resultsType);
@@ -643,7 +646,7 @@ std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalId
    }
 
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   for (const auto& pfType : pfTypes)
    {
       std::vector<Float64> vf = GetAxial(intervalIdx,pfType,vPoi,resultsType);
       if ( vF.size() == 0 )
@@ -699,7 +702,7 @@ std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType in
    }
 
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   for( const auto& pfType : pfTypes)
    {
       std::vector<sysSectionValue> vS = GetShear(intervalIdx,pfType,vPoi,resultsType);
       if ( vShear.size() == 0 )
@@ -755,7 +758,7 @@ std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalI
    }
 
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   for (const auto& pfType : pfTypes)
    {
       std::vector<Float64> vm = GetMoment(intervalIdx,pfType,vPoi,resultsType);
       if ( vM.size() == 0 )
@@ -811,7 +814,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
    }
 
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   for( const auto& pfType : pfTypes)
    {
       std::vector<Float64> vd = GetDeflection(intervalIdx,pfType,vPoi,resultsType);
       if ( vD.size() == 0 )
@@ -867,7 +870,7 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
    }
 
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   for( const auto& pfType : pfTypes)
    {
       std::vector<Float64> vr = GetRotation(intervalIdx,pfType,vPoi,resultsType);
       if ( vR.size() == 0 )
@@ -918,7 +921,7 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombin
    }
 
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   for( const auto& pfType : pfTypes)
    {
       std::vector<Float64> ft,fb;
       GetStress(intervalIdx,pfType,vPoi,resultsType,topLocation,botLocation,&ft,&fb);
@@ -1197,7 +1200,7 @@ bool CSegmentModelManager::AddLoadingToLoadCombination(GirderIndexType girderLin
 
 bool CSegmentModelManager::CreateConcentratedLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz)
 {
-   return CreateConcentratedLoad(intervalIdx,pfType,NULL,poi,Fx,Fy,Mz);
+   return CreateConcentratedLoad(intervalIdx,pfType,nullptr,poi,Fx,Fy,Mz);
 }
 
 bool CSegmentModelManager::CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz)
@@ -1207,7 +1210,7 @@ bool CSegmentModelManager::CreateConcentratedLoad(IntervalIndexType intervalIdx,
 
 bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy)
 {
-   return CreateUniformLoad(intervalIdx,pfType,NULL,poi1,poi2,wx,wy);
+   return CreateUniformLoad(intervalIdx,pfType,nullptr,poi1,poi2,wx,wy);
 }
 
 bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy)
@@ -1217,7 +1220,7 @@ bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx,LPCTS
 
 bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r)
 {
-   return CreateInitialStrainLoad(intervalIdx,pfType,NULL,poi1,poi2,e,r);
+   return CreateInitialStrainLoad(intervalIdx,pfType,nullptr,poi1,poi2,e,r);
 }
 
 bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r)
@@ -1486,7 +1489,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 {
    GET_IFACE(IIntervals, pIntervals);
 
-   CSegmentModelData* pModelData = NULL;
+   CSegmentModelData* pModelData = nullptr;
    CSegmentKey prevSegmentKey;
    std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
@@ -1980,17 +1983,17 @@ CSegmentModelData* CSegmentModelManager::GetSegmentModel(const CSegmentKey& segm
    }
 
    ATLASSERT(false);
-   return NULL;
+   return nullptr;
 }
 
 CSegmentModelData* CSegmentModelManager::GetReleaseModel(const CSegmentKey& segmentKey)
 {
    CSegmentModelData* pModelData = GetModelData(m_ReleaseModels,segmentKey);
-   if ( pModelData == NULL )
+   if ( pModelData == nullptr )
    {
       BuildReleaseModel(segmentKey);
       pModelData = GetModelData(m_ReleaseModels,segmentKey);
-      ATLASSERT(pModelData != NULL);
+      ATLASSERT(pModelData != nullptr);
    }
 
    return pModelData;
@@ -1999,11 +2002,11 @@ CSegmentModelData* CSegmentModelManager::GetReleaseModel(const CSegmentKey& segm
 CSegmentModelData* CSegmentModelManager::GetLiftingModel(const CSegmentKey& segmentKey)
 {
    CSegmentModelData* pModelData = GetModelData(m_LiftingModels,segmentKey);
-   if ( pModelData == NULL )
+   if ( pModelData == nullptr )
    {
       BuildLiftingModel(segmentKey);
       pModelData = GetModelData(m_LiftingModels,segmentKey);
-      ATLASSERT(pModelData != NULL);
+      ATLASSERT(pModelData != nullptr);
    }
 
    return pModelData;
@@ -2012,11 +2015,11 @@ CSegmentModelData* CSegmentModelManager::GetLiftingModel(const CSegmentKey& segm
 CSegmentModelData* CSegmentModelManager::GetHaulingModel(const CSegmentKey& segmentKey)
 {
    CSegmentModelData* pModelData = GetModelData(m_HaulingModels,segmentKey);
-   if ( pModelData == NULL )
+   if ( pModelData == nullptr )
    {
       BuildHaulingModel(segmentKey);
       pModelData = GetModelData(m_HaulingModels,segmentKey);
-      ATLASSERT(pModelData != NULL);
+      ATLASSERT(pModelData != nullptr);
    }
 
    return pModelData;
@@ -2025,11 +2028,11 @@ CSegmentModelData* CSegmentModelManager::GetHaulingModel(const CSegmentKey& segm
 CSegmentModelData* CSegmentModelManager::GetStorageModel(const CSegmentKey& segmentKey)
 {
    CSegmentModelData* pModelData = GetModelData(m_StorageModels,segmentKey);
-   if ( pModelData == NULL )
+   if ( pModelData == nullptr )
    {
       BuildStorageModel(segmentKey);
       pModelData = GetModelData(m_StorageModels,segmentKey);
-      ATLASSERT(pModelData != NULL);
+      ATLASSERT(pModelData != nullptr);
    }
 
    return pModelData;
@@ -2041,7 +2044,7 @@ CSegmentModelData* CSegmentModelManager::GetModelData(SegmentModels& models,cons
    SegmentModels::iterator found = models.find(segmentKey);
    if ( found == models.end() )
    {
-      return NULL;
+      return nullptr;
    }
 
    CSegmentModelData* pModelData = &(*found).second;

@@ -33,7 +33,7 @@
 
 IMPLEMENT_DYNAMIC(CFilletSame4BridgeDlg, CDialog)
 
-CFilletSame4BridgeDlg::CFilletSame4BridgeDlg(CWnd* pParent /*=NULL*/)
+CFilletSame4BridgeDlg::CFilletSame4BridgeDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CFilletSame4BridgeDlg::IDD, pParent)
 {
 }

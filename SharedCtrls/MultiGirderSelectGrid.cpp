@@ -287,7 +287,7 @@ bool CMultiGirderSelectGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
     if (IsCurrentCell(nRow, nCol) && IsActiveCurrentCell())
     {
         CGXControl* pControl = GetControl(nRow, nCol);
-        if (pControl != NULL)
+        if (pControl != nullptr)
         {
            CString huh;
            pControl->GetValue(huh);
@@ -346,7 +346,7 @@ BOOL CMultiGirderSelectGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UI
          bool bDat = GetCellValue(nRow, nCol); 
          CString cellval = bDat ? _T("0") : _T("1"); // flip value of cell that was clicked on
 
-         for (POSITION pos = m_SelectedRange.GetHeadPosition(); pos != NULL;)
+         for (POSITION pos = m_SelectedRange.GetHeadPosition(); pos != nullptr;)
          {
             CGXRange* pRange = m_SelectedRange.GetNext(pos);
 
@@ -360,7 +360,7 @@ BOOL CMultiGirderSelectGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UI
 
                CGXControl* pControl = GetControl(nRow2, nCol2);
                CGXCheckBox* pCheck = dynamic_cast<CGXCheckBox*>(pControl);
-               if (pCheck != NULL) // only set check boxes
+               if (pCheck != nullptr) // only set check boxes
                {
                   SetValueRange(CGXRange(nRow2, nCol2), cellval);
                   TRACE(_T("SetValue Range (%d, %d)"),nRow2, nCol2);
@@ -407,7 +407,7 @@ BOOL CMultiGirderSelectGrid::ProcessKeys(CWnd* pSender, UINT nMessage,
           BOOL st = OnLButtonClickedRowCol(nRow, nCol, 0, CPoint());
 
           // clear selection
-          this->SetSelection(NULL);
+          this->SetSelection(nullptr);
           m_SelectedRange.DeleteAll();
 
           return st;
@@ -466,7 +466,7 @@ void CMultiGirderSelectGrid::SetAllValues(bool val)
       {
          CGXControl* pControl = GetControl(row, col);
          CGXCheckBox* pCheck = dynamic_cast<CGXCheckBox*>(pControl);
-         if (pCheck != NULL) // only set check boxes
+         if (pCheck != nullptr) // only set check boxes
          {
             SetValueRange(CGXRange(row, col), val ? _T("1") : _T("0"));
             TRACE(_T("SetValue Range (%d, %d)"),row, col);

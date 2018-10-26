@@ -41,11 +41,11 @@ public:
    Float64 Dset_TTS,WobbleFriction_TTS,FrictionCoefficient_TTS;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
    afx_msg void OnHelp();
 
 	DECLARE_MESSAGE_MAP()
 public:
    CStatic m_ctrlDescription;
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 };

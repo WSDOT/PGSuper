@@ -188,25 +188,21 @@ CAnalysisResultsGraphDefinitions::CAnalysisResultsGraphDefinitions()
 
 void CAnalysisResultsGraphDefinitions::AddGraphDefinition(const CAnalysisResultsGraphDefinition& def)
 {
-   m_Definitions.insert(def);
+   m_Definitions.insert(std::make_pair(def.m_ID,def));
 }
 
 CAnalysisResultsGraphDefinition& CAnalysisResultsGraphDefinitions::GetGraphDefinition(IDType graphID)
 {
-   CAnalysisResultsGraphDefinition key;
-   key.m_ID = graphID;
-   GraphDefinitionIterator found = m_Definitions.find(key);
+   GraphDefinitionIterator found = m_Definitions.find(graphID);
    ASSERT(found != m_Definitions.end());
-   return *found;
+   return found->second;
 }
 
 const CAnalysisResultsGraphDefinition& CAnalysisResultsGraphDefinitions::GetGraphDefinition(IDType graphID) const
 {
-   CAnalysisResultsGraphDefinition key;
-   key.m_ID = graphID;
-   ConstGraphDefinitionIterator found = m_Definitions.find(key);
+   ConstGraphDefinitionIterator found = m_Definitions.find(graphID);
    ASSERT(found != m_Definitions.end());
-   return *found;
+   return found->second;
 }
 
 IndexType CAnalysisResultsGraphDefinitions::GetGraphIndex(IDType graphID) const
@@ -216,7 +212,7 @@ IndexType CAnalysisResultsGraphDefinitions::GetGraphIndex(IDType graphID) const
    ConstGraphDefinitionIterator end(m_Definitions.end());
    for ( ; iter != end; iter++, index++ )
    {
-      const CAnalysisResultsGraphDefinition& def = *iter;
+      const CAnalysisResultsGraphDefinition& def = iter->second;
       if ( def.m_ID == graphID )
       {
          return index;
@@ -229,11 +225,8 @@ IndexType CAnalysisResultsGraphDefinitions::GetGraphIndex(IDType graphID) const
 
 void CAnalysisResultsGraphDefinitions::RemoveGraphDefinition(IDType graphID)
 {
-   CAnalysisResultsGraphDefinition key;
-   key.m_ID = graphID;
-   GraphDefinitionIterator found = m_Definitions.find(key);
+   GraphDefinitionIterator found = m_Definitions.find(graphID);
    ASSERT(found != m_Definitions.end());
-
    m_Definitions.erase(found);
 }
 
@@ -243,7 +236,7 @@ std::_tstring CAnalysisResultsGraphDefinitions::GetDefaultLoadCase(IntervalIndex
    ConstGraphDefinitionIterator iter;
    for ( iter = m_Definitions.begin(); iter != m_Definitions.end(); iter++ )
    {
-      const CAnalysisResultsGraphDefinition& def = *iter;
+      const CAnalysisResultsGraphDefinition& def = iter->second;
       std::set<IntervalIndexType>::const_iterator found = def.m_IntervalApplicability.find(intervalIdx);
       if (found != def.m_IntervalApplicability.end())
       {
@@ -262,7 +255,7 @@ std::vector< std::pair<std::_tstring,IDType> > CAnalysisResultsGraphDefinitions:
    ConstGraphDefinitionIterator iterEnd(m_Definitions.end());
    for ( ; iter != iterEnd; iter++ )
    {
-      const CAnalysisResultsGraphDefinition& def = *iter;
+      const CAnalysisResultsGraphDefinition& def = iter->second;
 
       bool bApplicableAction = true;
       switch(action)

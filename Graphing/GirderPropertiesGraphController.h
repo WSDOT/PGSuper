@@ -38,7 +38,7 @@ public:
 
 protected:
 
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CGirderPropertiesGraphController)
    afx_msg void OnPropertyChanged();

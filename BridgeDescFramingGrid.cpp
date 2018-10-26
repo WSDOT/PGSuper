@@ -133,7 +133,7 @@ std::vector<Float64> CBridgeDescFramingGrid::GetSegmentLengths()
       CSpanData2* pSpan = pDlg->m_BridgeDesc.GetSpan(spanIdx);
       Float64 startSpanStation = pSpan->GetPrevPier()->GetStation();
       std::vector<CTemporarySupportData*> vTS = pSpan->GetTemporarySupports();
-      BOOST_FOREACH(CTemporarySupportData* pTS,vTS)
+      for (const auto& pTS : vTS)
       {
          Float64 station = pTS->GetStation();
          Float64 segmentLength = station - startSpanStation;
@@ -199,13 +199,13 @@ void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<Float64>& spanLeng
 
    ASSERT(spanLengths.size() == pDlg->m_BridgeDesc.GetSpanCount());
 
-   BOOST_FOREACH(Float64 L,spanLengths)
+   for (const auto& L : spanLengths)
    {
       CSpanData2* pNextSpan = pPrevPier->GetNextSpan();
       ASSERT(pNextSpan);
 
       std::vector<CTemporarySupportData*> vTS = pNextSpan->GetTemporarySupports();
-      BOOST_FOREACH(CTemporarySupportData* pTS,vTS)
+      for (const auto& pTS : vTS)
       {
          Float64 tsStation = pTS->GetStation();
          tsStation += pier_offset;
@@ -233,7 +233,7 @@ BOOL CBridgeDescFramingGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UI
 	VERIFY(menu.LoadMenu(IDR_FRAMING_GRID2_CONTEXT));
 
 	CMenu* pPopup = menu.GetSubMenu( 0 );
-	ASSERT( pPopup != NULL );
+	ASSERT( pPopup != nullptr );
 
    // deal with disabling delete since update stuff doesn't seem to work right
    UINT bCanDelete = EnableRemovePierBtn() ? MF_ENABLED|MF_BYCOMMAND : MF_GRAYED|MF_BYCOMMAND;
@@ -327,7 +327,7 @@ void CBridgeDescFramingGrid::OnAddPier()
    CInsertSpanDlg dlg(&pDlg->m_BridgeDesc);;
    if ( dlg.DoModal() == IDOK )
    {
-      pDlg->m_BridgeDesc.InsertSpan(dlg.m_RefPierIdx,dlg.m_PierFace,dlg.m_SpanLength,NULL,NULL,dlg.m_bCreateNewGroup,dlg.m_EventIndex);
+      pDlg->m_BridgeDesc.InsertSpan(dlg.m_RefPierIdx,dlg.m_PierFace,dlg.m_SpanLength,nullptr,nullptr,dlg.m_bCreateNewGroup,dlg.m_EventIndex);
       FillGrid(pDlg->m_BridgeDesc);
    }
 }
@@ -389,7 +389,7 @@ void CBridgeDescFramingGrid::OnRemoveTemporarySupport()
 
 bool CBridgeDescFramingGrid::EnableRemovePierBtn()
 {
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
    {
 		return false;
    }
@@ -419,7 +419,7 @@ bool CBridgeDescFramingGrid::EnableRemovePierBtn()
 
 bool CBridgeDescFramingGrid::EnableRemoveTemporarySupportBtn()
 {
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
    {
 		return false;
    }
@@ -1236,6 +1236,8 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
 
       FillSpanColumn();   // updates span lengths
       FillSegmentColumn(); // update segment lengths
+
+      ResizeColWidthsToFit(CGXRange(0, 0, GetRowCount(), 4));
    }
    return CGXGridWnd::OnEndEditing(nRow,nCol);
 }
@@ -1282,7 +1284,7 @@ BOOL CBridgeDescFramingGrid::CanActivateGrid(BOOL bActivate)
    {
       // make sure all the grid data is active
       std::vector<Float64> spanLengths = GetSpanLengths();
-      BOOST_FOREACH(Float64 L,spanLengths)
+      for (const auto& L : spanLengths)
       {
          if ( L <= 0 )
          {
@@ -1292,7 +1294,7 @@ BOOL CBridgeDescFramingGrid::CanActivateGrid(BOOL bActivate)
       }
 
       std::vector<Float64> segmentLengths = GetSegmentLengths();
-      BOOST_FOREACH(Float64 L,segmentLengths)
+      for (const auto& L : segmentLengths)
       {
          if ( L <= 0 )
          {
@@ -1440,7 +1442,7 @@ SupportIndexType CBridgeDescFramingGrid::GetTemporarySupportIndex(ROWCOL nRow)
 
 void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,txnTransaction* pTxn)
 {
-   if ( pTxn == NULL )
+   if ( pTxn == nullptr )
    {
       return;
    }
@@ -1456,7 +1458,7 @@ void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,txnTransa
 
 void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx,txnTransaction* pTxn)
 {
-   if ( pTxn == NULL )
+   if ( pTxn == nullptr )
    {
       return;
    }
@@ -1472,7 +1474,7 @@ void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx,txnTransa
 
 void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx,txnTransaction* pTxn)
 {
-   if ( pTxn == NULL )
+   if ( pTxn == nullptr )
    {
       return;
    }

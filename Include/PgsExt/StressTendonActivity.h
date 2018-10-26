@@ -53,7 +53,7 @@ public:
    void AddTendon(const CTendonKey& tendonKey);
 
    // Add multiple tendons to the list of tendons that are stressed during this event
-   void AddTendons(const std::set<CTendonKey>& tendons);
+   void AddTendons(const std::vector<CTendonKey>& tendons);
 
    // Removes a tendon from the stressing list.
    // Pass a value of true for bRemovedFromBridge if the tendon has been removed from the
@@ -71,8 +71,7 @@ public:
    bool IsTendonStressed() const;
 
    // Returns the tendons that are stressed in this activity
-   // the second data member holds a duct index
-   const std::set<CTendonKey>& GetTendons() const;
+   const std::vector<CTendonKey>& GetTendons() const;
 
    // Returns the number of tendons in this activity
    IndexType GetTendonCount() const;
@@ -82,9 +81,10 @@ public:
 
 protected:
    void MakeCopy(const CStressTendonActivity& rOther);
-   virtual void MakeAssignment(const CStressTendonActivity& rOther);
+   void MakeAssignment(const CStressTendonActivity& rOther);
    bool m_bEnabled;
 
    // tendon keys must use the gdrID parameter!
-   std::set<CTendonKey> m_Tendons;
+   // this is a sorted collection
+   std::vector<CTendonKey> m_Tendons;
 };

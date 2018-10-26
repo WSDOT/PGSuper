@@ -23,6 +23,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\PoiMgr.h>
 #include <algorithm>
+#include <iterator>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -212,27 +213,57 @@ private:
 
 bool MergeDuplicatePoi(pgsPointOfInterest& poi1,pgsPointOfInterest& poi2)
 {
-   if ( poi1.AtSamePlace(poi2) )
+   if (poi1.AtExactSamePlace(poi2))
    {
-      // Don't mess with
-      if ( sysFlags<PoiAttributeType>::IsSet(poi1.GetReferencedAttributes(POI_SPAN),POI_CANTILEVER) || // points on the cantilevers
-           sysFlags<PoiAttributeType>::IsSet(poi2.GetReferencedAttributes(POI_SPAN),POI_CANTILEVER) ||
-           poi1.HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) || // pick points
-           poi1.HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT) || // bunk points
-           poi1.HasAttribute(POI_SECTCHANGE) ||                   // section change locations
-           poi2.HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) || 
-           poi2.HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT) ||
-           poi2.HasAttribute(POI_SECTCHANGE) 
+      bool doMerge = true;
+      if (poi1.GetID() == poi2.GetID())
+      {
+         // There are rare cases when a function attempts to put in a duplicate POI and we need to merge attributes if this happens.
+         // An example is in PCI_BDM_Ex9.6.pgs span 2, girder 1 when computing the CS shear.
+         doMerge = true;
+      }
+      else if (
+         // don't mess with
+         sysFlags<PoiAttributeType>::IsSet(poi1.GetReferencedAttributes(POI_SPAN), POI_CANTILEVER) || // points on the cantilevers
+         sysFlags<PoiAttributeType>::IsSet(poi2.GetReferencedAttributes(POI_SPAN), POI_CANTILEVER) ||
+         poi1.HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) || // pick points
+         poi1.HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT) || // bunk points
+         poi2.HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) ||
+         poi2.HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT)
          )
       {
-         return false;
+         doMerge = false;
+      }
+      else
+      {
+         // section change locations. Don't merge unless to ends of segments. It is possible that an end already has a section change
+         bool isP1EF = poi1.HasAttribute(POI_END_FACE) || poi1.HasAttribute(POI_START_FACE);
+         bool isP2EF = poi2.HasAttribute(POI_END_FACE) || poi2.HasAttribute(POI_START_FACE);
+         bool isP1SC = poi1.HasAttribute(POI_SECTCHANGE);
+         bool isP2SC = poi2.HasAttribute(POI_SECTCHANGE);
+
+         if (isP1SC || isP2SC)
+         {
+            // easier to see logic if merge is true
+            if (isP1EF && isP2SC || isP2EF && isP1SC)
+            {
+               doMerge = true;
+            }
+            else
+            {
+               doMerge = false;
+            }
+         }
       }
 
-      bool bCanMerge = poi1.CanMerge();
-      poi1.CanMerge(true);
-      poi1.MergeAttributes(poi2);
-      poi1.CanMerge(bCanMerge);
-      return true;
+      if (doMerge)
+      {
+         bool bCanMerge = poi1.CanMerge();
+         poi1.CanMerge(true);
+         poi1.MergeAttributes(poi2);
+         poi1.CanMerge(bCanMerge);
+         return true;
+      }
    }
 
    return false;
@@ -402,7 +433,7 @@ void pgsPoiMgr::RemoveAll()
    {
       std::vector<pgsPointOfInterest>* pvPoi = iter->second;
       delete pvPoi;
-      iter->second = NULL;
+      iter->second = nullptr;
    }
    m_PoiData.clear();
 }
@@ -810,7 +841,7 @@ void pgsPoiMgr::GetTenthPointPOIs(PoiAttributeType reference,const CSegmentKey& 
    ATLASSERT(vpvPoi.size() != 0);
    const std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
 
-   if ( pvPoi == NULL )
+   if ( pvPoi == nullptr )
    {
       return;
    }
@@ -1138,7 +1169,7 @@ std::vector<std::vector<pgsPointOfInterest>*> pgsPoiMgr::GetPoiContainer(const C
    {
       // want POIs for specific segment
       std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator found = m_PoiData.find(segmentKey);
-      std::vector<pgsPointOfInterest>* pvPoi = NULL;
+      std::vector<pgsPointOfInterest>* pvPoi = nullptr;
       if ( found == m_PoiData.end() )
       {
          pvPoi = new std::vector<pgsPointOfInterest>();
@@ -1148,7 +1179,7 @@ std::vector<std::vector<pgsPointOfInterest>*> pgsPoiMgr::GetPoiContainer(const C
       {
          pvPoi = found->second;
       }
-      ATLASSERT( pvPoi != NULL);
+      ATLASSERT( pvPoi != nullptr);
       vpvPoi.push_back(pvPoi);
    }
 
@@ -1161,21 +1192,19 @@ std::vector<const std::vector<pgsPointOfInterest>*> pgsPoiMgr::GetPoiContainer(c
    if ( segmentKey.groupIndex == INVALID_INDEX || segmentKey.girderIndex == INVALID_INDEX || segmentKey.segmentIndex == INVALID_INDEX )
    {
       // want POIs for multiple groups, girders, or segments
-      std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::const_iterator iter = m_PoiData.begin();
-      std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::const_iterator end  = m_PoiData.end();
-      for ( ; iter != end; iter++ )
+      for (auto poiData : m_PoiData)
       {
-         const CSegmentKey& key = iter->first;
+         auto key = poiData.first;
          if ( segmentKey == key )
          {
-            vpvPoi.push_back(iter->second);
+            vpvPoi.push_back(poiData.second);
          }
       }
    }
    else
    {
       // want POIs for specific segment
-      std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::const_iterator found = m_PoiData.find(segmentKey);
+      auto found = m_PoiData.find(segmentKey);
       if ( found != m_PoiData.end() )
       {
          vpvPoi.push_back(found->second);

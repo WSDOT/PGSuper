@@ -83,45 +83,45 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
    //
    // Create report spec builders
    //
-   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
-   boost::shared_ptr<CReportSpecificationBuilder> pGirderLineRptSpecBuilder( new CGirderLineReportSpecificationBuilder(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
+   std::shared_ptr<CReportSpecificationBuilder> pGirderLineRptSpecBuilder( std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
 
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
-      boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
+      std::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
 
       // WSDOT Girder Schedule
-      CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Girder Schedule"));
+      std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("WSDOT Girder Schedule")));
 #if defined _DEBUG || defined _BETA_VERSION
       pRptBuilder->IncludeTimingChapter();
 #endif
-      pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+      pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
       pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-      pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
-      pRptMgr->AddReportBuilder( pRptBuilder );
+      pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
+      pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
       // WSDOT Summary Report
-      pRptBuilder = new CReportBuilder(_T("WSDOT Summary Report"));
+      pRptBuilder = std::make_unique<CReportBuilder>(_T("WSDOT Summary Report"));
 #if defined _DEBUG || defined _BETA_VERSION
       pRptBuilder->IncludeTimingChapter();
 #endif
-      pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+      pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
       pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-      pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) ); // may have to move this chapter to a common DLL
-      pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CInputSummaryChapter) );
-      pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COutputSummaryChapter) );
-      pRptMgr->AddReportBuilder( pRptBuilder );
+      pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) ); // may have to move this chapter to a common DLL
+      pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CInputSummaryChapter) );
+      pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new COutputSummaryChapter) );
+      pRptMgr->AddReportBuilder( pRptBuilder.release() );
    }
 
    // WSDOT Load Rating Summary
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Load Rating Summary"));
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("WSDOT Load Rating Summary")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->SetReportSpecificationBuilder( pGirderLineRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingSummaryChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingSummaryChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    return S_OK;
 }

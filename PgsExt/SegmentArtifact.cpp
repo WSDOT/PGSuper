@@ -35,8 +35,8 @@ static char THIS_FILE[] = __FILE__;
 pgsSegmentArtifact::pgsSegmentArtifact(const CSegmentKey& segmentKey) :
 m_SegmentKey(segmentKey)
 {
-   m_pLiftingCheckArtifact = NULL;
-   m_pHaulingAnalysisArtifact = NULL;
+   m_pLiftingCheckArtifact = nullptr;
+   m_pHaulingAnalysisArtifact = nullptr;
 }
 
 pgsSegmentArtifact::pgsSegmentArtifact(const pgsSegmentArtifact& rOther)
@@ -134,7 +134,7 @@ const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(I
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -147,7 +147,7 @@ pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(Interva
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -165,7 +165,7 @@ const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifactAt
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 const pgsStirrupCheckArtifact* pgsSegmentArtifact::GetStirrupCheckArtifact() const
@@ -493,11 +493,11 @@ bool pgsSegmentArtifact::Passed() const
 
    bPassed &= m_PrecastIGirderDetailingArtifact.Passed();
 
-   if ( m_pLiftingCheckArtifact != NULL )
+   if ( m_pLiftingCheckArtifact != nullptr )
    {
       bPassed &= m_pLiftingCheckArtifact->Passed();
    }
-   if (m_pHaulingAnalysisArtifact != NULL)
+   if (m_pHaulingAnalysisArtifact != nullptr)
    {
       bPassed &= m_pHaulingAnalysisArtifact->Passed(pgsTypes::CrownSlope);
       bPassed &= m_pHaulingAnalysisArtifact->Passed(pgsTypes::Superelevation);
@@ -758,7 +758,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
       }
    }
 
-   if (m_pHaulingAnalysisArtifact != NULL)
+   if (m_pHaulingAnalysisArtifact != nullptr)
    {
       Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope,&fc_reqd_hauling_comp1,&fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
@@ -927,7 +927,7 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
       }
    }
  
-   if (m_pLiftingCheckArtifact != NULL)
+   if (m_pLiftingCheckArtifact != nullptr)
    {
       Float64 fc_reqd_lifting_comp = m_pLiftingCheckArtifact->RequiredFcCompression();
       Float64 fc_reqd_lifting_tens_norebar = m_pLiftingCheckArtifact->RequiredFcTension();

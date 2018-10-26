@@ -30,7 +30,7 @@ class CAboutDlg : public CDialog
    DECLARE_DYNAMIC(CAboutDlg)
 
 public:
-   CAboutDlg(UINT nResourceID,UINT nIDTemplate=0,CWnd* pParent=NULL);
+   CAboutDlg(UINT nResourceID,UINT nIDTemplate=0,CWnd* pParent=nullptr);
    virtual ~CAboutDlg();
 
 // Dialog Data

@@ -98,7 +98,7 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
    std::sort(vShearPoi.begin(),vShearPoi.end());
    vShearPoi.erase(std::unique(vShearPoi.begin(),vShearPoi.end()),vShearPoi.end());
 
-   pgsRatingArtifact ratingArtifact;
+   pgsRatingArtifact ratingArtifact(ratingType);
 
    // Rate for positive moment - flexure
    MomentRating(girderKey,vPoi,true,ratingType,vehicleIdx,ratingArtifact);
@@ -166,7 +166,7 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
    bool bTimeStep = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
-   std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
+   std::vector<const MOMENTCAPACITYDETAILS*> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
    std::vector<MINMOMENTCAPDETAILS> vMmin = pMomentCapacity->GetMinMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
 
    ATLASSERT(vPoi.size()     == vDCmax.size());
@@ -271,8 +271,8 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
          }
       }
 
-      Float64 phi_moment = vM[i].Phi; 
-      Float64 Mn = vM[i].Mn;
+      Float64 phi_moment = vM[i]->Phi; 
+      Float64 Mn = vM[i]->Mn;
 
       // NOTE: K can be less than zero when we are rating for negative moment and the minumum moment demand (Mu)
       // is positive. This happens near the simple ends of spans. For example Mr < 0 because we are rating for
@@ -390,8 +390,8 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
    }
    else
    {
-      pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, batMin, true, true, &vLLIMmin, &vUnused, NULL,NULL,NULL,NULL);
-      pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, batMax, true, true, &vUnused, &vLLIMmax, NULL,NULL,NULL,NULL);
+      pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, batMin, true, true, &vLLIMmin, &vUnused, nullptr,nullptr,nullptr,nullptr);
+      pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, batMax, true, true, &vUnused, &vLLIMmax, nullptr,nullptr,nullptr,nullptr);
    }
 
    pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, batMax, false, &vUnused, &vPLmax );
@@ -576,8 +576,8 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
       pgsDesigner2 designer;
       designer.SetBroker(m_pBroker);
       pShearCapacity->GetShearCapacityDetails(ls,loadRatingIntervalIdx,poi,&scd);
-      designer.InitShearCheck(poi.GetSegmentKey(),loadRatingIntervalIdx,ls,NULL);
-      designer.CheckLongReinfShear(poi,loadRatingIntervalIdx,ls,scd,NULL,&l_artifact);
+      designer.InitShearCheck(poi.GetSegmentKey(),loadRatingIntervalIdx,ls,nullptr);
+      designer.CheckLongReinfShear(poi,loadRatingIntervalIdx,ls,scd,nullptr,&l_artifact);
       shearArtifact.SetLongReinfShearArtifact(l_artifact);
 
       ratingArtifact.AddArtifact(poi,shearArtifact);
@@ -589,6 +589,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
    ATLASSERT(ratingType == pgsTypes::lrDesign_Inventory || 
              ratingType == pgsTypes::lrLegal_Routine    ||
              ratingType == pgsTypes::lrLegal_Special    || // see MBE C6A.5.4.1
+             ratingType == pgsTypes::lrLegal_Emergency ||
              ratingType == pgsTypes::lrPermit_Routine   || // WSDOT BDM
              ratingType == pgsTypes::lrPermit_Special );   // WSDOT BDM
 
@@ -641,7 +642,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
    GET_IFACE(IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
+   for(const auto& poi : vPoi)
    {
       std::vector<pgsTypes::StressLocation> vStressLocations;
       for ( int i = 0; i < 2; i++ )
@@ -670,7 +671,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
          continue; // next POI
       }
 
-      BOOST_FOREACH(const pgsTypes::StressLocation& stressLocation,vStressLocations)
+      for (const auto& stressLocation : vStressLocations)
       {
          Float64 fDummy, fDC, fDW, fCR, fSH, fRE, fPS, fLLIM, fPL;
          pCombinedForces->GetStress(loadRatingIntervalIdx,lcDC,      poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fDC);
@@ -701,7 +702,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
          }
          else
          {
-            pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,poi,bat,true,true,stressLocation,stressLocation,&fDummy1,&fDummy2,&fDummy3,&fLLIM,NULL,NULL,NULL,NULL);
+            pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,poi,bat,true,true,stressLocation,stressLocation,&fDummy1,&fDummy2,&fDummy3,&fLLIM,nullptr,nullptr,nullptr,nullptr);
          }
 
          if ( bIncludePL )
@@ -979,7 +980,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
 
          Float64 Y = DBL_MAX;
          CComPtr<IRebarSectionItem> rebarSectionItem;
-         while ( enumRebarSectionItem->Next(1,&rebarSectionItem,NULL) != S_FALSE )
+         while ( enumRebarSectionItem->Next(1,&rebarSectionItem,nullptr) != S_FALSE )
          {
             CComPtr<IPoint2d> location;
             rebarSectionItem->get_Location(&location);
@@ -1370,8 +1371,8 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
       }
       else
       {
-         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMin,true,true,&vLLIMmin,&vUnused,NULL,NULL);
-         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMax,true,true,&vUnused,&vLLIMmax,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMin,true,true,&vLLIMmin,&vUnused,nullptr,nullptr);
+         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMax,true,true,&vUnused,&vLLIMmax,nullptr,nullptr);
       }
 
       pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, batMin, &vPLmin, &vUnused );
@@ -1474,8 +1475,8 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
       }
       else
       {
-         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMin,true,true,&vLLIMmin,&vUnused,NULL,NULL);
-         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMax,true,true,&vUnused,&vLLIMmax,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMin,true,true,&vLLIMmin,&vUnused,nullptr,nullptr);
+         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMax,true,true,&vUnused,&vLLIMmax,nullptr,nullptr);
       }
 
       // sum DC and DW

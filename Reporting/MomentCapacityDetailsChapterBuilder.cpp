@@ -242,7 +242,7 @@ void write_moment_data_table(IBroker* pBroker,
    CComPtr<IBeamFactory> pFactory;
    pGdrEntry->GetBeamFactory(&pFactory);
 
-   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->DeckType;
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
    DuctIndexType nTendons = pTendonGeometry->GetDuctCount(girderKey);
 
@@ -430,71 +430,70 @@ void write_moment_data_table(IBroker* pBroker,
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      MOMENTCAPACITYDETAILS mcd;
-      pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
+      const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
       col = 0;
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
-      (*table)(row,col++) << dim.SetValue( mcd.c );
-      (*table)(row,col++) << dim.SetValue( mcd.dc );
-      (*table)(row,col++) << dim.SetValue( mcd.de );
+      (*table)(row,col++) << dim.SetValue( pmcd->c );
+      (*table)(row,col++) << dim.SetValue( pmcd->dc );
+      (*table)(row,col++) << dim.SetValue( pmcd->de );
 
       if ( bPositiveMoment )
       {
-         (*table)(row,col++) << dim.SetValue( mcd.de_shear );
+         (*table)(row,col++) << dim.SetValue( pmcd->de_shear );
       }
 
-      (*table)(row,col++) << dim.SetValue( mcd.dt );
+      (*table)(row,col++) << dim.SetValue( pmcd->dt );
       if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
       {
-         (*table)(row,col++) << strain.SetValue(mcd.et);
+         (*table)(row,col++) << strain.SetValue(pmcd->et);
       }
 
       if ( bPositiveMoment )
       {
-         (*table)(row,col++) << stress.SetValue( mcd.fpe_ps );
-         (*table)(row,col++) << strain.SetValue(mcd.eps_initial * 1000);
+         (*table)(row,col++) << stress.SetValue( pmcd->fpe_ps );
+         (*table)(row,col++) << strain.SetValue(pmcd->eps_initial * 1000);
 
          for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
          {
-            (*table)(row,col++) << stress.SetValue(mcd.fpe_pt[tendonIdx]);
-            (*table)(row,col++) << strain.SetValue(mcd.ept_initial[tendonIdx]*1000);
+            (*table)(row,col++) << stress.SetValue(pmcd->fpe_pt[tendonIdx]);
+            (*table)(row,col++) << strain.SetValue(pmcd->ept_initial[tendonIdx]*1000);
          }
 
-         (*table)(row,col++) << stress.SetValue( mcd.fps_avg );
+         (*table)(row,col++) << stress.SetValue( pmcd->fps_avg );
 
          if ( 0 < nTendons )
          {
-            (*table)(row,col++) << stress.SetValue( mcd.fpt_avg );
+            (*table)(row,col++) << stress.SetValue( pmcd->fpt_avg );
          }
 
          if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
          {
-            (*table)(row,col++) << scalar.SetValue( mcd.PPR );
+            (*table)(row,col++) << scalar.SetValue( pmcd->PPR );
          }
       }
       else
       {
          if ( 0 < nTendons )
          {
-            (*table)(row,col++) << stress.SetValue( mcd.fpe_ps );
-            (*table)(row,col++) << strain.SetValue(mcd.eps_initial * 1000);
+            (*table)(row,col++) << stress.SetValue( pmcd->fpe_ps );
+            (*table)(row,col++) << strain.SetValue(pmcd->eps_initial * 1000);
             for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
             {
-               (*table)(row,col++) << stress.SetValue(mcd.fpe_pt[tendonIdx]);
-               (*table)(row,col++) << strain.SetValue(mcd.ept_initial[tendonIdx]*1000);
+               (*table)(row,col++) << stress.SetValue(pmcd->fpe_pt[tendonIdx]);
+               (*table)(row,col++) << strain.SetValue(pmcd->ept_initial[tendonIdx]*1000);
             }
 
-            (*table)(row,col++) << stress.SetValue( mcd.fps_avg );
-            (*table)(row,col++) << stress.SetValue( mcd.fpt_avg );
+            (*table)(row,col++) << stress.SetValue( pmcd->fps_avg );
+            (*table)(row,col++) << stress.SetValue( pmcd->fpt_avg );
          }
       }
-      (*table)(row,col++) << scalar.SetValue( mcd.Phi );
-      (*table)(row,col++) << dim.SetValue( mcd.MomentArm );
-      (*table)(row,col++) << force.SetValue( -mcd.C );
-      (*table)(row,col++) << force.SetValue( mcd.T );
-      (*table)(row,col++) << moment.SetValue( mcd.Mn );
+      (*table)(row,col++) << scalar.SetValue( pmcd->Phi );
+      (*table)(row,col++) << dim.SetValue( pmcd->MomentArm );
+      (*table)(row,col++) << force.SetValue( -pmcd->C );
+      (*table)(row,col++) << force.SetValue( pmcd->T );
+      (*table)(row,col++) << moment.SetValue( pmcd->Mn );
 
 
       row++;
@@ -518,10 +517,9 @@ void write_moment_data_table(IBroker* pBroker,
    }
    else
    {
-      MOMENTCAPACITYDETAILS mcd;
-      pMomentCap->GetMomentCapacityDetails(intervalIdx,vPoi.front(),bPositiveMoment,&mcd);
-      *pPara << Sub2(symbol(epsilon),_T("cl")) << _T(" = ") << strain.SetValue(mcd.ecl) << rptNewLine;
-      *pPara << Sub2(symbol(epsilon),_T("tl")) << _T(" = ") << strain.SetValue(mcd.etl) << rptNewLine;
+      const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,vPoi.front(),bPositiveMoment);
+      *pPara << Sub2(symbol(epsilon),_T("cl")) << _T(" = ") << strain.SetValue(pmcd->ecl) << rptNewLine;
+      *pPara << Sub2(symbol(epsilon),_T("tl")) << _T(" = ") << strain.SetValue(pmcd->etl) << rptNewLine;
 
       if ( 0 < nTendons )
       {
@@ -840,9 +838,8 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      MOMENTCAPACITYDETAILS mcd;
-      pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
-      if ( mcd.bOverReinforced )
+      const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
+      if ( pmcd->bOverReinforced )
       {
          bTableNeeded = true;
       }
@@ -930,21 +927,20 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      MOMENTCAPACITYDETAILS mcd;
-      pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
+      const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
-      if ( mcd.bOverReinforced )
+      if ( pmcd->bOverReinforced )
       {
          (*table)(row,0) << location.SetValue( POI_SPAN, poi );
-         (*table)(row,1) << scalar.SetValue( mcd.Beta1Slab );
-         (*table)(row,2) << stress.SetValue( mcd.FcSlab );
-         (*table)(row,3) << dim.SetValue( mcd.b );
-         (*table)(row,4) << dim.SetValue( mcd.bw );
-         (*table)(row,5) << dim.SetValue( mcd.de );
-         (*table)(row,6) << dim.SetValue( mcd.hf );
-         (*table)(row,7) << (mcd.bRectSection ? _T("C5.7.3.3.1-1") : _T("C5.7.3.3.1-2"));
-         (*table)(row,8) << moment.SetValue( mcd.MnMin );
-         (*table)(row,9) << moment.SetValue( mcd.Phi * mcd.MnMin );
+         (*table)(row,1) << scalar.SetValue( pmcd->Beta1Slab );
+         (*table)(row,2) << stress.SetValue( pmcd->FcSlab );
+         (*table)(row,3) << dim.SetValue( pmcd->b );
+         (*table)(row,4) << dim.SetValue( pmcd->bw );
+         (*table)(row,5) << dim.SetValue( pmcd->de );
+         (*table)(row,6) << dim.SetValue( pmcd->hf );
+         (*table)(row,7) << (pmcd->bRectSection ? _T("C5.7.3.3.1-1") : _T("C5.7.3.3.1-2"));
+         (*table)(row,8) << moment.SetValue( pmcd->MnMin );
+         (*table)(row,9) << moment.SetValue( pmcd->Phi * pmcd->MnMin );
 
          row++;
       }

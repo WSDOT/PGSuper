@@ -164,7 +164,7 @@ protected:
    void MakeCopy(const CLongitudinalRebarData& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CLongitudinalRebarData& rOther);
+   void MakeAssignment(const CLongitudinalRebarData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

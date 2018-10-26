@@ -69,8 +69,8 @@ IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignGirderInputPage, CPropertyPage)
 
 CTxDOTOptionalDesignGirderInputPage::CTxDOTOptionalDesignGirderInputPage()
 	: CPropertyPage(CTxDOTOptionalDesignGirderInputPage::IDD),
-   m_pBrokerRetriever(NULL),
-   m_pData(NULL),
+   m_pBrokerRetriever(nullptr),
+   m_pData(nullptr),
    m_OrigStrandFillType( CTxDOTOptionalDesignGirderData::sfStandard),
    m_OptStrandFillType( CTxDOTOptionalDesignGirderData::sfStandard),
    m_GirderTypeChanged(false)
@@ -161,7 +161,7 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
    CPropertyPage::DoDataExchange(pDX);
 
    CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
-   if (pBroker==NULL)
+   if (pBroker==nullptr)
       return;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -424,7 +424,7 @@ void CTxDOTOptionalDesignGirderInputPage::InitFillTypeCtrls()
    CString girder =  m_pData->GetGirderEntryName();
    GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder));
-   ASSERT(pGdrEntry!=NULL);
+   ASSERT(pGdrEntry!=nullptr);
 
    // Options depend on whether harped strands can exist
    bool hasHarped = pGdrEntry->GetMaxHarpedStrands() > 0;

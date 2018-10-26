@@ -307,6 +307,20 @@ public:
    void SetLimitStateConcreteStrength(pgsTypes::LimitStateConcreteStrength lsFc);
    pgsTypes::LimitStateConcreteStrength GetLimitStateConcreteStrength() const;
 
+   // Set/Get parameters for checking clear space between adjacent bottom flanges
+   void CheckBottomFlangeClearance(bool bCheck);
+   bool CheckBottomFlangeClearance() const;
+   void SetMinBottomFlangeClearance(Float64 Cmin);
+   Float64 GetMinBottomFlangeClearance() const;
+
+   // Set/Get parameters for checking maximum inclinations of tilted girders
+   void CheckGirderInclination(bool bCheck);
+   bool CheckGirderInclination() const;
+   void SetGirderInclinationBrgPadDeduction(Float64 brgPadDeduct);
+   Float64 GetGirderInclinationBrgPadDeduction() const;
+   void SetGirderInclinationFactorOfSafety(Float64 fs);
+   Float64 GetGirderInclinationFactorOfSafety() const;
+
    //////////////////////////////////////
    //
    // Precast Elements
@@ -600,6 +614,9 @@ public:
    Float64 GetLiftingCamberPercentEstimate() const;
    void SetLiftingCamberPercentEstimate(Float64 per);
 
+   Float64 GetLiftingCamberMultiplier() const;
+   void SetLiftingCamberMultiplier(Float64 m);
+
    pgsTypes::WindType GetLiftingWindType() const;
    void SetLiftingWindType(pgsTypes::WindType windType);
 
@@ -647,6 +664,9 @@ public:
    // Set/Get the percent the radius of stability is to be increased for camber
    Float64 GetHaulingCamberPercentEstimate() const;
    void SetHaulingCamberPercentEstimate(Float64 per);
+
+   Float64 GetHaulingCamberMultiplier() const;
+   void SetHaulingCamberMultiplier(Float64 m);
 
    const COldHaulTruck* GetOldHaulTruck() const;
 
@@ -1175,15 +1195,10 @@ public:
    // set version of these methods are obsolete and should be removed
    void IgnoreRangeOfApplicabilityRequirements(bool bIgnore);
 
-   void CheckBottomFlangeClearance(bool bCheck);
-   bool CheckBottomFlangeClearance() const;
-   void SetMinBottomFlangeClearance(Float64 Cmin);
-   Float64 GetMinBottomFlangeClearance() const;
-
 
 protected:
    void MakeCopy(const SpecLibraryEntry& rOther);
-   virtual void MakeAssignment(const SpecLibraryEntry& rOther);
+   void MakeAssignment(const SpecLibraryEntry& rOther);
 
 private:
 
@@ -1238,6 +1253,7 @@ private:
    int     m_CuringMethod;
    pgsTypes::CamberMethod m_LiftingCamberMethod;
    Float64 m_LiftingCamberPercentEstimate;
+   Float64 m_LiftingCamberMultiplier; // multilplier for direct camber
    pgsTypes::WindType m_LiftingWindType;
    Float64 m_LiftingWindLoad;
    bool m_LiftingStressesPlumbGirder;
@@ -1256,6 +1272,7 @@ private:
 
    pgsTypes::CamberMethod m_HaulingCamberMethod;
    Float64 m_HaulingCamberPercentEstimate;
+   Float64 m_HaulingCamberMultiplier; // multilplier for direct camber
 
    bool m_bHasOldHaulTruck; // if true, an old spec library entry was read and the hauling truck information is stored in m_OldHaulTruck
    COldHaulTruck m_OldHaulTruck;
@@ -1487,6 +1504,11 @@ private:
 
    bool m_bCheckBottomFlangeClearance;
    Float64 m_Cmin;
+
+   bool m_bCheckGirderInclination;
+   Float64 m_InclinedGirder_BrgPadDeduction;
+   Float64 m_InclinedGirder_FSmax;
+
 
    pgsTypes::LimitStateConcreteStrength m_LimitStateConcreteStrength;
 };

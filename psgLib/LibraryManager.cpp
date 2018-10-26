@@ -103,16 +103,16 @@ bool GirderLibrary::NewEntry(LPCTSTR key)
 psgLibraryManager::psgLibraryManager() :
 libLibraryManager()
 {
-   std::auto_ptr<ConcreteLibrary>        conc_lib(new ConcreteLibrary(_T("CONCRETE_LIBRARY"), _T("Concrete Types")));
-   std::auto_ptr<ConnectionLibrary>      conn_lib(new ConnectionLibrary(_T("CONNECTION_LIBRARY"), _T("Connections")));
-   std::auto_ptr<GirderLibrary>          gird_lib(new GirderLibrary(_T("GIRDER_LIBRARY"), _T("Girders")));
-   std::auto_ptr<DiaphragmLayoutLibrary> diap_lib(new DiaphragmLayoutLibrary(_T("DIAPHRAGM_LAYOUT_LIBRARY"), _T("Diaphragm Layouts"),true)); 
-   std::auto_ptr<TrafficBarrierLibrary>  barr_lib(new TrafficBarrierLibrary(_T("TRAFFIC_BARRIER_LIBRARY"), _T("Traffic Barriers")));
-   std::auto_ptr<SpecLibrary>            spec_lib(new SpecLibrary(_T("SPECIFICATION_LIBRARY"), _T("Project Criteria")));
-   std::auto_ptr<RatingLibrary>          rate_lib(new RatingLibrary(_T("RATING_LIBRARY"), _T("Load Rating Criteria")));
-   std::auto_ptr<LiveLoadLibrary>        live_lib(new LiveLoadLibrary(_T("USER_LIVE_LOAD_LIBRARY"), _T("User-Defined Live Loads")));
-   std::auto_ptr<DuctLibrary>            duct_lib(new DuctLibrary(_T("DUCT_LIBRARY"), _T("Ducts")));
-   std::auto_ptr<HaulTruckLibrary>       haul_lib(new HaulTruckLibrary(_T("HAUL_TRUCK_LIBRARY"), _T("Haul Trucks")));
+   std::unique_ptr<ConcreteLibrary>        conc_lib(std::make_unique<ConcreteLibrary>(_T("CONCRETE_LIBRARY"), _T("Concrete Types")));
+   std::unique_ptr<ConnectionLibrary>      conn_lib(std::make_unique<ConnectionLibrary>(_T("CONNECTION_LIBRARY"), _T("Connections")));
+   std::unique_ptr<GirderLibrary>          gird_lib(std::make_unique<GirderLibrary>(_T("GIRDER_LIBRARY"), _T("Girders")));
+   std::unique_ptr<DiaphragmLayoutLibrary> diap_lib(std::make_unique<DiaphragmLayoutLibrary>(_T("DIAPHRAGM_LAYOUT_LIBRARY"), _T("Diaphragm Layouts"),true));
+   std::unique_ptr<TrafficBarrierLibrary>  barr_lib(std::make_unique<TrafficBarrierLibrary>(_T("TRAFFIC_BARRIER_LIBRARY"), _T("Traffic Barriers")));
+   std::unique_ptr<SpecLibrary>            spec_lib(std::make_unique<SpecLibrary>(_T("SPECIFICATION_LIBRARY"), _T("Project Criteria")));
+   std::unique_ptr<RatingLibrary>          rate_lib(std::make_unique<RatingLibrary>(_T("RATING_LIBRARY"), _T("Load Rating Criteria")));
+   std::unique_ptr<LiveLoadLibrary>        live_lib(std::make_unique<LiveLoadLibrary>(_T("USER_LIVE_LOAD_LIBRARY"), _T("User-Defined Live Loads")));
+   std::unique_ptr<DuctLibrary>            duct_lib(std::make_unique<DuctLibrary>(_T("DUCT_LIBRARY"), _T("Ducts")));
+   std::unique_ptr<HaulTruckLibrary>       haul_lib(std::make_unique<HaulTruckLibrary>(_T("HAUL_TRUCK_LIBRARY"), _T("Haul Trucks")));
 
    live_lib->AddReservedName(_T("HL-93"));
    live_lib->AddReservedName(_T("Fatigue"));
@@ -120,6 +120,7 @@ libLibraryManager()
    live_lib->AddReservedName(_T("AASHTO Legal Loads"));
    live_lib->AddReservedName(_T("Notional Rating Load (NRL)"));
    live_lib->AddReservedName(_T("Single-Unit SHVs"));
+   live_lib->AddReservedName(_T("Emergency Vehicles"));
    live_lib->AddReservedName(NO_LIVE_LOAD_DEFINED); // this is for the dummy live load, when one isn't defined for analysis
 
    // don't change the order that the libraries are added to the library manager

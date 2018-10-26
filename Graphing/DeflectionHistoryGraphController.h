@@ -34,7 +34,7 @@ public:
    bool IncludeElevationAdjustment();
 
 protected:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CStressHistoryGraphController)
    afx_msg void OnElevAdjustment();

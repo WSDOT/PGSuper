@@ -38,8 +38,8 @@ class CTxDOTAgentApp : public CWinApp
 public:
 
 // Overrides
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 
    afx_msg void OnHelp();
 

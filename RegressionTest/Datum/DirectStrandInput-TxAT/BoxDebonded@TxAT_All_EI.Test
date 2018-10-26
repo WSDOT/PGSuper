@@ -25,6 +25,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
 Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

@@ -151,7 +151,7 @@ void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    ColumnIndexType col = 1;
 
   // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses>(pDetails->pLosses);
+   std::shared_ptr<const lrfdRefinedLosses> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...

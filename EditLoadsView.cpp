@@ -37,6 +37,7 @@
 #include <PgsExt\InsertDeleteLoad.h>
 
 #include <IFace\Bridge.h>
+#include <IFace\EditByUI.h>
 
 #include <PgsExt\BridgeDescription2.h>
 
@@ -100,7 +101,7 @@ BEGIN_MESSAGE_MAP(CEditLoadsView, CFormView)
 	ON_BN_CLICKED(IDC_DELETE_LOAD, OnDeleteLoad)
 	ON_BN_CLICKED(IDC_EDIT_LOAD, OnEditLoad)
 	ON_NOTIFY(NM_DBLCLK, IDC_LOADS_LIST, OnDblclkLoadsList)
-	ON_BN_CLICKED(IDC_ADD_NEW_DISTRIBUTED, OnAddNewDistributed)
+	ON_BN_CLICKED(IDC_ADD_NEW_DISTRIBUTED, OnAddDistributedLoad)
 	ON_NOTIFY(NM_CLICK, IDC_LOADS_LIST, OnClickLoadsList)
 	ON_NOTIFY(NM_RCLICK, IDC_LOADS_LIST, OnClickLoadsList)
 	ON_WM_SIZE()
@@ -110,7 +111,7 @@ BEGIN_MESSAGE_MAP(CEditLoadsView, CFormView)
 	ON_COMMAND(ID_EDIT_LOAD, OnEditLoad)
 	ON_COMMAND(ID_DELETE_LOAD, OnDeleteLoad)
 	ON_COMMAND(ID_ADD_POINT_LOAD, OnAddPointload)
-	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddNewDistributed)
+	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddDistributedLoad)
 	ON_COMMAND(ID_ADD_MOMENT_LOAD, OnAddMomentload)
 	//}}AFX_MSG_MAP
    ON_WM_DESTROY()
@@ -206,38 +207,29 @@ void CEditLoadsView::OnAddPointload()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   CPointLoadData load;
+   GET_IFACE(IEditByUI, pEditByUI);
+   pEditByUI->AddPointLoad(load);
+}
 
-	CPointLoadData load;
-   CEditPointLoadDlg dlg(load,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      txnTxnManager::GetInstance()->Execute(pTxn);
-   }
+void CEditLoadsView::OnAddDistributedLoad()
+{
+   CDistributedLoadData load;
+   GET_IFACE(IEditByUI, pEditByUI);
+   pEditByUI->AddDistributedLoad(load);
 }
 
 void CEditLoadsView::OnAddMomentload() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
    CMomentLoadData load;
-   CEditMomentLoadDlg dlg(load,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      txnTxnManager::GetInstance()->Execute(pTxn);
-   }
+   GET_IFACE(IEditByUI, pEditByUI);
+   pEditByUI->AddMomentLoad(load);
 }
 
 void CEditLoadsView::OnDeleteLoad() 
 {
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
-   if (pos != NULL)
+   if (pos != nullptr)
    {
       int nItem = m_LoadsListCtrl.GetNextSelectedItem(pos);
 
@@ -271,7 +263,7 @@ void CEditLoadsView::OnEditLoad()
 {
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
 
-   if (pos != NULL)
+   if (pos != nullptr)
    {
       EditLoad(pos);
    }
@@ -281,28 +273,12 @@ void CEditLoadsView::OnDblclkLoadsList(NMHDR* pNMHDR, LRESULT* pResult)
 {
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
 
-   if (pos != NULL)
+   if (pos != nullptr)
    {
       EditLoad(pos);
    }
 
 	*pResult = 0;
-}
-
-void CEditLoadsView::OnAddNewDistributed() 
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CDistributedLoadData load;
-	CEditDistributedLoadDlg dlg(load,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      txnTxnManager::GetInstance()->Execute(pTxn);
-   }
 }
 
 void CEditLoadsView::InsertData()
@@ -568,62 +544,31 @@ void CEditLoadsView::EditLoad(POSITION pos)
    WORD load_type = LOWORD(data);
    WORD load_idx = HIWORD(data);
 
-   GET_IFACE(IUserDefinedLoadData, pUdl);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   GET_IFACE(IEditByUI,pEditByUI);
+   GET_IFACE(IUserDefinedLoadData, pUDL);
 
    if (load_type == W_POINT_LOAD)
    {
-      // edit our point load
-      const CPointLoadData* pLoad = pUdl->GetPointLoad(load_idx);
-
-      EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoad->m_ID);
-
-      CEditPointLoadDlg dlg(*pLoad,pTimelineMgr);
-      if (dlg.DoModal() == IDOK)
+      if (pEditByUI->EditPointLoad(load_idx))
       {
-         if (*pLoad != dlg.m_Load || eventID != dlg.m_EventID )
-         {
-            txnEditPointLoad* pTxn = new txnEditPointLoad(load_idx,*pLoad,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-            txnTxnManager::GetInstance()->Execute(pTxn);
-            UpdatePointLoadItem(nItem, dlg.m_Load);
-         }
+         auto load = pUDL->GetPointLoad(load_idx);
+         UpdatePointLoadItem(nItem, *load);
       }
    }
    else if (load_type == W_MOMENT_LOAD)
    {
-      // edit our moment load
-      const CMomentLoadData* pLoad = pUdl->GetMomentLoad(load_idx);
-
-      EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoad->m_ID);
-
-	   CEditMomentLoadDlg dlg(*pLoad,pTimelineMgr);
-      if (dlg.DoModal() == IDOK)
+      if (pEditByUI->EditMomentLoad(load_idx))
       {
-         if (*pLoad != dlg.m_Load || eventID != dlg.m_EventID )
-         {
-            txnEditMomentLoad* pTxn = new txnEditMomentLoad(load_idx,*pLoad,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-            txnTxnManager::GetInstance()->Execute(pTxn);
-            UpdateMomentLoadItem(nItem, dlg.m_Load);
-         }
+         auto load = pUDL->GetMomentLoad(load_idx);
+         UpdateMomentLoadItem(nItem, *load);
       }
    }
    else if (load_type == W_DISTRIBUTED_LOAD)
    {
-      // edit our distributed load
-      const CDistributedLoadData* pLoad = pUdl->GetDistributedLoad(load_idx);
-
-      EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoad->m_ID);
-
-	   CEditDistributedLoadDlg dlg(*pLoad,pTimelineMgr);
-      if (dlg.DoModal() == IDOK)
+      if (pEditByUI->EditDistributedLoad(load_idx))
       {
-         if (*pLoad != dlg.m_Load || eventID != dlg.m_EventID )
-         {
-            txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(load_idx,*pLoad,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-            txnTxnManager::GetInstance()->Execute(pTxn);
-            UpdateDistributedLoadItem(nItem, dlg.m_Load);
-         }
+         auto load = pUDL->GetDistributedLoad(load_idx);
+         UpdateDistributedLoadItem(nItem, *load);
       }
    }
    else
@@ -637,7 +582,7 @@ void CEditLoadsView::OnClickLoadsList(NMHDR* pNMHDR, LRESULT* pResult)
 {
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
 
-   BOOL sel = (pos!=NULL) ? TRUE:FALSE;
+   BOOL sel = (pos!=nullptr) ? TRUE:FALSE;
    m_EditCtrl.EnableWindow(sel);
    m_DeleteCtrl.EnableWindow(sel);
 	
@@ -653,7 +598,7 @@ void CEditLoadsView::OnContextMenu(CWnd* pWnd,CPoint point)
    }
 
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition();
-   if ( pos == NULL )
+   if ( pos == nullptr )
    {
       // Nothing selected
       CMenu menu;
@@ -680,7 +625,7 @@ void CEditLoadsView::OnSize(UINT nType, int cx, int cy)
 	CFormView::OnSize(nType, cx, cy);
 	
    CWnd* pLoads  = GetDlgItem(IDC_LOADS_LIST);
-   if ( pLoads == NULL)
+   if ( pLoads == nullptr)
    {
       return;
    }
@@ -725,28 +670,28 @@ void CEditLoadsView::OnSize(UINT nType, int cx, int cy)
    // static
    int w = width - 2*BORDER;
    int h = height - 3*BORDER - m_But1Size.cy;
-   pStatic->SetWindowPos(NULL,0,0,w,h,SWP_NOMOVE | SWP_NOZORDER);
+   pStatic->SetWindowPos(nullptr,0,0,w,h,SWP_NOMOVE | SWP_NOZORDER);
 
    // list
    w = w - 2*BORDER;
    h = h - m_But1Size.cy - BORDER;
-   pLoads->SetWindowPos(NULL,0,0,w,h,SWP_NOMOVE | SWP_NOZORDER);
+   pLoads->SetWindowPos(nullptr,0,0,w,h,SWP_NOMOVE | SWP_NOZORDER);
 
    // buttons
    int x = 2*BORDER;
    int y = height - 3*BORDER;
-   pEdit->SetWindowPos(NULL,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
+   pEdit->SetWindowPos(nullptr,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
    x = x + m_But1Size.cx + BORDER;
-   pDelete->SetWindowPos(NULL,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
+   pDelete->SetWindowPos(nullptr,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
    x = x + m_But1Size.cx + BORDER;
-   pAddP->SetWindowPos(NULL,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
+   pAddP->SetWindowPos(nullptr,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
    x = x + m_But2Size.cx + BORDER;
-   pAddD->SetWindowPos(NULL,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
+   pAddD->SetWindowPos(nullptr,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
    x = x + m_But2Size.cx + BORDER;
-   pAddM->SetWindowPos(NULL,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
+   pAddM->SetWindowPos(nullptr,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
 
    x = width - m_HelpButWidth - BORDER;
-   pHelp->SetWindowPos(NULL,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
+   pHelp->SetWindowPos(nullptr,x,y,0,0,SWP_NOSIZE | SWP_NOZORDER);
 }
 
 
@@ -797,7 +742,7 @@ public:
 };
 
 CComPtr<IUserDefinedLoadData> SortObject::m_pUdl;
-const CTimelineManager* SortObject::m_pTimelineMgr = NULL;
+const CTimelineManager* SortObject::m_pTimelineMgr = nullptr;
 bool SortObject::m_bSortAscending = true;
 
 EventIndexType SortObject::GetEvent(LPARAM lParam)

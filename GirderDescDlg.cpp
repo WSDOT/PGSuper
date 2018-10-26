@@ -161,7 +161,7 @@ txnTransaction* CGirderDescDlg::GetExtensionPageTransaction()
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -202,7 +202,7 @@ LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
@@ -372,7 +372,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    if (m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
    {
       // first get in girderdata format
-      const CDirectStrandFillCollection* pDirectFillData(NULL);
+      const CDirectStrandFillCollection* pDirectFillData(nullptr);
       if (type==pgsTypes::Straight)
       {
          pDirectFillData = m_pSegment->Strands.GetDirectStrandFillStraight();
@@ -391,7 +391,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
       ConfigStrandFillVector vec(pStrandGeometry->ComputeStrandFill(m_strGirderName.c_str(), type, 0));
       StrandIndexType gridsize = vec.size();
 
-      if(pDirectFillData!=NULL)
+      if(pDirectFillData!=nullptr)
       {
          CDirectStrandFillCollection::const_iterator it = pDirectFillData->begin();
          CDirectStrandFillCollection::const_iterator itend = pDirectFillData->end();

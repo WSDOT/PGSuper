@@ -16,7 +16,7 @@
 
 IMPLEMENT_DYNAMIC(CConstructSegmentsDlg, CDialog)
 
-CConstructSegmentsDlg::CConstructSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CConstructSegmentsDlg::CConstructSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CConstructSegmentsDlg::IDD, pParent),
    m_EventIndex(eventIdx),
    m_bReadOnly(bReadOnly)

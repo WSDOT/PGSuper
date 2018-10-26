@@ -678,18 +678,18 @@ CLASS
 ****************************************************************************/
 CGirderSpacing::CGirderSpacing()
 {
-   m_pSpan = NULL;
+   m_pSpan = nullptr;
 }
 
 CGirderSpacing::CGirderSpacing(const CGirderSpacing& rOther)
 {
-   m_pSpan = NULL;
+   m_pSpan = nullptr;
    MakeCopy(rOther);
 }
 
 CGirderSpacing::CGirderSpacing(const CGirderSpacingData& rOther)
 {
-   m_pSpan = NULL;
+   m_pSpan = nullptr;
    CGirderSpacingData::MakeCopy(rOther);
 }
 

@@ -57,7 +57,7 @@ CLASS
 CTxDOTOptionalDesignGirderData::CTxDOTOptionalDesignGirderData(CTxDOTOptionalDesignData* pParent):
 m_pParent(pParent)
 {
-   ASSERT(pParent!=NULL);
+   ASSERT(pParent!=nullptr);
 
    ResetData();
 }
@@ -147,7 +147,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    const matPsStrand* pStrand = pPool->GetStrand(m_Grade, m_Type, m_Coating, m_Size);
    Int32 key=0;
-   if (pStrand!=NULL)
+   if (pStrand!=nullptr)
    {
       key = pPool->GetStrandKey(pStrand);
    }
@@ -182,7 +182,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       for (StrandRowIterator it = m_StrandRowsAtCL.begin(); it!=m_StrandRowsAtCL.end(); it++)
       {
          pStrSave->BeginUnit(_T("StrandRowAtCL"),1.0);
-         StrandRow& row = *it;
+         const StrandRow& row = *it;
          pStrSave->put_Property(_T("RowElev"), CComVariant(row.RowElev));
          pStrSave->put_Property(_T("StrandsInRow"), CComVariant(row.StrandsInRow));
          pStrSave->EndUnit();
@@ -193,7 +193,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       for (StrandRowIterator it = m_StrandRowsAtEnds.begin(); it!=m_StrandRowsAtEnds.end(); it++)
       {
          pStrSave->BeginUnit(_T("StrandRowAtEnds"),1.0);
-         StrandRow& row = *it;
+         const StrandRow& row = *it;
          pStrSave->put_Property(_T("RowElev"), CComVariant(row.RowElev));
          pStrSave->put_Property(_T("StrandsInRow"), CComVariant(row.StrandsInRow));
          pStrSave->EndUnit();
@@ -218,7 +218,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       std::vector<CDebondData>::iterator debond_iter;
       for ( debond_iter = m_DirectFilledStraightDebond.begin(); debond_iter != m_DirectFilledStraightDebond.end(); debond_iter++ )
       {
-         CDebondData& debond_info = *debond_iter;
+         const CDebondData& debond_info = *debond_iter;
          debond_info.Save(pStrSave,pProgress);
       }
       pStrSave->EndUnit(); // StraightStrandDebonding
@@ -282,7 +282,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
 
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
       const matPsStrand* pStrand = pPool->GetStrand(key);
-      if (pStrand!=NULL)
+      if (pStrand!=nullptr)
       {
          m_Grade = pStrand->GetGrade();
          m_Type = pStrand->GetType();
@@ -594,7 +594,7 @@ std::vector<StrandIndexType> CTxDOTOptionalDesignGirderData::ComputeAvailableNum
 
    CString girder_name = m_pParent->GetGirderEntryName();
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
-   if (pGdrEntry==NULL)
+   if (pGdrEntry==nullptr)
    {
       CString msg, stmp;
       stmp.LoadString(IDS_GDR_ERROR);
@@ -626,7 +626,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
 
    CString girder_name = m_pParent->GetGirderEntryName();
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
-   if (pGdrEntry==NULL)
+   if (pGdrEntry==nullptr)
    {
       ASSERT(0);
       CString msg, stmp;
@@ -705,7 +705,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
 
    CString girder_name = m_pParent->GetGirderEntryName();
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
-   if (pGdrEntry==NULL)
+   if (pGdrEntry==nullptr)
    {
       CString msg, stmp;
       stmp.LoadString(IDS_GDR_ERROR);
@@ -721,7 +721,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
       GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
       CComPtr<IGirderSection> gdrSection;
-      pFactory->CreateGirderSection(NULL,INVALID_ID,dimensions,-1,-1,&gdrSection);
+      pFactory->CreateGirderSection(nullptr,INVALID_ID,dimensions,-1,-1,&gdrSection);
 
       CComPtr<IShape>  pShape;
       gdrSection.QueryInterface(&pShape);
@@ -830,7 +830,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeDirectFillEccentricity(const GirderL
    if (m_DirectFilledStraightStrands.GetFilledStrandCount() == 0)
       return false;
 
-   if (pGdrEntry==NULL)
+   if (pGdrEntry==nullptr)
    {
       return false;
    }
@@ -842,7 +842,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeDirectFillEccentricity(const GirderL
       GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
       CComPtr<IGirderSection> gdrSection;
-      pFactory->CreateGirderSection(NULL,INVALID_ID,dimensions,-1,-1,&gdrSection);
+      pFactory->CreateGirderSection(nullptr,INVALID_ID,dimensions,-1,-1,&gdrSection);
 
       CComPtr<IShape>  pShape;
       gdrSection.QueryInterface(&pShape);
@@ -985,8 +985,8 @@ CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer CTxDOTOptionalDes
       else
       {
          // Row exists - add next increment
-         AvailableStrandsInRow& rowdata = *testiter;
-         StrandIncrement& last_inc = rowdata.AvailableStrandIncrements.back();
+         AvailableStrandsInRow& rowdata = const_cast<AvailableStrandsInRow&>(*testiter);
+         const StrandIncrement& last_inc = rowdata.AvailableStrandIncrements.back();
 
          StrandIncrement incr;
          incr.TotalStrands     = last_inc.TotalStrands + num_strands;            // next value is last + new available
@@ -1152,8 +1152,9 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       ShRowIterator shrit = shrows.find(elev);
       if (shrit != shrows.end())
       {
-         shrit->NumHarpedEnd = nh;
-         shrit->NumStraightEnd = no_end - nh;
+         ShRow& row(const_cast<ShRow&>(*shrit));
+         row.NumHarpedEnd = nh;
+         row.NumStraightEnd = no_end - nh;
       }
       else
       {
@@ -1185,7 +1186,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
    }
 
    // At this point we are mostly done checking, and if we have a clone, time to make the strands
-   if (pCloneGdrEntry != NULL)
+   if (pCloneGdrEntry != nullptr)
    {
       ASSERT(!pMasterGdrEntry->IsDifferentHarpedGridAtEndsUsed() && pMasterGdrEntry->GetMaxHarpedStrands()>0);
 
@@ -1224,9 +1225,9 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
 
             // Loop to fill harped strands
             StrandIndexType nh_filled=0;
-            std::vector<StrandIncrement>::iterator siit_end = avail_end->AvailableStrandIncrements.begin();
-            for (std::vector<StrandIncrement>::iterator siit_cl = avail_cl->AvailableStrandIncrements.begin(); 
-                                                        (siit_cl!=avail_cl->AvailableStrandIncrements.end() && siit_end!=avail_end->AvailableStrandIncrements.end()); 
+            std::vector<StrandIncrement>::iterator siit_end = const_cast<AvailableStrandsInRow&>(*avail_end).AvailableStrandIncrements.begin();
+            for (std::vector<StrandIncrement>::iterator siit_cl = const_cast<AvailableStrandsInRow&>(*avail_cl).AvailableStrandIncrements.begin();
+                                                        (siit_cl!= const_cast<AvailableStrandsInRow&>(*avail_cl).AvailableStrandIncrements.end() && siit_end!= const_cast<AvailableStrandsInRow&>(*avail_end).AvailableStrandIncrements.end());
                                                         siit_cl++, siit_end++)
             {
                StrandIncrement& incr_cl  = *siit_cl;
@@ -1266,8 +1267,8 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
          if (shit_cl->NumStraightCL > 0)
          {
             StrandIndexType ns_filled=0;
-            for (std::vector<StrandIncrement>::iterator siit_cl = avail_cl->AvailableStrandIncrements.begin(); 
-                                                        siit_cl!=avail_cl->AvailableStrandIncrements.end();
+            for (std::vector<StrandIncrement>::iterator siit_cl = const_cast<AvailableStrandsInRow&>(*avail_cl).AvailableStrandIncrements.begin();
+                                                        siit_cl!= const_cast<AvailableStrandsInRow&>(*avail_cl).AvailableStrandIncrements.end();
                                                         siit_cl++)
             {
                StrandIncrement& incr_cl  = *siit_cl;

@@ -75,7 +75,7 @@ GRID_IMPLEMENT_REGISTER(CTOGAStrandFillGrid, CS_DBLCLKS, 0, 0, 0);
 // CTOGAStrandFillGrid
 
 CTOGAStrandFillGrid::CTOGAStrandFillGrid():
-m_pParent(NULL)
+m_pParent(nullptr)
 {
 //   RegisterClass();
 }
@@ -739,7 +739,7 @@ void CTOGAStrandFillGrid::ToggleFill(ROWCOL rowNo)
 
      CGXControl* pControl = GetControl(rowNo, SELECT_CHECK_COL);
      CGXCheckBox* pCheck = dynamic_cast<CGXCheckBox*>(pControl);
-     if (pCheck != NULL) // only set check boxes
+     if (pCheck != nullptr) // only set check boxes
      {
         SetValueRange(CGXRange(rowNo, SELECT_CHECK_COL), val ? _T("1") : _T("0"));
      }

@@ -65,5 +65,5 @@ public:
 
 protected:
    void MakeCopy(const CGirderMaterial& rOther);
-   virtual void MakeAssignment(const CGirderMaterial& rOther);
+   void MakeAssignment(const CGirderMaterial& rOther);
 };

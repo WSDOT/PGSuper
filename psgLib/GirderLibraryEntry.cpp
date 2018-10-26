@@ -192,7 +192,7 @@ m_DragCoefficient(2.2)
       ATLASSERT(false); // is there a new create type?
    }
 
-   if ( beam_factory == NULL )
+   if ( beam_factory == nullptr )
    {
 	   std::vector<CString> familyNames;
 	   if ( createType == DEFAULT )
@@ -225,7 +225,7 @@ m_DragCoefficient(2.2)
    }
 
    SetBeamFactory(beam_factory);
-   // m_pBeamFactory is NULL if we were unable to create a beam factory
+   // m_pBeamFactory is nullptr if we were unable to create a beam factory
 
    // Shear design
 
@@ -299,7 +299,7 @@ void GirderLibraryEntry::InitCLSIDMap()
    CComPtr<ICatRegister> pICatReg = 0;
    HRESULT hr;
    hr = ::CoCreateInstance( CLSID_StdComponentCategoriesMgr,
-                            NULL,
+                            nullptr,
                             CLSCTX_INPROC_SERVER,
                             IID_ICatRegister,
                             (void**)&pICatReg );
@@ -319,13 +319,13 @@ void GirderLibraryEntry::InitCLSIDMap()
    CATID ID[nID];
    ID[0] = CATID_BeamFactoryCLSIDTranslator;
 
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    CLSID clsid[1];
-   while ( pIEnumCLSID->Next(1,clsid,NULL) != S_FALSE )
+   while ( pIEnumCLSID->Next(1,clsid,nullptr) != S_FALSE )
    {
       CComPtr<IBeamFactoryCLSIDTranslator> translator;
-      hr = ::CoCreateInstance(clsid[0],NULL,CLSCTX_ALL,IID_IBeamFactoryCLSIDTranslator,(void**)&translator);
+      hr = ::CoCreateInstance(clsid[0],nullptr,CLSCTX_ALL,IID_IBeamFactoryCLSIDTranslator,(void**)&translator);
       if ( SUCCEEDED(hr) )
       {
          m_ExternalCLSIDTranslators.push_back(translator);
@@ -692,7 +692,7 @@ std::_tstring GirderLibraryEntry::TranslateCLSID(const std::_tstring& strCLSID)
    }
 
    // check third party translaters
-   BOOST_FOREACH(CComPtr<IBeamFactoryCLSIDTranslator>& translator,m_ExternalCLSIDTranslators)
+   for (const auto& translator : m_ExternalCLSIDTranslators)
    {
       LPCTSTR newCLSID;
       if ( translator->TranslateCLSID(strCLSID.c_str(),&newCLSID) )
@@ -789,7 +789,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             throw 0; // just a dummy exception... will be caught in pgslibLoadLibrary
          }
 
-         ATLASSERT(m_pBeamFactory != NULL);
+         ATLASSERT(m_pBeamFactory != nullptr);
 
 
          CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
@@ -2787,7 +2787,7 @@ HRESULT GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
       ::CLSIDFromString(CT2OLE(strCLSID.c_str()),&clsid);
 
       CComPtr<IClassFactory> classFactory;
-      HRESULT hr = ::CoGetClassObject(clsid,CLSCTX_ALL,NULL,IID_IClassFactory,(void**)&classFactory);
+      HRESULT hr = ::CoGetClassObject(clsid,CLSCTX_ALL,nullptr,IID_IClassFactory,(void**)&classFactory);
       if ( FAILED(hr) )
       {
          return hr;
@@ -2803,7 +2803,7 @@ HRESULT GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
    }
 
    // Using the class factory, create the beam factory
-   HRESULT hr = pClassFactory->CreateInstance(NULL,IID_IBeamFactory,(void**)&m_pBeamFactory);
+   HRESULT hr = pClassFactory->CreateInstance(nullptr,IID_IBeamFactory,(void**)&m_pBeamFactory);
    return hr;
 }
 
@@ -2812,7 +2812,7 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
    CLSID clsid;
    ::CLSIDFromString(_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}"),&clsid);
    m_pBeamFactory.Release();
-   HRESULT hr = ::CoCreateInstance(clsid,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&m_pBeamFactory);
+   HRESULT hr = ::CoCreateInstance(clsid,nullptr,CLSCTX_ALL,IID_IBeamFactory,(void**)&m_pBeamFactory);
 
    Float64 value;
    if(!pLoad->Property(_T("D1"), &value))
@@ -2925,7 +2925,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
-   bool bSplicedGirder = (splicedBeamFactory == NULL ? false : true);
+   bool bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
 
 
    //
@@ -3161,7 +3161,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 
    // check if strands are in girder and other possible issues
    CComPtr<IGirderSection> gdrSection;
-   m_pBeamFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,m_Dimensions,-1.0,-1.0,&gdrSection);
+   m_pBeamFactory->CreateGirderSection(nullptr,DUMMY_AGENT_ID,m_Dimensions,-1.0,-1.0,&gdrSection);
 
    Float64 end_increment = this->IsVerticalAdjustmentAllowedEnd() ? this->GetEndStrandIncrement() : -1.0;
    Float64 hp_increment  = this->IsVerticalAdjustmentAllowedHP()  ? this->GetHPStrandIncrement() : -1.0;
@@ -3238,7 +3238,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    }
 
    CComQIPtr<IShape> shape(gdrSection);
-   ATLASSERT(shape != NULL); // girder section must support the shape interface
+   ATLASSERT(shape != nullptr); // girder section must support the shape interface
 
    // establish top and bottom bounds
    Float64 max_y_loc = height;
@@ -3566,7 +3566,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    }
 
    // long bars
-   point.Release(); // I think it is already NULL, but do it again here just to be sure
+   point.Release(); // I think it is already nullptr, but do it again here just to be sure
    point.CoCreateInstance(CLSID_Point2d); // recycle point object
    num=1;
    for(LongSteelInfoVec::iterator itl=m_LongSteelInfo.begin(); itl!=m_LongSteelInfo.end(); itl++)
@@ -3688,7 +3688,7 @@ void GirderLibraryEntry::SetAdjustableStrandType(pgsTypes::AdjustableStrandType 
 //======================== ACCESS     =======================================
 void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
 {
-   if ( pFactory == NULL )
+   if ( pFactory == nullptr )
    {
       return;
    }
@@ -4524,7 +4524,7 @@ bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   if ( m_pBeamFactory == NULL )
+   if ( m_pBeamFactory == nullptr )
    {
       // For some reason we were unable to create a beam factory.
       // This could be because IE was not installed correctly so the

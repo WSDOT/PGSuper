@@ -236,15 +236,14 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
             (*p_table)(row,8) << _T(" *");
 
             // Show limiting capacity of over reinforced section
-            MOMENTCAPACITYDETAILS mcd;
          
             GET_IFACE2(pBroker,IMomentCapacity,pMomentCap); 
             // it may seem wasteful to get this interface in this scope, inside a loop
             // however, the c_over_de method isn't used in the current LRFD so the reality is
             // that this interface wont be requested very often
 
-            pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
-            (*p_table)(row,5) << rptNewLine << _T("(") << moment.SetValue( mcd.Phi * mcd.MnMin ) << _T(")");
+            const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
+            (*p_table)(row,5) << rptNewLine << _T("(") << moment.SetValue( pmcd->Phi * pmcd->MnMin ) << _T(")");
          }
       }
 

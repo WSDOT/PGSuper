@@ -45,7 +45,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     2    WF74G    *     56  0.6  270  31.90  18.62  10.75  10.75                                              12  70.0  3.0  7.600  8.700   5.602    -5.461    15118   0.723  0.743   5.984 -2.588 -0.254 -0.256 -3.098 249.81  373.11    3.00   13.13   13.13 
+ 40.00    6   6.58 Puyallup River B    2     2    WF74G    *     56  0.6  270  31.90  18.62  10.75  10.75                                              12  70.0  3.0  7.600  8.700   5.602    -5.461    15118   0.723  0.743   5.984 -2.588 -0.254 -0.256 -3.098 249.81  373.11    2.75   13.13   13.13 
 
 
 The Specification Check was Not Successful
@@ -55,7 +55,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     4    WF74G    *     56  0.6  270  31.90  18.62  11.00  11.00                                              12  70.0  3.0  7.600  8.700   5.628    -5.485    15170   0.723  0.743   5.984 -2.627 -0.254 -0.256 -3.137 249.81  371.31    3.00   13.13   13.13 
+ 40.00    6   6.58 Puyallup River B    2     4    WF74G    *     56  0.6  270  31.90  18.62  11.00  11.00                                              12  70.0  3.0  7.600  8.700   5.628    -5.485    15170   0.723  0.743   5.984 -2.627 -0.254 -0.256 -3.137 249.81  371.31    2.75   13.13   13.13 
 
 
 The Specification Check was Not Successful

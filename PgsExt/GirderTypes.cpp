@@ -44,12 +44,12 @@ CLASS
 
 CGirderTypes::CGirderTypes()
 {
-   m_pSpan = NULL;
+   m_pSpan = nullptr;
 }
 
 CGirderTypes::CGirderTypes(const CGirderTypes& rOther)
 {
-   m_pSpan = NULL;
+   m_pSpan = nullptr;
    MakeCopy(rOther);
 }
 
@@ -270,7 +270,7 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          //{
          //   // these weren't created before because the same girder isn't used
          //   m_GirderNames.push_back(strGirder);
-         //   m_GirderLibraryEntries.push_back(NULL); // create a place holder for the girder library entry
+         //   m_GirderLibraryEntries.push_back(nullptr); // create a place holder for the girder library entry
          //}
       }
    
@@ -879,7 +879,7 @@ void CGirderTypes::SetGirderLibraryEntry(GroupIndexType grpIdx,const GirderLibra
 
 const GirderLibraryEntry* CGirderTypes::GetGirderLibraryEntry(GirderIndexType gdrIdx) const
 {
-   const GirderLibraryEntry* pEntry = NULL;
+   const GirderLibraryEntry* pEntry = nullptr;
 
    if ( m_pSpan && m_pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge() )
    {

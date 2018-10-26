@@ -14,13 +14,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -68,8 +66,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,57
- PRODUCTVERSION 3,0,0,57
+ FILEVERSION 3,1,0,0
+ PRODUCTVERSION 3,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -87,11 +85,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.57"
+            VALUE "FileVersion", "3.1.0.0"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.57"
+            VALUE "ProductVersion", "3.1.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -108,22 +106,27 @@ END
 
 IDR_LIBAPPPLUGIN        REGISTRY                "LibraryAppPlugin.rgs"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
 IDR_LIBEDITORTOOLBAR    BITMAP                  "res\\LibEditorToolbar.bmp"
+
 IDB_IN_USE              BITMAP                  "..\\res\\LibEntryInUse.bmp"
+
 IDB_IN_USE_AND_READ_ONLY BITMAP                  "..\\res\\LibEntryInUseAndReadOnly.bmp"
+
 IDB_READ_ONLY           BITMAP                  "..\\res\\LibEntryReadOnly.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_LIBEDITORTOOLBAR TOOLBAR  16, 16
+IDR_LIBEDITORTOOLBAR TOOLBAR 16, 16
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -436,8 +439,32 @@ BEGIN
     LTEXT           "Impact Down",IDC_STATIC_GH7,94,98,45,8,NOT WS_GROUP
     EDITTEXT        IDC_IMPACT_DOWNWARD_HAULING,142,95,27,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,171,98,8,8
+    LTEXT           "Use impact for",IDC_STATIC,193,96,47,8
+    COMBOBOX        IDC_IMPACT_USAGE,246,95,175,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Normal Crown Slope",IDC_STATIC,16,116,65,8
+    EDITTEXT        IDC_CROWN_SLOPE,84,113,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CROWN_SLOPE_UNIT,125,115,19,8
     LTEXT           "Max. Superelevation",IDC_STATIC_GH16,164,116,66,8,NOT WS_GROUP
     EDITTEXT        IDC_HE_ROADWAY_SUPERELEVATION,232,113,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HE_ROADWAY_SUPERELEVATION_UNIT,274,116,19,8
+    LTEXT           "Wind Loading",IDC_STATIC,16,135,45,8
+    COMBOBOX        IDC_WIND_TYPE,64,133,69,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_WIND_LOAD,137,133,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_WIND_LOAD_UNIT,180,136,19,8
+    LTEXT           "Centrifugal force is",IDC_STATIC,17,153,59,8
+    COMBOBOX        IDC_CF_TYPE,85,151,69,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Speed",IDC_STATIC,161,153,22,8
+    EDITTEXT        IDC_HAUL_SPEED,185,151,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HAUL_SPEED_UNIT,226,153,19,8
+    LTEXT           "Turning Radius",IDC_STATIC,249,153,49,8
+    EDITTEXT        IDC_RADIUS,301,151,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_RADIUS_UNIT,345,153,19,8
+    CONTROL         "Offset center of gravity by",IDC_CAMBER1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,176,97,10
+    EDITTEXT        IDC_CAMBER_CG_ADJUSTMENT,112,176,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "% to allow for camber",IDC_STATIC,156,178,73,8,NOT WS_GROUP
+    CONTROL         "Use computed camber with a ",IDC_CAMBER2,"Button",BS_AUTORADIOBUTTON,14,192,110,10
+    EDITTEXT        IDC_CAMBER_MULTIPLIER,121,192,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "multiplier",IDC_STATIC,166,194,28,8
     LTEXT           "Sweep Tolerance",IDC_STATIC_GH18,15,210,70,8,NOT WS_GROUP
     LTEXT           "1/",IDC_GIRDER_SWEEP_TOL_LABEL,106,211,8,8
     EDITTEXT        IDC_GIRDER_SWEEP_TOL,117,209,40,14,ES_AUTOHSCROLL
@@ -445,19 +472,6 @@ BEGIN
     LTEXT           "Support Placement Tolerance",IDC_STATIC_GH20,15,230,99,8,NOT WS_GROUP
     EDITTEXT        IDC_SUPPORT_PLACEMENT_TOLERANCE,117,228,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS,160,230,25,8,NOT WS_GROUP
-    CONTROL         "Offset center of gravity by",IDC_CAMBER1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,176,97,10
-    CONTROL         "Use computed camber",IDC_CAMBER2,"Button",BS_AUTORADIOBUTTON,14,192,87,10
-    EDITTEXT        IDC_CAMBER_CG_ADJUSTMENT,112,176,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "% to allow for camber",IDC_STATIC,156,178,73,8,NOT WS_GROUP
-    COMBOBOX        IDC_WIND_TYPE,64,133,69,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_WIND_LOAD,137,133,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_WIND_LOAD_UNIT,180,136,19,8
-    COMBOBOX        IDC_CF_TYPE,85,151,69,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_HAUL_SPEED,185,151,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_HAUL_SPEED_UNIT,226,153,19,8
-    LTEXT           "Turning Radius",IDC_STATIC,249,153,49,8
-    EDITTEXT        IDC_RADIUS,301,151,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_RADIUS_UNIT,345,153,19,8
     GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,258,466,128
     LTEXT           "Compressive Stress",IDC_STATIC_GH9,13,271,67,8,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_COMPRESSION,81,268,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -473,15 +487,6 @@ BEGIN
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_GH11,22,321,152,9,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_TENSION_WITH_REBAR_CROWN,177,319,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_WITH_REBAR_UNIT_CROWN,218,320,90,8,NOT WS_GROUP
-    COMBOBOX        IDC_IMPACT_USAGE,246,95,175,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Wind Loading",IDC_STATIC,16,135,45,8
-    LTEXT           "Centrifugal force is",IDC_STATIC,17,153,59,8
-    LTEXT           "Normal Crown Slope",IDC_STATIC,16,116,65,8
-    EDITTEXT        IDC_CROWN_SLOPE,84,113,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Use impact for",IDC_STATIC,193,96,47,8
-    LTEXT           "Speed",IDC_STATIC,161,153,22,8
-    LTEXT           "Static",IDC_CROWN_SLOPE_UNIT,125,115,19,8
-    LTEXT           "Static",IDC_HE_ROADWAY_SUPERELEVATION_UNIT,274,116,19,8
     LTEXT           "Tensile Stress for Max. Superelevation Case",IDC_STATIC_GH13,13,337,169,8,NOT WS_GROUP
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,23,351,154,18
     EDITTEXT        IDC_HAULING_TENSION_SUPER,177,351,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -719,9 +724,12 @@ BEGIN
     EDITTEXT        IDC_MIN_CABLE_ANGLE,165,173,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "degrees",IDC_MIN_CABLE_ANGLE_UNITS,209,175,43,8
     CONTROL         "Offset center of gravity by",IDC_CAMBER1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,266,97,97,10
-    CONTROL         "Use computed camber",IDC_CAMBER2,"Button",BS_AUTORADIOBUTTON,266,113,87,10
     EDITTEXT        IDC_CAMBER_CG_ADJUSTMENT,364,97,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "% to allow for camber",IDC_STATIC,408,99,73,8,NOT WS_GROUP
+    CONTROL         "Use computed camber with a",IDC_CAMBER2,"Button",BS_AUTORADIOBUTTON,266,113,108,10
+    EDITTEXT        IDC_CAMBER_MULTIPLIER,373,112,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "multiplier",IDC_STATIC,419,114,28,8
+    LTEXT           "Wind Load",IDC_STATIC,269,130,36,8
     COMBOBOX        IDC_WIND_TYPE,267,144,69,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_WIND_LOAD,338,143,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_WIND_LOAD_UNIT,381,146,19,8
@@ -734,15 +742,14 @@ BEGIN
     EDITTEXT        IDC_LIFTING_TENSION,167,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_LIFTING_TENSION_UNIT,211,247,90,8
     CONTROL         "But not greater than ",IDC_CHECK_LIFTING_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,315,247,77,10
-    EDITTEXT        IDC_LIFTING_TENSION_MAX,395,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_LIFTING_TENSION_MAX_UNIT,439,249,24,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,265,247,77,10
+    EDITTEXT        IDC_LIFTING_TENSION_MAX,345,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_LIFTING_TENSION_MAX_UNIT,389,249,24,8
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_ACSSB,15,264,143,8
     EDITTEXT        IDC_LIFTING_TENSION_WITH_REBAR,167,262,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_LIFTING_TENSION_WITH_REBAR_UNIT,211,264,90,8
-    COMBOBOX        IDC_STRESSES,333,212,127,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Evaluate stresses for",IDC_STATIC,263,214,66,8
-    LTEXT           "Wind Load",IDC_STATIC,269,130,36,8
+    COMBOBOX        IDC_STRESSES,333,212,127,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_GIRDER_PERMANENT_STRANDS DIALOGEX 0, 0, 484, 365
@@ -819,7 +826,7 @@ BEGIN
     COMBOBOX        IDC_COMBO_STR_USL,426,338,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_RENAME_LIBRARY_ENTRY DIALOG  0, 0, 187, 95
+IDD_RENAME_LIBRARY_ENTRY DIALOG 0, 0, 187, 95
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Rename Entry"
 FONT 8, "MS Sans Serif"
@@ -905,7 +912,7 @@ BEGIN
     LTEXT           "Note: Input of a positive X coordinate will create a pair of strand locations at (X,Y) and (-X,Y).",IDC_STATIC,7,202,293,14
 END
 
-IDD_GIRDER_HARPPOINT DIALOG  0, 0, 369, 172
+IDD_GIRDER_HARPPOINT DIALOG 0, 0, 369, 172
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1023,7 +1030,7 @@ BEGIN
     LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,248,29,8
 END
 
-IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 425
+IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 438
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Spec. Checking and Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1077,7 +1084,7 @@ BEGIN
     EDITTEXT        IDC_SUPPORT_LESS_THAN,101,217,25,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,129,219,44,8
     LTEXT           "(For Kansas method only)",IDC_STATIC_K,184,219,80,8
-    GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,244,462,70
+    GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,244,462,84
     LTEXT           "Slab Offset (""A"" Dimension)",IDC_STATIC,23,261,94,8
     CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,261,37,8
     CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,201,261,37,8
@@ -1090,16 +1097,23 @@ BEGIN
     LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,201,296,48,8
     EDITTEXT        IDC_CLEARANCE,253,293,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_CLEARANCE_UNIT,298,296,19,8
-    GROUPBOX        "Harped Strand Design",IDC_STATIC,12,320,462,44
+    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,23,311,81,8
+    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,311,37,10
+    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,200,311,51,8
+    EDITTEXT        IDC_INCLINDED_GIRDER_FS,260,308,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Bearing Pad Deduction",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL,313,311,74,8
+    EDITTEXT        IDC_INCLINDED_GIRDER_BRGPADDEDUCT,395,307,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT,437,311,19,8
+    GROUPBOX        "Harped Strand Design",IDC_STATIC,12,336,462,44
     CONTROL         "Add Strands Using the Permanent Strand Fill Order",IDC_RADIO_FILL_PERMANENT,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,336,193,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,352,193,10
     CONTROL         "Minimize Number of Harped Strands (*)",IDC_RADIO2,
-                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,351,137,10
-    LTEXT           "* If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,236,341,220,22
-    GROUPBOX        "Concrete Strength for Limit State Evaluations (Time-Step Analysis Only)",IDC_FC_GROUP,12,369,462,49
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,367,137,10
+    LTEXT           "* If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,236,357,220,22
+    GROUPBOX        "Concrete Strength for Limit State Evaluations (Time-Step Analysis Only)",IDC_FC_GROUP,12,385,462,45
     CONTROL         "Use f'ci and f'c at the time of loading (5.14.3.2d and 5.14.1.3.3)",IDC_FC1,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,386,214,10
-    CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,399,93,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,402,214,10
+    CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,415,93,10
 END
 
 IDD_SPEC_SHEAR DIALOGEX 0, 0, 441, 380
@@ -1241,7 +1255,7 @@ BEGIN
     LTEXT           "Spacing is measured between axles.\n\nOne axle may have a variable spacing. Enter variable spacing as min-max (e.g. 14-30)",IDC_STATIC,212,116,136,89
 END
 
-IDD_TRAFFICBARRIERVIEW DIALOG  0, 0, 520, 310
+IDD_TRAFFICBARRIERVIEW DIALOG 0, 0, 520, 310
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Traffic Barrier"
 FONT 8, "MS Sans Serif"
@@ -1846,7 +1860,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_LIVE_LOAD_FACTORS1, DIALOG
     BEGIN
@@ -2041,7 +2055,7 @@ BEGIN
         LEFTMARGIN, 12
         RIGHTMARGIN, 474
         TOPMARGIN, 7
-        BOTTOMMARGIN, 418
+        BOTTOMMARGIN, 431
     END
 
     IDD_SPEC_SHEAR, DIALOG
@@ -2341,7 +2355,7 @@ END
 // Menu
 //
 
-IDR_LIBRARYTYPE MENU 
+IDR_LIBRARYTYPE MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -2396,7 +2410,7 @@ BEGIN
     END
 END
 
-IDR_ADD_DELETE_POPUP MENU 
+IDR_ADD_DELETE_POPUP MENU
 BEGIN
     POPUP "Edit"
     BEGIN
@@ -2405,7 +2419,7 @@ BEGIN
     END
 END
 
-IDR_STRAIGHT_POPUP MENU 
+IDR_STRAIGHT_POPUP MENU
 BEGIN
     POPUP "Straight Strands"
     BEGIN
@@ -2414,7 +2428,7 @@ BEGIN
     END
 END
 
-IDR_ADD_EDIT_DELETE_POPUP MENU 
+IDR_ADD_EDIT_DELETE_POPUP MENU
 BEGIN
     POPUP "Edit"
     BEGIN
@@ -2431,20 +2445,35 @@ END
 //
 
 GIRDERDIM               METAFILE                "res\\GirderDim.emf"
+
 TRAFFICBARRIER          METAFILE                "res\\TrafficBarrier.emf"
+
 CONNECTION_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\Connection_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+
 CONNECTION_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\Connection_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+
 CONNECTION_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\Connection_BrgAlongGdr_EndAlongGdrFromPier.emf"
+
 CONNECTION_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\Connection_BrgAlongGdr_EndAlongNormalFromPier.emf"
+
 CONNECTION_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\Connection_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+
 CONNECTION_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\Connection_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+
 CONNECTION_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\Connection_BrgAlongNormal_EndAlongGdrFromPier.emf"
+
 CONNECTION_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\Connection_BrgAlongNormal_EndAlongNormalFromPier.emf"
+
 GENERATESTRANDS_STARTSPACING_SEQUENTIAL METAFILE                "res\\GenerateStrands_StartSpacing_Sequential.emf"
+
 GENERATESTRANDS_STARTSPACING_SKIPPED METAFILE                "res\\GenerateStrands_StartSpacing_Skipped.emf"
+
 GENERATESTRANDS_STARTEND_SEQUENTIAL METAFILE                "res\\GenerateStrands_StartEnd_Sequential.emf"
+
 GENERATESTRANDS_STARTEND_SKIPPED METAFILE                "res\\GenerateStrands_StartEnd_Skipped.emf"
+
 ZDIM                    METAFILE                "res\\Z.emf"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2454,27 +2483,63 @@ ZDIM                    METAFILE                "res\\Z.emf"
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_LIBRARYTYPE         ICON                    "res\\LibraryManager.ico"
+
 IDI_CONCRETE_ENTRY      ICON                    "res\\concrete.ico"
+
 IDI_CONNECTION_ENTRY    ICON                    "res\\connection.ico"
+
 IDI_GIRDER_ENTRY        ICON                    "res\\girder.ico"
+
 IDI_SPECIFICATION_ENTRY ICON                    "res\\specification.ico"
+
 IDI_TRAFFIC_BARRIER_ENTRY ICON                    "res\\trafficbarrier.ico"
+
 IDI_DIAPHRAGM_ENTRY     ICON                    "res\\diaphragm.ico"
+
 IDI_DUCT_ENTRY          ICON                    "res\\duct.ico"
+
 IDI_HAUL_TRUCK_ENTRY    ICON                    "res\\haul_truck.ico"
+
 IDI_LIVE_LOAD_ENTRY     ICON                    "res\\live_loa.ico"
+
 IDI_RATING_ENTRY        ICON                    "res\\Rating.ico"
+
 IDI_LIBRARY_MANAGER     ICON                    "res\\LibraryManager.ico"
+
 IDI_DEFAULT_ENTRY       ICON                    "res\\DefaultEntry.ico"
+
 IDI_FOLDER              ICON                    "..\\res\\folder_closed.ico"
+
 IDI_OPEN_FOLDER         ICON                    "..\\res\\folder_open.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_SPEC_DESIGN AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_WSDOT_HAULING AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SPEC_LIFTING AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_GIRDER_SHEET        "Girders"
     IDS_GIRDER_DIMENSIONS   "General"
@@ -2493,17 +2558,17 @@ BEGIN
     IDS_SLOPE_O6_US         "Max Strand Slope for 0.6d inch Strands"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_LIBRARYTYPE         "PGSLibrary Editor\nUntitled\nPGSLibrary Editor\nPGSLibrary File (*.lbr)\n.lbr\nPGSLibrary.Document\nPGSLibrary File"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     EAFID_APP_LEGAL         "Display PGSuper Legal Notices"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_SLOPE_O6_SI         "Max Strand Slope for 15.24d mm Strands"
     IDS_SLOPE_O7_SI         "Max Strand Slope for 17.78d mm Strands"
@@ -2515,12 +2580,12 @@ BEGIN
     IDS_GIRDER_HARPPOINT    "Harping Points"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_MANAGE_PLUGINS       "Manage PGSLibrary Editor Plug-ins"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDM_ADD_ENTRY           "Add a new entry to the library\nAdd entry"
     IDM_EDIT_ENTRY          "Edit the selected entry\nEdit entry"
@@ -2539,13 +2604,13 @@ BEGIN
     ID_STR_DELETE           "Delete row"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_CONFLICT_TOP_IMPORT "A conflict occurred while reading the library entries. An entry in the imported project's library has the same name as an entry in the current project's library, but not the same data values."
     IDS_CONFLICT_TOP_MASTER "A conflict occurred while reading the library entries in your project file. A library entry in the project file has the same name as an entry in the Master Library, but not the same data values."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_CONFLICT_BOTTOM_MASTER 
                             "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to rename the project entry and retain its values, or overwrite the project entry with values from the Master Library."
@@ -2553,7 +2618,7 @@ BEGIN
                             "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to Rename the imported entry and add it to the current library, or Skip the imported entry and not add it to the library."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
     IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
@@ -2563,18 +2628,18 @@ BEGIN
     IDS_E_FORMAT            "%1\n\n %2"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_WRITE             "An error has occured while writing to %1"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

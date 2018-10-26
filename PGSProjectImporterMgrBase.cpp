@@ -58,7 +58,7 @@ bool CPGSProjectImporterMgrBase::LoadImporters()
    CATID ID[nID];
    ID[0] = GetProjectImporterCATID();
 
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    // load all importers
    CEAFApp* pApp = EAFGetApp();

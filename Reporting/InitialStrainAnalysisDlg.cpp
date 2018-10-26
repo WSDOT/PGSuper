@@ -37,7 +37,7 @@
 
 IMPLEMENT_DYNAMIC(CInitialStrainAnalysisDlg, CDialog)
 
-CInitialStrainAnalysisDlg::CInitialStrainAnalysisDlg(IBroker* pBroker,boost::shared_ptr<CInitialStrainAnalysisReportSpecification>& pRptSpec,const CGirderKey& initialGirderKey,IntervalIndexType intervalIdx,CWnd* pParent)
+CInitialStrainAnalysisDlg::CInitialStrainAnalysisDlg(IBroker* pBroker,std::shared_ptr<CInitialStrainAnalysisReportSpecification>& pRptSpec,const CGirderKey& initialGirderKey,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CInitialStrainAnalysisDlg::IDD, pParent)
    , m_pRptSpec(pRptSpec)
 {

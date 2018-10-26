@@ -101,7 +101,7 @@ protected:
    void MakeCopy(const pgsPoiArtifactKey& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsPoiArtifactKey& rOther);
+   void MakeAssignment(const pgsPoiArtifactKey& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

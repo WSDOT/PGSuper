@@ -40,7 +40,7 @@
 
 IMPLEMENT_DYNAMIC(CMultiViewReportDlg, CDialog)
 
-CMultiViewReportDlg::CMultiViewReportDlg(IBroker* pBroker,const CReportDescription& rptDesc, boost::shared_ptr<CReportSpecification>& pRptSpec,
+CMultiViewReportDlg::CMultiViewReportDlg(IBroker* pBroker,const CReportDescription& rptDesc, std::shared_ptr<CReportSpecification>& pRptSpec,
                                          const CGirderKey& girderKey,
                                          UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
@@ -256,7 +256,7 @@ void CMultiViewReportDlg::InitChapterListFromSpec()
 
 void CMultiViewReportDlg::InitFromRptSpec()
 {
-   boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
+   std::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = std::dynamic_pointer_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
    if (pRptSpec)
    {
       m_GirderKeys.clear();

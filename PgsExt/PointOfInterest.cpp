@@ -227,19 +227,53 @@ bool pgsPointOfInterest::operator<=(const pgsPointOfInterest& rOther) const
 
 bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 {
-   if ( AtSamePlace(rOther) && // POIs are at exactly the same location and...
-        (
-          (IsTenthPoint(POI_SPAN) == 11 && rOther.IsTenthPoint(POI_SPAN) == 1) ||  // this poi is at the end of a span and the other is at the start of the span. This poi is less (Span i, 1.0L < Span i+1, 0.0L)
-          (HasAttribute(POI_SPAN | POI_CANTILEVER) && rOther.IsTenthPoint(POI_SPAN) == 1) || 
-          (HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER) && rOther.IsTenthPoint(POI_ERECTED_SEGMENT) == 1) ||
-          (HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER) && rOther.IsTenthPoint(POI_STORAGE_SEGMENT) == 1) ||
-          (IsTenthPoint(POI_SPAN) == 11 && rOther.HasAttribute(POI_SPAN | POI_CANTILEVER)) || 
-          (IsTenthPoint(POI_ERECTED_SEGMENT) == 11 && rOther.HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER)) || 
-          (IsTenthPoint(POI_STORAGE_SEGMENT) == 11 && rOther.HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER))
-        ) 
-      )
+   if ( m_SegmentKey.IsEqual(rOther.m_SegmentKey) && IsEqual(m_Xpoi, rOther.m_Xpoi)) // AtSamePlace(rOther))
    {
-      return true;
+      // POIs are at exactly the same location and...
+      // In span model
+      Uint16 thisSpanTenth = IsTenthPoint(POI_SPAN);
+      Uint16 othrSpanTenth = rOther.IsTenthPoint(POI_SPAN);
+      bool thisSpanCantilever = HasAttribute(POI_SPAN | POI_CANTILEVER);
+      bool otherSpanCantilever = rOther.HasAttribute(POI_SPAN | POI_CANTILEVER);
+
+      if (thisSpanTenth == 11 && othrSpanTenth == 1 || // this poi is at the end of a span and the other is at the start of the span. This poi is less (Span i, 1.0L < Span i+1, 0.0L)
+          thisSpanCantilever  && othrSpanTenth == 1 ||
+          thisSpanTenth == 11 && otherSpanCantilever)
+      {
+         return true;
+      }
+      else
+      {
+         // In erected model
+         Uint16 thisErectedTenth = IsTenthPoint(POI_ERECTED_SEGMENT);
+         Uint16 otherErectedTenth = rOther.IsTenthPoint(POI_ERECTED_SEGMENT);
+         bool thisErectedCantilever = HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER);
+         bool otherErectedCantilever = rOther.HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER);
+
+         if (thisErectedCantilever  && otherErectedTenth == 1 ||
+             thisErectedTenth == 11 && otherErectedCantilever)
+         {
+            return true;
+         }
+         else
+         {
+            // In storage model
+            Uint16 thisStorageTenth = IsTenthPoint(POI_STORAGE_SEGMENT);
+            Uint16 otherStorageTenth = rOther.IsTenthPoint(POI_STORAGE_SEGMENT);
+            bool thisStorageCantilever = HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER);
+            bool otherStorageCantilever = rOther.HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER);
+
+            if (thisStorageCantilever && otherStorageTenth == 1 ||
+                thisSpanTenth == 11   && otherStorageCantilever)
+            {
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+      }
    }
 
    if ( m_SegmentKey < rOther.m_SegmentKey )
@@ -248,11 +282,6 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
    }
 
    if ( rOther.m_SegmentKey < m_SegmentKey )
-   {
-      return false;
-   }
-
-   if (IsZero(m_Xpoi-rOther.m_Xpoi))
    {
       return false;
    }
@@ -634,6 +663,18 @@ bool pgsPointOfInterest::AtSamePlace(const pgsPointOfInterest& other) const
 
    return false;
 }
+
+bool pgsPointOfInterest::AtExactSamePlace(const pgsPointOfInterest& other) const
+{
+   if ( m_SegmentKey.IsEqual(other.m_SegmentKey) &&
+        IsZero( m_Xpoi - other.m_Xpoi ) )
+   {
+      return true;
+   }
+
+   return false;
+}
+
 
 void pgsPointOfInterest::SetTolerance(Float64 tol)
 {

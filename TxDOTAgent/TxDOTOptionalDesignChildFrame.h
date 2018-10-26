@@ -47,15 +47,15 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CTxDOTOptionalDesignChildFrame)
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs) override;
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	virtual ~CTxDOTOptionalDesignChildFrame();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid() const override;
+	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
 // Generated message map functions
@@ -70,7 +70,7 @@ protected:
 public:
    void SetFrameSize(int cx,int cy);
 protected:
-   virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
+   virtual void OnUpdateFrameTitle(BOOL bAddToTitle) override;
 public:
    afx_msg void OnLicenseAgreement();
    afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);

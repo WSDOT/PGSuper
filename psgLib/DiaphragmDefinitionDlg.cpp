@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 // CDiaphragmDefinitionDlg dialog
 
 
-CDiaphragmDefinitionDlg::CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry,const GirderLibraryEntry::DiaphragmLayoutRule& rule,CWnd* pParent /*=NULL*/)
+CDiaphragmDefinitionDlg::CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry,const GirderLibraryEntry::DiaphragmLayoutRule& rule,CWnd* pParent /*=nullptr*/)
 	: CDialog(CDiaphragmDefinitionDlg::IDD, pParent), m_Entry(entry) ,m_Rule(rule)
 {
 	//{{AFX_DATA_INIT(CDiaphragmDefinitionDlg)
@@ -50,7 +50,7 @@ CDiaphragmDefinitionDlg::CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry
    m_Entry.GetBeamFactory(&m_pBeamFactory);
 
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedFactory(m_pBeamFactory);
-   m_bSplicedGirder = (splicedFactory == NULL ? false : true);
+   m_bSplicedGirder = (splicedFactory == nullptr ? false : true);
 }
 
 

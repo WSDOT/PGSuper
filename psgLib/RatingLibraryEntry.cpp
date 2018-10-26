@@ -36,7 +36,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 1.0
+#define CURRENT_VERSION 2.0
 
 CLiveLoadFactorModel::CLiveLoadFactorModel()
 {
@@ -2225,6 +2225,10 @@ CString RatingLibraryEntry::GetLoadRatingType(pgsTypes::LoadRatingType ratingTyp
       lpszRatingType = _T("Legal - Special");
       break;
 
+   case pgsTypes::lrLegal_Emergency:
+      lpszRatingType = _T("Legal - Emergency");
+      break;
+
    case pgsTypes::lrPermit_Routine:
       lpszRatingType = _T("Permit - Routine");
       break;
@@ -2281,8 +2285,12 @@ m_bAlwaysRate(false)
    m_LiveLoadFactorModels[pgsTypes::lrLegal_Routine].SetLowerLiveLoadFactor(1.40,1.65,1.80,1.80);
 
    m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].SetLiveLoadFactorType(pgsTypes::gllBilinear);
-   m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].SetADTT(100,1000,5000,-1);
-   m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].SetLowerLiveLoadFactor(1.15,1.40,1.60,1.60);
+   m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].SetADTT(100, 1000, 5000, -1);
+   m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].SetLowerLiveLoadFactor(1.15, 1.40, 1.60, 1.60);
+
+   m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].SetLiveLoadFactorType(pgsTypes::gllSingleValue);
+   m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].SetLowerLiveLoadFactor(1.3, -1, -1, -1);
+   m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].SetServiceLiveLoadFactor(1.0, -1, -1, -1);
 
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetLiveLoadFactorType(pgsTypes::gllBilinearWithWeight);
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetADTT(100,1000,5000,-1);
@@ -2318,6 +2326,10 @@ m_bAlwaysRate(false)
    m_LiveLoadFactorModels2[pgsTypes::lrLegal_Special].SetLiveLoadFactorType(pgsTypes::gllLinear);
    m_LiveLoadFactorModels2[pgsTypes::lrLegal_Special].SetADTT(1000,5000,-1,-1);
    m_LiveLoadFactorModels2[pgsTypes::lrLegal_Special].SetLowerLiveLoadFactor(1.30,1.45,-1,1.45);
+
+   m_LiveLoadFactorModels2[pgsTypes::lrLegal_Emergency].SetLiveLoadFactorType(pgsTypes::gllSingleValue);
+   m_LiveLoadFactorModels2[pgsTypes::lrLegal_Emergency].SetLowerLiveLoadFactor(1.3, -1, -1, -1);
+   m_LiveLoadFactorModels2[pgsTypes::lrLegal_Emergency].SetServiceLiveLoadFactor(1.0, -1, -1, -1);
 
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetLiveLoadFactorType(pgsTypes::gllBilinearWithWeight);
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetADTT(100,1000,5000,-1);
@@ -2434,6 +2446,18 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    else
    {
       m_LiveLoadFactorModels2[pgsTypes::lrLegal_Special].SaveMe(pSave);
+   }
+   pSave->EndUnit();
+
+   // Added in version 2.0
+   pSave->BeginUnit(_T("LiveLoadFactors_Legal_Emergency"), 1.0);
+   if (m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims)
+   {
+      m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].SaveMe(pSave);
+   }
+   else
+   {
+      m_LiveLoadFactorModels2[pgsTypes::lrLegal_Emergency].SaveMe(pSave);
    }
    pSave->EndUnit();
 
@@ -2635,6 +2659,35 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
+   if (1.0 < version)
+   {
+      // added in version 2
+      if (!pLoad->BeginUnit(_T("LiveLoadFactors_Legal_Emergency")))
+      {
+         THROW_LOAD(InvalidFileFormat, pLoad);
+      }
+
+      if (m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims)
+      {
+         if (!m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].LoadMe(pLoad))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+      else
+      {
+         if (!m_LiveLoadFactorModels2[pgsTypes::lrLegal_Emergency].LoadMe(pLoad))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
+      if (!pLoad->EndUnit())
+      {
+         THROW_LOAD(InvalidFileFormat, pLoad);
+      }
+   }
+
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_Routine")) )
    {
       THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2775,7 +2828,8 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
 
    if ( lrfrVersionMgr::GetVersion() < lrfrVersionMgr::SecondEditionWith2013Interims)
    {
-      for ( int i = 0; i < 5; i++ )
+      int n = (int)pgsTypes::lrLoadRatingTypeCount;
+      for ( int i = 0; i < n; i++ )
       {
          pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
          if ( m_LiveLoadFactorModels[ratingType] != rOther.m_LiveLoadFactorModels[ratingType] )
@@ -2801,7 +2855,8 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
    }
    else
    {
-      for ( int i = 0; i < 5; i++ )
+      int n = (int)pgsTypes::lrLoadRatingTypeCount;
+      for ( int i = 0; i < n; i++ )
       {
          pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
          if ( m_LiveLoadFactorModels2[ratingType] != rOther.m_LiveLoadFactorModels2[ratingType] )
@@ -2841,7 +2896,7 @@ void RatingLibraryEntry::MakeCopy(const RatingLibraryEntry& rOther)
    m_SpecificationVersion = rOther.m_SpecificationVersion;
    m_bAlwaysRate          = rOther.m_bAlwaysRate;
 
-   for ( int i = 0; i < 5; i++ )
+   for ( int i = 0; i < 6; i++ )
    {
       m_LiveLoadFactorModels[i]  = rOther.m_LiveLoadFactorModels[i];
       m_LiveLoadFactorModels2[i] = rOther.m_LiveLoadFactorModels2[i];

@@ -108,7 +108,7 @@ public:
 
 protected:
    void MakeCopy(const DuctLibraryEntry& rOther);
-   virtual void MakeAssignment(const DuctLibraryEntry& rOther);
+   void MakeAssignment(const DuctLibraryEntry& rOther);
 
 private:
    // GROUP: DATA MEMBERS

@@ -7,7 +7,7 @@ Live Loads
 
 Item | Description
 -----|------------
-Live Load Vehicles | Select the live loads to be included in the load rating calculations for Routine Commercial Vehicles and Specialized Hauling Vehicles. If no live loads are selected a load rating will not be performed.
+Live Load Vehicles | Select the live loads to be included in the load rating calculations for Routine Commercial Vehicles, Specialized Hauling Vehicles, and Emergency Vehicles. If no live loads are selected a load rating will not be performed.
 Dynamic Load Allowances | Input the truck and lane dynamic load allowance factors.
 Exclude Lane Load and use 1.0 Truck Factor | The lane load and 0.75 truck factor for the AASHTO Legal Loads are excluded when this box is checked. See MBE 6A.4.4.2.a for guidance.
 

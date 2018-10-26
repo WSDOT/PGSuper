@@ -148,7 +148,7 @@ std::vector<CEAFDocTemplate*> CTxDOTAppPlugin::CreateDocTemplates()
 
 HMENU CTxDOTAppPlugin::GetSharedMenuHandle()
 {
-   return NULL;
+   return nullptr;
 }
 
 CString CTxDOTAppPlugin::GetName()
@@ -310,7 +310,7 @@ void CTxDOTAppPlugin::UpdateDocTemplates()
    // Search for the CPGSuperDocTemplate object
    CEAFDocManager* pDocMgr = (CEAFDocManager*)(pApp->m_pDocManager);
    POSITION pos = pDocMgr->GetFirstDocTemplatePosition();
-   while ( pos != NULL )
+   while ( pos != nullptr )
    {
       POSITION templatePos = pos;
       CDocTemplate* pDocTemplate = pDocMgr->GetNextDocTemplate(pos);

@@ -70,7 +70,7 @@ public:
 
 protected:
    void MakeCopy(const CDistributedLoadData& rOther);
-   virtual void MakeAssignment(const CDistributedLoadData& rOther);
+   void MakeAssignment(const CDistributedLoadData& rOther);
 };
 
 #endif // !defined(AFX_DISTRIBUTEDLOADDATA_H__83982300_F548_44FC_B84A_A7C9731FE381__INCLUDED_)

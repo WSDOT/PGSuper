@@ -49,7 +49,7 @@ CPierDetailsDlg::CPierDetailsDlg(const CBridgeDescription2* pBridge,PierIndexTyp
    InitPages();
 }
 
-CPierDetailsDlg::CPierDetailsDlg(const CBridgeDescription2* pBridge,PierIndexType pierIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd, UINT iSelectPage)
+CPierDetailsDlg::CPierDetailsDlg(const CBridgeDescription2* pBridge,PierIndexType pierIdx,const std::vector<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
    Init(pBridge,pierIdx);
@@ -118,7 +118,7 @@ void CPierDetailsDlg::InitPages()
    CreateExtensionPages();
 }
 
-void CPierDetailsDlg::InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+void CPierDetailsDlg::InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CommonInitPages();
    CreateExtensionPages(editBridgeExtensions);
@@ -179,13 +179,15 @@ LRESULT CPierDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
 	}
-	else
-		return 0;
+   else
+   {
+      return 0;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -210,12 +212,13 @@ void CPierDetailsDlg::CreateExtensionPages()
    }
 }
 
-void CPierDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+void CPierDetailsDlg::CreateExtensionPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_BridgeExtensionPages = editBridgeExtensions;
+   std::sort(m_BridgeExtensionPages.begin(), m_BridgeExtensionPages.end());
 
 
    const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
@@ -225,7 +228,7 @@ void CPierDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& 
    {
       IEditPierCallback* pEditPierCallback = callbackIter->second;
       IDType editBridgeCallbackID = pEditPierCallback->GetEditBridgeCallbackID();
-      CPropertyPage* pPage = NULL;
+      CPropertyPage* pPage = nullptr;
       if ( editBridgeCallbackID == INVALID_ID )
       {
          pPage = pEditPierCallback->CreatePropertyPage(this);
@@ -234,7 +237,7 @@ void CPierDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& 
       {
          EditBridgeExtension key;
          key.callbackID = editBridgeCallbackID;
-         std::set<EditBridgeExtension>::const_iterator found(m_BridgeExtensionPages.find(key));
+         std::vector<EditBridgeExtension>::const_iterator found(std::find(m_BridgeExtensionPages.begin(),m_BridgeExtensionPages.end(),key));
          if ( found != m_BridgeExtensionPages.end() )
          {
             const EditBridgeExtension& extension = *found;
@@ -275,7 +278,7 @@ txnTransaction* CPierDetailsDlg::GetExtensionPageTransaction()
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -317,7 +320,7 @@ void CPierDetailsDlg::NotifyBridgeExtensionPages()
       {
          EditBridgeExtension key;
          key.callbackID = editBridgeCallbackID;
-         std::set<EditBridgeExtension>::iterator found(m_BridgeExtensionPages.find(key));
+         std::vector<EditBridgeExtension>::iterator found(std::find(m_BridgeExtensionPages.begin(),m_BridgeExtensionPages.end(),key));
          if ( found != m_BridgeExtensionPages.end() )
          {
             EditBridgeExtension& extension = *found;

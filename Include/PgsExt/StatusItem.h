@@ -44,8 +44,8 @@ class PGSEXTCLASS pgsRefinedAnalysisStatusCallback : public iStatusCallback
 {
 public:
    pgsRefinedAnalysisStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;
@@ -65,8 +65,8 @@ class PGSEXTCLASS pgsInstallationErrorStatusCallback : public iStatusCallback
 {
 public:
    pgsInstallationErrorStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 };
 
 // status for unknown error
@@ -84,8 +84,8 @@ class PGSEXTCLASS pgsUnknownErrorStatusCallback : public iStatusCallback
 {
 public:
    pgsUnknownErrorStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 };
 
 // status informational message
@@ -101,8 +101,8 @@ class PGSEXTCLASS pgsInformationalStatusCallback : public iStatusCallback
 {
 public:
    pgsInformationalStatusCallback(eafTypes::StatusSeverityType severity,UINT helpID=0);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    eafTypes::StatusSeverityType m_Severity;
@@ -121,8 +121,8 @@ class PGSEXTCLASS pgsProjectCriteriaStatusCallback : public iStatusCallback
 {
 public:
    pgsProjectCriteriaStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;
@@ -146,8 +146,8 @@ class PGSEXTCLASS pgsGirderDescriptionStatusCallback : public iStatusCallback
 {
 public:
    pgsGirderDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;
@@ -166,15 +166,15 @@ class PGSEXTCLASS pgsStructuralAnalysisTypeStatusCallback : public iStatusCallba
 {
 public:
    pgsStructuralAnalysisTypeStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 };
 
 // status for general bridge description input
 class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions };
+   typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions } IssueType;
    pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,IssueType issueType,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
@@ -186,8 +186,8 @@ class PGSEXTCLASS pgsBridgeDescriptionStatusCallback : public iStatusCallback
 {
 public:
    pgsBridgeDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;
@@ -207,8 +207,8 @@ class PGSEXTCLASS pgsLldfWarningStatusCallback : public iStatusCallback
 {
 public:
    pgsLldfWarningStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;
@@ -227,8 +227,8 @@ class PGSEXTCLASS pgsEffectiveFlangeWidthStatusCallback : public iStatusCallback
 {
 public:
    pgsEffectiveFlangeWidthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;

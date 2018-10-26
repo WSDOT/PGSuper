@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 CConnectionEntryDlg::CConnectionEntryDlg(bool allowEditing,
-                                         CWnd* pParent /*=NULL*/)
+                                         CWnd* pParent /*=nullptr*/)
 	: CDialog(CConnectionEntryDlg::IDD, pParent),
    m_bAllowEditing(allowEditing)
 {

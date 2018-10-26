@@ -76,7 +76,7 @@ void CTemplateManager::GetTemplates(const CString& strRootSourcePath,const CStri
       CString strDestinationPath = iter->second;
 
 
-      ::CreateDirectory(strDestinationPath,NULL);
+      ::CreateDirectory(strDestinationPath,nullptr);
 
       GetTemplates(strSourcePath,strDestinationPath,pProgress);
    }

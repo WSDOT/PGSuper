@@ -118,7 +118,7 @@ protected:
    void MakeCopy(const pgsLongRebarInstance& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsLongRebarInstance& rOther);
+   void MakeAssignment(const pgsLongRebarInstance& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

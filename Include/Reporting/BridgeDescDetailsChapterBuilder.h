@@ -79,8 +79,8 @@ private:
    bool m_bOmitStrandLocations;
 
    // Prevent accidental copying and assignment
-   CBridgeDescDetailsChapterBuilder(const CBridgeDescDetailsChapterBuilder&);
-   CBridgeDescDetailsChapterBuilder& operator=(const CBridgeDescDetailsChapterBuilder&);
+   CBridgeDescDetailsChapterBuilder(const CBridgeDescDetailsChapterBuilder&) = delete;
+   CBridgeDescDetailsChapterBuilder& operator=(const CBridgeDescDetailsChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

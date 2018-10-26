@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 // CSpanLengthDlg dialog
 
 
-CSpanLengthDlg::CSpanLengthDlg(CWnd* pParent /*=NULL*/)
+CSpanLengthDlg::CSpanLengthDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CSpanLengthDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSpanLengthDlg)

@@ -15,7 +15,7 @@ IMPLEMENT_DYNAMIC(CDrawPrecastSegmentControl, CWnd)
 
 CDrawPrecastSegmentControl::CDrawPrecastSegmentControl()
 {
-   m_pSource = NULL;
+   m_pSource = nullptr;
 }
 
 CDrawPrecastSegmentControl::~CDrawPrecastSegmentControl()
@@ -43,7 +43,7 @@ void CDrawPrecastSegmentControl::OnPaint()
    // TODO: Add your message handler code here
    // Do not call CWnd::OnPaint() for painting messages
 
-   dc.SelectClipRgn(NULL);
+   dc.SelectClipRgn(nullptr);
 
    const CSplicedGirderData* pSplicedGirder = m_pSource->GetGirder();
    SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
@@ -212,7 +212,7 @@ void CDrawPrecastSegmentControl::CreateSegmentShape(const CSegmentKey& segmentKe
 
 void CDrawPrecastSegmentControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape)
 {
-   if ( pShape == NULL )
+   if ( pShape == nullptr )
       return;
 
    CComPtr<IPoint2dCollection> polypoints;
@@ -248,7 +248,7 @@ void CDrawPrecastSegmentControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,ISh
 
 void CDrawPrecastSegmentControl::DrawBottomFlange(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPoints)
 {
-   if ( pPoints == NULL )
+   if ( pPoints == nullptr )
       return;
 
    CollectionIndexType nPoints;

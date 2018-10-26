@@ -26,6 +26,9 @@
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
 
+#include <iterator>
+#include <algorithm>
+
 CPrestressTool::CPrestressTool(IBroker* pBroker) :
 m_pBroker(pBroker)
 {

@@ -219,42 +219,42 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
       {
          if ( bReportAxial )
          {
-            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Pmax, bReportTruckConfig ? &dummyConfig  : NULL, bReportTruckConfig ? &PmaxConfig   : NULL );
-            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Pmin, &dummy, bReportTruckConfig ? &PminConfig   : NULL, bReportTruckConfig ? &dummyConfig  : NULL  );
+            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Pmax, bReportTruckConfig ? &dummyConfig  : nullptr, bReportTruckConfig ? &PmaxConfig   : nullptr );
+            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Pmin, &dummy, bReportTruckConfig ? &PminConfig   : nullptr, bReportTruckConfig ? &dummyConfig  : nullptr  );
          }
 
-         pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Mmax, bReportTruckConfig ? &dummyConfig  : NULL, bReportTruckConfig ? &MmaxConfig   : NULL );
-         pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &dummy, bReportTruckConfig ? &MminConfig   : NULL, bReportTruckConfig ? &dummyConfig  : NULL  );
+         pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Mmax, bReportTruckConfig ? &dummyConfig  : nullptr, bReportTruckConfig ? &MmaxConfig   : nullptr );
+         pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &dummy, bReportTruckConfig ? &MminConfig   : nullptr, bReportTruckConfig ? &dummyConfig  : nullptr  );
 
          pForces2->GetVehicularLiveLoadShear( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Vdummy, &Vmax, 
-            bReportTruckConfig ? &dummyConfig  : NULL, 
-            bReportTruckConfig ? &dummyConfig  : NULL, 
-            bReportTruckConfig ? &VmaxLeftConfig   : NULL,
-            bReportTruckConfig ? &VmaxRightConfig  : NULL );
+            bReportTruckConfig ? &dummyConfig  : nullptr, 
+            bReportTruckConfig ? &dummyConfig  : nullptr, 
+            bReportTruckConfig ? &VmaxLeftConfig   : nullptr,
+            bReportTruckConfig ? &VmaxRightConfig  : nullptr );
 
          pForces2->GetVehicularLiveLoadShear( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Vmin, &Vdummy,
-            bReportTruckConfig ? &VminLeftConfig   : NULL, 
-            bReportTruckConfig ? &VminRightConfig  : NULL, 
-            bReportTruckConfig ? &dummyConfig  : NULL,
-            bReportTruckConfig ? &dummyConfig  : NULL  );
+            bReportTruckConfig ? &VminLeftConfig   : nullptr, 
+            bReportTruckConfig ? &VminRightConfig  : nullptr, 
+            bReportTruckConfig ? &dummyConfig  : nullptr,
+            bReportTruckConfig ? &dummyConfig  : nullptr  );
 
-         pForces2->GetVehicularLiveLoadDeflection( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Dmax, bReportTruckConfig ? &dummyConfig  : NULL, bReportTruckConfig ? &DmaxConfig   : NULL );
-         pForces2->GetVehicularLiveLoadDeflection( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Dmin, &dummy, bReportTruckConfig ? &DminConfig   : NULL, bReportTruckConfig ? &dummyConfig  : NULL );
+         pForces2->GetVehicularLiveLoadDeflection( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Dmax, bReportTruckConfig ? &dummyConfig  : nullptr, bReportTruckConfig ? &DmaxConfig   : nullptr );
+         pForces2->GetVehicularLiveLoadDeflection( intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Dmin, &dummy, bReportTruckConfig ? &DminConfig   : nullptr, bReportTruckConfig ? &dummyConfig  : nullptr );
       }
       else
       {
          if ( bReportAxial )
          {
-            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, bReportTruckConfig ? &PminConfig : NULL, bReportTruckConfig ? &PmaxConfig : NULL );
+            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, bReportTruckConfig ? &PminConfig : nullptr, bReportTruckConfig ? &PmaxConfig : nullptr );
          }
 
-         pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, bReportTruckConfig ? &MminConfig : NULL, bReportTruckConfig ? &MmaxConfig : NULL );
+         pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, bReportTruckConfig ? &MminConfig : nullptr, bReportTruckConfig ? &MmaxConfig : nullptr );
          pForces2->GetVehicularLiveLoadShear( intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Vmin, &Vmax, 
-                                              bReportTruckConfig ? &VminLeftConfig  : NULL, 
-                                              bReportTruckConfig ? &VminRightConfig : NULL, 
-                                              bReportTruckConfig ? &VmaxLeftConfig  : NULL,
-                                              bReportTruckConfig ? &VmaxRightConfig : NULL );
-         pForces2->GetVehicularLiveLoadDeflection( intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Dmin, &Dmax, bReportTruckConfig ? &DminConfig : NULL, bReportTruckConfig ? &DmaxConfig : NULL );
+                                              bReportTruckConfig ? &VminLeftConfig  : nullptr, 
+                                              bReportTruckConfig ? &VminRightConfig : nullptr, 
+                                              bReportTruckConfig ? &VmaxLeftConfig  : nullptr,
+                                              bReportTruckConfig ? &VmaxRightConfig : nullptr );
+         pForces2->GetVehicularLiveLoadDeflection( intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Dmin, &Dmax, bReportTruckConfig ? &DminConfig : nullptr, bReportTruckConfig ? &DmaxConfig : nullptr );
       }
 
       // Fill up the table

@@ -43,7 +43,7 @@ public:
    void Init(LPCTSTR strSection,const CATID& catid,LPCTSTR lpszAppName);
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
    bool InitList();
 
@@ -59,6 +59,6 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
-   virtual void OnOK();
+   virtual BOOL OnInitDialog() override;
+   virtual void OnOK() override;
 };

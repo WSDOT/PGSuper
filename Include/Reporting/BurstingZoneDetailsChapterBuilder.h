@@ -79,8 +79,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CSplittingZoneDetailsChapterBuilder(const CSplittingZoneDetailsChapterBuilder&);
-   CSplittingZoneDetailsChapterBuilder& operator=(const CSplittingZoneDetailsChapterBuilder&);
+   CSplittingZoneDetailsChapterBuilder(const CSplittingZoneDetailsChapterBuilder&) = delete;
+   CSplittingZoneDetailsChapterBuilder& operator=(const CSplittingZoneDetailsChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

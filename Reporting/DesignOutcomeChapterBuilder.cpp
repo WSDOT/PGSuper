@@ -186,7 +186,7 @@ LPCTSTR CDesignOutcomeChapterBuilder::GetName() const
 rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
-   ATLASSERT( pReportSpec != NULL );
+   ATLASSERT( pReportSpec != nullptr );
 
    std::vector<CGirderKey> girderKeys = pReportSpec->GetGirderKeys();
 
@@ -242,7 +242,7 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
       const pgsGirderDesignArtifact* pArtifact = pIArtifact->GetDesignArtifact(girderKey);
 
-      if ( pArtifact == NULL )
+      if ( pArtifact == nullptr )
       {
          rptParagraph* pPara = new rptParagraph;
          (*pChapter) << pPara;
@@ -298,7 +298,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
                   pArtifact->DoPreviouslyFailedDesignsExist() ||
                   pArtifact->DoDesignNotesExist();
 
-   rptParagraph* pNotesParagraph = doNotes ? new rptParagraph() : NULL;
+   rptParagraph* pNotesParagraph = doNotes ? new rptParagraph() : nullptr;
    if ( doNotes )
    {
       rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
@@ -584,8 +584,8 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
       Float64 neff;
-      Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, config, false, &neff);
-      Float64 ecc_current = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &neff);
+      Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config, &neff);
+      Float64 ecc_current = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, nullptr, &neff);
 
       (*pTable)(row,0) << _T("Eccentricity of Permanent Strands at Midspan");
       (*pTable)(row,1) << length.SetValue(ecc_design);
@@ -817,7 +817,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          GDRCONFIG config = pArtifact->GetSegmentConfiguration();
 
          GET_IFACE2(pBroker,ICamber,pCamber);
-         Float64 excess_camber = pCamber->GetExcessCamber(poiMS,config,CREEP_MAXTIME);
+         Float64 excess_camber = pCamber->GetExcessCamber(poiMS,CREEP_MAXTIME,&config);
          if ( excess_camber < 0 )
          {
             *pNotesParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
@@ -1291,7 +1291,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          GET_IFACE2(pBroker,IIntervals,pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
          Float64 neff;
-         Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, config, false, &neff);
+         Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config, &neff);
          (*pTable)(row++,col) << length.SetValue(ecc_design);
 
          if (is_harped)

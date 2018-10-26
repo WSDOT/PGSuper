@@ -68,13 +68,13 @@ CDebondSectionCalculator::CDebondSectionCalculator(const std::vector<DEBONDCONFI
          else
          {
             // found, add debond
-            DbSection& sec = *sec_it;
+            DbSection& sec = const_cast<DbSection&>(*sec_it);
             sec.m_NumDebonds++;
          }
       }
 
       // Right side
-      if(rinfo.DebondLength[pgsTypes::metEnd] > 0.0)
+      if(0.0 < rinfo.DebondLength[pgsTypes::metEnd])
       {
          DbSection bogus_sec;
          ATLASSERT(girderLength/2.0 > rinfo.DebondLength[pgsTypes::metEnd]);
@@ -94,7 +94,7 @@ CDebondSectionCalculator::CDebondSectionCalculator(const std::vector<DEBONDCONFI
          else
          {
             // found, add debond
-            DbSection& sec = *sec_it;
+            DbSection& sec = const_cast<DbSection&>(*sec_it);
             sec.m_NumDebonds++;
          }
       }
@@ -109,10 +109,12 @@ SectionIndexType CDebondSectionCalculator::GetNumLeftSections()
 void CDebondSectionCalculator::GetLeftSectionInfo(SectionIndexType idx, Float64* pLocation, IndexType* numStrandsDebonded)
 {
    std::set<DbSection>::iterator sec_it = m_LeftSections.begin();
-   for(SectionIndexType is=0; is<idx; is++)
+   for (SectionIndexType is = 0; is < idx; is++)
+   {
       sec_it++;
+   }
 
-   DbSection& sec = *sec_it;
+   DbSection& sec = const_cast<DbSection&>(*sec_it);
    *numStrandsDebonded = sec.m_NumDebonds;
    *pLocation = sec.m_Location;
 }
@@ -125,10 +127,12 @@ SectionIndexType CDebondSectionCalculator::GetNumRightSections()
 void CDebondSectionCalculator::GetRightSectionInfo(SectionIndexType idx, Float64* pLocation, IndexType* numStrandsDebonded)
 {
    std::set<DbSection>::iterator sec_it = m_RightSections.begin();
-   for(SectionIndexType is=0; is<idx; is++)
+   for (SectionIndexType is = 0; is < idx; is++)
+   {
       sec_it++;
+   }
 
-   DbSection& sec = *sec_it;
+   DbSection& sec = const_cast<DbSection&>(*sec_it);
    *numStrandsDebonded = sec.m_NumDebonds;
    *pLocation = sec.m_Location;
 }
@@ -162,7 +166,8 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, con
          StrandRowIter srit = strandrows.find(srow);
          if (srit != strandrows.end())
          {
-            srit->Count++;
+            StrandRow& strandRow(const_cast<StrandRow&>(*srit));
+            strandRow.Count++;
          }
          else
          {
@@ -191,7 +196,8 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, con
          StrandRowIter srit = strandrows.find(srow);
          if (srit != strandrows.end())
          {
-            srit->Count++;
+            StrandRow& strandRow(const_cast<StrandRow&>(*srit));
+            strandRow.Count++;
          }
          else
          {

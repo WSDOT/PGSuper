@@ -190,7 +190,7 @@ void CGirderGraphControllerBase::OnGirderChanged()
 void CGirderGraphControllerBase::FillGroupCtrl()
 {
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
-   if ( pcbGroup == NULL )
+   if ( pcbGroup == nullptr )
    {
       return; // not using a group list
    }
@@ -228,7 +228,7 @@ void CGirderGraphControllerBase::FillGirderCtrl()
    GroupIndexType grpIdx = GetGirderGroup();
 
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
-   if ( pcbGirder == NULL )
+   if ( pcbGirder == nullptr )
    {
       return; // not using a girder list
    }
@@ -383,7 +383,7 @@ void CIntervalGirderGraphControllerBase::OnIntervalChanged()
 void CIntervalGirderGraphControllerBase::FillIntervalCtrl()
 {
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
-   if ( pcbIntervals == NULL )
+   if ( pcbIntervals == nullptr )
    {
       return; // not using an intervals list
    }

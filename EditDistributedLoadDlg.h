@@ -38,7 +38,7 @@ class CEditDistributedLoadDlg : public CDialog
 {
 // Construction
 public:
-	CEditDistributedLoadDlg(const CDistributedLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent = NULL);   // standard constructor
+	CEditDistributedLoadDlg(const CDistributedLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CEditDistributedLoadDlg)

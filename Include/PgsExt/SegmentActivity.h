@@ -60,7 +60,7 @@ public:
 
 protected:
    void MakeCopy(const CSegmentActivityBase& rOther);
-   virtual void MakeAssignment(const CSegmentActivityBase& rOther);
+   void MakeAssignment(const CSegmentActivityBase& rOther);
    bool m_bEnabled;
 
    // called by load/save to give subclasses an opportunity to load/save data
@@ -100,12 +100,12 @@ public:
    Float64 GetAgeAtRelease() const;
 
 protected:
-   virtual LPCTSTR GetUnitName() { return _T("ConstructSegments"); }
+   virtual LPCTSTR GetUnitName() override { return _T("ConstructSegments"); }
    void MakeCopy(const CConstructSegmentActivity& rOther);
-   virtual void MakeAssignment(const CConstructSegmentActivity& rOther);
+   void MakeAssignment(const CConstructSegmentActivity& rOther);
 
-   virtual HRESULT LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress);
-   virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress);
+   virtual HRESULT LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress) override;
+   virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress) override;
 
    Float64 m_RelaxationTime;
    Float64 m_AgeAtRelease;
@@ -117,5 +117,5 @@ protected:
 class PGSEXTCLASS CErectSegmentActivity : public CSegmentActivityBase
 {
 protected:
-   virtual LPCTSTR GetUnitName() { return _T("ErectSegments"); }
+   virtual LPCTSTR GetUnitName() override { return _T("ErectSegments"); }
 };

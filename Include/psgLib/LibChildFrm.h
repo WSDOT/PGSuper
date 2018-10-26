@@ -54,8 +54,8 @@ public:
 				LPCTSTR lpszWindowName,
 				DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 				const RECT& rect = rectDefault,
-				CMDIFrameWnd* pParentWnd = NULL,
-				CCreateContext* pContext = NULL);
+				CMDIFrameWnd* pParentWnd = nullptr,
+				CCreateContext* pContext = nullptr);
 	//}}AFX_VIRTUAL
 
 // Implementation

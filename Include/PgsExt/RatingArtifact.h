@@ -52,11 +52,13 @@ public:
    typedef std::vector<std::pair<pgsPointOfInterest,pgsStressRatingArtifact>> StressRatings;
    typedef std::vector<std::pair<pgsPointOfInterest,pgsYieldStressRatioArtifact>> YieldStressRatios;
 
-   pgsRatingArtifact();
+   pgsRatingArtifact(pgsTypes::LoadRatingType ratingType);
    pgsRatingArtifact(const pgsRatingArtifact& rOther);
    virtual ~pgsRatingArtifact();
 
    pgsRatingArtifact& operator = (const pgsRatingArtifact& rOther);
+
+   pgsTypes::LoadRatingType GetLoadRatingType() const;
 
    void AddArtifact(const pgsPointOfInterest& poi,const pgsMomentRatingArtifact& artifact,bool bPositiveMoment);
    void AddArtifact(const pgsPointOfInterest& poi,const pgsShearRatingArtifact& artifact);
@@ -86,12 +88,14 @@ public:
                              const pgsStressRatingArtifact** ppStress,
                              const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment,const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const;
 
+   bool IsLoadPostingRequired() const;
    void GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const;
 
 protected:
    void MakeCopy(const pgsRatingArtifact& rOther);
-   virtual void MakeAssignment(const pgsRatingArtifact& rOther);
+   void MakeAssignment(const pgsRatingArtifact& rOther);
 
+   pgsTypes::LoadRatingType m_RatingType;
    MomentRatings m_PositiveMomentRatings;
    MomentRatings m_NegativeMomentRatings;
    ShearRatings  m_ShearRatings;

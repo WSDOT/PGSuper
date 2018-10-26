@@ -93,63 +93,63 @@ protected: // create from serialization only
 
 // CEAFBrokerDocument overrides
 public:
-   virtual CATID GetAgentCategoryID();
-   virtual CATID GetExtensionAgentCategoryID();
-   virtual BOOL Init();
-   virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
-   virtual CString GetToolbarSectionName();
+   virtual CATID GetAgentCategoryID() override;
+   virtual CATID GetExtensionAgentCategoryID() override;
+   virtual BOOL Init() override;
+   virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit) override; 
+   virtual CString GetToolbarSectionName() override;
 
-   virtual void DoIntegrateWithUI(BOOL bIntegrate);
+   virtual void DoIntegrateWithUI(BOOL bIntegrate) override;
 
-   virtual void LoadDocumentSettings();
-   virtual void SaveDocumentSettings();
+   virtual void LoadDocumentSettings() override;
+   virtual void SaveDocumentSettings() override;
 
-	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName);
-   virtual BOOL OpenTheDocument(LPCTSTR lpszPathName);
-   virtual BOOL SaveTheDocument(LPCTSTR lpszPathName);
-   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave);
-   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad);
+	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
+   virtual BOOL OpenTheDocument(LPCTSTR lpszPathName) override;
+   virtual BOOL SaveTheDocument(LPCTSTR lpszPathName) override;
+   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
+   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
 
-   virtual CString GetDocumentationSetName();
-   virtual CString GetDocumentationRootLocation();
+   virtual CString GetDocumentationSetName() override;
+   virtual CString GetDocumentationRootLocation() override;
 
-   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
+   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const override;
+   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
 protected:
-   virtual void OnCreateInitialize();
-   virtual void OnCreateFinalize();
+   virtual void OnCreateInitialize() override;
+   virtual void OnCreateFinalize() override;
 
-   virtual CString GetRootNodeName();
-   virtual Float64 GetRootNodeVersion();
-   virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave);
+   virtual CString GetRootNodeName() override;
+   virtual Float64 GetRootNodeVersion() override;
+   virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave) override;
 
 public:
    // ITxDOTBrokerRetriever
-   virtual IBroker* GetUpdatedBroker();
-   virtual IBroker* GetClassicBroker();
-   virtual GirderLibrary* GetGirderLibrary();
-   virtual ConnectionLibrary* GetConnectionLibrary();
-   virtual SpecLibrary* GetSpecLibrary();
+   virtual IBroker* GetUpdatedBroker() override;
+   virtual IBroker* GetClassicBroker() override;
+   virtual GirderLibrary* GetGirderLibrary() override;
+   virtual ConnectionLibrary* GetConnectionLibrary() override;
+   virtual SpecLibrary* GetSpecLibrary() override;
 
 // Operations
    // listen to data events
-   virtual void OnTxDotDataChanged(int change);
+   virtual void OnTxDotDataChanged(int change) override;
 
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CTxDOTOptionalDesignDoc)
 	public:
-//	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName);
+//	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	virtual ~CTxDOTOptionalDesignDoc();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid() const override;
+	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
 // Generated message map functions
@@ -158,8 +158,8 @@ protected:
    //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   virtual BOOL CreateBroker();
-   virtual HINSTANCE GetResourceInstance();
+   virtual BOOL CreateBroker() override;
+   virtual HINSTANCE GetResourceInstance() override;
 
    // our data
 public:
@@ -218,8 +218,8 @@ public:
    afx_msg void OnViewGirderviewsettings();
    afx_msg void OnStatuscenterView();
 
-   virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType);
-   virtual void ShowCustomReportDefinitionHelp();
+   virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType) override;
+   virtual void ShowCustomReportDefinitionHelp() override;
 
 };
 

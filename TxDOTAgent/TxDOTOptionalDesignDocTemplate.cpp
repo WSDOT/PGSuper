@@ -104,7 +104,7 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
    // top level icon
    HICON hIcon = AfxGetApp()->LoadIcon(IDR_TXDOTOPTIONALDESIGN);
    m_TemplateGroup.SetIcon(hIcon);
-   m_TemplateGroup.AddItem( new CEAFTemplateItem(this,strItemName,NULL,hIcon) );
+   m_TemplateGroup.AddItem( new CEAFTemplateItem(this,strItemName,nullptr,hIcon) );
 
    // Location of template folders
    CCatalogServerAppMixin* pAppPlugin = dynamic_cast<CCatalogServerAppMixin*>(m_pPlugin);
@@ -136,7 +136,7 @@ void CTxDOTOptionalDesignDocTemplate::FindInFolder(LPCTSTR strPath,CEAFTemplateG
    int i = strIconFile.ReverseFind(_T('\\'));
    strIconFile += strIconFile.Mid(i);
    strIconFile += _T(".ico");
-   HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
+   HICON hIcon = (HICON)::LoadImage(nullptr,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
    if ( hIcon )
       folderIcon = hIcon;
 
@@ -167,16 +167,15 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
       CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
       if(::DoParseTemplateFile(templateFile, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
       {
-         // Attempt to insert folder. Doesn't matter if insterted or not, all we want is an iterator
          TemplateFolder tfolder;
          tfolder.Title = folderName;
-         std::pair<TemplateFolderIterator, bool> itfolder = Folders.insert(tfolder);
 
          TemplateFile file;
          file.FilePath = templateFile;
          file.FileTitle = finder.GetFileTitle();
+         tfolder.Files.push_back(file);
 
-         itfolder.first->Files.push_back(file);
+         std::pair<TemplateFolderIterator, bool> itfolder = Folders.insert(tfolder);
       }
       else
       {
@@ -193,11 +192,17 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
       HICON fileIcon = origIcon;
 
       CString strIconFile = CString(strPath) + _T("\\") + rfolder.Title.c_str() + _T(".ico");
-      HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
-      if ( hIcon )
+      HICON hIcon = (HICON)::LoadImage(nullptr,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
+      if (hIcon)
+      {
          fileIcon = hIcon;
+      }
+#if defined _DEBUG
       else
+      {
          ATLASSERT(false);
+      }
+#endif
 
       CEAFTemplateGroup* pNewGroup = new CEAFTemplateGroup();
       pNewGroup->SetGroupName(rfolder.Title.c_str());

@@ -40,8 +40,8 @@ public:
    CGirderGraphBuilderBase(const CGirderGraphBuilderBase& other);
    virtual ~CGirderGraphBuilderBase();
 
-   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
-   virtual CEAFGraphControlWindow* GetGraphControlWindow();
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID) override;
+   virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
    
    virtual bool UpdateNow() = 0;
 

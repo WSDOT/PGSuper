@@ -109,14 +109,14 @@ void CPGSuperReportView::OnInitialUpdate()
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)pDocTemplate;
    CEAFReportViewCreationData* pCreateData = (CEAFReportViewCreationData*)pTemplate->GetViewCreationData();
-   ASSERT(pCreateData != NULL);
+   ASSERT(pCreateData != nullptr);
    std::vector<std::_tstring> rptNames(pCreateData->m_pRptMgr->GetReportNames());
-   boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pCreateData->m_pRptMgr->GetReportSpecificationBuilder(rptNames[pCreateData->m_RptIdx]);
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pCreateData->m_pRptMgr->GetReportSpecificationBuilder(rptNames[pCreateData->m_RptIdx]);
    CMultiViewSpanGirderReportSpecificationBuilder* pMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderReportSpecificationBuilder*>(pRptSpecBuilder.get()));
 
    // if autocalc is turned on, or this is not a multi-view report, just process this normally
    // by calling the base class OnInitialUpdate method
-   if ( pAutoCalcDoc->IsAutoCalcEnabled() || pMultiViewRptSpecBuilder == NULL )
+   if ( pAutoCalcDoc->IsAutoCalcEnabled() || pMultiViewRptSpecBuilder == nullptr )
    {
       CEAFAutoCalcReportView::OnInitialUpdate();
    }
@@ -214,7 +214,7 @@ CReportHint* CPGSuperReportView::TranslateHint(CView* pSender, LPARAM lHint, COb
       CGirderReportHint* pSGHint = new CGirderReportHint(pGirderHint->girderKey,pGirderHint->lHint);
       return pSGHint;
    }
-   return NULL;
+   return nullptr;
 }
 
 int CPGSuperReportView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -259,10 +259,10 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptFor
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
    std::vector<std::_tstring> names = pRptMgr->GetReportNames();
-   boost::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(names[rptIdx]);
+   std::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(names[rptIdx]);
    CReportDescription rptDesc = pRptBuilder->GetReportDescription();
 
-   boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pRptBuilder->GetReportSpecificationBuilder();
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pRptBuilder->GetReportSpecificationBuilder();
 
    // See if we have a CMultiViewSpanGirderReportSpecificationBuilder. 
    // If so, we will cycle through creating report windows - one for each girder
@@ -272,8 +272,8 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptFor
    {
       // this is a Span/Girder spec builder
       // Create the report specification. This will define the girders to be reported on and the chapters to report
-      boost::shared_ptr<CReportSpecification> nullSpec;
-      boost::shared_ptr<CReportSpecification> rptSpec = pSGRptSpecBuilder->CreateReportSpec(rptDesc,nullSpec);
+      std::shared_ptr<CReportSpecification> nullSpec;
+      std::shared_ptr<CReportSpecification> rptSpec = pSGRptSpecBuilder->CreateReportSpec(rptDesc,nullSpec);
 
       if(rptSpec)
       {
@@ -309,12 +309,12 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptFor
             // Creata a CSegmentReportSpecification. A single report view news a specification for a 
             // single segmentr.
             // Set the segment to report on
-            boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(pSGRptSpec->GetReportTitle().c_str(),pBroker,girderKey) );
+            std::shared_ptr<CReportSpecification> pRptSpec( std::make_shared<CGirderReportSpecification>(pSGRptSpec->GetReportTitle().c_str(),pBroker,girderKey) );
             CGirderReportSpecification* pMyReportSpec = (CGirderReportSpecification*)pRptSpec.get();
             pRptSpec->SetChapterInfo(pSGRptSpec->GetChapterInfo());
 
             // Also need a SpanGirder Report Spec Builder for when the Edit button is pressed
-            boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder( new CGirderReportSpecificationBuilder(pBroker,girderKey) );
+            std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(pBroker,girderKey) );
 
             if ( first )
             {

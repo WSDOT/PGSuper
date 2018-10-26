@@ -133,9 +133,9 @@ bool CBridgePlanView::IsDeckSelected()
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
-   DeckDisplayObjectInfo* pInfo = NULL;
+   DeckDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
-   if ( pInfo == NULL || pInfo->ID != DECK_ID || pInfo->DisplayListID != SLAB_DISPLAY_LIST )
+   if ( pInfo == nullptr || pInfo->ID != DECK_ID || pInfo->DisplayListID != SLAB_DISPLAY_LIST )
    {
       return false;
    }
@@ -181,8 +181,8 @@ void CBridgePlanView::SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endS
 
    if ( bUpdate )
    {
-      m_pDocument->UpdateAllViews(NULL,HINT_BRIDGEVIEWSETTINGSCHANGED,NULL);
-      m_pDocument->UpdateAllViews(NULL,HINT_BRIDGEVIEWSECTIONCUTCHANGED,NULL);
+      m_pDocument->UpdateAllViews(nullptr,HINT_BRIDGEVIEWSETTINGSCHANGED,nullptr);
+      m_pDocument->UpdateAllViews(nullptr,HINT_BRIDGEVIEWSECTIONCUTCHANGED,nullptr);
    }
 }
 
@@ -205,7 +205,7 @@ bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
 
    SpanDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
-   if ( pInfo == NULL || pInfo->SpanIdx == ALL_SPANS || pInfo->DisplayListID != SPAN_DISPLAY_LIST )
+   if ( pInfo == nullptr || pInfo->SpanIdx == ALL_SPANS || pInfo->DisplayListID != SPAN_DISPLAY_LIST )
    {
       return false;
    }
@@ -235,7 +235,7 @@ bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
    PierDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
 
-   if ( pInfo == NULL || pInfo->DisplayListID != PIER_DISPLAY_LIST )
+   if ( pInfo == nullptr || pInfo->DisplayListID != PIER_DISPLAY_LIST )
    {
       return false;
    }
@@ -298,10 +298,10 @@ bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
-   GirderDisplayObjectInfo* pInfo = NULL;
+   GirderDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
 
-   if ( pInfo == NULL || pInfo->DisplayListID != GIRDER_DISPLAY_LIST )
+   if ( pInfo == nullptr || pInfo->DisplayListID != GIRDER_DISPLAY_LIST )
    {
       return false;
    }
@@ -354,10 +354,10 @@ bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
-   SegmentDisplayObjectInfo* pInfo = NULL;
+   SegmentDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
 
-   if ( pInfo == NULL || pInfo->DisplayListID != SEGMENT_DISPLAY_LIST )
+   if ( pInfo == nullptr || pInfo->DisplayListID != SEGMENT_DISPLAY_LIST )
    {
       return false;
    }
@@ -411,10 +411,10 @@ bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
-   SegmentDisplayObjectInfo* pInfo = NULL;
+   SegmentDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
 
-   if ( pInfo == NULL || pInfo->DisplayListID != CLOSURE_JOINT_DISPLAY_LIST )
+   if ( pInfo == nullptr || pInfo->DisplayListID != CLOSURE_JOINT_DISPLAY_LIST )
    {
       return false;
    }
@@ -536,72 +536,72 @@ void CBridgePlanView::BuildDisplayLists()
 
    // section cut - add first so it is always on top
    CComPtr<iDisplayList> section_cut_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&section_cut_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&section_cut_list);
    section_cut_list->SetID(SECTION_CUT_DISPLAY_LIST);
    dispMgr->AddDisplayList(section_cut_list);
 
    CComPtr<iDisplayList> label_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
    label_list->SetID(LABEL_DISPLAY_LIST);
    dispMgr->AddDisplayList(label_list);
 
    CComPtr<iDisplayList> title_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
    title_list->SetID(TITLE_DISPLAY_LIST);
    dispMgr->AddDisplayList(title_list);
 
    CComPtr<iDisplayList> alignment_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
    alignment_list->SetID(ALIGNMENT_DISPLAY_LIST);
    dispMgr->AddDisplayList(alignment_list);
 
    CComPtr<iDisplayList> segment_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&segment_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&segment_list);
    segment_list->SetID(SEGMENT_DISPLAY_LIST);
    dispMgr->AddDisplayList(segment_list);
 
    CComPtr<iDisplayList> girder_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_list);
    girder_list->SetID(GIRDER_DISPLAY_LIST);
    dispMgr->AddDisplayList(girder_list);
 
    CComPtr<iDisplayList> diaphragm_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&diaphragm_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&diaphragm_list);
    diaphragm_list->SetID(DIAPHRAGM_DISPLAY_LIST);
    dispMgr->AddDisplayList(diaphragm_list);
 
    CComPtr<iDisplayList> pier_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&pier_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&pier_list);
    pier_list->SetID(PIER_DISPLAY_LIST);
    dispMgr->AddDisplayList(pier_list);
 
    CComPtr<iDisplayList> closure_joint_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&closure_joint_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&closure_joint_list);
    closure_joint_list->SetID(CLOSURE_JOINT_DISPLAY_LIST);
    dispMgr->AddDisplayList(closure_joint_list);
 
    CComPtr<iDisplayList> temporary_support_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&temporary_support_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&temporary_support_list);
    temporary_support_list->SetID(TEMPORARY_SUPPORT_DISPLAY_LIST);
    dispMgr->AddDisplayList(temporary_support_list);
 
    CComPtr<iDisplayList> bearing_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&bearing_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&bearing_list);
    bearing_list->SetID(BEARING_DISPLAY_LIST);
    dispMgr->AddDisplayList(bearing_list);
 
    CComPtr<iDisplayList> span_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&span_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&span_list);
    span_list->SetID(SPAN_DISPLAY_LIST);
    dispMgr->AddDisplayList(span_list);
 
    CComPtr<iDisplayList> slab_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&slab_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&slab_list);
    slab_list->SetID(SLAB_DISPLAY_LIST);
    dispMgr->AddDisplayList(slab_list);
 
    CComPtr<iDisplayList> north_arrow_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&north_arrow_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&north_arrow_list);
    north_arrow_list->SetID(NORTH_ARROW_DISPLAY_LIST);
    dispMgr->AddDisplayList(north_arrow_list);
 
@@ -815,7 +815,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
             CComPtr<iDisplayObject> pDO;
             display_list->FindDisplayObject(ID,&pDO);
-            ATLASSERT(pDO != NULL);
+            ATLASSERT(pDO != nullptr);
 
             CComPtr<IDirection> direction;
             pBridge->GetSegmentBearing(segmentKey,&direction);
@@ -956,7 +956,7 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
             CComPtr<iDisplayObject> pDO;
             display_list->FindDisplayObject(ID,&pDO);
-            ATLASSERT(pDO != NULL);
+            ATLASSERT(pDO != nullptr);
 
 #pragma Reminder("UPDATE: girder/segment label in tool tip") // using generic text for now
             //CString strMsg1;
@@ -1027,7 +1027,7 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-   pMenu->LoadMenu(IDR_BRIDGE_PLAN_CTX,NULL);
+   pMenu->LoadMenu(IDR_BRIDGE_PLAN_CTX,nullptr);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
    {
@@ -1833,6 +1833,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
+   bool bNoDeck = pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone;
+
    CComPtr<IDocUnitSystem> docUnitSystem;
    pDoc->GetDocUnitSystem(&docUnitSystem);
 
@@ -1894,7 +1896,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
       CString strConnectionTip;
       if ( pPier->IsBoundaryPier() )
       {
-         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetBoundaryConditionType()));
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetBoundaryConditionType(),bNoDeck));
       }
       else
       {
@@ -2401,8 +2403,8 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
       EventIndexType erectionEventIdx, removalEventIdx;
       pTimelineMgr->GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
-      const CTimelineEvent* pErectionEvent = NULL;
-      const CTimelineEvent* pRemovalEvent  = NULL;
+      const CTimelineEvent* pErectionEvent = nullptr;
+      const CTimelineEvent* pRemovalEvent  = nullptr;
 
       if ( erectionEventIdx != INVALID_INDEX )
       {
@@ -2485,9 +2487,9 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
                      FormatAngle(objSkew),
                      segConnectionType == pgsTypes::tsctClosureJoint ? _T("Closure Joint") : _T("Continuous Segment"),
                      LABEL_EVENT(erectionEventIdx),
-                     pErectionEvent == NULL ? _T("Erection stage not defined") : pErectionEvent->GetDescription(),
+                     pErectionEvent == nullptr ? _T("Erection stage not defined") : pErectionEvent->GetDescription(),
                      LABEL_EVENT(removalEventIdx),
-                     pRemovalEvent ==  NULL ? _T("Removal stage not defined") : pRemovalEvent->GetDescription());
+                     pRemovalEvent ==  nullptr ? _T("Removal stage not defined") : pRemovalEvent->GetDescription());
 
       CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n");
 
@@ -3018,10 +3020,10 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    CString strMsg2;
 
-   if ( pDeck->DeckType != pgsTypes::sdtNone )
+   if ( pDeck->GetDeckType() != pgsTypes::sdtNone )
    {
       strMsg2.Format(_T("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nf'c: %s"),
-                     m_pFrame->GetDeckTypeName(pDeck->DeckType),
+                     m_pFrame->GetDeckTypeName(pDeck->GetDeckType()),
                      FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                      FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                      );
@@ -3060,7 +3062,7 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
    dispMgr->GetDisplayObjectFactory(0, &factory);
 
    CComPtr<iDisplayObject> disp_obj;
-   factory->Create(CBridgeSectionCutDisplayImpl::ms_Format,NULL,&disp_obj);
+   factory->Create(CBridgeSectionCutDisplayImpl::ms_Format,nullptr,&disp_obj);
 
    CComPtr<iDisplayObjectEvents> sink;
    disp_obj->GetEventSink(&sink);
@@ -3264,7 +3266,7 @@ void CBridgePlanView::UpdateDrawingScale()
    CComPtr<iDisplayList> na_display_list;
    dispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST,&na_display_list);
 
-   if ( title_display_list == NULL )
+   if ( title_display_list == nullptr )
    {
       return;
    }
@@ -3309,7 +3311,7 @@ DROPEFFECT CBridgePlanView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState
       // need to peek at our object first and make sure it's coming from the local process
       // this is ugly because it breaks encapsulation of CBridgeSectionCutDisplayImpl
       CComPtr<iDragDataSource> source;               
-      ::CoCreateInstance(CLSID_DragDataSource,NULL,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
       source->SetDataObject(pDataObject);
       source->PrepareFormat(CBridgeSectionCutDisplayImpl::ms_Format);
 
@@ -3337,6 +3339,7 @@ void CBridgePlanView::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffec
 std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
 {
    std::_tstring strConnection;
+   bool bNoDeck = pPierData->GetBridgeDescription()->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone;
    if ( pPierData->IsBoundaryPier() )
    {
       pgsTypes::BoundaryConditionType connectionType = pPierData->GetBoundaryConditionType();
@@ -3352,34 +3355,50 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
          break;
 
       case pgsTypes::bctContinuousAfterDeck:
-         strConnection = _T("Ca");
+         if ( bNoDeck )
+            strConnection = _T("C");
+         else
+            strConnection = _T("Ca");
          break;
 
       case pgsTypes::bctContinuousBeforeDeck:
+         ATLASSERT(bNoDeck == false);
          strConnection = _T("Cb");
          break;
 
       case pgsTypes::bctIntegralAfterDeck:
-         strConnection = _T("Ia");
+         if ( bNoDeck)
+            strConnection = _T("I");
+         else
+            strConnection = _T("Ia");
          break;
 
       case pgsTypes::bctIntegralBeforeDeck:
+         ATLASSERT(bNoDeck == false);
          strConnection = _T("Ib");
          break;
 
       case pgsTypes::bctIntegralAfterDeckHingeBack:
-         strConnection = _T("H Ia");
+         if ( bNoDeck )
+            strConnection = _T("H I");
+         else
+            strConnection = _T("H Ia");
          break;
 
       case pgsTypes::bctIntegralBeforeDeckHingeBack:
+         ATLASSERT(bNoDeck == false);
          strConnection = _T("H Ib");
          break;
 
       case pgsTypes::bctIntegralAfterDeckHingeAhead:
-         strConnection = _T("Ia H");
+         if ( bNoDeck )
+            strConnection = _T("I H");
+         else
+            strConnection = _T("Ia H");
          break;
 
       case pgsTypes::bctIntegralBeforeDeckHingeAhead:
+         ATLASSERT(bNoDeck == false);
          strConnection = _T("Ib H");
          break;
 
@@ -3423,83 +3442,15 @@ std::_tstring CBridgePlanView::GetFullConnectionString(const CPierData2* pPierDa
    std::_tstring strConnection;
    if ( pPierData->IsBoundaryPier() )
    {
+      bool bNoDeck = pPierData->GetBridgeDescription()->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone;
       pgsTypes::BoundaryConditionType connectionType = pPierData->GetBoundaryConditionType();
-
-      switch( connectionType )
-      {
-      case pgsTypes::bctHinge:
-         strConnection = _T("Hinge");
-         break;
-
-      case pgsTypes::bctRoller:
-         strConnection = _T("Roller");
-         break;
-
-      case pgsTypes::bctContinuousAfterDeck:
-         strConnection = _T("Continuous after deck placement");
-         break;
-
-      case pgsTypes::bctContinuousBeforeDeck:
-         strConnection = _T("Continuous before deck placement");
-         break;
-
-      case pgsTypes::bctIntegralAfterDeck:
-         strConnection = _T("Integral after deck placement");
-         break;
-
-      case pgsTypes::bctIntegralBeforeDeck:
-         strConnection = _T("Integral before deck placement");
-         break;
-
-      case pgsTypes::bctIntegralAfterDeckHingeBack:
-         strConnection = _T("Hinge | Integral after deck placement");
-         break;
-
-      case pgsTypes::bctIntegralBeforeDeckHingeBack:
-         strConnection = _T("Hinge | Integral before deck placement");
-         break;
-
-      case pgsTypes::bctIntegralAfterDeckHingeAhead:
-         strConnection = _T("Integral after deck placement | Hinge");
-         break;
-
-      case pgsTypes::bctIntegralBeforeDeckHingeAhead:
-         strConnection = _T("Integral before deck placement | Hinge");
-         break;
-
-      default:
-         ATLASSERT(false); // who added a new connection type?
-         strConnection = _T("?????");
-      }
+      return CPierData2::AsString(connectionType, bNoDeck);
    }
    else
    {
       pgsTypes::PierSegmentConnectionType connectionType = pPierData->GetSegmentConnectionType();
-      switch(connectionType)
-      {
-      case pgsTypes::psctContinousClosureJoint:
-         strConnection = _T("Continuous Closure Joint");
-         break;
-
-      case pgsTypes::psctContinuousSegment:
-         strConnection = _T("Continuous Segment");
-         break;
-
-      case pgsTypes::psctIntegralClosureJoint:
-         strConnection = _T("Integral Closure Joint");
-         break;
-
-      case pgsTypes::psctIntegralSegment:
-         strConnection = _T("Integral");
-         break;
-
-      default:
-         ATLASSERT(false); // who added a new connection type?
-         strConnection = _T("?");
-      }
+      return CPierData2::AsString(connectionType);
    }
-
-   return strConnection;
 }
 
 std::_tstring CBridgePlanView::GetConnectionString(const CTemporarySupportData* pTS)
@@ -3555,7 +3506,7 @@ void CBridgePlanView::OnZoom()
    dispMgr->GetTaskFactory(&taskFactory);
 
    CComPtr<iTask> task;
-   taskFactory->CreateZoomTask(this,NULL,LIGHTSTEELBLUE,&task);
+   taskFactory->CreateZoomTask(this,nullptr,LIGHTSTEELBLUE,&task);
 
    dispMgr->SetTask(task);
 }

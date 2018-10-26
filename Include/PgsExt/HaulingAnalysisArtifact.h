@@ -56,20 +56,20 @@ public:
 
    // GROUP: OPERATIONS
    virtual bool Passed() const = 0;
-   virtual bool Passed(pgsTypes::HaulingSlope slope) const =0;
-   virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const =0;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const =0;
+   virtual bool Passed(pgsTypes::HaulingSlope slope) const = 0;
+   virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const = 0;
+   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const = 0;
 
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const =0;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const =0;
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
 
-   virtual pgsHaulingAnalysisArtifact* Clone() const =0;
+   virtual pgsHaulingAnalysisArtifact* Clone() const = 0;
 
 #if defined _DEBUG
-   virtual void Dump(dbgDumpContext& os) const =0;
+   virtual void Dump(dbgDumpContext& os) const = 0;
 #endif
 
-   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const =0;
+   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const = 0;
 };
 
 
@@ -111,17 +111,17 @@ public:
 
    // GROUP: OPERATIONS
    // virtual functions
-   virtual bool Passed() const;
-   virtual bool Passed(pgsTypes::HaulingSlope slope) const;
-   virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const;
+   virtual bool Passed() const override;
+   virtual bool Passed(pgsTypes::HaulingSlope slope) const override;
+   virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const override;
+   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const override;
 
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
 
-   virtual pgsHaulingAnalysisArtifact* Clone() const;
+   virtual pgsHaulingAnalysisArtifact* Clone() const override;
 
-   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const;
+   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const override;
 
    Float64 GetMinFsForCracking(pgsTypes::HaulingSlope slope) const;
    Float64 GetFsRollover(pgsTypes::HaulingSlope slope) const;
@@ -160,7 +160,7 @@ public:
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
    const stbHaulingStabilityProblem* m_pStabilityProblem; // need this for dump
-   virtual void Dump(dbgDumpContext& os) const;
+   virtual void Dump(dbgDumpContext& os) const override;
    #endif // _DEBUG
 
    #if defined _UNITTEST

@@ -41,7 +41,7 @@ IMPLEMENT_DYNAMIC(CDrawStrandControl, CWnd)
 
 CDrawStrandControl::CDrawStrandControl()
 {
-   m_pSegment = NULL;
+   m_pSegment = nullptr;
 }
 
 CDrawStrandControl::~CDrawStrandControl()

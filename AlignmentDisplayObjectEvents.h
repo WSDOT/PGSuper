@@ -46,7 +46,7 @@ public:
       Alignment
    } ViewType;
 
-   CAlignmentDisplayObjectEvents(IBroker* pDoc, CBridgeModelViewChildFrame* pFrame,ViewType viewType,iDisplayObject* pDO = NULL);
+   CAlignmentDisplayObjectEvents(IBroker* pDoc, CBridgeModelViewChildFrame* pFrame,ViewType viewType,iDisplayObject* pDO = nullptr);
    ~CAlignmentDisplayObjectEvents();
 
    virtual void OnFinalRelease();

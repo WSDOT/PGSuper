@@ -43,7 +43,7 @@ private:
 
    CComPtr<IPoint2d> m_CachePoint;
 
-   virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* loc);
+   void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* loc);
    void GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy);
 
    void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt);

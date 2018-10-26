@@ -31,7 +31,7 @@
 
 IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
 
-CAboutDlg::CAboutDlg(UINT nResourceID,UINT nIDTemplate,CWnd* pParent /*=NULL*/)
+CAboutDlg::CAboutDlg(UINT nResourceID,UINT nIDTemplate,CWnd* pParent /*=nullptr*/)
 : CDialog(nIDTemplate == 0 ? IDD_ABOUTBOX : nIDTemplate, pParent)
 {
    m_ResourceID = nResourceID;

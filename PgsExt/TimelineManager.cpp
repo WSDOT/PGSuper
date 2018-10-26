@@ -55,8 +55,8 @@ EventIDType CTimelineManager::ms_ID = 0;
 
 CTimelineManager::CTimelineManager()
 {
-   m_pBridgeDesc = NULL;
-   m_pLoadManager = NULL;
+   m_pBridgeDesc = nullptr;
+   m_pLoadManager = nullptr;
 }
 
 CTimelineManager::CTimelineManager(const CTimelineManager& rOther)
@@ -362,12 +362,12 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
 
    if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() )
    {
-      std::set<CTendonKey> vTendons = pTimelineEvent->GetStressTendonActivity().GetTendons();
-      std::set<CTendonKey>::iterator iter(vTendons.begin());
-      std::set<CTendonKey>::iterator end(vTendons.end());
+      std::vector<CTendonKey> vTendons = pTimelineEvent->GetStressTendonActivity().GetTendons();
+      std::vector<CTendonKey>::iterator iter(vTendons.begin());
+      std::vector<CTendonKey>::iterator end(vTendons.end());
       for ( ; iter != end; iter++ )
       {
-         CTendonKey& key = *iter;
+         CTendonKey& key(*iter);
          GirderIDType gdrID = key.girderID;
          DuctIndexType ductIdx = key.ductIdx;
          EventIndexType nEvents = GetEventCount();
@@ -465,7 +465,7 @@ int CTimelineManager::SetEventByIndex(EventIndexType eventIdx,CTimelineEvent* pT
 
    // done with the old event... delete it
    delete pOldEvent;
-   pOldEvent = NULL;
+   pOldEvent = nullptr;
 
    // sort the timeline... this will automatically adjust the timeline so all the events fit
    Sort();
@@ -637,7 +637,7 @@ bool CTimelineManager::FindEvent(LPCTSTR description,EventIndexType* pIndex,cons
    }
 
    *pIndex = INVALID_INDEX;
-   *ppTimelineEvent = NULL;
+   *ppTimelineEvent = nullptr;
    return false;
 }
 
@@ -856,7 +856,7 @@ const CTimelineEvent* CTimelineManager::GetEventByID(IDType id) const
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
@@ -869,7 +869,7 @@ CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -889,7 +889,7 @@ CTimelineEvent* CTimelineManager::GetEventByID(IDType id)
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 bool CTimelineManager::IsDeckCast() const
@@ -1526,7 +1526,7 @@ EventIndexType CTimelineManager::GetCastClosureJointEventIndex(const CClosureJoi
 {
    PGS_ASSERT_VALID;
 
-   if ( pClosure == NULL )
+   if ( pClosure == nullptr )
    {
       ATLASSERT(false); // there should be a closure
       return INVALID_INDEX;
@@ -1561,7 +1561,7 @@ EventIDType CTimelineManager::GetCastClosureJointEventID(const CClosureJointData
 {
    PGS_ASSERT_VALID;
 
-   if ( pClosure == NULL )
+   if ( pClosure == nullptr )
    {
       ATLASSERT(false); // there should be a closure
       return INVALID_ID;
@@ -1596,7 +1596,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
 {
    PGS_ASSERT_VALID;
 
-   if ( pClosure == NULL )
+   if ( pClosure == nullptr )
    {
       ATLASSERT(false); // there should be a closure
       return;
@@ -1655,7 +1655,7 @@ void CTimelineManager::SetCastClosureJointEventByID(ClosureIDType closureID,Even
 
 void CTimelineManager::SetCastClosureJointEventByID(const CClosureJointData* pClosure,EventIDType ID)
 {
-   if ( pClosure == NULL )
+   if ( pClosure == nullptr )
    {
       ATLASSERT(false); // there should be a closure
       return;
@@ -1791,7 +1791,7 @@ int CTimelineManager::SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdju
 {
    bool bUpdateAge = false;
    Float64 age_at_continuity = 7.0;
-   CTimelineEvent* pOldCastDeckEvent = NULL;
+   CTimelineEvent* pOldCastDeckEvent = nullptr;
 
    // search for the event where the deck is cast
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
@@ -2198,13 +2198,13 @@ EventIDType CTimelineManager::FindUserLoadEventID(LoadIDType loadID) const
 
 int CTimelineManager::Validate() const
 {
-   if ( m_pBridgeDesc == NULL )
+   if ( m_pBridgeDesc == nullptr )
    {
       return TLM_SUCCESS;
    }
 
    // Make sure the deck is cast
-   if ( m_pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone && !IsDeckCast() )
+   if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone && !IsDeckCast() )
    {
       return TLM_CAST_DECK_ACTIVITY_REQUIRED;
    }
@@ -2221,7 +2221,7 @@ int CTimelineManager::Validate() const
    }
    
    // Check user defined loads
-   BOOST_FOREACH( const CPointLoadData& load,m_pLoadManager->m_PointLoads)
+   for (const auto& load : m_pLoadManager->m_PointLoads)
    {
       if ( !IsUserDefinedLoadApplied(load.m_ID) )
       {
@@ -2229,7 +2229,7 @@ int CTimelineManager::Validate() const
       }
    }
 
-   BOOST_FOREACH( const CDistributedLoadData& load,m_pLoadManager->m_DistributedLoads)
+   for (const auto& load : m_pLoadManager->m_DistributedLoads)
    {
       if ( !IsUserDefinedLoadApplied(load.m_ID) )
       {
@@ -2237,7 +2237,7 @@ int CTimelineManager::Validate() const
       }
    }
 
-   BOOST_FOREACH( const CMomentLoadData& load,m_pLoadManager->m_MomentLoads)
+   for (const auto& load : m_pLoadManager->m_MomentLoads)
    {
       if ( !IsUserDefinedLoadApplied(load.m_ID) )
       {
@@ -2612,8 +2612,8 @@ int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
       return TLM_SUCCESS;
    }
 
-   const CTimelineEvent* pNextEvent = NULL;
-   const CTimelineEvent* pPrevEvent = NULL;
+   const CTimelineEvent* pNextEvent = nullptr;
+   const CTimelineEvent* pPrevEvent = nullptr;
 
    // find the first event that comes after the new event
    g_Day = pTimelineEvent->GetDay();

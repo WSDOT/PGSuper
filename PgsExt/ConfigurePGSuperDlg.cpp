@@ -38,7 +38,7 @@ static char THIS_FILE[] = __FILE__;
 // CConfigurePGSuperDlg dialog
 
 
-CConfigurePGSuperDlg::CConfigurePGSuperDlg(LPCTSTR lpszAppName,LPCTSTR lpszTemplateExt,BOOL bFirstRun,CWnd* pParent /*=NULL*/)
+CConfigurePGSuperDlg::CConfigurePGSuperDlg(LPCTSTR lpszAppName,LPCTSTR lpszTemplateExt,BOOL bFirstRun,CWnd* pParent /*=nullptr*/)
 	: CPropertyPage(CConfigurePGSuperDlg::IDD/*, pParent*/), m_AppName(lpszAppName), m_TemplateFileExt(lpszTemplateExt)
 {
 	//{{AFX_DATA_INIT(CConfigurePGSuperDlg)
@@ -94,7 +94,7 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
       if(m_Method != 0) // srtDefault
       {
          const CCatalogServer* psrvr = m_Servers.GetServer(m_CurrentServer);
-         if (psrvr==NULL)
+         if (psrvr==nullptr)
          {
             ::AfxMessageBox(_T("The selected server is invalid - please select another or the generic library package"),MB_ICONEXCLAMATION);
             pDX->Fail();
@@ -448,7 +448,7 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
    if (BST_CHECKED != pGen->GetCheck())
    {
       const CCatalogServer* pServer = m_Servers.GetServer(m_CurrentServer);
-      if(pServer != NULL)
+      if(pServer != nullptr)
       {
          CListBox* pCB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
          int idx = pCB->GetCurSel();

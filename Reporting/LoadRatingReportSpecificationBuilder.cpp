@@ -39,13 +39,14 @@ CLoadRatingReportSpecificationBuilder::~CLoadRatingReportSpecificationBuilder(vo
 {
 }
 
-boost::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+std::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec)
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) ||
+      pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special)
       )
@@ -55,17 +56,18 @@ boost::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::C
    else
    {
       AfxMessageBox(_T("No rating types defined. Select Project | Load Rating Options to select rating types"));
-      return boost::shared_ptr<CReportSpecification>();
+      return nullptr;
    }
 }
 
-boost::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) ||
+      pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special)
       )
@@ -75,6 +77,6 @@ boost::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::C
    else
    {
       AfxMessageBox(_T("No rating types defined. Select Project | Load Rating Options to select rating types"));
-      return boost::shared_ptr<CReportSpecification>();
+      return nullptr;
    }
 }

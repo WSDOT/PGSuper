@@ -48,8 +48,8 @@ public:
    pgsMacroTxn();
    virtual ~pgsMacroTxn(); 
 
-   virtual bool Execute();
-   virtual void Undo();
+   virtual bool Execute() override;
+   virtual void Undo() override;
 
    txnTransaction* CreateClone() const;
 

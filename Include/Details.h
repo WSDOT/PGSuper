@@ -60,6 +60,7 @@ struct HAUNCHDETAILS
 
 struct MOMENTCAPACITYDETAILS
 {
+   Float64 Mr;        // Nominal resistance (Mr = Phi*Mn);
    Float64 Mn;        // Nominal moment capacity
    Float64 Phi;       // Strength reduction factor
    Float64 PPR;       // Partial prestress ratio at this section
@@ -284,7 +285,7 @@ struct CRITSECTDETAILS
       PierFace = pgsTypes::Ahead;
       Start = 0;
       End = 0;
-      pCriticalSection = NULL;
+      pCriticalSection = nullptr;
    }
 
    CRITSECTDETAILS(const CRITSECTDETAILS& other)
@@ -309,7 +310,7 @@ struct CRITSECTDETAILS
       }
       else
       {
-         pCriticalSection = NULL;
+         pCriticalSection = nullptr;
       }
    }
 
@@ -357,15 +358,15 @@ struct CREEPCOEFFICIENTDETAILS
 
 struct INCREMENTALCREEPDETAILS
 {
-   boost::shared_ptr<matConcreteBaseCreepDetails> pStartDetails;
-   boost::shared_ptr<matConcreteBaseCreepDetails> pEndDetails;
+   std::shared_ptr<matConcreteBaseCreepDetails> pStartDetails;
+   std::shared_ptr<matConcreteBaseCreepDetails> pEndDetails;
 };
 
 struct INCREMENTALSHRINKAGEDETAILS
 {
    INCREMENTALSHRINKAGEDETAILS() : esi(0) {}
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> pStartDetails;
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> pEndDetails;
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pStartDetails;
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pEndDetails;
    Float64 esi;
 };
 
@@ -938,7 +939,7 @@ struct LOSSDETAILS
 
    // LRFD Method Losses
    // Base class can be casted to derived class to get details. You know who you are!
-   boost::shared_ptr<const lrfdLosses> pLosses;
+   std::shared_ptr<const lrfdLosses> pLosses;
 
 
    ///////////////////////////////////////////////////////////////////////////////

@@ -29,7 +29,7 @@ class CHaulTruckDlg : public CDialog
 	DECLARE_DYNAMIC(CHaulTruckDlg)
 
 public:
-	CHaulTruckDlg(bool allowEditing,CWnd* pParent = NULL);   // standard constructor
+	CHaulTruckDlg(bool allowEditing,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CHaulTruckDlg();
 
    bool m_bAllowEditing;

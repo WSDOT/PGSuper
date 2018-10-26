@@ -148,7 +148,7 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
 
    // figure out the web spacing, w2, based on the girder spacing
    Float64 w1;
-   if ( pBroker == NULL )
+   if ( pBroker == nullptr )
    {
       // just use the max
       w1 = wmax;
@@ -253,7 +253,7 @@ void CMultiWeb2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusG
 
    CComQIPtr<IShape> shape(gdrSection);
    ATLASSERT(shape);
-   segment->AddShape(shape,material,NULL);
+   segment->AddShape(shape,material,nullptr);
 
    ssmbr->AddSegment(segment);
 }

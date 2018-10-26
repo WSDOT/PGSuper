@@ -48,7 +48,7 @@ void CDesignLosses::Invalidate()
 
 const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, const GDRCONFIG& config)
 {
-   Losses* pLosses = NULL;
+   Losses* pLosses = nullptr;
 
    std::map<pgsPointOfInterest,Losses,ComparePoi>::iterator found(m_Losses.find(poi));
    if ( found != m_Losses.end() )
@@ -56,9 +56,9 @@ const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, co
       pLosses = &(found->second);
    }
 
-   if ( pLosses == NULL )
+   if ( pLosses == nullptr )
    {
-      return NULL; // not found... we don't have it cached
+      return nullptr; // not found... we don't have it cached
    }
 
    // have results for this POI cached, but was it for the same configuration?
@@ -72,7 +72,7 @@ const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, co
       // the one that was found doesn't match for this POI, so remove it because
       // we have new values for this POI
       m_Losses.erase(found);
-      return NULL;
+      return nullptr;
    }
 
    ATLASSERT(false); // should never get here
@@ -106,19 +106,21 @@ void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGro
 const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
    ATLASSERT(poi.GetID() != INVALID_ID);
-   std::map<PoiIDKey,LOSSDETAILS>::const_iterator found;
-   PoiIDKey key(poi,poi.GetID());
+   std::map<PoiIDType,LOSSDETAILS>::const_iterator found;
+   PoiIDType key =poi.GetID();
    found = m_PsLosses.find( key );
    if ( found == m_PsLosses.end() )
    {
       // losses not found... compute them
       LOSSDETAILS details = m_Engineer.ComputeLosses((CPsLossEngineer::BeamType)m_BeamType,poi);
-      m_PsLosses.insert(std::make_pair(key,details));
-      found = m_PsLosses.find( key );
-      ATLASSERT(found != m_PsLosses.end());
+      auto itf = m_PsLosses.insert(std::make_pair(key,details));
+      ATLASSERT(itf.second);
+      return &(itf.first->second);
    }
-
-   return &(*found).second;
+   else
+   {
+      return &(*found).second;
+   }
 }
 
 const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx)
@@ -133,7 +135,7 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
 #endif
 
    const LOSSDETAILS* pLossDetails = m_DesignLosses.GetFromCache(poi,config);
-   if ( pLossDetails == NULL )
+   if ( pLossDetails == nullptr )
    {
       LOSSDETAILS details = m_Engineer.ComputeLossesForDesign((CPsLossEngineer::BeamType)m_BeamType,poi,config);
       m_DesignLosses.SaveToCache(poi,config,details);
@@ -163,7 +165,7 @@ const ANCHORSETDETAILS* CPsBeamLossEngineer::GetAnchorSetDetails(const CGirderKe
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy
    ATLASSERT(false); // why did this method get called? it shouldn't happen
-   return NULL;
+   return nullptr;
 }
 
 Float64 CPsBeamLossEngineer::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)

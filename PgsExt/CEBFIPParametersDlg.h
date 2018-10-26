@@ -30,7 +30,7 @@ class CCEBFIPParametersDlg : public CDialog
 	DECLARE_DYNAMIC(CCEBFIPParametersDlg)
 
 public:
-	CCEBFIPParametersDlg(CWnd* pParent = NULL);   // standard constructor
+	CCEBFIPParametersDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CCEBFIPParametersDlg();
 
    Float64 m_t1;
@@ -42,11 +42,11 @@ public:
 	enum { IDD = IDD_CEBFIP_PARAMETERS };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
    afx_msg void UpdateParameters();
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 };

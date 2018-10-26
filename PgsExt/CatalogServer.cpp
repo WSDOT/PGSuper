@@ -68,7 +68,7 @@ CCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& createStri
             else
             {
                ATLASSERT(false);
-               return NULL;
+               return nullptr;
             }
          }
          else if (strType==_T("FILSYSINI"))
@@ -79,13 +79,13 @@ CCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& createStri
          else
          {
             ATLASSERT(0);
-            return NULL;
+            return nullptr;
          }
       }
       else
       {
          ATLASSERT(false);
-         return NULL;
+         return nullptr;
       }
    }
    else
@@ -103,7 +103,7 @@ CCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& createStri
       else
       {
          ATLASSERT(false);
-         return NULL;
+         return nullptr;
       }
    }
 }
@@ -138,7 +138,7 @@ CCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& strServerN
          else
          {
             ATLASSERT(false);
-            return NULL;
+            return nullptr;
          }
       }
       else if (strType==_T("FILSYSINI"))
@@ -149,7 +149,7 @@ CCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& strServerN
       else
       {
          ATLASSERT(false);
-         return NULL;
+         return nullptr;
       }
    }
    else
@@ -166,7 +166,7 @@ CCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& strServerN
       else
       {
          ATLASSERT(false);
-         return NULL;
+         return nullptr;
       }
    }
 }
@@ -282,9 +282,9 @@ static bool CheckFileAgainstMd5(const CString& testFile, const CString& md5File)
    CString strArg2 = CString(_T("\"")) + testFile + CString(_T("\""));
 //   LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
 #if defined _UNICODE
-   intptr_t pgz_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t pgz_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,nullptr);
 #else
-   intptr_t pgz_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t pgz_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,nullptr);
 #endif
 //   LOG(_T("pgz_result = ") << pgz_result);
 
@@ -352,7 +352,7 @@ BOOL PeekAndPump()
 {
 	static MSG msg;
 
-	while (::PeekMessage(&msg,NULL,0,0,PM_NOREMOVE)) 
+	while (::PeekMessage(&msg,nullptr,0,0,PM_NOREMOVE)) 
    {
 		if (!EAFGetApp()->PumpMessage()) 
       {
@@ -420,9 +420,9 @@ bool CCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMasterLibMD5
    CString strArg2 = CString(_T("\"")) + cachedMasterLibFile + CString(_T("\""));
 //   LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
 #if defined _UNICODE
-   intptr_t master_lib_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t master_lib_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,nullptr);
 #else
-   intptr_t master_lib_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t master_lib_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,nullptr);
 #endif
 //   LOG(_T("master_lib_result = ") << master_lib_result);
 
@@ -440,9 +440,9 @@ bool CCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMasterLibMD5
    strArg2 = CString(_T("-r ")) + CString(_T("\"")) + strWorkgroupTemplateFolderCache + CString(_T("\""));
 //   LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
 #if defined _UNICODE
-   intptr_t workgroup_template_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t workgroup_template_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,nullptr);
 #else
-   intptr_t workgroup_template_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+   intptr_t workgroup_template_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,nullptr);
 #endif
 //   LOG(_T("workgroup_template_result = ") << workgroup_template_result);
 
@@ -493,7 +493,7 @@ void CFtpCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool toTempfol
 {
    if (m_bDoFetchCatalog)
    {
-      if (pProgress!=NULL)
+      if (pProgress!=nullptr)
       {
          pProgress->put_Message(0, CComBSTR("Reading Configuration Publishers from the Internet"));
       }
@@ -524,9 +524,9 @@ void CFtpCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool toTempfol
          ATLASSERT( bSuccess );
 
 	      //Username we will use if a secure site comes into play
-	      LPCTSTR pstrUserName = NULL; 
+	      LPCTSTR pstrUserName = nullptr; 
 	      //The password we will use
-	      LPCTSTR pstrPassword = NULL;
+	      LPCTSTR pstrPassword = nullptr;
 
          // the URL is bogus or it isn't for an FTP service
          if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP )
@@ -539,7 +539,7 @@ void CFtpCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool toTempfol
          {
             // download the catalog file
             CInternetSession inetSession;
-            std::auto_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE) );
+            std::unique_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE) );
 
             CFtpFileFind ftpFind(pFTP.get());
             BOOL bFound = ftpFind.FindFile(strObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT);
@@ -579,7 +579,7 @@ std::vector<CString> CFtpCatalogServer::GetPublishers() const
 {
    std::vector<CString> items;
 
-   FetchCatalog(NULL);
+   FetchCatalog(nullptr);
 
    items = m_Catalog.GetPublishers();
 
@@ -594,7 +594,7 @@ bool CFtpCatalogServer::DoesPublisherExist(const CString& publisher) const
 
 CString CFtpCatalogServer::GetMasterLibraryURL(const CString& publisher) const
 {
-   FetchCatalog(NULL);
+   FetchCatalog(nullptr);
 
    // catalog parser does the work
    CCatalog::Format type = m_Catalog.GetFormat(publisher);
@@ -617,7 +617,7 @@ CString CFtpCatalogServer::GetMasterLibraryURL(const CString& publisher) const
 
 CString CFtpCatalogServer::GetWebLink(const CString& publisher) const
 {
-   FetchCatalog(NULL);
+   FetchCatalog(nullptr);
 
    CString url = m_Catalog.GetWebLink(publisher);
 
@@ -689,12 +689,12 @@ bool CFtpCatalogServer::CheckForUpdatesOriginal(const CString& publisher, IProgr
 
    // connect to the internet and get the md5 files
    CInternetSession inetSession;
-   CFtpConnection* pFTP = NULL;
+   CFtpConnection* pFTP = nullptr;
 
    //Username we will use if a secure site comes into play
-   LPCTSTR pstrUserName = NULL; 
+   LPCTSTR pstrUserName = nullptr; 
    //The password we will use
-   LPCTSTR pstrPassword = NULL;
+   LPCTSTR pstrPassword = nullptr;
 
    CString strLocalFile;
    CString strLocalFolder;
@@ -779,7 +779,7 @@ bool CFtpCatalogServer::CheckForUpdatesPgz(const CString& publisher, IProgressMo
    CString strPgzServer,      strPgzObject;
    INTERNET_PORT nPort;
 
-   if(pProgress!=NULL)
+   if(pProgress!=nullptr)
    {
       pProgress->put_Message(0,CComBSTR("Reading md5 hash from server"));
    }
@@ -796,13 +796,13 @@ bool CFtpCatalogServer::CheckForUpdatesPgz(const CString& publisher, IProgressMo
    CString strTempMd5File = GetTempPgzMD5Filename(m_AppName);
 
    //Username we will use if a secure site comes into play
-   LPCTSTR pstrUserName = NULL; 
+   LPCTSTR pstrUserName = nullptr; 
    //The password we will use
-   LPCTSTR pstrPassword = NULL;
+   LPCTSTR pstrPassword = nullptr;
 
    // connect to the internet and get the md5 file
    CInternetSession inetSession;
-   CFtpConnection* pFTP = NULL;
+   CFtpConnection* pFTP = nullptr;
 
    try
    {
@@ -906,9 +906,9 @@ bool CFtpCatalogServer::PopulateLibraryFile(IProgressMonitor* pProgress,const CS
    ATLASSERT( bSuccess && dwServiceType == AFX_INET_SERVICE_FTP);
 
    //Username we will use if a secure site comes into play
-   LPCTSTR pstrUserName = NULL; 
+   LPCTSTR pstrUserName = nullptr; 
    //The password we will use
-   LPCTSTR pstrPassword = NULL;
+   LPCTSTR pstrPassword = nullptr;
 
    CInternetSession inetSession;
    CFtpConnection* pFTP = 0;
@@ -918,14 +918,14 @@ bool CFtpCatalogServer::PopulateLibraryFile(IProgressMonitor* pProgress,const CS
       pFTP = inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE);
       CFtpFileFind file_find(pFTP);
 
-      if(pProgress!=NULL)
+      if(pProgress!=nullptr)
       {
          pProgress->put_Message(0,CComBSTR("Downloading the Master Library"));
       }
 
       if ( file_find.FindFile(strObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT) && pFTP->GetFile(strObject,cachedMasterLibFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
       {
-         if(pProgress!=NULL)
+         if(pProgress!=nullptr)
          {
             pProgress->put_Message(0,CComBSTR("Master Library downloaded successfully"));
          }
@@ -938,7 +938,7 @@ bool CFtpCatalogServer::PopulateLibraryFile(IProgressMonitor* pProgress,const CS
          CString msg;
          msg.Format(_T("An error occured while downloading master library file %s."),strMasterLibraryFile);
 
-         if(pProgress!=NULL)
+         if(pProgress!=nullptr)
          {
             pProgress->put_Message(0,CComBSTR(msg));
          }
@@ -984,13 +984,13 @@ bool CFtpCatalogServer::PopulateTemplateFolder(IProgressMonitor* pProgress,const
    ATLASSERT( bSuccess && dwServiceType == AFX_INET_SERVICE_FTP); // this should be tested elsewhere
 
    //Username we will use if a secure site comes into play
-   LPCTSTR pstrUserName = NULL; 
+   LPCTSTR pstrUserName = nullptr; 
    //The password we will use
-   LPCTSTR pstrPassword = NULL;
+   LPCTSTR pstrPassword = nullptr;
 
    CInternetSession inetSession;
 
-   ::CreateDirectory(cachedTemplateFolder,NULL);
+   ::CreateDirectory(cachedTemplateFolder,nullptr);
 
    CFtpConnection* pFTP = 0;
 
@@ -1043,9 +1043,9 @@ bool CFtpCatalogServer::PopulatePgz(const CString& publisher, IProgressMonitor* 
    ATLASSERT( bSuccess && dwServiceType == AFX_INET_SERVICE_FTP);
 
    //Username we will use if a secure site comes into play
-   LPCTSTR pstrUserName = NULL; 
+   LPCTSTR pstrUserName = nullptr; 
    //The password we will use
-   LPCTSTR pstrPassword = NULL;
+   LPCTSTR pstrPassword = nullptr;
 
    CInternetSession inetSession;
    CFtpConnection* pFTP = 0;
@@ -1055,21 +1055,21 @@ bool CFtpCatalogServer::PopulatePgz(const CString& publisher, IProgressMonitor* 
       pFTP = inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE);
       CFtpFileFind file_find(pFTP);
 
-      if(pProgress!=NULL)
+      if(pProgress!=nullptr)
       {
          pProgress->put_Message(0,CComBSTR("Downloading Configuration"));
       }
 
       if ( file_find.FindFile(strObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT) && pFTP->GetFile(strObject,pgzCachedFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_BINARY | INTERNET_FLAG_RELOAD) )
       {
-         if(pProgress!=NULL)
+         if(pProgress!=nullptr)
          {
             pProgress->put_Message(0,CComBSTR("Configuration downloaded successfully"));
          }
       }
       else
       {
-         if(pProgress!=NULL)
+         if(pProgress!=nullptr)
          {
             pProgress->put_Message(0,CComBSTR("Error downloading the Configuration"));
          }
@@ -1112,7 +1112,7 @@ bool CFtpCatalogServer::PopulatePgz(const CString& publisher, IProgressMonitor* 
    TCHAR* sFolder = pgzFolder.GetBuffer(1);
    TCHAR* sFile   = pgzCachedFile.GetBuffer(1);
 
-   if(pProgress!=NULL)
+   if(pProgress!=nullptr)
    {
       pProgress->put_Message(0,CComBSTR("Uncompressing Configuration to local cache."));
    }
@@ -1155,7 +1155,7 @@ bool CFtpCatalogServer::IsNetworkError() const
 
    try
    {
-      FetchCatalog(NULL,true);
+      FetchCatalog(nullptr,true);
    }
    catch(CCatalogServerException& exc)
    {
@@ -1200,13 +1200,13 @@ bool CFtpCatalogServer::TestServer(CString& errorMessage) const
    }
 
    //Username we will use if a secure site comes into play
-   LPCTSTR pstrUserName = NULL; 
+   LPCTSTR pstrUserName = nullptr; 
    //The password we will use
-   LPCTSTR pstrPassword = NULL;
+   LPCTSTR pstrPassword = nullptr;
 
    // See if we find the catalog file
    CInternetSession inetSession;
-   std::auto_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE) );
+   std::unique_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE) );
 
    CFtpFileFind ftpFind(pFTP.get());
    if ( !ftpFind.FindFile(strObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT))
@@ -1257,7 +1257,7 @@ void CIniCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
       catalogURL += GetCatalogFileName(m_AppName);
 
       // create a progress window
-      if (pProgress!=NULL)
+      if (pProgress!=nullptr)
       {
          CComBSTR str = CString(_T("Reading Library Publishers from: ")) + catalogURL;
          pProgress->put_Message(0,str);
@@ -1291,7 +1291,7 @@ std::vector<CString> CIniCatalogServer::GetPublishers() const
 {
    std::vector<CString> items;
 
-   FetchCatalog(NULL);
+   FetchCatalog(nullptr);
 
    items = m_Catalog.GetPublishers();
 
@@ -1305,7 +1305,7 @@ bool CIniCatalogServer::DoesPublisherExist(const CString& publisher) const
 
 CString CIniCatalogServer::GetMasterLibraryURL(const CString& publisher) const
 {
-   FetchCatalog(NULL);
+   FetchCatalog(nullptr);
 
    // catalog parser does the work
    ATLASSERT(m_Catalog.GetFormat(publisher)==CCatalog::ctPgz);
@@ -1317,7 +1317,7 @@ CString CIniCatalogServer::GetMasterLibraryURL(const CString& publisher) const
 
 CString CIniCatalogServer::GetWebLink(const CString& publisher) const
 {
-   FetchCatalog(NULL);
+   FetchCatalog(nullptr);
 
    CString url = m_Catalog.GetWebLink(publisher);
 
@@ -1347,7 +1347,7 @@ bool CIniCatalogServer::CheckForUpdates(const CString& publisher, IProgressMonit
    // name of md5p to be copied to temp folder
    CString strTempMd5File = GetTempPgzMD5Filename(m_AppName);
 
-   if(pProgress!=NULL)
+   if(pProgress!=nullptr)
    {
       pProgress->put_Message(0,CComBSTR("Reading md5 hash from server"));
    }
@@ -1398,7 +1398,7 @@ bool CIniCatalogServer::PopulateCatalog(const CString& publisher, IProgressMonit
    CString pgzCachedFile = cacheFolder + GetPgzFilename(m_AppName);
    CString strPgzFile = CleanUpURL(pgzFileURL,true);
 
-   if(pProgress!=NULL)
+   if(pProgress!=nullptr)
    {
       pProgress->put_Message(0,CComBSTR("Downloading Configuration"));
    }
@@ -1406,7 +1406,7 @@ bool CIniCatalogServer::PopulateCatalog(const CString& publisher, IProgressMonit
    bool st = gwOk == this->GetWebFile(strPgzFile, pgzCachedFile);
    if ( st )
    {
-      if(pProgress!=NULL)
+      if(pProgress!=nullptr)
       {
          pProgress->put_Message(0,CComBSTR("Configuration downloaded successfully"));
       }
@@ -1433,7 +1433,7 @@ bool CIniCatalogServer::PopulateCatalog(const CString& publisher, IProgressMonit
    TCHAR* sFolder = pgzFolder.GetBuffer(1);
    TCHAR* sFile   = pgzCachedFile.GetBuffer(1);
 
-   if(pProgress!=NULL)
+   if(pProgress!=nullptr)
    {
       pProgress->put_Message(0,CComBSTR("Uncompressing Configuration to local cache."));
    }
@@ -1523,38 +1523,38 @@ CIniCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFil
 	DWORD dwHttpRequestFlags = INTERNET_FLAG_EXISTING_CONNECT | INTERNET_FLAG_DONT_CACHE;
 
 	/*string containing the application name that is used to refer
-	  client making the request. If this NULL the frame work will
+	  client making the request. If this nullptr the frame work will
 	  call  the global function AfxGetAppName which returns the application
 	  name.*/
 	//LPCTSTR pstrAgent = _T("Pgsuper");
 	LPCTSTR pstrAgent = m_AppName;
 
 	//the verb we will be using for this connection
-	//if NULL then GET is assumed
+	//if nullptr then GET is assumed
 	LPCTSTR pstrVerb = _T("GET");
 	
 	//the address of the url in the request was obtained from
-	LPCTSTR pstrReferer = NULL;
+	LPCTSTR pstrReferer = nullptr;
 
-	//Http version we are using; NULL = HTTP/1.0
-	LPCTSTR pstrVersion = NULL;
+	//Http version we are using; nullptr = HTTP/1.0
+	LPCTSTR pstrVersion = nullptr;
 
 	//For the Accept request headers if we need them later on
-	LPCTSTR pstrAcceptTypes = NULL;
+	LPCTSTR pstrAcceptTypes = nullptr;
 	CString szHeaders = _T("Accept: audio/x-aiff, audio/basic, audio/midi, audio/mpeg, audio/wav, image/jpeg, image/gif, image/jpg, image/png, image/mng, image/bmp, text/plain, text/html, text/htm\r\n");
 
 	//Username we will use if a secure site comes into play
-	LPCTSTR pstrUserName = NULL; 
+	LPCTSTR pstrUserName = nullptr; 
 	//The password we will use
-	LPCTSTR pstrPassword = NULL;
+	LPCTSTR pstrPassword = nullptr;
 
 	//CInternetSession flags if we need them
 	//DWORD dwFlags = INTERNET_FLAG_ASYNC;
-	DWORD dwFlags = NULL;
+	DWORD dwFlags = 0;
 
 	//Proxy setting if we need them
-	LPCTSTR pstrProxyName = NULL;
-	LPCTSTR pstrProxyBypass = NULL;
+	LPCTSTR pstrProxyName = nullptr;
+	LPCTSTR pstrProxyBypass = nullptr;
 
    // see if url parses before going further
    DWORD dwServiceType;
@@ -1579,8 +1579,8 @@ CIniCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFil
 	//session.EnableStatusCallback(FALSE);
    gwResult retVal = gwConnectionError;
 
-	CHttpConnection*	pServer = NULL;   
-	CHttpFile* pFile = NULL;
+	CHttpConnection*	pServer = nullptr;   
+	CHttpFile* pFile = nullptr;
 	DWORD dwRet;
 	try 
    {		
@@ -1828,7 +1828,7 @@ bool CFileSystemCatalogServer::PopulateCatalog(const CString& publisher, IProgre
 
    if ( localMasterLibraryFile != _T("") )
    {
-      if(pProgress != NULL)
+      if(pProgress != nullptr)
       {
          pProgress->put_Message(0,CComBSTR("Copying the Master Library"));
       }
@@ -1836,7 +1836,7 @@ bool CFileSystemCatalogServer::PopulateCatalog(const CString& publisher, IProgre
       BOOL bSuccess = ::CopyFile(localMasterLibraryFile,cachedMasterLibFile,FALSE);
       if ( !bSuccess )
       {
-         if(pProgress!=NULL)
+         if(pProgress!=nullptr)
          {
             pProgress->put_Message(0,CComBSTR("Error copying the Master Library"));
          }
@@ -1850,7 +1850,7 @@ bool CFileSystemCatalogServer::PopulateCatalog(const CString& publisher, IProgre
       }
       else
       {
-         if(pProgress!=NULL)
+         if(pProgress!=nullptr)
          {
             pProgress->put_Message(0,CComBSTR("Master Library copied successfully"));
          }
@@ -1858,13 +1858,13 @@ bool CFileSystemCatalogServer::PopulateCatalog(const CString& publisher, IProgre
    }
 
    // Next deal with templates
-   BOOL bst = ::CreateDirectory(cachedTemplateFolder,NULL);
+   BOOL bst = ::CreateDirectory(cachedTemplateFolder,nullptr);
    if ( bst==0 )
    {
       CString strMessage;
       strMessage.Format(_T("Error creating Template Folder at %s"),cachedTemplateFolder);
 
-      if(pProgress!=NULL)
+      if(pProgress!=nullptr)
       {
          pProgress->put_Message(0,CComBSTR(strMessage));
       }

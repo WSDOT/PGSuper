@@ -37,10 +37,10 @@ static char THIS_FILE[] = __FILE__;
 CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder)
 {
    m_pGirder        = pGirder;
-   m_pTempSupport   = NULL;
-   m_pPier          = NULL;
-   m_pLeftSegment   = NULL;
-   m_pRightSegment  = NULL;
+   m_pTempSupport   = nullptr;
+   m_pPier          = nullptr;
+   m_pLeftSegment   = nullptr;
+   m_pRightSegment  = nullptr;
 
    m_TempSupportID  = INVALID_ID;
    m_PierID         = INVALID_ID;
@@ -50,9 +50,9 @@ CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,CTemporarySuppo
 {
    m_pGirder        = pGirder;
    m_pTempSupport   = pTempSupport;
-   m_pPier          = NULL;
-   m_pLeftSegment   = NULL;
-   m_pRightSegment  = NULL;
+   m_pPier          = nullptr;
+   m_pLeftSegment   = nullptr;
+   m_pRightSegment  = nullptr;
 
    m_TempSupportID  = INVALID_ID;
    m_PierID         = INVALID_ID;
@@ -61,10 +61,10 @@ CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,CTemporarySuppo
 CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,CPierData2* pPier)
 {
    m_pGirder        = pGirder;
-   m_pTempSupport   = NULL;
+   m_pTempSupport   = nullptr;
    m_pPier          = pPier;
-   m_pLeftSegment   = NULL;
-   m_pRightSegment  = NULL;
+   m_pLeftSegment   = nullptr;
+   m_pRightSegment  = nullptr;
 
    m_TempSupportID  = INVALID_ID;
    m_PierID         = INVALID_ID;
@@ -73,10 +73,10 @@ CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,CPierData2* pPi
 CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,const CClosureJointData& rOther)
 {
    m_pGirder        = pGirder;
-   m_pTempSupport   = NULL;
-   m_pPier          = NULL;
-   m_pLeftSegment   = NULL;
-   m_pRightSegment  = NULL;
+   m_pTempSupport   = nullptr;
+   m_pPier          = nullptr;
+   m_pLeftSegment   = nullptr;
+   m_pRightSegment  = nullptr;
 
    m_TempSupportID  = INVALID_ID;
    m_PierID         = INVALID_ID;
@@ -131,7 +131,7 @@ bool CClosureJointData::operator!=(const CClosureJointData& rOther) const
 bool CClosureJointData::operator<(const CClosureJointData& rOther) const
 {
    Float64 station1, station2;
-   if ( m_pTempSupport != NULL )
+   if ( m_pTempSupport != nullptr )
    {
       station1 = m_pTempSupport->GetStation();
    }
@@ -140,7 +140,7 @@ bool CClosureJointData::operator<(const CClosureJointData& rOther) const
       station1 = m_pPier->GetStation();
    }
 
-   if ( rOther.GetTemporarySupport() != NULL )
+   if ( rOther.GetTemporarySupport() != nullptr )
    {
       station2 = rOther.GetTemporarySupport()->GetStation();
    }
@@ -192,20 +192,20 @@ const CSplicedGirderData* CClosureJointData::GetGirder() const
 
 void CClosureJointData::SetTemporarySupport(CTemporarySupportData* pTS)
 {
-   ATLASSERT(m_pPier == NULL);
+   ATLASSERT(m_pPier == nullptr);
    m_pTempSupport = pTS;
    m_TempSupportID = INVALID_ID;
 }
 
 const CTemporarySupportData* CClosureJointData::GetTemporarySupport() const
 {
-   ATLASSERT( !(m_pPier == NULL && m_pTempSupport == NULL) ); // can't have both
+   ATLASSERT( !(m_pPier == nullptr && m_pTempSupport == nullptr) ); // can't have both
    return m_pTempSupport;
 }
 
 CTemporarySupportData* CClosureJointData::GetTemporarySupport()
 {
-   ATLASSERT( !(m_pPier == NULL && m_pTempSupport == NULL) ); // can't have both
+   ATLASSERT( !(m_pPier == nullptr && m_pTempSupport == nullptr) ); // can't have both
    return m_pTempSupport;
 }
 
@@ -231,20 +231,20 @@ SupportIDType CClosureJointData::GetTemporarySupportID() const
 
 void CClosureJointData::SetPier(CPierData2* pPier)
 {
-   ATLASSERT(m_pTempSupport == NULL);
+   ATLASSERT(m_pTempSupport == nullptr);
    m_pPier = pPier;
    m_PierID = INVALID_ID;
 }
 
 const CPierData2* CClosureJointData::GetPier() const
 {
-   ATLASSERT( !(m_pPier == NULL && m_pTempSupport == NULL) ); // can't have both
+   ATLASSERT( !(m_pPier == nullptr && m_pTempSupport == nullptr) ); // can't have both
    return m_pPier;
 }
 
 CPierData2* CClosureJointData::GetPier()
 {
-   ATLASSERT( !(m_pPier == NULL && m_pTempSupport == NULL) ); // can't have both
+   ATLASSERT( !(m_pPier == nullptr && m_pTempSupport == nullptr) ); // can't have both
    return m_pPier;
 }
 
@@ -365,33 +365,33 @@ void CClosureJointData::MakeCopy(const CClosureJointData& rOther,bool bCopyDataO
       if ( rOther.m_pTempSupport )
       {
          // other has a temporary support that is resolved
-         m_pTempSupport  = NULL; // NULL because this will be resolved later
+         m_pTempSupport  = nullptr; // nullptr because this will be resolved later
          m_TempSupportID = rOther.m_pTempSupport->GetID(); // capture ID for later resolution of m_pTempSupport
-         m_pPier         = NULL; // No pier
+         m_pPier         = nullptr; // No pier
          m_PierID        = INVALID_ID; // No pier
       }
       else if ( rOther.m_TempSupportID != INVALID_ID )
       {
          // other has a temporary support that is not resolved
-         m_pTempSupport  = NULL; // NULL because this will be resolved later
+         m_pTempSupport  = nullptr; // nullptr because this will be resolved later
          m_TempSupportID = rOther.m_TempSupportID; // capture ID for later resolution of m_pTempSupport
-         m_pPier         = NULL; // No pier
+         m_pPier         = nullptr; // No pier
          m_PierID        = INVALID_ID; // No pier
       }
       else if ( rOther.m_pPier )
       {
          // other has a pier that is resolved
-         m_pTempSupport  = NULL; // No temp support
+         m_pTempSupport  = nullptr; // No temp support
          m_TempSupportID = INVALID_ID; // No temp support 
-         m_pPier         = NULL; // NULL because this will be resolved later
+         m_pPier         = nullptr; // nullptr because this will be resolved later
          m_PierID        = rOther.m_pPier->GetID(); // capture index for later resolution of m_pPier
       }
       else
       {
          // other has a pier that is not resolved
-         m_pTempSupport  = NULL; // No temp support 
+         m_pTempSupport  = nullptr; // No temp support 
          m_TempSupportID = INVALID_ID; // No temp support 
-         m_pPier         = NULL; // NULL because this will be resolved later
+         m_pPier         = nullptr; // nullptr because this will be resolved later
          m_PierID        = rOther.m_PierID; // capture index for later resolution of m_pPier
       }
 
@@ -467,7 +467,7 @@ HRESULT CClosureJointData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          }
          else
          {
-            m_pPier = NULL;
+            m_pPier = nullptr;
             m_PierID = pierID;
          }
       }
@@ -485,7 +485,7 @@ HRESULT CClosureJointData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          }
          else
          {
-            m_pTempSupport = NULL;
+            m_pTempSupport = nullptr;
             m_TempSupportID = id;
          }
       }
@@ -512,19 +512,19 @@ void CClosureJointData::ResolveReferences()
    // associated pier or temporary support. The ID of the associated object is stored and now
    // it is time to resolve that reference.
 
-   if ( m_pGirder == NULL )
+   if ( m_pGirder == nullptr )
    {
       return; // can't resolve it
    }
 
    CGirderGroupData* pGirderGroup = m_pGirder->GetGirderGroup();
-   if ( pGirderGroup == NULL )
+   if ( pGirderGroup == nullptr )
    {
       return; // can't resolve it
    }
 
    CBridgeDescription2* pBridge = pGirderGroup->GetBridgeDescription();
-   if ( pBridge == NULL )
+   if ( pBridge == nullptr )
    {
       return; // can't resolve it
    }
@@ -536,11 +536,11 @@ void CClosureJointData::ResolveReferences()
 
       m_TempSupportID = INVALID_ID;
       m_PierID = INVALID_INDEX;
-      m_pPier = NULL;
+      m_pPier = nullptr;
    }
    else if (m_PierID != INVALID_ID )
    {
-      m_pTempSupport = NULL;
+      m_pTempSupport = nullptr;
       m_TempSupportID = INVALID_ID;
       m_pPier = pBridge->FindPier(m_PierID);
       m_PierID = INVALID_INDEX;
@@ -550,15 +550,15 @@ void CClosureJointData::ResolveReferences()
 #if defined _DEBUG
 void CClosureJointData::AssertValid()
 {
-   if ( m_pGirder != NULL )
+   if ( m_pGirder != nullptr )
    {
       if ( m_PierID == INVALID_ID && m_TempSupportID == INVALID_ID )
       {
-         _ASSERT(m_pPier != NULL || m_pTempSupport != NULL);
+         _ASSERT(m_pPier != nullptr || m_pTempSupport != nullptr);
       }
    }
 
-   _ASSERT(m_pLeftSegment  != NULL);
-   _ASSERT(m_pRightSegment != NULL);
+   _ASSERT(m_pLeftSegment  != nullptr);
+   _ASSERT(m_pRightSegment != nullptr);
 }
 #endif

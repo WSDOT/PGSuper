@@ -67,9 +67,9 @@ protected:
 
    void AddEvent(const CTimelineEvent* pTimelineEvent,const CTimelineEvent* pNextTimelineEvent);
    
-   virtual void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
-   virtual BOOL OnValidateCell(ROWCOL nRow,ROWCOL nCol);
-   virtual BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol);
+   virtual void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol) override;
+   virtual BOOL OnValidateCell(ROWCOL nRow,ROWCOL nCol) override;
+   virtual BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol) override;
 
    DECLARE_MESSAGE_MAP()
 };

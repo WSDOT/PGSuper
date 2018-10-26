@@ -32,12 +32,12 @@ public:
                        CRuntimeClass* pDocClass,
                        CRuntimeClass* pFrameClass,
                        CRuntimeClass* pViewClass,
-                       HMENU hSharedMenu = NULL,
+                       HMENU hSharedMenu = nullptr,
                        int maxViewCount = -1);
 
-   virtual void SetPlugin(IEAFAppPlugin* pPlugin);
+   virtual void SetPlugin(IEAFAppPlugin* pPlugin) override;
 
-   virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const;
+   virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const override;
 
    void LoadTemplateInformation();
 

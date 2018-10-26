@@ -409,8 +409,8 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const LiveLoadLibraryEntry* ll_entry = pLibrary->GetLiveLoadEntry( load_name.c_str());
 
-   // if the entry is NULL, the name better be HL-93
-   if ( ll_entry == NULL )
+   // if the entry is nullptr, the name better be HL-93
+   if ( ll_entry == nullptr )
    {
       if ( load_name == _T("HL-93") )
       {
@@ -439,6 +439,10 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
       else if ( load_name == _T("Single-Unit SHVs") )
       {
          *pPara << Bold(_T("AASHTO MBE 6A.4.4.2.1b: ")) << _T("Specialized Hauling Vehicles (SU)") << rptNewLine;
+      }
+      else if (load_name == _T("Emergency Vehicles"))
+      {
+         *pPara << Bold(_T("FHWA Memo, November 3, 2016: ")) << _T("FAST Act Emergency Vehicles") << rptNewLine;
       }
       else
          ATLASSERT(false);

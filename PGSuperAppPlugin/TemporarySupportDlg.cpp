@@ -22,7 +22,7 @@ CTemporarySupportDlg::CTemporarySupportDlg(const CBridgeDescription2* pBridgeDes
    InitPages();
 }
 
-CTemporarySupportDlg::CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx,const std::set<EditBridgeExtension>& editBridgeExtensions, CWnd* pParentWnd, UINT iSelectPage)
+CTemporarySupportDlg::CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx,const std::vector<EditBridgeExtension>& editBridgeExtensions, CWnd* pParentWnd, UINT iSelectPage)
 :CPropertySheet(tsIdx == INVALID_INDEX ? _T("Add Temporary Support") : _T("Temporary Support Details"), pParentWnd, iSelectPage)
 {
    Init(pBridgeDesc,tsIdx);
@@ -80,7 +80,7 @@ LRESULT CTemporarySupportDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
@@ -110,7 +110,7 @@ void CTemporarySupportDlg::InitPages()
    CreateExtensionPages();
 }
 
-void CTemporarySupportDlg::InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+void CTemporarySupportDlg::InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CommonInitPages();
    CreateExtensionPages(editBridgeExtensions);
@@ -136,12 +136,13 @@ void CTemporarySupportDlg::CreateExtensionPages()
    }
 }
 
-void CTemporarySupportDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+void CTemporarySupportDlg::CreateExtensionPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_BridgeExtensionPages = editBridgeExtensions;
+   std::sort(m_BridgeExtensionPages.begin(), m_BridgeExtensionPages.end()); // must be sorted.. do it here so callers don't have to worry about it
 
 
    std::map<IDType,IEditTemporarySupportCallback*> callbacks = pDoc->GetEditTemporarySupportCallbacks();
@@ -151,7 +152,7 @@ void CTemporarySupportDlg::CreateExtensionPages(const std::set<EditBridgeExtensi
    {
       IEditTemporarySupportCallback* pEditTemporarySupportCallback = callbackIter->second;
       IDType editBridgeCallbackID = pEditTemporarySupportCallback->GetEditBridgeCallbackID();
-      CPropertyPage* pPage = NULL;
+      CPropertyPage* pPage = nullptr;
       if ( editBridgeCallbackID == INVALID_ID )
       {
          pPage = pEditTemporarySupportCallback->CreatePropertyPage(this);
@@ -160,7 +161,7 @@ void CTemporarySupportDlg::CreateExtensionPages(const std::set<EditBridgeExtensi
       {
          EditBridgeExtension key;
          key.callbackID = editBridgeCallbackID;
-         std::set<EditBridgeExtension>::const_iterator found(m_BridgeExtensionPages.find(key));
+         std::vector<EditBridgeExtension>::const_iterator found(std::find(m_BridgeExtensionPages.begin(),m_BridgeExtensionPages.end(), key));
          if ( found != m_BridgeExtensionPages.end() )
          {
             const EditBridgeExtension& extension = *found;
@@ -194,7 +195,7 @@ txnTransaction* CTemporarySupportDlg::GetExtensionPageTransaction()
    if ( 0 < m_Macro.GetTxnCount() )
       return m_Macro.CreateClone();
    else
-      return NULL;
+      return nullptr;
 }
 
 void CTemporarySupportDlg::NotifyExtensionPages()
@@ -235,7 +236,7 @@ void CTemporarySupportDlg::NotifyBridgeExtensionPages()
       {
          EditBridgeExtension key;
          key.callbackID = editBridgeCallbackID;
-         std::set<EditBridgeExtension>::iterator found(m_BridgeExtensionPages.find(key));
+         std::vector<EditBridgeExtension>::iterator found(std::find(m_BridgeExtensionPages.begin(),m_BridgeExtensionPages.end(),key));
          if ( found != m_BridgeExtensionPages.end() )
          {
             EditBridgeExtension& extension = *found;

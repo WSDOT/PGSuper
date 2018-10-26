@@ -8,6 +8,7 @@ Design - Inventory | Define live load factors for the design, inventory load rat
 Design - Operating | Define live load factors for the design, operating load rating (MBE 6A.4.3.2.2)
 Legal - Routine | Define live load factors for the legal load rating for routine commercial traffic (MBE 6A.4.4.2.3a)
 Legal - Special | Define live load factors for the legal load rating for specialized hauling vehicles (MBE 6A.4.4.2.3b)
+Legal - Emergency | Define live load factors for the legal load rating for emergency vehicles ([FHWA Memorandum, Nov. 3, 2016](http://www.fhwa.dot.gov/bridge/loadrating/161103.pdf))
 Permit - Routine | Define live load factors for the permit load rating for routine or annual permits (MBE 6A.4.5.4.2a)
 Permit - Special, Single trip with escort | Define live load factors for the permit load rating for special single trip permits when the live load is escorted with no other vehicles on the bridge (MBE 6A.4.5.4.2a)
 Permit - Special, Single trip with traffic | Define live load factors for the permit load rating for special single trip permits mixed with other vehicular traffic on the bridge (MBE 6A.4.5.4.2a)

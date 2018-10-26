@@ -78,21 +78,39 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
             m_Data.SpecialNames.push_back( std::_tstring(str));
          }
       }
+
+      m_Data.EmergencyNames.clear();
+      nItems = m_ctlEmergencyLL.GetCount();
+      for (idx = 0; idx < nItems; idx++)
+      {
+         int check_state = m_ctlEmergencyLL.GetCheck(idx);
+         if (check_state == 1)
+         {
+            CString str;
+            m_ctlEmergencyLL.GetText(idx, str);
+            m_Data.EmergencyNames.push_back(std::_tstring(str));
+         }
+      }
    }
 
 	DDX_Control(pDX, IDC_ROUTINE_LIVELOAD, m_ctlRoutineLL);
-	DDX_Control(pDX, IDC_SPECIAL_LIVELOAD, m_ctlSpecialLL);
+   DDX_Control(pDX, IDC_SPECIAL_LIVELOAD, m_ctlSpecialLL);
+   DDX_Control(pDX, IDC_EMERGENCY_LIVELOAD, m_ctlEmergencyLL);
 
    DDX_Percentage(pDX,IDC_ROUTINE_TRUCK_IMPACT,m_Data.IM_Truck_Routine);
    DDX_Percentage(pDX,IDC_ROUTINE_LANE_IMPACT, m_Data.IM_Lane_Routine);
 
-   DDX_Percentage(pDX,IDC_SPECIAL_TRUCK_IMPACT,m_Data.IM_Truck_Special);
-   DDX_Percentage(pDX,IDC_SPECIAL_LANE_IMPACT, m_Data.IM_Lane_Special);
+   DDX_Percentage(pDX, IDC_SPECIAL_TRUCK_IMPACT, m_Data.IM_Truck_Special);
+   DDX_Percentage(pDX, IDC_SPECIAL_LANE_IMPACT, m_Data.IM_Lane_Special);
+
+   DDX_Percentage(pDX, IDC_EMERGENCY_TRUCK_IMPACT, m_Data.IM_Truck_Emergency);
+   DDX_Percentage(pDX, IDC_EMERGENCY_LANE_IMPACT, m_Data.IM_Lane_Emergency);
 
    DDX_Text(pDX,IDC_STRENGTH_I_DC,m_Data.StrengthI_DC);
    DDX_Text(pDX,IDC_STRENGTH_I_DW,m_Data.StrengthI_DW);
    DDX_Keyword(pDX,IDC_STRENGTH_I_LL_ROUTINE,_T("Compute"),m_Data.StrengthI_LL_Routine);
-   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_SPECIAL,_T("Compute"),m_Data.StrengthI_LL_Special);
+   DDX_Keyword(pDX, IDC_STRENGTH_I_LL_SPECIAL, _T("Compute"), m_Data.StrengthI_LL_Special);
+   DDX_Keyword(pDX, IDC_STRENGTH_I_LL_EMERGENCY, _T("Compute"), m_Data.StrengthI_LL_Emergency);
    DDX_Text(pDX,IDC_STRENGTH_I_CR,m_Data.StrengthI_CR);
    DDX_Text(pDX,IDC_STRENGTH_I_SH,m_Data.StrengthI_SH);
    DDX_Text(pDX,IDC_STRENGTH_I_PS,m_Data.StrengthI_PS);
@@ -100,7 +118,8 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_SERVICE_III_DC,m_Data.ServiceIII_DC);
    DDX_Text(pDX,IDC_SERVICE_III_DW,m_Data.ServiceIII_DW);
    DDX_Keyword(pDX,IDC_SERVICE_III_LL_ROUTINE,_T("Compute"),m_Data.ServiceIII_LL_Routine);
-   DDX_Keyword(pDX,IDC_SERVICE_III_LL_SPECIAL,_T("Compute"),m_Data.ServiceIII_LL_Special);
+   DDX_Keyword(pDX, IDC_SERVICE_III_LL_SPECIAL, _T("Compute"), m_Data.ServiceIII_LL_Special);
+   DDX_Keyword(pDX, IDC_SERVICE_III_LL_EMERGENCY, _T("Compute"), m_Data.ServiceIII_LL_Emergency);
    DDX_Text(pDX,IDC_SERVICE_III_CR,m_Data.ServiceIII_CR);
    DDX_Text(pDX,IDC_SERVICE_III_SH,m_Data.ServiceIII_SH);
    DDX_Text(pDX,IDC_SERVICE_III_PS,m_Data.ServiceIII_PS);
@@ -142,7 +161,8 @@ BOOL CLegalRatingPage::OnInitDialog()
    CPropertyPage::OnInitDialog();
 
    m_ctlRoutineLL.SetCheckStyle( BS_AUTOCHECKBOX );
-   m_ctlSpecialLL.SetCheckStyle( BS_AUTOCHECKBOX );
+   m_ctlSpecialLL.SetCheckStyle(BS_AUTOCHECKBOX);
+   m_ctlEmergencyLL.SetCheckStyle(BS_AUTOCHECKBOX);
 
    // fill the live load list boxes here
    for (std::vector<std::_tstring>::iterator iter = m_AllNames.begin(); iter != m_AllNames.end(); iter++)
@@ -151,6 +171,7 @@ BOOL CLegalRatingPage::OnInitDialog()
       m_ctlRoutineLL.AddString(str);
       m_ctlSpecialLL.AddString(str);
    }
+   m_ctlEmergencyLL.AddString(_T("Emergency Vehicles")); // this is the only option for EV ratings (EV rating load posting forces us to limit the vehicles to EV2 and EV3)
 
    // Set the check marks for the various loads
    for (std::vector<std::_tstring>::reverse_iterator iter = m_Data.RoutineNames.rbegin(); iter != m_Data.RoutineNames.rend(); iter++)
@@ -175,6 +196,17 @@ BOOL CLegalRatingPage::OnInitDialog()
       }
    }
 
+   for (std::vector<std::_tstring>::reverse_iterator iter = m_Data.EmergencyNames.rbegin(); iter != m_Data.EmergencyNames.rend(); iter++)
+   {
+      LPCTSTR str = iter->c_str();
+      int idx = m_ctlEmergencyLL.FindString(-1, str);
+      if (idx != LB_ERR)
+      {
+         m_ctlEmergencyLL.SetCheck(idx, 1);
+         m_ctlEmergencyLL.SetTopIndex(idx);
+      }
+   }
+
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -196,6 +228,7 @@ BOOL CLegalRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       {
       case IDC_ROUTINE_TRUCK_IMPACT:
       case IDC_SPECIAL_TRUCK_IMPACT:
+      case IDC_EMERGENCY_TRUCK_IMPACT:
          m_strTip = _T("MBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations or depressions IM = 20%");
          break;
 
@@ -227,6 +260,16 @@ BOOL CLegalRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
          bIsLoadFactorTip = true;
          break;
 
+      case IDC_STRENGTH_I_LL_EMERGENCY:
+         limit_state = pgsTypes::StrengthI_LegalEmergency;
+         bIsLoadFactorTip = true;
+         break;
+
+      case IDC_SERVICE_III_LL_EMERGENCY:
+         limit_state = pgsTypes::ServiceIII_LegalEmergency;
+         bIsLoadFactorTip = true;
+         break;
+
       default:
          return FALSE;
       }
@@ -240,7 +283,7 @@ BOOL CLegalRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.GetBuffer();
-      pTTT->hinst = NULL;
+      pTTT->hinst = nullptr;
       return TRUE;
    }
    return FALSE;
@@ -308,6 +351,30 @@ BOOL CLegalRatingPage::OnSetActive()
       DDX_Keyword(&dx,IDC_SERVICE_III_LL_SPECIAL,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_SPECIAL)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(FALSE);
+   }
+
+   if (pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims)
+   {
+      const CLiveLoadFactorModel& emergency = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Emergency);
+      bAllowUserOverride = emergency.AllowUserOverride();
+   }
+   else
+   {
+      const CLiveLoadFactorModel2& emergency = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrLegal_Emergency);
+      bAllowUserOverride = emergency.AllowUserOverride();
+   }
+
+   if (bAllowUserOverride)
+   {
+      GetDlgItem(IDC_STRENGTH_I_LL_EMERGENCY)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_III_LL_EMERGENCY)->EnableWindow(TRUE);
+   }
+   else
+   {
+      DDX_Keyword(&dx, IDC_STRENGTH_I_LL_EMERGENCY, _T("Compute"), gLL);
+      DDX_Keyword(&dx, IDC_SERVICE_III_LL_EMERGENCY, _T("Compute"), gLL);
+      GetDlgItem(IDC_STRENGTH_I_LL_EMERGENCY)->EnableWindow(FALSE);
+      GetDlgItem(IDC_SERVICE_III_LL_EMERGENCY)->EnableWindow(FALSE);
    }
 
    GET_IFACE2(broker, ILossParameters, pLossParams);

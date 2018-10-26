@@ -40,8 +40,8 @@ class pgsVSRatioStatusCallback : public iStatusCallback
 {
 public:
    pgsVSRatioStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;

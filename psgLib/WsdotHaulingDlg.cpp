@@ -35,7 +35,7 @@
 
 IMPLEMENT_DYNAMIC(CWsdotHaulingDlg, CDialog)
 
-CWsdotHaulingDlg::CWsdotHaulingDlg(CWnd* pParent /*=NULL*/)
+CWsdotHaulingDlg::CWsdotHaulingDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CWsdotHaulingDlg::IDD, pParent)
 {
 

@@ -252,7 +252,7 @@ public:
 
 protected:
    void MakeCopy(const CTimelineManager& rOther);
-   virtual void MakeAssignment(const CTimelineManager& rOther);
+   void MakeAssignment(const CTimelineManager& rOther);
    void Sort();
 
    std::vector<CTimelineEvent*> m_TimelineEvents; // owns the timeline events... will be deleted in the destructor

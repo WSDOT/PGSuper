@@ -30,7 +30,7 @@
 
 IMPLEMENT_DYNAMIC(CProjectCriteriaNotFoundDlg, CDialog)
 
-CProjectCriteriaNotFoundDlg::CProjectCriteriaNotFoundDlg(CWnd* pParent /*=NULL*/)
+CProjectCriteriaNotFoundDlg::CProjectCriteriaNotFoundDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CProjectCriteriaNotFoundDlg::IDD, pParent)
 {
 

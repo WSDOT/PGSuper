@@ -37,7 +37,7 @@ class CStructuralAnalysisMethodDlg : public CDialog
 {
 // Construction
 public:
-	CStructuralAnalysisMethodDlg(CWnd* pParent = NULL);   // standard constructor
+	CStructuralAnalysisMethodDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CStructuralAnalysisMethodDlg)
@@ -50,7 +50,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CStructuralAnalysisMethodDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation

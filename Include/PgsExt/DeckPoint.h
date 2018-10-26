@@ -92,7 +92,7 @@ public:
 
 protected:
    void MakeCopy(const CDeckPoint& rOther);
-   virtual void MakeAssignment(const CDeckPoint& rOther);
+   void MakeAssignment(const CDeckPoint& rOther);
 };
 
 

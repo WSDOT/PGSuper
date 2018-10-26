@@ -72,7 +72,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsRefinedAnalysisStatusItem* pItem = dynamic_cast<pgsRefinedAnalysisStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CRefinedAnalysisOptionsDlg dlg;
    dlg.m_strDescription = pStatusItem->GetDescription();
@@ -160,7 +160,7 @@ eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity()
 void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsInstallationErrorStatusItem* pItem = dynamic_cast<pgsInstallationErrorStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CString msg;
    msg.Format(_T("The software was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
@@ -211,7 +211,7 @@ void pgsUnknownErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    pgsUnknownErrorStatusItem* pItem = dynamic_cast<pgsUnknownErrorStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CString msg;
    msg.Format(_T("An unspecified error occured at %s, Line %d"),pItem->m_File.c_str(),pItem->m_Line);
@@ -299,7 +299,7 @@ void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    //pgsInformationalStatusItem* pItem = dynamic_cast<pgsInformationalStatusItem*>(pStatusItem);
-   //ATLASSERT(pItem!=NULL);
+   //ATLASSERT(pItem!=nullptr);
 
    std::_tstring msg = pStatusItem->GetDescription();
 
@@ -371,7 +371,7 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsGirderDescriptionStatusItem* pItem = dynamic_cast<pgsGirderDescriptionStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CString strMessage;
    strMessage.Format(_T("%s\n\r%s"),pItem->GetDescription(),_T("Would you like to edit the girder?"));
@@ -465,7 +465,7 @@ eafTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity()
 void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsBridgeDescriptionStatusItem* pItem = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    long dlgPage;
    switch(pItem->m_IssueType)
@@ -558,7 +558,7 @@ eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity()
 void pgsLldfWarningStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsLldfWarningStatusItem* pItem = dynamic_cast<pgsLldfWarningStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    // Just go straight to main lldf  editing dialog
    GET_IFACE(ILiveLoads,pLiveLoads);
@@ -605,7 +605,7 @@ eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity(
 void pgsEffectiveFlangeWidthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsEffectiveFlangeWidthStatusItem* pItem = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    // Just go straight to main editing dialog
    GET_IFACE(IEditByUI,pEdit);

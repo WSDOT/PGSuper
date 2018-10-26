@@ -306,8 +306,10 @@ LPCTSTR GetLimitStateString(pgsTypes::LimitState limitState)
       _T("Service III (Operating)"),
       _T("Strength I (Legal - Routine)"),
       _T("Strength I (Legal - Special)"),
+      _T("Strength I (Legal - Emergency)"),
       _T("Service III (Legal - Routine)"),
       _T("Service III (Legal - Special)"),
+      _T("Service III (Legal - Emergency)"),
       _T("Strength II (Routine Permit Rating)"),
       _T("Service I (Routine Permit Rating)"),
       _T("Service III (Routine Permit Rating)"),
@@ -371,12 +373,20 @@ LPCTSTR GetLimitStateString(pgsTypes::LimitState limitState)
          strName = _T("Strength I (Legal - Special)");
          break;
 
+      case pgsTypes::StrengthI_LegalEmergency:
+         strName = _T("Strength I (Legal - Emergency)");
+         break;
+
       case pgsTypes::ServiceIII_LegalRoutine:
          strName = _T("Service III (Legal - Routine)");
          break;
 
       case pgsTypes::ServiceIII_LegalSpecial:
          strName = _T("Service III (Legal - Special)");
+         break;
+
+      case pgsTypes::ServiceIII_LegalEmergency:
+         strName = _T("Service III (Legal - Emergency)");
          break;
 
       case pgsTypes::StrengthII_PermitRoutine:

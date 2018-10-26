@@ -78,7 +78,7 @@ HICON CPGSuperComponentInfo::GetIcon()
 bool CPGSuperComponentInfo::HasMoreInfo()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   return (pEAFDoc == NULL ? false : pEAFDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? true : false);
+   return (pEAFDoc == nullptr ? false : pEAFDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? true : false);
 }
 
 void CPGSuperComponentInfo::OnMoreInfo()

@@ -123,7 +123,7 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType st
 
    // figure out the overhang, w1, based on the spacing
    Float64 w1;
-   if ( pBroker == NULL )
+   if ( pBroker == nullptr )
    {
       // just use the max
       w1 = (wmax - nWebs*t1 - (nWebs-1)*w)/2;
@@ -234,7 +234,7 @@ void CMultiWebFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGr
 
    CComQIPtr<IShape> shape(gdrSection);
    ATLASSERT(shape);
-   segment->AddShape(shape,material,NULL);
+   segment->AddShape(shape,material,nullptr);
 
    ssmbr->AddSegment(segment);
 }

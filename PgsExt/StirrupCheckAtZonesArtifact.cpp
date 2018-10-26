@@ -499,8 +499,8 @@ CLASS
 pgsConfinementArtifact::pgsConfinementArtifact():
 m_IsApplicable(false)
 {
-   m_pStartRebar = NULL;
-   m_pMinRebar = NULL;
+   m_pStartRebar = nullptr;
+   m_pMinRebar = nullptr;
 }
 
 pgsConfinementArtifact::pgsConfinementArtifact(const pgsConfinementArtifact& rOther)
@@ -679,9 +679,9 @@ bool pgsConfinementArtifact::StartPassed() const
    }
 
    // min bar size
-   if (m_pMinRebar != NULL)
+   if (m_pMinRebar != nullptr)
    {
-      if (m_pStartRebar == NULL)
+      if (m_pStartRebar == nullptr)
       {
          return false;
       }
@@ -717,9 +717,9 @@ bool pgsConfinementArtifact::EndPassed() const
    }
 
    // min bar size
-   if (m_pMinRebar != NULL)
+   if (m_pMinRebar != nullptr)
    {
-      if (m_pEndRebar == NULL)
+      if (m_pEndRebar == nullptr)
       {
          return false;
       }

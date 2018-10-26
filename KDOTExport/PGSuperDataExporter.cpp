@@ -124,7 +124,7 @@ STDMETHODIMP CPGSuperDataExporter::Export(IBroker* pBroker)
    std::vector<CGirderKey> girderKeys;
    girderKeys.push_back(girderKey);
 
-   CExportDlg  caddlg (pBroker, NULL);
+   CExportDlg  caddlg (pBroker, nullptr);
    caddlg.m_GirderKeys = girderKeys;
 
    // Open the ExportCADData dialog box
@@ -168,8 +168,6 @@ STDMETHODIMP CPGSuperDataExporter::Export(IBroker* pBroker)
 
 HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys)
 {
-   USES_CONVERSION;
-
    { // scope the progress window
    GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress autoProgress(pProgress,0);
@@ -190,10 +188,10 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       KDOT::BridgeDataType brdata;
 
       std::_tstring type = pBridgeDescr2->GetLeftRailingSystem()->GetExteriorRailing()->GetName();
-      brdata.LeftRailingType(T2A(type.c_str()));
+      brdata.LeftRailingType(type);
 
       type = pBridgeDescr2->GetRightRailingSystem()->GetExteriorRailing()->GetName();
-      brdata.RightRailingType(T2A(type.c_str()));
+      brdata.RightRailingType(type);
 
       GET_IFACE2(pBroker,IMaterials,pMaterials);
       GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -208,7 +206,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       const CDeckDescription2* pDeckDescription = pBridgeDescr2->GetDeckDescription();
 
       Float64 tDeck(0.0);
-      if ( pDeckDescription->DeckType == pgsTypes::sdtCompositeSIP )
+      if ( pDeckDescription->GetDeckType() == pgsTypes::sdtCompositeSIP )
       {
          tDeck = pDeckDescription->GrossDepth + pDeckDescription->PanelDepth;
       }
@@ -327,7 +325,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          std::_tstring strGirderName = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderName();
          ATLASSERT( strGirderName == pGirderEntry->GetName() );
 
-         gd.GirderType(T2A(strGirderName.c_str()));
+         gd.GirderType(strGirderName);
 
          KDOT::BridgeDataType::GirderData_type::SectionDimensions_sequence sds;
 
@@ -339,7 +337,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
             KDOT::BridgeDataType::GirderData_type::SectionDimensions_type sd;
 
-            sd.ParameterName(T2A(dim.first.c_str()));
+            sd.ParameterName(dim.first);
 
             // assumes are dimensions are reals. This may not be the case (e.g., voided slab has #voids)
             dval = ::ConvertFromSysUnits(dim.second, unitMeasure::Inch);
@@ -598,7 +596,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          const matPsStrand* pmatps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
 
          std::_tstring name = pmatps->GetName();
-         pstype.Name(T2A(name.c_str()));
+         pstype.Name(name);
 
          dval = pmatps->GetNominalDiameter();
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
@@ -644,7 +642,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          for(StrandIndexType istrand=0; istrand<sicnt; istrand++)
          {
             Float64 dstart, dend;
-            if (pStrandGeom->IsStrandDebonded(segmentKey, istrand, pgsTypes::Straight, &dstart, &dend))
+            if (pStrandGeom->IsStrandDebonded(segmentKey, istrand, pgsTypes::Straight, nullptr, &dstart, &dend))
             {
                dstart = ::ConvertFromSysUnits(dstart, unitMeasure::Inch);
                dend   = ::ConvertFromSysUnits(dend,   unitMeasure::Inch);
@@ -763,10 +761,10 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          pMaterials->GetSegmentLongitudinalRebarMaterial(segmentKey, &rebarType, &rebarGrade);
 
          std::_tstring grd = GenerateReinfGradeName(rebarGrade);
-         lrbrmat.Grade(T2A(grd.c_str()));
+         lrbrmat.Grade(grd);
 
          std::_tstring typ = GenerateReinfTypeName(rebarType);
-         lrbrmat.Type(T2A(typ.c_str()));
+         lrbrmat.Type(typ);
 
          gd.LongitudinalRebarMaterial(lrbrmat);
 
@@ -800,7 +798,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
                dval = ::ConvertFromSysUnits(endLoc, unitMeasure::Inch);
                rebarRow.BarEnd(dval);
 
-               rebarRow.Face(rowData.Face==pgsTypes::TopFace ? "Top" : "Bottom");
+               rebarRow.Face(rowData.Face==pgsTypes::TopFace ? _T("Top") : _T("Bottom"));
 
                dval = ::ConvertFromSysUnits(rowData.Cover, unitMeasure::Inch);
                rebarRow.Cover(dval);
@@ -810,7 +808,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
                dval = ::ConvertFromSysUnits(rowData.BarSpacing, unitMeasure::Inch);
                rebarRow.Spacing(dval);
 
-               rebarRow.Size(T2A(pRebar->GetName().c_str()));
+               rebarRow.Size(pRebar->GetName());
 
                rows.push_back(rebarRow);
             }
@@ -824,10 +822,10 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          pMaterials->GetSegmentTransverseRebarMaterial(segmentKey, &rebarType, &rebarGrade);
 
          grd = GenerateReinfGradeName(rebarGrade);
-         srbrmat.Grade(T2A(grd.c_str()));
+         srbrmat.Grade(grd);
 
          typ = GenerateReinfTypeName(rebarType);
-         srbrmat.Type(T2A(typ.c_str()));
+         srbrmat.Type(typ);
 
          gd.TransverseReinforcementMaterial(srbrmat);
 
@@ -855,7 +853,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 nStirrups;
             pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
-            szone.BarSize(T2A(lrfdRebarPool::GetBarSize(barSize).c_str()));
+            szone.BarSize(lrfdRebarPool::GetBarSize(barSize));
 
             dval = ::ConvertFromSysUnits(spacing, unitMeasure::Inch);
             szone.BarSpacing(dval);
@@ -866,7 +864,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             szone.NumLegsExtendedIntoDeck(num_legs);
 
             barSize = pStirrupGeometry->GetPrimaryConfinementBarSize(segmentKey,iz);
-            szone.ConfinementBarSize(T2A(lrfdRebarPool::GetBarSize(barSize).c_str()));
+            szone.ConfinementBarSize(lrfdRebarPool::GetBarSize(barSize));
 
             szones.push_back(szone);
          }
@@ -1016,10 +1014,10 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
       // save the XML to a file
       xml_schema::namespace_infomap map;
-      map[""].name = "";
-      map[""].schema = "KDOTExport.xsd"; // get this from a compiled resource if possible
+      map[_T("")].name = _T("");
+      map[_T("")].schema = _T("KDOTExport.xsd"); // get this from a compiled resource if possible
 
-      std::ofstream ofile(T2A(strFileName.GetBuffer()));
+      std::ofstream ofile(strFileName.GetBuffer());
 
       KDOT::KDOTExport_(ofile,kdot_export,map);
    }
@@ -1055,8 +1053,6 @@ STDMETHODIMP CPGSuperDataExporter::GetDocumentationSetName(BSTR* pbstrName)
 
 CString CPGSuperDataExporter::GetDocumentationURL()
 {
-   USES_CONVERSION;
-
    CComBSTR bstrDocSetName;
    GetDocumentationSetName(&bstrDocSetName);
    CString strDocSetName(OLE2T(bstrDocSetName));
@@ -1091,8 +1087,6 @@ CString CPGSuperDataExporter::GetDocumentationURL()
 
 STDMETHODIMP CPGSuperDataExporter::LoadDocumentationMap()
 {
-   USES_CONVERSION;
-
    CComBSTR bstrDocSetName;
    GetDocumentationSetName(&bstrDocSetName);
 

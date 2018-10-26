@@ -47,13 +47,13 @@ END_COM_MAP()
 
 // IPGSuperComponentInfo
 public:
-   virtual BOOL Init(CPGSuperDoc* pDoc);
-   virtual void Terminate();
-   virtual CString GetName();
-   virtual CString GetDescription();
-   virtual HICON GetIcon();
-   virtual bool HasMoreInfo();
-   virtual void OnMoreInfo();
+   virtual BOOL Init(CPGSuperDoc* pDoc) override;
+   virtual void Terminate() override;
+   virtual CString GetName() override;
+   virtual CString GetDescription() override;
+   virtual HICON GetIcon() override;
+   virtual bool HasMoreInfo() override;
+   virtual void OnMoreInfo() override;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(KDOTComponentInfo), CKDOTComponentInfo)

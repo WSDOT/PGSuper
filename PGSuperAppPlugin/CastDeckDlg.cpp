@@ -35,7 +35,7 @@
 
 IMPLEMENT_DYNAMIC(CCastDeckDlg, CDialog)
 
-CCastDeckDlg::CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CCastDeckDlg::CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CCastDeckDlg::IDD, pParent)
 {
    m_TimelineMgr = timelineMgr;

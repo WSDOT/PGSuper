@@ -58,13 +58,13 @@ CPGSpliceTitlePageBuilder::~CPGSpliceTitlePageBuilder(void)
 {
 }
 
-bool CPGSpliceTitlePageBuilder::NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec)
+bool CPGSpliceTitlePageBuilder::NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec)
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>& pRptSpec)
+rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& pRptSpec)
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
@@ -80,11 +80,11 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
    *pTitlePage << pPara;
 
    // Determine if the report spec has span/girder information
-   boost::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = boost::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
-   boost::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = boost::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
-   boost::shared_ptr<CGirderLineReportSpecification> pGirderLineRptSpec = boost::dynamic_pointer_cast<CGirderLineReportSpecification,CReportSpecification>(pRptSpec);
+   std::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = std::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
+   std::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = std::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
+   std::shared_ptr<CGirderLineReportSpecification> pGirderLineRptSpec = std::dynamic_pointer_cast<CGirderLineReportSpecification,CReportSpecification>(pRptSpec);
 
-   if ( pGirderRptSpec != NULL )
+   if ( pGirderRptSpec != nullptr )
    {
       const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
       GroupIndexType grpIdx  = girderKey.groupIndex;
@@ -100,13 +100,13 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
          *pPara << _T("For") << rptNewLine << rptNewLine;
          *pPara << _T("Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
       }
-      else if ( gdrIdx != NULL )
+      else if ( gdrIdx != INVALID_INDEX )
       {
          *pPara << _T("For") << rptNewLine << rptNewLine;
          *pPara << _T("Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
       }
    }
-   else if ( pSpanRptSpec != NULL )
+   else if ( pSpanRptSpec != nullptr )
    {
       SpanIndexType spanIdx = pSpanRptSpec->GetSpan();
       if ( spanIdx != INVALID_INDEX )
@@ -115,7 +115,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
       }
    }
-   else if ( pGirderLineRptSpec != NULL )
+   else if ( pGirderLineRptSpec != nullptr )
    {
       GirderIndexType gdrIdx = pGirderLineRptSpec->GetGirderIndex();
       ATLASSERT(gdrIdx != INVALID_INDEX);
@@ -226,11 +226,11 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
 
    // There isn't any seed data for spliced girders
    //// girder seed data comparison
-   //if ( pGirderRptSpec != NULL || pSpanRptSpec != NULL )
+   //if ( pGirderRptSpec != nullptr || pSpanRptSpec != nullptr )
    //{
    //   CGirderKey girderKey;
 
-   //   if (pGirderRptSpec != NULL )
+   //   if (pGirderRptSpec != nullptr )
    //   {
    //      girderKey = pGirderRptSpec->GetGirderKey();
    //   }
@@ -243,7 +243,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
 
    //   p = CGirderSeedDataComparisonParagraph().Build(m_pBroker,girderKey);
 
-   //   if (p != NULL)
+   //   if (p != nullptr)
    //   {
    //      // only report if we have data
    //      *pTitlePage << p;

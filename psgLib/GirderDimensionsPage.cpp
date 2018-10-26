@@ -200,7 +200,7 @@ BOOL CGirderDimensionsPage::OnInitDialog()
          *pCLSID = beamFamily->GetFactoryCLSID(factoryName);
 
          CComPtr<IBeamFactory> pFactory;
-         HRESULT hr = ::CoCreateInstance(*pCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
+         HRESULT hr = ::CoCreateInstance(*pCLSID,nullptr,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
          if ( SUCCEEDED(hr) )
          {
             int idx = pComboBox->AddString(factoryName);
@@ -260,7 +260,7 @@ void CGirderDimensionsPage::OnBeamTypeChanged()
    int selIdx = pComboBox->GetCurSel();
    CLSID* pCLSID = (CLSID*)pComboBox->GetItemDataPtr(selIdx);
    CComPtr<IBeamFactory> pFactory;
-   HRESULT hr = ::CoCreateInstance(*pCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
+   HRESULT hr = ::CoCreateInstance(*pCLSID,nullptr,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
    if ( FAILED(hr) )
    {
       CString strGirderName;
@@ -331,7 +331,7 @@ void CGirderDimensionsPage::OnDestroy()
       CLSID* pItemDataPtr = (CLSID*)pComboBox->GetItemDataPtr(idx);
       delete pItemDataPtr;
 
-      pComboBox->SetItemDataPtr(idx,NULL);
+      pComboBox->SetItemDataPtr(idx,nullptr);
    }
 
    CPropertyPage::OnDestroy();
@@ -340,7 +340,7 @@ void CGirderDimensionsPage::OnDestroy()
 void CGirderDimensionsPage::UpdateGirderImage(const CLSID& factoryCLSID)
 {
    CComPtr<IBeamFactory> pFactory;
-   HRESULT hr = ::CoCreateInstance(factoryCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
+   HRESULT hr = ::CoCreateInstance(factoryCLSID,nullptr,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
    if ( FAILED(hr) )
    {
       return;

@@ -48,7 +48,7 @@ static char THIS_FILE[] = __FILE__;
 // CCopyGirderDlg dialog
 
 
-CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, std::map<IDType,ICopyGirderPropertiesCallback*>& rCopyGirderPropertiesCallbacks, CWnd* pParent /*=NULL*/)
+CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, std::map<IDType,ICopyGirderPropertiesCallback*>& rCopyGirderPropertiesCallbacks, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyGirderDlg::IDD, pParent),
    m_pBroker(pBroker),
    m_rCopyGirderPropertiesCallbacks(rCopyGirderPropertiesCallbacks)

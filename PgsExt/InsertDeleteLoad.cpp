@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 
 txnInsertPointLoad::txnInsertPointLoad(const CPointLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr)
 {
-   m_pTimelineMgr = NULL;
+   m_pTimelineMgr = nullptr;
    if ( pTimelineMgr )
    {
       m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
@@ -195,7 +195,7 @@ void txnDeletePointLoad::Undo()
 
 txnEditPointLoad::txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,EventIDType oldLoadingEventID,const CPointLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr)
 {
-   m_pTimelineMgr = NULL;
+   m_pTimelineMgr = nullptr;
    if ( pTimelineMgr )
    {
       m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
@@ -284,7 +284,7 @@ void txnEditPointLoad::DoExecute(int i)
 
 txnInsertDistributedLoad::txnInsertDistributedLoad(const CDistributedLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr)
 {
-   m_pTimelineMgr = NULL;
+   m_pTimelineMgr = nullptr;
    if ( pTimelineMgr )
    {
       m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
@@ -441,7 +441,7 @@ void txnDeleteDistributedLoad::Undo()
 
 txnEditDistributedLoad::txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,EventIDType oldLoadingEventID,const CDistributedLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr)
 {
-   m_pTimelineMgr = NULL;
+   m_pTimelineMgr = nullptr;
    if ( pTimelineMgr )
    {
       m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
@@ -530,7 +530,7 @@ void txnEditDistributedLoad::DoExecute(int i)
 
 txnInsertMomentLoad::txnInsertMomentLoad(const CMomentLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr)
 {
-   m_pTimelineMgr = NULL;
+   m_pTimelineMgr = nullptr;
    if ( pTimelineMgr )
    {
       m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
@@ -685,7 +685,7 @@ void txnDeleteMomentLoad::Undo()
 
 txnEditMomentLoad::txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,EventIDType oldLoadingEventID,const CMomentLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr)
 {
-   m_pTimelineMgr = NULL;
+   m_pTimelineMgr = nullptr;
    if ( pTimelineMgr )
    {
       m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);

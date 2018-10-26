@@ -1064,6 +1064,7 @@
 #define IDC_FCPG_COMBO                  1558
 #define IDC_DEBOND_RAISE_CHECK          1558
 #define IDC_ALPHA_UNIT                  1558
+#define IDC_CHECK_INCLINDED_GIRDER      1558
 #define IDC_ELASTIC_GAINS_GROUP         1559
 #define IDC_RADIO1                      1559
 #define IDC_GROSS                       1559
@@ -1131,6 +1132,8 @@
 #define IDC_EDIT4                       1581
 #define IDC_Z                           1581
 #define IDC_WCC                         1581
+#define IDC_INCLINDED_GIRDER_FS         1581
+#define IDC_CAMBER_MULTIPLIER           1581
 #define IDC_ADTT3_LABEL                 1582
 #define IDC_Z_UNIT                      1582
 #define IDC_ADTT3                       1583
@@ -1263,9 +1266,13 @@
 #define IDC_SAG_OPTIONS_LABEL           1677
 #define IDC_CHECK_HAULING_TENSION_MAX_SUPER 1678
 #define IDC_HAULING_TENSION_MAX_SUPER   1679
+#define IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL 1679
 #define IDC_HAULING_TENSION_MAX_UNIT_SUPER 1680
+#define IDC_INCLINDED_GIRDER_BRGPADDEDUCT 1680
 #define IDC_HAULING_TENSION_WITH_REBAR_SUPER 1681
+#define IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT 1681
 #define IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER 1682
+#define IDC_INCLINDED_GIRDER_FS_LABEL   1682
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1294,9 +1301,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        313
+#define _APS_NEXT_RESOURCE_VALUE        316
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1678
+#define _APS_NEXT_CONTROL_VALUE         1683
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

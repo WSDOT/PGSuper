@@ -94,7 +94,7 @@ BOOL CShearBarsLegsGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT n
 	VERIFY(menu.LoadMenu(IDR_ADD_DELETE_POPUP));
 
 	CMenu* pPopup = menu.GetSubMenu( 0 );
-	ASSERT( pPopup != NULL );
+	ASSERT( pPopup != nullptr );
 
    // deal with disabling delete since update stuff doesn't seem to work right
    UINT dodel = EnableItemDelete() ? MF_ENABLED|MF_BYCOMMAND : MF_GRAYED|MF_BYCOMMAND;
@@ -185,7 +185,7 @@ void CShearBarsLegsGrid::OnUpdateEditRemoveRows(CCmdUI* pCmdUI)
 
 bool CShearBarsLegsGrid::EnableItemDelete()
 {
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
 		return false;
 
    ROWCOL nrows = GetRowCount();

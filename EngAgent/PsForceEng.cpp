@@ -420,19 +420,68 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,
    return adjust;
 }
 
-Float64 pgsPsForceEng::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded)
+Float64 pgsPsForceEng::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig)
 {
-   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded);
+   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,pConfig);
    return details.ld;
 }
+//
+//STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded)
+//{
+//   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+//
+//   GET_IFACE(IIntervals,pIntervals);
+//   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+//   IntervalIndexType intervalIdx = nIntervals-1;
+//   pgsTypes::LimitState limitState = pgsTypes::ServiceIII;
+//
+//   GET_IFACE(ISegmentData,pSegmentData);
+//   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+//
+//   GET_IFACE(IGirder,pGirder);
+//   Float64 mbrDepth = pGirder->GetHeight(poi);
+//
+//   GET_IFACE(IPretensionForce,pPrestressForce);
+//   Float64 fpe = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,limitState);
+//
+//   GET_IFACE(IMomentCapacity,pMomCap);
+//   const MOMENTCAPACITYDETAILS* pmcd = pMomCap->GetMomentCapacityDetails(intervalIdx,poi,true); // positive moment
+//
+//   STRANDDEVLENGTHDETAILS details;
+//   details.db = pStrand->GetNominalDiameter();
+//   details.fpe = fpe;
+//   details.fps = pmcd->fps_avg;
+//   details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
+//   details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
+//
+//   details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
+//
+//   return details;
+//}
+//
+//STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,Float64 fps,Float64 fpe)
+//{
+//   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+//
+//   GET_IFACE(ISegmentData,pSegmentData);
+//   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+//
+//   GET_IFACE(IGirder,pGirder);
+//   Float64 mbrDepth = pGirder->GetHeight(poi);
+//
+//   STRANDDEVLENGTHDETAILS details;
+//   details.db = pStrand->GetNominalDiameter();
+//   details.fpe = fpe;
+//   details.fps = fps;
+//   details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
+//   details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
+//
+//   details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
+//
+//   return details;
+//}
 
-Float64 pgsPsForceEng::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG& config)
-{
-   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,config);
-   return details.ld;
-}
-
-STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded)
+STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -448,16 +497,15 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    Float64 mbrDepth = pGirder->GetHeight(poi);
 
    GET_IFACE(IPretensionForce,pPrestressForce);
-   Float64 fpe = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,limitState);
+   Float64 fpe = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,limitState,pConfig);
 
    GET_IFACE(IMomentCapacity,pMomCap);
-   MOMENTCAPACITYDETAILS mcd;
-   pMomCap->GetMomentCapacityDetails(intervalIdx,poi,true,&mcd); // positive moment
+   const MOMENTCAPACITYDETAILS* pmcd = pMomCap->GetMomentCapacityDetails(intervalIdx,poi,true/*positive moment*/,pConfig);
 
    STRANDDEVLENGTHDETAILS details;
    details.db = pStrand->GetNominalDiameter();
    details.fpe = fpe;
-   details.fps = mcd.fps_avg;
+   details.fps = pmcd->fps_avg;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
 
@@ -466,7 +514,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    return details;
 }
 
-STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,Float64 fps,Float64 fpe)
+STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,Float64 fps,Float64 fpe,const GDRCONFIG* pConfig)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -488,84 +536,28 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    return details;
 }
 
-STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG& config)
+//Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType)
+//{
+//   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,false);
+//   return GetDevLengthAdjustment(poi,strandIdx,strandType,details.fps,details.fpe);
+//}
+//
+//Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe)
+//{
+//   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+//
+//   GET_IFACE(IBridge,pBridge);
+//   GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
+//   return GetDevLengthAdjustment(poi,strandIdx,strandType,config,fps,fpe);
+//}
+
+Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig)
 {
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   IntervalIndexType intervalIdx = nIntervals-1;
-   pgsTypes::LimitState limitState = pgsTypes::ServiceIII;
-
-   GET_IFACE(ISegmentData,pSegmentData);
-   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-
-   GET_IFACE(IGirder,pGirder);
-   Float64 mbrDepth = pGirder->GetHeight(poi);
-
-   GET_IFACE(IPretensionForce,pPrestressForce);
-   Float64 fpe = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,limitState,config);
-
-   GET_IFACE(IMomentCapacity,pMomCap);
-   MOMENTCAPACITYDETAILS mcd;
-   pMomCap->GetMomentCapacityDetails(intervalIdx,poi,config,true,&mcd); // positive moment
-
-   STRANDDEVLENGTHDETAILS details;
-   details.db = pStrand->GetNominalDiameter();
-   details.fpe = fpe;
-   details.fps = mcd.fps_avg;
-   details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
-   details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
-
-   details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
-
-   return details;
+   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,false,pConfig);
+   return GetDevLengthAdjustment(poi,strandIdx,strandType,details.fps,details.fpe,pConfig);
 }
 
-STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG& config,Float64 fps,Float64 fpe)
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(ISegmentData,pSegmentData);
-   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-
-   GET_IFACE(IGirder,pGirder);
-   Float64 mbrDepth = pGirder->GetHeight(poi);
-
-   STRANDDEVLENGTHDETAILS details;
-   details.db = pStrand->GetNominalDiameter();
-   details.fpe = fpe;
-   details.fps = fps;
-   details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
-   details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
-
-   details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
-
-   return details;
-}
-
-Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType)
-{
-   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,false);
-   return GetDevLengthAdjustment(poi,strandIdx,strandType,details.fps,details.fpe);
-}
-
-Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe)
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(IBridge,pBridge);
-   GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
-   return GetDevLengthAdjustment(poi,strandIdx,strandType,config,fps,fpe);
-}
-
-Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config)
-{
-   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,false,config);
-   return GetDevLengthAdjustment(poi,strandIdx,strandType,config,details.fps,details.fpe);
-}
-
-Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config,Float64 fps,Float64 fpe)
+Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig)
 {
    // Compute a scaling factor to apply to the basic prestress force to
    // adjust for prestress force in the development
@@ -575,8 +567,8 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 bond_start, bond_end;
-   bool bDebonded = pStrandGeom->IsStrandDebonded(segmentKey,strandIdx,strandType,config,&bond_start,&bond_end);
-   bool bExtendedStrand = pStrandGeom->IsExtendedStrand(poi,strandIdx,strandType,config);
+   bool bDebonded = pStrandGeom->IsStrandDebonded(segmentKey,strandIdx,strandType,pConfig,&bond_start,&bond_end);
+   bool bExtendedStrand = pStrandGeom->IsExtendedStrand(poi,strandIdx,strandType,pConfig);
 
    // determine minimum bonded length from poi
    Float64 left_bonded_length, right_bonded_length;
@@ -610,17 +602,17 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    }
    else
    {
-      STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,config,fps,fpe);
+      STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,fps,fpe,pConfig);
       Float64 xfer_length = details.ltDetails.lt;
       Float64 dev_length  = details.ld;
 
       Float64 adjust = -999; // dummy value, helps with debugging
 
-      if ( lpx <= xfer_length)
+      if ( IsLE(lpx,xfer_length) )
       {
-         adjust = (fpe < fps ? (lpx*fpe) / (xfer_length*fps) : 1.0);
+         adjust = (IsLE(fpe,fps) ? (lpx*fpe) / (xfer_length*fps) : 1.0);
       }
-      else if ( lpx < dev_length )
+      else if ( IsLE(lpx,dev_length) )
       {
          adjust = (fpe + (lpx - xfer_length)*(fps-fpe)/(dev_length - xfer_length))/fps;
       }
@@ -635,55 +627,11 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    }
 }
 
-Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey)
+Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig)
 {
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-
-   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped, pConfig);
    if (0 < Nh)
-   {
-      GET_IFACE(IPointOfInterest,pPoi);
-      std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
-   
-      // no hold down force if there aren't any harped strands
-      if ( vPoi.size() == 0 )
-      {
-         return 0;
-      }
-   
-      GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType intervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
-
-      // The slope of the strands may be different at each harp point... need to compute the
-      // hold down force for each harp point and return the maximum value
-
-      Float64 F = 0;
-      BOOST_FOREACH(pgsPointOfInterest& poi,vPoi)
-      {
-         // NOTE: we may want to increase the force by some percentage to account for friction
-         // in the hold down device. harped *= 1.05 (for a 5% increase)
-         // See PCI BDM Example 9.1a,pg 9.1a-28
-         // Also see LRFD 5.9.5.2.2a
-         Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start);
-         Float64 slope = pStrandGeom->GetAvgStrandSlope( poi );
-
-         Float64 Fhd;
-         Fhd = harped / sqrt( 1*1 + slope*slope );
-
-         F = Max(F,Fhd);
-      }
-
-      return F;
-   }
-   else
-   {
-      return 0;
-   }
-}
-
-Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG& config)
-{
-   if (0 < config.PrestressConfig.GetStrandCount(pgsTypes::Harped))
    {
       GET_IFACE(IPointOfInterest,pPoi);
       std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
@@ -698,14 +646,26 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRC
    
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
-      Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,config);
+      // The slope of the strands may be different at each harp point... need to compute the
+      // hold down force for each harp point and return the maximum value
 
-      // Adjust for slope
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-      Float64 slope = pStrandGeom->GetAvgStrandSlope( poi,config.PrestressConfig);
+      Float64 F = 0;
+      for (const auto& poi : vPoi)
+      {
+         // NOTE: we may want to increase the force by some percentage to account for friction
+         // in the hold down device. harped *= 1.05 (for a 5% increase)
+         // See PCI BDM Example 9.1a,pg 9.1a-28
+         // Also see LRFD 5.9.5.2.2a
+         Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pConfig);
 
-      Float64 F;
-      F = harped / sqrt( 1*1 + slope*slope );
+         // Adjust for slope
+         Float64 slope = pStrandGeom->GetAvgStrandSlope( poi, pConfig);
+
+         Float64 Fhd;
+         Fhd = harped / sqrt(1 + slope*slope);
+
+         F = Max(F, Fhd);
+      }
 
       return F;
    }
@@ -728,14 +688,13 @@ void pgsPsForceEng::MakeAssignment(const pgsPsForceEng& rOther)
    MakeCopy( rOther );
 }
 
-Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType N = pStrandGeom->GetStrandCount(segmentKey,strandType);
-
-   if ( N == 0 )
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   StrandIndexType N = pStrandGeom->GetStrandCount(segmentKey, strandType, pConfig);
+   if (N == 0)
    {
       return 0;
    }
@@ -745,27 +704,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
 
    GET_IFACE(ISectionProperties,pSectProps);
    bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
-   Float64 fpe = GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,NULL,bIncludeElasticEffects);
-
-   Float64 aps = pStrand->GetNominalArea();
-
-   Float64 P = aps*N*fpe;
-
-   return P;
-}
-
-Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   StrandIndexType N = (strandType == pgsTypes::Permanent ? config.PrestressConfig.GetStrandCount(pgsTypes::Straight) + config.PrestressConfig.GetStrandCount(pgsTypes::Harped) : config.PrestressConfig.GetStrandCount(strandType));
-   
-   GET_IFACE(ISegmentData,pSegmentData );
-   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
-
-   GET_IFACE(ISectionProperties,pSectProps);
-   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
-   Float64 fpe = GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,&config,bIncludeElasticEffects);
+   Float64 fpe = GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,pConfig,bIncludeElasticEffects);
 
    Float64 aps = pStrand->GetNominalArea();
 
@@ -780,22 +719,21 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType N = pStrandGeom->GetStrandCount(segmentKey,strandType);
-   
+   if (N == 0)
+   {
+      return 0;
+   }
+
    GET_IFACE(ISegmentData,pSegmentData );
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
-   Float64 fpe = GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,NULL,bIncludeElasticEffects);
+   Float64 fpe = GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,nullptr,bIncludeElasticEffects);
 
    Float64 aps = pStrand->GetNominalArea();
 
    Float64 P = aps*N*fpe;
 
    return P;
-}
-
-Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
-{
-   return GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,NULL,true/*include elastic effects*/);
 }
 
 Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
@@ -813,17 +751,13 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   StrandIndexType N;
-   if ( pConfig )
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   StrandIndexType N = pStrandGeom->GetStrandCount(segmentKey, strandType, pConfig);
+   if (N == 0)
    {
-       N = pConfig->PrestressConfig.GetStrandCount(strandType);
+      return 0;
    }
-   else
-   {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-      N = pStrandGeom->GetStrandCount(segmentKey,strandType);
-   }
-   
+
    GET_IFACE(ISegmentData,pSegmentData );
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
@@ -843,7 +777,7 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
    return GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,pConfig,true/*include elastic effects*/);
 }
 
-Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( pPoi->IsOffSegment(poi) )
@@ -851,30 +785,13 @@ Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,p
       return 0;
    }
 
-   // fpe = fpj - loss + gain
-   // fpe = fpj - effective loss
-   // effective loss = loss - gain
-   Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime);
-   Float64 instantaneous_effects = GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime);
+   Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,pConfig);
+   Float64 instantaneous_effects = GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,pConfig);
    Float64 effective_loss = time_dependent_loss - instantaneous_effects;
    return effective_loss;
 }
 
-Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
-{
-   GET_IFACE(IPointOfInterest,pPoi);
-   if ( pPoi->IsOffSegment(poi) )
-   {
-      return 0;
-   }
-
-   Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,&config);
-   Float64 instantaneous_effects = GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,&config);
-   Float64 effective_loss = time_dependent_loss - instantaneous_effects;
-   return effective_loss;
-}
-
-Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
+Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig)
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( pPoi->IsOffSegment(poi) )
@@ -893,42 +810,10 @@ Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInt
       liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    }
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
-   Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,liveLoadIntervalIdx,intervalTime);
-   Float64 instantaneous_effects = GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState);
+   Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,liveLoadIntervalIdx,intervalTime,pConfig);
+   Float64 instantaneous_effects = GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState,pConfig);
    Float64 effective_loss = time_dependent_loss - instantaneous_effects;
    return effective_loss;
-}
-
-Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
-{
-   GET_IFACE(IPointOfInterest,pPoi);
-   if ( pPoi->IsOffSegment(poi) )
-   {
-      return 0;
-   }
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx;
-   if ( IsRatingLimitState(limitState) )
-   {
-      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
-   }
-   else
-   {
-      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   }
-   pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
-   Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,liveLoadIntervalIdx,intervalTime,&config);
-   Float64 instantaneous_effects = GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState,&config);
-   Float64 effective_loss = time_dependent_loss - instantaneous_effects;
-   return effective_loss;
-}
-
-Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
-{
-   GET_IFACE(ILosses,pLosses);
-   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
-   return GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,NULL,pDetails);
 }
 
 Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
@@ -941,6 +826,7 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
 
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails;
+#pragma Reminder("REVIEW = why does on version of GetLosses use the intervalIdx and the other doesnt?")
    if ( pConfig )
    {
       pDetails = pLosses->GetLossDetails(poi,*pConfig);
@@ -1273,13 +1159,6 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
    }
 }
 
-Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
-{
-   GET_IFACE(ILosses,pLosses);
-   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
-   return GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,NULL,pDetails);
-}
-
 Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
 {
    GET_IFACE(IPointOfInterest,pPoi);
@@ -1290,6 +1169,7 @@ Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgs
 
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails;
+#pragma Reminder("REVIEW = why does one version of GetLossDetails use the intervalIdx and the other doesnt?")
    if ( pConfig )
    {
       pDetails = pLosses->GetLossDetails(poi,*pConfig);
@@ -1487,23 +1367,6 @@ Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgs
    }
 }
 
-Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
-{
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx;
-   if ( IsRatingLimitState(limitState) )
-   {
-      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
-   }
-   else
-   {
-      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   }
-   GET_IFACE(ILosses,pLosses);
-   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,liveLoadIntervalIdx);
-   return GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState,NULL,pDetails);
-}
-
 Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig)
 {
    GET_IFACE(ILosses,pLosses);
@@ -1633,28 +1496,9 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
    IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx      = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
-   Float64 Pj;
-   StrandIndexType N;
-
-   if ( pConfig )
-   {
-      if ( strandType == pgsTypes::Permanent )
-      {
-         Pj = pConfig->PrestressConfig.Pjack[pgsTypes::Straight]          + pConfig->PrestressConfig.Pjack[pgsTypes::Harped];
-         N  = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight) + pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-      }
-      else
-      {
-         Pj = pConfig->PrestressConfig.Pjack[strandType];
-         N  = pConfig->PrestressConfig.GetStrandCount(strandType);
-      }
-   }
-   else
-   {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-      Pj = pStrandGeom->GetPjack(segmentKey,strandType);
-      N  = pStrandGeom->GetStrandCount(segmentKey,strandType);
-   }
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   Float64 Pj = pStrandGeom->GetPjack(segmentKey,strandType,pConfig);
+   StrandIndexType N = pStrandGeom->GetStrandCount(segmentKey,strandType,pConfig);
 
    if ( strandType == pgsTypes::Temporary &&
          ( intervalIdx < tsInstallationIntervalIdx || 
@@ -1688,7 +1532,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
    Float64 loss;
    if ( bIncludeElasticEffects )
    {
-      loss = GetEffectivePrestressLoss(poi,strandType,intervalIdx,intervalTime,*pConfig);
+      loss = GetEffectivePrestressLoss(poi,strandType,intervalIdx,intervalTime,pConfig);
    }
    else
    {
@@ -1778,7 +1622,7 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
    Float64 loss;
    if ( bIncludeElasticEffects )
    {
-      loss = GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState,*pConfig);
+      loss = GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState,pConfig);
    }
    else
    {

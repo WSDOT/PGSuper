@@ -87,7 +87,7 @@ CGirderSelectStrandsPage::CGirderSelectStrandsPage()
 
    m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch) * 1.5;
 
-   m_pToolTip = NULL;
+   m_pToolTip = nullptr;
 }
 
 CGirderSelectStrandsPage::~CGirderSelectStrandsPage()
@@ -313,7 +313,7 @@ void CGirderSelectStrandsPage::OnSize(UINT nType, int cx, int cy)
 
    CWnd* pPicture = GetDlgItem(IDC_PICTURE);
 
-   if ( pPicture == NULL )
+   if ( pPicture == nullptr )
       return; // child controls have not yet been created
 
    // get the picture and dialog rects in screen coordinates
@@ -574,7 +574,7 @@ void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper
    long i = 0;
    CComPtr<IEnumPoint2d> enumPoints;
    objPoints->get__Enum(&enumPoints);
-   while ( enumPoints->Next(1,&point,NULL) != S_FALSE )
+   while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
       mapper.WPtoDP(point,&dx,&dy);
 
@@ -1002,7 +1002,7 @@ void CGirderSelectStrandsPage::AddClickRect(CRect rect, ROWCOL gridRow)
 BOOL CGirderSelectStrandsPage::PreTranslateMessage(MSG* pMsg)
 {
 
-  if (NULL != m_pToolTip)
+  if (nullptr != m_pToolTip)
       m_pToolTip->RelayEvent(pMsg);
 
    return CPropertyPage::PreTranslateMessage(pMsg);

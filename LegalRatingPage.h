@@ -35,7 +35,8 @@ public:
 	virtual ~CLegalRatingPage();
 
 	CCheckListBox 	m_ctlRoutineLL;
-	CCheckListBox 	m_ctlSpecialLL;
+   CCheckListBox 	m_ctlSpecialLL;
+   CCheckListBox 	m_ctlEmergencyLL;
 
 // Dialog Data
 	enum { IDD = IDD_LEGAL_RATING };

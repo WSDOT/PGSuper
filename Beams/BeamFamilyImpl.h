@@ -39,11 +39,11 @@ class IBeamFamilyImpl :
 {
 public:
    // IBeamFactory
-   virtual CString GetName();
-   virtual void RefreshFactoryList();
-   virtual const std::vector<CString>& GetFactoryNames();
-   virtual CLSID GetFactoryCLSID(LPCTSTR strName);
-   virtual HRESULT CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory);
+   virtual CString GetName() override;
+   virtual void RefreshFactoryList() override;
+   virtual const std::vector<CString>& GetFactoryNames() override;
+   virtual CLSID GetFactoryCLSID(LPCTSTR strName) override;
+   virtual HRESULT CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory) override;
 
 protected:
    HRESULT Init();
@@ -78,8 +78,8 @@ BEGIN_COM_MAP(CIBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_WFBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_WFBeamFactory; }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -104,8 +104,8 @@ BEGIN_COM_MAP(CUBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_UBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_UBeamFactory; }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -130,8 +130,8 @@ BEGIN_COM_MAP(CBoxBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_BoxBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_BoxBeamFactory; }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -156,8 +156,8 @@ BEGIN_COM_MAP(CDeckBulbTeeBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_DeckBulbTeeBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_DeckBulbTeeBeamFactory; }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -182,8 +182,8 @@ BEGIN_COM_MAP(CDoubleTeeBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_DoubleTeeBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_DoubleTeeBeamFactory; }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -208,8 +208,8 @@ BEGIN_COM_MAP(CRibbedBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_RibbedBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_RibbedBeamFactory; }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -234,8 +234,8 @@ BEGIN_COM_MAP(CSlabBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_SlabBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_SlabBeamFactory; }
 };
 
 
@@ -261,8 +261,8 @@ BEGIN_COM_MAP(CDeckedSlabBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_DeckedSlabBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_DeckedSlabBeamFactory; }
 };
 
 
@@ -288,8 +288,8 @@ BEGIN_COM_MAP(CSplicedIBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_SplicedIBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_SplicedIBeamFactory; }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -314,6 +314,6 @@ BEGIN_COM_MAP(CSplicedUBeamFamily)
 END_COM_MAP()
 
 protected:
-   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() { return CATID_SplicedUBeamFactory; }
+   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() override { return CATID_SplicedUBeamFactory; }
 };

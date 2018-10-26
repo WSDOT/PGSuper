@@ -58,7 +58,7 @@ public:
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CSpanLayoutPage)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
    afx_msg void OnHelp();
 	//}}AFX_VIRTUAL
    afx_msg void OnChangeSlabOffset();
@@ -67,7 +67,7 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSpanLayoutPage)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

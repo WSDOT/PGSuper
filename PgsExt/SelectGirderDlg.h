@@ -28,7 +28,7 @@ class CSelectGirderDlg : public CDialog
 	DECLARE_DYNAMIC(CSelectGirderDlg)
 
 public:
-	CSelectGirderDlg(CWnd* pParent = NULL);   // standard constructor
+	CSelectGirderDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSelectGirderDlg();
 
 // Dialog Data
@@ -37,8 +37,8 @@ public:
    CGirderKey m_GirderKey;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual BOOL OnInitDialog();
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	virtual BOOL OnInitDialog() override;
    void OnGroupChanged();
 
 	DECLARE_MESSAGE_MAP()

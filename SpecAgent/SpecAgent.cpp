@@ -66,8 +66,8 @@ END_OBJECT_MAP()
 class CSpecAgentApp : public CWinApp
 {
 public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 };
 
 CSpecAgentApp theApp;

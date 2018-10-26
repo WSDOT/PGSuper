@@ -81,7 +81,7 @@ const CCatalogServer* CCatalogServers::GetServer(LPCTSTR strName) const
    if(found == m_Servers.end())
    {
       ATLASSERT(false);
-      return NULL;
+      return nullptr;
    }
    else
    {
@@ -134,7 +134,7 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
 
             CCatalogServer* pserver = CreateCatalogServer(m_AppName,strValue,m_strExt);
 
-            if (pserver!=NULL) // this is not good, but an assert should fire in CreateCatalogServer to help debugging
+            if (pserver!=nullptr) // this is not good, but an assert should fire in CreateCatalogServer to help debugging
             {
                m_Servers.insert( ServerPtr(pserver) );
             }
@@ -160,7 +160,7 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
          DWORD serverNameSize = sizeof(serverName);
          DWORD serverStringSize = sizeof(serverString);
          DWORD type;
-         while ( ::RegEnumValue(hSecKey,dwIndex++,&serverName[0],&serverNameSize,NULL,&type,(LPBYTE)&serverString[0],&serverStringSize) != ERROR_NO_MORE_ITEMS )
+         while ( ::RegEnumValue(hSecKey,dwIndex++,&serverName[0],&serverNameSize,nullptr,&type,(LPBYTE)&serverString[0],&serverStringSize) != ERROR_NO_MORE_ITEMS )
          {
             CCatalogServer* pServer = CreateCatalogServer(m_AppName,serverName,serverString,m_strExt );
             if ( pServer )
@@ -198,7 +198,7 @@ void CCatalogServers::SaveToRegistry(CWinApp* theApp) const
    theApp->DelRegTree(hAppKey,_T("CatalogServers"));
 
    // Save current servers
-   theApp->WriteProfileString(_T("CatalogServers"), NULL, NULL);
+   theApp->WriteProfileString(_T("CatalogServers"), nullptr, nullptr);
    Servers::const_iterator iter;
    for ( iter = m_Servers.begin(); iter != m_Servers.end(); iter++ )
    {

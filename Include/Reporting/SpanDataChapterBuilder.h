@@ -77,8 +77,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CSpanDataChapterBuilder(const CSpanDataChapterBuilder&);
-   CSpanDataChapterBuilder& operator=(const CSpanDataChapterBuilder&);
+   CSpanDataChapterBuilder(const CSpanDataChapterBuilder&) = delete;
+   CSpanDataChapterBuilder& operator=(const CSpanDataChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

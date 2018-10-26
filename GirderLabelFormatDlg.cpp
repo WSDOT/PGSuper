@@ -32,7 +32,7 @@
 
 IMPLEMENT_DYNAMIC(CGirderLabelFormatDlg, CDialog)
 
-CGirderLabelFormatDlg::CGirderLabelFormatDlg(CWnd* pParent /*=NULL*/)
+CGirderLabelFormatDlg::CGirderLabelFormatDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CGirderLabelFormatDlg::IDD, pParent)
    , m_Format(0)
 {

@@ -65,13 +65,13 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual CChapterBuilder* Clone() const override;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -89,8 +89,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CGirderScheduleChapterBuilder(const CGirderScheduleChapterBuilder&);
-   CGirderScheduleChapterBuilder& operator=(const CGirderScheduleChapterBuilder&);
+   CGirderScheduleChapterBuilder(const CGirderScheduleChapterBuilder&) = delete;
+   CGirderScheduleChapterBuilder& operator=(const CGirderScheduleChapterBuilder&) = delete;
 
    int GetReinforcementDetails(IBroker* pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const;
 

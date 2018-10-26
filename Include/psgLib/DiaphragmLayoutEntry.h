@@ -173,7 +173,7 @@ protected:
    void MakeCopy(const DiaphragmLayoutEntry& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const DiaphragmLayoutEntry& rOther);
+   void MakeAssignment(const DiaphragmLayoutEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 

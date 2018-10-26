@@ -48,6 +48,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CCEBFIPShrinkageStrainChapterBuilder(const CCEBFIPShrinkageStrainChapterBuilder&);
-   CCEBFIPShrinkageStrainChapterBuilder& operator=(const CCEBFIPShrinkageStrainChapterBuilder&);
+   CCEBFIPShrinkageStrainChapterBuilder(const CCEBFIPShrinkageStrainChapterBuilder&) = delete;
+   CCEBFIPShrinkageStrainChapterBuilder& operator=(const CCEBFIPShrinkageStrainChapterBuilder&) = delete;
 };

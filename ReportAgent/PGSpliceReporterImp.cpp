@@ -75,38 +75,38 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    GET_IFACE(IReportManager,pRptMgr);
 
    // Update details report to contain a couple of extra chapters
-   boost::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
-   VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder),TEXT("Section Properties")));
-   VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
+   std::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder),TEXT("Section Properties")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
 
 
 #if defined _DEBUG || defined _BETA_VERSION
-   boost::shared_ptr<CReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(new CEquilibriumCheckReportSpecificationBuilder(m_pBroker));
-   CReportBuilder* pMyRptBuilder = new CReportBuilder(_T("(DEBUG) Equilibrium Check"));
+   std::shared_ptr<CReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(std::make_shared<CEquilibriumCheckReportSpecificationBuilder>(m_pBroker));
+   std::unique_ptr<CReportBuilder> pMyRptBuilder(std::make_unique<CReportBuilder>(_T("(DEBUG) Equilibrium Check")));
    pMyRptBuilder->IncludeTimingChapter();
-   pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   pMyRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
    pMyRptBuilder->SetReportSpecificationBuilder( pEquilibriumCheckSpecBuilder );
-   pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEquilibriumCheckChapterBuilder) );
-   pRptMgr->AddReportBuilder( pMyRptBuilder );
+   pMyRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CEquilibriumCheckChapterBuilder) );
+   pRptMgr->AddReportBuilder( pMyRptBuilder.release() );
 #endif
 
-   //boost::shared_ptr<CReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
+   //std::shared_ptr<CReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
    //pMyRptBuilder = new CReportBuilder(_T("Initial Strain Analysis"));
-   //pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   //pMyRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
    //pMyRptBuilder->SetReportSpecificationBuilder( pInitialStrainAnalysisSpecBuilder );
-   //pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
+   //pMyRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
    //pRptMgr->AddReportBuilder( pMyRptBuilder );
 
-   boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(new CGirderLineReportSpecificationBuilder(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
 
-   CReportBuilder* pTSRptBuilder = new CReportBuilder(_T("Temporary Support Reactions Report"));
+   std::unique_ptr<CReportBuilder> pTSRptBuilder(std::make_unique<CReportBuilder>(_T("Temporary Support Reactions Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pTSRptBuilder->IncludeTimingChapter();
 #endif
-   pTSRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pTSRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pTSRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
-   pTSRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTemporarySupportReactionChapterBuilder(true)) );
-   pRptMgr->AddReportBuilder( pTSRptBuilder );
+   pTSRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTemporarySupportReactionChapterBuilder(true)) );
+   pRptMgr->AddReportBuilder( pTSRptBuilder.release() );
 
    return S_OK;
 }

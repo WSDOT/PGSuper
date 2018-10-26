@@ -177,7 +177,7 @@ protected:
    void MakeCopy(const pgsSegmentArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsSegmentArtifact& rOther);
+   void MakeAssignment(const pgsSegmentArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

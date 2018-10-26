@@ -215,7 +215,7 @@ protected:
    void MakeCopy(const LiveLoadLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const LiveLoadLibraryEntry& rOther);
+   void MakeAssignment(const LiveLoadLibraryEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 

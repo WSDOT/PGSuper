@@ -59,7 +59,7 @@ CGirderDescLiftingPage::~CGirderDescLiftingPage()
 
 void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 {
-   CPrecastSegmentData* pSegment = NULL;
+   CPrecastSegmentData* pSegment = nullptr;
    CWnd* pWnd = GetParent();
    CSegmentKey segmentKey;
    if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderDescDlg)) )
@@ -151,7 +151,7 @@ BOOL CGirderDescLiftingPage::OnInitDialog()
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    pLibNames->EnumHaulTruckNames( &names );
-   BOOST_FOREACH(std::_tstring& name,names)
+   for (const auto& name : names)
    {
       pcbHaulTrucks->AddString( name.c_str() );
    }

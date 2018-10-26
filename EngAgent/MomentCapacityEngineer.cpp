@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
 // Copyright © 1999-2017  Washington State Department of Transportation
@@ -23,6 +24,8 @@
 #include "StdAfx.h"
 #include "MomentCapacityEngineer.h"
 #include "..\PGSuperException.h"
+
+#include <EAF\EAFAutoProgress.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
@@ -111,25 +114,13 @@ pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGrou
    }
 }
 
-pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(const pgsMomentCapacityEngineer& rOther)
-{
-   MakeCopy(rOther);
-}
-
 pgsMomentCapacityEngineer::~pgsMomentCapacityEngineer()
 {
+   InvalidateMomentCapacity();
+   InvalidateCrackedSectionDetails();
+   InvalidateMinMomentCapacity();
+   InvalidateCrackingMoments();
    CLOSE_LOGFILE;
-}
-
-//======================== OPERATORS  =======================================
-pgsMomentCapacityEngineer& pgsMomentCapacityEngineer::operator= (const pgsMomentCapacityEngineer& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 //======================== OPERATIONS =======================================
@@ -146,63 +137,302 @@ void pgsMomentCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID
    m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
 }
 
-void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
+Float64 pgsMomentCapacityEngineer::GetMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig) const
 {
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-
-   GET_IFACE(IPointOfInterest,pPoi);
-   bool bIsOnSegment = pPoi->IsOnSegment(poi);
-   bool bIsOnGirder  = pPoi->IsOnGirder(poi);
-
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
-
-   Float64 Eps = pStrand->GetE();
-   Float64 fpe_ps = 0.0; // effective prestress after all losses
-   Float64 eps_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
-   if ( bPositiveMoment || 0 < nDucts )
-   {
-      // only for positive moment... strands are ignored for negative moment analysis unless there are tendons
-      if ( bIsOnSegment )
-      {
-         GET_IFACE(IPretensionForce, pPrestressForce);
-         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
-         eps_initial = fpe_ps/Eps;
-      }
-   }
-
-   std::vector<Float64> fpe_pt;
-   std::vector<Float64> ept_initial;
-   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
-   Float64 Ept = pTendon->GetE();
-   GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if 0 < nDucts
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-   {
-      Float64 fpe = 0;
-      Float64 e = 0;
-      if ( bIsOnGirder )
-      {
-         fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
-         e = fpe/Ept;
-      }
-      fpe_pt.push_back(fpe);
-      ept_initial.push_back(e);
-   }
-
-   pgsBondTool bondTool(m_pBroker,poi);
-
-   ComputeMomentCapacity(intervalIdx,poi,NULL,fpe_ps,eps_initial,fpe_pt,ept_initial,bondTool,bPositiveMoment,pmcd);
+   const MOMENTCAPACITYDETAILS* pmcd = GetMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, pConfig);
+   return pmcd->Mr;
 }
 
-void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
+std::vector<Float64> pgsMomentCapacityEngineer::GetMomentCapacity(IntervalIndexType intervalIdx, const std::vector<pgsPointOfInterest>& vPoi, bool bPositiveMoment, const GDRCONFIG* pConfig) const
+{
+   std::vector<Float64> Mr;
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi = *iter;
+      Mr.push_back(GetMomentCapacity(intervalIdx, poi, bPositiveMoment,pConfig));
+   }
+
+   return Mr;
+}
+
+const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment,const GDRCONFIG* pConfig) const
+{
+   const MOMENTCAPACITYDETAILS* pMCD = nullptr;
+   if ( pConfig == nullptr )
+   {
+#if defined _DEBUG
+      // Mu is only considered once live load is applied to the structure
+      GET_IFACE(IIntervals, pIntervals);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+      ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
+#endif
+
+      if (poi.GetID() == INVALID_ID)
+      {
+         // compute but don't cache since poiID is the key
+         m_InvalidPoiMomentCapacity = ComputeMomentCapacity(intervalIdx, poi, bPositiveMoment);
+         pMCD = &m_InvalidPoiMomentCapacity;
+      }
+      else
+      {
+         pMCD = GetCachedMomentCapacity(intervalIdx, poi, bPositiveMoment);
+         if (pMCD == nullptr)
+         {
+            pMCD = ValidateMomentCapacity(intervalIdx, poi, bPositiveMoment);
+         }
+      }
+   }
+   else
+   {
+      // Get the current configuration and compare it to the provided one
+      // If same, call GetMomentCapacityDetails w/o config.
+      GET_IFACE(IBridge, pBridge);
+      GDRCONFIG curr_config = pBridge->GetSegmentConfiguration(poi.GetSegmentKey());
+
+      if (poi.GetID() != INVALID_ID && curr_config.IsFlexuralDataEqual(*pConfig))
+      {
+         pMCD = GetMomentCapacityDetails(intervalIdx, poi, bPositiveMoment);
+      }
+      else
+      {
+         // the capacity details for the requested girder configuration is not the same as for the
+         // current input... see if it is cached
+         pMCD = GetCachedMomentCapacity(intervalIdx, poi, bPositiveMoment, pConfig);
+         if (pMCD == nullptr)
+         {
+            // the capacity has not yet been computed for this config, moment type, stage, and poi
+            pMCD = ValidateMomentCapacity(intervalIdx, poi, bPositiveMoment, pConfig); // compute it
+         }
+      }
+   }
+
+   ATLASSERT(pMCD != nullptr);
+
+   return pMCD;
+}
+
+std::vector<const MOMENTCAPACITYDETAILS*> pgsMomentCapacityEngineer::GetMomentCapacityDetails(IntervalIndexType intervalIdx, const std::vector<pgsPointOfInterest>& vPoi, bool bPositiveMoment, const GDRCONFIG* pConfig) const
+{
+   std::vector<const MOMENTCAPACITYDETAILS*> details;
+   for ( const pgsPointOfInterest& poi : vPoi)
+   {
+      const MOMENTCAPACITYDETAILS* pmcd = GetMomentCapacityDetails(intervalIdx, poi, bPositiveMoment,pConfig);
+      details.push_back(pmcd);
+   }
+
+   return details;
+}
+
+std::vector<Float64> pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalIdx, const std::vector<pgsPointOfInterest>& vPoi, bool bPositiveMoment) const
+{
+   std::vector<Float64> Mcr;
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi = *iter;
+      Mcr.push_back(GetCrackingMoment(intervalIdx, poi, bPositiveMoment));
+   }
+
+   return Mcr;
+}
+
+Float64 pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   CRACKINGMOMENTDETAILS cmd;
+   GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment, &cmd);
+
+   Float64 Mcr = cmd.Mcr;
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   // in LRFD 2nd Edition 2003 Mcr = Sc(fr + fcpe) - Mdnc(Sc/Snc - 1) <= Scfr
+   // however there is a typographical error... Mcr should be
+   // Mcr = Sc(fr + fcpe) - Mdnc(Sc/Snc - 1) >= Scfr
+   // This correction was made in LRFD 3rd Edition 2005.
+   // 
+   // We are going to use the correct equation from 2nd Edition 2003 forward.
+   // The limiting value was removed in LRFD 6th Edition, 2012
+   bool bAfter2002 = (lrfdVersionMgr::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationType() ? true : false);
+   bool bBefore2012 = (pSpecEntry->GetSpecificationType() <  lrfdVersionMgr::SixthEdition2012 ? true : false);
+   if (bAfter2002 && bBefore2012)
+   {
+      Mcr = (bPositiveMoment ? Max(cmd.Mcr, cmd.McrLimit) : Min(cmd.Mcr, cmd.McrLimit));
+   }
+   else
+   {
+      Mcr = cmd.Mcr;
+   }
+
+   return Mcr;
+}
+
+void pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKINGMOMENTDETAILS* pcmd) const
+{
+#if defined _DEBUG
+   // Mu is only considered once live load is applied to the structure
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
+#endif
+
+   if (poi.GetID() == INVALID_ID)
+   {
+      ComputeCrackingMoment(intervalIdx, poi, bPositiveMoment, pcmd);
+   }
+   else
+   {
+      *pcmd = *ValidateCrackingMoments(intervalIdx, poi, bPositiveMoment);
+   }
+}
+
+void pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG& config, bool bPositiveMoment, CRACKINGMOMENTDETAILS* pcmd) const
+{
+   // Get the current configuration and compare it to the provided one
+   // If same, call GetMomentCapacityDetails w/o config.
+   GET_IFACE(IBridge, pBridge);
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+   ATLASSERT(config.SegmentKey.IsEqual(segmentKey));
+
+   GDRCONFIG curr_config = pBridge->GetSegmentConfiguration(segmentKey);
+   if (poi.GetID() != INVALID_ID && curr_config.IsFlexuralDataEqual(config))
+   {
+      GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment, pcmd);
+   }
+   else
+   {
+      ComputeCrackingMoment(intervalIdx, poi, config, bPositiveMoment, pcmd);
+   }
+}
+
+std::vector<Float64> pgsMomentCapacityEngineer::GetMinMomentCapacity(IntervalIndexType intervalIdx, const std::vector<pgsPointOfInterest>& vPoi, bool bPositiveMoment) const
+{
+   std::vector<Float64> Mmin;
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi = *iter;
+      Mmin.push_back(GetMinMomentCapacity(intervalIdx, poi, bPositiveMoment));
+   }
+
+   return Mmin;
+}
+
+Float64 pgsMomentCapacityEngineer::GetMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   MINMOMENTCAPDETAILS mmcd;
+   GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, &mmcd);
+   return mmcd.MrMin;
+}
+
+void pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, MINMOMENTCAPDETAILS* pmmcd) const
+{
+
+#if defined _DEBUG
+   // Mu is only considered once live load is applied to the structure
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
+#endif
+
+   *pmmcd = ValidateMinMomentCapacity(intervalIdx, poi, bPositiveMoment);
+}
+
+void pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG& config, bool bPositiveMoment, MINMOMENTCAPDETAILS* pmmcd) const
+{
+   // Get the current configuration and compare it to the provided one
+   // If same, call GetMomentCapacityDetails w/o config.
+   GET_IFACE(IBridge, pBridge);
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   GDRCONFIG curr_config = pBridge->GetSegmentConfiguration(segmentKey);
+   if (poi.GetID() != INVALID_ID && curr_config.IsFlexuralDataEqual(config))
+   {
+      GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, pmmcd);
+   }
+   else
+   {
+      ComputeMinMomentCapacity(intervalIdx, poi, config, bPositiveMoment, pmmcd);
+   }
+}
+
+std::vector<MINMOMENTCAPDETAILS> pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const std::vector<pgsPointOfInterest>& vPoi, bool bPositiveMoment) const
+{
+   std::vector<MINMOMENTCAPDETAILS> details;
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi = *iter;
+      MINMOMENTCAPDETAILS mcd;
+      GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, &mcd);
+      details.push_back(mcd);
+   }
+
+   return details;
+}
+
+std::vector<CRACKINGMOMENTDETAILS> pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const std::vector<pgsPointOfInterest>& vPoi, bool bPositiveMoment) const
+{
+   std::vector<CRACKINGMOMENTDETAILS> details;
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi = *iter;
+      CRACKINGMOMENTDETAILS cmd;
+      GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment, &cmd);
+      details.push_back(cmd);
+   }
+
+   return details;
+}
+
+void pgsMomentCapacityEngineer::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKEDSECTIONDETAILS* pCSD) const
+{
+   *pCSD = *ValidateCrackedSectionDetails(poi, bPositiveMoment);
+}
+
+Float64 pgsMomentCapacityEngineer::GetIcr(const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   CRACKEDSECTIONDETAILS csd;
+   GetCrackedSectionDetails(poi, bPositiveMoment, &csd);
+   return csd.Icr;
+}
+
+std::vector<CRACKEDSECTIONDETAILS> pgsMomentCapacityEngineer::GetCrackedSectionDetails(const std::vector<pgsPointOfInterest>& vPoi, bool bPositiveMoment) const
+{
+   std::vector<CRACKEDSECTIONDETAILS> details;
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi = *iter;
+      CRACKEDSECTIONDETAILS csd;
+      GetCrackedSectionDetails(poi, bPositiveMoment, &csd);
+      details.push_back(csd);
+   }
+
+   return details;
+}
+
+////////////////////////////////////////////////////////
+
+MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment, const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   bool bIsOnSegment = pPoi->IsOnSegment(poi);
+   bool bIsOnGirder = pPoi->IsOnGirder(poi);
 
    GET_IFACE(ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
@@ -213,26 +443,13 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    if ( bPositiveMoment || 0 < nDucts )
    {
       // only for positive moment... strands are ignored for negative moment analysis
-      GET_IFACE(IPretensionForce, pPrestressForce);
-      if ( pConfig )
+      if (bIsOnSegment)
       {
-         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,*pConfig);
+         GET_IFACE(IPretensionForce, pPrestressForce);
+         fpe_ps = pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, intervalIdx, pgsTypes::End, pConfig);
+         eps_initial = fpe_ps / Eps;
       }
-      else
-      {
-         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
-      }
-
-      if ( fpe_ps < 0 )
-      {
-         fpe_ps = 0;
-      }
-
-      eps_initial = fpe_ps/Eps;
    }
-
-   GET_IFACE(IPointOfInterest,pPoi);
-   bool bIsOnGirder = pPoi->IsOnGirder(poi);
 
    std::vector<Float64> fpe_pt;
    std::vector<Float64> ept_initial;
@@ -256,21 +473,16 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       ept_initial.push_back(e);
    }
 
-   if ( pConfig )
-   {
-      pgsBondTool bondTool(m_pBroker,poi,*pConfig);
-      ComputeMomentCapacity(intervalIdx,poi,pConfig,fpe_ps,eps_initial,fpe_pt,ept_initial,bondTool,bPositiveMoment,pmcd);
-   }
-   else
-   {
-      pgsBondTool bondTool(m_pBroker,poi);
-      ComputeMomentCapacity(intervalIdx,poi,NULL,fpe_ps,eps_initial,fpe_pt,ept_initial,bondTool,bPositiveMoment,pmcd);
-   }
+   return ComputeMomentCapacity(intervalIdx,poi,pConfig,fpe_ps,eps_initial,fpe_pt,ept_initial,bPositiveMoment);
 }
 
-void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial,const std::vector<Float64>& fpe_pt,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
+MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial,const std::vector<Float64>& fpe_pt,const std::vector<Float64>& ept_initial,bool bPositiveMoment) const
 {
+   MOMENTCAPACITYDETAILS mcd;
+
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   pgsBondTool bondTool(m_pBroker, poi, pConfig);
 
    GET_IFACE(ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
@@ -282,16 +494,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    if ( bPositiveMoment || 0 < nDucts )
    {
       // Strands only modeled for positive moment calculations or all calculations when ducts are present
-      if ( pConfig )
-      {
-         Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-         Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-      }
-      else
-      {
-         Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-         Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
-      }
+      Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight,pConfig);
+      Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped,pConfig);
    }
 
    DuctIndexType Npt = 0;
@@ -451,7 +655,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    WATCHX(MomCap,0,_T("Duration = ") << duration.GetTotalSeconds() << _T(" seconds"));
 #endif // _DEBUG
 
-   pmcd->CapacitySolution = solution;
+   mcd.CapacitySolution = solution;
 
    Float64 Fz,Mx,My;
    CComPtr<IPlane3d> strains;
@@ -467,20 +671,15 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
    Float64 Mn = -Mx;
 
-   pmcd->Mn  = Mn;
+   Mn = IsZero(Mn) ? 0.0 : Mn;
+
+   mcd.Mn  = Mn;
 
    if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
    {
       GET_IFACE_NOCHECK(ILongRebarGeometry, pLongRebarGeom);
 
-      if ( pConfig )
-      {
-         pmcd->PPR = (bPositiveMoment ? pLongRebarGeom->GetPPRBottomHalf(poi,*pConfig) : 0.0);
-      }
-      else
-      {
-         pmcd->PPR = (bPositiveMoment ? pLongRebarGeom->GetPPRBottomHalf(poi) : 0.0);
-      }
+      mcd.PPR = (bPositiveMoment ? pLongRebarGeom->GetPPRBottomHalf(poi, pConfig) : 0.0);
    }
    else
    {
@@ -491,11 +690,11 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       // See computation of Phi about 5 lines down
       if ( bIsSplicedGirder )
       {
-         pmcd->PPR = 1.0;
+         mcd.PPR = 1.0;
       }
       else
       {
-         pmcd->PPR = (bPositiveMoment ? 1.0 : 0.0);
+         mcd.PPR = (bPositiveMoment ? 1.0 : 0.0);
       }
    }
 
@@ -510,18 +709,18 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    CClosureKey closureKey;
    if ( pPoi->IsInClosureJoint(poi,&closureKey) )
    {
-      pmcd->Phi = pResistanceFactors->GetClosureJointFlexureResistanceFactor(concType);
+      mcd.Phi = pResistanceFactors->GetClosureJointFlexureResistanceFactor(concType);
    }
    else
    {
       pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiSP,&PhiC);
       if ( bIsSplicedGirder )
       {
-         pmcd->Phi = PhiSP;
+         mcd.Phi = PhiSP;
       }
       else
       {
-         pmcd->Phi = PhiRC + (PhiPS-PhiRC)*pmcd->PPR; // generalized form of 5.5.4.2.1-3
+         mcd.Phi = PhiRC + (PhiPS-PhiRC)*mcd.PPR; // generalized form of 5.5.4.2.1-3
                                                       // Removed in AASHTO LRFD 6th Edition 2012, however
                                                       // PPR has been computed above to take this into account
       }
@@ -532,8 +731,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    solution->get_TensionResultant(&T);
    ATLASSERT(IsZero(C+T,0.5)); // equilibrium within 0.5 Newtons
    
-   pmcd->C = C;
-   pmcd->T = T;
+   mcd.C = C;
+   mcd.T = T;
 
    CComPtr<IPoint2d> cgC, cgT;
    solution->get_CompressionResultantLocation(&cgC);
@@ -548,11 +747,11 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    if ( IsZero(Mn) )
    {
       // dimensions have no meaning if no moment capacity
-      pmcd->c          = 0.0;
-      pmcd->dc         = 0.0;
-      pmcd->MomentArm  = 0.0;
-      pmcd->de         = 0.0;
-      pmcd->de_shear   = 0.0;
+      mcd.c          = 0.0;
+      mcd.dc         = 0.0;
+      mcd.MomentArm  = 0.0;
+      mcd.de         = 0.0;
+      mcd.de_shear   = 0.0;
       
       fps_avg          = 0.0;
       fpt_avg          = 0.0;
@@ -561,7 +760,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    {
       GET_IFACE(IBridge, pBridge);
 
-      pmcd->MomentArm = fabs(Mn/T);
+      mcd.MomentArm = fabs(Mn/T);
 
       Float64 tSlab = pBridge->GetStructuralSlabDepth(poi);
 
@@ -572,8 +771,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       cgC->get_X(&x2);
       cgC->get_Y(&y2);
 
-      pmcd->dc = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-      pmcd->de = pmcd->dc + pmcd->MomentArm;
+      mcd.dc = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+      mcd.de = mcd.dc + mcd.MomentArm;
 
       CComPtr<IPlane3d> strainPlane;
       solution->get_StrainPlane(&strainPlane);
@@ -582,7 +781,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       z = 0;
       strainPlane->GetY(x,z,&y);
 
-      pmcd->c = sqrt((x1-x)*(x1-x) + (y1-y)*(y1-y));
+      mcd.c = sqrt((x1-x)*(x1-x) + (y1-y)*(y1-y));
 
       Float64 dx,dy;
       szOffset->get_Dx(&dx);
@@ -617,7 +816,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
                CComPtr<IEnumPoint2d> enum_points;
                points->get__Enum(&enum_points);
                CComPtr<IPoint2d> point;
-               while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+               while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
                {
                   Float64 bond_factor = bond_factors[i][strandPos++];
 
@@ -710,8 +909,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
                                                 // subtracting (Haunch+tSlab) makes d measured from the top of composite girder section
          if ( 0 < F &&  // tension
              ( 
-               ( bPositiveMoment && d < -H/2) || // on bottom half
-               (!bPositiveMoment && -H/2 < d)    // on top half
+               ( bPositiveMoment && ::IsLT(d,-H/2)) || // on bottom half
+               (!bPositiveMoment && ::IsLT(-H/2,d))    // on top half
               )
             ) 
          {
@@ -720,38 +919,38 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
          }
       }
 
-      pmcd->de_shear = (IsZero(t) ? 0 : -tde/t);
+      mcd.de_shear = (IsZero(t) ? 0 : -tde/t);
 
       if ( !bPositiveMoment )
       {
          // de_shear is measured from the top of the girder
          // for negative moment, we want it to be measured from the bottom
-         pmcd->de_shear = H - pmcd->de_shear;
+         mcd.de_shear = H - mcd.de_shear;
       }
    }
 
 
    WATCHX(MomCap,0, _T("X = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft") << _T("   Mn = ") << ::ConvertFromSysUnits(Mn,unitMeasure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/Mn << _T(" fps_avg = ") << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << _T(" KSI"));
 
-   pmcd->fps_avg = fps_avg;
-   pmcd->fpt_avg = fpt_avg;
-   pmcd->dt  = dt;
-   pmcd->bOverReinforced = false;
+   mcd.fps_avg = fps_avg;
+   mcd.fpt_avg = fpt_avg;
+   mcd.dt  = dt;
+   mcd.bOverReinforced = false;
 
    GET_IFACE(ISpecification, pSpec);
-   pmcd->Method = pSpec->GetMomentCapacityMethod();
+   mcd.Method = pSpec->GetMomentCapacityMethod();
 
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   if ( pmcd->Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims)
+   if ( mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims)
    {
-      pmcd->bOverReinforced = (pmcd->c / pmcd->de > 0.42) ? true : false;
-      if ( pmcd->bOverReinforced )
+      mcd.bOverReinforced = (mcd.c / mcd.de > 0.42) ? true : false;
+      if ( mcd.bOverReinforced )
       {
          GET_IFACE(IMaterials,pMaterial);
-         Float64 de = pmcd->de;
-         Float64 c  = pmcd->c;
+         Float64 de = mcd.de;
+         Float64 c  = mcd.c;
 
          Float64 hf;
          Float64 b;
@@ -791,35 +990,35 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             Beta1 = lrfdConcreteUtil::Beta1(fc);
          }
 
-         pmcd->FcSlab = fc;
-         pmcd->b = b;
-         pmcd->bw = bw;
-         pmcd->hf = hf;
-         pmcd->Beta1Slab = Beta1;
+         mcd.FcSlab = fc;
+         mcd.b = b;
+         mcd.bw = bw;
+         mcd.hf = hf;
+         mcd.Beta1Slab = Beta1;
 
          if ( c <= hf )
          {
-            pmcd->bRectSection = true;
-            pmcd->MnMin = (0.36*Beta1 - 0.08*Beta1*Beta1)*fc*b*de*de;
+            mcd.bRectSection = true;
+            mcd.MnMin = (0.36*Beta1 - 0.08*Beta1*Beta1)*fc*b*de*de;
          }
          else
          {
             // T-section behavior
-            pmcd->bRectSection = false;
-            pmcd->MnMin = (0.36*Beta1 - 0.08*Beta1*Beta1)*fc*bw*de*de 
+            mcd.bRectSection = false;
+            mcd.MnMin = (0.36*Beta1 - 0.08*Beta1*Beta1)*fc*bw*de*de 
                         + 0.85*Beta1*fc*(b - bw)*hf*(de - 0.5*hf);
          }
 
          if ( !bPositiveMoment )
          {
-            pmcd->MnMin *= -1;
+            mcd.MnMin *= -1;
          }
       }
       else
       {
          // Dummy values
-         pmcd->bRectSection = true;
-         pmcd->MnMin = 0;
+         mcd.bRectSection = true;
+         mcd.MnMin = 0;
       }
    }
    else
@@ -845,100 +1044,99 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             pResistanceFactors->GetFlexuralStrainLimits(deckRebarGrade,&ecl,&etl);
          }
       }
-      pmcd->ecl = ecl;
-      pmcd->etl = etl;
+      mcd.ecl = ecl;
+      mcd.etl = etl;
 
-      pmcd->et = 0;
+      mcd.et = 0;
 
       // Compute Phi based on the net tensile strain....
       // This not applicable at closure joints
       CClosureKey closureKey;
       if ( !pPoi->IsInClosureJoint(poi,&closureKey) )
       {
-         if ( IsZero(pmcd->c) ) 
+         if ( IsZero(mcd.c) ) 
          {
             if ( bIsSplicedGirder )
             {
-               pmcd->Phi = PhiSP;
+               mcd.Phi = PhiSP;
             }
             else
             {
-               pmcd->Phi = (bPositiveMoment ? PhiPS : PhiRC); // there is no moment capacity, use PhiRC for phi instead of dividing by zero
+               mcd.Phi = (bPositiveMoment ? PhiPS : PhiRC); // there is no moment capacity, use PhiRC for phi instead of dividing by zero
             }
          }
          else
          {
-            pmcd->et = (pmcd->dt - pmcd->c)*0.003/(pmcd->c);
+            mcd.et = (mcd.dt - mcd.c)*0.003/(mcd.c);
             if ( bIsSplicedGirder )
             {
-               pmcd->Phi = PhiC + (PhiSP - PhiC)*(pmcd->et - ecl)/(etl-ecl);
+               mcd.Phi = PhiC + (PhiSP - PhiC)*(mcd.et - ecl)/(etl-ecl);
             }
             else
             {
                if ( bPositiveMoment && (0 < Ns+Nh+Npt) )
                {
                   // Prestressed case
-                  pmcd->Phi = PhiC + (PhiPS - PhiC)*(pmcd->et - ecl)/(etl-ecl);
+                  mcd.Phi = PhiC + (PhiPS - PhiC)*(mcd.et - ecl)/(etl-ecl);
                }
                else
                {
                   // Plain reinforced case
-                  pmcd->Phi = PhiC + (PhiRC - PhiC)*(pmcd->et - ecl)/(etl-ecl);
+                  mcd.Phi = PhiC + (PhiRC - PhiC)*(mcd.et - ecl)/(etl-ecl);
                }
             }
          }
 
          if ( bIsSplicedGirder )
          {
-            pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiSP);
+            mcd.Phi = ForceIntoRange(PhiC,mcd.Phi,PhiSP);
          }
          else
          {
-            pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiRC + (PhiPS-PhiRC)*pmcd->PPR);
+            mcd.Phi = ForceIntoRange(PhiC,mcd.Phi,PhiRC + (PhiPS-PhiRC)*mcd.PPR);
          }
       }
    }
 
-   pmcd->fpe_ps      = fpe_ps;
-   pmcd->eps_initial = eps_initial;
+   mcd.fpe_ps      = fpe_ps;
+   mcd.eps_initial = eps_initial;
 
-   pmcd->fpe_pt      = fpe_pt;
-   pmcd->ept_initial = ept_initial;
+   mcd.fpe_pt      = fpe_pt;
+   mcd.ept_initial = ept_initial;
+
+   mcd.Mr = mcd.Phi*mcd.Mn;
 
 #if defined _DEBUG
-   m_Log << _T("Dist from end ") << poi.GetDistFromStart() << endl;
-   m_Log << _T("-------------------------") << endl;
-   m_Log << endl;
+   pgsMomentCapacityEngineer* pThis = const_cast<pgsMomentCapacityEngineer*>(this);
+   pThis->m_Log << _T("Dist from end ") << poi.GetDistFromStart() << endl;
+   pThis->m_Log << _T("-------------------------") << endl;
+   pThis->m_Log << endl;
 #endif
+
+   return mcd;
 }
 
-void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd)
+void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) const
 {
-   GET_IFACE(IMomentCapacity,pMomentCapacity);
-
-   MOMENTCAPACITYDETAILS mcd;
-   pMomentCapacity->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
+   const MOMENTCAPACITYDETAILS* pmcd = GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
    CRACKINGMOMENTDETAILS cmd;
-   pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment,&cmd);
+   GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment,&cmd);
 
-   ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,mcd,cmd,pmmcd);
+   ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,pmcd,cmd,pmmcd);
 }
 
-void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd)
+void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) const
 {
-   GET_IFACE(IMomentCapacity,pMomentCapacity);
-
-   MOMENTCAPACITYDETAILS mcd;
-   pMomentCapacity->GetMomentCapacityDetails(intervalIdx,poi,config,bPositiveMoment,&mcd);
+   const MOMENTCAPACITYDETAILS* pmcd = GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&config);
 
    CRACKINGMOMENTDETAILS cmd;
-   pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,config,bPositiveMoment,&cmd);
+   GetCrackingMomentDetails(intervalIdx,poi,config,bPositiveMoment,&cmd);
 
-   ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,mcd,cmd,pmmcd);
+   ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,pmcd,cmd,pmmcd);
 }
 
-void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const CRACKINGMOMENTDETAILS& cmd,MINMOMENTCAPDETAILS* pmmcd)
+void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS& cmd,MINMOMENTCAPDETAILS* pmmcd) const
 {
    Float64 Mr;     // Nominal resistance (phi*Mn)
    Float64 MrMin;  // Minimum nominal resistance - Min(MrMin1,MrMin2)
@@ -961,7 +1159,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    GET_IFACE(IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(bPositiveMoment ? pgsTypes::Maximize : pgsTypes::Minimize);
 
-   Mr = mcd.Phi * mcd.Mn;
+   Mr = pmcd->Phi * pmcd->Mn;
 
    if ( bAfter2002 && bBefore2012 )
    {
@@ -971,6 +1169,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    {
       Mcr = cmd.Mcr;
    }
+   Mcr = IsZero(Mcr) ? 0 : Mcr;
 
 
    if ( bPositiveMoment )
@@ -1021,6 +1220,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
       Mu = Mu_StrengthI;
       ls = pgsTypes::StrengthI;
    }
+   Mu = IsZero(Mu) ? 0 : Mu;
 
    if ( lrfdVersionMgr::SixthEdition2012 <= pSpecEntry->GetSpecificationType() )
    {
@@ -1053,7 +1253,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    pmmcd->Mcr    = Mcr;
 }
 
-void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd)
+void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const
 {
    GET_IFACE(IPretensionForce,pPrestressForce);
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -1100,7 +1300,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    ComputeCrackingMoment(intervalIdx,poi,fcpe,bPositiveMoment,pcmd);
 }
 
-void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd)
+void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const
 {
    Float64 fcpe; // Stress at bottom of non-composite girder due to prestress
 
@@ -1119,11 +1319,11 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
       GET_IFACE(IStrandGeometry,pStrandGeom);
       GET_IFACE(IPretensionStresses,pPrestress);
 
-      Float64 P = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI,config);
+      Float64 P = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI,&config);
       Float64 ns_eff;
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-      Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, pgsTypes::Permanent, &ns_eff ); // eccentricity of non-composite section
+      Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &config, &ns_eff ); // eccentricity of non-composite section
 
       fcpe = -pPrestress->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,P,e);
    }
@@ -1136,7 +1336,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    ComputeCrackingMoment(intervalIdx,config,poi,fcpe,bPositiveMoment,pcmd);
 }
 
-void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3)
+void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const
 {
    if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
    {
@@ -1172,7 +1372,7 @@ void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Fl
    }
 }
 
-void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType intervalIdx,const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd)
+void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType intervalIdx,const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const
 {
    Float64 Mdnc; // Dead load moment on non-composite girder
    Float64 fr;   // Rupture stress
@@ -1180,8 +1380,8 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    Float64 Sbc;  // Bottom section modulus of composite girder
 
    // Get dead load moment on non-composite girder
-   Mdnc = GetNonCompositeDeadLoadMoment(intervalIdx,poi,config,bPositiveMoment);
-   fr = GetModulusOfRupture(intervalIdx,config,bPositiveMoment);
+   Mdnc = GetNonCompositeDeadLoadMoment(intervalIdx,poi,bPositiveMoment,&config);
+   fr = GetModulusOfRupture(intervalIdx,poi,bPositiveMoment,&config);
 
    GetSectionProperties(intervalIdx,poi,config,bPositiveMoment,&Sb,&Sbc);
 
@@ -1191,7 +1391,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    ComputeCrackingMoment(g1,g2,g3,fr,fcpe,Mdnc,Sb,Sbc,pcmd);
 }
 
-void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd)
+void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const
 {
    Float64 Mdnc; // Dead load moment on non-composite girder
    Float64 fr;   // Rupture stress
@@ -1210,22 +1410,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    ComputeCrackingMoment(g1,g2,g3,fr,fcpe,Mdnc,Sb,Sbc,pcmd);
 }
 
-Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment)
-{
-   GET_IFACE(IProductForces,pProductForces);
-   Float64 Mdnc = GetNonCompositeDeadLoadMoment(intervalIdx,poi,bPositiveMoment);
-
-   // add effect of different slab offset
-   Float64 deltaSlab = pProductForces->GetDesignSlabMomentAdjustment(config,poi);
-   Mdnc += deltaSlab;
-
-   Float64 deltaSlabPad = pProductForces->GetDesignSlabPadMomentAdjustment(config,poi);
-   Mdnc += deltaSlabPad;
-
-   return Mdnc;
-}
-
-Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment)
+Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IProductForces,pProductForces);
 
@@ -1268,10 +1453,22 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
       Mdnc += pProductForces->GetMoment(intervalIdx,pgsTypes::pftUserDW,poi, bat, rtCumulative);
    }
 
+   if (pConfig)
+   {
+      // add effect of different slab offset
+      Float64 deltaSlab = pProductForces->GetDesignSlabMomentAdjustment(poi,pConfig);
+      Mdnc += deltaSlab;
+
+      Float64 deltaSlabPad = pProductForces->GetDesignSlabPadMomentAdjustment(poi,pConfig);
+      Mdnc += deltaSlabPad;
+   }
+
+   Mdnc = IsZero(Mdnc) ? 0 : Mdnc;
+
    return Mdnc;
 }
 
-Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment)
+Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IMaterials,pMaterial);
 
@@ -1279,29 +1476,43 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
 
    Float64 fr;   // Rupture stress
    // Compute modulus of rupture
-   if ( bPositiveMoment )
+   if (bPositiveMoment)
    {
-      GET_IFACE(IPointOfInterest,pPoi);
-      CClosureKey closureKey;
-      if ( pPoi->IsOnSegment(poi) )
+      if (pConfig)
       {
-         fr = pMaterial->GetSegmentFlexureFr(segmentKey,intervalIdx);
-      }
-      else if ( pPoi->IsInClosureJoint(poi,&closureKey) )
-      {
-         fr = pMaterial->GetClosureJointFlexureFr(closureKey,intervalIdx);
+         fr = pMaterial->GetFlexureModRupture(pConfig->Fc, pConfig->ConcType);
       }
       else
       {
-         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+         GET_IFACE(IPointOfInterest, pPoi);
+         CClosureKey closureKey;
+         if (pPoi->IsOnSegment(poi))
+         {
+            fr = pMaterial->GetSegmentFlexureFr(segmentKey, intervalIdx);
+         }
+         else if (pPoi->IsInClosureJoint(poi, &closureKey))
+         {
+            fr = pMaterial->GetClosureJointFlexureFr(closureKey, intervalIdx);
+         }
+         else
+         {
+            fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+         }
       }
    }
    else
    {
       GET_IFACE(IBridge,pBridge);
-      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      if (pBridge->GetDeckType() == pgsTypes::sdtNone)
       {
-         fr = pMaterial->GetSegmentFlexureFr(segmentKey,intervalIdx);
+         if (pConfig)
+         {
+            fr = pMaterial->GetFlexureModRupture(pConfig->Fc, pConfig->ConcType);
+         }
+         else
+         {
+            fr = pMaterial->GetSegmentFlexureFr(segmentKey, intervalIdx);
+         }
       }
       else
       {
@@ -1312,33 +1523,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
    return fr;
 }
 
-Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType intervalIdx,const GDRCONFIG& config,bool bPositiveMoment)
-{
-   GET_IFACE(IMaterials,pMaterial);
-
-   Float64 fr;   // Rupture stress
-   // Compute modulus of rupture
-   if ( bPositiveMoment )
-   {
-      fr = pMaterial->GetFlexureModRupture(config.Fc,config.ConcType);
-   }
-   else
-   {
-      GET_IFACE(IBridge,pBridge);
-      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
-      {
-         fr = pMaterial->GetFlexureModRupture(config.Fc,config.ConcType);
-      }
-      else
-      {
-         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
-      }
-   }
-
-   return fr;
-}
-
-void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,Float64* pSb,Float64* pSbc)
+void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,Float64* pSb,Float64* pSbc) const
 {
    GET_IFACE(ISectionProperties,pSectProp);
 
@@ -1373,7 +1558,7 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    *pSbc = Sbc;
 }
 
-void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,Float64* pSb,Float64* pSbc)
+void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,Float64* pSb,Float64* pSbc) const
 {
    GET_IFACE(ISectionProperties,pSectProp);
 
@@ -1398,9 +1583,15 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    *pSbc = Sbc;
 }
 
-void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd)
+void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd) const
 {
-   Float64 Mcr = g3*((g1*fr + g2*fcpe)*Sbc - Mdnc*(Sbc/Sb - 1));
+   Float64 Mcr = (g1*fr + g2*fcpe)*Sbc + Mdnc; // NOTE this is the same as -Mdnc(Sbc/Sb - 1).   -Mdnc(-1) = +Mdnc
+   if (!IsZero(Sb))
+   {
+      Mcr -= Mdnc*(Sbc / Sb);
+   }
+
+   Mcr *= g3;
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -1423,7 +1614,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 g1,Float64 g2,Floa
    pcmd->g3   = g3;
 }
 
-void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD)
+void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1447,7 +1638,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   BuildCapacityProblem(liveLoadIntervalIdx,poi,NULL,e_initial_strands,e_initial_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
+   BuildCapacityProblem(liveLoadIntervalIdx,poi,nullptr,e_initial_strands,e_initial_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
 
    // determine neutral axis angle
    // compression is on the left side of the neutral axis
@@ -1496,18 +1687,6 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void pgsMomentCapacityEngineer::MakeCopy(const pgsMomentCapacityEngineer& rOther)
-{
-   // Add copy code here...
-   m_pBroker = rOther.m_pBroker;
-   m_CrackedSectionSolver = rOther.m_CrackedSectionSolver;
-   m_MomentCapacitySolver = rOther.m_MomentCapacitySolver;
-}
-
-void pgsMomentCapacityEngineer::MakeAssignment(const pgsMomentCapacityEngineer& rOther)
-{
-   MakeCopy( rOther );
-}
 
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
@@ -1517,7 +1696,7 @@ void pgsMomentCapacityEngineer::MakeAssignment(const pgsMomentCapacityEngineer& 
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS)
+void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
@@ -1535,7 +1714,7 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentK
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::CreateTendonMaterial(const CGirderKey& girderKey,IStressStrain** ppSS)
+void pgsMomentCapacityEngineer::CreateTendonMaterial(const CGirderKey& girderKey,IStressStrain** ppSS) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pTendon = pMaterial->GetTendonMaterial(girderKey);
@@ -1553,7 +1732,7 @@ void pgsMomentCapacityEngineer::CreateTendonMaterial(const CGirderKey& girderKey
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 eps_initial,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,Float64* pHaunch,std::map<StrandIndexType,Float64>* pBondFactors)
+void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 eps_initial,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,Float64* pHaunch,std::map<StrandIndexType,Float64>* pBondFactors) const
 {
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IMaterials,pMaterial);
@@ -1580,18 +1759,9 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
    Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
 
-   StrandIndexType Ns(0), Nh(0);
-   if ( pConfig )
-   {
-      Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-      Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-   }
-   else
-   {
-      GET_IFACE(IStrandGeometry, pStrandGeom);
-      Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-      Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
-   }
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight,pConfig);
+   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped,pConfig);
 
    //
    // Create Materials
@@ -1628,9 +1798,16 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          ATLASSERT(bIsInDiaphragm);
          // poi is not in the segment and isn't in a closure joint
          // this means the POI is in a cast-in-place diaphragm between girder groups
-         // assume cast in place diaphragms between groups is the same material as the deck
-         // because they are typically cast together
-         matGirder->put_fc( pMaterial->GetDeckDesignFc(intervalIdx) );
+         // LRFD 5.14.1.4.10 says if the diaphragm is confined by the girders, the girder strength can be used.
+         if (IsDiaphragmConfined(poi))
+         {
+            matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
+         }
+         else
+         {
+            // assume deck concrete is used for the diaphragm.
+            matGirder->put_fc(pMaterial->GetDeckDesignFc(intervalIdx));
+         }
       }
    }
    CComQIPtr<IStressStrain> ssGirder(matGirder);
@@ -1734,12 +1911,12 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
          if ( bVoid == VARIANT_FALSE )
          {
-            AddShape2Section(section,shape,ssGirder,NULL,0.00);
+            AddShape2Section(section,shape,ssGirder,nullptr,0.00);
          }
          else
          {
             // void shape... use only a background material (backgrounds are subtracted)
-            AddShape2Section(section,shape,NULL,ssGirder,0.00);
+            AddShape2Section(section,shape,nullptr,ssGirder,0.00);
          }
       } // next shape
    }
@@ -1747,7 +1924,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    {
       // beam shape isn't composite so just add it
       posBeam->Offset(-dx,-dy);
-      AddShape2Section(section,shapeBeam,ssGirder,NULL,0.00);
+      AddShape2Section(section,shapeBeam,ssGirder,nullptr,0.00);
    }
 
    // so far there is no deck in the model.... 
@@ -1833,7 +2010,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    #endif
 
                ATLASSERT( 0 < strandIdxs.size() );
-               BOOST_FOREACH(StrandIndexType strandIdx,strandIdxs)
+               for (const auto& strandIdx : strandIdxs)
                {
                   ATLASSERT( strandIdx < nStrands );
 
@@ -1953,7 +2130,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       rebar_section->get__EnumRebarSectionItem(&enumItems);
 
       CComPtr<IRebarSectionItem> item;
-      while ( enumItems->Next(1,&item,NULL) != S_FALSE )
+      while ( enumItems->Next(1,&item,nullptr) != S_FALSE )
       {
          CComPtr<IPoint2d> location;
          item->get_Location(&location);
@@ -2038,7 +2215,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
         GET_IFACE(ICamber,pCamber);
         if ( pConfig )
         {
-           excess_camber = pCamber->GetExcessCamber(poi,*pConfig,CREEP_MAXTIME);
+           excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME,pConfig);
         }
         else
         {
@@ -2083,7 +2260,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
               posHaunch->put_LocatorPoint(lpTopCenter,pntCommon);
 
               CComQIPtr<IShape> shapeHaunch(haunch);
-              AddShape2Section(section,shapeHaunch,ssSlab,NULL,0.00);
+              AddShape2Section(section,shapeHaunch,ssSlab,nullptr,0.00);
            }
          }
       }
@@ -2103,7 +2280,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
       CComQIPtr<IShape> shapeDeck(posDeck);
 
-      AddShape2Section(section,shapeDeck,ssSlab,NULL,0.00);
+      AddShape2Section(section,shapeDeck,ssSlab,nullptr,0.00);
 
 
       // deck rebar if this is for negative moment
@@ -2203,6 +2380,339 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    (*ppProblem)->AddRef();
 }
 
+//-----------------------------------------------------------------------------
+MINMOMENTCAPDETAILS pgsMomentCapacityEngineer::ValidateMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,  bool bPositiveMoment) const
+{
+   std::map<PoiIDType, MINMOMENTCAPDETAILS>* pMap;
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+   if (poi.GetID() != INVALID_ID)
+   {
+      pMap = (intervalIdx < compositeDeckIntervalIdx) ? &m_NonCompositeMinMomentCapacity[bPositiveMoment]
+         : &m_CompositeMinMomentCapacity[bPositiveMoment];
+
+      auto found = pMap->find(poi.GetID());
+      if (found != pMap->end())
+      {
+         return ((*found).second); // capacities have already been computed
+      }
+   }
+
+   MINMOMENTCAPDETAILS mmcd;
+   ComputeMinMomentCapacity(intervalIdx, poi, bPositiveMoment, &mmcd);
+
+   if (poi.GetID() == INVALID_ID)
+   {
+      return mmcd;
+   }
+   else
+   {
+      auto retval = pMap->insert(std::make_pair(poi.GetID(), mmcd));
+      return ((*(retval.first)).second);
+   }
+}
+
+//-----------------------------------------------------------------------------
+const CRACKINGMOMENTDETAILS* pgsMomentCapacityEngineer::ValidateCrackingMoments(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+   auto pMap = (intervalIdx < compositeDeckIntervalIdx) ? const_cast<CrackingMomentContainer*>(&m_NonCompositeCrackingMoment[bPositiveMoment]) : const_cast<CrackingMomentContainer*>(&m_CompositeCrackingMoment[bPositiveMoment]);
+   const CRACKINGMOMENTDETAILS* pMcrDetails = nullptr;
+
+   if (poi.GetID() != INVALID_ID)
+   {
+      auto found = pMap->find(poi.GetID());
+      if (found != pMap->end())
+      {
+         pMcrDetails = &((*found).second); // capacities have already been computed
+      }
+   }
+
+   if (pMcrDetails == nullptr)
+   {
+      CRACKINGMOMENTDETAILS cmd;
+      ComputeCrackingMoment(intervalIdx, poi, bPositiveMoment, &cmd);
+
+      ATLASSERT(poi.GetID() != INVALID_ID); // don't want to store for a non-specified location
+
+      auto retval = pMap->insert(std::make_pair(poi.GetID(), cmd));
+      pMcrDetails = &((*(retval.first)).second);
+   }
+
+   return pMcrDetails;
+}
+
+//-----------------------------------------------------------------------------
+const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::ValidateMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig) const
+{
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   MOMENTCAPACITYDETAILS mcd = ComputeMomentCapacity(intervalIdx, poi, bPositiveMoment, pConfig);
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+   if ( pConfig )
+      return StoreMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, mcd, intervalIdx < compositeDeckIntervalIdx ? m_TempNonCompositeMomentCapacity[bPositiveMoment] : m_TempCompositeMomentCapacity[bPositiveMoment]);
+   else
+      return StoreMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, mcd, intervalIdx < compositeDeckIntervalIdx ? m_NonCompositeMomentCapacity[bPositiveMoment] : m_CompositeMomentCapacity[bPositiveMoment]);
+}
+
+//-----------------------------------------------------------------------------
+pgsPointOfInterest pgsMomentCapacityEngineer::GetEquivalentPointOfInterest(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
+{
+   const CGirderKey& girderKey = poi.GetSegmentKey();
+
+   GET_IFACE(IPointOfInterest, pPOI);
+   Float64 Xg = pPOI->ConvertPoiToGirderCoordinate(poi);
+
+   pgsPointOfInterest search_poi(poi);
+
+   GET_IFACE(IGirder, pGirder);
+
+   // check for symmetry
+   if (pGirder->IsSymmetric(intervalIdx, girderKey))
+   {
+      GET_IFACE(IBridge, pBridge);
+      Float64 girder_length = pBridge->GetGirderLength(girderKey);
+
+      if (girder_length / 2 < Xg)
+      {
+         // we are past mid-point of a symmetric girder
+         // get the poi that is a mirror about the centerline of the girder
+
+         Xg = girder_length - Xg;
+         search_poi = pPOI->ConvertGirderCoordinateToPoi(girderKey, Xg);
+
+         if (search_poi.GetID() == INVALID_ID) // a symmetric POI was not actually found
+         {
+            search_poi = poi;
+         }
+      }
+   }
+
+   return search_poi;
+}
+
+//-----------------------------------------------------------------------------
+const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetCachedMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment,const GDRCONFIG* pConfig) const
+{
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   // if the stored config is not equal to the requesting config, flush all the cached results
+   if (pConfig && !pConfig->IsFlexuralDataEqual(m_TempGirderConfig))
+   {
+      m_TempNonCompositeMomentCapacity[0].clear();
+      m_TempNonCompositeMomentCapacity[1].clear();
+
+      m_TempCompositeMomentCapacity[0].clear();
+      m_TempCompositeMomentCapacity[1].clear();
+
+      m_TempGirderConfig = *pConfig;
+
+      return nullptr;
+   }
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+   if ( pConfig )
+      return GetStoredMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, intervalIdx < compositeDeckIntervalIdx ? m_TempNonCompositeMomentCapacity[bPositiveMoment] : m_TempCompositeMomentCapacity[bPositiveMoment]);
+   else
+      return GetStoredMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, intervalIdx < compositeDeckIntervalIdx ? m_NonCompositeMomentCapacity[bPositiveMoment]     : m_CompositeMomentCapacity[bPositiveMoment]);
+}
+
+//-----------------------------------------------------------------------------
+const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetStoredMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const MomentCapacityDetailsContainer& container) const
+{
+   // if the beam has some symmetry, we can use the results for another poi...
+   // get the equivalent, mirrored POI
+
+   // don't do this for negative moment... the symmetry check just isn't working right
+
+
+   pgsPointOfInterest search_poi((bPositiveMoment ? GetEquivalentPointOfInterest(intervalIdx, poi) : poi));
+
+   // if this is a real POI, then see if we've already computed results
+   if (search_poi.GetID() != INVALID_ID)
+   {
+      auto found = container.find(search_poi.GetID());
+      if (found != container.end())
+      {
+         return &((*found).second); // capacities have already been computed
+      }
+   }
+
+   return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::StoreMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const MOMENTCAPACITYDETAILS& mcd, MomentCapacityDetailsContainer& container) const
+{
+   // if the beam has some symmetry, we can use the results for another poi...
+   // get the equivalent, mirrored POI
+
+   pgsPointOfInterest search_poi((bPositiveMoment ? GetEquivalentPointOfInterest(intervalIdx, poi) : poi));
+
+   auto retval = container.insert(std::make_pair(search_poi.GetID(), mcd));
+
+   // insert failed
+   if (!retval.second)
+   {
+      // this shouldn't be happening unless we are out of memory or something really bad like that
+      // if there is already something stored with 'key' the insert will fail and that is
+      // bad because it indicates a bug elsewhere
+      ATLASSERT(false);
+      return nullptr;
+   }
+
+
+   return &((*(retval.first)).second);
+}
+
+//-----------------------------------------------------------------------------
+void pgsMomentCapacityEngineer::InvalidateMomentCapacity()
+{
+   for (int i = 0; i < 2; i++)
+   {
+      m_NonCompositeMomentCapacity[i].clear();
+      m_CompositeMomentCapacity[i].clear();
+      m_NonCompositeCrackingMoment[i].clear();
+      m_CompositeCrackingMoment[i].clear();
+      m_NonCompositeMinMomentCapacity[i].clear();
+      m_CompositeMinMomentCapacity[i].clear();
+   }
+}
+
+void pgsMomentCapacityEngineer::InvalidateCrackingMoments()
+{
+   for (int i = 0; i < 2; i++)
+   {
+      m_NonCompositeCrackingMoment[i].clear();
+      m_CompositeCrackingMoment[i].clear();
+   }
+}
+
+void pgsMomentCapacityEngineer::InvalidateMinMomentCapacity()
+{
+   for (int i = 0; i < 2; i++)
+   {
+      m_NonCompositeMinMomentCapacity[i].clear();
+      m_CompositeMinMomentCapacity[i].clear();
+   }
+}
+
+//-----------------------------------------------------------------------------
+void pgsMomentCapacityEngineer::InvalidateCrackedSectionDetails()
+{
+   for (int i = 0; i < 2; i++)
+   {
+      m_CrackedSectionDetails[i].clear();
+   }
+}
+
+const CRACKEDSECTIONDETAILS* pgsMomentCapacityEngineer::ValidateCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   int idx = (bPositiveMoment ? 0 : 1);
+   if (poi.GetID() != INVALID_ID)
+   {
+      auto found = m_CrackedSectionDetails[idx].find(poi.GetID());
+
+      if (found != m_CrackedSectionDetails[idx].end())
+      {
+         return &((*found).second); // cracked section has already been computed
+      }
+   }
+
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   std::_tostringstream os;
+   os << _T("Analyzing cracked section for ") << SEGMENT_LABEL(segmentKey)
+      << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(), pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
+
+   pProgress->UpdateMessage(os.str().c_str());
+
+   CRACKEDSECTIONDETAILS csd;
+   AnalyzeCrackedSection(poi, bPositiveMoment, &csd);
+
+   auto retval = m_CrackedSectionDetails[idx].insert(std::make_pair(poi.GetID(), csd));
+   return &((*(retval.first)).second);
+}
+
+bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& poi) const
+{
+   // LRFD 5.14.1.1.10 says we can use the girder concrete strength at the intermediate diaphragm if the
+   // diaphragm is confined by the girder ends and the diaphragm extends beyond the girders.
+   GET_IFACE(IPointOfInterest, pPoi);
+   PierIndexType pierIdx = pPoi->GetPier(poi);
+   ATLASSERT(pierIdx != INVALID_INDEX);
+
+   if (pierIdx == INVALID_INDEX)
+      return false;
+
+   GET_IFACE(IBridge, pBridge);
+   pgsTypes::BoundaryConditionType bc = pBridge->GetBoundaryConditionType(pierIdx);
+   if (!IsContinuousBoundaryCondition(bc))
+      return false; // boundary condition must be continuous
+
+   GroupIndexType backGroupIdx, aheadGroupIdx;
+   pBridge->GetGirderGroupIndex(pierIdx, &backGroupIdx, &aheadGroupIdx);
+
+
+   // First check that the diaphragm extends beyond the piers
+
+   // 1) Get the diaphragm width
+   Float64 Wb, Hb, Wa, Ha;
+   pBridge->GetPierDiaphragmSize(pierIdx, pgsTypes::Back, &Wb, &Hb);
+   pBridge->GetPierDiaphragmSize(pierIdx, pgsTypes::Ahead, &Wa, &Ha);
+   Float64 W = Wb + Wa;
+
+   // 2) Get the distance between girder ends
+   const CSegmentKey& backSegmentKey(poi.GetSegmentKey()); // segment framing into back side of pier
+   CSegmentKey aheadSegmentKey(aheadGroupIdx,backSegmentKey.girderIndex,0); // segment framing into ahead side of pier
+
+   GET_IFACE(IGirder, pGirder);
+   Float64 dummy, backEndDist, backBrgOffset, aheadEndDist, aheadBrgOffset;
+   pGirder->GetSegmentEndDistance(backSegmentKey, &dummy, &backEndDist);
+   pGirder->GetSegmentBearingOffset(backSegmentKey, &dummy, &backBrgOffset);
+   pGirder->GetSegmentEndDistance(aheadSegmentKey, &aheadEndDist, &dummy);
+   pGirder->GetSegmentBearingOffset(aheadSegmentKey, &aheadBrgOffset, &dummy);
+
+   // clear distance between ends of girders on back/ahead side of pier
+   Float64 end_to_end_of_girders = backBrgOffset - backEndDist + aheadBrgOffset - aheadEndDist;
+
+   // the width of the diaphragm must be wider than end_to_end_of_girders by some margin to
+   // say that the diaphragm extends beyond the piers. We'll use 5%
+
+   if (::IsLE(W, 1.05*end_to_end_of_girders))
+      return false; // diaphragm width is not 5% more than the end to end distance between girders
+
+   // OK... diaphragm confines girders
+
+   // Now, check that the girders confine the diaphragm concrete.
+   // We will consider the diaphragm concrete confined if the girder framing on
+   // both sides of the pier is exactly the same.
+
+   std::vector<Float64> vBackSpacing = pBridge->GetGirderSpacing(pierIdx, pgsTypes::Back, pgsTypes::AtPierLine, pgsTypes::AlongItem);
+   std::vector<Float64> vAheadSpacing = pBridge->GetGirderSpacing(pierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine, pgsTypes::AlongItem);
+
+   // if spacing is equal, the girders confine the diaphragm
+   return (vBackSpacing == vAheadSpacing);
+}
+
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
@@ -2231,7 +2741,7 @@ bool pgsMomentCapacityEngineer::TestMe(dbgLog& rlog)
 #endif // _UNITTEST
 
 #if defined _DEBUG_SECTION_DUMP
-void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGeneralSection* section, std::map<long,Float64> ssBondFactors,std::map<long,Float64> hsBondFactors,bool bPositiveMoment)
+void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGeneralSection* section, std::map<long,Float64> ssBondFactors,std::map<long,Float64> hsBondFactors,bool bPositiveMoment) const
 {
    std::_tostringstream os;
    std::_tstring strMn(bPositiveMoment ? "+M" : "-M"); 
@@ -2284,43 +2794,37 @@ void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGener
 }
 #endif // _DEBUG_SECTION_DUMP
 
-pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPointOfInterest& poi,const GDRCONFIG& config)
-{
-   m_pBroker    = pBroker;
-   m_Poi        = poi;
-   m_Config     = config;
-   m_bUseConfig = true;
-   Init();
-}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPointOfInterest& poi)
+pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig)
 {
    m_pBroker    = pBroker;
    m_Poi        = poi;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
+   GET_IFACE(IBridge, pBridge);
 
-   GET_IFACE(IBridge,pBridge);
-   m_CurrentConfig = pBridge->GetSegmentConfiguration(segmentKey);
-   m_bUseConfig = false;
-   Init();
-}
+   if (pConfig == nullptr)
+   {
+      m_CurrentConfig = pBridge->GetSegmentConfiguration(segmentKey);
+      m_pConfig = &m_CurrentConfig;
+   }
+   else
+   {
+      m_Config = *pConfig;
+      m_pConfig = &m_Config;
+   }
 
-void pgsMomentCapacityEngineer::pgsBondTool::Init()
-{
    m_pBroker->GetInterface(IID_IPretensionForce,(IUnknown**)&m_pPrestressForce);
 
-   const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
-
-   GET_IFACE(IBridge,pBridge);
    m_GirderLength = pBridge->GetSegmentLength(segmentKey);
 
    m_DistFromStart = m_Poi.GetDistFromStart();
 
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L) );
-   ASSERT( vPOI.size() == 1 );
-   m_PoiMidSpan = vPOI[0];
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L) );
+   ASSERT( vPoi.size() == 1 );
+   m_PoiMidSpan = vPoi.front();
 
    /////// -- NOTE -- //////
    // Development length, and hence the development length adjustment factor, require the result
@@ -2341,7 +2845,7 @@ void pgsMomentCapacityEngineer::pgsBondTool::Init()
    }
 }
 
-Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType strandIdx,pgsTypes::StrandType strandType)
+Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const
 {
    const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 
@@ -2356,36 +2860,22 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType st
    Float64 bond_factor = 1;
    if ( !m_bNearMidSpan )
    {
-      if ( m_bUseConfig )
-      {
-         GET_IFACE(IStrandGeometry,pStrandGeom);
-         Float64 bond_start, bond_end;
-         bool bDebonded = pStrandGeom->IsStrandDebonded(segmentKey,strandIdx,strandType,m_Config,&bond_start,&bond_end);
-         STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,m_Config,bDebonded);
-
-         bond_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,m_Config,strandIdx,strandType,dev_length.fps,dev_length.fpe);
-      }
-      else
-      {
-         GET_IFACE(IStrandGeometry,pStrandGeom);
-         Float64 bond_start, bond_end;
-         bool bDebonded = pStrandGeom->IsStrandDebonded(segmentKey,strandIdx,strandType,&bond_start,&bond_end);
-         STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,bDebonded);
-
-         bond_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,strandIdx,strandType,dev_length.fps,dev_length.fpe);
-      }
+      GET_IFACE(IStrandGeometry,pStrandGeom);
+      Float64 bond_start, bond_end;
+      const GDRCONFIG* pConfig = (m_pConfig == &m_CurrentConfig ? nullptr : m_pConfig);
+      bool bDebonded = pStrandGeom->IsStrandDebonded(segmentKey,strandIdx,strandType, pConfig,&bond_start,&bond_end);
+      STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,bDebonded,pConfig);
+      bond_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,strandIdx,strandType,dev_length.fps,dev_length.fpe,pConfig);
    }
 
    return bond_factor;
 }
 
-bool pgsMomentCapacityEngineer::pgsBondTool::IsDebonded(StrandIndexType strandIdx,pgsTypes::StrandType strandType)
+bool pgsMomentCapacityEngineer::pgsBondTool::IsDebonded(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const
 {
    bool bDebonded = false;
 
-   GDRCONFIG& config = (m_bUseConfig ? m_Config : m_CurrentConfig);
-
-   BOOST_FOREACH(const DEBONDCONFIG& debondConfig,config.PrestressConfig.Debond[strandType])
+   for (const auto& debondConfig : m_pConfig->PrestressConfig.Debond[strandType])
    {
       if ( debondConfig.strandIdx == strandIdx &&
           ((m_DistFromStart < debondConfig.DebondLength[pgsTypes::metStart]) || ((m_GirderLength - debondConfig.DebondLength[pgsTypes::metEnd]) < m_DistFromStart)) )
@@ -2398,3 +2888,4 @@ bool pgsMomentCapacityEngineer::pgsBondTool::IsDebonded(StrandIndexType strandId
 
    return bDebonded;
 }
+

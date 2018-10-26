@@ -92,7 +92,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,girderKey,CRatingSummaryTable::Design ) << rptNewLine;
    }
 
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
@@ -109,10 +109,15 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
             (*pPara) << pTable << rptNewLine;
          }
 
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Routine);
+         bool bMustCloseBridge;
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
+            if (bMustCloseBridge)
+            {
+               *pPara << color(Red) << Bold(_T("Minimum gross live load weight is less than three tons - bridge must be closed. (MBE 6A.8.1, 6A.8.3, C6A.8.3)")) << color(Black) << rptNewLine;
+            }
          }
       }
 
@@ -124,8 +129,28 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
             (*pPara) << pTable << rptNewLine;
          }
 
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Special);
+         bool bMustCloseBridge;
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Special, &bMustCloseBridge);
          if ( pTable )
+         {
+            (*pPara) << pTable << rptNewLine;
+            if (bMustCloseBridge)
+            {
+               *pPara << color(Red) << Bold(_T("Minimum gross live load weight is less than three tons - bridge must be closed. (MBE 6A.8.1, 6A.8.3, C6A.8.3)")) << color(Black) << rptNewLine;
+            }
+         }
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Emergency);
+         if (pTable)
+         {
+            (*pPara) << pTable << rptNewLine;
+         }
+
+         pTable = CRatingSummaryTable().BuildEmergencyVehicleLoadPosting(pBroker, girderKey);
+         if (pTable)
          {
             (*pPara) << pTable << rptNewLine;
          }

@@ -86,7 +86,7 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
       CComPtr<IPoint2d> point;
       point.CoCreateInstance(CLSID_Point2d);
       int rowIdx = 1;
-      BOOST_FOREACH(CLongitudinalRebarData::RebarRow& row,pSegment->LongitudinalRebarData.RebarRows)
+      for (const auto& row : pSegment->LongitudinalRebarData.RebarRows)
       {
          if (row.Cover < 0)
          {

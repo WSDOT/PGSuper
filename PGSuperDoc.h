@@ -54,15 +54,15 @@ protected: // create from serialization only
 public:
 	virtual ~CPGSuperDoc();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid() const override;
+	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
    void DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOffset,const CGirderKey& girderKey);
 
-   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage);
-   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);
-   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage);
+   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) override;
+   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) override;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) override;
 
    // flags for design dialog
    bool IsDesignFlexureEnabled() const;
@@ -74,7 +74,7 @@ public:
    bool IsDesignStirrupsFromScratchEnabled() const;
    void EnableDesignStirrupsFromScratch( bool bEnable );
 
-   virtual UINT GetStandardToolbarResourceID();
+   virtual UINT GetStandardToolbarResourceID() override;
 
    CPGSuperComponentInfoManager* GetComponentInfoManager() { return &m_ComponentInfoManager; }
 
@@ -101,17 +101,17 @@ protected:
 
    void DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim);
 
-   virtual CPGSuperPluginMgrBase* CreatePluginManager() { return new CPGSuperPluginMgr(); }
+   virtual CPGSuperPluginMgrBase* CreatePluginManager() override { return new CPGSuperPluginMgr(); }
 
-   virtual void LoadDocumentSettings();
-   virtual void SaveDocumentSettings();
+   virtual void LoadDocumentSettings() override;
+   virtual void SaveDocumentSettings() override;
 
-   virtual CATID GetAgentCategoryID() { return CATID_PGSuperAgent; }
-   virtual CATID GetExtensionAgentCategoryID() { return CATID_PGSuperExtensionAgent; }
-   virtual CATID GetBeamFamilyCategoryID() { return CATID_PGSuperBeamFamily; }
-   virtual CATID GetComponentInfoCategoryID() { return CATID_PGSuperComponentInfo; }
+   virtual CATID GetAgentCategoryID() override { return CATID_PGSuperAgent; }
+   virtual CATID GetExtensionAgentCategoryID() override { return CATID_PGSuperExtensionAgent; }
+   virtual CATID GetBeamFamilyCategoryID() override { return CATID_PGSuperBeamFamily; }
+   virtual CATID GetComponentInfoCategoryID() override { return CATID_PGSuperComponentInfo; }
 
-   virtual LPCTSTR GetTemplateExtension();
+   virtual LPCTSTR GetTemplateExtension() override;
 
 	DECLARE_MESSAGE_MAP()
 };

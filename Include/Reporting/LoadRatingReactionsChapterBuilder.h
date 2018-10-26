@@ -49,6 +49,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CLoadRatingReactionsChapterBuilder(const CLoadRatingReactionsChapterBuilder&);
-   CLoadRatingReactionsChapterBuilder& operator=(const CLoadRatingReactionsChapterBuilder&);
+   CLoadRatingReactionsChapterBuilder(const CLoadRatingReactionsChapterBuilder&) = delete;
+   CLoadRatingReactionsChapterBuilder& operator=(const CLoadRatingReactionsChapterBuilder&) = delete;
 };

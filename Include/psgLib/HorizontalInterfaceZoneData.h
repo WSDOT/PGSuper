@@ -107,7 +107,7 @@ protected:
    void MakeCopy(const CHorizontalInterfaceZoneData& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CHorizontalInterfaceZoneData& rOther);
+   void MakeAssignment(const CHorizontalInterfaceZoneData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

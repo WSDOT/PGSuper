@@ -38,7 +38,7 @@ class CSelectItemDlg : public CDialog
 {
 // Construction
 public:
-	CSelectItemDlg(CWnd* pParent = NULL);   // standard constructor
+	CSelectItemDlg(CWnd* pParent = nullptr);   // standard constructor
 
 private:
 // Dialog Data
@@ -58,7 +58,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSelectItemDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -66,7 +66,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CSelectItemDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -104,7 +104,7 @@ protected:
    void MakeCopy(const pgsHoldDownForceArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsHoldDownForceArtifact& rOther);
+   void MakeAssignment(const pgsHoldDownForceArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

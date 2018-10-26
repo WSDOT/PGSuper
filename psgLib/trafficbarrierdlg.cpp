@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CTrafficBarrierDlg, CDialog)
 
 CTrafficBarrierDlg::CTrafficBarrierDlg(bool allowEditing,
-                                       CWnd* pParent /*=NULL*/)
+                                       CWnd* pParent /*=nullptr*/)
 	: CDialog(CTrafficBarrierDlg::IDD, pParent),
    m_bAllowEditing(allowEditing)
 {

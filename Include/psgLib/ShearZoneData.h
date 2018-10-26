@@ -122,7 +122,7 @@ protected:
    void MakeCopy(const CShearZoneData2& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CShearZoneData2& rOther);
+   void MakeAssignment(const CShearZoneData2& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

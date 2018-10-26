@@ -21,7 +21,7 @@ SupportIndexType DecodeTSIndex(SupportIndexType tsIdx) { return MAX_INDEX-tsIdx;
 
 IMPLEMENT_DYNAMIC(CCastClosureJointDlg, CDialog)
 
-CCastClosureJointDlg::CCastClosureJointDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CCastClosureJointDlg::CCastClosureJointDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CCastClosureJointDlg::IDD, pParent)
 {
    m_TimelineMgr = timelineMgr;
@@ -193,7 +193,7 @@ void CCastClosureJointDlg::FillLists()
          }
          else
          {
-            pClosure = NULL;
+            pClosure = nullptr;
          }
       }
    }

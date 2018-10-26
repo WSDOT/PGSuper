@@ -144,7 +144,7 @@ void txnDesignGirder::Init()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   BOOST_FOREACH(DesignData& rdata,m_DesignDataColl)
+   for (auto& rdata : m_DesignDataColl)
    {
 #pragma Reminder("UPDATE: assuming precast girder bridge")
       SegmentIndexType segIdx = 0;
@@ -288,7 +288,7 @@ void txnDesignGirder::DoExecute(int i)
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 
    // Loop over all girder designs
-   BOOST_FOREACH(DesignData& rdata,m_DesignDataColl)
+   for (const auto& rdata : m_DesignDataColl)
    {
 #pragma Reminder("UPDATE: assuming precast girder bridge")
       SegmentIndexType segIdx = 0;

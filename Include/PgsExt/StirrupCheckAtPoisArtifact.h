@@ -182,7 +182,7 @@ protected:
    void MakeCopy(const pgsLongReinfShearArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsLongReinfShearArtifact& rOther);
+   void MakeAssignment(const pgsLongReinfShearArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -324,7 +324,7 @@ protected:
    void MakeCopy(const pgsVerticalShearArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsVerticalShearArtifact& rOther);
+   void MakeAssignment(const pgsVerticalShearArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -526,7 +526,7 @@ protected:
    void MakeCopy(const pgsHorizontalShearArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsHorizontalShearArtifact& rOther);
+   void MakeAssignment(const pgsHorizontalShearArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -681,7 +681,6 @@ public:
    // Returns <b>true</b> if the class is in a valid state, otherwise returns
    // <b>false</b>.
    virtual bool AssertValid() const;
-
    //------------------------------------------------------------------------
    // Dumps the contents of the class to the given stream.
    virtual void Dump(dbgDumpContext& os) const;
@@ -696,7 +695,7 @@ protected:
    void MakeCopy(const pgsStirrupDetailArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsStirrupDetailArtifact& rOther);
+   void MakeAssignment(const pgsStirrupDetailArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -795,7 +794,7 @@ public:
 
 protected:
    void MakeCopy(const pgsStirrupCheckAtPoisArtifact& rOther);
-   virtual void MakeAssignment(const pgsStirrupCheckAtPoisArtifact& rOther);
+   void MakeAssignment(const pgsStirrupCheckAtPoisArtifact& rOther);
 
 private:
    pgsPointOfInterest         m_Poi;

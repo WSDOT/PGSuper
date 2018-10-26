@@ -17,13 +17,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -78,12 +76,19 @@ END
 //
 
 IDR_PGSUPERAPPPLUGIN    REGISTRY                "PGSuperAppPlugin.rgs"
+
 IDR_PGSUPERAPPPLUGINIMPL REGISTRY                "res\\PGSuperAppPluginImpl.rgs"
+
 IDR_PGSPLICEAPPPLUGINIMPL REGISTRY                "res\\PGSpliceAppPluginImpl.rgs"
+
 IDR_PGSUPERCOMPONENTINFO REGISTRY                "res\\PGSuperComponentInfo.rgs"
+
 IDR_PGSPLICECOMPONENTINFO REGISTRY                "res\\PGSpliceComponentInfo.rgs"
+
 IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProjectImporterAppPlugin.rgs"
+
 IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSpliceProjectImporterAppPlugin.rgs"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -93,36 +98,67 @@ IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSpliceProje
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_PGSUPER             ICON                    "..\\res\\PGSuperDoc.ico"
+
 IDI_BSS                 ICON                    "res\\bss.ico"
+
 IDI_WSDOT               ICON                    "res\\Wsdot.ico"
+
 IDI_TXDOT               ICON                    "res\\txdot.ico"
+
 IDI_KDOT                ICON                    "res\\KDOT.ico"
+
 IDR_PGSPLICE            ICON                    "..\\res\\PGSpliceDoc.ico"
+
 IDR_PGSUPER_TEMPLATE_ICON ICON                    "..\\res\\PGSuperTemplate.ico"
+
 IDR_PGSPLICE_TEMPLATE_ICON ICON                    "..\\res\\PGSpliceTemplate.ico"
+
 IDR_BRIDGEMODELEDITOR   ICON                    "..\\res\\Bridge.ico"
+
 IDR_GIRDERMODELEDITOR   ICON                    "..\\res\\GirderView.ico"
+
 IDR_ANALYSISRESULTS     ICON                    "..\\res\\AnalysisResultsView.ico"
+
 IDR_GRAPHING            ICON                    "..\\res\\AnalysisResultsView.ico"
+
 IDR_REPORT              ICON                    "..\\res\\ReportView.ico"
+
 IDR_FACTOROFSAFETY      ICON                    "..\\res\\Stable.ico"
+
 IDR_EDITLOADS           ICON                    "..\\res\\edit_loa.ico"
+
 IDI_DEFAULT_ENTRY       ICON                    "..\\res\\DefaultEntry.ico"
+
 IDI_FOLDER              ICON                    "..\\res\\folder_closed.ico"
+
 IDI_OPEN_FOLDER         ICON                    "..\\res\\folder_open.ico"
+
 IDI_LIBRARY_MANAGER     ICON                    "..\\res\\library_manager.ico"
+
 IDI_WARNING2            ICON                    "..\\res\\warning2.ico"
+
 IDI_EDIT_LOADS          ICON                    "..\\res\\edit_loa.ico"
+
 IDI_POINT_LOAD          ICON                    "..\\res\\point_load.ico"
+
 IDI_DISTRIBUTED_LOAD    ICON                    "..\\res\\distributed_load.ico"
+
 IDI_MOMENT_LOAD         ICON                    "..\\res\\moment.ico"
+
 IDR_PGSUPERPROJECTIMPORTER ICON                    "..\\res\\Bridge2.ico"
+
 IDR_PGSPLICEPROJECTIMPORTER ICON                    "..\\res\\Bridge2.ico"
+
 IDI_EDIT_BRIDGE         ICON                    "..\\res\\EditBridge.ico"
+
 IDI_EDIT_GIRDER         ICON                    "..\\res\\EditGirder.ico"
+
 IDI_LIVELOAD            ICON                    "..\\res\\LiveLoad.ico"
+
 IDI_RF                  ICON                    "..\\res\\RatingFactor.ico"
+
 IDI_COPY_PROPERTIES     ICON                    "..\\res\\CopyProperties.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -130,20 +166,28 @@ IDI_COPY_PROPERTIES     ICON                    "..\\res\\CopyProperties.ico"
 //
 
 IDR_PGSUPER_STDTOOLBAR  BITMAP                  "..\\res\\PGSuperToolbar.bmp"
+
 IDR_PGSPLICE_STDTOOLBAR BITMAP                  "..\\res\\PGSpliceToolbar.bmp"
+
 IDR_LIBTOOLBAR          BITMAP                  "..\\res\\LibraryToolbar.bmp"
+
 IDR_HELPTOOLBAR         BITMAP                  "..\\res\\HelpToolbar.bmp"
+
 IDB_IN_USE              BITMAP                  "..\\res\\LibEntryInUse.bmp"
+
 IDB_IN_USE_AND_READ_ONLY BITMAP                  "..\\res\\LibEntryInUseAndReadOnly.bmp"
+
 IDB_READ_ONLY           BITMAP                  "..\\res\\LibEntryReadOnly.bmp"
+
 IDB_GIRDERDESIGNER      BITMAP                  "..\\res\\GirderDesigner.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_PGSUPER_STDTOOLBAR TOOLBAR  16, 16
+IDR_PGSUPER_STDTOOLBAR TOOLBAR 16, 16
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -184,7 +228,7 @@ BEGIN
     BUTTON      EAFID_AUTOCALC_UPDATENOW
 END
 
-IDR_PGSPLICE_STDTOOLBAR TOOLBAR  16, 16
+IDR_PGSPLICE_STDTOOLBAR TOOLBAR 16, 16
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -223,7 +267,7 @@ BEGIN
     BUTTON      EAFID_AUTOCALC_UPDATENOW
 END
 
-IDR_LIBTOOLBAR TOOLBAR  16, 16
+IDR_LIBTOOLBAR TOOLBAR 16, 16
 BEGIN
     BUTTON      IDM_ADD_ENTRY
     BUTTON      IDM_DELETE_ENTRY
@@ -235,7 +279,7 @@ BEGIN
     BUTTON      IDM_LIST_ICONS
 END
 
-IDR_HELPTOOLBAR TOOLBAR  16, 16
+IDR_HELPTOOLBAR TOOLBAR 16, 16
 BEGIN
     BUTTON      ID_HELP_INET_PGSUPER
     BUTTON      ID_HELP_FINDER
@@ -247,7 +291,7 @@ END
 // Menu
 //
 
-IDR_PGSPLICE MENU 
+IDR_PGSPLICE MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -401,7 +445,7 @@ BEGIN
     END
 END
 
-IDR_PGSUPER MENUEX 
+IDR_PGSUPER MENUEX
 BEGIN
     POPUP "&File",                          65535,MFT_STRING,MFS_ENABLED
     BEGIN
@@ -554,7 +598,7 @@ BEGIN
     END
 END
 
-IDR_ADD_DELETE_POPUP MENU 
+IDR_ADD_DELETE_POPUP MENU
 BEGIN
     POPUP "Edit"
     BEGIN
@@ -563,7 +607,7 @@ BEGIN
     END
 END
 
-IDR_ALIGNMENT_PLAN_CTX MENU 
+IDR_ALIGNMENT_PLAN_CTX MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -574,7 +618,7 @@ BEGIN
     END
 END
 
-IDR_ALIGNMENT_PROFILE_CTX MENU 
+IDR_ALIGNMENT_PROFILE_CTX MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -585,7 +629,7 @@ BEGIN
     END
 END
 
-IDR_BRIDGE_PLAN_CTX MENU 
+IDR_BRIDGE_PLAN_CTX MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -596,7 +640,7 @@ BEGIN
     END
 END
 
-IDR_BRIDGE_XSECTION_CTX MENU 
+IDR_BRIDGE_XSECTION_CTX MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -607,7 +651,7 @@ BEGIN
     END
 END
 
-IDR_GIRDER_CTX MENU 
+IDR_GIRDER_CTX MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -618,9 +662,9 @@ BEGIN
         MENUITEM "Design Girder",               ID_GIRDERVIEW_DESIGNGIRDERDIRECT
         MENUITEM "Design Girder (don't change Slab Offset)", ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET
         MENUITEM SEPARATOR
-        MENUITEM "Add Poi&nt Load...",          ID_ADD_POINT_LOAD
-        MENUITEM "Add &Distributed Load...",    ID_ADD_DISTRIBUTED_LOAD
-        MENUITEM "Add End Moment Load...",      ID_ADD_MOMENT_LOAD
+        MENUITEM "Add Poi&nt Load...",          ID_ADD_POINT_LOAD_CTX
+        MENUITEM "Add &Distributed Load...",    ID_ADD_DISTRIBUTED_LOAD_CTX
+        MENUITEM "Add End Moment Load...",      ID_ADD_MOMENT_LOAD_CTX
         MENUITEM SEPARATOR
         MENUITEM "Section &Cut...",             ID_USER_CUT
         MENUITEM SEPARATOR
@@ -629,7 +673,7 @@ BEGIN
     END
 END
 
-IDR_LOADS_CTX MENU 
+IDR_LOADS_CTX MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -638,7 +682,7 @@ BEGIN
     END
 END
 
-IDR_SELECTED_GIRDER_CONTEXT MENU 
+IDR_SELECTED_GIRDER_CONTEXT MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -654,7 +698,7 @@ BEGIN
     END
 END
 
-IDR_SELECTED_GIRDER_SEGMENT_CONTEXT MENU 
+IDR_SELECTED_GIRDER_SEGMENT_CONTEXT MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -668,7 +712,7 @@ BEGIN
     END
 END
 
-IDR_SELECTED_GIRDERLINE_CONTEXT MENU 
+IDR_SELECTED_GIRDERLINE_CONTEXT MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -681,7 +725,7 @@ BEGIN
     END
 END
 
-IDR_SELECTED_DECK_CONTEXT MENU 
+IDR_SELECTED_DECK_CONTEXT MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -692,7 +736,7 @@ BEGIN
     END
 END
 
-IDR_SELECTED_PIER_CONTEXT MENU 
+IDR_SELECTED_PIER_CONTEXT MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -702,7 +746,7 @@ BEGIN
     END
 END
 
-IDR_SELECTED_SPAN_CONTEXT MENU 
+IDR_SELECTED_SPAN_CONTEXT MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -712,7 +756,7 @@ BEGIN
     END
 END
 
-IDR_GIRDER_GRID_CONTEXT MENU 
+IDR_GIRDER_GRID_CONTEXT MENU
 BEGIN
     POPUP "Girder Grid Context Menu"
     BEGIN
@@ -721,7 +765,7 @@ BEGIN
     END
 END
 
-IDR_FRAMING_GRID_CONTEXT MENU 
+IDR_FRAMING_GRID_CONTEXT MENU
 BEGIN
     POPUP "Framing Grid Context Menu"
     BEGIN
@@ -730,7 +774,7 @@ BEGIN
     END
 END
 
-IDR_REPORTS MENU 
+IDR_REPORTS MENU
 BEGIN
     POPUP "ReportContextMenu"
     BEGIN
@@ -738,7 +782,7 @@ BEGIN
     END
 END
 
-IDR_GRAPHS MENU 
+IDR_GRAPHS MENU
 BEGIN
     POPUP "GraphContextMenu"
     BEGIN
@@ -746,7 +790,7 @@ BEGIN
     END
 END
 
-IDR_NEWLOADS MENU 
+IDR_NEWLOADS MENU
 BEGIN
     POPUP "NewLoads"
     BEGIN
@@ -756,7 +800,7 @@ BEGIN
     END
 END
 
-IDR_COPY_PASTE MENU 
+IDR_COPY_PASTE MENU
 BEGIN
     POPUP "Edit"
     BEGIN
@@ -765,7 +809,7 @@ BEGIN
     END
 END
 
-IDR_FRAMING_GRID2_CONTEXT MENU 
+IDR_FRAMING_GRID2_CONTEXT MENU
 BEGIN
     POPUP "Framing Grid Context Menu"
     BEGIN
@@ -777,7 +821,7 @@ BEGIN
     END
 END
 
-IDR_SELECTED_TEMPORARY_SUPPORT_CONTEXT MENU 
+IDR_SELECTED_TEMPORARY_SUPPORT_CONTEXT MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -787,7 +831,7 @@ BEGIN
     END
 END
 
-IDR_ACTIVITIES MENU 
+IDR_ACTIVITIES MENU
 BEGIN
     POPUP "Activities"
     BEGIN
@@ -802,7 +846,7 @@ BEGIN
     END
 END
 
-IDR_EDIT_GIRDER MENU 
+IDR_EDIT_GIRDER MENU
 BEGIN
     POPUP "EditGirderBtnMenu"
     BEGIN
@@ -817,7 +861,7 @@ END
 // Accelerator
 //
 
-IDR_BRIDGEMODELEDITOR ACCELERATORS 
+IDR_BRIDGEMODELEDITOR ACCELERATORS
 BEGIN
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
@@ -827,7 +871,7 @@ BEGIN
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_PGSPLICE ACCELERATORS 
+IDR_PGSPLICE ACCELERATORS
 BEGIN
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
@@ -838,7 +882,7 @@ BEGIN
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_PGSUPER ACCELERATORS 
+IDR_PGSUPER ACCELERATORS
 BEGIN
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
@@ -849,7 +893,7 @@ BEGIN
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_GIRDERMODELEDITOR ACCELERATORS 
+IDR_GIRDERMODELEDITOR ACCELERATORS
 BEGIN
     "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "A",            ID_VIEW_ANALYSISRESULTS, VIRTKEY, CONTROL, NOINVERT
@@ -858,7 +902,7 @@ BEGIN
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_GRAPHING ACCELERATORS 
+IDR_GRAPHING ACCELERATORS
 BEGIN
     "L",            ID_DUMP_LBAM,           VIRTKEY, CONTROL, ALT, NOINVERT
     "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
@@ -867,7 +911,7 @@ BEGIN
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_REPORT ACCELERATORS 
+IDR_REPORT ACCELERATORS
 BEGIN
     "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
@@ -911,7 +955,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,386,313,50,14,WS_GROUP
 END
 
-IDD_PROJECTPROPERTIES DIALOG  0, 0, 241, 231
+IDD_PROJECTPROPERTIES DIALOG 0, 0, 241, 231
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Project Properties"
 FONT 8, "MS Sans Serif"
@@ -935,7 +979,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,214,180,10
 END
 
-IDD_ENVIRONMENT DIALOG  0, 0, 187, 97
+IDD_ENVIRONMENT DIALOG 0, 0, 187, 97
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Environmental Conditions"
 FONT 8, "MS Sans Serif"
@@ -1008,7 +1052,7 @@ BEGIN
     LTEXT           "Right",IDC_HPOFFSET_END_LABEL,383,224,18,8
 END
 
-IDD_SPECIFICATION DIALOG  0, 0, 278, 65
+IDD_SPECIFICATION DIALOG 0, 0, 278, 65
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Project Criteria"
 FONT 8, "MS Sans Serif"
@@ -1020,7 +1064,7 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,170,44,50,14
 END
 
-IDD_BRIDGE_EDITOR_PLAN_PAGE DIALOG  0, 0, 134, 70
+IDD_BRIDGE_EDITOR_PLAN_PAGE DIALOG 0, 0, 134, 70
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Plan"
 FONT 8, "MS Sans Serif"
@@ -1049,7 +1093,7 @@ BEGIN
     CONTROL         "Schematic",IDC_SHOW_SCHEMATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,18,49,10
 END
 
-IDD_BRIDGE_EDITOR_SECTION_PAGE DIALOG  0, 0, 112, 61
+IDD_BRIDGE_EDITOR_SECTION_PAGE DIALOG 0, 0, 112, 61
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Section"
 FONT 8, "MS Sans Serif"
@@ -1058,7 +1102,7 @@ BEGIN
     CONTROL         "Label Girders",IDC_LABEL_GIRDERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,57,10
 END
 
-IDD_GIRDER_EDITOR_SECTION_PAGE DIALOG  0, 0, 143, 85
+IDD_GIRDER_EDITOR_SECTION_PAGE DIALOG 0, 0, 143, 85
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Section View"
 FONT 8, "MS Sans Serif"
@@ -1070,7 +1114,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,25,129,10
 END
 
-IDD_GIRDER_EDITOR_ELEVATION_PAGE DIALOG  0, 0, 192, 142
+IDD_GIRDER_EDITOR_ELEVATION_PAGE DIALOG 0, 0, 192, 142
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Elevation View"
 FONT 8, "MS Sans Serif"
@@ -1133,7 +1177,7 @@ BEGIN
     GROUPBOX        "Design Options",IDC_STATIC,7,139,301,81
     LTEXT           "The Girder Designer uses current bridge layout and project criteria information to determine an optimal design for the selected girder(s)",IDC_STATIC,8,10,179,30
     LTEXT           "Notes:\n- A successful design attempt does not guarantee compliance with all criteria.  Always run a Spec Check Report to review your final design.",IDC_STATIC,7,225,314,31
-    CONTROL         309,IDC_PICTURE,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE | SS_REALSIZEIMAGE | SS_SUNKEN | WS_BORDER,212,13,97,116
+    CONTROL         IDB_GIRDERDESIGNER,IDC_PICTURE,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE | SS_REALSIZEIMAGE | SS_SUNKEN | WS_BORDER,212,13,97,116
     CONTROL         "Start with Current Stirrup Layout",IDC_START_WITH_LAYOUT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,203,115,10
     COMBOBOX        IDC_DESIGN_A,30,168,267,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1194,7 +1238,7 @@ BEGIN
     LISTBOX         IDC_LIST,17,119,314,92,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_SECTION_CUT_DIALOG DIALOG  0, 0, 226, 62
+IDD_SECTION_CUT_DIALOG DIALOG 0, 0, 226, 62
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Section Cut Location"
 FONT 8, "MS Sans Serif"
@@ -1224,7 +1268,7 @@ BEGIN
     COMBOBOX        IDC_DESIGNA_TO,292,233,101,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_STABILITY_BAR DIALOG  0, 0, 240, 26
+IDD_STABILITY_BAR DIALOG 0, 0, 240, 26
 STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1260,7 +1304,7 @@ BEGIN
     LTEXT           "Distibution factors must be entered for both the main spans and at the piers.\nSelect both options above and enter your distribution factors",IDC_USER_LLDF_NOTE,37,130,260,19
 END
 
-IDD_BRIDGEDESC_ENVIRONMENTAL DIALOG  0, 0, 249, 141
+IDD_BRIDGEDESC_ENVIRONMENTAL DIALOG 0, 0, 249, 141
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION
 CAPTION "Environmental"
 FONT 8, "MS Sans Serif"
@@ -1334,7 +1378,7 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,327,169,50,14
 END
 
-IDD_EDIT_LOADS DIALOG  0, 0, 538, 132
+IDD_EDIT_LOADS DIALOG 0, 0, 538, 132
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1364,7 +1408,7 @@ BEGIN
     LTEXT           "- Only filled straight strands are shown in this view\n- Strands shown in light grey cannot be debonded",IDC_NOTE2,185,313,202,19
 END
 
-IDD_ALIGNMENT_HORIZONTAL DIALOG  0, 0, 274, 198
+IDD_ALIGNMENT_HORIZONTAL DIALOG 0, 0, 274, 198
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Horizontal"
 FONT 8, "MS Sans Serif"
@@ -1408,7 +1452,7 @@ BEGIN
     LTEXT           "Vertical Curves",IDC_STATIC,7,52,48,8
 END
 
-IDD_SUPERELEVATIONS DIALOG  0, 0, 274, 185
+IDD_SUPERELEVATIONS DIALOG 0, 0, 274, 185
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Superelevations"
 FONT 8, "MS Sans Serif"
@@ -1433,7 +1477,7 @@ BEGIN
     LTEXT           "station constant",IDC_STATIC,85,132,51,8
 END
 
-IDD_STATION_CUT_DIALOG DIALOG  0, 0, 140, 90
+IDD_STATION_CUT_DIALOG DIALOG 0, 0, 140, 90
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Section Cut Location"
 FONT 8, "MS Sans Serif"
@@ -1596,8 +1640,8 @@ BEGIN
     LTEXT           "Static",IDC_EC_UNIT,262,218,21,8
     PUSHBUTTON      "More Properties...",IDC_MORE,309,215,85,14
     COMBOBOX        IDC_WEARINGSURFACETYPE,19,302,109,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Overlay\nWeight",IDC_OLAY_WEIGHT_LABEL,"Button",BS_AUTORADIOBUTTON | BS_MULTILINE | WS_GROUP,23,320,44,25
-    CONTROL         "Overlay\nDepth",IDC_OLAY_DEPTH_LABEL,"Button",BS_AUTORADIOBUTTON | BS_MULTILINE,152,320,47,18
+    CONTROL         "Overlay\nWeight",IDC_OLAY_WEIGHT_LABEL,"Button",BS_AUTORADIOBUTTON | BS_MULTILINE | WS_GROUP,23,324,44,17
+    CONTROL         "Overlay\nDepth",IDC_OLAY_DEPTH_LABEL,"Button",BS_AUTORADIOBUTTON | BS_MULTILINE,152,324,47,17
     EDITTEXT        IDC_OLAY_WEIGHT,67,325,40,14,ES_AUTOHSCROLL
     LTEXT           "Static",IDC_OLAY_WEIGHT_UNIT,111,328,19,8
     EDITTEXT        IDC_OLAY_DEPTH,203,325,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
@@ -1605,7 +1649,7 @@ BEGIN
     CONTROL         "Sacrificial Depth",IDC_SACDEPTH_LABEL,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,275,304,55,11
     EDITTEXT        IDC_SACDEPTH,333,302,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_SACDEPTH_UNIT,375,306,28,8
-    CONTROL         "Overlay Density",IDC_OLAY_DENSITY_LABEL,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,278,328,51,11
+    LTEXT           "Overlay Unit Weight",IDC_OLAY_DENSITY_LABEL,278,324,51,16
     EDITTEXT        IDC_OLAY_DENSITY,333,325,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_OLAY_DENSITY_UNIT,375,328,28,8
     GROUPBOX        "Cross Section",IDC_STATIC,7,25,171,131
@@ -1704,7 +1748,7 @@ BEGIN
     GROUPBOX        "Permit Limit States",IDC_STATIC,329,7,153,259
 END
 
-IDD_MOVEPIER DIALOG  0, 0, 312, 82
+IDD_MOVEPIER DIALOG 0, 0, 312, 82
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Move Pier"
 FONT 8, "MS Sans Serif"
@@ -1715,7 +1759,7 @@ BEGIN
     COMBOBOX        IDC_RESIZEOPTIONS,7,25,237,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_STRUCTURAL_ANALYSIS_METHOD DIALOG  0, 0, 257, 188
+IDD_STRUCTURAL_ANALYSIS_METHOD DIALOG 0, 0, 257, 188
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Structural Analysis Method"
 FONT 8, "MS Sans Serif"
@@ -2198,12 +2242,12 @@ BEGIN
     GROUPBOX        "Analysis Controls",IDC_STATIC,7,136,282,39
 END
 
-IDD_LEGAL_RATING DIALOGEX 0, 0, 341, 343
+IDD_LEGAL_RATING DIALOGEX 0, 0, 495, 348
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Legal"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Live Loads",IDC_STATIC,7,7,327,160
+    GROUPBOX        "Live Loads",IDC_STATIC,7,7,481,160
     LTEXT           "Routine Commercial Vehicles",IDC_STATIC,15,16,91,8
     LISTBOX         IDC_ROUTINE_LIVELOAD,15,25,151,65,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,18,96,108,8
@@ -2222,49 +2266,62 @@ BEGIN
     LTEXT           "Lane",IDC_STATIC,245,110,17,8
     EDITTEXT        IDC_SPECIAL_LANE_IMPACT,266,108,20,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,289,110,8,8
-    LTEXT           "MBE 6A.4.4.2.1 - If the ADTT is less than 500, the lane load may be excluded and the 0.75 truck factor changed to 1.0 if, in the Engineer's judgement, it is warrented.",IDC_STATIC,17,129,309,19
+    LTEXT           "Emergency Vehicles",IDC_STATIC,332,14,64,8
+    LISTBOX         IDC_EMERGENCY_LIVELOAD,332,25,151,65,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,336,96,108,8
+    LTEXT           "Truck",IDC_STATIC,336,110,20,8
+    EDITTEXT        IDC_EMERGENCY_TRUCK_IMPACT,360,108,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,382,110,8,8
+    LTEXT           "Lane",IDC_STATIC,404,110,17,8
+    EDITTEXT        IDC_EMERGENCY_LANE_IMPACT,424,108,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,448,110,8,8
+    LTEXT           "MBE 6A.4.4.2.1 - If the ADTT is less than 500, the lane load may be excluded and the 0.75 truck factor changed to 1.0 if, in the Engineer's judgement, it is warrented.",IDC_STATIC,17,129,306,19
     CONTROL         "Exclude Lane Load and use 1.0 Truck Factor",IDC_EXCLUDE_LANELOAD,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,151,157,10
-    GROUPBOX        "Limit States",IDC_STATIC,7,172,327,111
-    LTEXT           "Strength I =",IDC_STATIC,16,193,41,8
-    EDITTEXT        IDC_STRENGTH_I_DC,57,190,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "DC + ",IDC_STATIC,85,193,20,8
-    EDITTEXT        IDC_STRENGTH_I_DW,103,190,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "DW + ",IDC_STATIC,131,193,22,8
-    EDITTEXT        IDC_STRENGTH_I_LL_ROUTINE,153,182,43,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(LL+IM) - Routine Commecial Vehicles",IDC_STATIC,202,185,120,8
-    EDITTEXT        IDC_STRENGTH_I_LL_SPECIAL,153,198,43,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(LL+IM) - Special Hauling Vehicles",IDC_STATIC,202,201,108,8
-    LTEXT           "+",IDC_STRENGTH_I_PLUS,48,218,8,8
-    EDITTEXT        IDC_STRENGTH_I_CR,57,215,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "CR + ",IDC_STRENGTH_I_CR_LABEL,85,217,18,8
-    EDITTEXT        IDC_STRENGTH_I_SH,103,215,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "SH + ",IDC_STRENGTH_I_SH_LABEL,131,217,17,8
-    EDITTEXT        IDC_STRENGTH_I_PS,155,214,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "PS",IDC_STRENGTH_I_PS_LABEL,183,217,9,8
-    LTEXT           "Service III =",IDC_STATIC,16,242,42,8
-    EDITTEXT        IDC_SERVICE_III_DC,57,239,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "DC + ",IDC_STATIC,85,242,20,8
-    EDITTEXT        IDC_SERVICE_III_DW,103,239,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "DW + ",IDC_STATIC,131,242,22,8
-    EDITTEXT        IDC_SERVICE_III_LL_ROUTINE,153,232,43,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(LL+IM) - Routine Commecial Vehicles",IDC_STATIC,202,235,120,8
-    EDITTEXT        IDC_SERVICE_III_LL_SPECIAL,153,247,43,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(LL+IM) - Special Hauling Vehicles",IDC_STATIC,202,250,108,8
-    LTEXT           "+",IDC_SERVICE_III_PLUS,47,266,8,8
-    EDITTEXT        IDC_SERVICE_III_CR,57,263,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "CR + ",IDC_SERVICE_III_CR_LABEL,85,266,18,8
-    EDITTEXT        IDC_SERVICE_III_SH,103,263,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "SH + ",IDC_SERVICE_III_SH_LABEL,131,266,17,8
-    EDITTEXT        IDC_SERVICE_III_PS,155,263,26,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "PS",IDC_SERVICE_III_PS_LABEL,183,266,9,8
-    GROUPBOX        "Analysis Controls",IDC_STATIC,7,286,327,50
+    GROUPBOX        "Limit States",IDC_STATIC,7,175,481,116
+    LTEXT           "Strength I =",IDC_STATIC,15,204,41,8
+    EDITTEXT        IDC_STRENGTH_I_DC,57,201,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DC + ",IDC_STATIC,85,204,20,8
+    EDITTEXT        IDC_STRENGTH_I_DW,103,201,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DW + ",IDC_STATIC,131,204,22,8
+    EDITTEXT        IDC_STRENGTH_I_LL_ROUTINE,153,184,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Routine Commecial Vehicles",IDC_STATIC,202,187,120,8
+    EDITTEXT        IDC_STRENGTH_I_LL_SPECIAL,153,201,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Special Hauling Vehicles",IDC_STATIC,202,204,108,8
+    EDITTEXT        IDC_STRENGTH_I_LL_EMERGENCY,153,217,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Emergency Vehicles",IDC_STATIC,201,220,96,8
+    LTEXT           "+",IDC_STRENGTH_I_PLUS,333,204,8,8
+    EDITTEXT        IDC_STRENGTH_I_CR,343,201,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "CR + ",IDC_STRENGTH_I_CR_LABEL,371,204,18,8
+    EDITTEXT        IDC_STRENGTH_I_SH,389,201,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "SH + ",IDC_STRENGTH_I_SH_LABEL,417,204,17,8
+    EDITTEXT        IDC_STRENGTH_I_PS,441,201,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "PS",IDC_STRENGTH_I_PS_LABEL,469,204,9,8
+    LTEXT           "Service III =",IDC_STATIC,14,257,42,8
+    EDITTEXT        IDC_SERVICE_III_DC,57,254,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DC + ",IDC_STATIC,85,257,20,8
+    EDITTEXT        IDC_SERVICE_III_DW,103,254,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DW + ",IDC_STATIC,131,257,22,8
+    EDITTEXT        IDC_SERVICE_III_LL_ROUTINE,153,239,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Routine Commecial Vehicles",IDC_STATIC,202,243,120,8
+    EDITTEXT        IDC_SERVICE_III_LL_SPECIAL,153,254,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Special Hauling Vehicles",IDC_STATIC,202,257,108,8
+    EDITTEXT        IDC_SERVICE_III_LL_EMERGENCY,153,270,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Emergency Vehicles",IDC_STATIC,201,273,96,8
+    LTEXT           "+",IDC_SERVICE_III_PLUS,333,257,8,8
+    EDITTEXT        IDC_SERVICE_III_CR,343,254,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "CR + ",IDC_SERVICE_III_CR_LABEL,371,257,18,8
+    EDITTEXT        IDC_SERVICE_III_SH,390,254,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "SH + ",IDC_SERVICE_III_SH_LABEL,417,257,17,8
+    EDITTEXT        IDC_SERVICE_III_PS,442,254,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "PS",IDC_SERVICE_III_PS_LABEL,469,257,9,8
+    GROUPBOX        "Analysis Controls",IDC_STATIC,7,294,481,47
     CONTROL         "Rate for Service III Stresses",IDC_RATE_FOR_STRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,301,107,10
-    LTEXT           "Allowable Tension",IDC_STATIC,133,302,58,8
-    EDITTEXT        IDC_ALLOWABLE_TENSION,197,299,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,241,302,85,8
-    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,317,63,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,309,107,10
+    LTEXT           "Allowable Tension",IDC_STATIC,133,310,58,8
+    EDITTEXT        IDC_ALLOWABLE_TENSION,197,307,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,241,310,85,8
+    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,325,63,10
 END
 
 IDD_PERMIT_RATING DIALOGEX 0, 0, 340, 407
@@ -3383,8 +3440,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,57
- PRODUCTVERSION 3,0,0,57
+ FILEVERSION 3,1,0,0
+ PRODUCTVERSION 3,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3401,12 +3458,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.57"
+            VALUE "FileVersion", "3.1.0.0"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2017, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.57"
+            VALUE "ProductVersion", "3.1.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -3422,7 +3479,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -3856,9 +3913,9 @@ BEGIN
     IDD_LEGAL_RATING, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 334
+        RIGHTMARGIN, 488
         TOPMARGIN, 7
-        BOTTOMMARGIN, 336
+        BOTTOMMARGIN, 341
     END
 
     IDD_PERMIT_RATING, DIALOG
@@ -4217,42 +4274,79 @@ END
 //
 
 HAULINGOVERHANGS        METAFILE                "..\\res\\HaulingOverhangs.emf"
+
 CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\Closure_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+
 CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\Closure_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+
 CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\Closure_BrgAlongGdr_EndAlongGdrFromPier.emf"
+
 CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\Closure_BrgAlongGdr_EndAlongNormalFromPier.emf"
+
 CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\Closure_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+
 CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\Closure_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+
 CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\Closure_BrgAlongNormal_EndAlongGdrFromPier.emf"
+
 CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\Closure_BrgAlongNormal_EndAlongNormalFromPier.emf"
+
 TS_CONTINUOUS_SEGMENT   METAFILE                "res\\TempSupportContinuousSegment.emf"
+
 PIER_CONTINUOUS_SEGMENT METAFILE                "res\\PierContinuousSegment.emf"
+
 CLPIER_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+
 CLPIER_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+
 CLPIER_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongGdrFromPier.emf"
+
 CLPIER_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongNormalFromPier.emf"
+
 CLPIER_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\CLPier_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+
 CLPIER_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\CLPier_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+
 CLPIER_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\CLPier_BrgAlongNormal_EndAlongGdrFromPier.emf"
+
 CLPIER_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\CLPier_BrgAlongNormal_EndAlongNormalFromPier.emf"
+
 SA_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\SA_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+
 SA_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\SA_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+
 SA_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\SA_BrgAlongGdr_EndAlongGdrFromPier.emf"
+
 SA_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\SA_BrgAlongGdr_EndAlongNormalFromPier.emf"
+
 SA_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\SA_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+
 SA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\SA_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+
 SA_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\SA_BrgAlongNormal_EndAlongGdrFromPier.emf"
+
 SA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\SA_BrgAlongNormal_EndAlongNormalFromPier.emf"
+
 EA_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\EA_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+
 EA_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\EA_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+
 EA_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\EA_BrgAlongGdr_EndAlongGdrFromPier.emf"
+
 EA_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\EA_BrgAlongGdr_EndAlongNormalFromPier.emf"
+
 EA_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\EA_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+
 EA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\EA_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+
 EA_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\EA_BrgAlongNormal_EndAlongGdrFromPier.emf"
+
 EA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\EA_BrgAlongNormal_EndAlongNormalFromPier.emf"
+
 STRANDSPACING           METAFILE                "res\\StrandSpacing.emf"
+
 PIERLAYOUT              METAFILE                "res\\PierLayout.emf"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -4391,10 +4485,26 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_LEGAL_RATING AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_BRIDGEDESC_DECKDETAILS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_PGSUPER             "\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
     IDR_BRIDGEMODELEDITOR   "Bridge View\n\n\n\n\n\n"
@@ -4411,24 +4521,24 @@ BEGIN
     IDR_PGSPLICE            "\nPGSplice\nPGSplice Project Templates\nPGSplice Project and Template Files (*.spl; *.spt)\n.spl;.spt\nPGSplice.Document\nPGSplice Document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_FACTOROFSAFETY      "Stablity\n\n\n\n\n\n"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_EDITLOADS           "Edit Loads\n\n\n\n\n\n"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "PGSuper"
     AFX_IDS_IDLEMESSAGE     "For Help, press F1"
     AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_EXT        "EXT"
     ID_INDICATOR_CAPS       "CAP"
@@ -4438,7 +4548,7 @@ BEGIN
     ID_INDICATOR_REC        "REC"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Create a new BridgeLink Project\nNew (Ctrl+N)"
     ID_FILE_OPEN            "Open an existing project\nOpen (Ctrl+O)"
@@ -4453,7 +4563,7 @@ BEGIN
     ID_FILE_SEND_MAIL       "Send the current project through electronic mail\nSend project via E-mail"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application; prompts to save the project\nExit"
@@ -4464,7 +4574,7 @@ BEGIN
     ID_HELP                 "Display help for current task or command\nHelp"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "Open this project"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -4484,13 +4594,13 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
@@ -4500,7 +4610,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -4515,13 +4625,13 @@ BEGIN
     ID_EDIT_REDO            "Redo\nRedo (Ctrl+Y)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Edit Toolbar Options\nToolbars"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -4532,19 +4642,19 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
     AFX_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_INCOMPATIBLE_BEARING_MSG 
                             "This connection locates the point of bearing by measuring along the centerline of the girder. The girder spacing is measured at the centerline of bearing. These are incompatible options.\r\n\r\nWhen the bearing is located along the girder, girder spacing must be measured at the pier. Would you like to measure the girder spacing along the Abutmentier Line?\r\n\r\nYes: Change girder spacing\r\nNo: Don't change anything"
@@ -4552,14 +4662,14 @@ BEGIN
                             "This connection locates the point of bearing by measuring along the centerline of the girder. The girder spacing for the bridge is measured at the centerline of bearing. These are incompatible options.\r\n\r\nWhen the bearing is located along the girder, girder spacing must be measured at the pier. Would you like to change the bridge so that the girder spacing is measured along the Abutment/Pier Line?\r\n\r\nYes: Change girder spacing for the entire bridge\r\nNo:  Change the girder spacing for this span only\r\nCancel: Don't change anything."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_HELP_INET_ARP        "Visit the Alternate Route Project Home Page"
     ID_HELP_INET_WSDOT      "Open the WSDOT Home Page at www.wsdot.wa.gov"
     ID_HELP_INET_PGSUPER    "Open the Home Page\nOnline Resources"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_PROJECT_ENVIRONMENT  "Specify environment conditions\nEnvironment"
     ID_PROJECT_BRIDGEDESC   "Edit the Bridge\nEdit the Bridge Description"
@@ -4572,7 +4682,7 @@ BEGIN
     ID_USER_CUT             "Select a section cut location"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_FACTOROFSAFETY  "View Factor of Safety graphs for Girder Stability\n\nGirder Stability"
     ID_VIEW_STABILITY       "View Factor of Safety graphs for Girder Stability\nGirder Stability View"
@@ -4589,7 +4699,7 @@ BEGIN
     ID_PROJECT_SPANDESC     "Edit the selected Span\nEdit the selected Span"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_PROJECT_EFFECTIVEFLANGEWIDTH 
                             "Modify effective flange width calculations\nEffective Flange Width"
@@ -4600,7 +4710,7 @@ BEGIN
     ID_PROJECT_PROFILE      "Edit Profile\nEdit Profile"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_PROJECT_PIERDESC     "Edit an abutment\\pier\nEdit an abutment\\pier"
     ID_DELETE               "Delete\nDelete (Del)"
@@ -4612,7 +4722,7 @@ BEGIN
     ID_RATING_SPEC          "Edit load rating options for this project\nEdit Load Rating Options"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_MANAGE_PLUGINS       "Manage PGSuper Plug-ins and Extensions\nManage Plug-ins and Extensions"
     ID_PROJECT_ANALYSIS     "Set the structural analysis method\nStructural Analysis Method"
@@ -4627,7 +4737,7 @@ BEGIN
     ID_EDIT_TIMELINE        "Edit timeline\nEdit Timeline"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     EAFID_VIEW_STATUSCENTER "View Status Center Window\nView Status Center Window"
     EAFID_VIEW_STATUSCENTER2 
@@ -4639,7 +4749,7 @@ BEGIN
     EAFID_UNITS_US          "Change units to US\nUS Units"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDM_ADD_ENTRY           "Add a new entry to the library\nAdd entry"
     IDM_EDIT_ENTRY          "Edit the selected entry\nEdit entry"
@@ -4655,19 +4765,19 @@ BEGIN
                             "Get Library Entries From Another Project\nGet Library Entries From Another Project"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_SEGMENT         "Edit a spliced girder segment\nEdit a spliced girder segment"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_PROJECT_PROPERTIES 
                             "Shows the properties for the current project\nProject Properties"
     ID_VIEW_BRIDGEMODELEDITOR "Shows the Bridge Model\nBridge View (Ctrl+B)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_GIRDEREDITOR    "Shows Detail View of a Girder\nGirder View (Ctrl+G)"
     ID_VIEW_ANALYSISMODELEDITOR 
@@ -4683,22 +4793,22 @@ BEGIN
     ID_VIEW_ANALYSISRESULTS "View analysis results\nAnalysis Results"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ALIGNMENTOFFSET_FMT "The Bridge Line is an arbritrary reference line that can be used to locate elements of the bridge. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R) to locate the bridge line. Positive signed values indicate the Bridge Line is located to the right of the alignment.\nExample: -2.25 and 2.25 L locate the Bridge Line left of the alignment."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_BM_VIEW_SETTINGS    "View Settings - Bridge Model"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_GM_VIEW_SETTINGS    "View Settings - Girder Model Editor"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_LOWRESOURCES      "System resources are running low.  Please quit one or more applications and try again."
     IDS_DLG_STATIONFMT_SI   "Enter station in the following format, xxx+yyy.zzz  Example 1+234.567"
@@ -4708,7 +4818,7 @@ BEGIN
     IDS_GRADE1725_SI        "Grade 1725"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_GRADE1860_US        "Grade 270"
     IDS_GRADE1860_SI        "Grade 1860"
@@ -4718,7 +4828,7 @@ BEGIN
     IDS_BROWSER_ERROR       "Error displaying report.  You must have Internet Explorer Version 4.0 or later."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_ANALYSIS   "CONTINUOUS"
     IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nThe concrete will be treated as Lightweight."
@@ -4732,14 +4842,14 @@ BEGIN
     IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nThe concrete will be treated as Normal Weight."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_RESULTS_NOT_AVAILABLE 
                             "Results not available - Select ""Update Now"" from the Project menu"
     IDS_COMPANY             "Washington State Department of Transportation"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PGSUPER_TEMPLATE_FILE_SUFFIX "pgt"
     IDS_PGSPLICE_TEMPLATE_FILE_SUFFIX "spt"
@@ -4754,13 +4864,13 @@ BEGIN
     IDS_E_PIER_LAYOUT       "The alignment you have entered (%s) invalidates the pier layout.\nThe skew angle of one of the piers exceeds %s or the\ndifference in skew angles between piers exceeds %s.\nWould you like to edit the piers?"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_NOCHAPTERS        "Please select at least one chapter for the report."
     IDS_E_UPDATE            "The following error occured while updating the views.\n\n%1."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_PGSUPER_STDTOOLBAR  "Standard"
     IDR_LIBTOOLBAR          "Library"
@@ -4768,7 +4878,7 @@ BEGIN
     IDR_PGSPLICE_STDTOOLBAR "Standard"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
     IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the log file, %1."
@@ -4778,12 +4888,12 @@ BEGIN
     IDS_E_FORMAT            "%1\n\n %2"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_INVALIDVERSION    "The file %1 came from a newer version of %2. You must upgrade in order to read it."
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

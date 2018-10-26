@@ -48,7 +48,7 @@ m_UpperBound(upperBound)
 }
 
 
-CSectionCutDlg::CSectionCutDlg(CWnd* pParent /*=NULL*/)
+CSectionCutDlg::CSectionCutDlg(CWnd* pParent /*=nullptr*/)
 : CDialog(CSectionCutDlg::IDD, pParent),
 m_Value(0.0),
 m_LowerBound(0.0),

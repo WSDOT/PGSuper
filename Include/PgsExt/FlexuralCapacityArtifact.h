@@ -113,7 +113,7 @@ protected:
    void MakeCopy(const pgsFlexuralCapacityArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsFlexuralCapacityArtifact& rOther);
+   void MakeAssignment(const pgsFlexuralCapacityArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -76,8 +76,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CStressChapterBuilder(const CStressChapterBuilder&);
-   CStressChapterBuilder& operator=(const CStressChapterBuilder&);
+   CStressChapterBuilder(const CStressChapterBuilder&) = delete;
+   CStressChapterBuilder& operator=(const CStressChapterBuilder&) = delete;
 
    bool m_bDesign;
    bool m_bRating;

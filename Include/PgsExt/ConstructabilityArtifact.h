@@ -168,7 +168,7 @@ protected:
    void MakeCopy(const pgsSpanConstructabilityArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsSpanConstructabilityArtifact& rOther);
+   void MakeAssignment(const pgsSpanConstructabilityArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -269,7 +269,7 @@ protected:
    void MakeCopy(const pgsConstructabilityArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsConstructabilityArtifact& rOther);
+   void MakeAssignment(const pgsConstructabilityArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

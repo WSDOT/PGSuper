@@ -29,7 +29,7 @@ class PGSEXTCLASS IntervalTool : public ScalarTool
 public:
    IntervalTool(const unitmgtScalar& umd);
    void SetLastValue(Float64 value);
-   virtual std::_tstring AsString(Float64 value) const;
+   virtual std::_tstring AsString(Float64 value) const override;
 
 protected:
    Float64 m_LastValue;

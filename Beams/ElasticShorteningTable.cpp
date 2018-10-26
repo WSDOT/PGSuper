@@ -123,7 +123,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       *pParagraph << Sub2(_T("f"),_T("cgp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() ) << rptNewLine << rptNewLine;
       *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pes")) << _T(" = ") << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() ) << rptNewLine;
 
-      return NULL;
+      return nullptr;
    }
    else
    {

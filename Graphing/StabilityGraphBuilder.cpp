@@ -88,22 +88,22 @@ m_pYFormat(0)
 
 CStabilityGraphBuilder::~CStabilityGraphBuilder()
 {
-   if ( m_pGraphController != NULL )
+   if ( m_pGraphController != nullptr )
    {
       delete m_pGraphController;
-      m_pGraphController = NULL;
+      m_pGraphController = nullptr;
    }
 
-   if ( m_pXFormat != NULL )
+   if ( m_pXFormat != nullptr )
    {
       delete m_pXFormat;
-      m_pXFormat = NULL;
+      m_pXFormat = nullptr;
    }
 
-   if ( m_pYFormat != NULL )
+   if ( m_pYFormat != nullptr )
    {
       delete m_pYFormat;
-      m_pYFormat = NULL;
+      m_pYFormat = nullptr;
    }
 }
 
@@ -112,7 +112,7 @@ CEAFGraphControlWindow* CStabilityGraphBuilder::GetGraphControlWindow()
    return m_pGraphController;
 }
 
-CGraphBuilder* CStabilityGraphBuilder::Clone()
+CGraphBuilder* CStabilityGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
    // the graph control window
@@ -347,7 +347,7 @@ void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
       else
       {
          CFont font;
-         CFont* pOldFont = NULL;
+         CFont* pOldFont = nullptr;
          if ( font.CreatePointFont(100,_T("Arial"),pDC) )
          {
             pOldFont = pDC->SelectObject(&font);
@@ -371,7 +371,7 @@ void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
       else
       {
          CFont font;
-         CFont* pOldFont = NULL;
+         CFont* pOldFont = nullptr;
          if ( font.CreatePointFont(100,_T("Arial"),pDC) )
          {
             pOldFont = pDC->SelectObject(&font);

@@ -852,7 +852,7 @@ const CTxDOTOptionalDesignGirderData* CTxDOTOptionalDesignData::GetPrecasterDesi
 // Let our observers listen
 void CTxDOTOptionalDesignData::Attach(ITxDataObserver* pObserver)
 {
-   ASSERT(pObserver!=NULL);
+   ASSERT(pObserver!=nullptr);
    m_pObservers.insert(pObserver);
 }
 

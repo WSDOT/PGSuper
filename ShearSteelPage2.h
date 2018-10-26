@@ -27,7 +27,7 @@ class CShearSteelPage2 : public  CShearSteelPage
 {
 public:
 
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 
 	DECLARE_MESSAGE_MAP()
 
@@ -39,5 +39,5 @@ protected:
    // Hides UI elements that don't make any sense when this page is used for closure joints
    void EnableClosureJointMode();
 
-   virtual UINT GetHelpID();
+   virtual UINT GetHelpID() override;
 };

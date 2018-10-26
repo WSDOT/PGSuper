@@ -39,7 +39,7 @@ HRESULT IBeamFamilyImpl::Init()
    CComPtr<ICatRegister> pICatReg = 0;
    HRESULT hr;
    hr = ::CoCreateInstance( CLSID_StdComponentCategoriesMgr,
-                            NULL,
+                            nullptr,
                             CLSCTX_INPROC_SERVER,
                             IID_ICatRegister,
                             (void**)&pICatReg );
@@ -59,12 +59,12 @@ HRESULT IBeamFamilyImpl::Init()
    CATID ID[nID];
    ID[0] = GetCATID();
 
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    m_Names.clear();
 
    CLSID clsid[1];
-   while ( pIEnumCLSID->Next(1,clsid,NULL) != S_FALSE )
+   while ( pIEnumCLSID->Next(1,clsid,nullptr) != S_FALSE )
    {
       LPOLESTR pszUserType;
       OleRegGetUserType(clsid[0],USERCLASSTYPE_SHORT,&pszUserType);
@@ -116,7 +116,7 @@ HRESULT IBeamFamilyImpl::CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory)
 
    CLSID clsid = found->second;
    IBeamFactory* pFactory;
-   HRESULT hr = ::CoCreateInstance(clsid,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
+   HRESULT hr = ::CoCreateInstance(clsid,nullptr,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
    if ( FAILED(hr) )
       return hr;
 

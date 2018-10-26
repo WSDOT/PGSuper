@@ -159,9 +159,9 @@ void CGirderDebondCriteriaPage::UpdateDesignCheckBoxes()
    BOOL can_harp     = pDad->CanHarpStrands() ? TRUE:FALSE;
    BOOL can_debond   = pDad->CanDebondStrands() ? TRUE:FALSE;
 
-   int straightCtrls[] = {IDC_STRAIGHT_DESIGN_CHECK,IDC_STRAIGHT_FCI,IDC_STRAIGHT_FC,IDC_STRAIGHT_UNITS,IDC_STRAIGHT_RAISE_CHECK, NULL};
-   int debondCtrls[]   = {IDC_DEBOND_DESIGN_CHECK,IDC_DEBOND_FCI,IDC_DEBOND_FC,IDC_DEBOND_UNITS,IDC_DEBOND_RAISE_CHECK, NULL};
-   int harpedCtrls[]   = {IDC_HARPED_DESIGN_CHECK,IDC_HARPED_FCI,IDC_HARPED_FC,IDC_HARPED_UNITS, NULL};
+   int straightCtrls[] = {IDC_STRAIGHT_DESIGN_CHECK,IDC_STRAIGHT_FCI,IDC_STRAIGHT_FC,IDC_STRAIGHT_UNITS,IDC_STRAIGHT_RAISE_CHECK, 0};
+   int debondCtrls[]   = {IDC_DEBOND_DESIGN_CHECK,IDC_DEBOND_FCI,IDC_DEBOND_FC,IDC_DEBOND_UNITS,IDC_DEBOND_RAISE_CHECK, 0};
+   int harpedCtrls[]   = {IDC_HARPED_DESIGN_CHECK,IDC_HARPED_FCI,IDC_HARPED_FC,IDC_HARPED_UNITS, 0};
 
    // All straight design if possible
    EnableCtrls(straightCtrls, can_straight);
@@ -194,7 +194,7 @@ void CGirderDebondCriteriaPage::UpdateDesignCheckBoxes()
 
 void CGirderDebondCriteriaPage::EnableCtrls(int* ctrlIDs, BOOL enable)
 {
-   while(*ctrlIDs!=NULL)
+   while( *ctrlIDs != 0)
    {
       CWnd* pedit = GetDlgItem(*ctrlIDs);
       pedit->EnableWindow(enable);

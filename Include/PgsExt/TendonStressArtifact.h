@@ -73,7 +73,7 @@ public:
 
 protected:
    void MakeCopy(const pgsTendonStressArtifact& rOther);
-   virtual void MakeAssignment(const pgsTendonStressArtifact& rOther);
+   void MakeAssignment(const pgsTendonStressArtifact& rOther);
 
    Float64 m_AtJacking[2];
    Float64 m_PriorToSeating[2]; // index 0 = capacity, index 1 = demand

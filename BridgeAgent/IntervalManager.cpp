@@ -834,7 +834,7 @@ void CIntervalManager::ProcessStep1(EventIndexType eventIdx,const CTimelineEvent
 
    IntervalIndexType intervalIdx = m_Intervals.size();
    const std::set<PierIDType>& pierIDs(activity.GetPiers());
-   BOOST_FOREACH(PierIDType pierID,pierIDs)
+   for( const auto& pierID : pierIDs)
    {
       const CPierData2* pPier = pBridgeDesc->FindPier(pierID);
       PierIndexType pierIdx = pPier->GetIndex();
@@ -842,7 +842,7 @@ void CIntervalManager::ProcessStep1(EventIndexType eventIdx,const CTimelineEvent
    }
 
    const std::set<SupportIDType>& tsIDs(activity.GetTempSupports());
-   BOOST_FOREACH(SupportIDType tsID,tsIDs)
+   for(const auto& tsID : tsIDs)
    {
       const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
       SupportIndexType tsIdx = pTS->GetIndex();
@@ -886,7 +886,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       IntervalIndexType haulIntervalIdx = StoreInterval(haulSegmentInterval);
 
       std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
-      BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
+      for( const auto& segmentID : erectedSegments)
       {
          const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
          CSegmentKey segmentKey(pSegment->GetSegmentKey());
@@ -901,7 +901,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       strDescriptions.push_back(CString(m_bIsPGSuper ? _T("Erect Girders") : _T("Erect Segments")));
       IntervalIndexType erectSegmentIntervalIdx = intervalIdx;
 
-      BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
+      for(const auto& segmentID : erectedSegments)
       {
          const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
          CSegmentKey segmentKey(pSegment->GetSegmentKey());
@@ -936,7 +936,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
 
       const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
       const std::vector<SupportIDType>& tsIDs(removeTS.GetTempSupports());
-      BOOST_FOREACH(SupportIDType tsID,tsIDs)
+      for( const auto& tsID : tsIDs)
       {
          const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
          SupportIndexType tsIdx = pTS->GetIndex();
@@ -950,8 +950,8 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       strDescriptions.push_back(CString(_T("Stress Tendons")));
       IntervalIndexType stressTendonIntervalIdx = intervalIdx;
 
-      const std::set<CTendonKey>& tendons( stressTendonActivity.GetTendons() );
-      BOOST_FOREACH(CTendonKey tendonKey,tendons)
+      const std::vector<CTendonKey>& tendons( stressTendonActivity.GetTendons() );
+      for(auto tendonKey : tendons)
       {
          if ( tendonKey.girderKey.groupIndex == ALL_GROUPS )
          {
@@ -973,7 +973,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          pGdrEntry->GetBeamFactory(&factory);
 
          CComPtr<IGirderSection> gdrSection;
-         factory->CreateGirderSection(NULL,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
+         factory->CreateGirderSection(nullptr,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
 
          WebIndexType nWebs;
          gdrSection->get_WebCount(&nWebs);
@@ -1001,7 +1001,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       IntervalIndexType castClosureIntervalIdx = intervalIdx;
 
       const std::set<PierIDType>& vPierIDs(closureJointActivity.GetPiers());
-      BOOST_FOREACH(PierIDType pierID,vPierIDs)
+      for( const auto& pierID : vPierIDs)
       {
          const CPierData2* pPier = pBridgeDesc->FindPier(pierID);
          const CGirderGroupData* pGroup = pPier->GetGirderGroup(pgsTypes::Ahead); // shouldn't matter which side
@@ -1014,7 +1014,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          }
       }
       const std::set<SupportIDType>& vTempSupportIDs(closureJointActivity.GetTempSupports());
-      BOOST_FOREACH(SupportIDType tsID,vTempSupportIDs)
+      for( const auto& tsID : vTempSupportIDs)
       {
          const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
          GirderIndexType nGirders = pTS->GetSpan()->GetGirderCount();
@@ -1034,7 +1034,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
 
    // Build up the composite description for this interval
    CString strDescription;
-   BOOST_FOREACH(CString& str,strDescriptions)
+   for( const auto& str : strDescriptions)
    {
       if (strDescription.GetLength() != 0 )
       {
@@ -1071,7 +1071,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       IntervalIndexType removeTempStrandsIntervalIdx = StoreInterval(removeTempStrandInterval);
 
       std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
-      BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
+      for(const auto& segmentID : erectedSegments)
       {
          const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
          CSegmentKey segmentKey(pSegment->GetSegmentKey());
@@ -1177,7 +1177,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
 
          // record the segments that are constructed during this activity
          const std::set<SegmentIDType>& segments = constructSegmentActivity.GetSegments();
-         BOOST_FOREACH(SegmentIDType segmentID,segments)
+         for(const auto& segmentID : segments)
          {
             const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
@@ -1460,7 +1460,7 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
                for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
                {
                   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
-                  if ( pSpan == NULL )
+                  if ( pSpan == nullptr )
                   {
                      // loading is out of range... ValidateLoad will deal with it. We'll just ignore it and continue
                      continue;
@@ -1488,7 +1488,7 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
 
    // Build up the composite description for this interval
    CString strDescription;
-   BOOST_FOREACH(CString& str,strDescriptions)
+   for(const auto& str : strDescriptions)
    {
       if (strDescription.GetLength() != 0 )
       {
@@ -1555,7 +1555,7 @@ std::vector<CClosureKey> CIntervalManager::GetClosureJoints(const CTimelineEvent
 
    std::vector<CClosureKey> vClosureKeys;
    const std::set<PierIDType>& vPierIDs(closureJointActivity.GetPiers());
-   BOOST_FOREACH(PierIDType pierID,vPierIDs)
+   for( const auto& pierID : vPierIDs)
    {
       const CPierData2* pPier = pBridgeDesc->FindPier(pierID);
       const CGirderGroupData* pGroup = pPier->GetGirderGroup(pgsTypes::Ahead); // shouldn't matter which side
@@ -1568,7 +1568,7 @@ std::vector<CClosureKey> CIntervalManager::GetClosureJoints(const CTimelineEvent
       }
    }
    const std::set<SupportIDType>& vTempSupportIDs(closureJointActivity.GetTempSupports());
-   BOOST_FOREACH(SupportIDType tsID,vTempSupportIDs)
+   for(const auto& tsID : vTempSupportIDs)
    {
       const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
       GirderIndexType nGirders = pTS->GetSpan()->GetGirderCount();

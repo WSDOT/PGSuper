@@ -47,5 +47,5 @@ public:
 
 protected:
    void MakeCopy(const CDuctGeometryCheckTable& rOther);
-   virtual void MakeAssignment(const CDuctGeometryCheckTable& rOther);
+   void MakeAssignment(const CDuctGeometryCheckTable& rOther);
 };

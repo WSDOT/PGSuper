@@ -120,7 +120,7 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
          pBody = new rptParagraph;
          *pChapter << pBody;
       
-         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,NULL);
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,nullptr);
          *pBody << pTable;
 
          (*pTable)(0,0) << COLHDR(_T("Hold Down Force"),    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );

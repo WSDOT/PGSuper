@@ -49,7 +49,7 @@ CLASS
 //======================== LIFECYCLE  =======================================
 CGirderData::CGirderData()
 {
-   m_pLibraryEntry = NULL;
+   m_pLibraryEntry = nullptr;
 
    Condition = pgsTypes::cfGood;
    ConditionFactor = 1.0;

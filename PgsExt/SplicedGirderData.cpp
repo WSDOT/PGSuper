@@ -72,9 +72,9 @@ CSplicedGirderData::CSplicedGirderData()
 
    m_PTData.SetGirder(this);
 
-   m_pGirderGroup = NULL;
+   m_pGirderGroup = nullptr;
    
-   m_pGirderLibraryEntry = NULL;
+   m_pGirderLibraryEntry = nullptr;
 
    m_ConditionFactor = 1.0;
    m_ConditionFactorType = pgsTypes::cfGood;
@@ -95,9 +95,9 @@ CSplicedGirderData::CSplicedGirderData(const CSplicedGirderData& rOther)
 
    m_PTData.SetGirder(this);
 
-   m_pGirderGroup = NULL;
+   m_pGirderGroup = nullptr;
    
-   m_pGirderLibraryEntry = NULL;
+   m_pGirderLibraryEntry = nullptr;
 
    m_ConditionFactor = 1.0;
    m_ConditionFactorType = pgsTypes::cfGood;
@@ -119,7 +119,7 @@ CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup,GirderInde
 
    m_pGirderGroup = pGirderGroup;
    
-   m_pGirderLibraryEntry = NULL;
+   m_pGirderLibraryEntry = nullptr;
 
    m_ConditionFactor = 1.0;
    m_ConditionFactorType = pgsTypes::cfGood;
@@ -142,7 +142,7 @@ CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup)
 
    m_pGirderGroup = pGirderGroup;
    
-   m_pGirderLibraryEntry = NULL;
+   m_pGirderLibraryEntry = nullptr;
 
    m_ConditionFactor = 1.0;
    m_ConditionFactorType = pgsTypes::cfGood;
@@ -583,7 +583,7 @@ const CPierData2* CSplicedGirderData::GetPier(pgsTypes::MemberEndType end) const
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -595,7 +595,7 @@ CPierData2* CSplicedGirderData::GetPier(pgsTypes::MemberEndType end)
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -638,7 +638,7 @@ void CSplicedGirderData::UpdateLinks()
 
       if ( segIdx == 0 )
       {
-         m_Segments[segIdx]->SetStartClosure(NULL);
+         m_Segments[segIdx]->SetStartClosure(nullptr);
       }
       else
       {
@@ -647,7 +647,7 @@ void CSplicedGirderData::UpdateLinks()
 
       if ( segIdx == nSegments-1 )
       {
-         m_Segments[segIdx]->SetEndClosure(NULL);
+         m_Segments[segIdx]->SetEndClosure(nullptr);
       }
       else
       {
@@ -670,7 +670,7 @@ void CSplicedGirderData::UpdateSegments()
    // Assigns the span where each segment starts/ends to the segment
 
    // If girder is not part of a group, or group is not part of a bridge, then this can't be done
-   if ( m_pGirderGroup == NULL || m_pGirderGroup->GetBridgeDescription() == NULL )
+   if ( m_pGirderGroup == nullptr || m_pGirderGroup->GetBridgeDescription() == nullptr )
    {
       return;
    }
@@ -792,7 +792,7 @@ CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx)
 {
    if ( m_Closures.size() <= idx )
    {
-      return NULL;
+      return nullptr;
    }
 
    return m_Closures[idx];
@@ -802,7 +802,7 @@ const CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType
 {
    if ( m_Closures.size() <= idx )
    {
-      return NULL;
+      return nullptr;
    }
 
    return m_Closures[idx];
@@ -825,14 +825,14 @@ void CSplicedGirderData::SetGirderName(LPCTSTR strName)
    if ( m_GirderType != strName )
    {
       m_GirderType = strName;
-      m_pGirderLibraryEntry = NULL;
+      m_pGirderLibraryEntry = nullptr;
    }
 }
 
 const GirderLibraryEntry* CSplicedGirderData::GetGirderLibraryEntry() const
 {
    const GirderLibraryEntry* pLibEntry = m_pGirderLibraryEntry;
-   const CBridgeDescription2* pBridgeDesc = NULL;
+   const CBridgeDescription2* pBridgeDesc = nullptr;
    if ( m_pGirderGroup )
    {
       pBridgeDesc = m_pGirderGroup->GetBridgeDescription();
@@ -851,7 +851,7 @@ void CSplicedGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
    {
       m_pGirderLibraryEntry = pEntry;
 
-      if ( m_pGirderLibraryEntry != NULL )
+      if ( m_pGirderLibraryEntry != nullptr )
       {
          CComPtr<IBeamFactory> beamFactory;
          m_pGirderLibraryEntry->GetBeamFactory(&beamFactory);
@@ -930,7 +930,7 @@ void CSplicedGirderData::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
 
 void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
-   ATLASSERT(m_pGirderGroup != NULL); // must be part of a group to remove a span
+   ATLASSERT(m_pGirderGroup != nullptr); // must be part of a group to remove a span
 
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
    std::vector<CPrecastSegmentData*>::iterator segIterEnd(m_Segments.end());
@@ -950,22 +950,22 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
 
          RemoveSegmentFromTimelineManager(pSegment);
 
-         // Delete the segment, mark it's position in the vector with NULL
+         // Delete the segment, mark it's position in the vector with nullptr
          delete pSegment;
-         *segIter = NULL;
+         *segIter = nullptr;
 
          if ( pStartClosure )
          {
-            pStartClosure->GetLeftSegment()->SetEndClosure(NULL);
-            m_Closures[pStartClosure->GetIndex()] = NULL;
+            pStartClosure->GetLeftSegment()->SetEndClosure(nullptr);
+            m_Closures[pStartClosure->GetIndex()] = nullptr;
             RemoveClosureJointFromTimelineManager(pStartClosure);
             delete pStartClosure;
          }
 
          if ( pEndClosure )
          {
-            pEndClosure->GetRightSegment()->SetStartClosure(NULL);
-            m_Closures[pEndClosure->GetIndex()] = NULL;
+            pEndClosure->GetRightSegment()->SetStartClosure(nullptr);
+            m_Closures[pEndClosure->GetIndex()] = nullptr;
             RemoveClosureJointFromTimelineManager(pEndClosure);
             delete pEndClosure;
          }
@@ -989,10 +989,10 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
    }
 
    // Remove all deleted segments and resize the vector
-   std::vector<CPrecastSegmentData*>::iterator new_segment_end = std::remove(m_Segments.begin(),m_Segments.end(),(CPrecastSegmentData*)NULL);
+   std::vector<CPrecastSegmentData*>::iterator new_segment_end = std::remove(m_Segments.begin(),m_Segments.end(),(CPrecastSegmentData*)nullptr);
    m_Segments.erase(new_segment_end,m_Segments.end());
 
-   std::vector<CClosureJointData*>::iterator new_closure_end = std::remove(m_Closures.begin(),m_Closures.end(),(CClosureJointData*)NULL);
+   std::vector<CClosureJointData*>::iterator new_closure_end = std::remove(m_Closures.begin(),m_Closures.end(),(CClosureJointData*)nullptr);
    m_Closures.erase(new_closure_end,m_Closures.end());
 
    m_PTData.RemoveSpan(spanIdx,rmPierType);
@@ -1673,7 +1673,7 @@ void CSplicedGirderData::Initialize()
 
    // this should be a new girder with no segments (a default girder, not one created with the copy constructor)
    ATLASSERT(m_Segments.size() == 0);
-   ATLASSERT(m_pGirderGroup->GetBridgeDescription() != NULL);// add girder to its group before initializing
+   ATLASSERT(m_pGirderGroup->GetBridgeDescription() != nullptr);// add girder to its group before initializing
 
    CPrecastSegmentData* pSegment = new CPrecastSegmentData;
    pSegment->SetGirder(this);
@@ -1695,13 +1695,13 @@ CTimelineManager* CSplicedGirderData::GetTimelineManager()
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 #if defined _DEBUG
 void CSplicedGirderData::AssertValid()
 {
-   if ( m_pGirderGroup == NULL )
+   if ( m_pGirderGroup == nullptr )
    {
       return;
    }
@@ -1727,7 +1727,7 @@ void CSplicedGirderData::AssertValid()
 
       // start location of segment must be same as or after the start location of the segment's start span
       // and end location of segment must be same as or before the end location of the segment's end span
-      if ( m_pGirderGroup->GetBridgeDescription() != NULL )
+      if ( m_pGirderGroup->GetBridgeDescription() != nullptr )
       {
          _ASSERT(pSegment->GetID() != INVALID_ID); // must have a valid ID if we are ultimately part of a bridge
 

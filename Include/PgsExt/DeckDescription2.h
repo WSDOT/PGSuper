@@ -70,10 +70,12 @@ public:
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
-   void SetBridgeDescription(const CBridgeDescription2* pBridge);
+   void SetBridgeDescription(CBridgeDescription2* pBridge);
    const CBridgeDescription2* GetBridgeDescription() const;
 
-   pgsTypes::SupportedDeckType DeckType;
+   void SetDeckType(pgsTypes::SupportedDeckType deckType);
+   pgsTypes::SupportedDeckType GetDeckType() const;
+
    pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity; // only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
    Float64 GrossDepth; // Cast Depth if SIP
    pgsTypes::DeckOverhangTaper OverhangTaper;
@@ -109,9 +111,11 @@ public:
 
 protected:
    void MakeCopy(const CDeckDescription2& rOther,bool bCopyDataOnly);
-   virtual void MakeAssignment(const CDeckDescription2& rOther);
+   void MakeAssignment(const CDeckDescription2& rOther);
 
-   const CBridgeDescription2* m_pBridgeDesc;
+   CBridgeDescription2* m_pBridgeDesc;
+
+   pgsTypes::SupportedDeckType DeckType;
 
 private:
    Float64 m_LegacyFillet;

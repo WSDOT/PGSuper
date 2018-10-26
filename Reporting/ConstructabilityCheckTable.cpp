@@ -49,7 +49,7 @@ inline bool ConstrNeedSpanCols(const std::vector<CGirderKey>& girderList, IBridg
    bool doNeed = 1 < girderList.size();
    if (!doNeed)
    {
-      BOOST_FOREACH(const CGirderKey& girderKey, girderList)
+      for (const auto& girderKey : girderList)
       {
          SpanIndexType startSpanIdx, endSpanIdx;
          pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
@@ -119,7 +119,7 @@ void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,IBro
    // First thing we must to is determine if all girders have the same "A" at start and ends. If not, we need a special table
    bool doTable(false);
    bool areAsDifferent(false);
-   BOOST_FOREACH(const CGirderKey& girderKey, girderList)
+   for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
       const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
@@ -197,7 +197,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
    (*pTable)(0,col++) << _T("Notes");
 
    RowIndexType row = 0;
-   BOOST_FOREACH(const CGirderKey& girderKey, girderList)
+   for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
       const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
@@ -255,8 +255,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
             {
                didNote = true;
                CSpanKey spanKey(spanIdx, girderKey.girderIndex);
-               HAUNCHDETAILS haunch_details;
-               pGdrHaunch->GetHaunchDetails(spanKey,&haunch_details);
+               HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
                (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
                                                  << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
                                                  
@@ -337,7 +336,7 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
    (*pTable)(0,col++) << _T("Notes");
 
    RowIndexType row=0;
-   BOOST_FOREACH(const CGirderKey& girderKey, girderList)
+   for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
       const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
@@ -405,8 +404,7 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
             {
                didNote = true;
                CSpanKey spanKey(spanIdx, girderKey.girderIndex);
-               HAUNCHDETAILS haunch_details;
-               pGdrHaunch->GetHaunchDetails(spanKey,&haunch_details);
+               HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
                (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
                                                  << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
                                                  
@@ -480,7 +478,7 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
    (*pTable)(0,col++) << _T("Status");
 
    RowIndexType row=0;
-   BOOST_FOREACH(const CGirderKey& girderKey, girderList)
+   for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
       const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
@@ -582,7 +580,7 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
    (*pTable)(0,col++) << _T("Status");
 
    RowIndexType row = 0;
-   BOOST_FOREACH(const CGirderKey& girderKey, girderList)
+   for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
       const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
@@ -650,7 +648,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
    (*pTable)(0,col++) << _T("Notes");
 
    RowIndexType row = 0;
-   BOOST_FOREACH(const CGirderKey& girderKey, girderList)
+   for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
       const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
@@ -740,11 +738,14 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bIsApplicable = false;
+   Float64 FSmax;
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsSegmentStabilityArtifact* pArtifact = pSegmentArtifact->GetSegmentStabilityArtifact();
+
+      FSmax = pArtifact->GetTargetFactorOfSafety();
       
       if ( pArtifact->IsGlobalGirderStabilityApplicable() )
       {
@@ -760,12 +761,12 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Global Stability of Girder");
+   *pTitle << _T("Girder Inclination Check");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GlobalGirderStability.gif"));
+   *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GlobalGirderStability.gif")) << rptNewLine;
 
    rptRcScalar slope;
    slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
@@ -779,6 +780,8 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsSegmentStabilityArtifact* pArtifact = pSegmentArtifact->GetSegmentStabilityArtifact();
 
+      ATLASSERT(IsEqual(FSmax, pArtifact->GetTargetFactorOfSafety()));
+
       CString strTitle;
       if ( 1 < nSegments )
       {
@@ -789,33 +792,43 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
          strTitle = _T("");
       }
 
-      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,strTitle);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(8,strTitle);
       std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-      (*pTable)(0,0) << COLHDR(Sub2(_T("W"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0,1) << COLHDR(Sub2(_T("Y"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0,2) << _T("Incline from Vertical (") << Sub2(symbol(theta),_T("max")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-      (*pTable)(0,3) << _T("Max Incline") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-      (*pTable)(0,4) << _T("Status");
+      ColumnIndexType col = 0;
+      (*pTable)(0, col++) << COLHDR(Sub2(_T("W"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0, col++) << COLHDR(_T("Brg Pad Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << COLHDR(Sub2(_T("z"), _T("o")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << _T("Inclination (") << symbol(theta) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      (*pTable)(0, col++) << Sub2(symbol(theta),_T("max")) << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      (*pTable)(0, col++) << _T("FS");
+      (*pTable)(0, col++) << _T("Status");
 
-      Float64 Wb, Yb, Orientation;
-      pArtifact->GetGlobalGirderStabilityParameters(&Wb,&Yb,&Orientation);
-      Float64 maxIncline = pArtifact->GetMaxGirderIncline();
+      Float64 Wb, BrgPadDeduct, Yb, Orientation, zo;
+      pArtifact->GetGlobalGirderStabilityParameters(&Wb,&BrgPadDeduct,&Yb,&Orientation,&zo);
+      Float64 ThetaMax = pArtifact->GetMaxGirderIncline();
+      Float64 FS = pArtifact->GetFactorOfSafety();
 
-      (*pTable)(1,0) << dim.SetValue(Wb);
-      (*pTable)(1,1) << dim.SetValue(Yb);
-      (*pTable)(1,2) << slope.SetValue(Orientation);
-      (*pTable)(1,3) << slope.SetValue(maxIncline);
+      col = 0;
+      (*pTable)(1, col++) << dim.SetValue(Wb);
+      (*pTable)(1, col++) << dim.SetValue(BrgPadDeduct);
+      (*pTable)(1, col++) << dim.SetValue(Yb);
+      (*pTable)(1, col++) << dim.SetValue(zo);
+      (*pTable)(1, col++) << slope.SetValue(Orientation);
+      (*pTable)(1, col++) << slope.SetValue(ThetaMax);
+      (*pTable)(1, col++) << slope.SetValue(FS);
 
       if ( pArtifact->Passed() )
       {
-         (*pTable)(1,4) << RPT_PASS;
+         (*pTable)(1,col++) << RPT_PASS;
       }
       else
       {
-         (*pTable)(1,4) << RPT_FAIL << rptNewLine << _T("Reaction falls outside of middle third of bottom width of girder");
+         (*pTable)(1,col++) << RPT_FAIL;
       }
       
+      *pBody << _T("Allowable Factor of Safety = ") << FSmax << rptNewLine;
       *pBody << pTable;
    } // next segment
 }
@@ -850,7 +863,7 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
    (*pTable)(0,col++) << _T("Status");
 
    RowIndexType row=0;
-   BOOST_FOREACH(const CGirderKey& girderKey, girderList)
+   for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
       const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();

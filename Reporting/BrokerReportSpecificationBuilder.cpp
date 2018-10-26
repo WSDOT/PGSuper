@@ -40,7 +40,7 @@ CBrokerReportSpecificationBuilder::~CBrokerReportSpecificationBuilder(void)
 {
 }
 
-boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -49,18 +49,18 @@ boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::Creat
    if ( dlg.DoModal() == IDOK )
    {
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
-      boost::shared_ptr<CBrokerReportSpecification> pOldGRptSpec = boost::dynamic_pointer_cast<CBrokerReportSpecification>(pOldRptSpec);
+      std::shared_ptr<CBrokerReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification>(pOldRptSpec);
 
-      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      std::shared_ptr<CReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
-         boost::shared_ptr<CBrokerReportSpecification> pNewGRptSpec = boost::shared_ptr<CBrokerReportSpecification>( new CBrokerReportSpecification(*pOldGRptSpec) );
+         std::shared_ptr<CBrokerReportSpecification> pNewGRptSpec(std::make_shared<CBrokerReportSpecification>(*pOldGRptSpec));
 
-         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
       }
       else
       {
-         pNewRptSpec = boost::shared_ptr<CBrokerReportSpecification>( new CBrokerReportSpecification(rptDesc.GetReportName(),m_pBroker) );
+         pNewRptSpec = std::make_shared<CBrokerReportSpecification>(rptDesc.GetReportName(),m_pBroker);
       }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
@@ -69,13 +69,13 @@ boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::Creat
       return pNewRptSpec;
    }
 
-   return boost::shared_ptr<CReportSpecification>();
+   return nullptr;
 }
 
-boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
 {
    // Use all chapters at the maximum level
-   boost::shared_ptr<CReportSpecification> pRptSpec( new CBrokerReportSpecification(rptDesc.GetReportName(),m_pBroker) );
+   std::shared_ptr<CReportSpecification> pRptSpec( std::make_shared<CBrokerReportSpecification>(rptDesc.GetReportName(),m_pBroker) );
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 

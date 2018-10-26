@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 CDuctEntryDlg::CDuctEntryDlg(bool allowEditing,
-                                         CWnd* pParent /*=NULL*/)
+                                         CWnd* pParent /*=nullptr*/)
 	: CDialog(CDuctEntryDlg::IDD, pParent),
    m_bAllowEditing(allowEditing)
 {
@@ -145,7 +145,7 @@ BOOL CDuctEntryDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.GetBuffer();
-      pTTT->hinst = NULL;
+      pTTT->hinst = nullptr;
       return TRUE;
    }
    return FALSE;

@@ -93,7 +93,7 @@ bool CCatalog::DoesPublisherExist(const CString& publisher)
 {
    const Publisher* pPub = GetPublisher(publisher);
 
-   return pPub!=NULL;
+   return pPub!=nullptr;
 }
 
 CCatalog::Format CCatalog::GetFormat(const CString& publisher)
@@ -136,7 +136,7 @@ const CCatalog::Publisher* CCatalog::GetPublisher(LPCTSTR publisher)
    }
 
    ATLASSERT(false);
-   return NULL;
+   return nullptr;
 }
 
 
@@ -208,7 +208,7 @@ bool CCatalog::DoParse()
          TCHAR sep[] = _T("\n");
          LPTSTR next_token;
          LPTSTR token = _tcstok_s(sections,sep,&next_token);
-         while (token != NULL )
+         while (token != nullptr )
          {
             std::_tstring strToken(token);
 
@@ -226,7 +226,7 @@ bool CCatalog::DoParse()
                WorkgroupTemplateEntries.insert(strToken.substr(0,eqpos));
             }
 
-            token = _tcstok_s(NULL,sep,&next_token);
+            token = _tcstok_s(nullptr,sep,&next_token);
          }
 
          // make sure we have entries for this publisher
@@ -303,7 +303,7 @@ bool CCatalog::DoParse()
          TCHAR sep[] = _T("\n");
          LPTSTR next_token;
          LPTSTR token = _tcstok_s(sections,sep,&next_token);
-         while (token != NULL )
+         while (token != nullptr )
          {
             std::_tstring strToken(token);
 
@@ -315,7 +315,7 @@ bool CCatalog::DoParse()
                PgzEntries.insert(strPgzEntry);
             }
 
-            token = _tcstok_s(NULL,sep,&next_token);
+            token = _tcstok_s(nullptr,sep,&next_token);
          }
 
         if (PgzEntries.empty())

@@ -38,7 +38,7 @@
 
 IMPLEMENT_DYNAMIC(CSelectClosureJointDlg, CDialog)
 
-CSelectClosureJointDlg::CSelectClosureJointDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pParent /*=NULL*/)
+CSelectClosureJointDlg::CSelectClosureJointDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectClosureJointDlg::IDD, pParent)
 {   
    m_pBridgeDesc = pBridgeDesc;

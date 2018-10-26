@@ -35,10 +35,10 @@
 
 IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignNonStandardFillDlg, CDialog)
 
-CTxDOTOptionalDesignNonStandardFillDlg::CTxDOTOptionalDesignNonStandardFillDlg(CWnd* pParent /*=NULL*/)
+CTxDOTOptionalDesignNonStandardFillDlg::CTxDOTOptionalDesignNonStandardFillDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CTxDOTOptionalDesignNonStandardFillDlg::IDD, pParent),
-   m_pGirderData(NULL),
-   m_pBrokerRetriever(NULL),
+   m_pGirderData(nullptr),
+   m_pBrokerRetriever(nullptr),
    m_UseDepressed(true),
    m_bFirstActive(true)
 {
@@ -67,7 +67,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData
 
    long DUMMY_AGENT_ID = -1;
    CComPtr<IGirderSection> gdrSection;
-   pFactory->CreateGirderSection(NULL,INVALID_ID,dimensions,-1,-1,&gdrSection);
+   pFactory->CreateGirderSection(nullptr,INVALID_ID,dimensions,-1,-1,&gdrSection);
 
    CComPtr<IShape>  pShape;
    gdrSection.QueryInterface(&pShape);
@@ -91,7 +91,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
 
    CString girder_name = m_pGirderData->GetGirderEntryName();
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
-   if (pGdrEntry==NULL)
+   if (pGdrEntry==nullptr)
    {
       CString msg, stmp;
       stmp.LoadString(IDS_GDR_ERROR);

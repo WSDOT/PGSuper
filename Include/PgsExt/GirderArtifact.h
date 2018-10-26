@@ -71,7 +71,7 @@ public:
    // adds a segment artifact to this girder artifact
    void AddSegmentArtifact(const pgsSegmentArtifact& artifact);
 
-   // returns a previously stored segment artifact. returns NULL if
+   // returns a previously stored segment artifact. returns nullptr if
    // a previously stored one does not exist
    const pgsSegmentArtifact* GetSegmentArtifact(SegmentIndexType segIdx) const;
 
@@ -123,7 +123,7 @@ public:
 
 protected:
    void MakeCopy(const pgsGirderArtifact& rOther);
-   virtual void MakeAssignment(const pgsGirderArtifact& rOther);
+   void MakeAssignment(const pgsGirderArtifact& rOther);
 
 private:
    CGirderKey m_GirderKey;
@@ -132,7 +132,7 @@ private:
 
    std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>> m_FlexuralCapacityArtifacts[pgsTypes::LimitStateCount];
 
-   std::set<pgsSegmentArtifact> m_SegmentArtifacts;
+   std::map<CSegmentKey,pgsSegmentArtifact> m_SegmentArtifacts;
 
    pgsConstructabilityArtifact m_ConstructabilityArtifact;
 

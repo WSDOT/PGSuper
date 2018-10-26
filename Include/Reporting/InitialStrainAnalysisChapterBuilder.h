@@ -48,7 +48,7 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CInitialStrainAnalysisChapterBuilder(const CInitialStrainAnalysisChapterBuilder&);
-   CInitialStrainAnalysisChapterBuilder& operator=(const CInitialStrainAnalysisChapterBuilder&);
+   CInitialStrainAnalysisChapterBuilder(const CInitialStrainAnalysisChapterBuilder&) = delete;
+   CInitialStrainAnalysisChapterBuilder& operator=(const CInitialStrainAnalysisChapterBuilder&) = delete;
 };
 

@@ -86,29 +86,29 @@ m_bShowBeam(other.m_bShowBeam)
 
 CGirderGraphBuilderBase::~CGirderGraphBuilderBase()
 {
-   if ( m_pGraphController != NULL )
+   if ( m_pGraphController != nullptr )
    {
       delete m_pGraphController;
-      m_pGraphController = NULL;
+      m_pGraphController = nullptr;
    }
 
-   if ( m_pXFormat != NULL )
+   if ( m_pXFormat != nullptr )
    {
       delete m_pXFormat;
-      m_pXFormat = NULL;
+      m_pXFormat = nullptr;
    }
 
-   if ( m_pYFormat != NULL )
+   if ( m_pYFormat != nullptr )
    {
       delete m_pYFormat;
-      m_pYFormat = NULL;
+      m_pYFormat = nullptr;
    }
 
 }
 
 CEAFGraphControlWindow* CGirderGraphBuilderBase::GetGraphControlWindow()
 {
-   ATLASSERT(m_pGraphController != NULL);
+   ATLASSERT(m_pGraphController != nullptr);
    return m_pGraphController;
 }
 
@@ -151,7 +151,7 @@ void CGirderGraphBuilderBase::UpdateXAxis()
    if ( m_pXFormat )
    {
       delete m_pXFormat;
-      m_pXFormat = NULL;
+      m_pXFormat = nullptr;
    }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
@@ -168,7 +168,7 @@ void CGirderGraphBuilderBase::UpdateYAxis()
    if ( m_pYFormat )
    {
       delete m_pYFormat;
-      m_pYFormat = NULL;
+      m_pYFormat = nullptr;
    }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);

@@ -441,7 +441,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSl
 
          pProgress->Increment();
 
-         if ( pArtifact == NULL )
+         if ( pArtifact == nullptr )
          {
             AfxMessageBox(_T("Design Cancelled"),MB_OK);
             return;
@@ -453,10 +453,10 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSl
 
    GET_IFACE(IReportManager,pReportMgr);
    CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
-   boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   boost::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-   boost::shared_ptr<CMultiGirderReportSpecification> pMGRptSpec = boost::dynamic_pointer_cast<CMultiGirderReportSpecification,CReportSpecification>(pRptSpec);
+   std::shared_ptr<CMultiGirderReportSpecification> pMGRptSpec = std::dynamic_pointer_cast<CMultiGirderReportSpecification,CReportSpecification>(pRptSpec);
 
    pMGRptSpec->SetGirderKeys(girderKeys);
 

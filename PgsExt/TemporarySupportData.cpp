@@ -45,7 +45,7 @@ CTemporarySupportData::CTemporarySupportData()
 {
    m_ID    = INVALID_ID;
    m_Index = INVALID_INDEX;
-   m_pSpan = NULL;
+   m_pSpan = nullptr;
 
    m_SupportType    = pgsTypes::ErectionTower;
    m_ConnectionType = pgsTypes::tsctContinuousSegment;
@@ -70,7 +70,7 @@ CTemporarySupportData::CTemporarySupportData(const CTemporarySupportData& rOther
 {
    m_ID    = INVALID_ID;
    m_Index = INVALID_INDEX;
-   m_pSpan = NULL;
+   m_pSpan = nullptr;
 
    m_Spacing.SetTemporarySupport(this);
 
@@ -535,7 +535,7 @@ CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx
 {
    if ( m_ConnectionType == pgsTypes::tsctContinuousSegment )
    {
-      return NULL;
+      return nullptr;
    }
 
    CGirderGroupData* pGroup = m_pSpan->GetBridgeDescription()->GetGirderGroup(m_pSpan);
@@ -553,14 +553,14 @@ CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 const CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx) const
 {
    if ( m_ConnectionType == pgsTypes::tsctContinuousSegment )
    {
-      return NULL;
+      return nullptr;
    }
 
    const CGirderGroupData* pGroup = m_pSpan->GetBridgeDescription()->GetGirderGroup(m_pSpan);
@@ -578,7 +578,7 @@ const CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType 
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 void CTemporarySupportData::SetGirderEndDistance(Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)

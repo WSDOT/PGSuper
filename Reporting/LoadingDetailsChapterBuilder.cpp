@@ -351,7 +351,7 @@ CChapterBuilder* CLoadingDetailsChapterBuilder::Clone() const
 void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,IBroker* pBroker,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    GET_IFACE2(pBroker,IBarriers,pBarriers);
-   rptParagraph* pPara = NULL;
+   rptParagraph* pPara = nullptr;
 
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
 
@@ -463,7 +463,7 @@ void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,IB
 void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    // slab loads between supports
-   rptParagraph* pPara = NULL;
+   rptParagraph* pPara = nullptr;
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         false );
@@ -685,7 +685,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
 void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,bool bRating,const CSegmentKey& thisSegmentKey) const
 {
    // slab loads between supports
-   rptParagraph* pPara = NULL;
+   rptParagraph* pPara = nullptr;
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         false );
@@ -810,7 +810,7 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
-   rptParagraph* pPara = NULL;
+   rptParagraph* pPara = nullptr;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -896,7 +896,7 @@ void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBri
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   rptParagraph* pPara = NULL;
+   rptParagraph* pPara = nullptr;
 
    // Shear key loads
    GET_IFACE2(pBroker,IGirder,pGirder);
@@ -1791,6 +1791,62 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
+         }
+
+         row++;
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         if (pRatingSpec->RateForStress(pgsTypes::lrLegal_Emergency))
+         {
+            col = 0;
+            pgsTypes::LimitState ls = pgsTypes::ServiceIII_LegalEmergency;
+            (*p_table)(row, col++) << GetLimitStateString(ls);
+            (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+            (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+            Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls, true);
+            if (gLL < 0)
+            {
+               (*p_table)(row, col++) << _T("*");
+               bFootNote = true;
+            }
+            else
+            {
+               (*p_table)(row, col++) << scalar.SetValue(gLL);
+            }
+
+            if (loss_method == pgsTypes::TIME_STEP)
+            {
+               (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+               (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+               (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
+            }
+
+            row++;
+         }
+
+         pgsTypes::LimitState ls = pgsTypes::StrengthI_LegalEmergency;
+         col = 0;
+         (*p_table)(row, col++) << GetLimitStateString(ls);
+         (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+         (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+         Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls, true);
+         if (gLL < 0)
+         {
+            (*p_table)(row, col++) << _T("*");
+            bFootNote = true;
+         }
+         else
+         {
+            (*p_table)(row, col++) << scalar.SetValue(gLL);
+         }
+
+         if (loss_method == pgsTypes::TIME_STEP)
+         {
+            (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+            (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+            (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetSecondaryEffectsFactor(ls));
          }
 
          row++;

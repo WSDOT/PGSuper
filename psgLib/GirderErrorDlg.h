@@ -36,7 +36,7 @@ class CGirderErrorDlg : public CDialog
 {
 // Construction
 public:
-	CGirderErrorDlg(CWnd* pParent = NULL);   // standard constructor
+	CGirderErrorDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CGirderErrorDlg)

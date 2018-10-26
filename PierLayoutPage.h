@@ -58,7 +58,7 @@ public:
 	//{{AFX_VIRTUAL(CPierLayoutPage)
 	public:
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 	CEdit	m_ctrlEc;
 	CButton m_ctrlEcCheck;
@@ -69,7 +69,7 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CPierLayoutPage)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
    afx_msg void OnHelp();
    afx_msg void OnChangeFc();
    afx_msg void OnUserEc();

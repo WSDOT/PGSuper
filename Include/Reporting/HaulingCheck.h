@@ -84,7 +84,7 @@ protected:
    void MakeCopy(const CHaulingCheck& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CHaulingCheck& rOther);
+   void MakeAssignment(const CHaulingCheck& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

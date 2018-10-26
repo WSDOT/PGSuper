@@ -76,7 +76,7 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-   virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = NULL);
+   virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = nullptr);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -94,7 +94,7 @@ protected:
 	afx_msg void OnDeleteLoad();
 	afx_msg void OnEditLoad();
 	afx_msg void OnDblclkLoadsList(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnAddNewDistributed();
+	afx_msg void OnAddDistributedLoad();
 	afx_msg void OnClickLoadsList(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
    afx_msg void OnContextMenu(CWnd* pWnd,CPoint pos);

@@ -53,7 +53,7 @@ m_nHarpPoints(nHarpPoints)
 }
 
 
-CTogaSectionCutDlgEx::CTogaSectionCutDlgEx(CWnd* pParent /*=NULL*/)
+CTogaSectionCutDlgEx::CTogaSectionCutDlgEx(CWnd* pParent /*=nullptr*/)
 : CDialog(CTogaSectionCutDlgEx::IDD, pParent),
 m_Value(0.0),
 m_LowerBound(0.0),

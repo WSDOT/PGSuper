@@ -89,7 +89,7 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
 
 IMPLEMENT_DYNAMIC(CLinearDuctDlg, CDialog)
 
-CLinearDuctDlg::CLinearDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent /*=NULL*/)
+CLinearDuctDlg::CLinearDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent /*=nullptr*/)
 	: CDialog(CLinearDuctDlg::IDD, pParent)
 {
    m_pGirderlineDlg = pGdrDlg;

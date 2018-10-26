@@ -457,6 +457,7 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    {
       DDV_MinMaxDouble(pDX, m_Entry.m_LiftingCamberPercentEstimate, 0.0, 1.0);
    }
+   DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_LiftingCamberMultiplier);
 
    DDX_CBEnum(pDX,IDC_WIND_TYPE,m_Entry.m_LiftingWindType);
    if ( m_Entry.m_LiftingWindType == pgsTypes::Pressure )
@@ -618,6 +619,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    {
       DDV_MinMaxDouble(pDX, m_Entry.m_HaulingCamberPercentEstimate, 0.0, 1.0);
    }
+   DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_HaulingCamberMultiplier);
 
 
    DDX_CBEnum(pDX,IDC_WIND_TYPE,m_Entry.m_HaulingWindType);
@@ -1295,6 +1297,11 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    DDX_Check_Bool(pDX,IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,m_Entry.m_bCheckBottomFlangeClearance);
    DDX_UnitValueAndTag(pDX,IDC_CLEARANCE,IDC_CLEARANCE_UNIT,m_Entry.m_Cmin,pDisplayUnits->SpanLength);
    DDV_UnitValueZeroOrMore(pDX,IDC_CLEARANCE,m_Entry.m_Cmin,pDisplayUnits->SpanLength);
+
+   // Girder Inclination
+   DDX_Check_Bool(pDX, IDC_CHECK_INCLINDED_GIRDER, m_Entry.m_bCheckGirderInclination);
+   DDX_Text(pDX, IDC_INCLINDED_GIRDER_FS, m_Entry.m_InclinedGirder_FSmax);
+   DDX_UnitValueAndTag(pDX, IDC_INCLINDED_GIRDER_BRGPADDEDUCT, IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT, m_Entry.m_InclinedGirder_BrgPadDeduction, pDisplayUnits->ComponentDim);
 
    // Strand Fill
    int value = (int)m_Entry.m_DesignStrandFillType;

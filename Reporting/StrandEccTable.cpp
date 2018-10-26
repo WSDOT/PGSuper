@@ -216,7 +216,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
 
          if ( IsZero( 1./avg_slope ) )
          {
-            (*p_table)(row,col++) << symbol(INFINITY);
+            (*p_table)(row,col++) << symbol(infinity);
          }
          else
          {
@@ -227,7 +227,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
          max_slope = fabs(max_slope);
          if ( IsZero( 1./max_slope ) )
          {
-            (*p_table)(row,col++) << symbol(INFINITY);
+            (*p_table)(row,col++) << symbol(infinity);
          }
          else
          {

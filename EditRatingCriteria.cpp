@@ -169,15 +169,18 @@ bool txnDesignRatingData::operator==(const txnDesignRatingData& other) const
 ///////////////////////////////////////////////////////////////////////////
 txnLegalRatingData::txnLegalRatingData()
 {
-   IM_Truck_Routine = 0.33;
+   IM_Truck_Routine = 0.10;
    IM_Lane_Routine  = 0.00;
-   IM_Truck_Special = 0.33;
+   IM_Truck_Special = 0.10;
    IM_Lane_Special  = 0.00;
+   IM_Truck_Emergency = 0.10;
+   IM_Lane_Emergency = 0.00;
 
    StrengthI_DC = 1.25;
    StrengthI_DW = 1.50;
    StrengthI_LL_Routine = -1;
    StrengthI_LL_Special = -1;
+   StrengthI_LL_Emergency = -1;
    StrengthI_CR = 1.0;
    StrengthI_SH = 1.0;
    StrengthI_PS = 1.0;
@@ -186,6 +189,7 @@ txnLegalRatingData::txnLegalRatingData()
    ServiceIII_DW = 1.0;
    ServiceIII_LL_Routine = -1;
    ServiceIII_LL_Special = -1;
+   ServiceIII_LL_Emergency = -1;
    ServiceIII_CR = 1.0;
    ServiceIII_SH = 1.0;
    ServiceIII_PS = 1.0;
@@ -201,7 +205,10 @@ bool txnLegalRatingData::operator==(const txnLegalRatingData& other) const
    if ( RoutineNames != other.RoutineNames )
       return false;
 
-   if ( SpecialNames != other.SpecialNames )
+   if (SpecialNames != other.SpecialNames)
+      return false;
+
+   if (EmergencyNames != other.EmergencyNames)
       return false;
 
    if ( !IsEqual(IM_Truck_Routine,other.IM_Truck_Routine) )
@@ -214,6 +221,12 @@ bool txnLegalRatingData::operator==(const txnLegalRatingData& other) const
       return false;
 
    if ( !IsEqual(IM_Lane_Special,other.IM_Lane_Special) )
+      return false;
+
+   if (!IsEqual(IM_Truck_Emergency, other.IM_Truck_Emergency))
+      return false;
+
+   if (!IsEqual(IM_Lane_Emergency, other.IM_Lane_Emergency))
       return false;
 
    if ( !IsEqual(StrengthI_DC,other.StrengthI_DC) )
@@ -491,6 +504,17 @@ void txnEditRatingCriteria::Execute(int i)
       pRatingSpec->EnableRating(pgsTypes::lrLegal_Special,   false);
    }
 
+   // Legal rating must be enabled and live loads must be selected for Emergency Vehicles
+   // for load rating to be performed
+   if (m_Data[i].m_General.bLegalRating && m_Data[i].m_Legal.EmergencyNames.size() != 0)
+   {
+      pRatingSpec->EnableRating(pgsTypes::lrLegal_Emergency, true);
+   }
+   else
+   {
+      pRatingSpec->EnableRating(pgsTypes::lrLegal_Emergency, false);
+   }
+
    if ( m_Data[i].m_General.bPermitRating && m_Data[i].m_Permit.RoutinePermitNames.size() != 0 )
    {
       pRatingSpec->EnableRating(pgsTypes::lrPermit_Routine, true);
@@ -589,24 +613,49 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_PS);
 
+
+   // Emergency Vehicles
+   pRatingSpec->SetDeadLoadFactor(pgsTypes::StrengthI_LegalEmergency, m_Data[i].m_Legal.StrengthI_DC);
+   pRatingSpec->SetWearingSurfaceFactor(pgsTypes::StrengthI_LegalEmergency, m_Data[i].m_Legal.StrengthI_DW);
+   pRatingSpec->SetLiveLoadFactor(pgsTypes::StrengthI_LegalEmergency, m_Data[i].m_Legal.StrengthI_LL_Emergency);
+   pRatingSpec->SetCreepFactor(pgsTypes::StrengthI_LegalEmergency, m_Data[i].m_Legal.StrengthI_CR);
+   pRatingSpec->SetShrinkageFactor(pgsTypes::StrengthI_LegalEmergency, m_Data[i].m_Legal.StrengthI_SH);
+   pRatingSpec->SetRelaxationFactor(pgsTypes::StrengthI_LegalEmergency, m_Data[i].m_Legal.StrengthI_CR); // RE
+   pRatingSpec->SetSecondaryEffectsFactor(pgsTypes::StrengthI_LegalEmergency, m_Data[i].m_Legal.StrengthI_PS);
+
+   pRatingSpec->SetDeadLoadFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_DC);
+   pRatingSpec->SetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_DW);
+   pRatingSpec->SetLiveLoadFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_LL_Emergency);
+   pRatingSpec->SetCreepFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_CR);
+   pRatingSpec->SetShrinkageFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_SH);
+   pRatingSpec->SetRelaxationFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_CR); // RE
+   pRatingSpec->SetSecondaryEffectsFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_PS);
+
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Routine,m_Data[i].m_Legal.RoutineNames);
-   pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Special,m_Data[i].m_Legal.SpecialNames);
-   
+   pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Special, m_Data[i].m_Legal.SpecialNames);
+   pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Emergency, m_Data[i].m_Legal.EmergencyNames);
+
    pLiveLoads->SetTruckImpact(pgsTypes::lltLegalRating_Routine,m_Data[i].m_Legal.IM_Truck_Routine);
    pLiveLoads->SetLaneImpact( pgsTypes::lltLegalRating_Routine,m_Data[i].m_Legal.IM_Lane_Routine);
 
-   pLiveLoads->SetTruckImpact(pgsTypes::lltLegalRating_Special,m_Data[i].m_Legal.IM_Truck_Special);
-   pLiveLoads->SetLaneImpact( pgsTypes::lltLegalRating_Special,m_Data[i].m_Legal.IM_Lane_Special);
+   pLiveLoads->SetTruckImpact(pgsTypes::lltLegalRating_Special, m_Data[i].m_Legal.IM_Truck_Special);
+   pLiveLoads->SetLaneImpact(pgsTypes::lltLegalRating_Special, m_Data[i].m_Legal.IM_Lane_Special);
+
+   pLiveLoads->SetTruckImpact(pgsTypes::lltLegalRating_Emergency, m_Data[i].m_Legal.IM_Truck_Emergency);
+   pLiveLoads->SetLaneImpact(pgsTypes::lltLegalRating_Emergency, m_Data[i].m_Legal.IM_Lane_Emergency);
 
    pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine,m_Data[i].m_Legal.AllowableTensionCoefficient );
-   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Special,m_Data[i].m_Legal.AllowableTensionCoefficient );
-   
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Special, m_Data[i].m_Legal.AllowableTensionCoefficient);
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Emergency, m_Data[i].m_Legal.AllowableTensionCoefficient);
+
    pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine,m_Data[i].m_Legal.bRateForStress);
-   pRatingSpec->RateForStress(pgsTypes::lrLegal_Special,m_Data[i].m_Legal.bRateForStress);
+   pRatingSpec->RateForStress(pgsTypes::lrLegal_Special, m_Data[i].m_Legal.bRateForStress);
+   pRatingSpec->RateForStress(pgsTypes::lrLegal_Emergency, m_Data[i].m_Legal.bRateForStress);
 
    pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine,m_Data[i].m_Legal.bRateForShear);
-   pRatingSpec->RateForShear(pgsTypes::lrLegal_Special,m_Data[i].m_Legal.bRateForShear);
+   pRatingSpec->RateForShear(pgsTypes::lrLegal_Special, m_Data[i].m_Legal.bRateForShear);
+   pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency, m_Data[i].m_Legal.bRateForShear);
 
    pRatingSpec->ExcludeLegalLoadLaneLoading(m_Data[i].m_Legal.bExcludeLaneLoad);
 

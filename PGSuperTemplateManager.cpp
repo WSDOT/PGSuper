@@ -78,7 +78,7 @@ void CPGSuperTemplateManager::GetTemplates(const CString& strRootSourcePath,cons
       CString strDestinationPath = iter->second;
 
 
-      ::CreateDirectory(strDestinationPath,NULL);
+      ::CreateDirectory(strDestinationPath,nullptr);
 
       GetTemplates(strSourcePath,strDestinationPath,pProgress);
    }

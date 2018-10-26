@@ -42,7 +42,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CBridgeAnalysisReportDlg, CSpanGirderReportDlg)
 
-CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CSpanGirderReportDlg(pBroker,rptDesc,GirderAndChapters,pRptSpec,nIDTemplate, pParent)
 {
    m_bDesign = true;
@@ -78,7 +78,7 @@ BOOL CBridgeAnalysisReportDlg::OnInitDialog()
 {
    if ( m_pInitRptSpec )
    {
-      boost::shared_ptr<CBridgeAnalysisReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CBridgeAnalysisReportSpecification,CReportSpecification>(m_pInitRptSpec);
+      std::shared_ptr<CBridgeAnalysisReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBridgeAnalysisReportSpecification,CReportSpecification>(m_pInitRptSpec);
       m_bDesign = pRptSpec->ReportDesignResults();
       m_bRating = pRptSpec->ReportRatingResults();
    }

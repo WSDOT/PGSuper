@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 // CResolveGirderSpacingDlg dialog
 
 
-CResolveGirderSpacingDlg::CResolveGirderSpacingDlg(CWnd* pParent /*=NULL*/)
+CResolveGirderSpacingDlg::CResolveGirderSpacingDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CResolveGirderSpacingDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CResolveGirderSpacingDlg)

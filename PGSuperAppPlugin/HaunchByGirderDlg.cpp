@@ -32,7 +32,7 @@
 
 IMPLEMENT_DYNAMIC(CHaunchByGirderDlg, CDialog)
 
-CHaunchByGirderDlg::CHaunchByGirderDlg(CWnd* pParent /*=NULL*/)
+CHaunchByGirderDlg::CHaunchByGirderDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CHaunchByGirderDlg::IDD, pParent),
    m_bFirstActive(true)
 {

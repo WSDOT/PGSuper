@@ -31,7 +31,7 @@ class CGirderLabelFormatDlg : public CDialog
 	DECLARE_DYNAMIC(CGirderLabelFormatDlg)
 
 public:
-	CGirderLabelFormatDlg(CWnd* pParent = NULL);   // standard constructor
+	CGirderLabelFormatDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CGirderLabelFormatDlg();
 
 // Dialog Data

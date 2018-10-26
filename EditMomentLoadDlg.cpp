@@ -48,7 +48,7 @@ static char THIS_FILE[] = __FILE__;
 // CEditMomentLoadDlg dialog
 
 
-CEditMomentLoadDlg::CEditMomentLoadDlg(const CMomentLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/):
+CEditMomentLoadDlg::CEditMomentLoadDlg(const CMomentLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent /*=nullptr*/):
 	CDialog(CEditMomentLoadDlg::IDD, pParent),
    m_Load(load),
    m_TimelineMgr(*pTimelineMgr)

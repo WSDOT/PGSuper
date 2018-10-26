@@ -38,7 +38,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IExtendUIEventSink* pIExtendUIEventSink = reinterpret_cast<IExtendUIEventSink*>(*pp);
 				ret = pIExtendUIEventSink->OnHintsReset();

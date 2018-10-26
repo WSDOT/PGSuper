@@ -164,8 +164,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   psgLibraryManager(const psgLibraryManager&);
-   psgLibraryManager& operator=(const psgLibraryManager&);
+   psgLibraryManager(const psgLibraryManager&) = delete;
+   psgLibraryManager& operator=(const psgLibraryManager&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

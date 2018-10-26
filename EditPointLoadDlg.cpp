@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 // CEditPointLoadDlg dialog
 
 
-CEditPointLoadDlg::CEditPointLoadDlg(const CPointLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/):
+CEditPointLoadDlg::CEditPointLoadDlg(const CPointLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent /*=nullptr*/):
 	CDialog(CEditPointLoadDlg::IDD, pParent),
    m_Load(load),
    m_TimelineMgr(*pTimelineMgr)
@@ -209,9 +209,17 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
       }
       ATLASSERT(m_SpanCB.GetCurSel() != CB_ERR);
 
-      const CSpanData2* pSpan = pBridgeDesc->GetSpan(m_Load.m_SpanKey.spanIndex);
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType nGirders;
+      if (m_Load.m_SpanKey.spanIndex == ALL_SPANS)
+      {
+         nGirders = pBridgeDesc->GetMinGirderCount();
+      }
+      else
+      {
+         const CSpanData2* pSpan = pBridgeDesc->GetSpan(m_Load.m_SpanKey.spanIndex);
+         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+         nGirders = pGroup->GetGirderCount();
+      }
 
       if ( nGirders <= m_Load.m_SpanKey.girderIndex && m_Load.m_SpanKey.girderIndex != ALL_GIRDERS )
       {

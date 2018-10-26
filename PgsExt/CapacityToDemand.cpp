@@ -179,7 +179,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 rptCapacityToDemand::rptCapacityToDemand():
 rptRcString(_T("Undef")),
-m_RcSymbolInfinity(rptRcSymbol::INFINITY),
+m_RcSymbolInfinity(rptRcSymbol::infinity),
 m_Capacity(0.0), m_Demand(0.0), m_Passed(false)
 {
    Init();
@@ -187,7 +187,7 @@ m_Capacity(0.0), m_Demand(0.0), m_Passed(false)
 
 rptCapacityToDemand::rptCapacityToDemand(Float64 capacity, Float64 demand, bool passed):
 rptRcString(_T("Undef")),
-m_RcSymbolInfinity(rptRcSymbol::INFINITY),
+m_RcSymbolInfinity(rptRcSymbol::infinity),
 m_Capacity(capacity), m_Demand(demand), m_Passed(passed)
 {
    Init();
@@ -203,7 +203,7 @@ void rptCapacityToDemand::Init()
 
 
 rptCapacityToDemand::rptCapacityToDemand(const rptCapacityToDemand& rOther) :
-m_RcSymbolInfinity(rptRcSymbol::INFINITY),
+m_RcSymbolInfinity(rptRcSymbol::infinity),
 rptRcString(rOther)
 {
    MakeCopy( rOther );
@@ -267,6 +267,7 @@ rptReportContent& rptCapacityToDemand::SetValue(Float64 capacity, Float64 demand
 
 std::_tstring rptCapacityToDemand::AsString() const
 {
+#pragma Reminder("REVIEW: Should this be an override of the base class GetString method???")
    if (Sign(m_Capacity) != Sign(m_Demand))
    {
       // Cannot have negative c/d

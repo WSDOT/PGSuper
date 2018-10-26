@@ -92,7 +92,7 @@ protected:
    void MakeCopy(const CConstructabilityCheckTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CConstructabilityCheckTable& rOther);
+   void MakeAssignment(const CConstructabilityCheckTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

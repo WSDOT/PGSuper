@@ -43,8 +43,8 @@ CRailingSystem::CRailingSystem()
    strExteriorRailing = _T("");
    strInteriorRailing = _T("");
 
-   pExteriorRailing = NULL;
-   pInteriorRailing = NULL;
+   pExteriorRailing = nullptr;
+   pInteriorRailing = nullptr;
 
    bUseSidewalk = false;
    bUseInteriorRailing = false;

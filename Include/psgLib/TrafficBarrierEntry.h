@@ -172,7 +172,7 @@ protected:
    void MakeCopy(const TrafficBarrierEntry& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const TrafficBarrierEntry& rOther);
+   void MakeAssignment(const TrafficBarrierEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 

@@ -30,14 +30,14 @@ class CLoadRatingSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CLoadRatingSummaryChapterBuilder(bool bSelect = true);
-   virtual LPCTSTR GetName() const;
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-   virtual CChapterBuilder* Clone() const;
+   virtual LPCTSTR GetName() const override;
+   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
+   virtual CChapterBuilder* Clone() const override;
 
 private:
    // Prevent accidental copying and assignment
-   CLoadRatingSummaryChapterBuilder(const CLoadRatingSummaryChapterBuilder&);
-   CLoadRatingSummaryChapterBuilder& operator=(const CLoadRatingSummaryChapterBuilder&);
+   CLoadRatingSummaryChapterBuilder(const CLoadRatingSummaryChapterBuilder&) = delete;
+   CLoadRatingSummaryChapterBuilder& operator=(const CLoadRatingSummaryChapterBuilder&) = delete;
 
    void ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const;
    void ReportRatingFactor2(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const;

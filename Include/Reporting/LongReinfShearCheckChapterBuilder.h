@@ -81,8 +81,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CLongReinfShearCheckChapterBuilder(const CLongReinfShearCheckChapterBuilder&);
-   CLongReinfShearCheckChapterBuilder& operator=(const CLongReinfShearCheckChapterBuilder&);
+   CLongReinfShearCheckChapterBuilder(const CLongReinfShearCheckChapterBuilder&) = delete;
+   CLongReinfShearCheckChapterBuilder& operator=(const CLongReinfShearCheckChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -62,8 +62,8 @@ public:
    CFileTemplateManager(LPCTSTR strExt);
 
 protected:
-   virtual CFileFind* CreateFileFinder();
-   virtual BOOL GetFile(const CString& strSource,const CString& strDestination);
+   virtual CFileFind* CreateFileFinder() override;
+   virtual BOOL GetFile(const CString& strSource,const CString& strDestination) override;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -74,8 +74,8 @@ public:
    CFTPTemplateManager(LPCTSTR strExt,CFtpConnection* pFTP);
 
 protected:
-   virtual CFileFind* CreateFileFinder();
-   virtual BOOL GetFile(const CString& strSource,const CString& strDestination);
+   virtual CFileFind* CreateFileFinder() override;
+   virtual BOOL GetFile(const CString& strSource,const CString& strDestination) override;
 
 private:
    CFtpConnection* m_pFTP;

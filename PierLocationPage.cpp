@@ -111,7 +111,7 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
-      pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+      pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
       if (pgsTypes::sdtNone != deckType)
       {
@@ -163,7 +163,7 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
                {
                   // this pier is at an abutment
 
-                  if ( pParent->m_pPier->GetPrevSpan() == NULL )
+                  if ( pParent->m_pPier->GetPrevSpan() == nullptr )
                   {
                      // we are at the start of the bridge so the data is in the ahead controls
                      pParent->m_pPier->GetGirderGroup(pgsTypes::Ahead)->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Ahead]);
@@ -247,7 +247,7 @@ BOOL CPierLocationPage::OnInitDialog()
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
    if (deckType != pgsTypes::sdtNone)
    {
@@ -296,7 +296,7 @@ BOOL CPierLocationPage::OnInitDialog()
    if ( pParent->m_pPier->IsAbutment() )
    {
       ATLASSERT(m_PierFaceCount == 1);
-      if ( pParent->m_pPier->GetPrevSpan() == NULL )
+      if ( pParent->m_pPier->GetPrevSpan() == nullptr )
       {
          GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
          GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);

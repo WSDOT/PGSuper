@@ -31,7 +31,7 @@ class CEditTimelineDlg : public CDialog
 	DECLARE_DYNAMIC(CEditTimelineDlg)
 
 public:
-	CEditTimelineDlg(CWnd* pParent = NULL);   // standard constructor
+	CEditTimelineDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CEditTimelineDlg();
 
 // Dialog Data

@@ -79,8 +79,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CDistributionFactorSummaryChapterBuilder(const CDistributionFactorSummaryChapterBuilder&);
-   CDistributionFactorSummaryChapterBuilder& operator=(const CDistributionFactorSummaryChapterBuilder&);
+   CDistributionFactorSummaryChapterBuilder(const CDistributionFactorSummaryChapterBuilder&) = delete;
+   CDistributionFactorSummaryChapterBuilder& operator=(const CDistributionFactorSummaryChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -16,7 +16,7 @@
 
 IMPLEMENT_DYNAMIC(CRemoveTempSupportsDlg, CDialog)
 
-CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CRemoveTempSupportsDlg::IDD, pParent)
 {
    m_TimelineMgr = timelineMgr;

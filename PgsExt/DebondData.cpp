@@ -78,7 +78,7 @@ HRESULT CDebondData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    return S_OK;
 }
 
-HRESULT CDebondData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CDebondData::Save(IStructuredSave* pStrSave,IProgress* pProgress) const
 {
    pStrSave->BeginUnit(_T("DebondInfo"),2.0);
    pStrSave->put_Property(_T("Strand"),    CComVariant(strandTypeGridIdx));

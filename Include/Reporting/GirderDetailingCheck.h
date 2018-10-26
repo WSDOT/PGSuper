@@ -87,7 +87,7 @@ protected:
    void MakeCopy(const CGirderDetailingCheck& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CGirderDetailingCheck& rOther);
+   void MakeAssignment(const CGirderDetailingCheck& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

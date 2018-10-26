@@ -43,7 +43,7 @@ class CRatingDialog : public CPropertySheet
 public:
 	CRatingDialog( RatingLibraryEntry& rentry,
       bool allowEditing,
-      CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+      CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
 // Attributes
 public:
@@ -78,11 +78,11 @@ public:
    CRatingDescriptionPage m_RatingDescriptionPage;
 
    // for LRFR before 2013
-   CLiveLoadFactorsPage*   m_LiveLoadFactorsPage1[4];
+   CLiveLoadFactorsPage*   m_LiveLoadFactorsPage1[5];
    CLiveLoadFactorsPage*   m_PermitLiveLoadFactorsPage1[4];
 
    // for LRFR 2013 and later
-   CLiveLoadFactorsPage*   m_LiveLoadFactorsPage2[4];
+   CLiveLoadFactorsPage*   m_LiveLoadFactorsPage2[5];
    CLiveLoadFactorsPage*   m_PermitLiveLoadFactorsPage2[4];
 
    void ExchangeDescriptionData(CDataExchange* pDX);

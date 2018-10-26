@@ -60,7 +60,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
    CATID ID[nID];
 
    ID[0] = GetImporterCATID();
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    const int nPlugins = 5;
    CLSID clsid[nPlugins]; 
@@ -120,7 +120,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
    // Load Exporters
    ID[0] = GetExporterCATID();
    pIEnumCLSID.Release();
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
    UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN;
    while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
    {
@@ -256,7 +256,7 @@ const CBitmap* CPGSuperPluginMgrBase::GetExporterBitmap(CollectionIndexType idx)
 
 void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 {
-   BOOST_FOREACH(ImporterRecord& record,m_ImporterPlugins )
+   for (const auto& record : m_ImporterPlugins )
    {
       CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
       if ( pDocumentation )
@@ -265,7 +265,7 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
       }
    }
 
-   BOOST_FOREACH(ExporterRecord& record,m_ExporterPlugins )
+   for (const auto& record : m_ExporterPlugins )
    {
       CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
       if ( pDocumentation )
@@ -280,7 +280,7 @@ eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocS
    USES_CONVERSION;
    CComBSTR bstrTargetDocSetName(lpszDocSetName);
 
-   BOOST_FOREACH(ImporterRecord& record,m_ImporterPlugins )
+   for (const auto& record : m_ImporterPlugins )
    {
       CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
       if ( pDocumentation )
@@ -305,7 +305,7 @@ eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocS
       }
    }
 
-   BOOST_FOREACH(ExporterRecord& record,m_ExporterPlugins )
+   for (const auto& record : m_ExporterPlugins )
    {
       CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
       if ( pDocumentation )

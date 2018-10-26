@@ -34,7 +34,7 @@
 
 IMPLEMENT_DYNAMIC(CEditTimelineDlg, CDialog)
 
-CEditTimelineDlg::CEditTimelineDlg(CWnd* pParent /*=NULL*/)
+CEditTimelineDlg::CEditTimelineDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CEditTimelineDlg::IDD, pParent)
 {
 

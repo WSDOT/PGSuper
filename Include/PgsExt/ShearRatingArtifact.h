@@ -126,7 +126,7 @@ public:
 
 protected:
    void MakeCopy(const pgsShearRatingArtifact& rOther);
-   virtual void MakeAssignment(const pgsShearRatingArtifact& rOther);
+   void MakeAssignment(const pgsShearRatingArtifact& rOther);
 
    mutable bool m_bRFComputed;
    mutable Float64 m_RF;

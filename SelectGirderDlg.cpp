@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 // CSelectGirderDlg dialog
 
 
-CSelectGirderDlg::CSelectGirderDlg(IBroker* pBroker, CWnd* pParent /*=NULL*/)
+CSelectGirderDlg::CSelectGirderDlg(IBroker* pBroker, CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectGirderDlg::IDD, pParent),
    m_pBroker(pBroker)
 {

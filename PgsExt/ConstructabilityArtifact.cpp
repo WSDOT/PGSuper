@@ -495,7 +495,7 @@ void pgsConstructabilityArtifact::AddSpanArtifact(SpanIndexType span, const pgsS
 
 const pgsSpanConstructabilityArtifact*  pgsConstructabilityArtifact::GetSpanArtifact(SpanIndexType span) const
 {
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artifact, m_SpanArtifacts)
+   for (const auto& artifact : m_SpanArtifacts)
    {
       if (artifact.m_Span == span)
       {
@@ -503,7 +503,7 @@ const pgsSpanConstructabilityArtifact*  pgsConstructabilityArtifact::GetSpanArti
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 SpanIndexType pgsConstructabilityArtifact::GetSpans(SpanIndexType* pStartSpanIdx, SpanIndexType* pEndSpanIdx) const
@@ -517,7 +517,7 @@ SpanIndexType pgsConstructabilityArtifact::GetSpans(SpanIndexType* pStartSpanIdx
    else
    {
       SpanIndexType minSpan(MAX_INDEX), maxSpan(0);
-      BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artifact, m_SpanArtifacts)
+      for (const auto& artifact : m_SpanArtifacts)
       {
          minSpan = min(minSpan, artifact.m_Span);
          maxSpan = max(maxSpan, artifact.m_Span);
@@ -533,7 +533,7 @@ SpanIndexType pgsConstructabilityArtifact::GetSpans(SpanIndexType* pStartSpanIdx
 bool pgsConstructabilityArtifact::Passed() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.Passed())
          return false;
@@ -545,7 +545,7 @@ bool pgsConstructabilityArtifact::Passed() const
 bool pgsConstructabilityArtifact::IsSlabOffsetApplicable() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.IsSlabOffsetApplicable())
          return false;
@@ -557,7 +557,7 @@ bool pgsConstructabilityArtifact::IsSlabOffsetApplicable() const
 bool pgsConstructabilityArtifact::SlabOffsetPassed() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.SlabOffsetPassed())
          return false;
@@ -569,7 +569,7 @@ bool pgsConstructabilityArtifact::SlabOffsetPassed() const
 bool pgsConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.IsHaunchAtBearingCLsApplicable())
          return false;
@@ -581,7 +581,7 @@ bool pgsConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
 bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.HaunchAtBearingCLsPassed())
          return false;
@@ -593,7 +593,7 @@ bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const
 bool pgsConstructabilityArtifact::IsBottomFlangeClearanceApplicable() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.IsBottomFlangeClearanceApplicable())
          return false;
@@ -605,7 +605,7 @@ bool pgsConstructabilityArtifact::IsBottomFlangeClearanceApplicable() const
 bool pgsConstructabilityArtifact::BottomFlangeClearancePassed() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.BottomFlangeClearancePassed())
          return false;
@@ -617,7 +617,7 @@ bool pgsConstructabilityArtifact::BottomFlangeClearancePassed() const
 bool pgsConstructabilityArtifact::MinimumFilletPassed() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.MinimumFilletPassed())
          return false;
@@ -629,7 +629,7 @@ bool pgsConstructabilityArtifact::MinimumFilletPassed() const
 bool pgsConstructabilityArtifact::HaunchGeometryPassed() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.HaunchGeometryPassed())
          return false;
@@ -641,7 +641,7 @@ bool pgsConstructabilityArtifact::HaunchGeometryPassed() const
 bool pgsConstructabilityArtifact::CheckStirrupLength() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
-   BOOST_FOREACH(const pgsSpanConstructabilityArtifact& artf,m_SpanArtifacts)
+   for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.CheckStirrupLength())
          return false;

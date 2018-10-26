@@ -31,7 +31,7 @@ class CDuctEntryDlg : public CDialog
 {
 // Construction
 public:
-	CDuctEntryDlg(bool allowEditing, CWnd* pParent = NULL);   // standard constructor
+	CDuctEntryDlg(bool allowEditing, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDuctEntryDlg)

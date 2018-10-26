@@ -34,7 +34,7 @@ class CProjectCriteriaNotFoundDlg : public CDialog
 	DECLARE_DYNAMIC(CProjectCriteriaNotFoundDlg)
 
 public:
-	CProjectCriteriaNotFoundDlg(CWnd* pParent = NULL);   // standard constructor
+	CProjectCriteriaNotFoundDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CProjectCriteriaNotFoundDlg();
 
 // Dialog Data

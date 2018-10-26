@@ -65,13 +65,13 @@ CTitlePageBuilder* CTOGATitlePageBuilder::Clone() const
 }
 
 
-bool CTOGATitlePageBuilder::NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec)
+bool CTOGATitlePageBuilder::NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec)
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>& pRptSpec)
+rptChapter* CTOGATitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& pRptSpec)
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
@@ -153,7 +153,7 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
    // girder seed data comparison
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
    p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, fabrSegmentKey);
-   if (p != NULL)
+   if (p != nullptr)
    {
       // only report if we have data
       *pTitlePage << p;

@@ -84,7 +84,7 @@ protected:
    void MakeCopy(const pgsStirrupCheckArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsStirrupCheckArtifact& rOther);
+   void MakeAssignment(const pgsStirrupCheckArtifact& rOther);
 
 private:
    struct Key

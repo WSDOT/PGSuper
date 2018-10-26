@@ -21,7 +21,7 @@ void DDX_DuctGeometry(CDataExchange* pDX,COffsetDuctGrid& grid,COffsetDuctGeomet
 
 IMPLEMENT_DYNAMIC(COffsetDuctDlg, CDialog)
 
-COffsetDuctDlg::COffsetDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent /*=NULL*/)
+COffsetDuctDlg::COffsetDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent /*=nullptr*/)
 	: CDialog(COffsetDuctDlg::IDD, pParent)
 {
    m_pGirderlineDlg = pGdrDlg;

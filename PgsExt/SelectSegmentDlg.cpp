@@ -35,7 +35,7 @@
 
 IMPLEMENT_DYNAMIC(CSelectSegmentDlg, CDialog)
 
-CSelectSegmentDlg::CSelectSegmentDlg(CWnd* pParent /*=NULL*/)
+CSelectSegmentDlg::CSelectSegmentDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectSegmentDlg::IDD, pParent)
 {
 

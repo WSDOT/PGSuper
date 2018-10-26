@@ -84,8 +84,8 @@ private:
    void Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
 
    // Prevent accidental copying and assignment
-   CCritSectionChapterBuilder(const CCritSectionChapterBuilder&);
-   CCritSectionChapterBuilder& operator=(const CCritSectionChapterBuilder&);
+   CCritSectionChapterBuilder(const CCritSectionChapterBuilder&) = delete;
+   CCritSectionChapterBuilder& operator=(const CCritSectionChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

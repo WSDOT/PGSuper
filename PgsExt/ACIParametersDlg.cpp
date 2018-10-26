@@ -35,7 +35,7 @@
 
 IMPLEMENT_DYNAMIC(CACIParametersDlg, CDialog)
 
-CACIParametersDlg::CACIParametersDlg(CWnd* pParent /*=NULL*/)
+CACIParametersDlg::CACIParametersDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CACIParametersDlg::IDD, pParent)
 {
    m_fc1 = ::ConvertToSysUnits(4.0,unitMeasure::KSI);

@@ -37,7 +37,7 @@ class CSpecDesignPage : public CPropertyPage
 	DECLARE_DYNCREATE(CSpecDesignPage)
 // Construction
 public:
-	CSpecDesignPage(CWnd* pParent = NULL);   // standard constructor
+	CSpecDesignPage(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSpecDesignPage)
@@ -70,6 +70,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    afx_msg void OnBnClickedCheckBottomFlangeClearance();
+   afx_msg void OnBnClickedCheckInclindedGirder();
    virtual BOOL OnSetActive();
    afx_msg void OnBnClickedLlDeflection();
 };

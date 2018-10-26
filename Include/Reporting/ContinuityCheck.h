@@ -82,7 +82,7 @@ protected:
    void MakeCopy(const CContinuityCheck& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CContinuityCheck& rOther);
+   void MakeAssignment(const CContinuityCheck& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

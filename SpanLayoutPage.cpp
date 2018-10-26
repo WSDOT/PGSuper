@@ -119,10 +119,10 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    {
       pParent->m_BridgeDesc.SetSpanLength(pParent->m_pSpanData->GetIndex(),m_SpanLength);
 
-      if (pgsTypes::sdtNone != pParent->m_BridgeDesc.GetDeckDescription()->DeckType)
+      if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
       {
          Float64 minA  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-         if (pgsTypes::sdtCompositeSIP == pParent->m_BridgeDesc.GetDeckDescription()->DeckType)
+         if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP)
          {
             minA += pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
          }
@@ -255,8 +255,8 @@ BOOL CSpanLayoutPage::OnInitDialog()
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
-      ShowCantilevers(pParent->m_pSpanData->GetPrevPier()->GetPrevSpan() == NULL ? TRUE : FALSE,
-                      pParent->m_pSpanData->GetNextPier()->GetNextSpan() == NULL ? TRUE : FALSE);
+      ShowCantilevers(pParent->m_pSpanData->GetPrevPier()->GetPrevSpan() == nullptr ? TRUE : FALSE,
+                      pParent->m_pSpanData->GetNextPier()->GetNextSpan() == nullptr ? TRUE : FALSE);
    }
    else
    {
@@ -265,7 +265,7 @@ BOOL CSpanLayoutPage::OnInitDialog()
    
    CPropertyPage::OnInitDialog();
 
-   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
    CComboBox* pFilletCB = (CComboBox*)this->GetDlgItem(IDC_FILLET_COMBO);
    CComboBox* pSlabOffsetCB = (CComboBox*)this->GetDlgItem(IDC_SLABOFFSET_COMBO);
@@ -456,7 +456,7 @@ void CSpanLayoutPage::UpdateSlabOffsetWindowState()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
    pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
    BOOL bEnable = TRUE;
    if (deckType == pgsTypes::sdtNone || slabOffsetType == pgsTypes::sotBridge || slabOffsetType == pgsTypes::sotGirder )

@@ -33,7 +33,7 @@
 #include <PgsExt\GirderDesignArtifact.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include "DesignGirder.h"
-#include <boost\shared_ptr.hpp>
+#include <memory>
 #include "afxwin.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ class CDesignOutcomeDlg : public CDialog
 {
 // Construction
 public:
-   CDesignOutcomeDlg(boost::shared_ptr<CMultiGirderReportSpecification>& pRptSpec,const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim, CWnd* pParent=NULL);
+   CDesignOutcomeDlg(std::shared_ptr<CMultiGirderReportSpecification>& pRptSpec,const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim, CWnd* pParent=nullptr);
 
 // Dialog Data
 	//{{AFX_DATA(CDesignOutcomeDlg)
@@ -75,8 +75,8 @@ public:
 protected:
    void CleanUp();
 
-   boost::shared_ptr<CMultiGirderReportSpecification> m_pRptSpec;
-   boost::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   std::shared_ptr<CMultiGirderReportSpecification> m_pRptSpec;
+   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
    const std::vector<CGirderKey> m_GirderKeys;
    arSlabOffsetDesignType m_DesignADimType;
 

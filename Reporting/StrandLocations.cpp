@@ -98,7 +98,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    StrandIndexType Ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
    StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   rptRcTable* pStraightLayoutTable = NULL;
+   rptRcTable* pStraightLayoutTable = nullptr;
    if ( 0 < Ns && 0 < Nt )
    {
       pStraightLayoutTable = rptStyleManager::CreateLayoutTable(2);
@@ -167,7 +167,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          if ( 0 < nDebonded ) 
          {
             Float64 start,end;
-            if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Straight,&start,&end) )
+            if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Straight,nullptr,&start,&end) )
             {
                (*p_table)(row,col++) << len.SetValue(start);
                (*p_table)(row,col++) << len.SetValue(Lg - end);
@@ -248,7 +248,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          if ( 0 < nDebonded ) 
          {
             Float64 start,end;
-            if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Temporary,&start,&end) )
+            if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Temporary,nullptr,&start,&end) )
             {
                (*p_table)(row,3) << len.SetValue(start);
                (*p_table)(row,4) << len.SetValue(end);
@@ -416,7 +416,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
             if ( 0 < nDebonded ) 
             {
                Float64 start,end;
-               if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Harped,&start,&end) )
+               if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Harped,nullptr,&start,&end) )
                {
                   (*p_table)(row,3) << len.SetValue(start);
                   (*p_table)(row,4) << len.SetValue(end);

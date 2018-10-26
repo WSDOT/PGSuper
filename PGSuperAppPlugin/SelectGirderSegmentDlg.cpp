@@ -36,7 +36,7 @@
 
 IMPLEMENT_DYNAMIC(CSelectGirderSegmentDlg, CDialog)
 
-CSelectGirderSegmentDlg::CSelectGirderSegmentDlg(CWnd* pParent /*=NULL*/)
+CSelectGirderSegmentDlg::CSelectGirderSegmentDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectGirderSegmentDlg::IDD, pParent)
 {
    m_Group   = INVALID_INDEX;

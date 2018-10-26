@@ -82,7 +82,7 @@ DuctIndexType CEffectivePrestressGraphController::GetDuct()
 
 bool CEffectivePrestressGraphController::IsStressGraph()
 {
-   if ( GetSafeHwnd() == NULL )
+   if ( GetSafeHwnd() == nullptr )
    {
       return true;
    }
@@ -94,7 +94,7 @@ bool CEffectivePrestressGraphController::IsStressGraph()
 
 bool CEffectivePrestressGraphController::IsPermanentStrands()
 {
-   if ( GetSafeHwnd() == NULL )
+   if ( GetSafeHwnd() == nullptr )
    {
       return true;
    }

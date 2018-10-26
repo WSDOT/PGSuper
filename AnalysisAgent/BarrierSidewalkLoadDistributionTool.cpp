@@ -39,6 +39,8 @@
 #include <PgsExt\PierData2.h>
 #include <PgsExt\TemporarySupportData.h>
 
+#include <algorithm>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

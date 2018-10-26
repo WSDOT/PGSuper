@@ -41,7 +41,7 @@ public:
 
 protected:
 
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
    void FillGroupCtrl();
    void FillGirderCtrl();

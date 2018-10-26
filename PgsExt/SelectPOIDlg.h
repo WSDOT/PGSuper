@@ -30,7 +30,7 @@ class CSelectPOIDlg : public CDialog
 	DECLARE_DYNAMIC(CSelectPOIDlg)
 
 public:
-	CSelectPOIDlg(CWnd* pParent = NULL);   // standard constructor
+	CSelectPOIDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSelectPOIDlg();
 
 // Dialog Data
@@ -43,12 +43,12 @@ public:
    pgsPointOfInterest GetPOI();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
    std::vector<pgsPointOfInterest> m_vPOI;
 

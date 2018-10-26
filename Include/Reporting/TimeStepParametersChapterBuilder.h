@@ -54,6 +54,6 @@ protected:
 
 private:
    // Prevent accidental copying and assignment
-   CTimeStepParametersChapterBuilder(const CTimeStepParametersChapterBuilder&);
-   CTimeStepParametersChapterBuilder& operator=(const CTimeStepParametersChapterBuilder&);
+   CTimeStepParametersChapterBuilder(const CTimeStepParametersChapterBuilder&) = delete;
+   CTimeStepParametersChapterBuilder& operator=(const CTimeStepParametersChapterBuilder&) = delete;
 };

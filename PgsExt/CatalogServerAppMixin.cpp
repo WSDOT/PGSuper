@@ -285,85 +285,7 @@ CString CCatalogServerAppMixin::GetMasterLibraryPublisher() const
 
    return strPublisher;
 }
-/*
-BOOL CCatalogServerAppMixin::UpdateProgramSettings(BOOL bFirstRun) 
-{
-   CEAFApp* pApp = EAFGetApp();
 
-   if (!bFirstRun && pApp->IsDocLoaded())
-   {
-      AfxMessageBox(_T("Program settings cannot be changed while a project is open. Close this project and try again."),MB_OK|MB_ICONINFORMATION);
-   }
-   else
-   {
-      INT_PTR result=0;
-
-      // Save a copy of all server information in case our update fails
-      SharedResourceType   original_type = m_SharedResourceType;
-      CacheUpdateFrequency original_freq = m_CacheUpdateFrequency;
-      CString              original_server = m_CurrentCatalogServer;
-      CString              original_publisher = m_Publisher;
-      CCatalogServers      original_servers = m_CatalogServers;
-
-      bool doUpdate(false);
-      // scope module state
-      {
-         AFX_MANAGE_STATE(AfxGetStaticModuleState());
-         CConfigurePGSuperDlg dlg(GetAppName(),GetTemplateFileExtension(),bFirstRun,EAFGetMainFrame());
-
-         dlg.m_SharedResourceType   = m_SharedResourceType;
-         dlg.m_CacheUpdateFrequency = m_CacheUpdateFrequency;
-         dlg.m_CurrentServer        = m_CurrentCatalogServer;
-         dlg.m_Publisher            = m_Publisher;
-         dlg.m_Servers              = m_CatalogServers;
-
-         result = dlg.DoModal();
-
-         if ( result == IDOK )
-         {
-            m_SharedResourceType   = dlg.m_SharedResourceType;
-            m_CacheUpdateFrequency = dlg.m_CacheUpdateFrequency;
-
-            m_CatalogServers       = dlg.m_Servers;
-            m_CurrentCatalogServer = dlg.m_CurrentServer;
-            m_Publisher            = dlg.m_Publisher;
-
-            if ( m_SharedResourceType == srtDefault )
-            {
-               // Using hard coded defaults
-               RestoreLibraryAndTemplatesToDefault();
-            }
-         }
-
-         doUpdate = dlg.m_bUpdateCache;
-      }
-
-      // must be careful with scoping state
-      if ( doUpdate )
-      {
-         if (!DoCacheUpdate())
-         {  
-            // DoCacheUpdate will restore the cache, we need also to restore local data
-            m_SharedResourceType   = original_type;
-            m_CacheUpdateFrequency = original_freq;
-            m_CurrentCatalogServer = original_server;
-            m_Publisher            = original_publisher;
-            m_CatalogServers       = original_servers;
-         }
-      }
-
-      if ( result == IDOK )
-      {
-         SaveRegistryValues(); // Saves all the current settings to the registery
-                               // There is no sense waiting until PGSuper closes to do this
-      }
-
-      return (result == IDOK ? TRUE : FALSE);
-   }
-
-   return FALSE;
-}
-*/
 CPropertyPage* CCatalogServerAppMixin::CreatePropertyPage()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -616,14 +538,14 @@ bool CCatalogServerAppMixin::AreUpdatesPending()
       {
          // Catalog server does the work here
          const CCatalogServer* pserver = m_CatalogServers.GetServer(m_CurrentCatalogServer);
-         if (pserver!=NULL)
+         if (pserver!=nullptr)
          {
-            bUpdatesPending = pserver->CheckForUpdates(m_Publisher, NULL, GetCacheFolder());
+            bUpdatesPending = pserver->CheckForUpdates(m_Publisher, nullptr, GetCacheFolder());
          }
          else
          {
             CString msg;
-			msg.Format(_T("Error: the configuration server, %s, could not be found."),m_CurrentCatalogServer);
+            msg.Format(_T("Error: the configuration server, %s, could not be found."),m_CurrentCatalogServer);
             CCatalogServerException exc(CCatalogServerException::ceServerNotFound, msg);
             throw exc;
          }
@@ -763,9 +685,8 @@ bool CCatalogServerAppMixin::DoCacheUpdate()
 
 sysDate CCatalogServerAppMixin::GetLastCacheUpdateDate()
 {
-
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(GetAppName(),pApp);
 
    JulTy last_update = pApp->GetProfileInt(_T("Settings"),_T("LastCacheUpdate"),0);
@@ -775,7 +696,7 @@ sysDate CCatalogServerAppMixin::GetLastCacheUpdateDate()
 void CCatalogServerAppMixin::SetLastCacheUpdateDate(const sysDate& date)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(GetAppName(),pApp);
 
    pApp->WriteProfileInt(_T("Settings"),_T("LastCacheUpdate"),date.Hash());
@@ -838,7 +759,7 @@ CString CCatalogServerAppMixin::GetCacheFolder()
    CEAFApp* pParentApp = EAFGetApp();
 
    TCHAR buffer[MAX_PATH];
-   BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
+   BOOL bResult = ::SHGetSpecialFolderPath(nullptr,buffer,CSIDL_APPDATA,FALSE);
 
    if ( !bResult )
    {
@@ -858,7 +779,7 @@ CString CCatalogServerAppMixin::GetSaveCacheFolder()
    CWinApp* pMyApp     = AfxGetApp();
 
    TCHAR buffer[MAX_PATH];
-   BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
+   BOOL bResult = ::SHGetSpecialFolderPath(nullptr,buffer,CSIDL_APPDATA,FALSE);
 
    if ( !bResult )
    {
@@ -887,7 +808,7 @@ void CCatalogServerAppMixin::ProcessLibrarySetUp(const CPGSBaseCommandLineInfo& 
 
    // find our server
    const CCatalogServer* pserver = GetCatalogServers()->GetServer(rCmdInfo.m_CatalogServerName);
-   if (pserver != NULL)
+   if (pserver != nullptr)
    {
       m_SharedResourceType   = pserver->GetServerType();
 

@@ -81,7 +81,7 @@ protected:
    void MakeCopy(const CStirrupTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CStirrupTable& rOther);
+   void MakeAssignment(const CStirrupTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

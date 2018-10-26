@@ -31,7 +31,7 @@ class CFilletSame4BridgeDlg : public CDialog
 	DECLARE_DYNAMIC(CFilletSame4BridgeDlg)
 
 public:
-	CFilletSame4BridgeDlg(CWnd* pParent = NULL);   // standard constructor
+	CFilletSame4BridgeDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CFilletSame4BridgeDlg();
 
    void DownloadData(HaunchInputData* pdata, CDataExchange* pDX);

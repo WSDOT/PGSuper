@@ -55,7 +55,7 @@ class CLLDFFillDlg : public CDialog
 	DECLARE_DYNAMIC(CLLDFFillDlg)
 
 public:
-	CLLDFFillDlg(CWnd* pParent = NULL);   // standard constructor
+	CLLDFFillDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CLLDFFillDlg();
 
 // Functions to get data after dialog closes

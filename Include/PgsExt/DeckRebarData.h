@@ -141,7 +141,7 @@ protected:
    void MakeCopy(const CDeckRebarData& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CDeckRebarData& rOther);
+   void MakeAssignment(const CDeckRebarData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

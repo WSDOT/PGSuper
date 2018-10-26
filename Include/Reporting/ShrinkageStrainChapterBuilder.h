@@ -72,8 +72,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CShrinkageStrainChapterBuilder(const CShrinkageStrainChapterBuilder&);
-   CShrinkageStrainChapterBuilder& operator=(const CShrinkageStrainChapterBuilder&);
+   CShrinkageStrainChapterBuilder(const CShrinkageStrainChapterBuilder&) = delete;
+   CShrinkageStrainChapterBuilder& operator=(const CShrinkageStrainChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

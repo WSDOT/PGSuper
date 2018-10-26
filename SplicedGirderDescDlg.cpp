@@ -108,7 +108,7 @@ void CSplicedGirderDescDlg::CreateExtensionPages()
          extension.callbackID = callbackIter->first;
          extension.pCallback = pCallback;
          extension.pPage = pPage;
-         m_ExtensionPages.insert(extension);
+         m_ExtensionPages.push_back(extension);
          AddPage(pPage);
       }
    }
@@ -116,8 +116,8 @@ void CSplicedGirderDescDlg::CreateExtensionPages()
 
 void CSplicedGirderDescDlg::DestroyExtensionPages()
 {
-   std::set<EditSplicedGirderExtension>::iterator extIter(m_ExtensionPages.begin());
-   std::set<EditSplicedGirderExtension>::iterator extIterEnd(m_ExtensionPages.end());
+   std::vector<EditSplicedGirderExtension>::iterator extIter(m_ExtensionPages.begin());
+   std::vector<EditSplicedGirderExtension>::iterator extIterEnd(m_ExtensionPages.end());
    for ( ; extIter != extIterEnd; extIter++ )
    {
       CPropertyPage* pPage = extIter->pPage;
@@ -128,16 +128,20 @@ void CSplicedGirderDescDlg::DestroyExtensionPages()
 
 txnTransaction* CSplicedGirderDescDlg::GetExtensionPageTransaction()
 {
-   if ( 0 < m_Macro.GetTxnCount() )
+   if (0 < m_Macro.GetTxnCount())
+   {
       return m_Macro.CreateClone();
+   }
    else
-      return NULL;
+   {
+      return nullptr;
+   }
 }
 
 void CSplicedGirderDescDlg::NotifyExtensionPages()
 {
-   std::set<EditSplicedGirderExtension>::iterator pageIter(m_ExtensionPages.begin());
-   std::set<EditSplicedGirderExtension>::iterator pageIterEnd(m_ExtensionPages.end());
+   std::vector<EditSplicedGirderExtension>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<EditSplicedGirderExtension>::iterator pageIterEnd(m_ExtensionPages.end());
    for ( ; pageIter != pageIterEnd; pageIter++ )
    {
       IEditSplicedGirderCallback* pCallback = pageIter->pCallback;
@@ -150,12 +154,12 @@ void CSplicedGirderDescDlg::NotifyExtensionPages()
    }
 }
 
-const std::set<EditSplicedGirderExtension>& CSplicedGirderDescDlg::GetExtensionPages() const
+const std::vector<EditSplicedGirderExtension>& CSplicedGirderDescDlg::GetExtensionPages() const
 {
    return m_ExtensionPages;
 }
 
-std::set<EditSplicedGirderExtension>& CSplicedGirderDescDlg::GetExtensionPages()
+std::vector<EditSplicedGirderExtension>& CSplicedGirderDescDlg::GetExtensionPages()
 {
    return m_ExtensionPages;
 }
@@ -181,7 +185,7 @@ LRESULT CSplicedGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );

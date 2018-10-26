@@ -47,11 +47,11 @@ public:
 
 
    BEGIN_INTERFACE_PART(DropSite,iDropSite)
-      STDMETHOD_(DROPEFFECT,CanDrop)(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point);
-      STDMETHOD_(void,OnDropped)(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point);
-      STDMETHOD_(void,SetDisplayObject)(iDisplayObject* pDO);
-      STDMETHOD_(void,GetDisplayObject)(iDisplayObject** dispObj);
-      STDMETHOD_(void,Highlite)(CDC* pDC,BOOL bHighlite);
+      STDMETHOD_(DROPEFFECT,CanDrop)(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point) override;
+      STDMETHOD_(void,OnDropped)(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point) override;
+      STDMETHOD_(void,SetDisplayObject)(iDisplayObject* pDO) override;
+      STDMETHOD_(void,GetDisplayObject)(iDisplayObject** dispObj) override;
+      STDMETHOD_(void,Highlite)(CDC* pDC,BOOL bHighlite) override;
    END_INTERFACE_PART(DropSite)
 
 private:
@@ -59,6 +59,28 @@ private:
    CGirderModelChildFrame* m_pFrame;
    CComPtr<iDisplayObject> m_DispObj;
    CSpanKey m_SpanKey;
+
+   template <class T>
+   void InitLoad(T& load) const
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+
+      load.m_SpanKey = m_SpanKey;
+   
+      EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+
+      EventIndexType eventIndex = m_pFrame->GetEvent();
+      if (eventIndex == liveLoadEventIdx)
+      {
+         load.m_LoadCase = UserLoads::LL_IM;
+      }
+      else
+      {
+         load.m_LoadCase = UserLoads::DC;
+      }
+   }
 };
 
 #endif // !defined(AFX_GIRDERDROPSITE_H__1F8A97C9_F789_11D4_8B9B_006097C68A9C__INCLUDED_)

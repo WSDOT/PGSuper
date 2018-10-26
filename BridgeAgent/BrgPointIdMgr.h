@@ -105,7 +105,7 @@ private:
 
    // Prevent accidental copying and assignment
    CBrgPointIdMgr(const CBrgPointIdMgr&);
-   CBrgPointIdMgr& operator=(const CBrgPointIdMgr&);
+   CBrgPointIdMgr& operator=(const CBrgPointIdMgr&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -49,16 +49,16 @@ public:
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Events,iDisplayMgrEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseMove)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayMgr* pDO,UINT nFlags,short zDelta,CPoint point);
-      STDMETHOD_(bool,OnKeyDown)(iDisplayMgr* pDO,UINT nChar, UINT nRepCnt, UINT nFlags);
-      STDMETHOD_(bool,OnContextMenu)(iDisplayMgr* pDO,CWnd* pWnd,CPoint point);
+      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnLButtonDown)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnRButtonDown)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnLButtonUp)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnRButtonUp)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnMouseMove)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
+      STDMETHOD_(bool,OnMouseWheel)(iDisplayMgr* pDO,UINT nFlags,short zDelta,CPoint point) override;
+      STDMETHOD_(bool,OnKeyDown)(iDisplayMgr* pDO,UINT nChar, UINT nRepCnt, UINT nFlags) override;
+      STDMETHOD_(bool,OnContextMenu)(iDisplayMgr* pDO,CWnd* pWnd,CPoint point) override;
    END_INTERFACE_PART(Events)
 
 };

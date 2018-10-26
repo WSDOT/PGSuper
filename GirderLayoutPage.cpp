@@ -181,8 +181,8 @@ void CSpanGirderLayoutPage::Init(CSpanDetailsDlg* pParent)
       m_CacheRefGirderOffsetType[end] = m_RefGirderOffsetType[end];
 
       m_GirderSpacingCache[end] = *pSpacing;
-      m_GirderSpacingCache[end].SetPier(NULL);
-      m_GirderSpacingCache[end].SetTemporarySupport(NULL);
+      m_GirderSpacingCache[end].SetPier(nullptr);
+      m_GirderSpacingCache[end].SetTemporarySupport(nullptr);
 
       m_SpacingGrid[end].InitializeGridData( pSpacing,
                                              pParent->m_pGirderGroup,
@@ -190,7 +190,7 @@ void CSpanGirderLayoutPage::Init(CSpanDetailsDlg* pParent)
                                              pPier->GetIndex(),
                                              skew_angle,
                                              pPier->IsAbutment(),
-                                             pParent->m_BridgeDesc.GetDeckDescription()->DeckType);
+                                             pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType());
    }
 
    m_nGirders = pParent->m_pGirderGroup->GetGirderCount();
@@ -369,10 +369,10 @@ void CSpanGirderLayoutPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult)
    m_GirderSpacingCache[pgsTypes::metStart] = *(pParent->m_pGirderGroup->GetPier(pgsTypes::metStart)->GetGirderSpacing(pgsTypes::Ahead));
    m_GirderSpacingCache[pgsTypes::metEnd]   = *(pParent->m_pGirderGroup->GetPier(pgsTypes::metEnd  )->GetGirderSpacing(pgsTypes::Back ));
 
-   m_GirderSpacingCache[pgsTypes::metStart].SetPier(NULL);
-   m_GirderSpacingCache[pgsTypes::metStart].SetTemporarySupport(NULL);
-   m_GirderSpacingCache[pgsTypes::metEnd].SetPier(NULL);
-   m_GirderSpacingCache[pgsTypes::metEnd].SetTemporarySupport(NULL);
+   m_GirderSpacingCache[pgsTypes::metStart].SetPier(nullptr);
+   m_GirderSpacingCache[pgsTypes::metStart].SetTemporarySupport(nullptr);
+   m_GirderSpacingCache[pgsTypes::metEnd].SetPier(nullptr);
+   m_GirderSpacingCache[pgsTypes::metEnd].SetTemporarySupport(nullptr);
 
    FillRefGirderComboBox(pgsTypes::metStart);
    FillRefGirderComboBox(pgsTypes::metEnd);
@@ -606,8 +606,8 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
 
          CGirderSpacing2* pGirderSpacing = pParent->m_pSpanData->GetPier(end)->GetGirderSpacing(face);
          m_GirderSpacingCache[end] = *pGirderSpacing; // update the cache before changing values
-         m_GirderSpacingCache[end].SetPier(NULL);
-         m_GirderSpacingCache[end].SetTemporarySupport(NULL);
+         m_GirderSpacingCache[end].SetPier(nullptr);
+         m_GirderSpacingCache[end].SetTemporarySupport(nullptr);
 
          GroupIndexType nSpacingGroups = pGirderSpacing->GetSpacingGroupCount();
          for ( GroupIndexType spaIdx = 0; spaIdx < nSpacingGroups;spaIdx++ )

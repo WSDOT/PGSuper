@@ -47,7 +47,7 @@ CClosureJointDlg::CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const 
    Init(pBridgeDesc);
 }
 
-CClosureJointDlg::CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd, UINT iSelectPage)
+CClosureJointDlg::CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T("Closure Joint Details"), pParentWnd, iSelectPage),
    m_ClosureKey(closureKey)
 {
@@ -118,7 +118,7 @@ void CClosureJointDlg::Init(const CBridgeDescription2* pBridgeDesc)
    CreateExtensionPages();
 }
 
-void CClosureJointDlg::Init(const CBridgeDescription2* pBridgeDesc,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
+void CClosureJointDlg::Init(const CBridgeDescription2* pBridgeDesc,const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
    CommonInit(pBridgeDesc);
    CreateExtensionPages(editSplicedGirderExtensions);
@@ -144,12 +144,13 @@ void CClosureJointDlg::CreateExtensionPages()
    }
 }
 
-void CClosureJointDlg::CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
+void CClosureJointDlg::CreateExtensionPages(const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_SplicedGirderExtensionPages = editSplicedGirderExtensions;
+   std::sort(m_SplicedGirderExtensionPages.begin(), m_SplicedGirderExtensionPages.end());
 
 
    std::map<IDType,IEditClosureJointCallback*> callbacks = pDoc->GetEditClosureJointCallbacks();
@@ -159,7 +160,7 @@ void CClosureJointDlg::CreateExtensionPages(const std::set<EditSplicedGirderExte
    {
       IEditClosureJointCallback* pEditClosureJointCallback = callbackIter->second;
       IDType editSplicedGirderCallbackID = pEditClosureJointCallback->GetEditSplicedGirderCallbackID();
-      CPropertyPage* pPage = NULL;
+      CPropertyPage* pPage = nullptr;
       if ( editSplicedGirderCallbackID == INVALID_ID )
       {
          pPage = pEditClosureJointCallback->CreatePropertyPage(this);
@@ -168,7 +169,7 @@ void CClosureJointDlg::CreateExtensionPages(const std::set<EditSplicedGirderExte
       {
          EditSplicedGirderExtension key;
          key.callbackID = editSplicedGirderCallbackID;
-         std::set<EditSplicedGirderExtension>::const_iterator found(m_SplicedGirderExtensionPages.find(key));
+         std::vector<EditSplicedGirderExtension>::const_iterator found(std::find(m_SplicedGirderExtensionPages.begin(),m_SplicedGirderExtensionPages.end(),key));
          if ( found != m_SplicedGirderExtensionPages.end() )
          {
             const EditSplicedGirderExtension& extension = *found;
@@ -205,7 +206,7 @@ txnTransaction* CClosureJointDlg::GetExtensionPageTransaction()
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
@@ -231,7 +232,7 @@ void CClosureJointDlg::NotifySplicedGirderExtensionPages()
       {
          EditSplicedGirderExtension key;
          key.callbackID = editSplicedGirderCallbackID;
-         std::set<EditSplicedGirderExtension>::iterator found(m_SplicedGirderExtensionPages.find(key));
+         std::vector<EditSplicedGirderExtension>::iterator found(std::find(m_SplicedGirderExtensionPages.begin(),m_SplicedGirderExtensionPages.end(),key));
          if ( found != m_SplicedGirderExtensionPages.end() )
          {
             EditSplicedGirderExtension& extension = *found;
@@ -311,7 +312,7 @@ LRESULT CClosureJointDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );

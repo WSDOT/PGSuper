@@ -119,7 +119,7 @@ bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
    CComPtr<IEnumPoint2d> enum_points;
    m_BarrierPoints->get__Enum(&enum_points);
    CComPtr<IPoint2d> point;
-   while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+   while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
    {
       Float64 x,y;
       point->get_X(&x);
@@ -633,7 +633,7 @@ void TrafficBarrierEntry::CopyPoints(IPoint2dCollection* points1,IPoint2dCollect
    CComPtr<IEnumPoint2d> enum_points;
    points2->get__Enum(&enum_points);
    CComPtr<IPoint2d> point;
-   while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+   while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
    {
       Float64 x,y;
       point->get_X(&x);
@@ -655,7 +655,7 @@ void TrafficBarrierEntry::CopyPoints(IPoint2dCollection* points1,IPoint2dCollect
    CComPtr<IEnumPoint2d> enum_points;
    points2->get__Enum(&enum_points);
    CComPtr<IPoint2d> point;
-   while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+   while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
    {
       Float64 x,y;
       point->get_X(&x);
@@ -712,7 +712,7 @@ void TrafficBarrierEntry::CreatePolyShape(pgsTypes::TrafficBarrierOrientation or
    CComPtr<IEnumPoint2d> enum_points;
    points->get__Enum(&enum_points);
    CComPtr<IPoint2d> point;
-   while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+   while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
    {
       Float64 x,y;
       point->get_X(&x);

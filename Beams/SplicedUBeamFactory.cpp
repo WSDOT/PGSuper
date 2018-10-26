@@ -159,7 +159,7 @@ void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    CComPtr<ISplicedGirderSegment> segment;
    segment.CoCreateInstance(CLSID_USplicedGirderSegment);
 
-   ATLASSERT(segment != NULL);
+   ATLASSERT(segment != nullptr);
 
    // Build up the beam shape
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -202,7 +202,7 @@ void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&material);
    CComQIPtr<IShape> shape(gdrSection);
    ATLASSERT(shape);
-   segment->AddShape(shape,material,NULL);
+   segment->AddShape(shape,material,nullptr);
 
    ssmbr->AddSegment(segment);
 }

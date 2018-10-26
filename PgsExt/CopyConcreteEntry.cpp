@@ -46,10 +46,10 @@ static char THIS_FILE[] = __FILE__;
 // CCopyConcreteEntry dialog
 
 
-CCopyConcreteEntry::CCopyConcreteEntry(bool isPrestressed, CWnd* pParent /*=NULL*/)
+CCopyConcreteEntry::CCopyConcreteEntry(bool isPrestressed, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyConcreteEntry::IDD, pParent),
    m_IsPrestressed(isPrestressed) ,
-   m_ConcreteEntry(NULL)
+   m_ConcreteEntry(nullptr)
 {
 	//{{AFX_DATA_INIT(CCopyConcreteEntry)
 		// NOTE: the ClassWizard will add member initialization here

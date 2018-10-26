@@ -709,7 +709,7 @@ protected:
    void MakeCopy(const GirderLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const GirderLibraryEntry& rOther);
+   void MakeAssignment(const GirderLibraryEntry& rOther);
 
 private:
    // GROUP: DATA MEMBERS

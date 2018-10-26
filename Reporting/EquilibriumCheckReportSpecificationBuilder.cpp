@@ -44,7 +44,7 @@ CEquilibriumCheckReportSpecificationBuilder::~CEquilibriumCheckReportSpecificati
 {
 }
 
-boost::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -69,25 +69,25 @@ boost::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuil
    pgsPointOfInterest initial_poi = vPoi.front();
 
    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
-   boost::shared_ptr<CEquilibriumCheckReportSpecification> pOldGRptSpec = boost::dynamic_pointer_cast<CEquilibriumCheckReportSpecification>(pOldRptSpec);
+   std::shared_ptr<CEquilibriumCheckReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CEquilibriumCheckReportSpecification>(pOldRptSpec);
 
    CEquilibriumCheckDlg dlg(m_pBroker,pOldGRptSpec,initial_poi,0);
 
    if ( dlg.DoModal() == IDOK )
    {     
 
-      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      std::shared_ptr<CReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
-         boost::shared_ptr<CEquilibriumCheckReportSpecification> pNewGRptSpec = boost::shared_ptr<CEquilibriumCheckReportSpecification>( new CEquilibriumCheckReportSpecification(*pOldGRptSpec) );
+         std::shared_ptr<CEquilibriumCheckReportSpecification> pNewGRptSpec(std::make_shared<CEquilibriumCheckReportSpecification>(*pOldGRptSpec));
 
          pNewGRptSpec->SetOptions(dlg.GetPOI(),dlg.GetInterval());
 
-         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
       }
       else
       {
-         pNewRptSpec = boost::shared_ptr<CEquilibriumCheckReportSpecification>( new CEquilibriumCheckReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.GetPOI(),dlg.GetInterval()) );
+         pNewRptSpec = std::make_shared<CEquilibriumCheckReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.GetPOI(),dlg.GetInterval());
       }
 
       rptDesc.ConfigureReportSpecification(pNewRptSpec);
@@ -95,12 +95,11 @@ boost::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuil
       return pNewRptSpec;
    }
 
-   return boost::shared_ptr<CReportSpecification>();
+   return nullptr;
 }
 
-boost::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
 {
    // always prompt
-   boost::shared_ptr<CReportSpecification> nullSpec;
-   return CreateReportSpec(rptDesc,nullSpec);
+   return CreateReportSpec(rptDesc,std::shared_ptr<CReportSpecification>());
 }

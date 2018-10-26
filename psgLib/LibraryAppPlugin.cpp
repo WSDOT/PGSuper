@@ -135,7 +135,7 @@ std::vector<CEAFDocTemplate*> CLibraryAppPlugin::CreateDocTemplates()
 
 HMENU CLibraryAppPlugin::GetSharedMenuHandle()
 {
-   return NULL;
+   return nullptr;
 }
 
 CString CLibraryAppPlugin::GetName()

@@ -38,7 +38,7 @@ public:
    int GetXAxisType();
 
 protected:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CConcretePropertyGraphController)
    //}}AFX_MSG

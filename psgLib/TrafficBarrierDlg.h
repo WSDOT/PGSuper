@@ -43,7 +43,7 @@ class CTrafficBarrierDlg : public CDialog
 // Construction
 public:
 	CTrafficBarrierDlg(bool allowEditing,
-      CWnd* pParent = NULL);   // standard constructor
+      CWnd* pParent = nullptr);   // standard constructor
 
 	DECLARE_DYNAMIC(CTrafficBarrierDlg)
 

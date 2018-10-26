@@ -9,18 +9,15 @@
 //
 #include "afxres.h"
 #include "grid/gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -65,8 +62,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,57
- PRODUCTVERSION 3,0,0,57
+ FILEVERSION 3,1,0,0
+ PRODUCTVERSION 3,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -84,12 +81,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "3.0.0.57"
+            VALUE "FileVersion", "3.1.0.0"
             VALUE "InternalName", "PgsExt"
             VALUE "LegalCopyright", "Copyright © 1999-2017, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.57"
+            VALUE "ProductVersion", "3.1.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -268,7 +265,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,98,92,50,14
     COMBOBOX        IDC_CONC_ENTRIES,7,33,232,153,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Select Concrete Library Entry To Be Copied",IDC_LABEL,7,18,138,8
-    ICON            363,IDC_WARNING,22,57,20,20,SS_NOTIFY
+    ICON            IDI_WARNING2,IDC_WARNING,22,57,20,20,SS_NOTIFY
     LTEXT           "Note that the concrete strength at release, f'c, is not specified by the library entry. You must specify it manually after you close this dialog.",IDC_WARNOTE,50,55,184,29
     PUSHBUTTON      "Help",IDHELP,162,92,50,14
 END
@@ -375,13 +372,21 @@ END
 //
 
 IDB_HINGES              BITMAP                  "res\\Hinges.bmp"
+
 IDB_ROLLERS             BITMAP                  "res\\Rollers.bmp"
+
 IDB_CONTINUOUS          BITMAP                  "res\\Continuous.bmp"
+
 IDB_IP_HINGES           BITMAP                  "res\\InteriorPierHinges.bmp"
+
 IDB_IP_ROLLERS          BITMAP                  "res\\InteriorPierRollers.bmp"
+
 IDB_COLUMN_FIXITY       BITMAP                  "res\\ColumnFixity.bmp"
+
 IDB_HAUNCH_SQUARE       BITMAP                  "res\\HaunchSquare.bmp"
+
 IDB_HAUNCH_FILLETED     BITMAP                  "res\\HaunchFilleted.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -392,13 +397,14 @@ IDB_HAUNCH_FILLETED     BITMAP                  "res\\HaunchFilleted.bmp"
 // remains consistent on all systems.
 IDI_EARTH               ICON                    "res\\Globe.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DESIGNINFO
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_REFINEDANALYSIS, DIALOG
     BEGIN
@@ -520,7 +526,7 @@ END
 // Menu
 //
 
-IDR_ADD_DELETE_POPUP MENU 
+IDR_ADD_DELETE_POPUP MENU
 BEGIN
     POPUP "Edit"
     BEGIN
@@ -532,21 +538,32 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_AASHTO_CONCRETE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nThe concrete will be treated as Normal Weight."
     IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nThe concrete will be treated as Lightweight."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_NOCHAPTERS        "Please select at least one chapter for the report."
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -569,7 +586,6 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid/gxres.rc"               // Objective Grid resources
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

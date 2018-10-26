@@ -35,12 +35,12 @@ CTimelineEvent::CTimelineEvent()
    m_ID = INVALID_ID;
    m_Day = 0;
    m_Description = _T("Unknown");
-   m_pTimelineMgr = NULL;
+   m_pTimelineMgr = nullptr;
 }
 
 CTimelineEvent::CTimelineEvent(const CTimelineEvent& rOther)
 {
-   m_pTimelineMgr = NULL;
+   m_pTimelineMgr = nullptr;
    m_ID = INVALID_ID;
    MakeCopy(rOther);
 }

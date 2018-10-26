@@ -8,6 +8,24 @@ Boundary Condition
 ------------------
 Use the drop down list to select a connection boundary condition.
 
+Item | Description
+-----|-------------------------
+Hinge | Idealized "knife edge" support. Vertical and horizontal support.
+Roller | Idealized "roller" support. Vertical support only.
+Continuous | Vertical and horizontal support. No moment connection with pier. Used for bridges without decks. Continuity occurs prior to placement of superimposed dead loads.
+Continuous after deck placement | Vertical and horizontal support. No moment connection with pier. Continuity occurs prior to placement of superimposed dead loads.
+Continuous before deck placement | Vertical and horizontal support. No moment connection with pier. Continuity occurs before placement of deck concrete.
+Integral | Vertical, horizontal, and rotational support. Full moment connection with pier. Used for bridges without decks. Continuity occurs prior to placement of superimposed dead loads.
+Integral after deck placement | Vertical, horizontal, and rotational support. Full moment connection with pier. Continuity occurs prior to placement of superimposed dead loads.
+Integral before deck placement | Vertical, horizontal, and rotational support. Full moment connection with pier. Continuity occurs before placement of deck concrete.
+Hinged on back side; Integral on ahead side | Hinged on back side of pier and integral on ahead side. See Hinge and Integral boundary conditions.
+Hinged on back side; Integral on ahead side after deck placement | Hinged on back side of pier and integral on ahead side. See Hinge and Integral after deck placement boundary conditions.
+Hinged on back side; Integral on ahead side before deck placement | Hinged on back side of pier and integral on ahead side. See Hinge and Integral before deck placement boundary conditions.
+Integral on back side; Hinged on ahead side | Integral on back side of pier and hinged on ahead side. See Integral and Hinge boundary conditions.
+Integral on back side after deck placement; Hinged on ahead side | Integral on back side of pier and hinged on ahead side. See Integral after deck placement and Hinge boundary conditions.
+Integral on back side before deck placement; Hinged on ahead side | Integral on back side of pier and hinged on ahead side. See Integral before deck placement and Hinge boundary conditions.
+
+
 Connection Definition
 ---------------------
 Define the geometry of the connection. Press [Copy Connection Geometry from Library] to copy pre-defined connection geometry from the library.

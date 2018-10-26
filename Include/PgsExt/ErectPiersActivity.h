@@ -67,7 +67,7 @@ public:
 
 protected:
    void MakeCopy(const CSupportActivityBase& rOther);
-   virtual void MakeAssignment(const CSupportActivityBase& rOther);
+   void MakeAssignment(const CSupportActivityBase& rOther);
 
    // called by load/save to give subclasses an opportunity to load/save data
    virtual HRESULT LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress);
@@ -105,14 +105,14 @@ public:
    Float64 GetCuringDuration() const;
 
 protected:
-   virtual LPCTSTR GetUnitName() { return _T("CastClosurePours"); }
-   virtual Float64 GetUnitVersion() { return 2.0; }
+   virtual LPCTSTR GetUnitName() override { return _T("CastClosurePours"); }
+   virtual Float64 GetUnitVersion() override { return 2.0; }
 
    void MakeCopy(const CCastClosureJointActivity& rOther);
-   virtual void MakeAssignment(const CCastClosureJointActivity& rOther);
+   void MakeAssignment(const CCastClosureJointActivity& rOther);
 
-   virtual HRESULT LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress);
-   virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress);
+   virtual HRESULT LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress) override;
+   virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress) override;
 
    Float64 m_Age; // age of concrete when continuity between segments is acheived
    Float64 m_CuringDuration; // duration of time closure is cured (used in shrinkage computations)

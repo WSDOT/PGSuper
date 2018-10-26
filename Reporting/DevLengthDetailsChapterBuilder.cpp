@@ -457,7 +457,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    (*pParagraph) << _T("Full-length deck bars are considered to be developed along entire length of girder.") << rptNewLine;
 
    const std::vector<CDeckRebarData::NegMomentRebarData> negMomRebarColl = pDeck->DeckRebarData.NegMomentRebar;
-   if ( pDeck->DeckType == pgsTypes::sdtNone || negMomRebarColl.empty() )
+   if ( pDeck->GetDeckType() == pgsTypes::sdtNone || negMomRebarColl.empty() )
    {
       (*pParagraph) << _T("No partial-length longitudinal rebar exists in deck.") << rptNewLine;
    }

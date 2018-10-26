@@ -40,12 +40,12 @@ public:
    CDeflectionHistoryGraphBuilder(const CDeflectionHistoryGraphBuilder& other);
    virtual ~CDeflectionHistoryGraphBuilder();
 
-   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
-   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
-   virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
-   virtual CGraphBuilder* Clone();
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID) override;
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
+   virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC) override;
+   virtual CGraphBuilder* Clone() const override;
 
-   virtual CEAFGraphControlWindow* GetGraphControlWindow();
+   virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
 
 protected:
    void Init();
@@ -67,7 +67,7 @@ protected:
 
    int m_XAxisType;
 
-   virtual bool UpdateNow();
+   virtual bool UpdateNow() override;
 
    void UpdateXAxis();
    void UpdateYAxis();

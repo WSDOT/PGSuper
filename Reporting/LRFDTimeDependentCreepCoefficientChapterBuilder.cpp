@@ -410,7 +410,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
                (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
             }
 
-            boost::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetSegmentCreepCoefficientDetails(segmentKey,releaseIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+            std::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetSegmentCreepCoefficientDetails(segmentKey,releaseIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
             lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
             (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
@@ -452,7 +452,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
                   (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
                }
 
-               boost::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetClosureJointCreepCoefficientDetails(closureKey,compositeClosureIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+               std::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetClosureJointCreepCoefficientDetails(closureKey,compositeClosureIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
                lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
                (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
@@ -493,7 +493,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
             (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
          }
 
-         boost::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetDeckCreepCoefficientDetails(compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+         std::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetDeckCreepCoefficientDetails(compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
          lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
          (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;

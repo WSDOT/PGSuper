@@ -120,7 +120,7 @@ LRESULT CRatingOptionsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
@@ -188,7 +188,7 @@ txnTransaction* CRatingOptionsDlg::GetExtensionPageTransaction()
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 

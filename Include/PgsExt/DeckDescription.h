@@ -113,7 +113,7 @@ public:
 
 protected:
    void MakeCopy(const CDeckDescription& rOther);
-   virtual void MakeAssignment(const CDeckDescription& rOther);
+   void MakeAssignment(const CDeckDescription& rOther);
 
    const CBridgeDescription* m_pBridgeDesc;
 };

@@ -79,8 +79,8 @@ private:
    bool m_bRating;
 
    // Prevent accidental copying and assignment
-   CShearCapacityDetailsChapterBuilder(const CShearCapacityDetailsChapterBuilder&);
-   CShearCapacityDetailsChapterBuilder& operator=(const CShearCapacityDetailsChapterBuilder&);
+   CShearCapacityDetailsChapterBuilder(const CShearCapacityDetailsChapterBuilder&) = delete;
+   CShearCapacityDetailsChapterBuilder& operator=(const CShearCapacityDetailsChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

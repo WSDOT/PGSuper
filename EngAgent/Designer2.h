@@ -377,13 +377,13 @@ public:
 
    pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config);
 
-   // Returns a girder check artifact if the girder was already checked, otherwise returns NULL
+   // Returns a girder check artifact if the girder was already checked, otherwise returns nullptr
    const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey);
 
-   // Returns a lifting analysis artifact if the segment was already checked, otherwise returns NULL
+   // Returns a lifting analysis artifact if the segment was already checked, otherwise returns nullptr
    const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey);
 
-   // Returns a nauling analysis artifact if the segment was already checked, otherwise returns NULL
+   // Returns a nauling analysis artifact if the segment was already checked, otherwise returns nullptr
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey);
 
    // Clears all cached artifacts
@@ -392,10 +392,10 @@ public:
 protected:
    void DoDesign(const CGirderKey& girderKey, const arDesignOptions& options, pgsGirderDesignArtifact& artifact);
    void MakeCopy(const pgsDesigner2& rOther);
-   virtual void MakeAssignment(const pgsDesigner2& rOther);
+   void MakeAssignment(const pgsDesigner2& rOther);
 
 private:
-   std::map<CGirderKey,boost::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
+   std::map<CGirderKey,std::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
    std::map<CSegmentKey,stbLiftingCheckArtifact> m_LiftingCheckArtifacts;
    std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
 
@@ -514,7 +514,7 @@ private:
 
    void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG& config,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact);
    void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact);
-   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact);
+   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact);
 
    // poi based shear checks
    void CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, Float64 vu,

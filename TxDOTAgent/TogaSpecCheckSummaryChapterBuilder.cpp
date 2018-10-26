@@ -80,7 +80,7 @@ rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRp
    const pgsGirderArtifact* pArtifact = pGetTogaResults->GetFabricatorDesignArtifact();
 
    // Use original summary report chapter builder
-   std::auto_ptr<CSpecCheckSummaryChapterBuilder> pchb( new CSpecCheckSummaryChapterBuilder(m_ReferToDetailsReport) );
+   std::unique_ptr<CSpecCheckSummaryChapterBuilder> pchb( std::make_unique<CSpecCheckSummaryChapterBuilder>(m_ReferToDetailsReport) );
 
    rptChapter* pChap = pchb->BuildEx(pRptSpec, level, pArtifact);
 

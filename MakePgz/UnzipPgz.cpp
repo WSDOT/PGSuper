@@ -26,7 +26,7 @@ uzErrorType UnZipPGZ(_TCHAR* fileName,_TCHAR* folderName,bool emitMessages)
 {
   HZIP hz;
   hz = OpenZip(fileName,0);
-  if (hz==NULL)
+  if (hz==nullptr)
   {
      if (emitMessages)
          _tprintf(_T("Error opening compressed file: %s \n"),fileName);

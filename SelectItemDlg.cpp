@@ -38,7 +38,7 @@ static char THIS_FILE[] = __FILE__;
 // CSelectItemDlg dialog
 
 
-CSelectItemDlg::CSelectItemDlg(CWnd* pParent /*=NULL*/)
+CSelectItemDlg::CSelectItemDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectItemDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSelectItemDlg)

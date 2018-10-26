@@ -62,13 +62,13 @@ void CTxDOTOptionalDesignPropertySheet::OnSize(UINT nType, int cx, int cy)
 
    // resize the CTabCtrl
    CTabCtrl* pTab = GetTabControl ();
-   if (pTab!=NULL && ::IsWindow(pTab->m_hWnd))
+   if (pTab!=nullptr && ::IsWindow(pTab->m_hWnd))
    {
       pTab->MoveWindow(0, 0, cx, cy);
    }
 
    CPropertyPage* pPage = GetActivePage();
-   if (pPage!=NULL && ::IsWindow(pPage->m_hWnd))
+   if (pPage!=nullptr && ::IsWindow(pPage->m_hWnd))
    {
       CRect rc;
       pTab->GetWindowRect (&rc);

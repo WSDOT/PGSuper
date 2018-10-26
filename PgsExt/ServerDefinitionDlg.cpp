@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CServerDefinitionDlg dialog
 // constructor when adding a new server
-CServerDefinitionDlg::CServerDefinitionDlg(const CCatalogServers& servers,const CString& strExt,const CString& appName,CWnd* pParent /*=NULL*/)
+CServerDefinitionDlg::CServerDefinitionDlg(const CCatalogServers& servers,const CString& strExt,const CString& appName,CWnd* pParent /*=nullptr*/)
 	: CDialog(CServerDefinitionDlg::IDD, pParent), m_Servers(servers), m_TemplateFileExt(strExt),
    m_AppName(appName)
 {
@@ -52,7 +52,7 @@ CServerDefinitionDlg::CServerDefinitionDlg(const CCatalogServers& servers,const 
 
 // constructor when editing an existing server
 CServerDefinitionDlg::CServerDefinitionDlg(const CCatalogServers& servers,const CCatalogServer* pCurrentServer,const CString& strExt,const CString& appName,
-                                           CWnd* pParent /*=NULL*/)
+                                           CWnd* pParent /*=nullptr*/)
 	: CDialog(CServerDefinitionDlg::IDD, pParent), m_Servers(servers), m_TemplateFileExt(strExt),
    m_AppName(appName)
 {
@@ -223,7 +223,7 @@ void CServerDefinitionDlg::OnBnClickedTestServer()
    if (UpdateData(true))
    {
       CCatalogServer* pServer = CreateServer();
-      if (pServer == NULL)
+      if (pServer == nullptr)
       {
          AfxMessageBox(_T("Failed to create server. Check your input data"));
       }
@@ -283,7 +283,7 @@ CCatalogServer* CServerDefinitionDlg::CreateServer()
       ATLASSERT(false);
    }
 
-   return NULL;
+   return nullptr;
 }
 
 void CServerDefinitionDlg::OnCbnSelchangeServerType()

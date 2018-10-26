@@ -114,7 +114,7 @@ void CBridgeDescDlg::CreateExtensionPages()
          extension.callbackID = callbackIter->first;
          extension.pCallback = pCallback;
          extension.pPage = pPage;
-         m_ExtensionPages.insert(extension);
+         m_ExtensionPages.push_back(extension);
          AddPage(pPage);
       }
    }
@@ -122,8 +122,8 @@ void CBridgeDescDlg::CreateExtensionPages()
 
 void CBridgeDescDlg::DestroyExtensionPages()
 {
-   std::set<EditBridgeExtension>::iterator extIter(m_ExtensionPages.begin());
-   std::set<EditBridgeExtension>::iterator extIterEnd(m_ExtensionPages.end());
+   std::vector<EditBridgeExtension>::iterator extIter(m_ExtensionPages.begin());
+   std::vector<EditBridgeExtension>::iterator extIterEnd(m_ExtensionPages.end());
    for ( ; extIter != extIterEnd; extIter++ )
    {
       CPropertyPage* pPage = extIter->pPage;
@@ -132,12 +132,12 @@ void CBridgeDescDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-const std::set<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages() const
+const std::vector<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages() const
 {
    return m_ExtensionPages;
 }
 
-std::set<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages()
+std::vector<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages()
 {
    return m_ExtensionPages;
 }
@@ -150,14 +150,14 @@ txnTransaction* CBridgeDescDlg::GetExtensionPageTransaction()
    }
    else
    {
-      return NULL;
+      return nullptr;
    }
 }
 
 void CBridgeDescDlg::NotifyExtensionPages()
 {
-   std::set<EditBridgeExtension>::iterator pageIter(m_ExtensionPages.begin());
-   std::set<EditBridgeExtension>::iterator pageIterEnd(m_ExtensionPages.end());
+   std::vector<EditBridgeExtension>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<EditBridgeExtension>::iterator pageIterEnd(m_ExtensionPages.end());
    for ( ; pageIter != pageIterEnd; pageIter++ )
    {
       IEditBridgeCallback* pCallback = pageIter->pCallback;
@@ -233,7 +233,7 @@ LRESULT CBridgeDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );

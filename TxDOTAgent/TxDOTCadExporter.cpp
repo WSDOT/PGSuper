@@ -57,12 +57,6 @@ STDMETHODIMP CTxDOTCadExporter::Init(UINT nCmdID)
    return S_OK;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetName(BSTR*  bstrText)
-{
-   *bstrText = CComBSTR("TxDOT CAD Data Exporter");
-   return S_OK;
-}
-
 STDMETHODIMP CTxDOTCadExporter::GetMenuText(BSTR*  bstrText)
 {
    *bstrText = CComBSTR("TxDOT &CAD Data...");
@@ -71,7 +65,7 @@ STDMETHODIMP CTxDOTCadExporter::GetMenuText(BSTR*  bstrText)
 
 STDMETHODIMP CTxDOTCadExporter::GetBitmapHandle(HBITMAP* phBmp)
 {
-   *phBmp = NULL;
+   *phBmp = nullptr;
    return S_OK;
 }
 
@@ -129,7 +123,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
    BOOL bIsExtended = FALSE;
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	   exportCADData  caddlg (pBroker, NULL);
+	   exportCADData  caddlg (pBroker, nullptr);
       caddlg.m_GirderKeys = girderKeys;
       caddlg.m_IsExtended = bIsExtended;
 
@@ -186,8 +180,8 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
             pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
 
 		   /* Open/create the specified text file */
-      	FILE	*fp = NULL;
-         if (_tfopen_s(&fp,LPCTSTR(file_path), _T("w+")) != 0 || fp == NULL)
+      	FILE	*fp = nullptr;
+         if (_tfopen_s(&fp,LPCTSTR(file_path), _T("w+")) != 0 || fp == nullptr)
          {
 			   AfxMessageBox (_T("Warning: File Cannot be Created."));
 			   return S_OK;

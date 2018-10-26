@@ -82,7 +82,7 @@ protected:
    void MakeCopy(const COptionalDeflectionCheck& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const COptionalDeflectionCheck& rOther);
+   void MakeAssignment(const COptionalDeflectionCheck& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

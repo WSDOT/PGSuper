@@ -28,12 +28,12 @@ class CTOGAStatusBar : public CEAFStatusBar
 {
 public:
    CTOGAStatusBar() {}
-   virtual BOOL Create(CWnd* pParentWnd, DWORD dwStyle = WS_CHILD | WS_VISIBLE | CBRS_BOTTOM, UINT nID = AFX_IDW_STATUS_BAR);
+   virtual BOOL Create(CWnd* pParentWnd, DWORD dwStyle = WS_CHILD | WS_VISIBLE | CBRS_BOTTOM, UINT nID = AFX_IDW_STATUS_BAR) override;
 
 #if _WBFL_VERSION < 330
-   virtual void EnableModifiedFlag(BOOL bEnable);
+   virtual void EnableModifiedFlag(BOOL bEnable) override;
 #endif
 
 protected:
-   virtual void GetStatusIndicators(const UINT** lppIDArray,int* pnIDCount);
+   virtual void GetStatusIndicators(const UINT** lppIDArray,int* pnIDCount) override;
 };

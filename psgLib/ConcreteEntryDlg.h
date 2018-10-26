@@ -37,7 +37,7 @@ class CConcreteEntryDlg : public CPropertySheet
 {
 // Construction
 public:
-	CConcreteEntryDlg(bool allowEditing,CWnd* pParent = NULL,UINT iSelectPage =0);   // standard constructor
+	CConcreteEntryDlg(bool allowEditing,CWnd* pParent = nullptr,UINT iSelectPage =0);   // standard constructor
    ~CConcreteEntryDlg();
 
 // Operations

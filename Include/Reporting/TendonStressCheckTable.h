@@ -54,7 +54,7 @@ public:
 
 protected:
    void MakeCopy(const CTendonStressCheckTable& rOther);
-   virtual void MakeAssignment(const CTendonStressCheckTable& rOther);
+   void MakeAssignment(const CTendonStressCheckTable& rOther);
 
 public:
    // GROUP: DEBUG

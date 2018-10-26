@@ -32,7 +32,7 @@ class CStrandGenerationDlg : public CDialog
 	DECLARE_DYNAMIC(CStrandGenerationDlg)
 
 public:
-	CStrandGenerationDlg(CWnd* pParent = NULL);   // standard constructor
+	CStrandGenerationDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CStrandGenerationDlg();
 
 // Dialog Data

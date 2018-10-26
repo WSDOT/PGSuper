@@ -65,7 +65,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IProjectPropertiesEventSink* pIProjectPropertiesEventSink = reinterpret_cast<IProjectPropertiesEventSink*>(*pp);
 				ret = pIProjectPropertiesEventSink->OnProjectPropertiesChanged();
@@ -101,7 +101,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IEnvironmentEventSink* pIEnvironmentEventSink = reinterpret_cast<IEnvironmentEventSink*>(*pp);
 				ret = pIEnvironmentEventSink->OnExposureConditionChanged();
@@ -126,7 +126,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IEnvironmentEventSink* pIEnvironmentEventSink = reinterpret_cast<IEnvironmentEventSink*>(*pp);
 				ret = pIEnvironmentEventSink->OnRelHumidityChanged();
@@ -147,7 +147,7 @@ class CProxyIBridgeDescriptionEventSink : public IConnectionPointImpl<T, &IID_IB
 public:
 
 public:
-	HRESULT Fire_BridgeChanged(CBridgeChangedHint* pHint = NULL)
+	HRESULT Fire_BridgeChanged(CBridgeChangedHint* pHint = nullptr)
 	{
 		T* pT = (T*)this;
 
@@ -165,7 +165,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
 				ret = pEventSink->OnBridgeChanged(pHint);
@@ -175,7 +175,7 @@ public:
       if ( pHint )
       {
          delete pHint;
-         pHint = NULL;
+         pHint = nullptr;
       }
 
 		pT->Unlock();
@@ -197,7 +197,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
 				ret = pEventSink->OnGirderFamilyChanged();
@@ -235,7 +235,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
 				ret = pEventSink->OnGirderChanged(girderKey,lHint);
@@ -261,7 +261,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
 				ret = pEventSink->OnConstructionLoadChanged();
@@ -287,7 +287,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
 				ret = pEventSink->OnLiveLoadChanged();
@@ -314,7 +314,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
 				ret = pEventSink->OnLiveLoadNameChanged(strOldName,strNewName);
@@ -351,7 +351,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				ISpecificationEventSink* pISpecificationEventSink = reinterpret_cast<ISpecificationEventSink*>(*pp);
 				ret = pISpecificationEventSink->OnSpecificationChanged();
@@ -377,7 +377,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				ISpecificationEventSink* pISpecificationEventSink = reinterpret_cast<ISpecificationEventSink*>(*pp);
 				ret = pISpecificationEventSink->OnAnalysisTypeChanged();
@@ -415,7 +415,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IRatingSpecificationEventSink* pEventSink = reinterpret_cast<IRatingSpecificationEventSink*>(*pp);
 				ret = pEventSink->OnRatingSpecificationChanged();
@@ -451,7 +451,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				ILibraryConflictEventSink* pILibraryConflictEventSink = reinterpret_cast<ILibraryConflictEventSink*>(*pp);
 				ret = pILibraryConflictEventSink->OnLibraryConflictResolved();
@@ -487,7 +487,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				ILoadModifiersEventSink* pEventSink = reinterpret_cast<ILoadModifiersEventSink*>(*pp);
 				ret = pEventSink->OnLoadModifiersChanged();
@@ -517,7 +517,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
 				ret = pEventSink->OnHoldEvents();
@@ -537,7 +537,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
 				ret = pEventSink->OnFirePendingEvents();
@@ -557,7 +557,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
 				ret = pEventSink->OnCancelPendingEvents();
@@ -594,7 +594,7 @@ public:
 		IUnknown** pp = m_vec.begin();
 		while (pp < m_vec.end())
 		{
-			if (*pp != NULL)
+			if (*pp != nullptr)
 			{
 				ILossParametersEventSink* pEventSink = reinterpret_cast<ILossParametersEventSink*>(*pp);
 				ret = pEventSink->OnLossParametersChanged();

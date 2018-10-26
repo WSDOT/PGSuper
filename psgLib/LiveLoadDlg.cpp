@@ -42,7 +42,7 @@ static char THIS_FILE[] = __FILE__;
 // CLiveLoadDlg dialog
 
 
-CLiveLoadDlg::CLiveLoadDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
+CLiveLoadDlg::CLiveLoadDlg(bool allowEditing, CWnd* pParent /*=nullptr*/)
 	: CDialog(CLiveLoadDlg::IDD, pParent),
    m_bAllowEditing(allowEditing)
 {

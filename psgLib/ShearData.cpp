@@ -300,7 +300,7 @@ HRESULT CShearData2::Load(sysIStructuredLoad* pStrLoad)
       if ( ShearZones.front().ZoneNum != 0 )
       {
          ZoneIndexType zoneIdx = 0;
-         BOOST_FOREACH(CShearZoneData2& sd,ShearZones)
+         for (auto& sd : ShearZones)
          {
             sd.ZoneNum = zoneIdx++;
          }
@@ -357,7 +357,7 @@ HRESULT CShearData2::Load(sysIStructuredLoad* pStrLoad)
          if ( HorizontalInterfaceZones.front().ZoneNum != 0 )
          {
             ZoneIndexType zoneIdx = 0;
-            BOOST_FOREACH(CHorizontalInterfaceZoneData& zd,HorizontalInterfaceZones)
+            for (auto& zd : HorizontalInterfaceZones)
             {
                zd.ZoneNum = zoneIdx++;
             }

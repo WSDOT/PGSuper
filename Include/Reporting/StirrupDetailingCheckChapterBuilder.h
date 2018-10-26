@@ -59,6 +59,6 @@ protected:
 
 private:
    // Prevent accidental copying and assignment
-   CStirrupDetailingCheckChapterBuilder(const CStirrupDetailingCheckChapterBuilder&);
-   CStirrupDetailingCheckChapterBuilder& operator=(const CStirrupDetailingCheckChapterBuilder&);
+   CStirrupDetailingCheckChapterBuilder(const CStirrupDetailingCheckChapterBuilder&) = delete;
+   CStirrupDetailingCheckChapterBuilder& operator=(const CStirrupDetailingCheckChapterBuilder&) = delete;
 };

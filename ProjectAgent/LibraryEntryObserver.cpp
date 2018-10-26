@@ -178,9 +178,9 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
    {
       for ( int i = 0; i < 8; i++ )
       {
-
-         CProjectAgentImp::LiveLoadSelectionIterator begin = m_pAgent->m_SelectedLiveLoads[i].begin();
-         CProjectAgentImp::LiveLoadSelectionIterator end   = m_pAgent->m_SelectedLiveLoads[i].end();
+         pgsTypes::LiveLoadType llType = (pgsTypes::LiveLoadType)i;
+         CProjectAgentImp::LiveLoadSelectionIterator begin = m_pAgent->m_SelectedLiveLoads[llType].begin();
+         CProjectAgentImp::LiveLoadSelectionIterator end   = m_pAgent->m_SelectedLiveLoads[llType].end();
 
          CProjectAgentImp::LiveLoadSelection key;
          key.pEntry = pSubject;
@@ -188,12 +188,15 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
 
          if ( found != end )
          {
-            CProjectAgentImp::LiveLoadSelection& ll = *found;
+            CProjectAgentImp::LiveLoadSelection ll = *found;
 
             std::_tstring strOldName = ll.EntryName;
             
-            ll.EntryName = pSubject->GetName();
+            ll.EntryName = pSubject->GetName(); // this changes the value of the key that the collection is sorted on... we have to remove and re-insert to ensure proper sorting
             ll.pEntry = pSubject;
+
+            m_pAgent->m_SelectedLiveLoads[llType].erase(found);
+            m_pAgent->m_SelectedLiveLoads[llType].insert(ll);
 
             m_pAgent->Fire_LiveLoadNameChanged(strOldName.c_str(),ll.EntryName.c_str());
          }

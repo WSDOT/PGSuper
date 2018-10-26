@@ -94,7 +94,7 @@ public:
 
 protected:
    void MakeCopy(const CGirderSpacingData2& rOther);
-   virtual void MakeAssignment(const CGirderSpacingData2& rOther);
+   void MakeAssignment(const CGirderSpacingData2& rOther);
 
    pgsTypes::MeasurementType m_MeasurementType;
    pgsTypes::MeasurementLocation m_MeasurementLocation;
@@ -143,16 +143,16 @@ public:
 
    const CGirderGroupData* GetGirderGroup() const;
 
-   virtual pgsTypes::MeasurementType GetMeasurementType() const;
-   virtual pgsTypes::MeasurementLocation GetMeasurementLocation() const;
-   virtual GirderIndexType GetRefGirder() const;
-   virtual Float64 GetRefGirderOffset() const;
-   virtual pgsTypes::OffsetMeasurementType GetRefGirderOffsetType() const;
-   virtual void SetGirderSpacing(GroupIndexType spacingGroupIdx,Float64 s);
-   virtual GroupIndexType GetSpacingGroupCount() const;
-   virtual void GetSpacingGroup(GroupIndexType spacingGroupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const;
-   virtual SpacingIndexType GetSpacingCount() const;
-   virtual Float64 GetGirderSpacing(SpacingIndexType spacingIdx) const;
+   virtual pgsTypes::MeasurementType GetMeasurementType() const override;
+   virtual pgsTypes::MeasurementLocation GetMeasurementLocation() const override;
+   virtual GirderIndexType GetRefGirder() const override;
+   virtual Float64 GetRefGirderOffset() const override;
+   virtual pgsTypes::OffsetMeasurementType GetRefGirderOffsetType() const override;
+   virtual void SetGirderSpacing(GroupIndexType spacingGroupIdx,Float64 s) override;
+   virtual GroupIndexType GetSpacingGroupCount() const override;
+   virtual void GetSpacingGroup(GroupIndexType spacingGroupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const override;
+   virtual SpacingIndexType GetSpacingCount() const override;
+   virtual Float64 GetGirderSpacing(SpacingIndexType spacingIdx) const override;
 
    // Returns the out-to-out width of the girder spacing (summation of the individual spaces)
    Float64 GetSpacingWidth() const; 
@@ -167,12 +167,12 @@ protected:
    const CTemporarySupportData* m_pTempSupport;
 
    void MakeCopy(const CGirderSpacing2& rOther);
-   virtual void MakeAssignment(const CGirderSpacing2& rOther);
+   void MakeAssignment(const CGirderSpacing2& rOther);
 
    GirderIndexType GetGirderCount() const;
    Float64 GetGirderWidth(const CSplicedGirderData* pGirder) const;
 
 #if defined _DEBUG
-   virtual void AssertValid() const;
+   virtual void AssertValid() const override;
 #endif
 };

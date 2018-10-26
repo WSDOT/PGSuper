@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 CLiveLoadSelectDlg::CLiveLoadSelectDlg(std::vector< std::_tstring>& allNames, std::vector< std::_tstring>& dsgnNames,
-                                       std::vector< std::_tstring>& fatigueNames,std::vector< std::_tstring>& str2Names,CWnd* pParent /*=NULL*/)
+                                       std::vector< std::_tstring>& fatigueNames,std::vector< std::_tstring>& str2Names,CWnd* pParent /*=nullptr*/)
 	: CDialog(CLiveLoadSelectDlg::IDD, pParent), 
      m_AllNames(allNames),
      m_DesignNames(dsgnNames),
@@ -186,7 +186,7 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
    m_ctlFatigueLL.SetCheckStyle( BS_AUTOCHECKBOX );
    m_ctlPermitLL.SetCheckStyle( BS_AUTOCHECKBOX );
 
-   BOOST_FOREACH(const std::_tstring& strName,m_AllNames)
+   for (const auto& strName : m_AllNames)
    {
       LPCTSTR str = strName.c_str();
       m_ctlDesignLL.AddString(str);

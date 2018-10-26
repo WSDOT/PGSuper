@@ -281,7 +281,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   pgsTypes::WearingSurfaceType wearingSurfaceType = pBridge->GetWearingSurfaceType();
 
    PoiAttributeType refAttribute = POI_SPAN;
    if ( intervalIdx == releaseIntervalIdx )
@@ -347,6 +351,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    bool bIsWithRebarAllowableApplicableTop = pGirderArtifact->IsWithRebarAllowableStressApplicable(intervalIdx,limitState,topLocation);
    bool bIsWithRebarAllowableApplicableBot = pGirderArtifact->IsWithRebarAllowableStressApplicable(intervalIdx,limitState,botLocation);
 
+   // when we have a future overlay and two applicable stress types (tension/compression), we need to list both limit state and demand stresses for tension and compression cases
+   // recall that tension top is worse before future overlay and compression bottom is worse after future overlay.
+   // this flag tells if we are listing both cases
+   bool bFutureOverlay = ((bApplicableTensionTop && bApplicableCompressionBot) || (bApplicableTensionBot && bApplicableCompressionTop)) // two stress cases that include/exclude future overlay are applicable
+                         &&  // -AND-
+                         (intervalIdx == overlayIntervalIdx && wearingSurfaceType == pgsTypes::wstFutureOverlay); // we are in the overlay interval and the overlay is a future overlay
+
 
    ColumnIndexType columnInc = 0;
    if ( bApplicableTensionTop || bApplicableCompressionTop )
@@ -407,6 +418,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    if ( bApplicableCompressionTop || bApplicableCompressionBot )
    {
       nColumns++; // compression status
+   }
+
+   if (bFutureOverlay)
+   {
+      nColumns += 2 * columnInc; // need to added Limit State and Demand columns so we can have tension and compression values
    }
 
    p_table = rptStyleManager::CreateDefaultTable(nColumns);
@@ -484,7 +500,15 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       {
          p_table->SetColumnSpan(0,col1,2);
       }
-      (*p_table)(0,col1++) << strLimitState;
+
+      if (bFutureOverlay)
+      {
+         (*p_table)(0, col1++) << strLimitState << rptNewLine << _T("Tension");
+      }
+      else
+      {
+         (*p_table)(0, col1++) << strLimitState;
+      }
       if ( bApplicableTensionTop || bApplicableCompressionTop )
       {
          (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -498,7 +522,14 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       {
          p_table->SetColumnSpan(0,col1,2);
       }
-      (*p_table)(0,col1++) << _T("Demand");
+      if (bFutureOverlay)
+      {
+         (*p_table)(0, col1++) << _T("Demand") << rptNewLine << _T("Tension");
+      }
+      else
+      {
+         (*p_table)(0, col1++) << _T("Demand");
+      }
       if ( bApplicableTensionTop || bApplicableCompressionTop )
       {
          (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -506,6 +537,37 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       if ( bApplicableTensionBot || bApplicableCompressionBot )
       {
          (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
+
+      if (bFutureOverlay)
+      {
+         if (columnInc == 2)
+         {
+            p_table->SetColumnSpan(0, col1, 2);
+         }
+         (*p_table)(0, col1++) << strLimitState << rptNewLine << _T("Compression");
+         if (bApplicableTensionTop || bApplicableCompressionTop)
+         {
+            (*p_table)(1, col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         }
+         if (bApplicableTensionBot || bApplicableCompressionBot)
+         {
+            (*p_table)(1, col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         }
+
+         if (columnInc == 2)
+         {
+            p_table->SetColumnSpan(0, col1, 2);
+         }
+         (*p_table)(0, col1++) << _T("Demand") << rptNewLine << _T("Compression");
+         if (bApplicableTensionTop || bApplicableCompressionTop)
+         {
+            (*p_table)(1, col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         }
+         if (bApplicableTensionBot || bApplicableCompressionBot)
+         {
+            (*p_table)(1, col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         }
       }
    }
 
@@ -558,7 +620,6 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       p_table->SetColumnSpan(0,i,SKIP_CELL);
    }
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);
    SegmentIndexType lastSegIdx  = (segIdx == ALL_SEGMENTS ? nSegments-1 : firstSegIdx);
@@ -590,7 +651,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
          }
 #endif
 
-         if ( pTensionArtifact == NULL && pCompressionArtifact == NULL )
+         if ( pTensionArtifact == nullptr && pCompressionArtifact == nullptr )
          {
             continue;
          }
@@ -715,6 +776,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                (*p_table)(row,col++) << _T("-");
             }
 
+            if (bFutureOverlay)
+            {
+               col += 2 * columnInc; // jump over the compression limit state and demand stresses
+            }
+
             bool bIsTopInPTZ = pTensionArtifact->IsInPrecompressedTensileZone(topLocation);
             bool bIsBotInPTZ = pTensionArtifact->IsInPrecompressedTensileZone(botLocation);
             if ( bIsTopInPTZ )
@@ -760,42 +826,55 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                // somewhere along the girder, so report N/A for this locatino
                (*p_table)(row,col++) << RPT_NA;
             }
+
+            if (bFutureOverlay)
+            {
+               col -= 3; // go back 2 PTZ columns and the tension status column
+            }
          }
 
          // Compression
          if ( pCompressionArtifact )
          {
             Float64 fTop, fBot;
-            if ( pTensionArtifact == NULL )
+            if ( pTensionArtifact == nullptr || bFutureOverlay)
             {
                // if there is a tension artifact, then this stuff is already reported
                // if not, report it here
-               if ( bIncludePrestress && ( bApplicableTensionTop || bApplicableCompressionTop || bApplicableTensionBot || bApplicableCompressionBot ) )
+               if (!bFutureOverlay)
                {
-                  fTop = pCompressionArtifact->GetPretensionEffects(topLocation);
-                  fBot = pCompressionArtifact->GetPretensionEffects(botLocation);
-                  if ( bApplicableTensionTop || bApplicableCompressionTop )
+                  if (bIncludePrestress && (bApplicableTensionTop || bApplicableCompressionTop || bApplicableTensionBot || bApplicableCompressionBot))
                   {
-                     (*p_table)(row,col++) << stress.SetValue( fTop );
+                     fTop = pCompressionArtifact->GetPretensionEffects(topLocation);
+                     fBot = pCompressionArtifact->GetPretensionEffects(botLocation);
+                     if (bApplicableTensionTop || bApplicableCompressionTop)
+                     {
+                        (*p_table)(row, col++) << stress.SetValue(fTop);
+                     }
+                     if (bApplicableTensionBot || bApplicableCompressionBot)
+                     {
+                        (*p_table)(row, col++) << stress.SetValue(fBot);
+                     }
                   }
-                  if ( bApplicableTensionBot || bApplicableCompressionBot )
+
+                  if (bIncludeTendons && (bApplicableTensionTop || bApplicableCompressionTop || bApplicableTensionBot || bApplicableCompressionBot))
                   {
-                     (*p_table)(row,col++) << stress.SetValue( fBot );
+                     fTop = pCompressionArtifact->GetPosttensionEffects(topLocation);
+                     fBot = pCompressionArtifact->GetPosttensionEffects(botLocation);
+                     if (bApplicableTensionTop || bApplicableCompressionTop)
+                     {
+                        (*p_table)(row, col++) << stress.SetValue(fTop);
+                     }
+                     if (bApplicableTensionBot || bApplicableCompressionBot)
+                     {
+                        (*p_table)(row, col++) << stress.SetValue(fBot);
+                     }
                   }
                }
 
-               if ( bIncludeTendons && ( bApplicableTensionTop || bApplicableCompressionTop || bApplicableTensionBot || bApplicableCompressionBot ) )
+               if (bFutureOverlay)
                {
-                  fTop = pCompressionArtifact->GetPosttensionEffects(topLocation);
-                  fBot = pCompressionArtifact->GetPosttensionEffects(botLocation);
-                  if ( bApplicableTensionTop || bApplicableCompressionTop )
-                  {
-                     (*p_table)(row,col++) << stress.SetValue( fTop );
-                  }
-                  if ( bApplicableTensionBot || bApplicableCompressionBot )
-                  {
-                     (*p_table)(row,col++) << stress.SetValue( fBot );
-                  }
+                  col -= 2*columnInc; // jump back to the compression limit state and demand stresses (we jumped over them above)
                }
 
                if ( bApplicableTensionTop || bApplicableCompressionTop || bApplicableTensionBot || bApplicableCompressionBot )
@@ -823,39 +902,47 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                   }
                }
 
-               if ( bApplicableTensionTop && bIsWithRebarAllowableApplicableTop )
+               if (pTensionArtifact == nullptr)
                {
-                  (*p_table)(row,col++) << _T("-");
-               }
+                  if (bApplicableTensionTop && bIsWithRebarAllowableApplicableTop)
+                  {
+                     (*p_table)(row, col++) << _T("-");
+                  }
 
-               if ( bApplicableTensionBot && bIsWithRebarAllowableApplicableBot )
-               {
-                  (*p_table)(row,col++) << _T("-");
-               }
+                  if (bApplicableTensionBot && bIsWithRebarAllowableApplicableBot)
+                  {
+                     (*p_table)(row, col++) << _T("-");
+                  }
 
-               bool bIsTopInPTZ = pCompressionArtifact->IsInPrecompressedTensileZone(topLocation);
-               bool bIsBotInPTZ = pCompressionArtifact->IsInPrecompressedTensileZone(botLocation);
-               if ( bIsTopInPTZ )
-               {
-                  (*p_table)(row,col++) << _T("Yes");
-               }
-               else
-               {
-                  (*p_table)(row,col++) << _T("No");
-               }
+                  bool bIsTopInPTZ = pCompressionArtifact->IsInPrecompressedTensileZone(topLocation);
+                  bool bIsBotInPTZ = pCompressionArtifact->IsInPrecompressedTensileZone(botLocation);
+                  if (bIsTopInPTZ)
+                  {
+                     (*p_table)(row, col++) << _T("Yes");
+                  }
+                  else
+                  {
+                     (*p_table)(row, col++) << _T("No");
+                  }
 
-               if ( bIsBotInPTZ )
-               {
-                  (*p_table)(row,col++) << _T("Yes");
-               }
-               else
-               {
-                  (*p_table)(row,col++) << _T("No");
+                  if (bIsBotInPTZ)
+                  {
+                     (*p_table)(row, col++) << _T("Yes");
+                  }
+                  else
+                  {
+                     (*p_table)(row, col++) << _T("No");
+                  }
                }
             }
 
             if ( bApplicableCompressionTop || bApplicableCompressionBot )
             {
+               if (bFutureOverlay)
+               {
+                  col += 3; // jump over the 2 PTZ columns and the tension status
+               }
+
                bool bPassed = bGirderStresses ? pCompressionArtifact->BeamPassed()     : pCompressionArtifact->DeckPassed();
                Float64 cdr  = bGirderStresses ? pCompressionArtifact->GetBeamCDRatio() : pCompressionArtifact->GetDeckCDRatio();
                if ( bPassed )

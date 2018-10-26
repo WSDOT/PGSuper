@@ -84,7 +84,7 @@ void CAlignmentDisplayObjectEvents::EditAlignment()
 
    CDisplayView* pView = pDispMgr->GetView();
 
-   pView->SendMessage(WM_COMMAND,ID_PROJECT_ALIGNMENT,NULL);
+   pView->SendMessage(WM_COMMAND,ID_PROJECT_ALIGNMENT,0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -302,7 +302,7 @@ STDMETHODIMP_(DROPEFFECT) CAlignmentDisplayObjectEvents::XDropSite::CanDrop(COle
       // need to peek at our object first and make sure it's coming from the local process
       // this is ugly because it breaks encapsulation of CBridgeSectionCutDisplayImpl
       CComPtr<iDragDataSource> source;               
-      ::CoCreateInstance(CLSID_DragDataSource,NULL,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
       source->SetDataObject(pDataObject);
       source->PrepareFormat(CBridgeSectionCutDisplayImpl::ms_Format);
 

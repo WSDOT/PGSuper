@@ -1610,14 +1610,14 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
 
    const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
    const pgsStirrupCheckArtifact* pstirrup_artifact = pSegmentArtifact->GetStirrupCheckArtifact();
-   ATLASSERT(pstirrup_artifact != NULL);
+   ATLASSERT(pstirrup_artifact != nullptr);
    const pgsStirrupCheckAtPoisArtifact* pPoiArtifact;
    const pgsVerticalShearArtifact* pArtifact;
 
    RowIndexType row = 1;
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifactAtPOI(lastIntervalIdx,pgsTypes::StrengthI,left_cs.GetID());
-   if ( pPoiArtifact == NULL )
+   if ( pPoiArtifact == nullptr )
    {
       return;
    }
@@ -1696,7 +1696,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
    const pgsSegmentArtifact* pSegmentArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
    const stbLiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
 
-   if (pLiftArtifact == NULL)
+   if (pLiftArtifact == nullptr)
    {
       *p<<_T("Lifting check not performed because it is not enabled in the library")<<rptNewLine;
       return;
@@ -1838,7 +1838,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
    const pgsHaulingAnalysisArtifact* pHaulArtifact_base = pSegmentArtifact->GetHaulingAnalysisArtifact();
    const pgsWsdotHaulingAnalysisArtifact* pHaulArtifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(pHaulArtifact_base);
 
-   if (pHaulArtifact == NULL)
+   if (pHaulArtifact == nullptr)
    {
       *p << _T("Hauling check not performed because it is not enabled in the Project Criteria") << rptNewLine;
       return;

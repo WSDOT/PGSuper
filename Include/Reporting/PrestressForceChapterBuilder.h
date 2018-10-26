@@ -79,8 +79,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CPrestressForceChapterBuilder(const CPrestressForceChapterBuilder&);
-   CPrestressForceChapterBuilder& operator=(const CPrestressForceChapterBuilder&);
+   CPrestressForceChapterBuilder(const CPrestressForceChapterBuilder&) = delete;
+   CPrestressForceChapterBuilder& operator=(const CPrestressForceChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

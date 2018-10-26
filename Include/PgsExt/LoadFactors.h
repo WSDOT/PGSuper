@@ -72,7 +72,7 @@ public:
 
 protected:
    void MakeCopy(const CLoadFactors& rOther);
-   virtual void MakeAssignment(const CLoadFactors& rOther);
+   void MakeAssignment(const CLoadFactors& rOther);
 };
 
 // INLINE METHODS

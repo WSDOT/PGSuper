@@ -204,13 +204,13 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
 
    m_RebarData = pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData;
 
-   if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+   if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
    {
       bEnableTop    = FALSE;
       bEnableBottom = FALSE;
       GetDlgItem(IDC_DECK)->SetWindowText(_T("Deck reinforcement cannot be described because deck type is None."));
    }
-   else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP )
+   else if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP )
    {
       bEnableTop    = TRUE;
       bEnableBottom = FALSE;
@@ -315,7 +315,7 @@ BOOL CBridgeDescDeckReinforcementPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LR
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.LockBuffer();
-      pTTT->hinst = NULL;
+      pTTT->hinst = nullptr;
       return TRUE;
    }
    return FALSE;

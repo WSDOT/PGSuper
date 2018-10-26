@@ -34,6 +34,7 @@
 #include "EditMomentLoadDlg.h"
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\EditByUI.h>
 #include "mfcdual.h"
 
 #include <PgsExt\InsertDeleteLoad.h>
@@ -80,13 +81,13 @@ STDMETHODIMP_(DROPEFFECT) CGirderDropSite::XDropSite::CanDrop(COleDataObject* pD
 
    // Was a tool dragged over the Girder?
    CComPtr<iTool> tool;
-   ::CoCreateInstance(CLSID_Tool,NULL,CLSCTX_ALL,IID_iTool,(void**)&tool);
+   ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&tool);
    CComQIPtr<iDraggable,&IID_iDraggable> draggable(tool);
 
    if ( pDataObject->IsDataAvailable( draggable->Format() ) )
    {
       CComPtr<iDragDataSource> source;
-      ::CoCreateInstance(CLSID_DragDataSource,NULL,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
       source->SetDataObject(pDataObject);
       draggable->OnDrop(source); // Rebuild the tool object from the data object
 
@@ -113,34 +114,25 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
 
    // Was it a tool from the palette?
    CComPtr<iTool> tool;
-   ::CoCreateInstance(CLSID_Tool,NULL,CLSCTX_ALL,IID_iTool,(void**)&tool);
+   ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&tool);
    CComQIPtr<iDraggable,&IID_iDraggable> draggable(tool);
    if ( pDataObject->IsDataAvailable(draggable->Format()) )
    {
       CComPtr<iDragDataSource> source;
-      ::CoCreateInstance(CLSID_DragDataSource,NULL,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
       source->SetDataObject(pDataObject);
       draggable->OnDrop(source); // Rebuild the tool object from the data object
 
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+      GET_IFACE2(pBroker, IEditByUI, pEditByUI);
 
       // Was it the concentrated load tool?
       if ( tool->GetID() == IDC_POINT_LOAD_DRAG )
       {
          // set data to that of view
-         CPointLoadData data;
-         data.m_SpanKey = pThis->m_SpanKey;
-
-         EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-
-         EventIndexType eventIndex = pThis->m_pFrame->GetEvent();
-         if (eventIndex == liveLoadEventIdx )
-         {
-            data.m_LoadCase = UserLoads::LL_IM;
-         }
+         CPointLoadData load;
+         pThis->InitLoad(load);
 
          CComPtr<IPoint2d> pntStart, pntEnd;
          CComQIPtr<iLineDisplayObject> doLine(pThis->m_DispObj);
@@ -151,59 +143,21 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
 
          Float64 load_loc = wx - segX;
 
-         //// estimate where we are at
-         //CComPtr<IBroker> pBroker;
-         //pThis->m_pDoc->GetBroker(&pBroker);
-         //GET_IFACE2(pBroker,IBridge,pBridge);
-         //Float64 gdr_length = pBridge->GetSegmentLength(data.m_SegmentKey);
-         //Float64 start_lgth = pBridge->GetSegmentStartEndDistance(data.m_SegmentKey);
-         //Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(data.m_SegmentKey);
-         //Float64 span_lgth  = gdr_length - start_lgth - end_lgth;
+         load.m_Fractional = false;
+         load.m_Location   = load_loc;
 
-         //Float64 wx;
-         //point->get_X(&wx);
-
-         //wx = wx - start_lgth;  // span coordinates
-
-         //Float64 load_loc;
-         //if (wx < 0.0)
-         //   load_loc = 0.0;
-         //else if (wx > span_lgth)
-         //   load_loc = span_lgth;
-         //else
-         //   load_loc = wx;
-
-         data.m_Fractional = false;
-         data.m_Location   = load_loc;
-
-	      CEditPointLoadDlg dlg(data,pTimelineMgr);
-         if (dlg.DoModal() == IDOK)
-         {
-            txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-            txnTxnManager::GetInstance()->Execute(pTxn);
-         }
+         pEditByUI->AddPointLoad(load);
       }
       // perhaps a distributed load?
       else if ( tool->GetID() == IDC_DISTRIBUTED_LOAD_DRAG )
       {
          // set data to that of view
-         CDistributedLoadData data;
-         data.m_SpanKey = pThis->m_SpanKey;
-
-         EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-
-         EventIndexType eventIndex = pThis->m_pFrame->GetEvent();
-         if (eventIndex == liveLoadEventIdx )
-         {
-            data.m_LoadCase = UserLoads::LL_IM;
-         }
+         CDistributedLoadData load;
+         pThis->InitLoad(load);
 
          // estimate where we are at
          GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 span_length = pBridge->GetSpanLength(data.m_SpanKey.spanIndex,data.m_SpanKey.girderIndex);
-         //Float64 start_lgth = pBridge->GetSegmentStartEndDistance(data.m_SegmentKey);
-         //Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(data.m_SegmentKey);
-         //Float64 span_lgth  = gdr_length - start_lgth - end_lgth;
+         Float64 span_length = pBridge->GetSpanLength(load.m_SpanKey.spanIndex,load.m_SpanKey.girderIndex);
 
          // set length of load to 1/10 span length
          Float64 load_length = span_length/10;
@@ -228,39 +182,21 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          }
 
          // start with 1/4 of span length and shorten if we are near the end
-         data.m_Fractional = false;
-         data.m_StartLocation = load_loc;
-         data.m_EndLocation = load_loc+load_length;
+         load.m_Fractional = false;
+         load.m_StartLocation = load_loc;
+         load.m_EndLocation = load_loc+load_length;
 
-	      CEditDistributedLoadDlg dlg(data,pTimelineMgr);
-         if (dlg.DoModal() == IDOK)
-         {
-            txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-            txnTxnManager::GetInstance()->Execute(pTxn);
-         }
+         pEditByUI->AddDistributedLoad(load);
       }
       else if ( tool->GetID() == IDC_MOMENT_LOAD_DRAG )
       {
          // set data to that of view
-         CMomentLoadData data;
-         data.m_SpanKey = pThis->m_SpanKey;
-
-         EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-
-         EventIndexType eventIndex = pThis->m_pFrame->GetEvent();
-         EventIDType eventID = pTimelineMgr->GetEventByIndex(eventIndex)->GetID();
-
-         if (eventIndex == liveLoadEventIdx )
-         {
-            data.m_LoadCase = UserLoads::LL_IM;
-         }
+         CMomentLoadData load;
+         pThis->InitLoad(load);
 
          // estimate where we are at
          GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 span_length = pBridge->GetSpanLength(data.m_SpanKey.spanIndex,data.m_SpanKey.girderIndex);
-         //Float64 start_lgth = pBridge->GetSegmentStartEndDistance(data.m_SegmentKey);
-         //Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(data.m_SegmentKey);
-         //Float64 span_lgth  = gdr_length - start_lgth - end_lgth;
+         Float64 span_length = pBridge->GetSpanLength(load.m_SpanKey.spanIndex,load.m_SpanKey.girderIndex);
 
          Float64 wx;
          point->get_X(&wx);
@@ -281,15 +217,10 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
             load_loc = wx;
          }
 
-         data.m_Fractional = false;
-         data.m_Location   = load_loc;
+         load.m_Fractional = false;
+         load.m_Location   = load_loc;
 
-	      CEditMomentLoadDlg dlg(data,pTimelineMgr);
-         if (dlg.DoModal() == IDOK)
-         {
-            txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-            txnTxnManager::GetInstance()->Execute(pTxn);
-         }
+         pEditByUI->AddMomentLoad(load);
       }
    }
 }

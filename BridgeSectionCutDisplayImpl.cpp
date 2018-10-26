@@ -41,7 +41,7 @@ static const Float64 SSIZE = 1440 * 3/8; // (twips)
 UINT CBridgeSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("BridgeSectionCutData"));
 
 CBridgeSectionCutDisplayImpl::CBridgeSectionCutDisplayImpl():
-m_pCutLocation(NULL),
+m_pCutLocation(nullptr),
 m_Color(RGB(0,0,220)),
 m_pFrame(0)
 {

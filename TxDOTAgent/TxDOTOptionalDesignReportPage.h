@@ -26,7 +26,7 @@
 #include "TxDOTOptionalDesignBrokerRetreiver.h"
 
 #include <Reporting\SpanGirderReportSpecification.h>
-#include <boost\shared_ptr.hpp>
+#include <memory>
 #include "afxwin.h"
 
 interface IReportManager;
@@ -38,7 +38,7 @@ class CTxDOTOptionalDesignReportPage : public CPropertyPage, public ITxDataObser
 
 public:
 	CTxDOTOptionalDesignReportPage();
-	virtual ~CTxDOTOptionalDesignReportPage();
+	virtual ~CTxDOTOptionalDesignReportPage() override;
 
 // Dialog Data
 	enum { IDD = IDD_REPORT_PAGE };
@@ -51,27 +51,27 @@ public:
    ITxDOTBrokerRetriever* m_pBrokerRetriever;
 
    // Our reporting guts
-   boost::shared_ptr<CReportSpecification> m_pRptSpec;
-   boost::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   std::shared_ptr<CReportSpecification> m_pRptSpec;
+   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
    // listen to data change events
-   virtual void OnTxDotDataChanged(int change);
+   virtual void OnTxDotDataChanged(int change) override;
 
    // create spec for currently selected report
-   boost::shared_ptr<CReportSpecification> CreateSelectedReportSpec(IReportManager* pReportMgr);
+   std::shared_ptr<CReportSpecification> CreateSelectedReportSpec(IReportManager* pReportMgr);
    void CreateNewBrowser(IBroker* pBroker);
    void DisplayErrorMode(TxDOTBrokerRetrieverException& exc);
 
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
-   virtual void EditReport();
+   void EditReport();
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnSetActive();
+   virtual BOOL OnInitDialog() override;
+   virtual BOOL OnSetActive() override;
    afx_msg void OnSize(UINT nType, int cx, int cy);
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    CStatic m_BrowserPlaceholder;
@@ -84,6 +84,6 @@ public:
 
    afx_msg void OnCbnSelchangeReportCombo();
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-   virtual void AssertValid() const;
+   virtual void AssertValid() const override;
    afx_msg void OnHelpFinder();
 };

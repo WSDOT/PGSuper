@@ -145,7 +145,7 @@ protected:
    void MakeCopy(const CShearData2& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CShearData2& rOther);
+   void MakeAssignment(const CShearData2& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -276,42 +276,42 @@ void CBridgeSectionView::BuildDisplayLists()
    // Setup display lists
 
    CComPtr<iDisplayList> alignment_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
    alignment_list->SetID(ALIGNMENT_DISPLAY_LIST);
    dispMgr->AddDisplayList(alignment_list);
 
    CComPtr<iDisplayList> girder_label_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_label_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_label_list);
    girder_label_list->SetID(GIRDER_LABEL_DISPLAY_LIST);
    dispMgr->AddDisplayList(girder_label_list);
 
    CComPtr<iDisplayList> dim_line_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&dim_line_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dim_line_list);
    dim_line_list->SetID(DIMENSION_DISPLAY_LIST);
    dispMgr->AddDisplayList(dim_line_list);
 
    CComPtr<iDisplayList> title_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
    title_list->SetID(TITLE_DISPLAY_LIST);
    dispMgr->AddDisplayList(title_list);
 
    CComPtr<iDisplayList> traffic_barrier_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&traffic_barrier_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&traffic_barrier_list);
    traffic_barrier_list->SetID(TRAFFIC_BARRIER_DISPLAY_LIST);
    dispMgr->AddDisplayList(traffic_barrier_list);
 
    CComPtr<iDisplayList> slab_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&slab_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&slab_list);
    slab_list->SetID(SLAB_DISPLAY_LIST);
    dispMgr->AddDisplayList(slab_list);
 
    CComPtr<iDisplayList> overlay_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&overlay_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&overlay_list);
    overlay_list->SetID(OVERLAY_DISPLAY_LIST);
    dispMgr->AddDisplayList(overlay_list);
 
    CComPtr<iDisplayList> girder_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_list);
    girder_list->SetID(GIRDER_DISPLAY_LIST);
    dispMgr->AddDisplayList(girder_list);
 
@@ -457,7 +457,7 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-   pMenu->LoadMenu(IDR_BRIDGE_XSECTION_CTX,NULL);
+   pMenu->LoadMenu(IDR_BRIDGE_XSECTION_CTX,nullptr);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
    {
@@ -739,7 +739,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
       // all the girders we found
       std::vector<GirderIndexType> vFoundGirders;
-      BOOST_FOREACH(pgsPointOfInterest& poi,vPoi)
+      for (const auto& poi : vPoi)
       {
          vFoundGirders.push_back(poi.GetSegmentKey().girderIndex);
       }
@@ -751,7 +751,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       vMissingGirders.resize(end-vMissingGirders.begin());
 
       // for each missing girder, get a POI to use
-      BOOST_FOREACH(GirderIndexType gdrIdx,vMissingGirders)
+      for (const auto& gdrIdx : vMissingGirders)
       {
          CGirderKey girderKey(grpIdx,gdrIdx);
          pgsPointOfInterest poi;
@@ -760,7 +760,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       }
    }
 
-   BOOST_FOREACH(pgsPointOfInterest& poi,vPoi)
+   for (const auto& poi : vPoi)
    {
       const CSegmentKey& thisSegmentKey(poi.GetSegmentKey());
       COLORREF segment_fill_color;
@@ -870,7 +870,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
-   pgsTypes::SupportedDeckType deckType = pDeck->DeckType;
+   pgsTypes::SupportedDeckType deckType = pDeck->GetDeckType();
    if ( deckType == pgsTypes::sdtNone )
    {
       return; // if there is no deck, don't create a display object
@@ -890,7 +890,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
    CComPtr<IShape> shape;
-   pShapes->GetSlabShape(m_pFrame->GetCurrentCutLocation(),NULL,true/*include haunch*/,&shape);
+   pShapes->GetSlabShape(m_pFrame->GetCurrentCutLocation(),nullptr,true/*include haunch*/,&shape);
 
    CComPtr<iShapeDrawStrategy> strategy;
    strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
@@ -1006,7 +1006,7 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    CComPtr<IPoint2dCollection> surfacePoints;
-   pRoadway->GetRoadwaySurface(station,NULL,&surfacePoints);
+   pRoadway->GetRoadwaySurface(station,nullptr,&surfacePoints);
 
    TrimSurface(surfacePoints,left_offset,right_offset);
 
@@ -1099,7 +1099,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    pAlignment->GetBearingNormal(cut_station,&normal);
 
    CComPtr<IShape> left_shape;
-   pShapes->GetLeftTrafficBarrierShape(cut_station,NULL,&left_shape);
+   pShapes->GetLeftTrafficBarrierShape(cut_station,nullptr,&left_shape);
 
    CComPtr<iShapeDrawStrategy> strategy;
    if ( left_shape )
@@ -1140,7 +1140,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    right_dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
    CComPtr<IShape> right_shape;
-   pShapes->GetRightTrafficBarrierShape(cut_station,NULL,&right_shape);
+   pShapes->GetRightTrafficBarrierShape(cut_station,nullptr,&right_shape);
 
    if ( right_shape )
    {
@@ -2043,7 +2043,7 @@ void CBridgeSectionView::UpdateDrawingScale()
    CComPtr<iDisplayList> display_list;
    dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&display_list);
 
-   if ( display_list == NULL )
+   if ( display_list == nullptr )
    {
       return;
    }

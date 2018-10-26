@@ -115,7 +115,7 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
-         if ( psArtifact == NULL )
+         if ( psArtifact == nullptr )
          {
             continue;
          }
@@ -211,7 +211,7 @@ void CShearCheckTable::BuildNotes(rptChapter* pChapter,
          for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
          {
             const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
-            if ( psArtifact == NULL )
+            if ( psArtifact == nullptr )
             {
                continue;
             }

@@ -37,7 +37,7 @@
 
 IMPLEMENT_DYNAMIC(CSelectPointOfInterestDlg, CDialog)
 
-CSelectPointOfInterestDlg::CSelectPointOfInterestDlg(IBroker* pBroker,boost::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent)
+CSelectPointOfInterestDlg::CSelectPointOfInterestDlg(IBroker* pBroker,std::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent)
 	: CDialog(CSelectPointOfInterestDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)
@@ -109,7 +109,7 @@ void CSelectPointOfInterestDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,m_GirderKey.girderIndex,ALL_SEGMENTS));
-   if (m_Slider.GetSafeHwnd() != NULL )
+   if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
                                                    // subtract one so we don't go past the end of the array

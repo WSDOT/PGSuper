@@ -378,7 +378,7 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& m
    long i = 0;
    CComPtr<IEnumPoint2d> enumPoints;
    objPoints->get__Enum(&enumPoints);
-   while ( enumPoints->Next(1,&point,NULL) != S_FALSE )
+   while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
       mapper.WPtoDP(point,&dx,&dy);
 

@@ -120,7 +120,7 @@ protected:
    void MakeCopy(const pgsShearCapacityEngineer& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsShearCapacityEngineer& rOther);
+   void MakeAssignment(const pgsShearCapacityEngineer& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

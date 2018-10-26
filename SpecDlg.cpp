@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 // CSpecDlg dialog
 
 
-CSpecDlg::CSpecDlg(CWnd* pParent /*=NULL*/)
+CSpecDlg::CSpecDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CSpecDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSpecDlg)
@@ -113,7 +113,7 @@ BOOL CSpecDlg::OnInitDialog()
    std::vector<std::_tstring> specs;
    pLibNames->EnumSpecNames( &specs );
 
-   BOOST_FOREACH(const std::_tstring& spec,specs)
+   for (const auto& spec : specs)
    {
       pBox->AddString( spec.c_str() );
    }

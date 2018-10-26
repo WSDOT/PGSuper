@@ -514,7 +514,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker, girderKey, CRatingSummaryTable::Design ) << rptNewLine;
    }
 
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
@@ -531,10 +531,15 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
             (*pPara) << pTable << rptNewLine;
          }
 
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Routine);
+         bool bMustCloseBridge;
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
+            if (bMustCloseBridge)
+            {
+               *pPara << color(Red) << Bold(_T("Minimum gross live load weight is less than three tons - bridge must be closed MBE 6A.8.3")) << color(Black) << rptNewLine;
+            }
          }
       }
 
@@ -546,10 +551,35 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
             (*pPara) << pTable << rptNewLine;
          }
 
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Special);
+         bool bMustCloseBridge;
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Special,&bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
+            if (bMustCloseBridge)
+            {
+               *pPara << color(Red) << Bold(_T("Minimum gross live load weight is less than three tons - bridge must be closed MBE 6A.8.3")) << color(Black) << rptNewLine;
+            }
+         }
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Emergency);
+         if (pTable)
+         {
+            (*pPara) << pTable << rptNewLine;
+         }
+
+         bool bMustCloseBridge;
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Emergency, &bMustCloseBridge);
+         if (pTable)
+         {
+            (*pPara) << pTable << rptNewLine;
+            if (bMustCloseBridge)
+            {
+               *pPara << color(Red) << Bold(_T("Minimum gross live load weight is less than three tons - bridge must be closed MBE 6A.8.3")) << color(Black) << rptNewLine;
+            }
          }
       }
    }
@@ -724,7 +754,7 @@ void write_confinement_check(IBroker* pBroker,
                <<rConfine.GetZoneLengthFactor()<<_T(" *")<<length.SetValue(rConfine.GetStartd())<<_T(" = ")
                << length.SetValue(rConfine.GetStartRequiredZoneLength()) << rptNewLine;
       (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetStartProvidedZoneLength()) << rptNewLine;
-      matRebar::Size size = rConfine.GetStartBar()==NULL ? matRebar::bsNone : rConfine.GetStartBar()->GetSize();
+      matRebar::Size size = rConfine.GetStartBar()==nullptr ? matRebar::bsNone : rConfine.GetStartBar()->GetSize();
       (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
       (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetStartS()) << rptNewLine;
       (*pPara) << _T("  Status = ");
@@ -744,7 +774,7 @@ void write_confinement_check(IBroker* pBroker,
                <<rConfine.GetZoneLengthFactor()<<_T(" *")<<length.SetValue(rConfine.GetEndd())<<_T(" = ")
                << length.SetValue(rConfine.GetEndRequiredZoneLength()) << rptNewLine;
       (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetEndProvidedZoneLength()) << rptNewLine;
-      size = rConfine.GetEndBar()==NULL ? matRebar::bsNone : rConfine.GetEndBar()->GetSize();
+      size = rConfine.GetEndBar()==nullptr ? matRebar::bsNone : rConfine.GetEndBar()->GetSize();
       (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
       (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetEndS()) << rptNewLine;
       (*pPara) << _T("  Status = ");

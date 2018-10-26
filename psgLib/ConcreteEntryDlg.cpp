@@ -54,7 +54,7 @@ static char THIS_FILE[] = __FILE__;
 // CConcreteEntryDlg dialog
 
 
-CConcreteEntryDlg::CConcreteEntryDlg(bool allowEditing,CWnd* pParent /*=NULL*/,UINT iSelectPage /*=0*/)
+CConcreteEntryDlg::CConcreteEntryDlg(bool allowEditing,CWnd* pParent /*=nullptr*/,UINT iSelectPage /*=0*/)
 	: CPropertySheet(_T("Concrete Details"),pParent,iSelectPage),
    m_bAllowEditing(allowEditing)
 {

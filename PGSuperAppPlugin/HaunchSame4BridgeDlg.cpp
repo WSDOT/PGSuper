@@ -33,7 +33,7 @@
 
 IMPLEMENT_DYNAMIC(CHaunchSame4BridgeDlg, CDialog)
 
-CHaunchSame4BridgeDlg::CHaunchSame4BridgeDlg(CWnd* pParent /*=NULL*/)
+CHaunchSame4BridgeDlg::CHaunchSame4BridgeDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CHaunchSame4BridgeDlg::IDD, pParent)
 {
 

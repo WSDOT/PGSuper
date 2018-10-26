@@ -75,8 +75,8 @@ END_OBJECT_MAP()
 class CEngAgentApp : public CWinApp
 {
 public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 };
 
 CEngAgentApp theApp;

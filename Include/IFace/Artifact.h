@@ -79,7 +79,7 @@ interface IArtifact : IUnknown
    // Creates a DesignArtifact for the specified girder
    virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& options) = 0;
 
-   // If the specified girder was previously designed, its DesignArtifact is returned, otherwise NULL
+   // If the specified girder was previously designed, its DesignArtifact is returned, otherwise nullptr
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) = 0;
 
    // Creates a LiftingAnalysisArtifact for the specified segment based on the specified lifting configuration

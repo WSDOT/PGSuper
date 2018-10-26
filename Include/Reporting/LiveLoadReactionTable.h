@@ -77,5 +77,5 @@ protected:
    void MakeCopy(const CLiveLoadReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CLiveLoadReactionTable& rOther);
+   void MakeAssignment(const CLiveLoadReactionTable& rOther);
 };

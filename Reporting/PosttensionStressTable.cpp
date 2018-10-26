@@ -103,7 +103,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    }
 
    // remove the intervals
-   vIntervals.erase(std::remove_if(vIntervals.begin(),vIntervals.end(),std::bind2nd(std::less<IntervalIndexType>(),minIntervalIdx)),vIntervals.end());
+   vIntervals.erase(std::remove_if(vIntervals.begin(), vIntervals.end(), [&minIntervalIdx](const auto& intervalIdx) {return intervalIdx < minIntervalIdx;}), vIntervals.end());
    ATLASSERT(0 < vIntervals.size());
 
    ColumnIndexType nColumns;

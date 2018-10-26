@@ -41,7 +41,7 @@ class CLiveLoadDlg : public CDialog
    friend CLiveLoadAxleGrid;
 // Construction
 public:
-	CLiveLoadDlg(bool allowEditing, CWnd* pParent = NULL);   // standard constructor
+	CLiveLoadDlg(bool allowEditing, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CLiveLoadDlg)

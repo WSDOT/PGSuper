@@ -88,7 +88,7 @@ eafTypes::StatusSeverityType pgsLiftingSupportLocationStatusCallback::GetSeverit
 void pgsLiftingSupportLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsLiftingSupportLocationStatusItem* pItem = dynamic_cast<pgsLiftingSupportLocationStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    GET_IFACE(IEditByUI,pEdit);
 
@@ -127,7 +127,7 @@ void pgsTruckStiffnessStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    pgsTruckStiffnessStatusItem* pItem = dynamic_cast<pgsTruckStiffnessStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    CString msg;
    msg.Format(_T("%s\n\nThe truck roll stiffness is specified in the Hauling Parameters of the Design Criteria\nDesign Criteria may be viewed in the Library Editor"),pStatusItem->GetDescription());
@@ -164,7 +164,7 @@ eafTypes::StatusSeverityType pgsBunkPointLocationStatusCallback::GetSeverity()
 void pgsBunkPointLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsBunkPointLocationStatusItem* pItem = dynamic_cast<pgsBunkPointLocationStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
+   ATLASSERT(pItem!=nullptr);
 
    GET_IFACE(IEditByUI,pEdit);
    pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);

@@ -42,7 +42,7 @@ static const Uint32 SSIZE = 1440 * 3/8; // (twips)
 UINT CTogaSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("TogaSectionCutData"));
 
 CTogaSectionCutDisplayImpl::CTogaSectionCutDisplayImpl():
-m_pCutLocation(NULL),
+m_pCutLocation(nullptr),
 m_Color(CUT_COLOR)
 {
    EnableAutomation ();

@@ -31,6 +31,9 @@
 #include <IFace\InterfaceShearRequirements.h>
 #include <IFace\Intervals.h>
 
+#include <iterator>
+#include <algorithm>
+
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
@@ -269,9 +272,9 @@ CLASS
 //////////////////////
 pgsShearDesignTool::pgsShearDesignTool(SHARED_LOGFILE lf):
 LOGFILE(lf),
-m_pArtifact(NULL),
-m_pBroker(NULL),
-m_StatusGroupID(NULL)
+m_pArtifact(nullptr),
+m_pBroker(nullptr),
+m_StatusGroupID(INVALID_ID)
 {
 }
 
@@ -325,7 +328,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-   ATLASSERT(pool != NULL);
+   ATLASSERT(pool != nullptr);
 
    // Shear Design Control items
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -426,7 +429,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
 
 void pgsShearDesignTool::ResetDesign(const std::vector<pgsPointOfInterest>& pois)
 {
-   ATLASSERT(m_pBroker!=NULL); // make sure Intialize was called
+   ATLASSERT(m_pBroker!=nullptr); // make sure Intialize was called
 
    // Reset check artifacts
    m_StirrupCheckArtifact.Clear();
@@ -586,14 +589,14 @@ bool pgsShearDesignTool::GetLongShearCapacityRequiresStirrupTightening() const
    return m_bLongShearCapacityRequiresStirrupTightening;
 }
 
-void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfInterest>& pois)
+void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfInterest>& vPois)
 {
    // POI's are managed locally
    m_PoiMgr.RemoveAll();
 
    // Add all Poi's used from the flexure analysis. 
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPois.end());
    for ( ; poiIter != poiIterEnd; poiIter++)
    {
       const pgsPointOfInterest& poi = *poiIter;
@@ -1517,7 +1520,7 @@ bool  pgsShearDesignTool::ModifyPreExistingStirrupDesign()
    matRebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-   ATLASSERT(pool != NULL);
+   ATLASSERT(pool != nullptr);
 
    // Design stirrups from left-right for both symmetrical and non-symmetrical cases
 
@@ -1789,7 +1792,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-   ATLASSERT(pool != NULL);
+   ATLASSERT(pool != nullptr);
 
    // Loop over zones and design each. To simplify life, we DO NOT abide by vertical stirrup
    // zone spacing and size jump rules here
@@ -1946,7 +1949,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
          pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-         ATLASSERT(pool != NULL);
+         ATLASSERT(pool != nullptr);
 
          // Determine Av/s required for splitting
          Float64 avs_req = GetAvsReqdForSplitting();
@@ -2091,7 +2094,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
             matRebar::Type barType;
             pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
             lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-            ATLASSERT(pool != NULL);
+            ATLASSERT(pool != nullptr);
 
             Float64 max_spac = rConfinementArtifact.GetSMax();
             const matRebar* pBar = rConfinementArtifact.GetMinBar();
@@ -2262,7 +2265,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    {
       LOG(_T("Checking LRS (failures reported only) at ")<<vPoi.size()<<_T(" Pois, ils = ")<<ils);
 
-      BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
+      for (const auto& poi : vPoi)
       {
          Float64 location = poi.GetDistFromStart();
 

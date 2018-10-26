@@ -1,0 +1,762 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|Win32">
+      <Configuration>Profile</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4A38B3B0-7C87-40E8-BF6A-9D1B4051FF71}</ProjectGuid>
+    <RootNamespace>Reporting</RootNamespace>
+    <Keyword>MFCDLLProj</Keyword>
+    <ProjectName>PGSuperReporting</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfAtl>Dynamic</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>F:\boost_1_63_0;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Regex\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\RWUXTheme\Include;C:\Program Files\AASHTOWare\VirtisOpis63\include;F:\Apache\xalan-builds\XALANCPKG-11-31-X86-VC90\include;F:\CodeSynthesis XSD 3.3\include;F:\Coin3d\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>F:\boost_1_63_0;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Regex\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\RWUXTheme\Include;C:\Program Files\AASHTOWare\VirtisOpis63\include;F:\Apache\xalan-builds\XALANCPKG-11-31-X86-VC90\include;F:\CodeSynthesis XSD 3.3\include;F:\Coin3d\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;_DEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSUper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Reporting.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;_DEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSUper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Reporting.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSUper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Reporting.def</ModuleDefinitionFile>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSUper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Reporting.def</ModuleDefinitionFile>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Profile/</AssemblerListingLocation>
+      <ObjectFileName>.\Profile/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Profile/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSUper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Reporting.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Profile/</AssemblerListingLocation>
+      <ObjectFileName>.\Profile/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Profile/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSUper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\Reporting.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX64</TargetMachine>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\SharedCtrls\MultiGirderSelectGrid.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ACI209CreepCoefficientChapterBuilder.cpp" />
+    <ClCompile Include="ACI209ShrinkageStrainChapterBuilder.cpp" />
+    <ClCompile Include="ADimChapterBuilder.cpp" />
+    <ClCompile Include="AlignmentChapterBuilder.cpp" />
+    <ClCompile Include="BasicCamberChapterBuilder.cpp" />
+    <ClCompile Include="BearingDesignParametersChapterBuilder.cpp" />
+    <ClCompile Include="BridgeAnalysisChapterBuilder.cpp" />
+    <ClCompile Include="BridgeAnalysisReportDlg.cpp" />
+    <ClCompile Include="BridgeAnalysisReportSpecification.cpp" />
+    <ClCompile Include="BridgeAnalysisReportSpecificationBuilder.cpp" />
+    <ClCompile Include="BridgeDescChapterBuilder.cpp" />
+    <ClCompile Include="BridgeDescDetailsChapterBuilder.cpp" />
+    <ClCompile Include="BrokerReportSpecification.cpp" />
+    <ClCompile Include="BrokerReportSpecificationBuilder.cpp" />
+    <ClCompile Include="BurstingZoneDetailsChapterBuilder.cpp" />
+    <ClCompile Include="CamberChapterBuilder.cpp" />
+    <ClCompile Include="CamberTable.cpp" />
+    <ClCompile Include="CastingYardMomentsTable.cpp" />
+    <ClCompile Include="CastingYardRebarRequirementChapterBuilder.cpp" />
+    <ClCompile Include="CastingYardStressTable.cpp" />
+    <ClCompile Include="CEBFIPCreepCoefficientChapterBuilder.cpp" />
+    <ClCompile Include="CEBFIPShrinkageStrainChapterBuilder.cpp" />
+    <ClCompile Include="ColumnPropertiesTable.cpp" />
+    <ClCompile Include="CombinedAxialTable.cpp" />
+    <ClCompile Include="CombinedMomentsTable.cpp" />
+    <ClCompile Include="CombinedReactionTable.cpp" />
+    <ClCompile Include="CombinedShearTable.cpp" />
+    <ClCompile Include="CombinedStressTable.cpp" />
+    <ClCompile Include="ConcurrentShearTable.cpp" />
+    <ClCompile Include="ConstructabilityCheckTable.cpp" />
+    <ClCompile Include="ContinuityCheck.cpp" />
+    <ClCompile Include="CrackedSectionDetailsChapterBuilder.cpp" />
+    <ClCompile Include="CreepCoefficientChapterBuilder.cpp" />
+    <ClCompile Include="CritSectionChapterBuilder.cpp" />
+    <ClCompile Include="DebondCheckTable.cpp" />
+    <ClCompile Include="DeckElevationChapterBuilder.cpp" />
+    <ClCompile Include="DesignOutcomeChapterBuilder.cpp" />
+    <ClCompile Include="DevLengthDetailsChapterBuilder.cpp" />
+    <ClCompile Include="DistributionFactorDetailsChapterBuilder.cpp" />
+    <ClCompile Include="DistributionFactorSummaryChapterBuilder.cpp" />
+    <ClCompile Include="DuctGeometryCheckTable.cpp" />
+    <ClCompile Include="DuctSizeCheckTable.cpp" />
+    <ClCompile Include="EffFlangeWidthDetailsChapterBuilder.cpp" />
+    <ClCompile Include="EquilibriumCheckChapterBuilder.cpp" />
+    <ClCompile Include="EquilibriumCheckDlg.cpp" />
+    <ClCompile Include="EquilibriumCheckReportSpecification.cpp" />
+    <ClCompile Include="EquilibriumCheckReportSpecificationBuilder.cpp" />
+    <ClCompile Include="FinalLossesChapterBuilder.cpp" />
+    <ClCompile Include="FlexuralCapacityCheckTable.cpp" />
+    <ClCompile Include="FlexuralStressCheckTable.cpp" />
+    <ClCompile Include="GirderComparisonChapterBuilder.cpp" />
+    <ClCompile Include="GirderDetailingCheck.cpp" />
+    <ClCompile Include="GirderGeometryChapterBuilder.cpp" />
+    <ClCompile Include="GirderSeedDataComparisonParagraph.cpp">
+      <DeploymentContent>true</DeploymentContent>
+    </ClCompile>
+    <ClCompile Include="HaulingCheck.cpp" />
+    <ClCompile Include="HaulingCheckChapterBuilder.cpp" />
+    <ClCompile Include="HaulingCheckDetailsChapterBuilder.cpp" />
+    <ClCompile Include="HoldDownForceArtifact.cpp" />
+    <ClCompile Include="InitialStrainAnalysisChapterBuilder.cpp" />
+    <ClCompile Include="InitialStrainAnalysisDlg.cpp" />
+    <ClCompile Include="InitialStrainAnalysisReportSpecification.cpp" />
+    <ClCompile Include="InitialStrainAnalysisReportSpecificationBuilder.cpp" />
+    <ClCompile Include="InterfaceShearDetails.cpp" />
+    <ClCompile Include="InterfaceShearTable.cpp" />
+    <ClCompile Include="InternalForceChapterBuilder.cpp" />
+    <ClCompile Include="IntervalChapterBuilder.cpp" />
+    <ClCompile Include="LibraryUsageParagraph.cpp" />
+    <ClCompile Include="LibraryUsageTable.cpp" />
+    <ClCompile Include="LiftingCheck.cpp" />
+    <ClCompile Include="LiftingCheckChapterBuilder.cpp" />
+    <ClCompile Include="LiftingCheckDetailsChapterBuilder.cpp" />
+    <ClCompile Include="LiveLoadDetailsChapterBuilder.cpp" />
+    <ClCompile Include="LiveLoadDistributionFactorTable.cpp" />
+    <ClCompile Include="LiveLoadReactionTable.cpp" />
+    <ClCompile Include="LoadingDetailsChapterBuilder.cpp" />
+    <ClCompile Include="LoadRatingChapterBuilder.cpp" />
+    <ClCompile Include="LoadRatingDetailsChapterBuilder.cpp" />
+    <ClCompile Include="LoadRatingReactionsChapterBuilder.cpp" />
+    <ClCompile Include="LoadRatingReportSpecificationBuilder.cpp" />
+    <ClCompile Include="LongitudinalReinforcementForShearLoadRatingChapterBuilder.cpp" />
+    <ClCompile Include="LongRebarLocations.cpp" />
+    <ClCompile Include="LongReinfShearCheck.cpp" />
+    <ClCompile Include="LongReinfShearCheckChapterBuilder.cpp" />
+    <ClCompile Include="LossesChapterBuilder.cpp" />
+    <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp" />
+    <ClCompile Include="LRFDTimeDependentCreepCoefficientChapterBuilder.cpp" />
+    <ClCompile Include="LRFDTimeDependentShrinkageStrainChapterBuilder.cpp" />
+    <ClCompile Include="MomentCapacityDetailsChapterBuilder.cpp" />
+    <ClCompile Include="MomentCapacityParagraphBuilder.cpp" />
+    <ClCompile Include="MultiGirderHaunchGeometryChapterBuilder.cpp" />
+    <ClCompile Include="MultiGirderReportDlg.cpp" />
+    <ClCompile Include="MultiViewReportDlg.cpp" />
+    <ClCompile Include="MVRChapterBuilder.cpp" />
+    <ClCompile Include="NetGirderPropertiesTable.cpp" />
+    <ClCompile Include="OptimizedFabricationChapterBuilder.cpp" />
+    <ClCompile Include="OptionalDeflectionCheck.cpp" />
+    <ClCompile Include="PGSpliceTitlePageBuilder.cpp" />
+    <ClCompile Include="PGSuperChapterBuilder.cpp" />
+    <ClCompile Include="PGSuperTitlePageBuilder.cpp" />
+    <ClCompile Include="PierGeometryChapterBuilder.cpp" />
+    <ClCompile Include="PierReactionChapterBuilder.cpp" />
+    <ClCompile Include="PointOfInterestChapterBuilder.cpp" />
+    <ClCompile Include="PosttensionStressTable.cpp" />
+    <ClCompile Include="PrestressForceChapterBuilder.cpp" />
+    <ClCompile Include="PrestressLossTable.cpp" />
+    <ClCompile Include="PretensionStressTable.cpp" />
+    <ClCompile Include="ProductAxialTable.cpp" />
+    <ClCompile Include="ProductDisplacementsTable.cpp" />
+    <ClCompile Include="ProductForcesChapterBuilder.cpp" />
+    <ClCompile Include="ProductMomentsTable.cpp" />
+    <ClCompile Include="ProductReactionTable.cpp" />
+    <ClCompile Include="ProductRotationTable.cpp" />
+    <ClCompile Include="ProductShearTable.cpp" />
+    <ClCompile Include="ProductStressTable.cpp" />
+    <ClCompile Include="ProjectCriteriaChapterBuilder.cpp" />
+    <ClCompile Include="RatingSummaryTable.cpp" />
+    <ClCompile Include="ReactionInterfaceAdapters.cpp" />
+    <ClCompile Include="Reporting.cpp" />
+    <ClCompile Include="RMultiGirderSelectDlg.cpp" />
+    <ClCompile Include="SectPropChapterBuilder.cpp" />
+    <ClCompile Include="SectPropTable.cpp" />
+    <ClCompile Include="SectPropTable2.cpp" />
+    <ClCompile Include="SelectPointOfInterestDlg.cpp" />
+    <ClCompile Include="ShearCapacityDetailsChapterBuilder.cpp" />
+    <ClCompile Include="ShearCheckTable.cpp" />
+    <ClCompile Include="ShrinkageStrainChapterBuilder.cpp" />
+    <ClCompile Include="SpanDataChapterBuilder.cpp" />
+    <ClCompile Include="SpanGirderReportDlg.cpp" />
+    <ClCompile Include="SpanGirderReportSpecification.cpp" />
+    <ClCompile Include="SpanGirderReportSpecificationBuilder.cpp" />
+    <ClCompile Include="SpecCheckChapterBuilder.cpp" />
+    <ClCompile Include="SpecCheckSummaryChapterBuilder.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StirrupDetailingCheckChapterBuilder.cpp" />
+    <ClCompile Include="StirrupDetailingCheckTable.cpp" />
+    <ClCompile Include="StirrupTable.cpp" />
+    <ClCompile Include="StrandEccentricities.cpp" />
+    <ClCompile Include="StrandEccTable.cpp" />
+    <ClCompile Include="StrandLocations.cpp" />
+    <ClCompile Include="StrandSlopeCheck.cpp" />
+    <ClCompile Include="StrandStressCheckTable.cpp" />
+    <ClCompile Include="StressChapterBuilder.cpp" />
+    <ClCompile Include="TemporarySupportReactionChapterBuilder.cpp" />
+    <ClCompile Include="TendonGeometryChapterBuilder.cpp" />
+    <ClCompile Include="TendonStressCheckTable.cpp" />
+    <ClCompile Include="TimeStepCamberChapterBuilder.cpp" />
+    <ClCompile Include="TimeStepDetailsChapterBuilder.cpp" />
+    <ClCompile Include="TimeStepDetailsDlg.cpp" />
+    <ClCompile Include="TimeStepDetailsReportSpecification.cpp" />
+    <ClCompile Include="TimeStepDetailsReportSpecificationBuilder.cpp" />
+    <ClCompile Include="TimeStepParametersChapterBuilder.cpp" />
+    <ClCompile Include="UserAxialTable.cpp" />
+    <ClCompile Include="UserDefinedLoadsChapterBuilder.cpp" />
+    <ClCompile Include="UserDisplacementsTable.cpp" />
+    <ClCompile Include="UserMomentsTable.cpp" />
+    <ClCompile Include="UserReactionTable.cpp" />
+    <ClCompile Include="UserRotationTable.cpp" />
+    <ClCompile Include="UserShearTable.cpp" />
+    <ClCompile Include="UserStressTable.cpp" />
+    <ClCompile Include="VehicularLoadReactionTable.cpp" />
+    <ClCompile Include="VehicularLoadResultsTable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Reporting.def" />
+    <None Include="res\Reporting.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\ACI209ShrinkageStrainChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\AlignmentChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\AutoLib.h" />
+    <ClInclude Include="..\Include\Reporting\BasicCamberChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingDesignParametersChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BridgeAnalysisChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportDlg.h" />
+    <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BridgeDescChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BridgeDescDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BrokerReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\BrokerReportSpecificationBuilder.h" />
+    <CustomBuild Include="..\Include\Reporting\BurstingZoneDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CamberChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CamberTable.h" />
+    <ClInclude Include="..\Include\Reporting\CastingYardMomentsTable.h" />
+    <ClInclude Include="..\Include\Reporting\CastingYardRebarRequirementChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CastingYardStressTable.h" />
+    <ClInclude Include="..\Include\Reporting\CEBFIPCreepCoefficientChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CEBFIPShrinkageStrainChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\ColumnPropertiesTable.h" />
+    <ClInclude Include="..\Include\Reporting\CombinedAxialTable.h" />
+    <ClInclude Include="..\Include\Reporting\CombinedMomentsTable.h" />
+    <ClInclude Include="..\Include\Reporting\CombinedReactionTable.h" />
+    <ClInclude Include="..\Include\Reporting\CombinedShearTable.h" />
+    <ClInclude Include="..\Include\Reporting\CombinedStressTable.h" />
+    <ClInclude Include="..\Include\Reporting\ConcurrentShearTable.h" />
+    <ClInclude Include="..\Include\Reporting\ConfinementCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\ConstructabilityCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\ContinuityCheck.h" />
+    <ClInclude Include="..\Include\Reporting\CrackedSectionDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CreepCoefficientChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CritSectionChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\DebondCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\DeckElevationChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\DesignOutcomeChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\DevLengthDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\DistributionFactorDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\DistributionFactorSummaryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\DuctGeometryCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\DuctSizeCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\EffFlangeWidthDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\EquilibriumCheckChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\EquilibriumCheckReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\EquilibriumCheckReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\FinalLossesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\FlexuralCapacityCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\FlexuralStressCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\GirderComparisonChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\GirderDetailingCheck.h" />
+    <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\GirderSeedDataComparisonParagraph.h" />
+    <ClInclude Include="..\Include\Reporting\HaulingCheck.h" />
+    <ClInclude Include="..\Include\Reporting\HaulingCheckChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\HaulingCheckDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\HoldDownForceCheck.h" />
+    <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\InterfaceShearDetails.h" />
+    <ClInclude Include="..\Include\Reporting\InterfaceShearTable.h" />
+    <ClInclude Include="..\Include\Reporting\InternalForceChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\IntervalChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LibraryUsageParagraph.h" />
+    <ClInclude Include="..\Include\Reporting\LibraryUsageTable.h" />
+    <ClInclude Include="..\Include\Reporting\LiftingCheck.h" />
+    <ClInclude Include="..\Include\Reporting\LiftingCheckChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LiftingCheckDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LiveLoadDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LiveLoadDistributionFactorTable.h" />
+    <ClInclude Include="..\Include\Reporting\LiveLoadReactionTable.h" />
+    <ClInclude Include="..\Include\Reporting\LoadingDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LoadRatingChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LoadRatingDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LoadRatingReactionsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LoadRatingReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LongitudinalReinforcementForShearLoadRatingChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LongRebarLocations.h" />
+    <ClInclude Include="..\Include\Reporting\LongReinfShearCheck.h" />
+    <ClInclude Include="..\Include\Reporting\LongReinfShearCheckChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LossesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\MomentCapacityParagraphBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\MultiGirderHaunchGeometryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\MultiGirderReportDlg.h" />
+    <ClInclude Include="..\Include\Reporting\MVRChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\NetGirderPropertiesTable.h" />
+    <ClInclude Include="..\Include\Reporting\OptimizedFabricationChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\OptionalDeflectionCheck.h" />
+    <ClInclude Include="..\Include\Reporting\PGSpliceTitlePageBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PGSuperChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PGSuperTitlePageBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PierGeometryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PierReactionChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PointOfInterestChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PosttensionStressTable.h" />
+    <ClInclude Include="..\Include\Reporting\PrestressForceChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PrestressLossTable.h" />
+    <ClInclude Include="..\Include\Reporting\PretensionStressTable.h" />
+    <ClInclude Include="..\Include\Reporting\ProductAxialTable.h" />
+    <ClInclude Include="..\Include\Reporting\ProductDisplacementsTable.h" />
+    <ClInclude Include="..\Include\Reporting\ProductForcesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\ProductMomentsTable.h" />
+    <ClInclude Include="..\Include\Reporting\ProductReactionTable.h" />
+    <ClInclude Include="..\Include\Reporting\ProductRotationTable.h" />
+    <ClInclude Include="..\Include\Reporting\ProductShearTable.h" />
+    <ClInclude Include="..\Include\Reporting\ProductStressTable.h" />
+    <ClInclude Include="..\Include\Reporting\ProjectCriteriaChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\RatingSummaryTable.h" />
+    <ClInclude Include="..\Include\Reporting\ReactionInterfaceAdapters.h" />
+    <ClInclude Include="..\Include\Reporting\ReportingExp.h" />
+    <ClInclude Include="..\Include\Reporting\ReportNotes.h" />
+    <ClInclude Include="..\Include\Reporting\SectPropChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SectPropTable.h" />
+    <ClInclude Include="..\Include\Reporting\SectPropTable2.h" />
+    <ClInclude Include="..\Include\Reporting\ShearCapacityDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\ShearCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\ShrinkageStrainChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SpanDataChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h" />
+    <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SpecCheckChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SpecCheckSummaryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\StirrupDetailingCheckChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\StirrupDetailingCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\StirrupTable.h" />
+    <ClInclude Include="..\Include\Reporting\StrandEccentricities.h" />
+    <ClInclude Include="..\Include\Reporting\StrandEccTable.h" />
+    <ClInclude Include="..\Include\Reporting\StrandLocations.h" />
+    <ClInclude Include="..\Include\Reporting\StrandSlopeCheck.h" />
+    <ClInclude Include="..\Include\Reporting\StrandStressCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\StressChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\TemporarySupportReactionChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\TendonGeometryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\TendonStressCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\TimeStepCamberChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\TimeStepDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\TimeStepDetailsReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\TimeStepDetailsReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\TimeStepParametersChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\UserAxialTable.h" />
+    <ClInclude Include="..\Include\Reporting\UserDefinedLoadsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\UserDisplacementsTable.h" />
+    <ClInclude Include="..\Include\Reporting\UserMomentsTable.h" />
+    <ClInclude Include="..\Include\Reporting\UserReactionTable.h" />
+    <ClInclude Include="..\Include\Reporting\UserRotationTable.h" />
+    <ClInclude Include="..\Include\Reporting\UserShearTable.h" />
+    <ClInclude Include="..\Include\Reporting\UserStressTable.h" />
+    <ClInclude Include="..\Include\Reporting\VehicularLoadReactionTable.h" />
+    <ClInclude Include="..\Include\Reporting\VehicularLoadResultsTable.h" />
+    <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />
+    <ClInclude Include="EquilibriumCheckDlg.h" />
+    <ClInclude Include="InitialStrainAnalysisDlg.h" />
+    <ClInclude Include="MultiViewReportDlg.h" />
+    <ClInclude Include="Reporting.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="RMultiGirderSelectDlg.h" />
+    <ClInclude Include="SelectPointOfInterestDlg.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TimeStepDetailsDlg.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Reporting.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
+      <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="Reporting.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

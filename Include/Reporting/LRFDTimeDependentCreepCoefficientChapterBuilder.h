@@ -48,6 +48,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CLRFDTimeDependentCreepCoefficientChapterBuilder(const CLRFDTimeDependentCreepCoefficientChapterBuilder&);
-   CLRFDTimeDependentCreepCoefficientChapterBuilder& operator=(const CLRFDTimeDependentCreepCoefficientChapterBuilder&);
+   CLRFDTimeDependentCreepCoefficientChapterBuilder(const CLRFDTimeDependentCreepCoefficientChapterBuilder&) = delete;
+   CLRFDTimeDependentCreepCoefficientChapterBuilder& operator=(const CLRFDTimeDependentCreepCoefficientChapterBuilder&) = delete;
 };

@@ -10,6 +10,7 @@ Compression stress check failed for Service I Limit State in Interval 8 Remove t
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
 Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
@@ -32,6 +33,7 @@ Compression stress check failed for Service I Limit State in Interval 8 Remove t
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
 Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State

@@ -58,7 +58,7 @@ public:
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CProfilePage)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 
@@ -69,7 +69,7 @@ protected:
 	afx_msg void OnAdd();
 	afx_msg void OnRemove();
 	afx_msg void OnSort();
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
    afx_msg void OnHelp();
 

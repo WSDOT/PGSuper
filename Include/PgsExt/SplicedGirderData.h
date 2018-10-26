@@ -144,7 +144,7 @@ public:
 
 protected:
    void MakeCopy(const CSplicedGirderData& rOther,bool bCopyDataOnly);
-   virtual void MakeAssignment(const CSplicedGirderData& rOther);
+   void MakeAssignment(const CSplicedGirderData& rOther);
 
    // called by CBridgeDescription
    void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);

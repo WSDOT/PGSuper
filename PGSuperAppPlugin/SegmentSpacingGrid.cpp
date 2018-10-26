@@ -164,7 +164,7 @@ void CSegmentSpacingGrid::InitializeGridData(CGirderSpacing2* pSpacing)
 
 void CSegmentSpacingGrid::UpdateGrid()
 {
-   if ( GetSafeHwnd() == NULL )
+   if ( GetSafeHwnd() == nullptr )
       return; // grid isn't ready for filling
 
 	GetParam()->EnableUndo(FALSE);
@@ -206,7 +206,7 @@ void CSegmentSpacingGrid::UpdateGrid()
 		);
 
    const CBridgeDescription2* pBridgeDesc = m_pSpacing->GetBridgeDescription();
-   pgsTypes::SupportedDeckType deckType  = pBridgeDesc->GetDeckDescription()->DeckType;
+   pgsTypes::SupportedDeckType deckType  = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
    m_MinGirderSpacing.clear();
    m_MaxGirderSpacing.clear();

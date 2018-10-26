@@ -32,7 +32,7 @@
 
 IMPLEMENT_DYNAMIC(CRMultiGirderSelectDlg, CDialog)
 
-CRMultiGirderSelectDlg::CRMultiGirderSelectDlg(CWnd* pParent /*=NULL*/)
+CRMultiGirderSelectDlg::CRMultiGirderSelectDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CRMultiGirderSelectDlg::IDD, pParent)
 {
    m_pGrid = new CMultiGirderSelectGrid();

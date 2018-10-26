@@ -78,8 +78,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CADimChapterBuilder(const CADimChapterBuilder&);
-   CADimChapterBuilder& operator=(const CADimChapterBuilder&);
+   CADimChapterBuilder(const CADimChapterBuilder&) = delete;
+   CADimChapterBuilder& operator=(const CADimChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

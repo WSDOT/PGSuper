@@ -1,0 +1,703 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AgeAdjustedMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BeamFamilyImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Beams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxBeamDistFactorEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxBeamFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxBeamFactory2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxBeamFactoryImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BulbTeeDistFactorEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BulbTeeFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ChangeOfConcreteStressTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreepAndShrinkageTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreepAtDeckPlacementTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreepAtFinalTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreepAtHaulingTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeckedSlabBeamFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeckShrinkageLossTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DoubleTeeFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectivePrestressTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectOfPostTensionedTemporaryStrandsTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ElasticGainDueToDeckPlacementTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ElasticGainDueToLiveLoadTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ElasticGainDueToSIDLTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ElasticShorteningTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FinalPrestressLossTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FrictionLossTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IBeamDistFactorEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IBeamFactoryImp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiWeb2Factory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiWebDistFactorEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiWebFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NUBeamFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostTensionInteractionTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostTensionTimeDependentLossesAtShippingTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PsBeamLossEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PsLossEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RelaxationAftertransferTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RelaxationAtDeckPlacementTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RelaxationAtFinalTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RelaxationAtHaulingTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShrinkageAtDeckPlacementTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShrinkageAtFinalTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShrinkageAtHaulingTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SplicedIBeamFactoryImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SplicedNUBeamFactoryImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SplicedUBeamFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StrandMoverImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TaperedIBeamFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TemporaryStrandRemovalTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeDependentLossesAtDeckPlacementTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeDependentLossesAtShippingTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeDependentLossesTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeDependentLossFinalTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeStepLossEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TotalPrestressLossTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxDOT2013ChangeOfConcreteStressTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxDOT2013CreepAndShrinkageTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxDOT2013RelaxationAftertransferTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxDotDoubleTFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UBeam2Factory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UBeamDistFactorEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UBeamFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UBeamHelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VoidedSlab2DistFactorEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VoidedSlabDistFactorEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VoidedSlabFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VoidedSlabFactory2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxDOT2013TimeDependentLossesTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Include\IFace\AgeAdjustedMaterial.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDOT2013TimeDependentLossesTable.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AgeAdjustedMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\AutoLib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Plugins\BeamFactoryCATID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Plugins\BeamFamilyCLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BeamFamilyImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\BeamsExp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxBeamFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxBeamFactory2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxBeamFactoryImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BulbTeeDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BulbTeeFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ChangeOfConcreteStressTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Plugins\CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CreepAndShrinkageTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CreepAtDeckPlacementTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CreepAtFinalTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CreepAtHaulingTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeckedSlabBeamFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeckShrinkageLossTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DistFactorEngineerImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DoubleTeeFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectivePrestressTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectOfPostTensionedTemporaryStrandsTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ElasticGainDueToDeckPlacementTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ElasticGainDueToLiveLoadTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ElasticGainDueToSIDLTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ElasticShorteningTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FinalPrestressLossTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrictionLossTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\Helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IBeamFactoryImp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiWeb2Factory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiWebDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiWebFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NUBeamFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PostTensionInteractionTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PsBeamLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RelaxationAftertransferTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RelaxationAtDeckPlacementTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RelaxationAtFinalTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RelaxationAtHaulingTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShrinkageAtDeckPlacementTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShrinkageAtFinalTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShrinkageAtHaulingTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SplicedIBeamFactoryImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SplicedNUBeamFactoryImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SplicedUBeamFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StrandMoverImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TaperedIBeamFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TemporaryStrandRemovalTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeDependentLossesAtDeckPlacementTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeDependentLossesAtShippingTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeDependentLossesTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeDependentLossFinalTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeStepLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TotalPrestressLossTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDOT2013ChangeOfConcreteStressTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDOT2013CreepAndShrinkageTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDOT2013RelaxationAftertransferTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDotDoubleTFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UBeam2Factory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UBeamFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UBeamHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoidedSlab2DistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoidedSlabDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoidedSlabDistFactorEngineerTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoidedSlabFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoidedSlabFactory2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\DistFactorEngineer.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IBeamFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\Interfaces.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\BeamFamily.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\BeamFactory.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="PostTensionTimeDependentLossesAtShippingTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\PsLossEngineer.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="PsLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Res\boxbeam.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\boxbeam2.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\bulb_tee.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\DeckedSlab.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\ico00001.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\ico00002.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\ico00003.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\ico00004.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\SplicedIBeam.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\SplicedNUBeam.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\SplicedUBeam.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\texas_u.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\txdotdou.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\voided_slab.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Res\voided_slab2.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Beams.def" />
+    <None Include="AgeAdjustedMaterial.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\BoxBeam.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\BoxBeam2.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BoxBeamDistFactorEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BoxBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BoxBeamFactory2.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BoxBeamFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\BulbTee.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BulbTeeDistFactorEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BulbTeeFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BulbTeeFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\DeckedSlabBeam.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="DeckedSlabBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="DeckedSlabBeamFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\DoubleTee.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="DoubleTeeFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="DoubleTeeFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\IBeam.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="IBeamDistFactorEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="IBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="IBeamFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\MultiWeb.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\MultiWeb2.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="MultiWeb2Factory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="MultiWebfactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="MultiWebFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\NUbeam.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="NUBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="PsBeamLossEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\SplicedIBeam.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SplicedIBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SplicedIBeamFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\SplicedNUBeam.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SplicedNUBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SplicedUBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SplicedUBeamFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="StrandMoverImpl.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\TaperedIBeam.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="TaperedIBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="TimeStepLossEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\txdotdou.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="TxDotDoubleTFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\UBeam.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\UBeam2.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UBeam2Factory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UBeamDistFactorEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UBeamFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UBeamFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\VoidedSlab.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Res\VoidedSlab2.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="VoidedSlab2DistFactorEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="VoidedSlabDistFactorEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="VoidedSlabFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="VoidedSlabFactory2.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="VoidedSlabFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{905d65c4-dee5-49b7-9831-297a6170eb14}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="IFace">
+      <UniqueIdentifier>{43b584a6-87ab-456e-9368-86e5d5fbba42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{efb32551-fdcb-437f-ab44-083ba8eba62b}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{edb96d1e-b9c7-4070-a8c3-479d475a0515}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Beams.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

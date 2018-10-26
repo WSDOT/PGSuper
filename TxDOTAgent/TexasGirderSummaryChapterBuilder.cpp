@@ -182,7 +182,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
       if ( hash == HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::AlongItem) )
       {
-         if ( (i == 0 && pPrevPier->GetPrevSpan() == NULL) || (i == 1 && pNextPier->GetNextSpan() == NULL) )
+         if ( (i == 0 && pPrevPier->GetPrevSpan() == nullptr) || (i == 1 && pNextPier->GetNextSpan() == nullptr) )
             *pStr = _T("Measured at and along the abutment line");
          else
             *pStr = _T("Measured at and along the pier line");
@@ -193,7 +193,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
       else if ( hash == HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem) )
       {
-         if ( (i == 0 && pPrevPier->GetPrevSpan() == NULL) || (i == 1 && pNextPier->GetNextSpan() == NULL) )
+         if ( (i == 0 && pPrevPier->GetPrevSpan() == nullptr) || (i == 1 && pNextPier->GetNextSpan() == nullptr) )
             *pStr = _T("Measured normal to alignment at abutment line");
          else
             *pStr = _T("Measured normal to alignment at pier line");

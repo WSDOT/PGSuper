@@ -36,7 +36,7 @@
 
 IMPLEMENT_DYNAMIC(CTogaDirectFillDlg, CDialog)
 
-CTogaDirectFillDlg::CTogaDirectFillDlg(CWnd* pParent /*=NULL*/)
+CTogaDirectFillDlg::CTogaDirectFillDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CTogaDirectFillDlg::IDD, pParent), 
    m_bFirstActive(true),
    m_SpanLength(0)
@@ -189,7 +189,7 @@ bool  CTogaDirectFillDlg::UpdateLibraryData()
       const libLibraryEntry* pLibEntry = m_pBrokerRetriever->GetGirderLibrary()->GetEntry(m_GirderEntryName);
       const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLibEntry);
 
-      if (pGdrEntry == NULL)
+      if (pGdrEntry == nullptr)
       {
          CString msg, stmp;
          stmp.LoadString(IDS_GDR_ERROR);

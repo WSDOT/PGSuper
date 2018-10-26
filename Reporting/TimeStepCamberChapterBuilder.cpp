@@ -28,6 +28,8 @@
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 
+#include <iterator>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

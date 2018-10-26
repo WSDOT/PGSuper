@@ -93,28 +93,28 @@ m_pYFormat(0)
 
 CStressHistoryGraphBuilder::~CStressHistoryGraphBuilder()
 {
-   if ( m_pGraphController != NULL )
+   if ( m_pGraphController != nullptr )
    {
       delete m_pGraphController;
-      m_pGraphController = NULL;
+      m_pGraphController = nullptr;
    }
 
-   if ( m_pTimeFormat != NULL )
+   if ( m_pTimeFormat != nullptr )
    {
       delete m_pTimeFormat;
-      m_pTimeFormat = NULL;
+      m_pTimeFormat = nullptr;
    }
 
-   if ( m_pIntervalFormat != NULL )
+   if ( m_pIntervalFormat != nullptr )
    {
       delete m_pIntervalFormat;
-      m_pIntervalFormat = NULL;
+      m_pIntervalFormat = nullptr;
    }
 
-   if ( m_pYFormat != NULL )
+   if ( m_pYFormat != nullptr )
    {
       delete m_pYFormat;
-      m_pYFormat = NULL;
+      m_pYFormat = nullptr;
    }
 
 }
@@ -148,7 +148,7 @@ CEAFGraphControlWindow* CStressHistoryGraphBuilder::GetGraphControlWindow()
    return m_pGraphController;
 }
 
-CGraphBuilder* CStressHistoryGraphBuilder::Clone()
+CGraphBuilder* CStressHistoryGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
    // the graph control window

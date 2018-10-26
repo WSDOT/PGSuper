@@ -57,10 +57,10 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
    *pParagraph << rptRcImage(strImagePath + _T("Delta_Fpr_TxDOT_2013.png")) << rptNewLine;
 
    const lrfdRefinedLossesTxDOT2013* pLosses = dynamic_cast<const lrfdRefinedLossesTxDOT2013*>(pDetails->pLosses.get());
-   if (pLosses==NULL)
+   if (pLosses==nullptr)
    {
       ATLASSERT(false);
-      return NULL; // we have bigger problems than a memory leak at this point
+      return nullptr; // we have bigger problems than a memory leak at this point
    }
 
    *pParagraph << Sub2(_T("K"),_T("L"))<<_T(" = ")<<pLosses->GetKL() << rptNewLine;
@@ -78,7 +78,7 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
 
       *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("fpr1"))<<_T(" = ")<< symbol(DELTA) << Sub2(_T("f"),_T("fpr2"))<<_T(" = ")<<stress.SetValue(pLosses->RelaxationLossBeforeDeckPlacement()) << rptNewLine;
 
-      return NULL;
+      return nullptr;
    }
    else
    {

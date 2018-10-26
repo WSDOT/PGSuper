@@ -92,7 +92,7 @@ void DDV_DuctGeometry(CDataExchange* pDX,int nIDC,CParabolicDuctGeometry& ductGe
 
 IMPLEMENT_DYNAMIC(CParabolicDuctDlg, CDialog)
 
-CParabolicDuctDlg::CParabolicDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent /*=NULL*/)
+CParabolicDuctDlg::CParabolicDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent /*=nullptr*/)
 	: CDialog(CParabolicDuctDlg::IDD, pParent)
 {
    m_pGirderlineDlg = pGdrDlg;

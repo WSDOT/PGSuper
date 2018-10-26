@@ -39,7 +39,7 @@ class CSectionViewDialog : public CDialog
 {
 // Construction
 public:
-	CSectionViewDialog(const GirderLibraryEntry* pShape,bool isEnd,CWnd* pParent = NULL);   // standard constructor
+	CSectionViewDialog(const GirderLibraryEntry* pShape,bool isEnd,CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSectionViewDialog)

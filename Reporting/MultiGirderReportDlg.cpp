@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CMultiGirderReportDlg, CDialog)
 
-CMultiGirderReportDlg::CMultiGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CMultiGirderReportDlg::CMultiGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_pBroker = pBroker;
@@ -240,7 +240,7 @@ void CMultiGirderReportDlg::InitChapterListFromSpec()
 
 void CMultiGirderReportDlg::InitFromRptSpec()
 {
-   boost::shared_ptr<CMultiGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CMultiGirderReportSpecification>(m_pInitRptSpec);
+   std::shared_ptr<CMultiGirderReportSpecification> pRptSpec = std::dynamic_pointer_cast<CMultiGirderReportSpecification>(m_pInitRptSpec);
    ATLASSERT(pRptSpec); // is there a new mode?
    m_GirderKeys = pRptSpec->GetGirderKeys();
 

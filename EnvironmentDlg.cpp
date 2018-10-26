@@ -38,7 +38,7 @@ static char THIS_FILE[] = __FILE__;
 // CEnvironmentDlg dialog
 
 
-CEnvironmentDlg::CEnvironmentDlg(CWnd* pParent /*=NULL*/)
+CEnvironmentDlg::CEnvironmentDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CEnvironmentDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CEnvironmentDlg)

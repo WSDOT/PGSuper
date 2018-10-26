@@ -37,7 +37,7 @@ class CApplyLoadsDlg : public CDialog
 	DECLARE_DYNAMIC(CApplyLoadsDlg)
 
 public:
-	CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = NULL);   // standard constructor
+	CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CApplyLoadsDlg();
 
 // Dialog Data

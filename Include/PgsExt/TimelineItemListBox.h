@@ -57,7 +57,7 @@ public:
 
    void MoveSelectedItemsToBuddy();
 
-   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
 
    afx_msg void OnDestroy();
 

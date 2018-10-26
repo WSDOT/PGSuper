@@ -216,7 +216,7 @@ void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
       segment.CoCreateInstance(CLSID_TaperedGirderSegment);
    }
 
-   ATLASSERT(segment != NULL);
+   ATLASSERT(segment != nullptr);
 
    // Build up the beam shape
 
@@ -258,7 +258,7 @@ void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
       CComQIPtr<IShape> shape(gdrSection);
       ATLASSERT(shape);
 
-      prisSegment->AddShape(shape,material,NULL);
+      prisSegment->AddShape(shape,material,nullptr);
    }
    else
    {
@@ -274,7 +274,7 @@ void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
          flangedSection[i].QueryInterface(&shape[i]);
       }
 
-      taperedSegment->AddShape( shape[etStart], shape[etEnd], material, NULL );
+      taperedSegment->AddShape( shape[etStart], shape[etEnd], material, nullptr );
    }
 
    ssmbr->AddSegment(segment);

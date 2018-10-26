@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CBoundaryConditionDlg, CDialog)
 
-CBoundaryConditionDlg::CBoundaryConditionDlg(CWnd* pParent /*=NULL*/)
+CBoundaryConditionDlg::CBoundaryConditionDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CBoundaryConditionDlg::IDD, pParent)
 {
    m_BoundaryCondition = pgsTypes::bctContinuousAfterDeck;

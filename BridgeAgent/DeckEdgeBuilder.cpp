@@ -326,7 +326,7 @@ void CDeckEdgeBuilder::GetDeckEdges(IPath** ppLeftEdgePath,IPath** ppRightEdgePa
 
 pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** ppSpline,pgsTypes::DeckPointTransitionType transition,bool bLeft)
 {
-   ATLASSERT( *ppSpline == NULL );
+   ATLASSERT( *ppSpline == nullptr );
 
    CComPtr<ICubicSpline> spline;
    spline.CoCreateInstance(CLSID_CubicSpline);
@@ -399,14 +399,14 @@ pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPo
 
 pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::Spline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpline,pgsTypes::DeckPointTransitionType transition)
 {
-   ATLASSERT(pSpline != NULL );
+   ATLASSERT(pSpline != nullptr );
    pSpline->AddPointEx(pPoint);
    return transition;
 }
 
 pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpline,pgsTypes::DeckPointTransitionType transition,bool bLeft)
 {
-   ATLASSERT(pSpline != NULL );
+   ATLASSERT(pSpline != nullptr );
 
    pSpline->AddPointEx(pPoint);
 
@@ -442,7 +442,7 @@ pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoin
 
    pPath->AddEx(pSpline);
 
-   pSpline = NULL;
+   pSpline = nullptr;
 
    return transition;
 }

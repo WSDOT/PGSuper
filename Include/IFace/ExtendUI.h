@@ -47,6 +47,7 @@ struct EditBridgeExtension
    CPropertyPage* pPage;
 
    bool operator<(const EditBridgeExtension& other) const { return callbackID < other.callbackID; }
+   bool operator==(const EditBridgeExtension& other) const { return callbackID == other.callbackID; }
 };
 
 struct EditSplicedGirderExtension
@@ -56,6 +57,7 @@ struct EditSplicedGirderExtension
    CPropertyPage* pPage;
 
    bool operator<(const EditSplicedGirderExtension& other) const { return callbackID < other.callbackID; }
+   bool operator==(const EditSplicedGirderExtension& other) const { return callbackID == other.callbackID; }
 };
 
 struct EditLoadRatingOptionsExtension
@@ -83,7 +85,7 @@ interface IEditPierCallback
 
    // Called by the framework when stand alone editing is complete. Return a transaction object if you
    // want the editing the occured on this extension page to be in the transaction queue for undo/redo,
-   // otherwise return NULL
+   // otherwise return nullptr
    virtual txnTransaction* OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
 
    // Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to
@@ -107,7 +109,7 @@ interface IEditTemporarySupportCallback
 
    // Called by the framework when stand alone editing is complete. Return a transaction object if you
    // want the editing the occured on this extension page to be in the transaction queue for undo/redo,
-   // otherwise return NULL
+   // otherwise return nullptr
    virtual txnTransaction* OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
 
    // Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to
@@ -299,7 +301,7 @@ DEFINE_GUID(IID_IExtendPGSuperUI,
 struct __declspec(uuid("{D3CF52A4-A37E-4e9b-A71C-F9B37A045B8A}")) IExtendPGSuperUI;
 interface IExtendPGSuperUI : IExtendUI
 {
-   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback=NULL) = 0;
+   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback=nullptr) = 0;
    virtual bool UnregisterEditGirderCallback(IDType ID) = 0;
 };
 
@@ -314,7 +316,7 @@ struct __declspec(uuid("{0303E609-6BBD-45b0-AFA2-E642CE7DA219}")) IExtendPGSplic
 interface IExtendPGSpliceUI : IExtendUI
 {
    virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback) = 0;
-   virtual IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback=NULL) = 0;
+   virtual IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback=nullptr) = 0;
    virtual IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback) = 0;
    virtual IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback) = 0;
 

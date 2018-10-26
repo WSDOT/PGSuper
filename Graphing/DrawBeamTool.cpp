@@ -291,8 +291,8 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
    const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetStartClosure() : pSegment->GetEndClosure());
-   const CPierData2* pPier = NULL;
-   const CTemporarySupportData* pTS = NULL;
+   const CPierData2* pPier = nullptr;
+   const CTemporarySupportData* pTS = nullptr;
 
    if ( pClosure )
    {
@@ -313,7 +313,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    // a previous group ends on the other side of the pier
    if ( (segmentKey.segmentIndex == nSegments-1 && // last segment in the girder
          endType == pgsTypes::metEnd            && // support at right end of segment
-         pPier->GetNextGirderGroup() != NULL)      // not the last group
+         pPier->GetNextGirderGroup() != nullptr)      // not the last group
          &&                                     // AND
          (compositeDeckIntervalIdx <= intervalIdx &&
          pPier && pPier->IsContinuous())
@@ -322,7 +322,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
 
          (segmentKey.segmentIndex == 0 && // first segment in the girder
          endType == pgsTypes::metStart && // support at left end of the segment
-         pPier->GetPrevGirderGroup() != NULL) // not the first group
+         pPier->GetPrevGirderGroup() != nullptr) // not the first group
          && // AND
          (compositeDeckIntervalIdx <= intervalIdx &&
          pPier && pPier->IsContinuous())
@@ -862,7 +862,7 @@ void CDrawBeamTool::DrawTemporarySupport(IntervalIndexType intervalIdx,const CTe
 void CDrawBeamTool::DrawStrongBack(const CTemporarySupportData* pTS,const CPoint& p,const grlibPointMapper& mapper,CDC* pDC)
 {
    const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(m_GirderKey.girderIndex);
-   ATLASSERT(pClosureJoint != NULL);
+   ATLASSERT(pClosureJoint != nullptr);
 
    const CPrecastSegmentData* pLeftSegment  = pClosureJoint->GetLeftSegment();
    const CPrecastSegmentData* pRightSegment = pClosureJoint->GetRightSegment();

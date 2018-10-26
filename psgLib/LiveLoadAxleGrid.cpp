@@ -78,7 +78,7 @@ BOOL CLiveLoadAxleGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nF
    CLiveLoadDlg* pdlg = (CLiveLoadDlg*)GetParent();
    ASSERT (pdlg);
 
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
 	{
       pdlg->OnEnableDelete(false);
 		return TRUE;
@@ -554,7 +554,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
 
 void CLiveLoadAxleGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI) 
 {
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
 	{
 		pCmdUI->Enable(FALSE);
 		return;

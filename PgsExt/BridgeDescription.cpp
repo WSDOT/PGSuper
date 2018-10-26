@@ -65,7 +65,7 @@ CBridgeDescription::CBridgeDescription()
    m_RefGirderOffsetType = pgsTypes::omtBridge;
 
 
-   m_pGirderLibraryEntry = NULL;
+   m_pGirderLibraryEntry = nullptr;
 
    m_LLDFMethod = pgsTypes::Calculated;
 
@@ -522,7 +522,7 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
    pDeck->ConditionFactor           = m_Deck.ConditionFactor;
    pDeck->DeckEdgePoints            = m_Deck.DeckEdgePoints;
    pDeck->DeckRebarData             = m_Deck.DeckRebarData;
-   pDeck->DeckType                  = m_Deck.DeckType;
+   pDeck->SetDeckType( m_Deck.DeckType );
    pDeck->GrossDepth                = m_Deck.GrossDepth;
    pDeck->OverhangEdgeDepth         = m_Deck.OverhangEdgeDepth;
    pDeck->OverhangTaper             = m_Deck.OverhangTaper;
@@ -563,9 +563,9 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
    for ( ; spanIter != spanIterEnd; spanIter++ )
    {
       if ( spanIter == m_Spans.begin() )
-         pBridgeDesc->CreateFirstSpan(NULL,NULL,NULL,INVALID_INDEX);
+         pBridgeDesc->CreateFirstSpan(nullptr,nullptr,nullptr,INVALID_INDEX);
       else
-         pBridgeDesc->AppendSpan(NULL,NULL,true,INVALID_INDEX);
+         pBridgeDesc->AppendSpan(nullptr,nullptr,true,INVALID_INDEX);
    }
    
    // Copy the pier data
@@ -981,7 +981,7 @@ CPierData* CBridgeDescription::GetPier(PierIndexType pierIdx)
    if (0 <= pierIdx && pierIdx < (PierIndexType)m_Piers.size() )
      return m_Piers[pierIdx];
 
-   return NULL;
+   return nullptr;
 }
 
 const CPierData* CBridgeDescription::GetPier(PierIndexType pierIdx) const
@@ -989,7 +989,7 @@ const CPierData* CBridgeDescription::GetPier(PierIndexType pierIdx) const
    if (0 <= pierIdx && pierIdx < (PierIndexType)m_Piers.size() )
       return m_Piers[pierIdx];
 
-   return NULL;
+   return nullptr;
 }
 
 CSpanData* CBridgeDescription::GetSpan(SpanIndexType spanIdx)
@@ -997,7 +997,7 @@ CSpanData* CBridgeDescription::GetSpan(SpanIndexType spanIdx)
    if ( 0 <= spanIdx && spanIdx < (SpanIndexType)m_Spans.size() )
      return m_Spans[spanIdx];
 
-   return NULL;
+   return nullptr;
 }
 
 const CSpanData* CBridgeDescription::GetSpan(SpanIndexType spanIdx) const
@@ -1005,7 +1005,7 @@ const CSpanData* CBridgeDescription::GetSpan(SpanIndexType spanIdx) const
    if ( 0 <= spanIdx && spanIdx < (SpanIndexType)m_Spans.size() )
       return m_Spans[spanIdx];
 
-   return NULL;
+   return nullptr;
 }
 
 
@@ -1529,10 +1529,10 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
          origSpanIter++;
 
       CSpanData* pthisSpan = *thisSpanIter;
-      CSpanData* pOrigSpan = (origSpanIter==pOriginal->m_Spans.end() ? NULL : *origSpanIter);
+      CSpanData* pOrigSpan = (origSpanIter==pOriginal->m_Spans.end() ? nullptr : *origSpanIter);
 
       GroupIndexType thisNGroups = pthisSpan->GetGirderTypes()->GetGirderGroupCount();
-      GroupIndexType origNGroups = (pOrigSpan!=NULL ? pOrigSpan->GetGirderTypes()->GetGirderGroupCount() : 0);
+      GroupIndexType origNGroups = (pOrigSpan!=nullptr ? pOrigSpan->GetGirderTypes()->GetGirderGroupCount() : 0);
 
       for(GroupIndexType iGroup = 0; iGroup< thisNGroups; iGroup++)
       {
@@ -1577,7 +1577,7 @@ void CBridgeDescription::RenumberSpans()
 
    SpanIndexType spanIdx = 0;
    PierIndexType pierIdx = 0;
-   CSpanData* pPrevSpan = NULL;
+   CSpanData* pPrevSpan = nullptr;
 
    CPierData* pPrevPier = *pierIter++;
    pPrevPier->SetPierIndex(pierIdx++);
@@ -1599,7 +1599,7 @@ void CBridgeDescription::RenumberSpans()
 
    // last pier
    CPierData* pLastPier = m_Piers.back();
-   pLastPier->SetSpans(pPrevSpan,NULL);
+   pLastPier->SetSpans(pPrevSpan,nullptr);
 }
 
 #if defined _DEBUG

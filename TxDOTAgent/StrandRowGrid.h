@@ -35,7 +35,7 @@
 class StrandRowGridEventHandler
 {
 public:
-   virtual void OnGridDataChanged()=0;
+   virtual void OnGridDataChanged() = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -71,8 +71,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    // virtual overrides for grid
-   virtual int GetColWidth(ROWCOL nCol);
-   virtual void OnModifyCell (ROWCOL nRow, ROWCOL nCol);
+   virtual int GetColWidth(ROWCOL nCol) override;
+   virtual void OnModifyCell (ROWCOL nRow, ROWCOL nCol) override;
 
 public:
    // custom stuff for grid

@@ -170,55 +170,55 @@ void CTogaGirderModelElevationView::OnInitialUpdate()
    // Create display lists
    // section cut - add first so it's always on top
    CComPtr<iDisplayList> sc_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&sc_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&sc_list);
    sc_list->SetID(SECT_CUT_LIST);
    dispMgr->AddDisplayList(sc_list);
 
    // dimension lines
    CComPtr<iDisplayList> dlList;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&dlList);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dlList);
    dlList->SetID(DIMLINE_LIST);
    dispMgr->AddDisplayList(dlList);
 
    // supports
    CComPtr<iDisplayList> sup_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&sup_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&sup_list);
    sup_list->SetID(SUPPORT_LIST);
    dispMgr->AddDisplayList(sup_list);
 
    // debond strands
    CComPtr<iDisplayList> db_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&db_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&db_list);
    db_list->SetID(DEBOND_LIST);
    dispMgr->AddDisplayList(db_list);
 
    // strands
    CComPtr<iDisplayList> ts_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&ts_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&ts_list);
    ts_list->SetID(STRAND_LIST);
    dispMgr->AddDisplayList(ts_list);
 
    // strand cg
    CComPtr<iDisplayList> cg_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&cg_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&cg_list);
    cg_list->SetID(STRAND_CG_LIST);
    dispMgr->AddDisplayList(cg_list);
 
    // rebar
    CComPtr<iDisplayList> rb_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&rb_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&rb_list);
    rb_list->SetID(REBAR_LIST);
    dispMgr->AddDisplayList(rb_list);
 
    // strirrups
    CComPtr<iDisplayList> stirrups_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&stirrups_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&stirrups_list);
    stirrups_list->SetID(STIRRUP_LIST);
    dispMgr->AddDisplayList(stirrups_list);
 
    // girder
    CComPtr<iDisplayList> gdr_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&gdr_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&gdr_list);
    gdr_list->SetID(GDR_LIST);
    dispMgr->AddDisplayList(gdr_list);
 }
@@ -392,7 +392,7 @@ DROPEFFECT CTogaGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DW
       // need to peek at our object first and make sure it's coming from the local process
       // this is ugly because it breaks encapsulation of CSectionCutDisplayImpl
       CComPtr<iDragDataSource> source;               
-      ::CoCreateInstance(CLSID_DragDataSource,NULL,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
       source->SetDataObject(pDataObject);
       source->PrepareFormat(CTogaSectionCutDisplayImpl::ms_Format);
 
@@ -511,12 +511,12 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
 
    // create the display object
    CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
    doPnt->SetID(1);
 
    // create the drawing strategy
    CComPtr<iShapeDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_ShapeDrawStrategy,NULL,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
+   ::CoCreateInstance(CLSID_ShapeDrawStrategy,nullptr,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
    doPnt->SetDrawingStrategy(strategy);
 
    // configure the strategy
@@ -613,7 +613,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    point->put_Y(0.0);
 
    CComPtr<iPointDisplayObject> startpt_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&startpt_rep);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&startpt_rep);
    startpt_rep->SetPosition(point,FALSE,FALSE);
    startpt_rep->SetID(100);
    CComQIPtr<iConnectable,&IID_iConnectable> start_connectable(startpt_rep);
@@ -628,7 +628,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
 
    // end point display object
    CComPtr<iPointDisplayObject> endpt_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&endpt_rep);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&endpt_rep);
    endpt_rep->SetPosition(point2,FALSE,FALSE);
    endpt_rep->SetID(200);
    CComQIPtr<iConnectable,&IID_iConnectable> end_connectable(endpt_rep);
@@ -639,7 +639,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
 
    // line to represent girder
    CComPtr<iLineDisplayObject> ssm_rep;
-   ::CoCreateInstance(CLSID_LineDisplayObject,NULL,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&ssm_rep);
+   ::CoCreateInstance(CLSID_LineDisplayObject,nullptr,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&ssm_rep);
    ssm_rep->SetID(101);
 
    // plug in
@@ -700,7 +700,7 @@ void CTogaGirderModelElevationView::BuildSupportDisplayObjects(CTxDOTOptionalDes
 
    // create display object
    CComPtr<iPointDisplayObject> dispObj;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&dispObj);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&dispObj);
 
    // create drawing strategy
    CTogaSupportDrawStrategyImpl* pDrawStrategy = new CTogaSupportDrawStrategyImpl(pDoc);
@@ -725,7 +725,7 @@ void CTogaGirderModelElevationView::BuildSupportDisplayObjects(CTxDOTOptionalDes
    point2->put_X(gdr_length-end_lgth);
    point2->put_Y(-Hg_end);
    dispObj.Release();
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&dispObj);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&dispObj);
 
    pDrawStrategy = new CTogaSupportDrawStrategyImpl(pDoc);
    unk = pDrawStrategy->GetInterface(&IID_iDrawPointStrategy);
@@ -820,7 +820,7 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
       BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
 
       Float64 start,end;
-      if ( pStrandGeometry->IsStrandDebonded(segmentKey,strandPointIdx,pgsTypes::Straight,&start,&end) )
+      if ( pStrandGeometry->IsStrandDebonded(segmentKey,strandPointIdx,pgsTypes::Straight,nullptr,&start,&end) )
       {
          // Left debond point
          CComPtr<IPoint2d> left_debond;
@@ -1022,7 +1022,7 @@ void CTogaGirderModelElevationView::BuildRebarDisplayObjects(CTxDOTOptionalDesig
    rebar_section_end->get__EnumRebarSectionItem(&enum_end);
 
    CComPtr<IRebarSectionItem> startItem, endItem;
-   while ( enum_start->Next(1,&startItem,NULL) != S_FALSE && enum_end->Next(1,&endItem,NULL) != S_FALSE )
+   while ( enum_start->Next(1,&startItem,nullptr) != S_FALSE && enum_end->Next(1,&endItem,nullptr) != S_FALSE )
    {
       CComPtr<IPoint2d> startLocation, endLocation;
       startItem->get_Location(&startLocation);
@@ -1135,7 +1135,7 @@ void CTogaGirderModelElevationView::BuildSectionCutDisplayObjects(CTxDOTOptional
    dispMgr->GetDisplayObjectFactory(0, &factory);
 
    CComPtr<iDisplayObject> disp_obj;
-   factory->Create(CTogaSectionCutDisplayImpl::ms_Format,NULL,&disp_obj);
+   factory->Create(CTogaSectionCutDisplayImpl::ms_Format,nullptr,&disp_obj);
 
    CComPtr<iDisplayObjectEvents> sink;
    disp_obj->GetEventSink(&sink);
@@ -1218,8 +1218,8 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
             p2->Move(x,top);
 
             CComPtr<iPointDisplayObject> doPnt1, doPnt2;
-            ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt1);
-            ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt2);
+            ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt1);
+            ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt2);
             doPnt1->SetPosition(p1,FALSE,FALSE);
             doPnt2->SetPosition(p2,FALSE,FALSE);
 
@@ -1231,7 +1231,7 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
             c2->AddSocket(0,p2,&s2);
 
             CComPtr<iLineDisplayObject> line;
-            ::CoCreateInstance(CLSID_LineDisplayObject,NULL,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&line);
+            ::CoCreateInstance(CLSID_LineDisplayObject,nullptr,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&line);
 
             // color
             CComPtr<iDrawLineStrategy> pStrategy;
@@ -1271,7 +1271,7 @@ void CTogaGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromP
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> from_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&from_rep);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&from_rep);
    from_rep->SetPosition(fromPoint,FALSE,FALSE);
    from_rep->SetID(m_CurrID++);
    CComQIPtr<iConnectable,&IID_iConnectable> from_connectable(from_rep);
@@ -1281,7 +1281,7 @@ void CTogaGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromP
    pDL->AddDisplayObject(from_rep);
 
    CComPtr<iPointDisplayObject> to_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&to_rep);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&to_rep);
    to_rep->SetPosition(toPoint,FALSE,FALSE);
    to_rep->SetID(m_CurrID++);
    CComQIPtr<iConnectable,&IID_iConnectable> to_connectable(to_rep);
@@ -1292,7 +1292,7 @@ void CTogaGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromP
 
    // Create the dimension line object
    CComPtr<iLineDisplayObject> line;
-   ::CoCreateInstance(CLSID_LineDisplayObject,NULL,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&line);
+   ::CoCreateInstance(CLSID_LineDisplayObject,nullptr,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&line);
 
    // color
    CComPtr<iDrawLineStrategy> pStrategy;
@@ -1329,12 +1329,12 @@ void CTogaGirderModelElevationView::BuildDebondTick(iDisplayList* pDL, IPoint2d*
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
    doPnt->SetPosition(tickPoint,FALSE,FALSE);
    doPnt->SetID(m_CurrID++);
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,NULL,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
+   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
    strategy->SetColor(color);
    strategy->SetPointType(ptCircle);
 
@@ -1347,7 +1347,7 @@ iDimensionLine* CTogaGirderModelElevationView::BuildDimensionLine(iDisplayList* 
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> from_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&from_rep);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&from_rep);
    from_rep->SetPosition(fromPoint,FALSE,FALSE);
    from_rep->SetID(m_CurrID++);
    CComQIPtr<iConnectable,&IID_iConnectable> from_connectable(from_rep);
@@ -1357,7 +1357,7 @@ iDimensionLine* CTogaGirderModelElevationView::BuildDimensionLine(iDisplayList* 
    pDL->AddDisplayObject(from_rep);
 
    CComPtr<iPointDisplayObject> to_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&to_rep);
+   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&to_rep);
    to_rep->SetPosition(toPoint,FALSE,FALSE);
    to_rep->SetID(m_CurrID++);
    CComQIPtr<iConnectable,&IID_iConnectable> to_connectable(to_rep);
@@ -1368,7 +1368,7 @@ iDimensionLine* CTogaGirderModelElevationView::BuildDimensionLine(iDisplayList* 
 
    // Create the dimension line object
    CComPtr<iDimensionLine> dimLine;
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,NULL,CLSCTX_ALL,IID_iDimensionLine,(void**)&dimLine);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&dimLine);
 
    dimLine->SetArrowHeadStyle(DManip::ahsFilled);
 
@@ -1386,7 +1386,7 @@ iDimensionLine* CTogaGirderModelElevationView::BuildDimensionLine(iDisplayList* 
 
    // Create the text block and attach it to the dimension line
    CComPtr<iTextBlock> textBlock;
-   ::CoCreateInstance(CLSID_TextBlock,NULL,CLSCTX_ALL,IID_iTextBlock,(void**)&textBlock);
+   ::CoCreateInstance(CLSID_TextBlock,nullptr,CLSCTX_ALL,IID_iTextBlock,(void**)&textBlock);
 
    // Format the dimension text
    CComPtr<IBroker> pBroker;

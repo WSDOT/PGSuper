@@ -38,7 +38,7 @@ static char THIS_FILE[] = __FILE__;
 // CStructuralAnalysisMethodDlg dialog
 
 
-CStructuralAnalysisMethodDlg::CStructuralAnalysisMethodDlg(CWnd* pParent /*=NULL*/)
+CStructuralAnalysisMethodDlg::CStructuralAnalysisMethodDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CStructuralAnalysisMethodDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CStructuralAnalysisMethodDlg)

@@ -74,7 +74,7 @@ public:
    rptCapacityToDemand& operator = (const rptCapacityToDemand& rOther);
 
    //------------------------------------------------------------------------
-   virtual rptReportContent* CreateClone() const;
+   virtual rptReportContent* CreateClone() const override;
 
    //------------------------------------------------------------------------
    virtual rptReportContent& SetValue(Float64 cdr);
@@ -86,7 +86,7 @@ public:
 
 protected:
    void MakeCopy(const rptCapacityToDemand& rOther);
-   virtual void MakeAssignment(const rptCapacityToDemand& rOther);
+   void MakeAssignment(const rptCapacityToDemand& rOther);
 
 private:
    void Init();

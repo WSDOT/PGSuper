@@ -58,9 +58,9 @@ void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
    CEAFApp* pApp = EAFGetApp();
 
    POSITION template_position;
-   CPGSImportPluginDocTemplateBase* pMyTemplate = NULL;
+   CPGSImportPluginDocTemplateBase* pMyTemplate = nullptr;
    POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
-   while ( pos != NULL )
+   while ( pos != nullptr )
    {
       template_position = pos;
       CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pApp->m_pDocManager->GetNextDocTemplate(pos));
@@ -71,17 +71,17 @@ void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
    }
 
    // our doc template was not found...
-   if ( pMyTemplate == NULL )
+   if ( pMyTemplate == nullptr )
    {
       // when the doc template is created, it loads all the enabled plug-in objects
       // write the plugin states into the registry and then create the doc template
-      BOOST_FOREACH(CEAFPluginState& state,vPluginStates)
+      for (const auto& state : vPluginStates)
       {
          pApp->WriteProfileString(_T("Plugins"),state.GetCLSIDString(),state.IsEnabled() ? _T("Enabled") : _T("Disabled") );
       }
 
       std::vector<CEAFDocTemplate*> vDocTemplates = CreateDocTemplates();
-      BOOST_FOREACH(CEAFDocTemplate* pTemplate,vDocTemplates)
+      for (const auto& pTemplate : vDocTemplates)
       {
          pApp->m_pDocManager->AddDocTemplate(pTemplate);
       }
@@ -90,7 +90,7 @@ void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
 
    // Set the state of the importer plugins, create and destroy them as needed
    CPGSProjectImporterMgrBase* pImporterMgr = pMyTemplate->GetProjectImporterManager();
-   BOOST_FOREACH(CEAFPluginState& state,vPluginStates)
+   for (const auto& state : vPluginStates)
    {
       if ( state.StateChanged() )
       {
@@ -121,7 +121,7 @@ void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
 
 CPGSBaseCommandLineInfo* CPGSProjectImporterAppPluginBase::CreateCommandLineInfo() const
 {
-   return NULL;//return new CPGSuperProjectImporterCommandLineInfo; (if we want to handle command line options for an importer, we need a new class);
+   return nullptr;//return new CPGSuperProjectImporterCommandLineInfo; (if we want to handle command line options for an importer, we need a new class);
 }
 
 BOOL CPGSProjectImporterAppPluginBase::Init(CEAFApp* pParent)
@@ -134,7 +134,7 @@ BOOL CPGSProjectImporterAppPluginBase::Init(CEAFApp* pParent)
    UINT nResource = GetMenuResourceID();
    m_hMenuShared = ::LoadMenu( AfxGetApp()->m_hInstance, MAKEINTRESOURCE(nResource) );
 
-   return (m_hMenuShared != NULL);
+   return (m_hMenuShared != nullptr);
 }
 
 void CPGSProjectImporterAppPluginBase::Terminate()
@@ -179,15 +179,15 @@ std::vector<CEAFDocTemplate*> CPGSProjectImporterAppPluginBase::CreateDocTemplat
 
    // If there aren't any importers, we don't want the "PGSuper/PGSplice Project Importer" option to
    // show up in the File | New dialog
-   // Returning a NULL doc template will do the trick
+   // Returning a nullptr doc template will do the trick
    CPGSProjectImporterMgrBase* pImporterMgr = pDocTemplate->GetProjectImporterManager();
    if ( pImporterMgr->GetImporterCount() == 0 )
    {
       delete pDocTemplate;
-      pDocTemplate = NULL;
+      pDocTemplate = nullptr;
    }
 
-   if ( pDocTemplate != NULL )
+   if ( pDocTemplate != nullptr )
    {
       vDocTemplates.push_back(pDocTemplate);
    }

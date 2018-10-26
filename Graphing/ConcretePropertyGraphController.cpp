@@ -307,7 +307,7 @@ void CConcretePropertyGraphController::FillClosureControl()
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
    const CClosureJointData* pClosure = pSegment->GetEndClosure();
 
-   if ( pClosure == NULL )
+   if ( pClosure == nullptr )
    {
       // there aren't any closure joints... disable the combo box and the radio button
       pCB->EnableWindow(FALSE);
@@ -341,7 +341,7 @@ void CConcretePropertyGraphController::FillClosureControl()
          }
          else
          {
-            pClosure = NULL;
+            pClosure = nullptr;
          }
       }
 

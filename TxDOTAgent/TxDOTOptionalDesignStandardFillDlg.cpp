@@ -34,15 +34,15 @@
 
 IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignStandardFillDlg, CDialog)
 
-CTxDOTOptionalDesignStandardFillDlg::CTxDOTOptionalDesignStandardFillDlg(CWnd* pParent /*=NULL*/)
+CTxDOTOptionalDesignStandardFillDlg::CTxDOTOptionalDesignStandardFillDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CTxDOTOptionalDesignStandardFillDlg::IDD, pParent)
    , m_strNumStrands(_T(""))
    , m_NumStrands(0)
    , m_To(0)
    , m_bFirstActive(true)
 {
-   m_pGirderData = NULL;
-   m_pBrokerRetriever = NULL;
+   m_pGirderData = nullptr;
+   m_pBrokerRetriever = nullptr;
 }
 
 CTxDOTOptionalDesignStandardFillDlg::~CTxDOTOptionalDesignStandardFillDlg()
@@ -79,7 +79,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    }
 
    CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
-   if (pBroker==NULL)
+   if (pBroker==nullptr)
       return;
 
    DDX_CBStringExactCase(pDX, IDC_OPT_NUM_STRANDS, m_strNumStrands);
@@ -91,7 +91,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    // it takes some effort here
    GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(m_GirderEntryName));
-   ASSERT(pGdrEntry!=NULL);
+   ASSERT(pGdrEntry!=nullptr);
 
    StrandIndexType numStraight(0), numHarped(0);
    if (pGdrEntry->GetPermStrandDistribution(m_NumStrands, &numStraight, &numHarped))
@@ -185,7 +185,7 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
    // update number of depressed strands
    GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(m_GirderEntryName));
-   ASSERT(pGdrEntry!=NULL);
+   ASSERT(pGdrEntry!=nullptr);
 
    CWnd* pout = (CWnd*)GetDlgItem(IDC_OPT_NO_DEPRESSED);
 

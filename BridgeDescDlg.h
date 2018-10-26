@@ -47,7 +47,7 @@ class CBridgeDescDlg : public CPropertySheet, public IEditBridgeData
 
 // Construction
 public:
-	CBridgeDescDlg(const CBridgeDescription2& bridgeDesc,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CBridgeDescDlg(const CBridgeDescription2& bridgeDesc,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
 // IEditBridgeData
 public:
@@ -85,8 +85,8 @@ public:
    // for all the extension pages. The caller is responsble for deleting this object
    txnTransaction* GetExtensionPageTransaction();
 
-   const std::set<EditBridgeExtension>& GetExtensionPages() const;
-   std::set<EditBridgeExtension>& GetExtensionPages();
+   const std::vector<EditBridgeExtension>& GetExtensionPages() const;
+   std::vector<EditBridgeExtension>& GetExtensionPages();
 
 	// Generated message map functions
 protected:
@@ -107,7 +107,7 @@ protected:
 
 
    txnMacroTxn m_Macro;
-   std::set<EditBridgeExtension> m_ExtensionPages;
+   std::vector<EditBridgeExtension> m_ExtensionPages;
    void NotifyExtensionPages();
 
 	//{{AFX_MSG(CBridgeDescDlg)

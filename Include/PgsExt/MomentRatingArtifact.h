@@ -125,7 +125,7 @@ public:
 
 protected:
    void MakeCopy(const pgsMomentRatingArtifact& rOther);
-   virtual void MakeAssignment(const pgsMomentRatingArtifact& rOther);
+   void MakeAssignment(const pgsMomentRatingArtifact& rOther);
 
    mutable bool m_bRFComputed;
    mutable Float64 m_RF;

@@ -75,7 +75,7 @@ public:
    const CGirderKey& GetSelection() const;
 
 protected:
-   bool DoSyncWithBridgeModelView();
+   bool DoSyncWithBridgeModelView() const;
 
    void RefreshGirderLabeling();
 
@@ -89,8 +89,8 @@ public:
 				LPCTSTR lpszWindowName,
 				DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 				const RECT& rect = rectDefault,
-				CMDIFrameWnd* pParentWnd = NULL,
-				CCreateContext* pContext = NULL);
+				CMDIFrameWnd* pParentWnd = nullptr,
+				CCreateContext* pContext = nullptr);
    virtual BOOL OnCmdMsg(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
 	//}}AFX_VIRTUAL
 
@@ -151,6 +151,55 @@ private:
 
    CGirderKey m_GirderKey;
    bool m_bIsAfterFirstUpdate;
+
+   CSpanKey GetLoadSpanKey() const;
+
+   template <class T>
+   void InitLoad(T& load) const
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+
+      bool bSync = DoSyncWithBridgeModelView();
+      if (bSync)
+      {
+         GET_IFACE2(pBroker, ISelection, pSelection);
+         CSelection selection = pSelection->GetSelection();
+         ATLASSERT(selection.Type == CSelection::Girder);
+         ATLASSERT(selection.GroupIdx != ALL_GROUPS);
+         auto group = pIBridgeDesc->GetGirderGroup(selection.GroupIdx);
+         load.m_SpanKey.spanIndex = group->GetPier(pgsTypes::metStart)->GetSpan(pgsTypes::Ahead)->GetIndex();
+         load.m_SpanKey.girderIndex = selection.GirderIdx;
+      }
+      else
+      {
+         SpanIndexType spanIdx;
+         if (m_GirderKey.groupIndex == ALL_GROUPS)
+         {
+            spanIdx = ALL_SPANS;
+         }
+         else
+         {
+            const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex);
+            spanIdx = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
+         }
+
+         load.m_SpanKey.spanIndex = spanIdx;
+         load.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
+      }
+
+      EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+      if (m_EventIndex == liveLoadEventIdx)
+      {
+         load.m_LoadCase = UserLoads::LL_IM;
+      }
+      else
+      {
+         load.m_LoadCase = UserLoads::DC;
+      }
+   }
 };
 
 /////////////////////////////////////////////////////////////////////////////

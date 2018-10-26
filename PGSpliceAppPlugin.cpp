@@ -104,7 +104,7 @@ BOOL CPGSpliceAppPlugin::Init(CEAFApp* pParent)
    // See MSKB Article ID: Q118435, _T("Sharing Menus Between MDI Child Windows")
    m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSPLICE) );
 
-   if ( m_hMenuShared == NULL )
+   if ( m_hMenuShared == nullptr )
       return FALSE;
 
    if ( !EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode )
@@ -153,7 +153,7 @@ std::vector<CEAFDocTemplate*> CPGSpliceAppPlugin::CreateDocTemplates()
 
    CPGSpliceDocTemplate* pTemplate = new CPGSpliceDocTemplate(
 		IDR_PGSPLICE,
-      NULL,
+      nullptr,
 		RUNTIME_CLASS(CPGSpliceDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
@@ -301,7 +301,7 @@ void CPGSpliceAppPlugin::UpdateTemplates()
    CATID ID[nID];
 
    ID[0] = CATID_PGSpliceExtensionAgent;
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    const int nPlugins = 5;
    CLSID clsid[nPlugins]; 

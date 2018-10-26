@@ -283,11 +283,11 @@ void CConcreteGeneralPage::UpdateEc()
 void CConcreteGeneralPage::OnCopyMaterial() 
 {
    INT_PTR result;
-   std::auto_ptr<CCopyConcreteEntry> pDlg;
+   std::unique_ptr<CCopyConcreteEntry> pDlg;
 
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      pDlg = std::auto_ptr<CCopyConcreteEntry>(new CCopyConcreteEntry(false, this));
+      pDlg = std::make_unique<CCopyConcreteEntry>(false, this);
       result = pDlg->DoModal();
    }
 
@@ -299,7 +299,7 @@ void CConcreteGeneralPage::OnCopyMaterial()
    {
       const ConcreteLibraryEntry* entry = pDlg->m_ConcreteEntry;
 
-      if (entry != NULL)
+      if (entry != nullptr)
       {
          CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
 

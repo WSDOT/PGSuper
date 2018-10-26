@@ -80,6 +80,6 @@ protected:
    std::vector<pgsTypes::ProductForceType> GetProductForces(IBroker* pBroker,const CGirderKey& girderKey) const;
 
    // Prevent accidental copying and assignment
-   CTimeStepDetailsChapterBuilder(const CTimeStepDetailsChapterBuilder&);
-   CTimeStepDetailsChapterBuilder& operator=(const CTimeStepDetailsChapterBuilder&);
+   CTimeStepDetailsChapterBuilder(const CTimeStepDetailsChapterBuilder&) = delete;
+   CTimeStepDetailsChapterBuilder& operator=(const CTimeStepDetailsChapterBuilder&) = delete;
 };

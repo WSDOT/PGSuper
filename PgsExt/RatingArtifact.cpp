@@ -33,7 +33,8 @@ static char THIS_FILE[] = __FILE__;
 CLASS
    pgsRatingCapacityArtifact
 ****************************************************************************/
-pgsRatingArtifact::pgsRatingArtifact()
+pgsRatingArtifact::pgsRatingArtifact(pgsTypes::LoadRatingType ratingType) :
+   m_RatingType(ratingType)
 {
 }
 
@@ -54,6 +55,11 @@ pgsRatingArtifact& pgsRatingArtifact::operator=(const pgsRatingArtifact& rOther)
    }
 
    return *this;
+}
+
+pgsTypes::LoadRatingType pgsRatingArtifact::GetLoadRatingType() const
+{
+   return m_RatingType;
 }
 
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsMomentRatingArtifact& artifact,bool bPositiveMoment)
@@ -113,7 +119,7 @@ const pgsRatingArtifact::YieldStressRatios& pgsRatingArtifact::GetYieldStressRat
 Float64 pgsRatingArtifact::GetMomentRatingFactorEx(bool bPositiveMoment,const pgsMomentRatingArtifact** ppArtifact) const
 {
    Float64 RF = DBL_MAX;
-   (*ppArtifact) = NULL;
+   (*ppArtifact) = nullptr;
 
    MomentRatings::const_iterator iter;
    const MomentRatings* pRatings = (bPositiveMoment ? &m_PositiveMomentRatings : &m_NegativeMomentRatings);
@@ -129,7 +135,7 @@ Float64 pgsRatingArtifact::GetMomentRatingFactorEx(bool bPositiveMoment,const pg
       }
    }
 
-   if ( *ppArtifact == NULL && 0 < pRatings->size() )
+   if ( *ppArtifact == nullptr && 0 < pRatings->size() )
    {
       ATLASSERT(RF == DBL_MAX);
       (*ppArtifact) = &(pRatings->front().second);
@@ -147,7 +153,7 @@ Float64 pgsRatingArtifact::GetMomentRatingFactor(bool bPositiveMoment) const
 Float64 pgsRatingArtifact::GetShearRatingFactorEx(const pgsShearRatingArtifact** ppArtifact) const
 {
    Float64 RF = DBL_MAX;
-   (*ppArtifact) = NULL;
+   (*ppArtifact) = nullptr;
 
    ShearRatings::const_iterator iter;
    for ( iter = m_ShearRatings.begin(); iter != m_ShearRatings.end(); iter++ )
@@ -161,7 +167,7 @@ Float64 pgsRatingArtifact::GetShearRatingFactorEx(const pgsShearRatingArtifact**
       }
    }
 
-   if ( *ppArtifact == NULL && 0 < m_ShearRatings.size() )
+   if ( *ppArtifact == nullptr && 0 < m_ShearRatings.size() )
    {
       ATLASSERT(RF == DBL_MAX);
       (*ppArtifact) = &(m_ShearRatings.front().second);
@@ -179,7 +185,7 @@ Float64 pgsRatingArtifact::GetShearRatingFactor() const
 Float64 pgsRatingArtifact::GetStressRatingFactorEx(const pgsStressRatingArtifact** ppArtifact) const
 {
    Float64 RF = DBL_MAX;
-   (*ppArtifact) = NULL;
+   (*ppArtifact) = nullptr;
 
    StressRatings::const_iterator iter;
    for ( iter = m_StressRatings.begin(); iter != m_StressRatings.end(); iter++ )
@@ -193,7 +199,7 @@ Float64 pgsRatingArtifact::GetStressRatingFactorEx(const pgsStressRatingArtifact
       }
    }
 
-   if ( *ppArtifact == NULL && 0 < m_StressRatings.size() )
+   if ( *ppArtifact == nullptr && 0 < m_StressRatings.size() )
    {
       ATLASSERT(RF == DBL_MAX);
       (*ppArtifact) = &(m_StressRatings.front().second);
@@ -211,7 +217,7 @@ Float64 pgsRatingArtifact::GetStressRatingFactor() const
 Float64 pgsRatingArtifact::GetYieldStressRatioEx(bool bPositiveMoment,const pgsYieldStressRatioArtifact** ppArtifact) const
 {
    Float64 RF = DBL_MAX;
-   (*ppArtifact) = NULL;
+   (*ppArtifact) = nullptr;
 
    const YieldStressRatios* pRatios = (bPositiveMoment ? &m_PositiveMomentYieldStressRatios : &m_NegativeMomentYieldStressRatios);
    YieldStressRatios::const_iterator iter;
@@ -226,7 +232,7 @@ Float64 pgsRatingArtifact::GetYieldStressRatioEx(bool bPositiveMoment,const pgsY
       }
    }
 
-   if ( *ppArtifact == NULL && 0 < pRatios->size() )
+   if ( *ppArtifact == nullptr && 0 < pRatios->size() )
    {
       ATLASSERT(RF == DBL_MAX);
       (*ppArtifact) = &(pRatios->front().second);
@@ -303,60 +309,60 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       i = 5;
    }
 
-   // NULL out all but the controlling rating
+   // nullptr out all but the controlling rating
    if ( i == 0 )
    {
-      //(*ppPositiveMoment)            = NULL;
-      (*ppNegativeMoment)            = NULL;
-      (*ppShear)                     = NULL;
-      (*ppStress)                    = NULL;
-      (*ppYieldStressPositiveMoment) = NULL;
-      (*ppYieldStressNegativeMoment) = NULL;
+      //(*ppPositiveMoment)            = nullptr;
+      (*ppNegativeMoment)            = nullptr;
+      (*ppShear)                     = nullptr;
+      (*ppStress)                    = nullptr;
+      (*ppYieldStressPositiveMoment) = nullptr;
+      (*ppYieldStressNegativeMoment) = nullptr;
    }
    else if ( i == 1 )
    {
-      (*ppPositiveMoment)            = NULL;
-      //(*ppNegativeMoment)            = NULL;
-      (*ppShear)                     = NULL;
-      (*ppStress)                    = NULL;
-      (*ppYieldStressPositiveMoment) = NULL;
-      (*ppYieldStressNegativeMoment) = NULL;
+      (*ppPositiveMoment)            = nullptr;
+      //(*ppNegativeMoment)            = nullptr;
+      (*ppShear)                     = nullptr;
+      (*ppStress)                    = nullptr;
+      (*ppYieldStressPositiveMoment) = nullptr;
+      (*ppYieldStressNegativeMoment) = nullptr;
    }
    else if ( i == 2 )
    {
-      (*ppPositiveMoment)            = NULL;
-      (*ppNegativeMoment)            = NULL;
-      //(*ppShear)                     = NULL;
-      (*ppStress)                    = NULL;
-      (*ppYieldStressPositiveMoment) = NULL;
-      (*ppYieldStressNegativeMoment) = NULL;
+      (*ppPositiveMoment)            = nullptr;
+      (*ppNegativeMoment)            = nullptr;
+      //(*ppShear)                     = nullptr;
+      (*ppStress)                    = nullptr;
+      (*ppYieldStressPositiveMoment) = nullptr;
+      (*ppYieldStressNegativeMoment) = nullptr;
    }
    else if ( i == 3 )
    {
-      (*ppPositiveMoment)            = NULL;
-      (*ppNegativeMoment)            = NULL;
-      (*ppShear)                     = NULL;
-      //(*ppStress)                    = NULL;
-      (*ppYieldStressPositiveMoment) = NULL;
-      (*ppYieldStressNegativeMoment) = NULL;
+      (*ppPositiveMoment)            = nullptr;
+      (*ppNegativeMoment)            = nullptr;
+      (*ppShear)                     = nullptr;
+      //(*ppStress)                    = nullptr;
+      (*ppYieldStressPositiveMoment) = nullptr;
+      (*ppYieldStressNegativeMoment) = nullptr;
    }
    else if ( i == 4 )
    {
-      (*ppPositiveMoment)            = NULL;
-      (*ppNegativeMoment)            = NULL;
-      (*ppShear)                     = NULL;
-      (*ppStress)                    = NULL;
-      //(*ppYieldStressPositiveMoment) = NULL;
-      (*ppYieldStressNegativeMoment) = NULL;
+      (*ppPositiveMoment)            = nullptr;
+      (*ppNegativeMoment)            = nullptr;
+      (*ppShear)                     = nullptr;
+      (*ppStress)                    = nullptr;
+      //(*ppYieldStressPositiveMoment) = nullptr;
+      (*ppYieldStressNegativeMoment) = nullptr;
    }
    else if ( i == 5 )
    {
-      (*ppPositiveMoment)            = NULL;
-      (*ppNegativeMoment)            = NULL;
-      (*ppShear)                     = NULL;
-      (*ppStress)                    = NULL;
-      (*ppYieldStressPositiveMoment) = NULL;
-      //(*ppYieldStressNegativeMoment) = NULL;
+      (*ppPositiveMoment)            = nullptr;
+      (*ppNegativeMoment)            = nullptr;
+      (*ppShear)                     = nullptr;
+      (*ppStress)                    = nullptr;
+      (*ppYieldStressPositiveMoment) = nullptr;
+      //(*ppYieldStressNegativeMoment) = nullptr;
    }
    else
    {
@@ -366,15 +372,20 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       // reactions, but the reating factors are DBL_MAX...
       // since all types of ratings control equally, use positive moment as controlling factor
       ATLASSERT(i == -1);
-      //(*ppPositiveMoment)            = NULL;
-      (*ppNegativeMoment)            = NULL;
-      (*ppShear)                     = NULL;
-      (*ppStress)                    = NULL;
-      (*ppYieldStressPositiveMoment) = NULL;
-      (*ppYieldStressNegativeMoment) = NULL;
+      //(*ppPositiveMoment)            = nullptr;
+      (*ppNegativeMoment)            = nullptr;
+      (*ppShear)                     = nullptr;
+      (*ppStress)                    = nullptr;
+      (*ppYieldStressPositiveMoment) = nullptr;
+      (*ppYieldStressNegativeMoment) = nullptr;
    }
 
    return RF;
+}
+
+bool pgsRatingArtifact::IsLoadPostingRequired() const
+{
+   return (::IsLegalRatingType(m_RatingType) && !::IsEmergencyRatingType(m_RatingType) && GetRatingFactor() < 1.0 ? true : false);
 }
 
 void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const
@@ -388,7 +399,7 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
       Float64 RF = artifact.GetRatingFactor();
-      Float64 spl = W*(RF - 0.3)/0.7;
+      Float64 spl = W*(RF - 0.3)/0.7; // safe posting load MBE Eq 6A.8.3-1
       if ( spl < 0 )
       {
          spl = 0;
@@ -521,6 +532,7 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
 
 void pgsRatingArtifact::MakeCopy(const pgsRatingArtifact& rOther)
 {
+   m_RatingType = rOther.m_RatingType;
    m_PositiveMomentRatings = rOther.m_PositiveMomentRatings;
    m_NegativeMomentRatings = rOther.m_NegativeMomentRatings;
    m_ShearRatings  = rOther.m_ShearRatings;

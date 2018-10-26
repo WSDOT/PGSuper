@@ -41,5 +41,5 @@ public:
 
 protected:
    void MakeCopy(const CColumnPropertiesTable& rOther);
-   virtual void MakeAssignment(const CColumnPropertiesTable& rOther);
+   void MakeAssignment(const CColumnPropertiesTable& rOther);
 };

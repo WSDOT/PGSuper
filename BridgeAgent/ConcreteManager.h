@@ -107,9 +107,9 @@ public:
    Float64 GetDeckFlexureFr(Float64 t);
    Float64 GetDeckShearFr(Float64 t);
    Float64 GetDeckFreeShrinkageStrain(Float64 t);
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> GetDeckFreeShrinkageStrainDetails(Float64 t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> GetDeckFreeShrinkageStrainDetails(Float64 t);
    Float64 GetDeckCreepCoefficient(Float64 t,Float64 tla);
-   boost::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(Float64 t,Float64 tla);
+   std::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(Float64 t,Float64 tla);
    Float64 GetDeckAgingCoefficient(Float64 timeOfLoading);
    matConcreteBase* GetDeckConcrete();
 
@@ -119,9 +119,9 @@ public:
    Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t);
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla);
-   boost::shared_ptr<matConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla);
+   std::shared_ptr<matConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla);
    Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading);
    matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey);
 
@@ -131,9 +131,9 @@ public:
    Float64 GetClosureJointFlexureFr(const CClosureKey& closureKey,Float64 t);
    Float64 GetClosureJointShearFr(const CClosureKey& closureKey,Float64 t);
    Float64 GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t);
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t);
    Float64 GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla);
-   boost::shared_ptr<matConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla);
+   std::shared_ptr<matConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla);
    Float64 GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading);
    matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey);
 
@@ -141,9 +141,9 @@ public:
    Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
-   boost::shared_ptr<matConcreteBaseShrinkageDetails> GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla);
-   boost::shared_ptr<matConcreteBaseCreepDetails> GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla);
+   std::shared_ptr<matConcreteBaseCreepDetails> GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla);
    Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading);
    matConcreteBase* GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation);
 
@@ -167,7 +167,7 @@ private:
    void ValidateSegmentConcrete();
    void ValidateRailingSystemConcrete();
    void ValidateDeckConcrete();
-   void ValidateConcreteParameters(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey);
+   void ValidateConcreteParameters(std::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey);
    bool IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type);
 
    // create new concrete material objects given the basic concrete input information
@@ -192,13 +192,13 @@ private:
    Float64 GetConcreteAgingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading);
 
    // Material model for precast girder segments
-   std::map< CSegmentKey, boost::shared_ptr<matConcreteBase> > m_pSegmentConcrete;
+   std::map< CSegmentKey, std::shared_ptr<matConcreteBase> > m_pSegmentConcrete;
 
    // Material model for cast-in-place closure joint
-   std::map< CSegmentKey, boost::shared_ptr<matConcreteBase> > m_pClosureConcrete;
+   std::map< CSegmentKey, std::shared_ptr<matConcreteBase> > m_pClosureConcrete;
 
    // Material model for pier concrete
-   std::map<PierIndexType,boost::shared_ptr<matConcrete>> m_pPierConcrete;
+   std::map<PierIndexType,std::shared_ptr<matConcrete>> m_pPierConcrete;
 
    // Material model for deck concrete
    Float64 m_DeckEcK1;
@@ -207,10 +207,10 @@ private:
    Float64 m_DeckCreepK2;
    Float64 m_DeckShrinkageK1;
    Float64 m_DeckShrinkageK2;
-   std::auto_ptr<matConcreteBase> m_pDeckConc; // time dependent Deck concrete model
+   std::unique_ptr<matConcreteBase> m_pDeckConc; // time dependent Deck concrete model
 
    // Material model for railing system concrete
-   std::auto_ptr<matConcreteBase> m_pRailingConc[2]; // index is pgsTypes::TrafficBarrierOrientation
+   std::unique_ptr<matConcreteBase> m_pRailingConc[2]; // index is pgsTypes::TrafficBarrierOrientation
 
    // callback IDs for the status callbacks we register
    StatusCallbackIDType m_scidConcreteStrengthWarning;

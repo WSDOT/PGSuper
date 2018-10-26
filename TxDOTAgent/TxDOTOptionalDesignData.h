@@ -79,22 +79,22 @@ DEFINE_GUID(IID_IGetTogaResults,
 interface IGetTogaResults : IUnknown
 {
    // Values from "original design" configuration
-   virtual void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart)=0;
-   virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart)=0;
+   virtual void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) = 0;
+   virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) = 0;
 
-   virtual Float64 GetRequiredUltimateMoment()=0;
-   virtual Float64 GetUltimateMomentCapacity()=0;
+   virtual Float64 GetRequiredUltimateMoment() = 0;
+   virtual Float64 GetUltimateMomentCapacity() = 0;
 
-   virtual Float64 GetMaximumCamber()=0;
+   virtual Float64 GetMaximumCamber() = 0;
 
-   virtual Float64 GetRequiredFc()=0;
-   virtual Float64 GetRequiredFci()=0;
+   virtual Float64 GetRequiredFc() = 0;
+   virtual Float64 GetRequiredFci() = 0;
 
    // Values from fabricator optional design
-   virtual const pgsGirderArtifact* GetFabricatorDesignArtifact()=0;
-   virtual Float64 GetFabricatorMaximumCamber()=0;
+   virtual const pgsGirderArtifact* GetFabricatorDesignArtifact() = 0;
+   virtual Float64 GetFabricatorMaximumCamber() = 0;
 
-   virtual bool ShearPassed()=0;
+   virtual bool ShearPassed() = 0;
 };
 
 
@@ -268,7 +268,7 @@ protected:
    void MakeCopy(const CTxDOTOptionalDesignData& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CTxDOTOptionalDesignData& rOther);
+   void MakeAssignment(const CTxDOTOptionalDesignData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

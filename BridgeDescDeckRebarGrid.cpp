@@ -149,7 +149,7 @@ void CBridgeDescDeckRebarGrid::RemoveSelectedRows()
       RemoveRows(selRow,selRow);
    }
 
-   OnChangedSelection(NULL,FALSE,FALSE);
+   OnChangedSelection(nullptr,FALSE,FALSE);
 }
 
 void CBridgeDescDeckRebarGrid::CustomInit()
@@ -572,8 +572,8 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
       {
          if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack || 
               boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack ||
-              (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetPrevSpan() == NULL) ||
-              (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetPrevSpan() == NULL) 
+              (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetPrevSpan() == nullptr) ||
+              (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetPrevSpan() == nullptr) 
             )
          {
             bHasLeftCutoff = false;
@@ -581,8 +581,8 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
 
          if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead || 
               boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead ||
-             (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetNextSpan() == NULL) ||
-             (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetNextSpan() == NULL) 
+             (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetNextSpan() == nullptr) ||
+             (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetNextSpan() == nullptr) 
             ) 
          {
             bHasRightCutoff = false;

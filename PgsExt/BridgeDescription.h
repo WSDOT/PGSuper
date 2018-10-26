@@ -69,9 +69,9 @@ public:
    CRailingSystem* GetRightRailingSystem();
    const CRailingSystem* GetRightRailingSystem() const;
 
-   void CreateFirstSpan(const CPierData* pFirstPier=NULL,const CSpanData* pFirstSpan=NULL,const CPierData* pNextPier=NULL);
-   void AppendSpan(const CSpanData* pSpanData=NULL,const CPierData* pPierData=NULL);
-   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,const CSpanData* pSpanData=NULL,const CPierData* pPierData=NULL);
+   void CreateFirstSpan(const CPierData* pFirstPier=nullptr,const CSpanData* pFirstSpan=nullptr,const CPierData* pNextPier=nullptr);
+   void AppendSpan(const CSpanData* pSpanData=nullptr,const CPierData* pPierData=nullptr);
+   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,const CSpanData* pSpanData=nullptr,const CPierData* pPierData=nullptr);
    void RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType);
 
    PierIndexType GetPierCount() const;
@@ -168,7 +168,7 @@ public:
 
 protected:
    void MakeCopy(const CBridgeDescription& rOther);
-   virtual void MakeAssignment(const CBridgeDescription& rOther);
+   void MakeAssignment(const CBridgeDescription& rOther);
 
 private:
    CDeckDescription m_Deck;

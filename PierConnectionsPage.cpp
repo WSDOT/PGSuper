@@ -283,7 +283,7 @@ void CPierConnectionsPage::InitializeComboBoxes()
 void CPierConnectionsPage::FillBoundaryConditionComboBox()
 {
    std::vector<pgsTypes::BoundaryConditionType> connections( m_pPier->GetBridgeDescription()->GetBoundaryConditionTypes(m_PierIdx) );
-   m_cbBoundaryCondition.Initialize(m_pPier->IsBoundaryPier(),connections);
+   m_cbBoundaryCondition.Initialize(m_pPier->IsBoundaryPier(),connections,m_pPier->GetBridgeDescription()->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone);
 
    CDataExchange dx(this,FALSE);
    DDX_CBItemData(&dx,IDC_BOUNDARY_CONDITIONS,m_BoundaryConditionType);
@@ -327,7 +327,7 @@ void CPierConnectionsPage::OnBearingOffsetMeasureChanged()
 
 void CPierConnectionsPage::OnBoundaryConditionChanged()
 {
-   BOOL bEnable = (m_pPier->GetPrevSpan() == NULL ? FALSE : TRUE);
+   BOOL bEnable = (m_pPier->GetPrevSpan() == nullptr ? FALSE : TRUE);
 
    // Connection properties on back side of pier
    GetDlgItem(IDC_LEFT_LABEL)->EnableWindow(bEnable);
@@ -347,7 +347,7 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
    GetDlgItem(IDC_BACK_DIAPHRAGM_LOAD)->EnableWindow(bEnable);
 
    // Connection properties on ahead side of pier
-   bEnable = (m_pPier->GetNextSpan() == NULL ? FALSE : TRUE);
+   bEnable = (m_pPier->GetNextSpan() == nullptr ? FALSE : TRUE);
    GetDlgItem(IDC_RIGHT_LABEL)->EnableWindow(bEnable);
    m_BearingOffsetEdit[pgsTypes::Ahead].EnableWindow(bEnable);
    GetDlgItem(IDC_RIGHT_BEARING_OFFSET_T)->EnableWindow(bEnable);
@@ -471,7 +471,7 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
    const int StartPier = PIERTYPE_START;
    const int IntPier   = PIERTYPE_INTERMEDIATE;
    const int EndPier   = PIERTYPE_END;
-   int pierType = (pPrevSpan != NULL && pNextSpan != NULL ? IntPier : (pPrevSpan == NULL ? StartPier : EndPier));
+   int pierType = (pPrevSpan != nullptr && pNextSpan != nullptr ? IntPier : (pPrevSpan == nullptr ? StartPier : EndPier));
 
    CString strName;
    if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )

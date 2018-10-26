@@ -90,7 +90,7 @@ const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtP
       }
    }
 
-   return NULL;
+   return nullptr;
 }
 
 void pgsStirrupCheckArtifact::SetConfinementArtifact(const pgsConfinementArtifact& artifact)

@@ -37,7 +37,7 @@ DEFINE_GUID(IID_ICrackedSection,
 0xcd48333f, 0xe8b8, 0x4025, 0x89, 0xc4, 0x86, 0xba, 0x5, 0xe6, 0x1, 0x21);
 interface ICrackedSection : IUnknown
 {
-   virtual void GetCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD) = 0;
-   virtual Float64 GetIcr(const pgsPointOfInterest& poi,bool bPositiveMoment) = 0;
-   virtual std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment) = 0;
+   virtual void GetCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD) const = 0;
+   virtual Float64 GetIcr(const pgsPointOfInterest& poi,bool bPositiveMoment) const = 0;
+   virtual std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment) const = 0;
 };

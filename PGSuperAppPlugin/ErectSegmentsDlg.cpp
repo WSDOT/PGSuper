@@ -29,7 +29,7 @@
 
 IMPLEMENT_DYNAMIC(CErectSegmentsDlg, CDialog)
 
-CErectSegmentsDlg::CErectSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=NULL*/)
+CErectSegmentsDlg::CErectSegmentsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CErectSegmentsDlg::IDD, pParent),
    m_EventIndex(eventIdx),
    m_bReadOnly(bReadOnly)

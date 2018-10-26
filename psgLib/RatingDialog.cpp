@@ -51,7 +51,8 @@ CRatingDialog::CRatingDialog( RatingLibraryEntry& rentry,
    m_LiveLoadFactorsPage1[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrDesign_Inventory),pgsTypes::lrDesign_Inventory);
    m_LiveLoadFactorsPage1[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrDesign_Operating),pgsTypes::lrDesign_Operating);
    m_LiveLoadFactorsPage1[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Routine),pgsTypes::lrLegal_Routine);
-   m_LiveLoadFactorsPage1[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Special),pgsTypes::lrLegal_Special);
+   m_LiveLoadFactorsPage1[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1, RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Special), pgsTypes::lrLegal_Special);
+   m_LiveLoadFactorsPage1[4] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1, RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Emergency), pgsTypes::lrLegal_Emergency);
 
    m_PermitLiveLoadFactorsPage1[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrPermit_Routine),pgsTypes::lrPermit_Routine);
    m_PermitLiveLoadFactorsPage1[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetSpecialPermitType(pgsTypes::ptSingleTripWithEscort),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithEscort);
@@ -61,7 +62,8 @@ CRatingDialog::CRatingDialog( RatingLibraryEntry& rentry,
    m_LiveLoadFactorsPage2[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrDesign_Inventory),pgsTypes::lrDesign_Inventory);
    m_LiveLoadFactorsPage2[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrDesign_Operating),pgsTypes::lrDesign_Operating);
    m_LiveLoadFactorsPage2[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Routine),pgsTypes::lrLegal_Routine);
-   m_LiveLoadFactorsPage2[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Special),pgsTypes::lrLegal_Special);
+   m_LiveLoadFactorsPage2[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2, RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Special), pgsTypes::lrLegal_Special);
+   m_LiveLoadFactorsPage2[4] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2, RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Emergency), pgsTypes::lrLegal_Emergency);
 
    m_PermitLiveLoadFactorsPage2[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrPermit_Routine),pgsTypes::lrPermit_Routine);
    m_PermitLiveLoadFactorsPage2[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetSpecialPermitType(pgsTypes::ptSingleTripWithEscort),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithEscort);
@@ -73,7 +75,7 @@ CRatingDialog::CRatingDialog( RatingLibraryEntry& rentry,
 
 CRatingDialog::~CRatingDialog()
 {
-   for ( int i = 0; i < 4; i++ )
+   for ( int i = 0; i < 5; i++ )
    {
       delete m_LiveLoadFactorsPage1[i];
       delete m_LiveLoadFactorsPage2[i];
@@ -102,7 +104,7 @@ void CRatingDialog::Init()
    m_RatingDescriptionPage.m_psp.dwFlags |= PSP_HASHELP;
    AddPage(&m_RatingDescriptionPage);
 
-   for ( int i = 0; i < 4; i++ )
+   for ( int i = 0; i < 5; i++ )
    {
       m_LiveLoadFactorsPage1[i]->m_psp.dwFlags |= PSP_HASHELP;
       m_LiveLoadFactorsPage2[i]->m_psp.dwFlags |= PSP_HASHELP;
@@ -530,7 +532,7 @@ void CRatingDialog::UpdatePageLayout()
 
 void CRatingDialog::UpdatePageLayout(lrfrVersionMgr::Version version)
 {
-   for ( int i = 0; i < 4; i++ )
+   for ( int i = 0; i < 5; i++ )
    {
       if ( 0 <= GetPageIndex(m_LiveLoadFactorsPage1[i]) )
          RemovePage(m_LiveLoadFactorsPage1[i]);
@@ -550,7 +552,7 @@ void CRatingDialog::UpdatePageLayout(lrfrVersionMgr::Version version)
 
    if ( version < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
-      for ( int i = 0; i < 4; i++ )
+      for ( int i = 0; i < 5; i++ )
       {
          AddPage(m_LiveLoadFactorsPage1[i]);
       }
@@ -562,7 +564,7 @@ void CRatingDialog::UpdatePageLayout(lrfrVersionMgr::Version version)
    }
    else
    {
-      for ( int i = 0; i < 4; i++ )
+      for ( int i = 0; i < 5; i++ )
       {
          AddPage(m_LiveLoadFactorsPage2[i]);
       }

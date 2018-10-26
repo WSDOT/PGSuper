@@ -86,7 +86,7 @@ protected:
    void MakeCopy(const CUserReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CUserReactionTable& rOther);
+   void MakeAssignment(const CUserReactionTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

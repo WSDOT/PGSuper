@@ -31,7 +31,7 @@ class CLoadFactorsDlg : public CDialog
 	DECLARE_DYNAMIC(CLoadFactorsDlg)
 
 public:
-	CLoadFactorsDlg(CWnd* pParent = NULL);   // standard constructor
+	CLoadFactorsDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CLoadFactorsDlg();
 
 // Dialog Data

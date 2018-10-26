@@ -95,7 +95,7 @@ CDeckDescription2::CDeckDescription2()
    Condition = pgsTypes::cfGood;
    ConditionFactor = 1.0;
 
-   m_pBridgeDesc = NULL;
+   m_pBridgeDesc = nullptr;
 }
 
 CDeckDescription2::CDeckDescription2(const CDeckDescription2& rOther)
@@ -159,9 +159,27 @@ bool CDeckDescription2::operator == (const CDeckDescription2& rOther) const
       return false;
    }
 
-   if ( !IsEqual( OverlayWeight, rOther.OverlayWeight ) )
-   {
+   if (bInputAsDepthAndDensity != rOther.bInputAsDepthAndDensity)
       return false;
+
+   if (bInputAsDepthAndDensity)
+   {
+      if (!IsEqual(OverlayDepth, rOther.OverlayDepth))
+      {
+         return false;
+      }
+
+      if (!IsEqual(OverlayDensity, rOther.OverlayDensity))
+      {
+         return false;
+      }
+   }
+   else
+   {
+      if (!IsEqual(OverlayWeight, rOther.OverlayWeight))
+      {
+         return false;
+      }
    }
 
 	if ( !IsEqual( SacrificialDepth, rOther.SacrificialDepth ) )
@@ -449,7 +467,7 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 }
 
 
-void CDeckDescription2::SetBridgeDescription(const CBridgeDescription2* pBridge)
+void CDeckDescription2::SetBridgeDescription(CBridgeDescription2* pBridge)
 {
    m_pBridgeDesc = pBridge;
 }
@@ -458,12 +476,44 @@ const CBridgeDescription2* CDeckDescription2::GetBridgeDescription() const
 {
    return m_pBridgeDesc;
 }
-   std::vector<CDeckPoint> DeckEdgePoints;
+
+void CDeckDescription2::SetDeckType(pgsTypes::SupportedDeckType deckType)
+{
+   DeckType = deckType;
+   if (deckType == pgsTypes::sdtNone)
+   {
+      // deck just got changed to a "no deck" type.. update the boundary conditions to be compatable
+      CPierData2* pPier = m_pBridgeDesc->GetPier(0);
+      while (pPier != nullptr)
+      {
+         auto bc = pPier->GetBoundaryConditionType();
+         if (!IsNoDeckBoundaryCondition(bc))
+         {
+            pPier->SetBoundaryConditionType(GetNoDeckBoundaryCondition(bc));
+         }
+
+         auto pSpan = pPier->GetNextSpan();
+         if (pSpan)
+         {
+            pPier = pSpan->GetNextPier();
+         }
+         else
+         {
+            pPier = nullptr;
+         }
+      }
+   }
+}
+
+pgsTypes::SupportedDeckType CDeckDescription2::GetDeckType() const
+{
+   return DeckType;
+}
 
 Float64 CDeckDescription2::GetMinWidth() const
 {
    Float64 width = DBL_MAX;
-   BOOST_FOREACH(const CDeckPoint& deckPoint,DeckEdgePoints)
+   for(const auto& deckPoint : DeckEdgePoints)
    {
       width = Min(width,deckPoint.GetWidth());
    }
@@ -473,7 +523,7 @@ Float64 CDeckDescription2::GetMinWidth() const
 Float64 CDeckDescription2::GetMaxWidth() const
 {
    Float64 width = -DBL_MAX;
-   BOOST_FOREACH(const CDeckPoint& deckPoint,DeckEdgePoints)
+   for (const auto& deckPoint : DeckEdgePoints)
    {
       width = Max(width,deckPoint.GetWidth());
    }

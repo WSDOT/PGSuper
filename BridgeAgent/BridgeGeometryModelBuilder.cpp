@@ -243,7 +243,7 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       }
       else
       {
-         pPier = NULL;
+         pPier = nullptr;
       }
 
       pierIdx++;
@@ -537,7 +537,8 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    //
 
    CComPtr<ISingleGirderLineFactory> glFactory;
-   glFactory.CoCreateInstance(CLSID_SingleGirderLineFactory);
+   HRESULT hr = glFactory.CoCreateInstance(CLSID_SingleGirderLineFactory);
+   ATLASSERT(SUCCEEDED(hr));
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -673,16 +674,16 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             PierIDType startID, endID;
             GetPierID(pSegment,&startID,&endID);
 
-            const CPierData2* pStartPier = NULL;
-            const CTemporarySupportData* pStartTS = NULL;
+            const CPierData2* pStartPier = nullptr;
+            const CTemporarySupportData* pStartTS = nullptr;
             pSegment->GetSupport(pgsTypes::metStart,&pStartPier,&pStartTS);
 
-            const CPierData2* pEndPier = NULL;
-            const CTemporarySupportData* pEndTS = NULL;
+            const CPierData2* pEndPier = nullptr;
+            const CTemporarySupportData* pEndTS = nullptr;
             pSegment->GetSupport(pgsTypes::metEnd,&pEndPier,&pEndTS);
 
-            const CGirderSpacing2* pStartSpacing = NULL;
-            const CGirderSpacing2* pEndSpacing   = NULL;
+            const CGirderSpacing2* pStartSpacing = nullptr;
+            const CGirderSpacing2* pEndSpacing   = nullptr;
             if ( pStartPier )
             {
                pStartSpacing = pStartPier->GetGirderSpacing(pgsTypes::Ahead);
@@ -723,7 +724,7 @@ void CBridgeGeometryModelBuilder::GetPierID(const CPrecastSegmentData* pSegment,
    const CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
    const CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
-   if ( pStartClosure == NULL )
+   if ( pStartClosure == nullptr )
    {
       *pStartID = ::GetPierLineID( pSegment->GetGirder()->GetPier(pgsTypes::metStart)->GetIndex() );
    }
@@ -740,7 +741,7 @@ void CBridgeGeometryModelBuilder::GetPierID(const CPrecastSegmentData* pSegment,
    }
 
 
-   if ( pEndClosure == NULL )
+   if ( pEndClosure == nullptr )
    {
       *pEndID = ::GetPierLineID( pSegment->GetGirder()->GetPier(pgsTypes::metEnd)->GetIndex() );
    }
@@ -928,8 +929,8 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
    CComPtr<IDirection> startSupportDirection, endSupportDirection;
 
 
-   const CPierData2* pStartPier = NULL;
-   const CTemporarySupportData* pStartTS = NULL;
+   const CPierData2* pStartPier = nullptr;
+   const CTemporarySupportData* pStartTS = nullptr;
    pSegment->GetSupport(pgsTypes::metStart,&pStartPier,&pStartTS);
    if ( pStartPier )
    {
@@ -940,8 +941,8 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
       GetSpacingDataAtTempSupport(pBridgeGeometry,alignmentOffset,pStartTS,&startMeasureStation,&startMeasureDirection,&startSupportDirection,&pStartSpacing);
    }
 
-   const CPierData2* pEndPier = NULL;
-   const CTemporarySupportData* pEndTS = NULL;
+   const CPierData2* pEndPier = nullptr;
+   const CTemporarySupportData* pEndTS = nullptr;
    pSegment->GetSupport(pgsTypes::metEnd,&pEndPier,&pEndTS);
    if ( pEndPier )
    {
@@ -1043,7 +1044,7 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
    // center of the support or at the centerline of bearing. You must check the girder spacing object
    // and use the appropreate value
 
-   if ( *ppStartPoints == NULL )
+   if ( *ppStartPoints == nullptr )
    {
       // if array is not given, create it
       CComPtr<IPoint2dCollection> points;
@@ -1056,7 +1057,7 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
       (*ppStartPoints)->Clear();
    }
 
-   if ( *ppEndPoints == NULL )
+   if ( *ppEndPoints == nullptr )
    {
       // if array is not given, create it
       CComPtr<IPoint2dCollection> points;

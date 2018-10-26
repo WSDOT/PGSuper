@@ -39,15 +39,15 @@ public:
    HRESULT FinalConstruct();
    void FinalRelease();
 
-   virtual CString GetAppName() const { return CString("PGSuper"); }
-   virtual CString GetDefaultCatalogServerName() const  { return CString("WSDOT"); }
-   virtual CString GetDefaultCatalogName()  const  { return CString("WSDOT"); }
-   virtual CString GetTemplateFileExtension();
-   virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
+   virtual CString GetAppName() const override { return CString("PGSuper"); }
+   virtual CString GetDefaultCatalogServerName() const override  { return CString("WSDOT"); }
+   virtual CString GetDefaultCatalogName() const override  { return CString("WSDOT"); }
+   virtual CString GetTemplateFileExtension() override;
+   virtual const CRuntimeClass* GetDocTemplateRuntimeClass() override;
 
-   virtual CATID GetProjectImporterCATID();
-   virtual UINT GetMenuResourceID();
-   virtual CPGSImportPluginDocTemplateBase* CreateDocTemplate();
+   virtual CATID GetProjectImporterCATID() override;
+   virtual UINT GetMenuResourceID() override;
+   virtual CPGSImportPluginDocTemplateBase* CreateDocTemplate() override;
 
 BEGIN_COM_MAP(CPGSuperProjectImporterAppPlugin)
    COM_INTERFACE_ENTRY(IEAFAppPlugin)

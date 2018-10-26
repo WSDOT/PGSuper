@@ -40,7 +40,7 @@ class CDiaphragmDefinitionDlg : public CDialog
 {
 // Construction
 public:
-	CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry,const GirderLibraryEntry::DiaphragmLayoutRule& rule,CWnd* pParent = NULL);   // standard constructor
+	CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry,const GirderLibraryEntry::DiaphragmLayoutRule& rule,CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDiaphragmDefinitionDlg)

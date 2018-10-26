@@ -31,7 +31,7 @@ class CFilletSpanBySpanDlg : public CDialog
 	DECLARE_DYNAMIC(CFilletSpanBySpanDlg)
 
 public:
-	CFilletSpanBySpanDlg(CWnd* pParent = NULL);   // standard constructor
+	CFilletSpanBySpanDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CFilletSpanBySpanDlg();
 
 // Dialog Data

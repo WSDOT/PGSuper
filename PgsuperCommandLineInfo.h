@@ -44,6 +44,6 @@ public:
    CPGSuperCommandLineInfo();
 
 private:
-   virtual LPCTSTR GetAppName() const;
+   virtual LPCTSTR GetAppName() const override;
 };
 

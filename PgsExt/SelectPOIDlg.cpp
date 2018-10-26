@@ -39,7 +39,7 @@
 
 IMPLEMENT_DYNAMIC(CSelectPOIDlg, CDialog)
 
-CSelectPOIDlg::CSelectPOIDlg(CWnd* pParent /*=NULL*/)
+CSelectPOIDlg::CSelectPOIDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectPOIDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_IntervalIdx(INVALID_INDEX)
@@ -253,7 +253,7 @@ void CSelectPOIDlg::UpdatePOI()
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS));
 
-   if (m_Slider.GetSafeHwnd() != NULL )
+   if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
                                                    // subtract one so we don't go past the end of the array

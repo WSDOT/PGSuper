@@ -54,7 +54,7 @@ public:
    pgsTypes::StrandInstallationType GetInstallationType();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
    void FillGirderComboBox();
    void FillStrandList(UINT nIDC);
@@ -81,7 +81,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
    afx_msg void OnAddDuct();
    afx_msg void OnDeleteDuct();
    afx_msg void OnStrandChanged();

@@ -30,7 +30,7 @@ class CConstructionLoadDlg : public CDialog
 	DECLARE_DYNAMIC(CConstructionLoadDlg)
 
 public:
-	CConstructionLoadDlg(CWnd* pParent = NULL);   // standard constructor
+	CConstructionLoadDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CConstructionLoadDlg();
 
    Float64 m_Load;

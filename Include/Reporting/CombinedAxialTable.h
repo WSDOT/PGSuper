@@ -78,5 +78,5 @@ protected:
 
    void MakeCopy(const CCombinedAxialTable& rOther);
 
-   virtual void MakeAssignment(const CCombinedAxialTable& rOther);
+   void MakeAssignment(const CCombinedAxialTable& rOther);
 };

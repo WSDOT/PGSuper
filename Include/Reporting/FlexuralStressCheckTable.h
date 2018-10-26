@@ -98,7 +98,7 @@ public:
 
 protected:
    void MakeCopy(const CFlexuralStressCheckTable& rOther);
-   virtual void MakeAssignment(const CFlexuralStressCheckTable& rOther);
+   void MakeAssignment(const CFlexuralStressCheckTable& rOther);
 
 
    void BuildSectionHeading(rptChapter* pChapter, 

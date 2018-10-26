@@ -34,7 +34,7 @@
 #include <PgsExt\HandlingData.h>
 #include <PgsExt\Keys.h>
 
-#include <boost\shared_ptr.hpp>
+#include <memory>
 
 class CClosureJointData;
 class CSplicedGirderData;
@@ -114,7 +114,7 @@ public:
    const CPrecastSegmentData* GetNextSegment() const;
 
    // Returns the support at the start of the segment. The support could be a
-   // pier or a temporary support. The support pointer is not NULL, the other pointer is NULL
+   // pier or a temporary support. The support pointer is not nullptr, the other pointer is nullptr
    void GetSupport(pgsTypes::MemberEndType endType,const CPierData2** ppPier,const CTemporarySupportData** ppTS) const;
    void GetSupport(pgsTypes::MemberEndType endType,CPierData2** ppPier,CTemporarySupportData** ppTS);
    void GetStations(Float64* pStartStation,Float64* pEndStation) const;
@@ -160,7 +160,7 @@ public:
 protected:
    void Init();
    void MakeCopy(const CPrecastSegmentData& rOther,bool bCopyIdentity,bool bCopyLocation,bool bCopyProperties);
-   virtual void MakeAssignment(const CPrecastSegmentData& rOther);
+   void MakeAssignment(const CPrecastSegmentData& rOther);
    void ResolveReferences();
 
    // A segment can start/end of a temporary support or a pier (hinge/roller connections only)

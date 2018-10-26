@@ -37,6 +37,7 @@
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\EditByUI.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -155,9 +156,9 @@ BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
 	ON_COMMAND(ID_FILE_PRINT, OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, OnFilePrintDirect)
 	ON_CBN_SELCHANGE(IDC_SELEVENT, OnSelectEvent)
-	ON_COMMAND(ID_ADD_POINT_LOAD, OnAddPointload)
-	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddDistributedLoad)
-	ON_COMMAND(ID_ADD_MOMENT_LOAD, OnAddMoment)
+	ON_COMMAND(ID_ADD_POINT_LOAD_CTX, OnAddPointload)
+	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD_CTX, OnAddDistributedLoad)
+	ON_COMMAND(ID_ADD_MOMENT_LOAD_CTX, OnAddMoment)
    ON_CBN_SELCHANGE( IDC_GIRDER, OnGirderChanged )
    ON_CBN_SELCHANGE( IDC_SPAN, OnGroupChanged )
    ON_COMMAND(IDC_SECTION_CUT, OnSectionCut )
@@ -196,7 +197,7 @@ const CGirderKey& CGirderModelChildFrame::GetSelection() const
    return m_GirderKey;
 }
 
-bool CGirderModelChildFrame::DoSyncWithBridgeModelView()
+bool CGirderModelChildFrame::DoSyncWithBridgeModelView() const
 {
    CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
    return (pBtn->GetCheck() == 0 ? false : true);
@@ -257,7 +258,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
    // point load tool
    CComPtr<iTool> point_load_tool;
-   ::CoCreateInstance(CLSID_Tool,NULL,CLSCTX_ALL,IID_iTool,(void**)&point_load_tool);
+   ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&point_load_tool);
    point_load_tool->SetID(IDC_POINT_LOAD_DRAG);
    point_load_tool->SetToolTipText(_T("Drag me onto girder to create a point load"));
 
@@ -269,7 +270,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    // distributed load tool
    CComPtr<iTool> distributed_load_tool;
-   ::CoCreateInstance(CLSID_Tool,NULL,CLSCTX_ALL,IID_iTool,(void**)&distributed_load_tool);
+   ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&distributed_load_tool);
    distributed_load_tool->SetID(IDC_DISTRIBUTED_LOAD_DRAG);
    distributed_load_tool->SetToolTipText(_T("Drag me onto girder to create a distributed load"));
 
@@ -284,7 +285,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
       CComPtr<iTool> moment_load_tool;
-      ::CoCreateInstance(CLSID_Tool,NULL,CLSCTX_ALL,IID_iTool,(void**)&moment_load_tool);
+      ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&moment_load_tool);
       moment_load_tool->SetID(IDC_MOMENT_LOAD_DRAG);
       moment_load_tool->SetToolTipText(_T("Drag me onto girder to create a moment load"));
       
@@ -384,8 +385,8 @@ CGirderModelSectionView* CGirderModelChildFrame::GetGirderModelSectionView() con
 
 void CGirderModelChildFrame::UpdateViews()
 {
-   GetGirderModelElevationView()->OnUpdate(NULL,0,NULL);
-   GetGirderModelSectionView()->OnUpdate(NULL,0,NULL);
+   GetGirderModelElevationView()->OnUpdate(nullptr,0,nullptr);
+   GetGirderModelSectionView()->OnUpdate(nullptr,0,nullptr);
 }
 
 void CGirderModelChildFrame::UpdateCutLocation(const pgsPointOfInterest& poi)
@@ -402,8 +403,8 @@ void CGirderModelChildFrame::UpdateCutLocation(const pgsPointOfInterest& poi)
       m_CurrentCutLocation = pPoi->ConvertPoiToGirderCoordinate(poi);
    }
    UpdateBar();
-   GetGirderModelSectionView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
-   GetGirderModelElevationView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
+   GetGirderModelSectionView()->OnUpdate(nullptr, HINT_GIRDERVIEWSECTIONCUTCHANGED, nullptr);
+   GetGirderModelElevationView()->OnUpdate(nullptr, HINT_GIRDERVIEWSECTIONCUTCHANGED, nullptr);
 }
 
 void CGirderModelChildFrame::UpdateBar()
@@ -741,123 +742,35 @@ void CGirderModelChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 
 void CGirderModelChildFrame::OnAddPointload()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   ATLASSERT( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS  ); // if we are adding a point load, a girder better be selected
+   CPointLoadData load;
+   InitLoad(load);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex);
-
-   // set data to that of view
-   CPointLoadData data;
-   data.m_SpanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
-
-   EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIndex == liveLoadEventIdx )
-   {
-      data.m_LoadCase = UserLoads::LL_IM;
-   }
-   //EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   //if ( m_EventIndex != liveLoadEventIdx)
-   //{
-   //   data.m_EventIndex = m_EventIndex;
-   //}
-   //else
-   //{
-   //   data.m_LoadCase = UserLoads::LL_IM;
-   //}
-
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CEditPointLoadDlg dlg(data,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      txnTxnManager::GetInstance()->Execute(pTxn);
-   }
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
+   pEdit->AddPointLoad(load);
 }
 
 void CGirderModelChildFrame::OnAddDistributedLoad() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   ATLASSERT( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS  ); // if we are adding a point load, a girder better be selected
+   CDistributedLoadData load;
+   InitLoad(load);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex);
-
-   // set data to that of view
-   CDistributedLoadData data;
-   data.m_SpanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
-
-   EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIndex == liveLoadEventIdx )
-   {
-      data.m_LoadCase = UserLoads::LL_IM;
-   }
-   //EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   //if ( m_EventIndex != liveLoadEventIdx)
-   //{
-   //   data.m_EventIndex = m_EventIndex;
-   //}
-   //else
-   //{
-   //   data.m_LoadCase = UserLoads::LL_IM;
-   //}
-
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CEditDistributedLoadDlg dlg(data,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      txnTxnManager::GetInstance()->Execute(pTxn);
-   }
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
+   pEdit->AddDistributedLoad(load);
 }
 
 void CGirderModelChildFrame::OnAddMoment() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CMomentLoadData load;
+   InitLoad(load);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex);
-
-   // set data to that of view
-   CMomentLoadData data;
-   data.m_SpanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
-
-   EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIndex == liveLoadEventIdx )
-   {
-      data.m_LoadCase = UserLoads::LL_IM;
-   }
-   //EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   //if ( m_EventIndex != liveLoadEventIdx)
-   //{
-   //   data.m_EventIndex = m_EventIndex;
-   //}
-   //else
-   //{
-   //   data.m_LoadCase = UserLoads::LL_IM;
-   //}
-
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CEditMomentLoadDlg dlg(data,pTimelineMgr);
-   if (dlg.DoModal() == IDOK)
-   {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
-      txnTxnManager::GetInstance()->Execute(pTxn);
-   }
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
+   pEdit->AddMomentLoad(load);
 }
 
 LRESULT CGirderModelChildFrame::OnCommandHelp(WPARAM, LPARAM lParam)

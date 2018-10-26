@@ -86,7 +86,7 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    CComPtr<IBroker> pBroker;
 
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   if (pGirderRptSpec!=NULL)
+   if (pGirderRptSpec!=nullptr)
    {
       pGirderRptSpec->GetBroker(&pBroker);
       girder_list.push_back( pGirderRptSpec->GetGirderKey() );
@@ -291,8 +291,8 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       // Haunch depth at mid-span
       CSpanKey spanKey(girderKey.groupIndex, girderKey.girderIndex);  // precast girder bridge assumption here
 
-      HAUNCHDETAILS haunch_details; // all along girder
-      pGdrHaunch->GetHaunchDetails(spanKey, &haunch_details);
+      // haunch all along the girder
+      HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
 
       // find Z value at mid-span
       Float64 Z(Float64_Max);

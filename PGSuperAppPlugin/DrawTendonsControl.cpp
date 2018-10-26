@@ -41,7 +41,7 @@ IMPLEMENT_DYNAMIC(CDrawTendonsControl, CWnd)
 
 CDrawTendonsControl::CDrawTendonsControl()
 {
-   m_pGirder = NULL;
+   m_pGirder = nullptr;
 }
 
 CDrawTendonsControl::~CDrawTendonsControl()

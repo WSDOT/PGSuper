@@ -57,6 +57,6 @@ protected:
 
 private:
    // Prevent accidental copying and assignment
-   CIntervalChapterBuilder(const CIntervalChapterBuilder&);
-   CIntervalChapterBuilder& operator=(const CIntervalChapterBuilder&);
+   CIntervalChapterBuilder(const CIntervalChapterBuilder&) = delete;
+   CIntervalChapterBuilder& operator=(const CIntervalChapterBuilder&) = delete;
 };

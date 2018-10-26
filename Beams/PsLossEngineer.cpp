@@ -84,6 +84,8 @@
 
 #include "EffectivePrestressTable.h"
 
+#include <algorithm>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -94,7 +96,7 @@ static char THIS_FILE[] = __FILE__;
 template <class T>
 void ReportRow(T* pTable,rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   if ( pTable == NULL )
+   if ( pTable == nullptr )
    {
       return;
    }
@@ -370,7 +372,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
    Float64 shipping_loss = pSpecEntry->GetShippingLosses();
 
-   boost::shared_ptr<lrfdRefinedLosses> pLoss(new lrfdRefinedLosses(poi.GetDistFromStart(),
+   std::shared_ptr<lrfdRefinedLosses> pLoss(new lrfdRefinedLosses(poi.GetDistFromStart(),
                                 girder_length, spType,
                                 gradePerm,
                                 typePerm,
@@ -431,15 +433,15 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    {
       Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
       // store in shared pointer to base class
-      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
-      ATLASSERT(pLosses->pLosses!=NULL);
+      pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=nullptr);
    }
    catch( const lrfdXPsLosses& e )
    {
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tstring msg;
 
-      CEAFStatusItem* pStatusItem = NULL;
+      CEAFStatusItem* pStatusItem = nullptr;
 
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
@@ -468,7 +470,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
       }
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      ATLASSERT(pStatusItem != NULL);
+      ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
@@ -564,7 +566,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    }
 
    lrfdRefinedLosses2005::RelaxationLossMethod relaxationMethod = (lrfdRefinedLosses2005::RelaxationLossMethod)pSpecEntry->GetRelaxationLossMethod();
-   boost::shared_ptr<lrfdRefinedLosses2005> pLoss(new lrfdRefinedLosses2005(poi.GetDistFromStart(),
+   std::shared_ptr<lrfdRefinedLosses2005> pLoss(std::make_shared<lrfdRefinedLosses2005>(poi.GetDistFromStart(),
                                 girder_length,
                                 spType,
                                 gradePerm,
@@ -636,15 +638,15 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    {
       Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
       // store in shared pointer of base class
-      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
-      ATLASSERT(pLosses->pLosses!=NULL);
+      pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=nullptr);
    }
    catch( const lrfdXPsLosses& e )
    {
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tstring msg;
 
-      CEAFStatusItem* pStatusItem = NULL;
+      CEAFStatusItem* pStatusItem = nullptr;
 
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
@@ -679,7 +681,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
       }
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      ATLASSERT(pStatusItem != NULL);
+      ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
@@ -827,7 +829,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
       }
    }
 
-   boost::shared_ptr<lrfdRefinedLossesTxDOT2013> pLoss(new lrfdRefinedLossesTxDOT2013( poi.GetDistFromStart(),
+   std::shared_ptr<lrfdRefinedLossesTxDOT2013> pLoss(std::make_shared<lrfdRefinedLossesTxDOT2013>( poi.GetDistFromStart(),
                                                   girder_length,
                                                   spType,
                                                   gradePerm,
@@ -884,8 +886,8 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    {
       Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
       // store in shared pointer to base class
-      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
-      ATLASSERT(pLosses->pLosses!=NULL);
+      pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=nullptr);
 
       if(fcgp_method == FCGP_HYBRID && 
          pLoss->ElasticShortening().GetFcgpComputationMethod() == lrfdElasticShortening::fcgpIterative)
@@ -903,7 +905,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tstring msg;
 
-      CEAFStatusItem* pStatusItem = NULL;
+      CEAFStatusItem* pStatusItem = nullptr;
 
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
@@ -932,7 +934,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
       }
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      ATLASSERT(pStatusItem != NULL);
+      ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
@@ -1056,7 +1058,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
          Float64 shipping_loss = pSpecEntry->GetShippingLosses();
 
-         boost::shared_ptr<lrfdApproximateLosses> pLoss(new lrfdApproximateLosses(
+         std::shared_ptr<lrfdApproximateLosses> pLoss(std::make_shared<lrfdApproximateLosses>(
                             (lrfdApproximateLosses::BeamType)beamType,
                             shipping_loss,
                             ppr,
@@ -1119,8 +1121,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          // the elastic shortening losses and make sure an exception doesn't throw.
          Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
          // store in shared pointer to base class
-         pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
-         ATLASSERT(pLosses->pLosses!=NULL);
+         pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
+         ATLASSERT(pLosses->pLosses!=nullptr);
       }
       else
       {
@@ -1140,7 +1142,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
             THROW_UNWIND(msg.c_str(),XREASON_LRFD_VERSION);
          }
 
-         boost::shared_ptr<lrfdApproximateLosses2005> pLoss(new lrfdApproximateLosses2005(poi.GetDistFromStart(), // location along girder where losses are computed
+         std::shared_ptr<lrfdApproximateLosses2005> pLoss(std::make_shared<lrfdApproximateLosses2005>(poi.GetDistFromStart(), // location along girder where losses are computed
                             girder_length,    // girder length
                             spType,
                             gradePerm,
@@ -1209,8 +1211,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          // the elastic shortening losses and make sure an exception doesn't throw.
          Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
          // store in shared pointer to base class
-         pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
-         ATLASSERT(pLosses->pLosses!=NULL);
+         pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
+         ATLASSERT(pLosses->pLosses!=nullptr);
       }
 
    } // end of try block
@@ -1219,7 +1221,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tstring msg;
 
-      CEAFStatusItem* pStatusItem = NULL;
+      CEAFStatusItem* pStatusItem = nullptr;
 
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
@@ -1248,7 +1250,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       }
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      ATLASSERT(pStatusItem != NULL);
+      ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
@@ -1336,16 +1338,16 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    if ( Nstrands == 0 )
    {
-      boost::shared_ptr<const lrfdLumpSumLosses> pLoss (new lrfdLumpSumLosses(0,0,0,0,usage,0,0,0,0,0,0,0,0,0));
+      std::shared_ptr<const lrfdLumpSumLosses> pLoss (std::make_shared<lrfdLumpSumLosses>(0,0,0,0,usage,0,0,0,0,0,0,0,0,0));
 
-      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
-      ATLASSERT(pLosses->pLosses!=NULL);
+      pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=nullptr);
    }
    else
    {
       GET_IFACE(ILossParameters,pLossParameters);
 
-      boost::shared_ptr<const lrfdLumpSumLosses> pLoss(new lrfdLumpSumLosses(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
+      std::shared_ptr<const lrfdLumpSumLosses> pLoss(std::make_shared<lrfdLumpSumLosses>(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
                                            pLossParameters->GetBeforeXferLosses(),
                                            pLossParameters->GetAfterXferLosses(),
                                            pLossParameters->GetLiftingLosses(),
@@ -1356,8 +1358,8 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
                                            pLossParameters->GetAfterSIDLLosses(),
                                            pLossParameters->GetFinalLosses()));
 
-      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
-      ATLASSERT(pLosses->pLosses!=NULL);
+      pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=nullptr);
    }
 }
 
@@ -1406,9 +1408,9 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    ReportInitialRelaxation(pChapter,bTemporaryStrands,pDetails->pLosses.get(),pDisplayUnits,level);
 
    CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
-   CFrictionLossTable*                          pFR  = NULL;
-   CPostTensionInteractionTable*                pPTT = NULL;
-   CEffectOfPostTensionedTemporaryStrandsTable* pPTP = NULL;
+   CFrictionLossTable*                          pFR  = nullptr;
+   CPostTensionInteractionTable*                pPTT = nullptr;
+   CEffectOfPostTensionedTemporaryStrandsTable* pPTP = nullptr;
    
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
@@ -1417,8 +1419,8 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
       pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    }
 
-   CTimeDependentLossesAtShippingTable*            pPSH = NULL;
-   CPostTensionTimeDependentLossesAtShippingTable* pPTH = NULL;
+   CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
+   CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if ( pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
@@ -1431,7 +1433,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
       }
    }
 
-   CTemporaryStrandRemovalTable*        pPTR = NULL;
+   CTemporaryStrandRemovalTable*        pPTR = nullptr;
    if (0 < Nt )
    {
       pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
@@ -1546,9 +1548,9 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    // Create the tables for losses - order is important here... The factory methods
    // put content into the chapter and return a table that needs to be filled up
    CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
-   CFrictionLossTable*                          pFR  = NULL;
-   CPostTensionInteractionTable*                pPTT = NULL;
-   CEffectOfPostTensionedTemporaryStrandsTable* pPTP = NULL;
+   CFrictionLossTable*                          pFR  = nullptr;
+   CPostTensionInteractionTable*                pPTT = nullptr;
+   CEffectOfPostTensionedTemporaryStrandsTable* pPTP = nullptr;
 
    
 
@@ -1559,12 +1561,12 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    }
 
-   CShrinkageAtHaulingTable*                       pSRH = NULL;
-   CCreepAtHaulingTable*                           pCRH = NULL;
-   CRelaxationAtHaulingTable*                      pR1H = NULL;
-   CTimeDependentLossesAtShippingTable*            pPSH = NULL;
+   CShrinkageAtHaulingTable*                       pSRH = nullptr;
+   CCreepAtHaulingTable*                           pCRH = nullptr;
+   CRelaxationAtHaulingTable*                      pR1H = nullptr;
+   CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
    
-   CPostTensionTimeDependentLossesAtShippingTable* pPTH  = NULL;
+   CPostTensionTimeDependentLossesAtShippingTable* pPTH  = nullptr;
 
    // must report this even if not checking hauling because
    // temporary strand removal effects depend on losses at end of hauling stage
@@ -1598,7 +1600,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    CCreepAtDeckPlacementTable*          pCR = CCreepAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    CRelaxationAtDeckPlacementTable*     pR1 = CRelaxationAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
    CTimeDependentLossesAtDeckPlacementTable* pLTid = CTimeDependentLossesAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CTemporaryStrandRemovalTable*        pPTR = NULL;
+   CTemporaryStrandRemovalTable*        pPTR = nullptr;
    
    if ( 0 < Nt )
    {
@@ -1772,9 +1774,9 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
 
    CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,
                                                                                              pDetails,pDisplayUnits,level);
-   CFrictionLossTable*                          pFR  = NULL;
-   CPostTensionInteractionTable*                pPTT = NULL;
-   CEffectOfPostTensionedTemporaryStrandsTable* pPTP = NULL;
+   CFrictionLossTable*                          pFR  = nullptr;
+   CPostTensionInteractionTable*                pPTT = nullptr;
+   CEffectOfPostTensionedTemporaryStrandsTable* pPTP = nullptr;
    
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
@@ -1783,8 +1785,8 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
       pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    }
 
-   CTimeDependentLossesAtShippingTable*            pPSH = NULL;
-   CPostTensionTimeDependentLossesAtShippingTable* pPTH = NULL;
+   CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
+   CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if ( pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
@@ -1797,7 +1799,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
       }
    }
 
-   CTemporaryStrandRemovalTable* pPTR = NULL;
+   CTemporaryStrandRemovalTable* pPTR = nullptr;
    if (0 < Nt )
    {
       pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
@@ -1919,9 +1921,9 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 
    ReportLumpSumTimeDependentLossesAtShipping(pChapter,pDetails,pDisplayUnits,level);
 
-   CFrictionLossTable*                             pFR  = NULL;
-   CPostTensionInteractionTable*                   pPTT = NULL;
-   CEffectOfPostTensionedTemporaryStrandsTable*    pPTP = NULL;
+   CFrictionLossTable*                             pFR  = nullptr;
+   CPostTensionInteractionTable*                   pPTT = nullptr;
+   CEffectOfPostTensionedTemporaryStrandsTable*    pPTP = nullptr;
 
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
@@ -1931,14 +1933,14 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    }
 
    CTimeDependentLossesAtShippingTable*            pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
-   CPostTensionTimeDependentLossesAtShippingTable* pPTH  = NULL;
+   CPostTensionTimeDependentLossesAtShippingTable* pPTH  = nullptr;
    
    if ( 0 < Nt )
    {
       pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    }
 
-   CTemporaryStrandRemovalTable*                   pPTR = NULL;
+   CTemporaryStrandRemovalTable*                   pPTR = nullptr;
    if ( 0 < Nt )
    {
       pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
@@ -2046,9 +2048,9 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
    ReportLumpSumTimeDependentLossesAtShipping(pChapter,pDetails,pDisplayUnits,level);
 
-   CFrictionLossTable*                             pFR  = NULL;
-   CPostTensionInteractionTable*                   pPTT = NULL;
-   CEffectOfPostTensionedTemporaryStrandsTable*    pPTP = NULL;
+   CFrictionLossTable*                             pFR  = nullptr;
+   CPostTensionInteractionTable*                   pPTT = nullptr;
+   CEffectOfPostTensionedTemporaryStrandsTable*    pPTP = nullptr;
 
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
@@ -2058,14 +2060,14 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    }
 
    CTimeDependentLossesAtShippingTable*            pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
-   CPostTensionTimeDependentLossesAtShippingTable* pPTH = NULL;
+   CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
    if ( 0 < Nt )
    {
       pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    }
 
-   CTemporaryStrandRemovalTable*                   pPTR = NULL;
+   CTemporaryStrandRemovalTable*                   pPTR = nullptr;
    if ( 0 < Nt )
    {
       pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
@@ -2187,7 +2189,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
 
    // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdLumpSumLosses> ptl = boost::dynamic_pointer_cast<const lrfdLumpSumLosses>(pDetails->pLosses);
+   std::shared_ptr<const lrfdLumpSumLosses> ptl = std::dynamic_pointer_cast<const lrfdLumpSumLosses>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -2309,7 +2311,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
 
 void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits)
 {
-   if ( pTable == NULL )
+   if ( pTable == nullptr )
    {
       return;
    }
@@ -2325,7 +2327,7 @@ void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const 
 
 void CPsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits)
 {
-   if ( pTable == NULL )
+   if ( pTable == nullptr )
    {
       return;
    }
@@ -2401,7 +2403,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
       (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       // Typecast to our known type (eating own doggy food)
-      boost::shared_ptr<const lrfdApproximateLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdApproximateLosses2005>(pDetails->pLosses);
+      std::shared_ptr<const lrfdApproximateLosses2005> ptl = std::dynamic_pointer_cast<const lrfdApproximateLosses2005>(pDetails->pLosses);
       if (!ptl)
       {
          ATLASSERT(false); // made a bad cast? Bail...
@@ -2482,7 +2484,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       int method = (pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM) ? 1 : 0;
 
       // Typecast to our known type (eating own doggy food)
-      boost::shared_ptr<const lrfdApproximateLosses> ptl = boost::dynamic_pointer_cast<const lrfdApproximateLosses>(pDetails->pLosses);
+      std::shared_ptr<const lrfdApproximateLosses> ptl = std::dynamic_pointer_cast<const lrfdApproximateLosses>(pDetails->pLosses);
       if (!ptl)
       {
          ATLASSERT(false); // made a bad cast? Bail...
@@ -2536,7 +2538,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       // Typecast to our known type (eating own doggy food)
-      boost::shared_ptr<const lrfdApproximateLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdApproximateLosses2005>(pDetails->pLosses);
+      std::shared_ptr<const lrfdApproximateLosses2005> ptl = std::dynamic_pointer_cast<const lrfdApproximateLosses2005>(pDetails->pLosses);
       if (!ptl)
       {
          ATLASSERT(false); // made a bad cast? Bail...
@@ -2737,13 +2739,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    
    // eccentricity of the permanent strands at release
-   *pepermRelease = pStrandGeom->GetEccentricity( releaseIntervalIdx,  poi, config, pgsTypes::Permanent, &nStrandsEffective);
+   *pepermRelease = pStrandGeom->GetEccentricity( releaseIntervalIdx,  poi, pgsTypes::Permanent, &config, &nStrandsEffective);
 
    // eccentricity of permanent strands when the deck is cast
-   *pepermFinal   = pStrandGeom->GetEccentricity( castDeckIntervalIdx, poi, config, pgsTypes::Permanent, &nStrandsEffective);
+   *pepermFinal   = pStrandGeom->GetEccentricity( castDeckIntervalIdx, poi, pgsTypes::Permanent, &config, &nStrandsEffective);
 
    // eccentricity of the temporary strands
-   *petemp = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, pgsTypes::Temporary, &nStrandsEffective);
+   *petemp = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Temporary, &config, &nStrandsEffective);
 
    pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
    *pSectionProperties = (spType == pgsTypes::sptGross ? lrfdLosses::sptGross : lrfdLosses::sptTransformed);
@@ -2896,7 +2898,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
          pgsTypes::ProductForceType pfType = (i == 0 ? pgsTypes::pftUserDC : pgsTypes::pftUserDW);
          Float64 K = (i == 0 ? K_userdc1 : K_userdw1);
          std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey,pfType);
-         BOOST_FOREACH(IntervalIndexType intervalIdx,vUserLoadIntervals)
+         for( const auto& intervalIdx : vUserLoadIntervals)
          {
             if ( intervalIdx <= castDeckIntervalIdx )
             {
@@ -2906,7 +2908,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       }
 
 
-      if ( pDeck->DeckType == pgsTypes::sdtCompositeSIP )
+      if ( pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP )
       {
          *pMadlg += K_slab * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtCumulative );
       }
@@ -2915,10 +2917,10 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    if ( m_bComputingLossesForDesign )
    {
       // get the additional moment caused by the difference in input and design "A" dimension
-      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(config,poi);
+      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(poi,&config);
       *pMadlg += K_slab*Mslab;
 
-      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(config,poi);
+      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(poi,&config);
       *pMadlg += K_slabpad*Mslabpad;
    }
 
@@ -2934,7 +2936,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       pgsTypes::ProductForceType pfType = (i == 0 ? pgsTypes::pftUserDC : pgsTypes::pftUserDW);
       Float64 K = (i == 0 ? K_userdc2 : K_userdw2);
       std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey,pfType);
-      BOOST_FOREACH(IntervalIndexType intervalIdx,vUserLoadIntervals)
+      for( const auto& intervalIdx : vUserLoadIntervals)
       {
          if ( castDeckIntervalIdx < intervalIdx )
          {

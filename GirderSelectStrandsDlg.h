@@ -31,7 +31,7 @@ class CGirderSelectStrandsDlg : public CPropertySheet
 	DECLARE_DYNAMIC(CGirderSelectStrandsDlg)
 
 public:
-	CGirderSelectStrandsDlg(CWnd* pParentWnd = NULL,UINT iSelectPage=0);   // standard constructor
+	CGirderSelectStrandsDlg(CWnd* pParentWnd = nullptr,UINT iSelectPage=0);   // standard constructor
 	virtual ~CGirderSelectStrandsDlg();
 
    // not the best design, but this is the only page.

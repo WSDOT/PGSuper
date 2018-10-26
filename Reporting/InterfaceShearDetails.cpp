@@ -105,7 +105,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          }
          else
          {
-            p_first_artifact[segIdx] = NULL;
+            p_first_artifact[segIdx] = nullptr;
          }
       } // next artifact
    } // next segment
@@ -382,7 +382,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          }
          else
          {
-            (*av_table)(av_row,2)  <<  symbol(INFINITY);
+            (*av_table)(av_row,2)  <<  symbol(infinity);
          }
 
          (*av_table)(av_row,3)  <<  area.SetValue(pArtifact->GetAvfAdditional());
@@ -391,7 +391,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          if (sv>0.0)
             (*av_table)(av_row,4)  <<  dim.SetValue(sv);
          else
-            (*av_table)(av_row,4)  <<  symbol(INFINITY);
+            (*av_table)(av_row,4)  <<  symbol(infinity);
 
          (*av_table)(av_row,5)  <<  AvS.SetValue(pArtifact->GetAvOverS());
 
@@ -512,7 +512,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       {
          col = 0;
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( intervalIdx, ls, idx );
-         if ( psArtifact == NULL )
+         if ( psArtifact == nullptr )
          {
             continue;
          }

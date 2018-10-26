@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CConstructionLoadDlg, CDialog)
 
-CConstructionLoadDlg::CConstructionLoadDlg(CWnd* pParent /*=NULL*/)
+CConstructionLoadDlg::CConstructionLoadDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CConstructionLoadDlg::IDD, pParent)
 {
 

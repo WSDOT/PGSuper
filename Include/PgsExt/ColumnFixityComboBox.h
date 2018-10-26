@@ -41,7 +41,7 @@ public:
 
    void SetFixityTypes(UINT fixity);
 
-   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
 
 
 private:
@@ -50,5 +50,5 @@ private:
 
 protected:
    UINT m_Fixity;
-   virtual void PreSubclassWindow();
+   virtual void PreSubclassWindow() override;
 };

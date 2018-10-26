@@ -35,11 +35,11 @@ public:
    CGirderKey GetGirderKey();
 
    // called by the framework when the view's OnUpdate method is called
-   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 protected:
 
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CGirderGraphControllerBase)
    afx_msg void CbnOnGroupChanged();
@@ -84,11 +84,11 @@ public:
    IntervalIndexType GetInterval();
 
    // called by the framework when the view's OnUpdate method is called
-   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 protected:
 
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CIntervalGirderGraphControllerBase)
    afx_msg void CbnOnIntervalChanged();
@@ -121,14 +121,14 @@ public:
    IndexType GetGraphCount();
 
    // called by the framework when the view's OnUpdate method is called
-   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
    virtual IntervalIndexType GetFirstInterval();
    virtual IntervalIndexType GetLastInterval();
 
 protected:
 
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CMultiIntervalGirderGraphControllerBase)
    afx_msg void OnIntervalsChanged();

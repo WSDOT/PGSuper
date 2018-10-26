@@ -50,7 +50,7 @@ CSpanDetailsDlg::CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanInde
    InitPages();
 }
 
-CSpanDetailsDlg::CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd, UINT iSelectPage)
+CSpanDetailsDlg::CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,const std::vector<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
    Init(pBridgeDesc,spanIdx);
@@ -67,10 +67,14 @@ INT_PTR CSpanDetailsDlg::DoModal()
    INT_PTR result = CPropertySheet::DoModal();
    if ( result == IDOK )
    {
-      if ( 0 < m_BridgeExtensionPages.size() )
+      if (0 < m_BridgeExtensionPages.size())
+      {
          NotifyBridgeExtensionPages();
+      }
       else
+      {
          NotifyExtensionPages();
+      }
    }
 
    return result;
@@ -111,7 +115,7 @@ void CSpanDetailsDlg::InitPages()
    CreateExtensionPages();
 }
 
-void CSpanDetailsDlg::InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+void CSpanDetailsDlg::InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CommonInitPages();
    CreateExtensionPages(editBridgeExtensions);
@@ -153,12 +157,12 @@ void CSpanDetailsDlg::Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType 
    SetTitle(strTitle);
 
 
-   CString strStartPierLabel(m_pPrevPier->GetPrevSpan() == NULL ? _T("Abut.") : _T("Pier"));
+   CString strStartPierLabel(m_pPrevPier->GetPrevSpan() == nullptr ? _T("Abut.") : _T("Pier"));
    m_strStartPierTitle.Format(_T("%s %d Connections"),strStartPierLabel,LABEL_PIER(m_pPrevPier->GetIndex()));
    m_StartPierPage.m_psp.dwFlags |= PSP_USETITLE;
    m_StartPierPage.m_psp.pszTitle = m_strStartPierTitle.GetBuffer();
 
-   CString strEndPierLabel(m_pNextPier->GetNextSpan() == NULL ? _T("Abut.") : _T("Pier"));
+   CString strEndPierLabel(m_pNextPier->GetNextSpan() == nullptr ? _T("Abut.") : _T("Pier"));
    m_strEndPierTitle.Format(_T("%s %d Connections"),strEndPierLabel,LABEL_PIER(m_pNextPier->GetIndex()));
    m_EndPierPage.m_psp.dwFlags |= PSP_USETITLE;
    m_EndPierPage.m_psp.pszTitle = m_strEndPierTitle.GetBuffer();
@@ -185,13 +189,15 @@ LRESULT CSpanDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	CPropertyPage* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
+	if( pPage != nullptr )
 	{
 		//ASSERT_VALID(pPage);
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
 	}
-	else
-		return 0;
+   else
+   {
+      return 0;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -216,12 +222,13 @@ void CSpanDetailsDlg::CreateExtensionPages()
    }
 }
 
-void CSpanDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+void CSpanDetailsDlg::CreateExtensionPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_BridgeExtensionPages = editBridgeExtensions;
+   std::sort(m_BridgeExtensionPages.begin(), m_BridgeExtensionPages.end());
 
    const std::map<IDType,IEditSpanCallback*>& callbacks = pDoc->GetEditSpanCallbacks();
    std::map<IDType,IEditSpanCallback*>::const_iterator callbackIter(callbacks.begin());
@@ -230,7 +237,7 @@ void CSpanDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& 
    {
       IEditSpanCallback* pEditSpanCallback = callbackIter->second;
       IDType editBridgeCallbackID = pEditSpanCallback->GetEditBridgeCallbackID();
-      CPropertyPage* pPage = NULL;
+      CPropertyPage* pPage = nullptr;
       if ( editBridgeCallbackID == INVALID_ID )
       {
          pPage = pEditSpanCallback->CreatePropertyPage(this);
@@ -239,7 +246,7 @@ void CSpanDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& 
       {
          EditBridgeExtension key;
          key.callbackID = editBridgeCallbackID;
-         std::set<EditBridgeExtension>::const_iterator found(m_BridgeExtensionPages.find(key));
+         std::vector<EditBridgeExtension>::const_iterator found(std::find(m_BridgeExtensionPages.begin(), m_BridgeExtensionPages.end(),key));
          if ( found != m_BridgeExtensionPages.end() )
          {
             const EditBridgeExtension& extension = *found;
@@ -270,10 +277,14 @@ void CSpanDetailsDlg::DestroyExtensionPages()
 
 txnTransaction* CSpanDetailsDlg::GetExtensionPageTransaction()
 {
-   if ( 0 < m_Macro.GetTxnCount() )
+   if (0 < m_Macro.GetTxnCount())
+   {
       return m_Macro.CreateClone();
+   }
    else
-      return NULL;
+   {
+      return nullptr;
+   }
 }
 
 void CSpanDetailsDlg::NotifyExtensionPages()
@@ -314,7 +325,7 @@ void CSpanDetailsDlg::NotifyBridgeExtensionPages()
       {
          EditBridgeExtension key;
          key.callbackID = editBridgeCallbackID;
-         std::set<EditBridgeExtension>::iterator found(m_BridgeExtensionPages.find(key));
+         std::vector<EditBridgeExtension>::iterator found(std::find(m_BridgeExtensionPages.begin(), m_BridgeExtensionPages.end(),key));
          if ( found != m_BridgeExtensionPages.end() )
          {
             EditBridgeExtension& extension = *found;
@@ -329,10 +340,14 @@ void CSpanDetailsDlg::NotifyBridgeExtensionPages()
 pgsTypes::BoundaryConditionType CSpanDetailsDlg::GetConnectionType(pgsTypes::MemberEndType end)
 {
    pgsTypes::BoundaryConditionType connectionType;
-   if ( end == pgsTypes::metStart )
+   if (end == pgsTypes::metStart)
+   {
       connectionType = m_pPrevPier->GetBoundaryConditionType();
+   }
    else
+   {
       connectionType = m_pNextPier->GetBoundaryConditionType();
+   }
 
    return connectionType;
 }

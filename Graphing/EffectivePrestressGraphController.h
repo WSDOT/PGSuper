@@ -37,16 +37,16 @@ public:
 
 
    // called by the framework when the view's OnUpdate method is called
-   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
-   virtual IntervalIndexType GetFirstInterval();
+   virtual IntervalIndexType GetFirstInterval() override;
 
 protected:
 
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
-   virtual void OnGroupChanged();
-   virtual void OnGirderChanged();
+   virtual void OnGroupChanged() override;
+   virtual void OnGirderChanged() override;
 
 	//{{AFX_MSG(CEffectivePrestressGraphController)
    afx_msg void OnDuctChanged();

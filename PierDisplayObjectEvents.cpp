@@ -80,7 +80,7 @@ void CPierDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
    if ( m_PierIdx == 0 )
    {
       // this is the first pier
-      if ( m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+      if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
          m_pFrame->SelectPier(m_pBridgeDesc->GetPierCount()-1); // no deck, select last pier
       else
          m_pFrame->SelectDeck();  // select deck if there is one
@@ -96,7 +96,7 @@ void CPierDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
    if ( m_PierIdx == m_pBridgeDesc->GetPierCount()-1 )
    {
       // this is the last pier
-      if ( m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+      if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
          m_pFrame->SelectPier(0); // no deck, select first pier
       else
          m_pFrame->SelectDeck(); // select deck if there is one 
@@ -217,13 +217,15 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,NULL);
+      pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,nullptr);
 
       CComPtr<IBroker> pBroker;
       pDoc->GetBroker(&pBroker);
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CPierData2* pPier = pBridgeDesc->GetPier(pThis->m_PierIdx);
+
+      bool bNoDeck = pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone;
 
       if ( pPier->IsBoundaryPier() )
       {
@@ -251,7 +253,7 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
          for ( ; iter != iterEnd; iter++ )
          {
             UINT nID = menuIDs[*iter]; // look up the ID for each valid connection type
-            pMenu->AppendMenu(nID ,CPierData2::AsString(*iter),NULL); // add it to the menu
+            pMenu->AppendMenu(nID ,CPierData2::AsString(*iter,bNoDeck),nullptr); // add it to the menu
          }
       }
       else
@@ -274,7 +276,7 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
          for ( ; iter != iterEnd; iter++ )
          {
             UINT nID = menuIDs[*iter]; // look up the ID for each valid connection type
-            pMenu->AppendMenu(nID ,CPierData2::AsString(*iter),NULL); // add it to the menu
+            pMenu->AppendMenu(nID ,CPierData2::AsString(*iter),nullptr); // add it to the menu
          }
       }
 

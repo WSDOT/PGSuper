@@ -81,7 +81,7 @@ public:
 CGirderSpacingGrid::CGirderSpacingGrid()
 {
 //   RegisterClass();
-   m_pGirderGroup = NULL;
+   m_pGirderGroup = nullptr;
    m_bEnabled = TRUE;
 }
 
@@ -171,10 +171,10 @@ void CGirderSpacingGrid::InitializeGridData(CGirderSpacing2* pGirderSpacing,CGir
 
 void CGirderSpacingGrid::UpdateGrid()
 {
-   if ( GetSafeHwnd() == NULL )
+   if ( GetSafeHwnd() == nullptr )
       return; // grid isn't ready for filling
 
-   if ( m_pGirderGroup == NULL )
+   if ( m_pGirderGroup == nullptr )
       return; // not associated with a group
 
 	GetParam()->EnableUndo(FALSE);

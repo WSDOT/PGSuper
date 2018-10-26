@@ -31,7 +31,7 @@
 
 IMPLEMENT_DYNAMIC(CHaunchSpanBySpanDlg, CDialog)
 
-CHaunchSpanBySpanDlg::CHaunchSpanBySpanDlg(CWnd* pParent /*=NULL*/)
+CHaunchSpanBySpanDlg::CHaunchSpanBySpanDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CHaunchSpanBySpanDlg::IDD, pParent),
    m_bFirstActive(true)
 {

@@ -91,7 +91,7 @@ bool pgsWsdotHaulingAnalysisArtifact::PassedStressCheck(pgsTypes::HaulingSlope s
 
 pgsHaulingAnalysisArtifact* pgsWsdotHaulingAnalysisArtifact::Clone() const
 {
-   std::auto_ptr<pgsWsdotHaulingAnalysisArtifact> clone(new pgsWsdotHaulingAnalysisArtifact());
+   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> clone(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
    *clone = *this;
 
    return clone.release();
@@ -237,7 +237,7 @@ bool pgsWsdotHaulingAnalysisArtifact::AssertValid() const
 
 void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
 {
-   ATLASSERT(m_pStabilityProblem != NULL);
+   ATLASSERT(m_pStabilityProblem != nullptr);
    os << _T("Dump for pgsWsdotHaulingAnalysisArtifact") << endl;
    os <<_T(" Stress Artifacts - Plumb Girder: ")<<endl;
    os << _T("=================================") <<endl;
@@ -245,7 +245,7 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
    stbTypes::WindDirection cf   = stbTypes::Left;
    const stbHaulingResults& results = m_HaulingArtifact.GetHaulingResults();
 
-   BOOST_FOREACH(const stbHaulingSectionResult& sectionResult,results.vSectionResults)
+   for (const auto& sectionResult : results.vSectionResults)
    {
       const stbIAnalysisPoint* pAnalysisPoint = m_pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
@@ -271,7 +271,7 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
 
    os <<_T(" Stress Artifacts - Inclined Girder: ")<<endl;
    os << _T("=================================") <<endl;
-   BOOST_FOREACH(const stbHaulingSectionResult& sectionResult,results.vSectionResults)
+   for (const auto& sectionResult : results.vSectionResults)
    {
       const stbIAnalysisPoint* pAnalysisPoint = m_pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();

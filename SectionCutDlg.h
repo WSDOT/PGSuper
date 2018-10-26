@@ -37,10 +37,10 @@ class CSectionCutDlg : public CDialog
 {
 // Construction
 public:
-   CSectionCutDlg(CWnd* pParent=NULL);   // standard constructor
+   CSectionCutDlg(CWnd* pParent=nullptr);   // standard constructor
 
 	CSectionCutDlg(Float64 value, Float64 lowerBound, Float64 upperBound, 
-		            const CString& unitTag, CWnd* pParent = NULL);
+		            const CString& unitTag, CWnd* pParent = nullptr);
 
    void SetValue(Float64 value);
    Float64 GetValue()const;
@@ -58,7 +58,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSectionCutDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -66,7 +66,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CSectionCutDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

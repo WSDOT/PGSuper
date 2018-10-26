@@ -42,6 +42,8 @@
 
 #include <MFCTools\MFCTools.h>
 
+#include <algorithm>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -72,11 +74,11 @@ CEffectivePrestressGraphBuilder::~CEffectivePrestressGraphBuilder()
 BOOL CEffectivePrestressGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   ATLASSERT(m_pGraphController != NULL);
+   ATLASSERT(m_pGraphController != nullptr);
    return m_pGraphController->Create(pParent,IDD_EFFECTIVEPRESTRESS_GRAPH_CONTROLLER, CBRS_LEFT, nID);
 }
 
-CGraphBuilder* CEffectivePrestressGraphBuilder::Clone()
+CGraphBuilder* CEffectivePrestressGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
    // the graph control window
@@ -95,7 +97,7 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
    if ( m_pYFormat )
    {
       delete m_pYFormat;
-      m_pYFormat = NULL;
+      m_pYFormat = nullptr;
    }
 
    m_Graph.SetYAxisNiceRange(true);
@@ -215,7 +217,7 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
    bool bStresses = ((CEffectivePrestressGraphController*)m_pGraphController)->IsStressGraph();
 
    // remove all intervals that occur before the tendon is stressed
-   vIntervals.erase(std::remove_if(vIntervals.begin(),vIntervals.end(),std::bind2nd(std::less<IntervalIndexType>(),stressTendonIntervalIdx)),vIntervals.end());
+   vIntervals.erase(std::remove_if(vIntervals.begin(), vIntervals.end(), [&stressTendonIntervalIdx](const auto& intervalIdx) {return intervalIdx < stressTendonIntervalIdx;}), vIntervals.end());
 
    int penWeight = GRAPH_PEN_WEIGHT;
 

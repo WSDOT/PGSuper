@@ -43,8 +43,8 @@ private:
    void Build_NoDeck(            rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
 
    // Prevent accidental copying and assignment
-   CBasicCamberChapterBuilder(const CBasicCamberChapterBuilder&);
-   CBasicCamberChapterBuilder& operator=(const CBasicCamberChapterBuilder&);
+   CBasicCamberChapterBuilder(const CBasicCamberChapterBuilder&) = delete;
+   CBasicCamberChapterBuilder& operator=(const CBasicCamberChapterBuilder&) = delete;
 
    mutable rptRcScalar scalar;
 };

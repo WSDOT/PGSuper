@@ -284,11 +284,11 @@ private:
    bool m_bAlwaysRate;
 
    // for use with LRFR before 2013
-   CLiveLoadFactorModel m_LiveLoadFactorModels[5]; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
+   CLiveLoadFactorModel m_LiveLoadFactorModels[6]; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
    CLiveLoadFactorModel m_SpecialPermitLiveLoadFactorModels[3]; // index is pgsTypes::SpecialPermitType
 
 
    // for use with LRFR2013 and later
-   CLiveLoadFactorModel2 m_LiveLoadFactorModels2[5]; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
+   CLiveLoadFactorModel2 m_LiveLoadFactorModels2[6]; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
    CLiveLoadFactorModel2 m_SpecialPermitLiveLoadFactorModels2[3]; // index is pgsTypes::SpecialPermitType
 };

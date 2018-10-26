@@ -57,6 +57,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CBridgeDescChapterBuilder(const CBridgeDescChapterBuilder&);
-   CBridgeDescChapterBuilder& operator=(const CBridgeDescChapterBuilder&);
+   CBridgeDescChapterBuilder(const CBridgeDescChapterBuilder&) = delete;
+   CBridgeDescChapterBuilder& operator=(const CBridgeDescChapterBuilder&) = delete;
 };

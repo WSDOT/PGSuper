@@ -76,11 +76,11 @@ END_MESSAGE_MAP()
 
 CTxDOTOptionalDesignView::CTxDOTOptionalDesignView(void): CView()
 {
-	m_pPropSheet = NULL;
-	m_pBridgeInputPage = NULL;
-	m_pGirderInputPage = NULL;
-	m_pGirderViewPage = NULL;
-	m_pReportPage = NULL;
+	m_pPropSheet = nullptr;
+	m_pBridgeInputPage = nullptr;
+	m_pGirderInputPage = nullptr;
+	m_pGirderViewPage = nullptr;
+	m_pReportPage = nullptr;
 }
 
 CTxDOTOptionalDesignView::~CTxDOTOptionalDesignView(void)
@@ -147,7 +147,7 @@ void CTxDOTOptionalDesignView::OnInitialUpdate()
 
    // plug in our hook so dialog messages are redirected to the property sheet
    PageHwnd = m_pPropSheet->GetSafeHwnd();
-   hHook = ::SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc, NULL, GetCurrentThreadId());
+   hHook = ::SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc, nullptr, GetCurrentThreadId());
 
    // Resize the application main frame to fits around the property sheet.
 	CRect rcPropSheet;
@@ -183,7 +183,7 @@ void CTxDOTOptionalDesignView::OnInitialUpdate()
    cxMin = Max(cxMin, rcMainFrame.Width());
    cyMin = Max(cyMin, rcMainFrame.Height());
 
-   pMainFrame->SetWindowPos(NULL,0,0,cxMin,cyMin,SWP_NOMOVE | SWP_NOZORDER);
+   pMainFrame->SetWindowPos(nullptr,0,0,cxMin,cyMin,SWP_NOMOVE | SWP_NOZORDER);
 }
 
 BOOL CTxDOTOptionalDesignView::DestroyWindow()
@@ -207,7 +207,7 @@ void CTxDOTOptionalDesignView::OnSize(UINT nType, int cx, int cy)
 {
    CView::OnSize(nType, cx, cy);
 
-   if (m_pPropSheet!=NULL && ::IsWindow(m_pPropSheet->m_hWnd))
+   if (m_pPropSheet!=nullptr && ::IsWindow(m_pPropSheet->m_hWnd))
    {
       if ( GetParentFrame()->IsZoomed() )
       {
@@ -225,20 +225,20 @@ void CTxDOTOptionalDesignView::OnSize(UINT nType, int cx, int cy)
 BOOL CTxDOTOptionalDesignView::UpdateCurrentPageData()
 {
    // If active page is an input page, update it's data
-   if (m_pPropSheet!=NULL && ::IsWindow(m_pPropSheet->m_hWnd))
+   if (m_pPropSheet!=nullptr && ::IsWindow(m_pPropSheet->m_hWnd))
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
       CPropertyPage* pPage = m_pPropSheet->GetActivePage();
 
       CTxDOTOptionalDesignBridgeInputPage* pBridgeInput = dynamic_cast<CTxDOTOptionalDesignBridgeInputPage*>(pPage);
-      if (pBridgeInput!=NULL)
+      if (pBridgeInput!=nullptr)
       {
          return pBridgeInput->UpdateData(TRUE);
       }
 
       CTxDOTOptionalDesignGirderInputPage* pGirderInput = dynamic_cast<CTxDOTOptionalDesignGirderInputPage*>(pPage);
-      if (pGirderInput!=NULL)
+      if (pGirderInput!=nullptr)
       {
          return pGirderInput->UpdateData(TRUE);
       }
@@ -254,7 +254,7 @@ BOOL CTxDOTOptionalDesignView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_C
    // If this is not here, the context menu in the report view will not work
    if (nCode==CN_COMMAND  && !(nID>=ID_FILE_MRU_FIRST && nID<=ID_FILE_MRU_LAST) // mru commands must go to main app
        && (nID != ID_APP_EXIT)
-       && m_pPropSheet!=NULL && ::IsWindow(m_pPropSheet->m_hWnd))
+       && m_pPropSheet!=nullptr && ::IsWindow(m_pPropSheet->m_hWnd))
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

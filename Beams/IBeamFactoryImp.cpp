@@ -228,7 +228,7 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
       segment.CoCreateInstance(CLSID_FlangedGirderEndBlockSegment);
    }
 
-   ATLASSERT(segment != NULL);
+   ATLASSERT(segment != nullptr);
 
    // Build up the beam shape
    Float64 ebWidth, ebLength, ebTransition;
@@ -274,7 +274,7 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
       CComQIPtr<IShape> shape(gdrSection);
       ATLASSERT(shape);
 
-      prisSegment->AddShape(shape,material,NULL);
+      prisSegment->AddShape(shape,material,nullptr);
    }
    else
    {
@@ -292,7 +292,7 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
       CComQIPtr<IShape> shape(gdrSection);
       ATLASSERT(shape);
 
-      ebSegment->AddShape(shape,material,NULL);
+      ebSegment->AddShape(shape,material,nullptr);
    }
 
    ssmbr->AddSegment(segment);

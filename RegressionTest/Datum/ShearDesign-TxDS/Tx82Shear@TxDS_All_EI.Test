@@ -4,6 +4,7 @@
 
 
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -12,6 +13,7 @@ The Specification Check was Not Successful
 
 
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -20,5 +22,6 @@ The Specification Check was Not Successful
 
 
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
 
 

@@ -51,17 +51,17 @@ public:
    CGirderPropertiesGraphBuilder(const CGirderPropertiesGraphBuilder& other);
    virtual ~CGirderPropertiesGraphBuilder();
 
-   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
-   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
-   virtual CGraphBuilder* Clone();
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID) override;
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
+   virtual CGraphBuilder* Clone() const override;
 
-   virtual void UpdateXAxis();
+   virtual void UpdateXAxis() override;
 
    LPCTSTR GetPropertyLabel(PropertyType propertyType);
 
 protected:
-   virtual CGirderGraphControllerBase* CreateGraphController();
-   virtual bool UpdateNow();
+   virtual CGirderGraphControllerBase* CreateGraphController() override;
+   virtual bool UpdateNow() override;
 
    DECLARE_MESSAGE_MAP()
 
@@ -73,5 +73,5 @@ protected:
    void InitializeGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,IndexType* pGraph1,IndexType* pGraph2);
    void UpdateTendonGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
 
-   virtual IntervalIndexType GetBeamDrawInterval();
+   virtual IntervalIndexType GetBeamDrawInterval() override;
 };

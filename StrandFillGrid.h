@@ -66,9 +66,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    // virtual overrides for grid
-   virtual int GetColWidth(ROWCOL nCol);
-//   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
-   virtual void OnClickedButtonRowCol(ROWCOL nHitRow, ROWCOL nHitCol);
+   virtual int GetColWidth(ROWCOL nCol) override;
+//   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt) override;
+   virtual void OnClickedButtonRowCol(ROWCOL nHitRow, ROWCOL nHitCol) override;
 
 public:
    // custom stuff for grid

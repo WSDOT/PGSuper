@@ -134,7 +134,7 @@ void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType status
    }
 
    CComQIPtr<IShape> shape(section);
-   segment->AddShape(shape,material,NULL);
+   segment->AddShape(shape,material,nullptr);
    ssmbr->AddSegment(segment);
 }
 
@@ -179,7 +179,7 @@ void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,StatusItemID
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    // use passed value if not null
-   pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pDeck->DeckType;
+   pgsTypes::SupportedDeckType deckType = (pDeckType!=nullptr) ? *pDeckType : pDeck->GetDeckType();
 
    if ( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone )
    {

@@ -82,7 +82,7 @@ protected:
    void MakeCopy(const CCastingYardMomentsTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CCastingYardMomentsTable& rOther);
+   void MakeAssignment(const CCastingYardMomentsTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

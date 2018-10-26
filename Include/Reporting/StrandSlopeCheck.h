@@ -83,7 +83,7 @@ protected:
    void MakeCopy(const CStrandSlopeCheck& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CStrandSlopeCheck& rOther);
+   void MakeAssignment(const CStrandSlopeCheck& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

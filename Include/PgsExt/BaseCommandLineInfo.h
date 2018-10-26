@@ -57,10 +57,10 @@ public:
    virtual ~CPGSBaseCommandLineInfo();
 
    // derive new version to parse new commands
-   virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
+   virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast) override;
 
-   virtual CString GetUsageMessage();
-   virtual CString GetErrorMessage();
+   virtual CString GetUsageMessage() override;
+   virtual CString GetErrorMessage() override;
 
    bool   m_bDo1250Test;
    long   m_SubdomainId;
@@ -73,8 +73,8 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CPGSBaseCommandLineInfo(const CPGSBaseCommandLineInfo&);
-   CPGSBaseCommandLineInfo& operator=(const CPGSBaseCommandLineInfo&);
+   CPGSBaseCommandLineInfo(const CPGSBaseCommandLineInfo&) = delete;
+   CPGSBaseCommandLineInfo& operator=(const CPGSBaseCommandLineInfo&) = delete;
 
    virtual LPCTSTR GetAppName() const = 0;
 };

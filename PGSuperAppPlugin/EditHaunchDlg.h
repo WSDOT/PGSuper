@@ -83,7 +83,7 @@ class CEditHaunchDlg : public CDialog
 
 public:
    // constructor - holds on to bridge description while dialog is active
-	CEditHaunchDlg(const CBridgeDescription2* pBridgeDesc, CWnd* pParent = NULL);
+	CEditHaunchDlg(const CBridgeDescription2* pBridgeDesc, CWnd* pParent = nullptr);
 	virtual ~CEditHaunchDlg();
 
 // Dialog Data

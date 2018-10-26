@@ -38,7 +38,7 @@ class CBridgeEditorPlanSettingsPage : public CPropertyPage
 {
 // Construction
 public:
-	CBridgeEditorPlanSettingsPage(CWnd* pParent = NULL);   // standard constructor
+	CBridgeEditorPlanSettingsPage(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CBridgeEditorPlanSettingsPage)

@@ -41,7 +41,7 @@ class CDesignGirderDlg : public CDialog
 {
 // Construction
 public:
-	CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, arSlabOffsetDesignType designA, IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
+	CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, arSlabOffsetDesignType designA, IBroker* pBroker, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDesignGirderDlg)

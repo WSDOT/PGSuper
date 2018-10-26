@@ -37,7 +37,7 @@ class CEnvironmentDlg : public CDialog
 {
 // Construction
 public:
-	CEnvironmentDlg(CWnd* pParent = NULL);   // standard constructor
+	CEnvironmentDlg(CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CEnvironmentDlg)

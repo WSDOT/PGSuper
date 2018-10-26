@@ -56,7 +56,7 @@ public:
 
 protected:
    void MakeCopy(const CCastDeckActivity& rOther);
-   virtual void MakeAssignment(const CCastDeckActivity& rOther);
+   void MakeAssignment(const CCastDeckActivity& rOther);
    bool m_bEnabled;
    
    Float64 m_Age;

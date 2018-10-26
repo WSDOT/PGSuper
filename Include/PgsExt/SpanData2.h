@@ -26,7 +26,7 @@
 #include <WBFLCore.h>
 #include <PgsExt\GirderSpacing2.h>
 #include <PgsExt\TemporarySupportData.h>
-#include <boost\shared_ptr.hpp>
+#include <memory>
 
 class CPierData2;
 class CBridgeDescription2;
@@ -49,7 +49,7 @@ LOG
 class PGSEXTCLASS CSpanData2
 {
 public:
-   CSpanData2(SpanIndexType spanIdx = INVALID_INDEX,CBridgeDescription2* pBridge=NULL,CPierData2* pPrevPier=NULL,CPierData2* pNextPier=NULL);
+   CSpanData2(SpanIndexType spanIdx = INVALID_INDEX,CBridgeDescription2* pBridge=nullptr,CPierData2* pPrevPier=nullptr,CPierData2* pNextPier=nullptr);
    CSpanData2(const CSpanData2& rOther); // copies only data, not ID or Index
    ~CSpanData2();
 
@@ -137,7 +137,7 @@ public:
 
 protected:
    void MakeCopy(const CSpanData2& rOther,bool bCopyDataOnly);
-   virtual void MakeAssignment(const CSpanData2& rOther);
+   void MakeAssignment(const CSpanData2& rOther);
 
 private:
    SpanIndexType m_SpanIdx;

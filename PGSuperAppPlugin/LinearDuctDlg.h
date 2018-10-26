@@ -10,7 +10,7 @@ class CLinearDuctDlg : public CDialog, public CLinearDuctGridCallback
 	DECLARE_DYNAMIC(CLinearDuctDlg)
 
 public:
-	CLinearDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent = NULL);   // standard constructor
+	CLinearDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CLinearDuctDlg();
 
    void EnableDeleteBtn(BOOL bEnable);

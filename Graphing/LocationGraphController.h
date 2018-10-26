@@ -35,7 +35,7 @@ public:
    CLocationGraphController();
    DECLARE_DYNCREATE(CLocationGraphController);
 
-   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
    CGirderKey GetGirderKey();
    pgsPointOfInterest GetLocation();
@@ -47,7 +47,7 @@ public:
    BOOL AlwaysSelect() const;
 
 protected:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
    virtual void UpdateGraph() = 0;
 

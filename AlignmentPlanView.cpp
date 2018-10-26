@@ -100,27 +100,27 @@ void CAlignmentPlanView::BuildDisplayLists()
    // Setup display lists
 
    CComPtr<iDisplayList> label_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
    label_list->SetID(LABEL_DISPLAY_LIST);
    dispMgr->AddDisplayList(label_list);
 
    CComPtr<iDisplayList> title_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
    title_list->SetID(TITLE_DISPLAY_LIST);
    dispMgr->AddDisplayList(title_list);
 
    CComPtr<iDisplayList> alignment_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
    alignment_list->SetID(ALIGNMENT_DISPLAY_LIST);
    dispMgr->AddDisplayList(alignment_list);
 
    CComPtr<iDisplayList> bridge_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&bridge_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&bridge_list);
    bridge_list->SetID(BRIDGE_DISPLAY_LIST);
    dispMgr->AddDisplayList(bridge_list);
 
    CComPtr<iDisplayList> north_arrow_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&north_arrow_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&north_arrow_list);
    north_arrow_list->SetID(NORTH_ARROW_DISPLAY_LIST);
    dispMgr->AddDisplayList(north_arrow_list);
 }
@@ -164,7 +164,7 @@ void CAlignmentPlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-   pMenu->LoadMenu(IDR_ALIGNMENT_PLAN_CTX,NULL);
+   pMenu->LoadMenu(IDR_ALIGNMENT_PLAN_CTX,nullptr);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
    {
@@ -544,14 +544,14 @@ void CAlignmentPlanView::CreateStationLabel(iDisplayList* pDisplayList,Float64 s
 
 
    CComPtr<IPoint2d> p;
-   pRoadway->GetPoint(station,0.00,NULL,pgsTypes::pcGlobal,&p);
+   pRoadway->GetPoint(station,0.00,nullptr,pgsTypes::pcGlobal,&p);
 
    CComPtr<iTextBlock> doLabel;
    doLabel.CoCreateInstance(CLSID_TextBlock);
    doLabel->SetPosition(p);
    
    CString strLabel;
-   if ( strBaseLabel == NULL )
+   if ( strBaseLabel == nullptr )
    {
       strLabel.Format(_T("%s"),::FormatStation(pDisplayUnits->GetStationFormat(),station));
    }
@@ -617,7 +617,7 @@ void CAlignmentPlanView::UpdateDrawingScale()
    CComPtr<iDisplayList> na_display_list;
    dispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST,&na_display_list);
 
-   if ( title_display_list == NULL || na_display_list == NULL )
+   if ( title_display_list == nullptr || na_display_list == nullptr )
    {
       return;
    }

@@ -83,7 +83,7 @@ CDeckDescription::CDeckDescription()
    Condition = pgsTypes::cfGood;
    ConditionFactor = 1.0;
 
-   m_pBridgeDesc = NULL;
+   m_pBridgeDesc = nullptr;
 }
 
 CDeckDescription::CDeckDescription(const CDeckDescription& rOther)

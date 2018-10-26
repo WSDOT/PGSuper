@@ -94,12 +94,13 @@ rptChapter* CLoadRatingDetailsChapterBuilder::Build(CReportSpecification* pRptSp
    bool bSplicedGirder = (0 < nDucts ? true : false);
 
 
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrDesign_Inventory,bSplicedGirder);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrDesign_Operating,bSplicedGirder);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrLegal_Routine,bSplicedGirder);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrLegal_Special,bSplicedGirder);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrPermit_Routine,bSplicedGirder);
-   ReportRatingDetails(pChapter,pBroker,girderKey,pgsTypes::lrPermit_Special,bSplicedGirder);
+   ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrDesign_Inventory, bSplicedGirder);
+   ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrDesign_Operating, bSplicedGirder);
+   ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrLegal_Routine, bSplicedGirder);
+   ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrLegal_Special, bSplicedGirder);
+   ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrLegal_Emergency, bSplicedGirder);
+   ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrPermit_Routine, bSplicedGirder);
+   ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrPermit_Special, bSplicedGirder);
 
    return pChapter;
 }
@@ -183,9 +184,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
             }
          }
 
-         if ( (ratingType == pgsTypes::lrLegal_Routine || ratingType == pgsTypes::lrLegal_Special) && 
-               pRatingArtifact->GetRatingFactor() < 1 
-            )
+         if (pRatingArtifact->IsLoadPostingRequired() )
          {
             LoadPostingDetails(pChapter,pBroker,girderKey,pRatingArtifact);
          }
@@ -214,7 +213,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRatingEquation.png") ) << rptNewLine;
    }
-   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRatingParameters.png") ) << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRating_K_Equation.png")) << rptNewLine;
 
    ColumnIndexType nColumns = 14;
    if ( bSplicedGirder )
@@ -295,7 +294,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
 
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
-      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special || ratingType == pgsTypes::lrLegal_Emergency ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
@@ -429,7 +428,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
 
       Float64 gpM, gnM, gV;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
-      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special || ratingType == pgsTypes::lrLegal_Emergency ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&gpM,&gnM,&gV);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
@@ -524,7 +523,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    {
       (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
-   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("r")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("R")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("DC"));
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("DC")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
@@ -572,7 +571,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
-      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special || ratingType == pgsTypes::lrLegal_Emergency ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN,  poi );
@@ -643,8 +642,6 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ReinforcementYieldingEquation.png") ) << rptNewLine;
    }
-
-   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ReinforcementYieldingParameters.png") ) << rptNewLine;
 
    ColumnIndexType nColumns = 18;
    if ( bSplicedGirder )

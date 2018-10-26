@@ -49,7 +49,7 @@ ROWCOL nOffsetTypeCol = 0;
 CLinearDuctGrid::CLinearDuctGrid()
 {
 //   RegisterClass();
-   m_pCallback = NULL;
+   m_pCallback = nullptr;
 }
 
 CLinearDuctGrid::~CLinearDuctGrid()
@@ -423,7 +423,7 @@ void CLinearDuctGrid::SetDeleteButtonState()
 {
    CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
 
-	if (GetParam() == NULL)
+	if (GetParam() == nullptr)
 	{
       // grid isn't ready yet
       pParent->EnableDeleteBtn(FALSE);

@@ -187,7 +187,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 
       if ( IsZero( Mu ) )
       {
-         (*pTable)(row,1) << rptNewLine << _T("(") << symbol(INFINITY) << _T(")");
+         (*pTable)(row,1) << rptNewLine << _T("(") << symbol(infinity) << _T(")");
       }
       else
       {

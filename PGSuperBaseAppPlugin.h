@@ -39,20 +39,20 @@ public:
    CPGSAppPluginBase();
    virtual ~CPGSAppPluginBase();
 
-   virtual HRESULT OnFinalConstruct();
-   virtual void OnFinalRelease();
+   virtual HRESULT OnFinalConstruct() override;
+   virtual void OnFinalRelease() override;
 
    // call these from Init and Terminate
-   virtual void DefaultInit(IEAFAppPlugin* pAppPlugin);
-   virtual void DefaultTerminate();
+   virtual void DefaultInit(IEAFAppPlugin* pAppPlugin) override;
+   virtual void DefaultTerminate() override;
 
    void GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem);
 
-   virtual void UpdateDocTemplates();
+   virtual void UpdateDocTemplates() override;
 
    // CEAFCustomReportMixin
-   virtual void LoadCustomReportInformation();
-   virtual void SaveCustomReportInformation();
+   virtual void LoadCustomReportInformation() override;
+   virtual void SaveCustomReportInformation() override;
 
    virtual CString GetDocumentationURL();
    virtual CString GetDocumentationMapFile();
@@ -63,8 +63,8 @@ protected:
    CString m_strAppProfileName; // this is the original app profile name before we mess with it
    // need to hang on to it so we can put it back the way it was
 
-   virtual void LoadRegistryValues();
-   virtual void SaveRegistryValues();
+   virtual void LoadRegistryValues() override;
+   virtual void SaveRegistryValues() override;
 
    virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const = 0;
    virtual BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);

@@ -45,11 +45,11 @@
 class pgsGirderHaulingChecker
 {
 public:
-   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)=0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey)=0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang)=0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId)=0;
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE)=0;
+   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) = 0;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) = 0;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) = 0;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) = 0;
+   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE) = 0;
 };
 
 
@@ -116,11 +116,11 @@ private:
 
    // GROUP: LIFECYCLE
    // can't construct without a broker
-   pgsGirderHandlingChecker();
+   pgsGirderHandlingChecker() = delete;
 
    // Prevent accidental copying and assignment
-   pgsGirderHandlingChecker(const pgsGirderHandlingChecker&);
-   pgsGirderHandlingChecker& operator=(const pgsGirderHandlingChecker&);
+   pgsGirderHandlingChecker(const pgsGirderHandlingChecker&) = delete;
+   pgsGirderHandlingChecker& operator=(const pgsGirderHandlingChecker&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

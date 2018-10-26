@@ -97,7 +97,7 @@ class CGirderDescDlg : public CPropertySheet, public IEditGirderData
 
 // Construction
 public:
-	CGirderDescDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CGirderDescDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
    // IEditGirderData
    const CSegmentKey& GetSegmentKey() { return m_SegmentKey; }

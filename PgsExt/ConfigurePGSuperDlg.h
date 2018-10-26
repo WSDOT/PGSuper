@@ -41,7 +41,7 @@ class CConfigurePGSuperDlg : public CPropertyPage
 {
 // Construction
 public:
-	CConfigurePGSuperDlg(LPCTSTR lpszAppName,LPCTSTR lpszTemplateExt,BOOL bFirstRun,CWnd* pParent = NULL);   // standard constructor
+	CConfigurePGSuperDlg(LPCTSTR lpszAppName,LPCTSTR lpszTemplateExt,BOOL bFirstRun,CWnd* pParent = nullptr);   // standard constructor
    virtual ~CConfigurePGSuperDlg();
 
 // Dialog Data
@@ -71,7 +71,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CConfigurePGSuperDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -80,7 +80,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CConfigurePGSuperDlg)
 	afx_msg void OnHelp();
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
    afx_msg void OnAddCatalogServer();
 	afx_msg void OnServerChanged();
 	afx_msg void OnGeneric();
@@ -100,8 +100,8 @@ protected:
    bool m_bNetworkError;
   int	m_Method;
 public:
-   virtual LRESULT OnWizardNext();
-   virtual LRESULT OnWizardBack();
+   virtual LRESULT OnWizardNext() override;
+   virtual LRESULT OnWizardBack() override;
    afx_msg void OnLbnSelchangePublishers();
 };
 

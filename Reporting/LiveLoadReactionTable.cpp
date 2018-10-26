@@ -90,14 +90,14 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
-   std::auto_ptr<ICmbLsReactionAdapter> pForces;
+   std::unique_ptr<ICmbLsReactionAdapter> pForces;
    if(  tableType==PierReactionsTable )
    {
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pReactions,pLsForces,girderKey));
+      pForces =  std::make_unique<CombinedLsForcesReactionAdapter>(pReactions,pLsForces,girderKey);
    }
    else
    {
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
+      pForces =  std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, intervalIdx, girderKey);
    }
 
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);

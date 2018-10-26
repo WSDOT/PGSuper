@@ -93,7 +93,7 @@ private:
    std::vector<Float64> m_MinGirderSpacing;
    std::vector<Float64> m_MaxGirderSpacing;
 
-   virtual BOOL OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT nFlags,WORD nHitState);
+   virtual BOOL OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT nFlags,WORD nHitState) override;
    BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
    BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol);
 };

@@ -123,7 +123,7 @@ interface IBeamFactory : IUnknown
    //
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
-   // const pointers have valid values to be used if non-NULL
+   // const pointers have valid values to be used if non-nullptr
    virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) = 0;
 
    //---------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Returns a vector of length unit objects representing the units of measure of each
-   // dimenions. If an item in the vector is NULL, the dimension is a scalar.
+   // dimenions. If an item in the vector is nullptr, the dimension is a scalar.
    virtual std::vector<const unitLength*> GetDimensionUnits(bool bSIUnits) = 0;
 
    //---------------------------------------------------------------------------------

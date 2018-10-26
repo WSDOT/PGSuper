@@ -36,7 +36,7 @@ int ListPGZ(_TCHAR* fileName)
   // List files contained in pgz
   HZIP hz;
   hz = OpenZip(fileName,0);
-  if (hz==NULL)
+  if (hz==nullptr)
   {
      _tprintf(_T("Error opening compressed file: %s \n"),fileName);
      return -1;
@@ -65,7 +65,7 @@ int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName,_T
 {
   HZIP hz;
   hz = CreateZip(pgzFileName,0);
-  if (hz==NULL)
+  if (hz==nullptr)
   {
      _tprintf(_T("Error Creating compressed file: %s \n"),pgzFileName);
      return -1;
@@ -96,7 +96,7 @@ int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName,_T
   else
   {
      retval = FindInFolder(hz,templateRoot,_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtension);
-     if ( retval != -1 && lpszTemplateExtensionAlt!=NULL)
+     if ( retval != -1 && lpszTemplateExtensionAlt!=nullptr)
      {
         retval = FindInFolder(hz,templateRoot,_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtensionAlt);
      }

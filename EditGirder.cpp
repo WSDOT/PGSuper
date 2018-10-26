@@ -130,7 +130,7 @@ void txnEditGirder::Undo()
    std::set<txnEditGirderData>::iterator end(m_OldGirderData.end());
    for ( ; iter != end; iter++ )
    {
-      txnEditGirderData& oldGirderData = *iter;
+      const txnEditGirderData& oldGirderData = *iter;
       SetGirderData(oldGirderData.m_GirderKey,oldGirderData,true);
    }
 

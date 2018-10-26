@@ -10,7 +10,7 @@ class CParabolicDuctDlg : public CDialog, public CParabolicDuctGridCallback
 	DECLARE_DYNAMIC(CParabolicDuctDlg)
 
 public:
-	CParabolicDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent = NULL);   // standard constructor
+	CParabolicDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CParabolicDuctDlg();
 
    CParabolicDuctGrid m_Grid;

@@ -1,14 +1,16 @@
 Live Load {#tg_live_load}
 ======================================
-In addition to supporting the HL93 live load as defined in LRFD 3.6.1.3, you can apply your own live loads and envelopes of live loads. Live loads can be defined for two different load categories:
+In addition to supporting the HL93 live load as defined in LRFD 3.6.1.3, you can apply your own live loads and envelopes of live loads. Live loads can be defined for three different load categories:
 
 1. Design Limit States
     * Service I
-    * Service IA/Fatigue I
     * Service III
     * Strength I 
 
-2. Permit Limit State
+2. Fatigue Limit States
+    * Service IA/Fatigue I
+
+3. Permit Limit State
     * Strength II
 
 The responses for the vehicles defined in each category are enveloped and these envelopes are used to compute the associated limit state responses.

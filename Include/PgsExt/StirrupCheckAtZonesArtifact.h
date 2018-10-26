@@ -98,7 +98,7 @@ protected:
    void MakeCopy(const pgsStirrupCheckAtZonesArtifactKey& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsStirrupCheckAtZonesArtifactKey& rOther);
+   void MakeAssignment(const pgsStirrupCheckAtZonesArtifactKey& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -239,7 +239,7 @@ protected:
    void MakeCopy(const pgsSplittingZoneArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsSplittingZoneArtifact& rOther);
+   void MakeAssignment(const pgsSplittingZoneArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -382,7 +382,7 @@ protected:
    void MakeCopy(const pgsConfinementArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsConfinementArtifact& rOther);
+   void MakeAssignment(const pgsConfinementArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -475,11 +475,11 @@ public:
    //------------------------------------------------------------------------
    // Returns <b>true</b> if the class is in a valid state, otherwise returns
    // <b>false</b>.
-   virtual bool AssertValid() const;
+   virtual bool AssertValid() const override;
 
    //------------------------------------------------------------------------
    // Dumps the contents of the class to the given stream.
-   virtual void Dump(dbgDumpContext& os) const;
+   virtual void Dump(dbgDumpContext& os) const override;
    #endif // _DEBUG
 
 protected:
@@ -491,7 +491,7 @@ protected:
    void MakeCopy(const pgsStirrupCheckAtZonesArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsStirrupCheckAtZonesArtifact& rOther);
+   void MakeAssignment(const pgsStirrupCheckAtZonesArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

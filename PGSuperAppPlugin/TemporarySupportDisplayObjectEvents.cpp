@@ -47,11 +47,11 @@ CTemporarySupportDisplayObjectEvents::CTemporarySupportDisplayObjectEvents(Suppo
    m_tsID   = tsID;
    m_pFrame = pFrame;
 
-   m_pPrevTS = NULL;
-   m_pNextTS = NULL;
+   m_pPrevTS = nullptr;
+   m_pNextTS = nullptr;
 
-   m_pPrevPier = NULL;
-   m_pNextPier = NULL;
+   m_pPrevPier = nullptr;
+   m_pNextPier = nullptr;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -63,15 +63,15 @@ CTemporarySupportDisplayObjectEvents::CTemporarySupportDisplayObjectEvents(Suppo
    m_pNextTS = pIBridgeDesc->GetTemporarySupport(tsIdx+1);
    m_pPrevTS = pIBridgeDesc->GetTemporarySupport(tsIdx-1);
 
-   if ( (m_pPrevTS && (m_pPrevTS->GetSpan() != pTS->GetSpan())) || m_pPrevTS == NULL)
+   if ( (m_pPrevTS && (m_pPrevTS->GetSpan() != pTS->GetSpan())) || m_pPrevTS == nullptr)
    {
-      m_pPrevTS = NULL;
+      m_pPrevTS = nullptr;
       m_pPrevPier = pTS->GetSpan()->GetPrevPier();
    }
 
-   if ( (m_pNextTS && (m_pNextTS->GetSpan() != pTS->GetSpan())) || m_pNextTS == NULL )
+   if ( (m_pNextTS && (m_pNextTS->GetSpan() != pTS->GetSpan())) || m_pNextTS == nullptr )
    {
-      m_pNextTS = NULL;
+      m_pNextTS = nullptr;
       m_pNextPier = pTS->GetSpan()->GetNextPier();
    }
 }
@@ -221,7 +221,7 @@ STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnContextMenu
       CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      pMenu->LoadMenu(IDR_SELECTED_TEMPORARY_SUPPORT_CONTEXT,NULL);
+      pMenu->LoadMenu(IDR_SELECTED_TEMPORARY_SUPPORT_CONTEXT,nullptr);
 
       std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;

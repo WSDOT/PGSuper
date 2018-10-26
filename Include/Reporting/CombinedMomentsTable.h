@@ -110,7 +110,7 @@ protected:
    void MakeCopy(const CCombinedMomentsTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CCombinedMomentsTable& rOther);
+   void MakeAssignment(const CCombinedMomentsTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

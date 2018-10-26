@@ -58,7 +58,7 @@ public:
 
 protected:
 
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CAnalysisResultsGraphController)
    afx_msg void OnModeChanged();
@@ -71,7 +71,7 @@ protected:
    afx_msg void OnAnalysisTypeClicked();
    //}}AFX_MSG
 
-   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 	DECLARE_MESSAGE_MAP()
 

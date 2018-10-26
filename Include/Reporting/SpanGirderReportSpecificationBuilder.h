@@ -35,8 +35,8 @@ public:
    CSpanReportSpecificationBuilder(IBroker* pBroker);
    ~CSpanReportSpecificationBuilder(void);
 
-   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };
 
 class REPORTINGCLASS CGirderReportSpecificationBuilder :
@@ -46,8 +46,8 @@ public:
    CGirderReportSpecificationBuilder(IBroker* pBroker,const CGirderKey& defaultGirderKey);
    ~CGirderReportSpecificationBuilder(void);
 
-   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 
 private:
    CGirderKey m_GirderKey;
@@ -60,8 +60,8 @@ public:
    CGirderLineReportSpecificationBuilder(IBroker* pBroker);
    ~CGirderLineReportSpecificationBuilder(void);
 
-   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };
 
 class REPORTINGCLASS CMultiGirderReportSpecificationBuilder :
@@ -71,8 +71,8 @@ public:
    CMultiGirderReportSpecificationBuilder(IBroker* pBroker);
    ~CMultiGirderReportSpecificationBuilder(void);
 
-   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };
 
 // Allow opening of multiple view windows from a single dialog
@@ -83,8 +83,8 @@ public:
    CMultiViewSpanGirderReportSpecificationBuilder(IBroker* pBroker);
    ~CMultiViewSpanGirderReportSpecificationBuilder(void);
 
-   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };
 
 class REPORTINGCLASS CPointOfInterestReportSpecificationBuilder :
@@ -94,6 +94,6 @@ public:
    CPointOfInterestReportSpecificationBuilder(IBroker* pBroker);
    ~CPointOfInterestReportSpecificationBuilder(void);
 
-   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };

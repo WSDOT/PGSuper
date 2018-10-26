@@ -220,7 +220,7 @@ protected:
    void MakeCopy(const ConnectionLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const ConnectionLibraryEntry& rOther);
+   void MakeAssignment(const ConnectionLibraryEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 

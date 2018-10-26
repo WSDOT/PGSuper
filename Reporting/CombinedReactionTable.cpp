@@ -153,13 +153,13 @@ void CCombinedReactionTable::BuildForBearingDesign(IBroker* pBroker, rptChapter*
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    if (liveLoadIntervalIdx <= intervalIdx)
    {
-      // first no impact
-      BuildLiveLoad(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, tableType, false, true, false);
-      BuildLimitStateTable(pBroker, pChapter, girderKey, false, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
-
       // with impact
       BuildLiveLoad(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, tableType, true, true, false);
       BuildLimitStateTable(pBroker, pChapter, girderKey, true, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
+
+      // no impact
+      BuildLiveLoad(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, tableType, false, true, false);
+      BuildLimitStateTable(pBroker, pChapter, girderKey, false, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
    }
 }
 
@@ -185,16 +185,16 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
 
    // TRICKY:
    // Use the adapter class to get the reaction response functions we need and to iterate piers
-   std::auto_ptr<ICmbLsReactionAdapter> pForces;
+   std::unique_ptr<ICmbLsReactionAdapter> pForces;
    if(  tableType==PierReactionsTable )
    {
       GET_IFACE2(pBroker,IReactions,pReactions);
-      pForces = std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pReactions,pLsForces,girderKey));
+      pForces = std::make_unique<CombinedLsForcesReactionAdapter>(pReactions,pLsForces,girderKey);
    }
    else
    {
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-      pForces = std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
+      pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, intervalIdx, girderKey);
    }
 
    // Use iterator to walk locations
@@ -357,17 +357,17 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
    // TRICKY:
    // Use the adapter class to get the reaction response functions we need and to iterate piers
-   std::auto_ptr<ICmbLsReactionAdapter> pForces;
+   std::unique_ptr<ICmbLsReactionAdapter> pForces;
    if(  tableType == PierReactionsTable )
    {
       GET_IFACE2(pBroker,IReactions,pReactions);
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pReactions,pLsForces,girderKey));
+      pForces =  std::make_unique<CombinedLsForcesReactionAdapter>(pReactions,pLsForces,girderKey);
    }
    else
    {
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
+      pForces =  std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, intervalIdx, girderKey);
    }
 
    // Use iterator to walk locations
@@ -698,16 +698,16 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
 
    // TRICKY:
    // Use the adapter class to get the reaction response functions we need and to iterate piers
-   std::auto_ptr<ICmbLsReactionAdapter> pForces;
+   std::unique_ptr<ICmbLsReactionAdapter> pForces;
    if(  tableType==PierReactionsTable )
    {
       GET_IFACE2(pBroker,IReactions,pReactions);
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pReactions,pLsForces,girderKey));
+      pForces =  std::make_unique<CombinedLsForcesReactionAdapter>(pReactions,pLsForces,girderKey);
    }
    else
    {
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
+      pForces =  std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, intervalIdx, girderKey);
    }
 
 

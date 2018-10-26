@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 // CGirderErrorDlg dialog
 
 
-CGirderErrorDlg::CGirderErrorDlg(CWnd* pParent /*=NULL*/)
+CGirderErrorDlg::CGirderErrorDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CGirderErrorDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CGirderErrorDlg)

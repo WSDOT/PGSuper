@@ -153,7 +153,7 @@ public:
 
 protected:
    void MakeCopy(const pgsYieldStressRatioArtifact& rOther);
-   virtual void MakeAssignment(const pgsYieldStressRatioArtifact& rOther);
+   void MakeAssignment(const pgsYieldStressRatioArtifact& rOther);
    void ComputeStressRatios() const;
    void ComputeStressRatio(Float64 d,Float64 E,Float64 fbcr,Float64 fy,Float64* pfcr,Float64* pfs,Float64* pRF) const;
 

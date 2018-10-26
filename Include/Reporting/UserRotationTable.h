@@ -82,7 +82,7 @@ protected:
    void MakeCopy(const CUserRotationTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CUserRotationTable& rOther);
+   void MakeAssignment(const CUserRotationTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

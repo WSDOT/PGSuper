@@ -63,11 +63,11 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
       *pParagraph << rptRcImage(strImagePath + _T("TxDOT_Delta_Fcd_07.png")) << rptNewLine;
       *pParagraph << _T("Note: Elastic values are considered constant along girder length. All parameters taken at mid-span of girder.") << rptNewLine << rptNewLine;
 
-       boost::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
+       std::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
       if (!ptl)
       {
          ATLASSERT(false); // made a bad cast? Bail...
-         return NULL;
+         return nullptr;
       }
 
       INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,       pDisplayUnits->GetMomentUnit(),          true );
@@ -80,7 +80,7 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
       *pParagraph << Sub2(_T("I"),_T("g")) << _T(" = ") << mom_inertia.SetValue(pDetails->pLosses->GetIg()) << rptNewLine << rptNewLine;
       *pParagraph << Sub2(_T("f"),_T("cdp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() ) << rptNewLine << rptNewLine;
 
-      return NULL; // no table needed for 0.7fpu case
+      return nullptr; // no table needed for 0.7fpu case
    }
    else if (lrfdElasticShortening::fcgpIterative==fcgpMethod)
    {
@@ -109,13 +109,13 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
    else
    {
       ATLASSERT(false);
-      return NULL;
+      return nullptr;
    }
 }
 
 void CTxDOT2013ChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-    boost::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
+    std::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...

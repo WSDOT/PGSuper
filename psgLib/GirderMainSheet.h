@@ -55,7 +55,7 @@ class CGirderMainSheet : public CPropertySheet
 public:
 	CGirderMainSheet( GirderLibraryEntry& rentry,  
       bool allowEditing,
-      CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+      CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
    void SetBeamFactory(IBeamFactory* pBeamFactory);
 

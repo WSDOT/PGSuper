@@ -33,7 +33,7 @@ class CSelectClosureJointDlg : public CDialog
 	DECLARE_DYNAMIC(CSelectClosureJointDlg)
 
 public:
-	CSelectClosureJointDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pParent = NULL);   // standard constructor
+	CSelectClosureJointDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSelectClosureJointDlg();
 
    PierIndexType m_PierIdx;
@@ -44,7 +44,7 @@ public:
 	enum { IDD = IDD_SELECT_CLOSURE_JOINT };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
    void FillSupportComboBox();
    void FillGirderComboBox(GroupIndexType grpIdx);
@@ -55,5 +55,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    afx_msg void OnSupportChanged();
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 };

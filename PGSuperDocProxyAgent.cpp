@@ -76,7 +76,7 @@ CLASS
 
 CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
 {
-   m_pMyDocument = NULL;
+   m_pMyDocument = nullptr;
    m_EventHoldCount = 0;
    m_bFiringEvents = false;
    m_StdToolBarID = -1;
@@ -115,7 +115,7 @@ void CPGSuperDocProxyAgent::CreateStatusBar()
 void CPGSuperDocProxyAgent::ResetStatusBar()
 {
    CEAFMainFrame* pFrame = EAFGetMainFrame();
-   pFrame->SetStatusBar(NULL);
+   pFrame->SetStatusBar(nullptr);
 }
 
 void CPGSuperDocProxyAgent::CreateAcceleratorKeys()
@@ -136,21 +136,21 @@ void CPGSuperDocProxyAgent::CreateToolBars()
 
    m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
    CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
-   pToolBar->LoadToolBar(m_pMyDocument->GetStandardToolbarResourceID(),NULL); // don't use a command callback because these commands are handled by 
+   pToolBar->LoadToolBar(m_pMyDocument->GetStandardToolbarResourceID(),nullptr); // don't use a command callback because these commands are handled by 
                                                // the standard MFC message routing
 
    // Add a drop-down arrow to the Open and Report buttons
-   pToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
-   pToolBar->CreateDropDownButton(ID_VIEW_GRAPHS, NULL,BTNS_WHOLEDROPDOWN);
-   pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,NULL,BTNS_WHOLEDROPDOWN);
+   pToolBar->CreateDropDownButton(ID_FILE_OPEN,   nullptr,BTNS_DROPDOWN);
+   pToolBar->CreateDropDownButton(ID_VIEW_GRAPHS, nullptr,BTNS_WHOLEDROPDOWN);
+   pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,nullptr,BTNS_WHOLEDROPDOWN);
 
    m_LibToolBarID = pToolBars->CreateToolBar(_T("Library"));
    pToolBar = pToolBars->GetToolBar(m_LibToolBarID);
-   pToolBar->LoadToolBar(IDR_LIBTOOLBAR,NULL);
+   pToolBar->LoadToolBar(IDR_LIBTOOLBAR,nullptr);
 
    m_HelpToolBarID = pToolBars->CreateToolBar(_T("Help"));
    pToolBar = pToolBars->GetToolBar(m_HelpToolBarID);
-   pToolBar->LoadToolBar(IDR_HELPTOOLBAR,NULL);
+   pToolBar->LoadToolBar(IDR_HELPTOOLBAR,nullptr);
 
    OnStatusChanged(); // set the status items
 }
@@ -178,12 +178,12 @@ void CPGSuperDocProxyAgent::RegisterViews()
    // for the views below will register them. For example, the analysis results view is the
    // responsiblity of the analysis results agent, so that view's implementation will move
    GET_IFACE(IEAFViewRegistrar,pViewReg);
-   m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR, NULL, RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
-   m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR, NULL, RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, -1); // unlimited number of reports
-   m_LibraryEditorViewKey     = pViewReg->RegisterView(IDR_LIBRARYEDITOR,     NULL, RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
-   m_ReportViewKey            = pViewReg->RegisterView(IDR_REPORT,            NULL, RUNTIME_CLASS(CReportViewChildFrame),      RUNTIME_CLASS(CPGSuperReportView),        hMenu, -1); // unlimited number of reports
-   m_GraphingViewKey          = pViewReg->RegisterView(IDR_GRAPHING,          NULL, RUNTIME_CLASS(CGraphViewChildFrame),        RUNTIME_CLASS(CGraphView),            hMenu, -1); // unlimited number of reports
-   m_LoadsViewKey             = pViewReg->RegisterView(IDR_EDITLOADS,         NULL, RUNTIME_CLASS(CEditLoadsChildFrame),       RUNTIME_CLASS(CEditLoadsView),            hMenu, 1);
+   m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR, nullptr, RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
+   m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR, nullptr, RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, -1); // unlimited number of reports
+   m_LibraryEditorViewKey     = pViewReg->RegisterView(IDR_LIBRARYEDITOR,     nullptr, RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
+   m_ReportViewKey            = pViewReg->RegisterView(IDR_REPORT,            nullptr, RUNTIME_CLASS(CReportViewChildFrame),      RUNTIME_CLASS(CPGSuperReportView),        hMenu, -1); // unlimited number of reports
+   m_GraphingViewKey          = pViewReg->RegisterView(IDR_GRAPHING,          nullptr, RUNTIME_CLASS(CGraphViewChildFrame),        RUNTIME_CLASS(CGraphView),            hMenu, -1); // unlimited number of reports
+   m_LoadsViewKey             = pViewReg->RegisterView(IDR_EDITLOADS,         nullptr, RUNTIME_CLASS(CEditLoadsChildFrame),       RUNTIME_CLASS(CEditLoadsView),            hMenu, 1);
 }
 
 void CPGSuperDocProxyAgent::UnregisterViews()
@@ -488,28 +488,28 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
       GET_IFACE(IEAFToolbars,pToolBars);
       CEAFToolBar* pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
 
-      if ( pToolBar == NULL )
+      if ( pToolBar == nullptr )
          return;
    
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       switch(pStatusCenter->GetSeverity())
       {
       case eafTypes::statusInformation:
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, NULL, FALSE);
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,NULL, TRUE);
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,NULL, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, FALSE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, TRUE);
          break;
 
       case eafTypes::statusWarning:
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, NULL, TRUE);
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,NULL, FALSE);
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,NULL, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, FALSE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, TRUE);
          break;
 
       case eafTypes::statusError:
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, NULL, TRUE);
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,NULL, TRUE);
-         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,NULL, FALSE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, FALSE);
          break;
       }
    }
@@ -625,7 +625,7 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
    if ( selection.Type == CSelection::Span )
    {
       const CSpanData2* pSpan = pBridgeDesc->GetSpan(selection.SpanIdx);
-      if ( pSpan == NULL )
+      if ( pSpan == nullptr )
       {
          // the selected span no longer exists
          bClearSelection = true;
@@ -640,7 +640,7 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
       else
       {
          const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(selection.GroupIdx);
-         if ( pGroup == NULL || pGroup->GetGirderCount() < selection.GirderIdx )
+         if ( pGroup == nullptr || pGroup->GetGirderCount() < selection.GirderIdx )
          {
             // the selected girder no longer exists
             bClearSelection = true;
@@ -651,7 +651,7 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
    {
       PierIndexType pierIdx = selection.PierIdx;
       const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-      if ( pPier == NULL )
+      if ( pPier == nullptr )
          bClearSelection = true;
    }
 
@@ -660,16 +660,16 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
 
    m_pMyDocument->SetModifiedFlag();
 
-   boost::shared_ptr<CBridgeHint> pBridgeHint;
+   std::shared_ptr<CBridgeHint> pBridgeHint;
    if ( pHint )
    {
-      pBridgeHint = boost::shared_ptr<CBridgeHint>(new CBridgeHint);
+      pBridgeHint = std::make_shared<CBridgeHint>();
       pBridgeHint->PierIdx = pHint->PierIdx;
       pBridgeHint->PierFace = pHint->PierFace;
       pBridgeHint->bAdded = pHint->bAdded;
    }
 
-   boost::shared_ptr<CObject> pObjHint = boost::dynamic_pointer_cast<CObject,CBridgeHint>(pBridgeHint);
+   std::shared_ptr<CObject> pObjHint = std::dynamic_pointer_cast<CObject,CBridgeHint>(pBridgeHint);
    FireEvent( 0, HINT_BRIDGECHANGED, pObjHint );
 
    return S_OK;
@@ -680,8 +680,7 @@ HRESULT CPGSuperDocProxyAgent::OnGirderFamilyChanged()
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    GET_IFACE(IEAFDocument,pDoc);
    pDoc->SetModified();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_GIRDERFAMILYCHANGED, pnull );
+   FireEvent( 0, HINT_GIRDERFAMILYCHANGED, nullptr );
    return S_OK;
 }
    
@@ -690,11 +689,11 @@ HRESULT CPGSuperDocProxyAgent::OnGirderChanged(const CGirderKey& girderKey,Uint3
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
 
-   boost::shared_ptr<CGirderHint> pHint(new CGirderHint());
+   std::shared_ptr<CGirderHint> pHint(std::make_shared<CGirderHint>());
    pHint->lHint   = lHint;
    pHint->girderKey = girderKey;
 
-   FireEvent(NULL,HINT_GIRDERCHANGED,pHint);
+   FireEvent(nullptr,HINT_GIRDERCHANGED,pHint);
 
    return S_OK;
 }
@@ -703,8 +702,8 @@ HRESULT CPGSuperDocProxyAgent::OnLiveLoadChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_LIVELOADCHANGED, pnull );
+
+   FireEvent( 0, HINT_LIVELOADCHANGED, nullptr );
    return S_OK;
 }
 
@@ -712,8 +711,8 @@ HRESULT CPGSuperDocProxyAgent::OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR 
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_LIVELOADCHANGED, pnull );
+   
+   FireEvent( 0, HINT_LIVELOADCHANGED, nullptr );
    return S_OK;
 }
 
@@ -721,8 +720,8 @@ HRESULT CPGSuperDocProxyAgent::OnConstructionLoadChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_BRIDGECHANGED, pnull );
+
+   FireEvent( 0, HINT_BRIDGECHANGED, nullptr );
    return S_OK;
 }
 
@@ -731,8 +730,8 @@ HRESULT CPGSuperDocProxyAgent::OnExposureConditionChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_ENVCHANGED, pnull );
+
+   FireEvent( 0, HINT_ENVCHANGED, nullptr );
    return S_OK;
 }
 
@@ -740,8 +739,8 @@ HRESULT CPGSuperDocProxyAgent::OnRelHumidityChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_ENVCHANGED, pnull );
+
+   FireEvent( 0, HINT_ENVCHANGED, nullptr );
    return S_OK;
 }
 
@@ -751,8 +750,7 @@ HRESULT CPGSuperDocProxyAgent::OnProjectPropertiesChanged()
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
 
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_PROJECTPROPERTIESCHANGED, pnull );
+   FireEvent( 0, HINT_PROJECTPROPERTIESCHANGED, nullptr );
    return S_OK;
 }
 
@@ -773,8 +771,7 @@ HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(eafTypes::UnitMode newUnitMode)
    m_pMyDocument->GetDocUnitSystem(&pDocUnitSystem);
    pDocUnitSystem->put_UnitMode(UnitModeType(pDisplayUnits->GetUnitMode()));
 
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_UNITSCHANGED, pnull );
+   FireEvent( 0, HINT_UNITSCHANGED, nullptr );
    return S_OK;
 }
 
@@ -783,8 +780,8 @@ HRESULT CPGSuperDocProxyAgent::OnSpecificationChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_SPECCHANGED, pnull );
+
+   FireEvent( 0, HINT_SPECCHANGED, nullptr );
    return S_OK;
 }
 
@@ -793,8 +790,8 @@ HRESULT CPGSuperDocProxyAgent::OnAnalysisTypeChanged()
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
    m_pMyDocument->UpdateAnalysisTypeStatusIndicator();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_ANALYSISTYPECHANGED, pnull );
+
+   FireEvent( 0, HINT_ANALYSISTYPECHANGED, nullptr );
    return S_OK;
 }
 
@@ -803,8 +800,8 @@ HRESULT CPGSuperDocProxyAgent::OnRatingSpecificationChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_RATINGSPECCHANGED, pnull );
+
+   FireEvent( 0, HINT_RATINGSPECCHANGED, nullptr );
    return S_OK;
 }
 
@@ -813,8 +810,8 @@ HRESULT CPGSuperDocProxyAgent::OnLoadModifiersChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_LOADMODIFIERSCHANGED, pnull );
+
+   FireEvent( 0, HINT_LOADMODIFIERSCHANGED, nullptr );
    return S_OK;
 }
 
@@ -823,8 +820,8 @@ HRESULT CPGSuperDocProxyAgent::OnLossParametersChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_LOSSPARAMETERSCHANGED, pnull );
+   
+   FireEvent( 0, HINT_LOSSPARAMETERSCHANGED, nullptr );
    return S_OK;
 }
 
@@ -955,7 +952,7 @@ Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
 
    POSITION pos = m_pMyDocument->GetFirstViewPosition();
    CView* pView;
-   while ( pos != NULL )
+   while ( pos != nullptr )
    {
       pView = m_pMyDocument->GetNextView(pos);
       if ( pView->IsKindOf( RUNTIME_CLASS(CBridgePlanView) ) )
@@ -1054,7 +1051,7 @@ void CPGSuperDocProxyAgent::CancelPendingEvents()
    }
 }
 
-void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint)
+void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,std::shared_ptr<CObject> pHint)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    if ( 0 < m_EventHoldCount )

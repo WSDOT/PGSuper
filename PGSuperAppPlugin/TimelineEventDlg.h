@@ -37,7 +37,7 @@ public:
                      EventIndexType eventIdx, // index of event, INVALID_INDEX if creating a new event
                      BOOL bEditEvent, // true to display the event details editing, otherwise so the list of prev. defined events for creating new events on the fly
                      BOOL bReadOnly=FALSE,
-                     CWnd* pParent = NULL);   // standard constructor
+                     CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CTimelineEventDlg();
 
    bool UpdateTimelineManager(const CTimelineManager& timelineMgr);
@@ -50,7 +50,7 @@ public:
 	enum { IDD = IDD_TIMELINE_EVENT };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
    BOOL m_bReadOnly;
    BOOL m_bEdit;
 
@@ -72,6 +72,6 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
    afx_msg void OnHelp();
 };

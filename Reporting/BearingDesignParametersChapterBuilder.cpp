@@ -100,11 +100,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Reactions
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,true,false,true,false,true,pDisplayUnits) << rptNewLine;
 
    if( doFinalLoads )
    {
-      *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
+      *p << LIVELOAD_PER_LANE << rptNewLine;
 
       if (bPedestrian)
       {
@@ -229,7 +229,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    // TRICKY: use adapter class to get correct reaction interfaces
-   std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
+   std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, intervalIdx, girderKey) );
 
    //PierIndexType pierIdx = 0;
    //for ( pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )

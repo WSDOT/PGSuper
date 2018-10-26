@@ -38,8 +38,8 @@ class CServerDefinitionDlg : public CDialog
 {
 // Construction
 public:
-	CServerDefinitionDlg(const CCatalogServers& servers,const CString& strExt,const CString& appName, CWnd* pParent = NULL);
-	CServerDefinitionDlg(const CCatalogServers& servers,const CCatalogServer* pcurrentServer,const CString& strExt,const CString& appName,CWnd* pParent = NULL);
+	CServerDefinitionDlg(const CCatalogServers& servers,const CString& strExt,const CString& appName, CWnd* pParent = nullptr);
+	CServerDefinitionDlg(const CCatalogServers& servers,const CCatalogServer* pcurrentServer,const CString& strExt,const CString& appName,CWnd* pParent = nullptr);
 
 // Dialog Data
 	//{{AFX_DATA(CServerDefinitionDlg)
@@ -58,7 +58,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CServerDefinitionDlg)
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
    const CCatalogServers& m_Servers;
@@ -78,7 +78,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CServerDefinitionDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:

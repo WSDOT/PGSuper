@@ -99,22 +99,22 @@ void CAlignmentProfileView::BuildDisplayLists()
    // Setup display lists
 
    CComPtr<iDisplayList> label_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
    label_list->SetID(LABEL_DISPLAY_LIST);
    dispMgr->AddDisplayList(label_list);
 
    CComPtr<iDisplayList> title_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
    title_list->SetID(TITLE_DISPLAY_LIST);
    dispMgr->AddDisplayList(title_list);
 
    CComPtr<iDisplayList> bridge_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&bridge_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&bridge_list);
    bridge_list->SetID(BRIDGE_DISPLAY_LIST);
    dispMgr->AddDisplayList(bridge_list);
 
    CComPtr<iDisplayList> profile_list;
-   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&profile_list);
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&profile_list);
    profile_list->SetID(PROFILE_DISPLAY_LIST);
    dispMgr->AddDisplayList(profile_list);
 }
@@ -158,7 +158,7 @@ void CAlignmentProfileView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-   pMenu->LoadMenu(IDR_ALIGNMENT_PROFILE_CTX,NULL);
+   pMenu->LoadMenu(IDR_ALIGNMENT_PROFILE_CTX,nullptr);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
    {
@@ -508,7 +508,7 @@ void CAlignmentProfileView::UpdateDrawingScale()
    CComPtr<iDisplayList> title_display_list;
    dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&title_display_list);
 
-   if ( title_display_list == NULL )
+   if ( title_display_list == nullptr )
    {
       return;
    }
@@ -554,7 +554,7 @@ void CAlignmentProfileView::CreateStationLabel(iDisplayList* pDisplayList,Float6
    doLabel->SetPosition(p);
    
    CString strLabel;
-   if ( strBaseLabel == NULL )
+   if ( strBaseLabel == nullptr )
    {
       strLabel.Format(_T("%s\nEl. %s"),
       ::FormatStation(pDisplayUnits->GetStationFormat(),station),

@@ -46,7 +46,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 CDesignGirderDlg::CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, arSlabOffsetDesignType designA, 
-                                   IBroker* pBroker, CWnd* pParent /*=NULL*/)
+                                   IBroker* pBroker, CWnd* pParent /*=nullptr*/)
 	: CDialog(CDesignGirderDlg::IDD, pParent),
    m_EnableA(enableA),
    m_DesignSlabOffset(designA)
@@ -215,7 +215,7 @@ BOOL CDesignGirderDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       {
       case IDC_PICTURE:
          pTTT->lpszText = m_strToolTip.LockBuffer();
-         pTTT->hinst = NULL;
+         pTTT->hinst = nullptr;
          break;
 
       default:

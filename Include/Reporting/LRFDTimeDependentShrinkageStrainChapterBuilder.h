@@ -48,6 +48,6 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CLRFDTimeDependentShrinkageStrainChapterBuilder(const CLRFDTimeDependentShrinkageStrainChapterBuilder&);
-   CLRFDTimeDependentShrinkageStrainChapterBuilder& operator=(const CLRFDTimeDependentShrinkageStrainChapterBuilder&);
+   CLRFDTimeDependentShrinkageStrainChapterBuilder(const CLRFDTimeDependentShrinkageStrainChapterBuilder&) = delete;
+   CLRFDTimeDependentShrinkageStrainChapterBuilder& operator=(const CLRFDTimeDependentShrinkageStrainChapterBuilder&) = delete;
 };

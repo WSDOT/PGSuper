@@ -52,7 +52,7 @@ private:
 
    CComPtr<IPoint2d> m_CachePoint;
 
-   virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc);
+   void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc);
    void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt);
    void DrawFixedSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
    void DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt);

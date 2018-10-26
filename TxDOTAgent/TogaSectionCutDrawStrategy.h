@@ -34,8 +34,8 @@ class iCutLocation
 public:
 
    virtual Float64 GetCurrentCutLocation() = 0;
-   virtual void CutAt(Float64 cut)=0;
-   virtual void ShowCutDlg()=0;
+   virtual void CutAt(Float64 cut) = 0;
+   virtual void ShowCutDlg() = 0;
 };
 
 // {8F1327F9-3055-4e44-9E23-71FCDB3B9AA5}

@@ -32,7 +32,7 @@ public:
                                    CRuntimeClass* pDocClass,
                                    CRuntimeClass* pFrameClass,
                                    CRuntimeClass* pViewClass,
-                                   HMENU hSharedMenu = NULL,
+                                   HMENU hSharedMenu = nullptr,
                                    int maxViewCount = -1);
    
    ~CPGSuperImportPluginDocTemplate();
@@ -41,6 +41,6 @@ protected:
 
    DECLARE_DYNAMIC(CPGSuperImportPluginDocTemplate)
 
-   virtual CPGSProjectImporterMgrBase* CreateProjectImporterMgr() const;
+   virtual CPGSProjectImporterMgrBase* CreateProjectImporterMgr() const override;
 };
 

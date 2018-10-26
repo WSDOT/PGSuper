@@ -32,7 +32,7 @@ class CBoundaryConditionDlg : public CDialog
 	DECLARE_DYNAMIC(CBoundaryConditionDlg)
 
 public:
-	CBoundaryConditionDlg(CWnd* pParent = NULL);   // standard constructor
+	CBoundaryConditionDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CBoundaryConditionDlg();
 
    pgsTypes::BoundaryConditionType m_BoundaryCondition;
@@ -42,11 +42,11 @@ public:
 	enum { IDD = IDD_BOUNDARY_CONDITIONS };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
    CBoundaryConditionComboBox m_cbBoundaryCondition;
 
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual BOOL OnInitDialog();
+   virtual BOOL OnInitDialog() override;
 };

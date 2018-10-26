@@ -33,7 +33,7 @@ class CLossParametersDlg : public CPropertySheet
 	DECLARE_DYNAMIC(CLossParametersDlg)
 
 public:
-	CLossParametersDlg(CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CLossParametersDlg(CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 	virtual ~CLossParametersDlg();
 
    CPretensioningPage m_Pretensioning;

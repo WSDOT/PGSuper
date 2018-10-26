@@ -43,7 +43,7 @@ GRID_IMPLEMENT_REGISTER(COffsetDuctGrid, CS_DBLCLKS, 0, 0, 0);
 COffsetDuctGrid::COffsetDuctGrid()
 {
 //   RegisterClass();
-   m_pCallback = NULL;
+   m_pCallback = nullptr;
 }
 
 COffsetDuctGrid::~COffsetDuctGrid()
@@ -241,7 +241,7 @@ BOOL COffsetDuctGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFla
 {
    COffsetDuctDlg* pParent = (COffsetDuctDlg*)GetParent();
 
-	//if (GetParam() == NULL)
+	//if (GetParam() == nullptr)
 	//{
  //     pParent->EnableDeleteBtn(FALSE);
 	//	return TRUE;

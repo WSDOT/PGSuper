@@ -17,8 +17,11 @@ Load rating calculations can be performed for:
 * Operating
 * Legal Loads with Routine Commercial Traffic
 * Legal Loads with Specialized Hauling Vehicles
+* Legal Loads with Emergency Vehicles
 * Permit Loads for routine or annual permits
 * Permit Loads for special or limited crossing permits
+
+> NOTE: Legal Loads with Emergency Vehicles load rating is defined in FHWA Memorandum dated November 3, 2016 (https://www.fhwa.dot.gov/bridge/loadrating/161103.pdf). FHWA published the explainitory document [QUESTIONS AND ANSWERS Load Rating for the FAST Act's Emergency Vehicles](https://www.fhwa.dot.gov/bridge/loadrating/fast1410_qa.pdf), dated March 2017.
 
 Rating factors can be computed for positive moment, negative moment, shear, and flexural stresses.
 

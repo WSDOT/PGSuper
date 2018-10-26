@@ -103,8 +103,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CLoadingDetailsChapterBuilder(const CLoadingDetailsChapterBuilder&);
-   CLoadingDetailsChapterBuilder& operator=(const CLoadingDetailsChapterBuilder&);
+   CLoadingDetailsChapterBuilder(const CLoadingDetailsChapterBuilder&) = delete;
+   CLoadingDetailsChapterBuilder& operator=(const CLoadingDetailsChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

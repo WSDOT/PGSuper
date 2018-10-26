@@ -76,8 +76,8 @@ private:
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
-   CDeckElevationChapterBuilder(const CDeckElevationChapterBuilder&);
-   CDeckElevationChapterBuilder& operator=(const CDeckElevationChapterBuilder&);
+   CDeckElevationChapterBuilder(const CDeckElevationChapterBuilder&) = delete;
+   CDeckElevationChapterBuilder& operator=(const CDeckElevationChapterBuilder&) = delete;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

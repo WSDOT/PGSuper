@@ -69,5 +69,5 @@ protected:
    void MakeCopy(const CStrandEccentricities& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CStrandEccentricities& rOther);
+   void MakeAssignment(const CStrandEccentricities& rOther);
 };

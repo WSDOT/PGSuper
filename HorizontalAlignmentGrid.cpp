@@ -288,14 +288,14 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,HorzCurveData& data)
    {
       // forward tangent is a bearing
       CComBSTR bstrDirection;
-      pParent->m_DirFormatter->Format(data.FwdTangent,NULL,&bstrDirection);
+      pParent->m_DirFormatter->Format(data.FwdTangent,nullptr,&bstrDirection);
       SetValueRange(CGXRange(nRow,2),CString(bstrDirection));
    }
    else
    {
       // forward tangent is a delta angle
       CComBSTR bstrAngle;
-      pParent->m_AngleFormatter->Format(data.FwdTangent,NULL,&bstrAngle);
+      pParent->m_AngleFormatter->Format(data.FwdTangent,nullptr,&bstrAngle);
       SetValueRange(CGXRange(nRow,2),CString(bstrAngle));
    }
 

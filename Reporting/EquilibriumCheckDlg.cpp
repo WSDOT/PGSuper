@@ -37,7 +37,7 @@
 
 IMPLEMENT_DYNAMIC(CEquilibriumCheckDlg, CDialog)
 
-CEquilibriumCheckDlg::CEquilibriumCheckDlg(IBroker* pBroker,boost::shared_ptr<CEquilibriumCheckReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
+CEquilibriumCheckDlg::CEquilibriumCheckDlg(IBroker* pBroker,std::shared_ptr<CEquilibriumCheckReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CEquilibriumCheckDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)
@@ -128,7 +128,7 @@ void CEquilibriumCheckDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,m_GirderKey.girderIndex,ALL_SEGMENTS));
-   if (m_Slider.GetSafeHwnd() != NULL )
+   if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
                                                    // subtract one so we don't go past the end of the array

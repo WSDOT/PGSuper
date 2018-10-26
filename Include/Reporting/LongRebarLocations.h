@@ -81,7 +81,7 @@ protected:
    void MakeCopy(const CLongRebarLocations& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CLongRebarLocations& rOther);
+   void MakeAssignment(const CLongRebarLocations& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

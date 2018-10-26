@@ -36,10 +36,10 @@ class CTogaSectionCutDlgEx : public CDialog
 {
 // Construction
 public:
-   CTogaSectionCutDlgEx(CWnd* pParent=NULL);   // standard constructor
+   CTogaSectionCutDlgEx(CWnd* pParent=nullptr);   // standard constructor
 
 	CTogaSectionCutDlgEx(IndexType nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
-		CTxDOTOptionalDesignGirderViewPage::CutLocation, CWnd* pParent = NULL);
+		CTxDOTOptionalDesignGirderViewPage::CutLocation, CWnd* pParent = nullptr);
 
    void SetValue(Float64 value);
    Float64 GetValue()const;
@@ -58,7 +58,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CTogaSectionCutDlgEx)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -66,7 +66,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CTogaSectionCutDlgEx)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	afx_msg void OnGirderMiddle();
 	afx_msg void OnLeftEnd();
 	afx_msg void OnLeftHarp();

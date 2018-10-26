@@ -39,8 +39,8 @@ class CClosureJointDlg : public CPropertySheet, public IEditClosureJointData
 	DECLARE_DYNAMIC(CClosureJointDlg)
 
 public:
-	CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CClosureJointDlg(const CBridgeDescription2* pBridgeDesc,const CClosureKey& closureKey, const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
    // IEditClosureJointData
    virtual const CClosureKey& GetClosureKey() { return m_ClosureKey; }
@@ -72,15 +72,15 @@ protected:
 
    void CommonInit(const CBridgeDescription2* pBridgeDesc);
    void Init(const CBridgeDescription2* pBridgeDesc);
-   void Init(const CBridgeDescription2* pBridgeDesc,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void Init(const CBridgeDescription2* pBridgeDesc,const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions);
    void CreateExtensionPages();
-   void CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void CreateExtensionPages(const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions);
    void DestroyExtensionPages();
 
 
    txnMacroTxn m_Macro;
    std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>> m_ExtensionPages;
-   std::set<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
+   std::vector<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
    void NotifyExtensionPages();
    void NotifySplicedGirderExtensionPages();
 

@@ -31,7 +31,7 @@ class CFilletByGirderDlg : public CDialog
 	DECLARE_DYNAMIC(CFilletByGirderDlg)
 
 public:
-	CFilletByGirderDlg(CWnd* pParent = NULL);   // standard constructor
+	CFilletByGirderDlg(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CFilletByGirderDlg();
 
    void UploadData(const HaunchInputData& rData);
