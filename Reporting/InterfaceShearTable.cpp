@@ -157,7 +157,9 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          const pgsHorizontalShearArtifact* pArtifact = psArtifact->GetHorizontalShearArtifact();
 
          if (!pArtifact->IsApplicable())
+         {
             continue;
+         }
 
          if ( pArtifact->DidAvsDecreaseAtEnd() )
          {
@@ -168,7 +170,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          ColumnIndexType col = 0;
 
          (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
-         Float64 smax = pArtifact->GetSMax();
+         Float64 smax = pArtifact->GetSmax();
          if (0.0 < smax)
          {
             (*table)(row,col++) << dim.SetValue( smax );
@@ -178,12 +180,14 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
             (*table)(row,col++) << symbol(INFINITY);
          }
 
-         (*table)(row,col++) << dim.SetValue( pArtifact->GetSall() );
-
          if ( pArtifact->SpacingPassed() )
+         {
             (*table)(row,col++) << RPT_PASS;
+         }
          else
+         {
             (*table)(row,col++) << RPT_FAIL;
+         }
          
          (*table)(row,col++) << AvS.SetValue( pArtifact->GetAvOverS());
 
@@ -191,9 +195,13 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          {
             (*table)(row,col++) << AvS.SetValue( pArtifact->GetAvOverSMin());
             if ( 0 < pArtifact->MinReinforcementPassed() )
+            {
                (*table)(row,col++) << RPT_PASS;
+            }
             else
+            {
                (*table)(row,col++) << RPT_FAIL;
+            }
          }
          else
          {
@@ -218,9 +226,13 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
          bool bPassed = pArtifact->StrengthPassed();
          if ( bPassed )
+         {
             (*table)(row,col) << RPT_PASS;
+         }
          else
+         {
             (*table)(row,col) << RPT_FAIL;
+         }
 
          (*table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(vr,vu,bPassed) << _T(")");
 

@@ -3157,9 +3157,11 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
    display_list->Clear();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
+   // only used if there are diaphragms
+   GET_IFACE2_NOCHECK(pBroker,IRoadway,pAlignment);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
    SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);

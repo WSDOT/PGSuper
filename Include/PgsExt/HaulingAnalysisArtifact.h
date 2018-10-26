@@ -126,7 +126,11 @@ public:
 
    bool Passed() const;
    bool CompressionPassed() const;
+   bool CompressionPassedPlumbGirder() const;
+   bool CompressionPassedInclinedGirder() const;
    bool TensionPassed() const;
+   bool TensionPassedPlumbGirder() const;
+   bool TensionPassedInclinedGirder() const;
 
    // GROUP: ACCESS
    Float64 GetEffectiveHorizPsForce() const;

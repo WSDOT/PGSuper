@@ -49,6 +49,7 @@
 #include <IFace\EditByUI.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\ResistanceFactors.h>
+#include <IFace\InterfaceShearRequirements.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>

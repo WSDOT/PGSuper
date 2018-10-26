@@ -1390,8 +1390,8 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
 
       for ( int i = 0; i < 3; i++ ) // i is one of the TIMESTEP_XXX constants
       {
-         Float64 P = m_pExternalLoading->GetAxial( intervalIdx,strLoadGroupName[i].c_str(),poi,m_Bat,rtIncremental);
-         Float64 M = m_pExternalLoading->GetMoment(intervalIdx,strLoadGroupName[i].c_str(),poi,m_Bat,rtIncremental);
+         Float64 P = -m_pExternalLoading->GetAxial( intervalIdx,strLoadGroupName[i].c_str(),poi,m_Bat,rtIncremental);
+         Float64 M = -m_pExternalLoading->GetMoment(intervalIdx,strLoadGroupName[i].c_str(),poi,m_Bat,rtIncremental);
 
          // If the POI is at a closure joint, and it is before the closure is composite
          // with the adjacent girder segments, load doesn't get transfered to the concrete.
@@ -1408,8 +1408,8 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
 
          // Add the "external" force to the other forces on this section
          ProductForceType pfType = (ProductForceType)(pftCreep + i);
-         tsDetails.dPi[pfType] += tsDetails.Pre[i];
-         tsDetails.dMi[pfType] += tsDetails.Mre[i];
+         tsDetails.dPi[pfType] -= tsDetails.Pre[i];
+         tsDetails.dMi[pfType] -= tsDetails.Mre[i];
       }
    }
 }

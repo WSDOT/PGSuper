@@ -74,6 +74,7 @@ STDMETHODIMP CSpecAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IKdotGirderHaulingSpecCriteria, this );
    pBrokerInit->RegInterface( IID_IDebondLimits,                  this );
    pBrokerInit->RegInterface( IID_IResistanceFactors,             this );
+   pBrokerInit->RegInterface( IID_IInterfaceShearRequirements,    this );
    pBrokerInit->RegInterface( IID_IDuctLimits,                    this );
 
    return S_OK;
@@ -1244,16 +1245,13 @@ Float64 CSpecAgentImp::GetMinConfinmentAvS()
    return lrfdRebar::GetMinConfinmentAvS();
 }
 
-void CSpecAgentImp::GetMaxStirrupSpacing(Float64* sUnderLimit, Float64* sOverLimit)
+void CSpecAgentImp::GetMaxStirrupSpacing(Float64 dv,Float64* pSmax1, Float64* pSmax2)
 {
-   lrfdRebar::GetMaxStirrupSpacing(sUnderLimit, sOverLimit);
-
-   // check to see if this has been overridden by spec library entry.
+   Float64 k1,k2,s1,s2;
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 max_spac = pSpec->GetMaxStirrupSpacing();
-
-   *sUnderLimit = Min(*sUnderLimit, max_spac);
-   *sOverLimit = Min(*sOverLimit, max_spac);
+   pSpec->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
+   *pSmax1 = min(k1*dv,s1); // LRFD equation 5.8.2.7-1
+   *pSmax2 = min(k2*dv,s2); // LRFD equation 5.8.2.7-2
 }
 
 Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter)
@@ -2063,6 +2061,29 @@ Float64 CSpecAgentImp::GetClosureJointShearResistanceFactor(pgsTypes::ConcreteTy
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetClosureJointShearResistanceFactor(type);
+}
+
+///////////////////////////////////////////////////
+// IInterfaceShearRequirements 
+ShearFlowMethod CSpecAgentImp::GetShearFlowMethod()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetShearFlowMethod();
+}
+
+Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi)
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   Float64 sMax = pSpec->GetMaxInterfaceShearConnectorSpacing();
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      GET_IFACE(ISectionProperties,pSectProp);
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(poi.GetSegmentKey())-1;
+      Float64 Hg = pSectProp->GetHg(intervalIdx,poi);
+      sMax = min(Hg,sMax);
+   }
+   return sMax;
 }
 
 ////////////////////

@@ -588,7 +588,7 @@ m_Vn2(0),
 m_Vn3(0),
 m_Fc(0),
 m_Bv(0),
-m_Sall(0),
+m_Smax(0),
 m_Fy(0),
 m_bWasFyLimited(false),
 m_AvOverSMin_5_8_4_4_1(0),
@@ -647,7 +647,7 @@ bool pgsHorizontalShearArtifact::SpacingPassed() const
 {
    if (m_IsApplicable && 0.0 < GetAvOverS())
    {
-      return GetSMax() <= m_Sall;
+      return GetSpacing() <= m_Smax;
    }
    else
    {
@@ -735,7 +735,7 @@ Float64 pgsHorizontalShearArtifact::GetAvOverS() const
    return avsg + avstf;
 }
 
-Float64 pgsHorizontalShearArtifact::GetSMax() const
+Float64 pgsHorizontalShearArtifact::GetSpacing() const
 {
    if (0.0 < m_AvfGirder && 0.0 < m_AvfAdditional)
    {
@@ -805,14 +805,14 @@ void pgsHorizontalShearArtifact::SetSGirder(Float64 s)
    m_SGirder = s;
 }
 
-Float64 pgsHorizontalShearArtifact::GetSall() const
+Float64 pgsHorizontalShearArtifact::GetSmax() const
 {
-   return m_Sall;
+   return m_Smax;
 }
 
-void pgsHorizontalShearArtifact::SetSall(Float64 sall)
+void pgsHorizontalShearArtifact::SetSmax(Float64 sMax)
 {
-   m_Sall = sall;
+   m_Smax = sMax;
 }
 
 Float64 pgsHorizontalShearArtifact::GetFy() const
@@ -837,7 +837,7 @@ void pgsHorizontalShearArtifact::WasFyLimited(bool bWasLimited)
 
 bool pgsHorizontalShearArtifact::Is5_8_4_1_4Applicable() const
 {
-   return m_VsAvg >= m_VsLimit;
+   return m_VsLimit <= m_VsAvg;
 }
 
 Float64 pgsHorizontalShearArtifact::GetAvOverSMin_5_8_4_4_1() const
@@ -1079,7 +1079,7 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
    m_SAdditional   = rOther.m_SAdditional;
    m_AvfGirder    = rOther.m_AvfGirder;
    m_SGirder      = rOther.m_SGirder;
-   m_Sall         = rOther.m_Sall;
+   m_Smax         = rOther.m_Smax;
    m_Fy           = rOther.m_Fy;
    m_bWasFyLimited = rOther.m_bWasFyLimited;
    m_AvOverSMin_5_8_4_4_1   = rOther.m_AvOverSMin_5_8_4_4_1;

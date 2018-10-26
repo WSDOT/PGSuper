@@ -396,8 +396,6 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
       ATLASSERT(false); // is there a new curing method
    }
 
-   *pPara << _T("Max stirrup spacing = ") << dim.SetValue(pSpecEntry->GetMaxStirrupSpacing())<<rptNewLine;
-
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    pgsPointOfInterest poi(segmentKey,0.0);
@@ -858,9 +856,28 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    }
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),    true );
+
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 fr = pMaterials->GetSegmentShearFr(segmentKey,liveLoadIntervalIdx);
    *pPara << _T("Modulus of rupture = ") << stress.SetValue(fr) << rptNewLine;
+
+
+   bool bAfter1999 = lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false;
+   std::_tstring strFcCoefficient(bAfter1999 ? _T("0.125") : _T("0.1"));
+   Float64 k1,k2,s1,s2;
+   pSpecEntry->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
+   *pPara << _T("Maximum Spacing of Transverse Reinforcement (LRFD 5.8.2.7)") << rptNewLine;
+   if ( bAfter1999 )
+   {
+      *pPara << _T("Eqn 5.8.2.7-1: If ") << italic(ON) << Sub2(_T("v"),_T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k1 << Sub2(_T("d"),_T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
+      *pPara << _T("Eqn 5.8.2.7-2: If ") << italic(ON) << Sub2(_T("v"),_T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k2 << Sub2(_T("d"),_T("v")) << symbol(LTE) <<  dim.SetValue(s2) << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Eqn 5.8.2.7-1: If ") << italic(ON) << Sub2(_T("V"),_T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")) << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k1 << Sub2(_T("d"),_T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
+      *pPara << _T("Eqn 5.8.2.7-2: If ") << italic(ON) << Sub2(_T("V"),_T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")) << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k2 << Sub2(_T("d"),_T("v")) << symbol(LTE) <<  dim.SetValue(s2) << rptNewLine;
+   }
 
    Int16 method = pSpecEntry->GetLongReinfShearMethod();
    if ( method != WSDOT_METHOD )
@@ -882,6 +899,8 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
       *pPara << _T("Shear stress at girder/deck interface computed using the classical shear flow formula: ") << Sub2(_T("V"),_T("ui")) << _T(" = (") << Sub2(_T("V"),_T("u")) << _T("Q)") << _T("/") << _T("(Ib)") << rptNewLine;
       break;
    }
+
+   *pPara << _T("Maximum spacing of interface shear connectors (LRFD 5.8.4.2): ") << dim.SetValue(pSpecEntry->GetMaxInterfaceShearConnectorSpacing()) << rptNewLine;
 }
 
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)

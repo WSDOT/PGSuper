@@ -15714,29 +15714,38 @@ void CBridgeAgentImp::ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,CSpanK
 
    pSpanKey->spanIndex = INVALID_INDEX;
    Float64 XgStartSpan = (startSpanIdx == 0 || !bIsContinuous ? endDist : -endOffset);
-   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   if ( XgPoi < XgStartSpan )
    {
-      Float64 Lspan = GetSpanLength(spanIdx,segmentKey.girderIndex);
-      Float64 XgEndSpan = XgStartSpan + Lspan;
-      if ( ::InRange(XgStartSpan,XgPoi,XgEndSpan) )
-      {
-         // we found the span that contains the poi
-         pSpanKey->spanIndex = spanIdx;
-         *pXspan = XgPoi - XgStartSpan;
-         break;
-      }
-      XgStartSpan = XgEndSpan; // start of next span is end of this span
+      // poi is before the start of the span
+      pSpanKey->spanIndex = startSpanIdx;
+      *pXspan = XgPoi - XgStartSpan;
    }
-
-   if ( pSpanKey->spanIndex == INVALID_INDEX )
+   else
    {
-      // XgPoi is beyond the end of the last span
-      // XgStartSpan is the start of the next span which is the end of the last span... which is what we want
-      pSpanKey->spanIndex = endSpanIdx;
+      for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+      {
+         Float64 Lspan = GetSpanLength(spanIdx,segmentKey.girderIndex);
+         Float64 XgEndSpan = XgStartSpan + Lspan;
+         if ( ::InRange(XgStartSpan,XgPoi,XgEndSpan) )
+         {
+            // we found the span that contains the poi
+            pSpanKey->spanIndex = spanIdx;
+            *pXspan = XgPoi - XgStartSpan;
+            break;
+         }
+         XgStartSpan = XgEndSpan; // start of next span is end of this span
+      }
 
-      // Xspan is (XgPoi - XgStartSpan) which is the distance from the end of the last span to the poi
-      // plus the length of the span which makes the value be the distance from the start of the last span
-      *pXspan = XgPoi - XgStartSpan + GetSpanLength(endSpanIdx,segmentKey.girderIndex);
+      if ( pSpanKey->spanIndex == INVALID_INDEX )
+      {
+         // XgPoi is beyond the end of the last span
+         // XgStartSpan is the start of the next span which is the end of the last span... which is what we want
+         pSpanKey->spanIndex = endSpanIdx;
+
+         // Xspan is (XgPoi - XgStartSpan) which is the distance from the end of the last span to the poi
+         // plus the length of the span which makes the value be the distance from the start of the last span
+         *pXspan = XgPoi - XgStartSpan + GetSpanLength(endSpanIdx,segmentKey.girderIndex);
+      }
    }
 
 #if defined CHECK_POI_CONVERSIONS
@@ -21302,6 +21311,13 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
          dist *= -GetSpanLength(nextSpanIdx,girderKey.girderIndex);
       }
 
+      if ( nextSpanIdx == nSpans-1 )
+      {
+         // low point in last span is measured from the right end
+         // change it around to be measured from the left end
+         dist = GetSpanLength(nextSpanIdx,girderKey.girderIndex) - dist;
+      }
+
       x3 = x1 + dist; // low point, measured from previous high point
       y3 = ConvertDuctOffsetToDuctElevation(girderKey,x3,offset,offsetType);
 
@@ -24391,20 +24407,21 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
 
       if ( dist < 0 ) // fraction of the distance between start and high point at first interior pier
       {
-         // get the cl-brg to cl-pier length for this girder in the start span
          Float64 L = GetSpanLength(startSpanIdx,girderKey.girderIndex);
-         dist *= -L;
 
          // adjust for the end distance at the start of the girder
          Float64 end_dist = GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
-         dist += end_dist;
+         L += end_dist;
 
          if ( startSpanIdx == endSpanIdx )
          {
             // there is only one span for this tendon... adjust for the end distance at the end of the girder
             end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-            dist += end_dist;
+            L += end_dist;
          }
+
+         // get the end of girder to low point distance
+         dist *= -L;
       }
 
       Float64 x2 = x1; // dummy (x1 and x2 are computed from the web plane below)
@@ -24520,6 +24537,13 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          y1 = y3;
 
          L = GetSpanLength(nextSpanIdx,girderKey.girderIndex);
+         if ( nextSpanIdx == endSpanIdx )
+         {
+            // adjust for the end distance at the end of the girder
+            Float64 end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
+            L += end_dist;
+         }
+
          if ( dist < 0 ) // fraction of span length
          {
             dist *= -L;
@@ -24527,9 +24551,9 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
 
          if ( nextSpanIdx == endSpanIdx )
          {
-            // adjust for the end distance at the end of the girder
-            Float64 end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-            L += end_dist;
+            // for the last span, low point is measured from right end... make it 
+            // measured from the left end
+            dist = L - dist;
          }
 
          z3 = z1 + dist; // low point, measured from previous high point
@@ -24592,18 +24616,19 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
       {
          // get the cl-brg to cl-brg length for this girder in the end span
          Float64 L = GetSpanLength(endSpanIdx,girderKey.girderIndex);
-         dist *= -L;
 
          // adjust for the end distance at the end of the girder
          Float64 end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-         dist += end_dist;
+         L += end_dist;
 
          if ( startSpanIdx == endSpanIdx )
          {
             // this is only one span for this tendon... adjust for end distance at the start of the girder
             end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
-            dist += end_dist;
+            L += end_dist;
          }
+
+         dist *= -L;
       }
 
       Float64 Lg = GetGirderLength(girderKey); // End-to-end length of full girder

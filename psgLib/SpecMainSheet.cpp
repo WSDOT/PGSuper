@@ -625,8 +625,15 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::AllLightweight]);
    DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::SandLightweight]);
 
-   DDX_UnitValueAndTag(pDX, IDC_MAX_STIRRUP_SPACING, IDC_MAX_STIRRUP_SPACING_UNITS, m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_STIRRUP_SPACING,m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_SMAX, IDC_SMAX_UNIT, m_Entry.m_MaxInterfaceShearConnectorSpacing, pDisplayUnits->ComponentDim );
+
+   DDX_Text(pDX, IDC_SPACING_COEFFICIENT_1, m_Entry.m_StirrupSpacingCoefficient[0]);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_SPACING_1, IDC_MAX_SPACING_1_UNIT, m_Entry.m_MaxStirrupSpacing[0], pDisplayUnits->ComponentDim );
+   DDX_Text(pDX, IDC_SPACING_COEFFICIENT_2, m_Entry.m_StirrupSpacingCoefficient[1]);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_SPACING_2, IDC_MAX_SPACING_2_UNIT, m_Entry.m_MaxStirrupSpacing[1], pDisplayUnits->ComponentDim );
+
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_SPACING_1, m_Entry.m_MaxStirrupSpacing[0], pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_SPACING_2, m_Entry.m_MaxStirrupSpacing[1], pDisplayUnits->ComponentDim );
 }
 
 void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)

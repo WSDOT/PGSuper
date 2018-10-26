@@ -316,6 +316,10 @@ bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLi
                                     *(projectMgr.GetRatingLibrary()), _T("Rating Criteria Library"), RatingLibraryEntry(),isImported,bForceUpdate))
         return false;
 
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetDuctLibrary(), 
+                                    *(projectMgr.GetDuctLibrary()), _T("Duct Library"), DuctLibraryEntry(),isImported,bForceUpdate))
+        return false;
+
    return true;
 }
 
@@ -373,6 +377,10 @@ bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, p
    if (!do_make_saveable_copy( *(libMgr.GetRatingLibrary()), ptempManager->GetRatingLibrary()))
       return false;
 
+   // duct specification
+   if (!do_make_saveable_copy( *(libMgr.GetDuctLibrary()), ptempManager->GetDuctLibrary()))
+      return false;
+
    return true;
 }
 
@@ -400,9 +408,13 @@ LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std
       result = Rename;
    }
    else if (outcom==CLibraryEntryConflict::OverWrite)
+   {
       result = OverWrite;
+   }
    else
+   {
       ASSERT(0);
+   }
 
    return result;
 }
@@ -492,9 +504,13 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
    std::_tstring str(OLE2T(var.bstrVal));
 
    if (str==_T("US"))
+   {
       *pUnitsMode = eafTypes::umUS;
+   }
    else
+   {
       *pUnitsMode = eafTypes::umSI;
+   }
 
    return S_OK;
 }
@@ -542,13 +558,21 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
       CString cmsg;
       rLoad.GetErrorMessage(&msg);
       if (reason==sysXStructuredLoad::InvalidFileFormat)
+      {
          cmsg = _T("Invalid file data format. The file may have been corrupted. Extended error information is as follows: ");
+      }
       else if (reason==sysXStructuredLoad::BadVersion)
+      {
          cmsg = _T("Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ");
+      }
       else if ( reason == sysXStructuredLoad::UserDefined )
+      {
          cmsg = _T("Error reading file. Extended error information is as follows:");
+      }
       else
+      {
          cmsg = _T("Undetermined error reading data file.  Extended error information is as follows: ");
+      }
 
       cmsg += msg.c_str();
       AfxMessageBox(cmsg,MB_OK | MB_ICONEXCLAMATION);

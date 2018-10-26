@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 50.0 // jumped to version 50 for PGSplice development... this leaves a gap
+#define CURRENT_VERSION 51.0 // jumped to version 50 for PGSplice development... this leaves a gap
 // between version 44 (PGSuper head branch, version 2.9) and PGSplice 
 // when loading data that was added after version 44 it is ok for the load to fail for now.
 // once this is merged to the head branch, data added from the then CURRENT_VERSION and later can't fail
@@ -74,7 +74,6 @@ m_DoCheckSplitting(true),
 m_DoCheckConfinement(true),
 m_DoDesignSplitting(true),
 m_DoDesignConfinement(true),
-m_MaxStirrupSpacing(ConvertToSysUnits(18,unitMeasure::Inch)),
 m_CyLiftingCrackFs(1.0),
 m_CyLiftingFailFs(1.5),
 m_CyCompStressServ(0.45),
@@ -184,6 +183,7 @@ m_EnableSlabOffsetDesign(true),
 m_DesignStrandFillType(ftMinimizeHarping),
 m_EffFlangeWidthMethod(pgsTypes::efwmLRFD),
 m_ShearFlowMethod(sfmClassical),
+m_MaxInterfaceShearConnectorSpacing(::ConvertToSysUnits(48.0,unitMeasure::Inch)),
 m_ShearCapacityMethod(scmBTTables),
 m_CuringMethodTimeAdjustmentFactor(7),
 m_MinLiftPoint(-1), // H
@@ -317,6 +317,11 @@ m_ClosureCompStressFatigue(0.40)
    m_DoCheckStirrupSpacingCompatibility = true;
    m_bCheckSag = true;
    m_SagCamberType = pgsTypes::LowerBoundCamber;
+
+   m_StirrupSpacingCoefficient[0] = 0.8;
+   m_StirrupSpacingCoefficient[1] = 0.4;
+   m_MaxStirrupSpacing[0] = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
+   m_MaxStirrupSpacing[1] = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
 }
 
 SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
@@ -481,7 +486,11 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("DoDesignSplitting"), m_DoDesignSplitting);
    pSave->Property(_T("DoCheckConfinement"), m_DoCheckConfinement);
    pSave->Property(_T("DoDesignConfinement"), m_DoDesignConfinement);
-   pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing);
+   //pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing); // removed in version 46
+   pSave->Property(_T("StirrupSpacingCoefficient1"),m_StirrupSpacingCoefficient[0]); // added in version 46
+   pSave->Property(_T("MaxStirrupSpacing1"),m_MaxStirrupSpacing[0]); // added in version 46
+   pSave->Property(_T("StirrupSpacingCoefficient2"),m_StirrupSpacingCoefficient[1]); // added in version 46
+   pSave->Property(_T("MaxStirrupSpacing2"),m_MaxStirrupSpacing[1]); // added in version 46
    pSave->Property(_T("CyLiftingCrackFs"), m_CyLiftingCrackFs);
    pSave->Property(_T("CyLiftingFailFs"), m_CyLiftingFailFs);
    pSave->Property(_T("CyCompStressServ"), m_CyCompStressServ);
@@ -834,6 +843,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
       // added in version 18 (moved into datablock in version 37)
       pSave->Property(_T("ShearFlowMethod"),(long)m_ShearFlowMethod);
+      pSave->Property(_T("MaxInterfaceShearConnectorSpacing"),m_MaxInterfaceShearConnectorSpacing);
       pSave->Property(_T("ShearCapacityMethod"),(long)m_ShearCapacityMethod);
 
       // added in version 37
@@ -1130,9 +1140,38 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if(!pLoad->Property(_T("MaxStirrupSpacing"), &m_MaxStirrupSpacing))
+      if ( version < 46 || version == 50 )
       {
-         THROW_LOAD(InvalidFileFormat,pLoad);
+         // removed in version 46
+         // also used in version 50 (on the PGSplice, v3.0 branch)
+         Float64 maxStirrupSpacing;
+         if(!pLoad->Property(_T("MaxStirrupSpacing"), &maxStirrupSpacing))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_MaxStirrupSpacing[0] = maxStirrupSpacing;
+      }
+      else
+      {
+         // added in version 46 or 51 (PGSplice, v3.0 branch)
+         if ( !pLoad->Property(_T("StirrupSpacingCoefficient1"),&m_StirrupSpacingCoefficient[0]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("MaxStirrupSpacing1"),&m_MaxStirrupSpacing[0]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("StirrupSpacingCoefficient2"),&m_StirrupSpacingCoefficient[1]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("MaxStirrupSpacing2"),&m_MaxStirrupSpacing[1]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("CyLiftingCrackFs"), &m_CyLiftingCrackFs))
@@ -3228,6 +3267,20 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          m_ShearFlowMethod = (ShearFlowMethod)(value);
 
+         // MaxInterfaceShearConnectorSpacing wasn't available in this version of the input
+         // the default value is 48". Set the value to match the spec
+         if ( m_SpecificationType < lrfdVersionMgr::SeventhEdition2014 )
+         {
+            if ( m_SpecificationUnits == lrfdVersionMgr::US )
+            {
+               m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
+            }
+            else
+            {
+               m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(0.6, unitMeasure::Meter);
+            }
+         }
+
          if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -3306,6 +3359,36 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          m_ShearFlowMethod = (ShearFlowMethod)(value);
 
+         if ( 1 < shear_version )
+         {
+            // NOTE: PGSuper 2.9 changed the version number of this data block to 2
+            // PGSuper 3.0 was using version 2 at the same time. There will be files
+            // that were created with PGSuper 2.9 that will be read by PGSuper 3.0.
+            // In those cases the following Property will fail. That's ok. Just move
+            // on. If it succeeds, the MaxInterfaceShearConnectorSpacing information is available
+            // so read it.
+            // For this reason the return value from this pLoad->Property is not check. Everything
+            // is OK if it passes or fails
+            // 
+            // ***** NOTE ***** DO NOT TEST THE RETULT VALUE
+            pLoad->Property(_T("MaxInterfaceShearConnectorSpacing"),&m_MaxInterfaceShearConnectorSpacing);
+         }
+         else
+         {
+            // prior to 7th Edition 2014 max spacing was 24 inches... 
+            if ( m_SpecificationType < lrfdVersionMgr::SeventhEdition2014 )
+            {
+               if ( m_SpecificationUnits == lrfdVersionMgr::US )
+               {
+                  m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
+               }
+               else
+               {
+                  m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(0.6, unitMeasure::Meter);
+               }
+            }
+         }
+
          if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -3383,29 +3466,33 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // Added ClosureJointResistanceFactor in version 2 of the Shear data block
          if ( 1 < shear_version )
          {
-            if ( !pLoad->BeginUnit(_T("ClosureJointResistanceFactor")) )
+            // NOTE: PGSuper 2.9 changed the version number of this data block to 2
+            // PGSuper 3.0 was using version 2 at the same time. There will be files
+            // that were created with PGSuper 2.9 that will be read by PGSuper 3.0.
+            // In those cases the following BeginUnit will fail. That's ok. Just move
+            // on. If it succeeds, the ClosureJointResistanceFactor information is available
+            // so read it
+            if ( pLoad->BeginUnit(_T("ClosureJointResistanceFactor")) )
             {
-               THROW_LOAD(InvalidFileFormat,pLoad );
-            }
+               if ( !pLoad->Property(_T("Normal"),&m_PhiClosureJointShear[pgsTypes::Normal]) )
+               {
+                  THROW_LOAD(InvalidFileFormat,pLoad );
+               }
 
-            if ( !pLoad->Property(_T("Normal"),&m_PhiClosureJointShear[pgsTypes::Normal]) )
-            {
-               THROW_LOAD(InvalidFileFormat,pLoad );
-            }
+               if ( !pLoad->Property(_T("AllLightweight"),&m_PhiClosureJointShear[pgsTypes::AllLightweight]) )
+               {
+                  THROW_LOAD(InvalidFileFormat,pLoad );
+               }
 
-            if ( !pLoad->Property(_T("AllLightweight"),&m_PhiClosureJointShear[pgsTypes::AllLightweight]) )
-            {
-               THROW_LOAD(InvalidFileFormat,pLoad );
-            }
+               if ( !pLoad->Property(_T("SandLightweight"),&m_PhiClosureJointShear[pgsTypes::SandLightweight]) )
+               {
+                  THROW_LOAD(InvalidFileFormat,pLoad );
+               }
 
-            if ( !pLoad->Property(_T("SandLightweight"),&m_PhiClosureJointShear[pgsTypes::SandLightweight]) )
-            {
-               THROW_LOAD(InvalidFileFormat,pLoad );
-            }
-
-            if ( !pLoad->EndUnit() ) // ClosureJointResistanceFactor
-            {
-               THROW_LOAD(InvalidFileFormat,pLoad );
+               if ( !pLoad->EndUnit() ) // ClosureJointResistanceFactor
+               {
+                  THROW_LOAD(InvalidFileFormat,pLoad );
+               }
             }
          }
 
@@ -3571,7 +3658,10 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_DoDesignSplitting           , rOther.m_DoDesignSplitting         );
    TEST (m_DoCheckConfinement           , rOther.m_DoCheckConfinement       );
    TEST (m_DoDesignConfinement           , rOther.m_DoDesignConfinement     );
-   TESTD(m_MaxStirrupSpacing          , rOther.m_MaxStirrupSpacing          );
+   TESTD(m_StirrupSpacingCoefficient[0], rOther.m_StirrupSpacingCoefficient[0]);
+   TESTD(m_StirrupSpacingCoefficient[1], rOther.m_StirrupSpacingCoefficient[1]);
+   TESTD(m_MaxStirrupSpacing[0]          , rOther.m_MaxStirrupSpacing[0]          );
+   TESTD(m_MaxStirrupSpacing[1]          , rOther.m_MaxStirrupSpacing[1]          );
    TESTD(m_CyLiftingCrackFs          , rOther.m_CyLiftingCrackFs          );
    TESTD(m_CyLiftingFailFs           , rOther.m_CyLiftingFailFs           );
    TESTD(m_CyCompStressServ           , rOther.m_CyCompStressServ           );
@@ -3748,6 +3838,8 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_DesignStrandFillType            , rOther.m_DesignStrandFillType );
    TEST (m_EffFlangeWidthMethod            , rOther.m_EffFlangeWidthMethod );
    TEST (m_ShearFlowMethod                 , rOther.m_ShearFlowMethod );
+   TESTD(m_MaxInterfaceShearConnectorSpacing, rOther.m_MaxInterfaceShearConnectorSpacing);
+
    TEST (m_ShearCapacityMethod             , rOther.m_ShearCapacityMethod );
    TESTD(m_CuringMethodTimeAdjustmentFactor , rOther.m_CuringMethodTimeAdjustmentFactor );
 
@@ -3938,15 +4030,20 @@ bool SpecLibraryEntry::IsConfinementDesignEnabled() const
    return m_DoDesignConfinement;
 }
 
-
-Float64 SpecLibraryEntry::GetMaxStirrupSpacing() const
+void SpecLibraryEntry::GetMaxStirrupSpacing(Float64* pK1,Float64* pS1,Float64* pK2,Float64* pS2) const
 {
-   return m_MaxStirrupSpacing;
+   *pK1 = m_StirrupSpacingCoefficient[0];
+   *pS1 = m_MaxStirrupSpacing[0];
+   *pK2 = m_StirrupSpacingCoefficient[1];
+   *pS2 = m_MaxStirrupSpacing[1];
 }
 
-void SpecLibraryEntry::SetMaxStirrupSpacing(Float64 space)
+void SpecLibraryEntry::SetMaxStirrupSpacing(Float64 K1,Float64 S1,Float64 K2,Float64 S2)
 {
-   m_MaxStirrupSpacing = space;
+   m_StirrupSpacingCoefficient[0] = K1;
+   m_MaxStirrupSpacing[0]         = S1;
+   m_StirrupSpacingCoefficient[1] = K2;
+   m_MaxStirrupSpacing[1]         = S2;
 }
 
 void SpecLibraryEntry::EnableLiftingCheck(bool enable)
@@ -5205,6 +5302,16 @@ ShearFlowMethod SpecLibraryEntry::GetShearFlowMethod() const
    return m_ShearFlowMethod;
 }
 
+Float64 SpecLibraryEntry::GetMaxInterfaceShearConnectorSpacing() const
+{
+   return m_MaxInterfaceShearConnectorSpacing;
+}
+
+void SpecLibraryEntry::SetMaxInterfaceShearConnectionSpacing(Float64 sMax)
+{
+   m_MaxInterfaceShearConnectorSpacing = sMax;
+}
+
 void SpecLibraryEntry::SetShearCapacityMethod(ShearCapacityMethod method)
 {
    m_ShearCapacityMethod = method;
@@ -5583,7 +5690,10 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_DoCheckHoldDown            = rOther.m_DoCheckHoldDown;
    m_DoDesignHoldDown           = rOther.m_DoDesignHoldDown;
    m_HoldDownForce              = rOther.m_HoldDownForce;
-   m_MaxStirrupSpacing          = rOther.m_MaxStirrupSpacing;
+   m_StirrupSpacingCoefficient[0] = rOther.m_StirrupSpacingCoefficient[0];
+   m_MaxStirrupSpacing[0]         = rOther.m_MaxStirrupSpacing[0];
+   m_StirrupSpacingCoefficient[1] = rOther.m_StirrupSpacingCoefficient[1];
+   m_MaxStirrupSpacing[1]         = rOther.m_MaxStirrupSpacing[1];
    m_DoCheckConfinement         = rOther.m_DoCheckConfinement;
    m_DoDesignConfinement        = rOther.m_DoDesignConfinement;
    m_DoCheckSplitting           = rOther.m_DoCheckSplitting;
@@ -5767,6 +5877,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_EffFlangeWidthMethod = rOther.m_EffFlangeWidthMethod;
 
    m_ShearFlowMethod = rOther.m_ShearFlowMethod;
+   m_MaxInterfaceShearConnectorSpacing = rOther.m_MaxInterfaceShearConnectorSpacing;
 
    m_ShearCapacityMethod = rOther.m_ShearCapacityMethod;
 

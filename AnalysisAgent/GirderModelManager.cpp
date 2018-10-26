@@ -10248,11 +10248,27 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup      = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+   const CSplicedGirderData*  pGirder     = pGroup->GetGirder(girderKey.girderIndex);
+
+   SegmentIndexType nSegments = pGirder->GetSegmentCount();
 
    // Equivalent load for tendon path composed of compounded second-degree parabolas.
    // See "Modern Prestress Concrete", Libby, page 472-473, Eqn (10-7).
    SpanIndexType startSpanIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+   SpanIndexType endSpanIdx   = pGroup->GetPierIndex(pgsTypes::metEnd)-1;
+
    Float64 L = pBridge->GetSpanLength(startSpanIdx,girderKey.girderIndex);
+   Float64 endDist = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
+   if ( startSpanIdx == 0 )
+   {
+      L += endDist;
+   }
+
+   if ( startSpanIdx == endSpanIdx )
+   {
+      Float64 end_dist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
+      L += end_dist;
+   }
 
    /////// NOTE ////////
    // In this function, the span coordinate system that is being refered to is the LBAM
@@ -10273,8 +10289,9 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    pgsPointOfInterest startPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgStart);
 
    // Get start of tendon, and thus the equivalent load, in span coordinates
-   Float64 endDist = pBridge->GetSegmentStartEndDistance(startPoi.GetSegmentKey());
-   Float64 XspanStart = XgStart - endDist; // start of tendon in span coordinates
+   CSpanKey spanKey;
+   Float64 XspanStart;
+   pPoi->ConvertPoiToSpanPoint(startPoi,&spanKey,&XspanStart);
 
    // P*e at start of tendon
    Float64 epts = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,startPoi,ductIdx);
@@ -10285,19 +10302,31 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    start_moment.X = XspanStart;
    momentLoads.push_back(start_moment);
 
+
+   // Instead of using the eccentricity at the start/end of the tendon segment, we are using
+   // the distance down from the top of the non-composite girder. Eccentricity is based on
+   // the material properties and we end up with non-symmetrical equivalent loads for
+   // symmetrical tendons when the modulus of the segments are different. Using the geometry
+   // of the tendon instead of eccentricities, we get equivalent loadings that make sense.
+   Float64 Ystart = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,startPoi,ductIdx);
+
    // Start of duct to first low point
    Float64 lowPoint, lowOffset;
    CDuctGeometry::OffsetType lowOffsetType;
    ductGeometry.GetLowPoint(startSpanIdx,&lowPoint,&lowOffset,&lowOffsetType);
-   Float64 XspanLow = (lowPoint < 0 ? -lowPoint*L  : lowPoint); // low point measured from CL Bearing at start of first span
-   Float64 XgLow = XspanLow + endDist; // low point in girder coordinates
+   Float64 XgLow = (lowPoint < 0 ? -lowPoint*L  : lowPoint); // low point measured from left end of girder
    pgsPointOfInterest lowPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgLow);
    Float64 eptl = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,lowPoi,ductIdx);
+
+   Float64 XspanLow;
+   pPoi->ConvertPoiToSpanPoint(lowPoi,&spanKey,&XspanLow);
+
+   Float64 Ylow = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,lowPoi,ductIdx);
 
    // we want e_prime to be positive if the parabola is a smile shape
    EquivPostTensionDistributedLoad load;
 
-   Float64 e_prime = eptl - epts;
+   Float64 e_prime = Ystart - Ylow;
    Float64 x = XgLow - XgStart;
    Float64 w = P*e_prime*L/(endDist*endDist*(x-L) + L*x*x - x*x*x);
 
@@ -10308,8 +10337,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       load.Xend    = XspanLow;
       load.Wstart  = w;
       load.Wend    = w;
-      load.eStart = epts;
-      load.eEnd   = eptl;
+      load.Ystart = Ystart;
+      load.Yend   = Ylow;
       load.e_prime = e_prime;
       load.x      = x;
       load.P      = P;
@@ -10330,7 +10359,7 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       ductGeometry.GetHighPoint(pierIdx,&leftIP,&highOffset,&highOffsetType,&rightIP);
       pgsPointOfInterest highPoi = pPoi->GetPointOfInterest(girderKey,pierIdx);
       Float64 XgHigh = pPoi->ConvertPoiToGirderCoordinate(highPoi);
-      Float64 epth = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,highPoi,ductIdx);
+      Float64 Yhigh = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,highPoi,ductIdx);
 
       // Low point in span - IP
       // find the location of the inflection point on the left side of the pier (previous span)
@@ -10346,10 +10375,10 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       Float64 XgLIP = XgHigh - leftIP;
 
       pgsPointOfInterest lipPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgLIP);
-      Float64 elip = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,lipPoi,ductIdx);
+      Float64 Ylip = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,lipPoi,ductIdx);
 
       // low point to inflection point
-      e_prime = eptl - elip;
+      e_prime = Ylip - Ylow;
       x = XgLIP - XgLow;
       w = 2*P*e_prime/(x*x);
       if ( !IsZero(w) )
@@ -10359,8 +10388,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
          load.Xend    = XspanLIP;
          load.Wstart  = w;
          load.Wend    = w;
-         load.eStart = eptl;
-         load.eEnd   = elip;
+         load.Ystart = Ylow;
+         load.Yend   = Ylip;
          load.e_prime = e_prime;
          load.x      = x;
          load.P      = P;
@@ -10371,7 +10400,7 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       }
 
       // Inflection point to high point
-      e_prime = epth - elip;
+      e_prime = Ylip - Yhigh;
       x = XgHigh - XgLIP;
       w = 2*P*e_prime/(x*x);
       if ( !IsZero(w) )
@@ -10381,8 +10410,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
          load.Xend    = XspanHigh;
          load.Wstart  = w;
          load.Wend    = w;
-         load.eStart = elip;
-         load.eEnd   = epth;
+         load.Ystart = Ylip;
+         load.Yend   = Yhigh;
          load.e_prime = e_prime;
          load.x      = x;
          load.P      = P;
@@ -10401,11 +10430,23 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
 
       // find low point in span to the right of the pier
       L = pBridge->GetSpanLength(nextSpanIdx,girderKey.girderIndex);
+      if ( nextSpanIdx == endSpanIdx )
+      {
+         Float64 end_dist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
+         L += end_dist;
+      }
       XspanLow = (lowPoint < 0 ? -lowPoint*L : lowPoint);
+      if ( nextSpanIdx == endSpanIdx )
+      {
+         // if the next span is the last span, XspanLoad is measured from the right end of the span
+         // change it to be measured from the left end of the span
+         XspanLow = L - XspanLow;
+      }
       XgLow = XgHigh + XspanLow;
       
       lowPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgLow);
-      eptl = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,lowPoi,ductIdx);
+
+      Ylow = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,lowPoi,ductIdx);
 
       // find inflection point to the right of the pier
       // if rightIP is less than zero, rightIP is a fraction measure from the high point to the next low point
@@ -10414,10 +10455,10 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       Float64 XgRIP = XgHigh + XspanRIP;
 
       pgsPointOfInterest ripPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgRIP);
-      Float64 erip = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,ripPoi,ductIdx);
+      Float64 Yrip = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,ripPoi,ductIdx);
 
       // high point to inflection point
-      e_prime = epth - erip;
+      e_prime = Yrip - Yhigh;
       x = XgRIP - XgHigh;
       w = 2*P*e_prime/(x*x);
 
@@ -10428,8 +10469,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
          load.Xend    = XspanRIP;
          load.Wstart  = w;
          load.Wend    = w;
-         load.eStart = epth;
-         load.eEnd   = erip;
+         load.Ystart = Yhigh;
+         load.Yend   = Yrip;
          load.e_prime = e_prime;
          load.x      = x;
          load.P      = P;
@@ -10440,7 +10481,7 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       }
 
       // IP to low point
-      e_prime = eptl - erip;
+      e_prime = Yrip - Ylow;
       x = XgLow - XgRIP;
       w = 2*P*e_prime/(x*x);
 
@@ -10452,8 +10493,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
          load.Xend    = XspanLow;
          load.Wstart  = w;
          load.Wend    = w;
-         load.eStart = erip;
-         load.eEnd   = eptl;
+         load.Ystart = Yrip;
+         load.Yend   = Ylow;
          load.e_prime = e_prime;
          load.x      = x;
          load.P      = P;
@@ -10473,20 +10514,26 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
 
    // end point is a special case. It is measured from the right end of the girder
    L = pBridge->GetSpanLength(load.spanIdx,girderKey.girderIndex);
+   if ( startSpanIdx == endSpanIdx )
+   {
+      Float64 end_dist = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
+      L += end_dist;
+   }
+
+   endDist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
+   L += endDist;
    endPoint = (endPoint < 0 ? -endPoint*L : endPoint);
 
    Float64 Lg = pBridge->GetGirderLength(girderKey);
    Float64 XgEnd = Lg - endPoint; // end of tendon in girder coordinates
 
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   endDist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey,nSegments-1));
-   Float64 XspanEnd = L - (endPoint-endDist); // end of tendon in span coordinates
-
    pgsPointOfInterest endPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgEnd);
+   Float64 XspanEnd;
+   pPoi->ConvertPoiToSpanPoint(endPoi,&spanKey,&XspanEnd);
 
-   Float64 epte = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,endPoi,ductIdx);
+   Float64 Yend = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,endPoi,ductIdx);
 
-   e_prime = eptl - epte;
+   e_prime = Yend - Ylow;
    x = XgEnd - XgLow; 
    w = P*e_prime*L/(endDist*endDist*(x-L) + L*x*x - x*x*x);
 
@@ -10496,8 +10543,8 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       load.Xend   = XspanEnd;
       load.Wstart = w;
       load.Wend   = w;
-      load.eStart = eptl;
-      load.eEnd   = epte;
+      load.Ystart = Ylow;
+      load.Yend   = Yend;
       load.e_prime = e_prime;
       load.x      = x;
       load.P      = P;
@@ -10508,10 +10555,11 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    }
 
    // P*e at end of tendon
+   Float64 epte = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,endPoi,ductIdx);
    Float64 Me = P*epte;
    EquivPostTensionMomentLoad end_moment;
    end_moment.M = -Me;
-   end_moment.spanIdx = startSpanIdx + nSpans-1;
+   end_moment.spanIdx = endSpanIdx;
    end_moment.X = XspanEnd;
    momentLoads.push_back(end_moment);
 }

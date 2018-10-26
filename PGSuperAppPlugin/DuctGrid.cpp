@@ -738,10 +738,21 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
 
    GetParam()->SetLockReadOnly(FALSE);
 
-   CGXComboBox* pCB = (CGXComboBox*)GetControl(row,nDuctTypeCol);
-   pCB->SetValue(duct.Name.c_str());
+   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   std::vector<std::_tstring> vNames;
+   pLibNames->EnumDuctNames(&vNames);
+   std::vector<std::_tstring>::iterator iter(vNames.begin());
+   std::vector<std::_tstring>::iterator end(vNames.end());
+   short idx = 0;
+   for ( ; iter != end; iter++, idx++ )
+   {
+      if ( duct.Name == *iter )
+      {
+         break;
+      }
+   }
 
-   //SetValueRange(CGXRange(row,nDuctTypeCol),    duct.Name.c_str());
+   SetValueRange(CGXRange(row,nDuctTypeCol),    idx);
    SetValueRange(CGXRange(row,nNumStrandCol),   (LONG)duct.nStrands);
    SetValueRange(CGXRange(row,nJackEndCol),     (LONG)duct.JackingEnd);
    SetValueRange(CGXRange(row,nPjackCheckCol),  (LONG)!duct.bPjCalc);

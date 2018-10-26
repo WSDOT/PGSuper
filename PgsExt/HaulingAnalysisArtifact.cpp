@@ -111,9 +111,8 @@ pgsWsdotHaulingStressAnalysisArtifact& pgsWsdotHaulingStressAnalysisArtifact::op
 }
 
 //======================== OPERATIONS =======================================
-bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
+bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassedPlumbGirder() const
 {
-   // First plumb girder
    Float64 fTop, fBottom, CapacityTop, CapacityBottom;
    GetMaxPlumbTensileStress(&fTop, &fBottom, &CapacityTop, &CapacityBottom);
    if ( IsGT(CapacityTop,fTop) )
@@ -125,7 +124,11 @@ bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
       return false;
    }
 
-   // Inclined girder
+   return true;
+}
+
+bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassedInclinedGirder() const
+{
    Float64 ftu,ftd,fbu,fbd;
    GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
    Float64 fmax = Max(ftu,ftd,fbu,fbd);
@@ -138,10 +141,25 @@ bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
    return true;
 }
 
-bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassed() const
+bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
 {
-   Float64 comp_stress = Min( GetMaximumConcreteCompressiveStress(),
-                                        GetMaximumInclinedConcreteCompressiveStress() );
+   return TensionPassedPlumbGirder() && TensionPassedInclinedGirder();
+}
+
+bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassedPlumbGirder() const
+{
+   Float64 comp_stress = GetMaximumConcreteCompressiveStress();
+   Float64 max_comp_stress = GetCompressiveCapacity();
+
+   if (comp_stress < max_comp_stress)
+      return false;
+
+   return true;
+}
+
+bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassedInclinedGirder() const
+{
+   Float64 comp_stress = GetMaximumInclinedConcreteCompressiveStress();
 
    Float64 max_comp_stress = GetCompressiveCapacity();
 
@@ -151,6 +169,11 @@ bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassed() const
    }
 
    return true;
+}
+
+bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassed() const
+{
+   return CompressionPassedPlumbGirder() && CompressionPassedInclinedGirder();
 }
 
 bool pgsWsdotHaulingStressAnalysisArtifact::Passed() const
@@ -1878,7 +1901,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
          capTens = tensCapacityBottom;
       }
 
-      if ( pStressArtifact->TensionPassed() )
+      if ( pStressArtifact->TensionPassedInclinedGirder() )
       {
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,true)<<_T(")");
       }
@@ -1889,7 +1912,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
 
       Float64 fComp = Min(fTopMin, fBotMin);
       
-      if ( pStressArtifact->CompressionPassed() )
+      if ( pStressArtifact->CompressionPassedInclinedGirder() )
       {
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
       }
@@ -2004,7 +2027,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
       Float64 fTens = Max(ftu, ftd, fbu, fbd);
       Float64 fComp = Min(ftu, ftd, fbu, fbd);
       
-      if ( fTens <= mod_rupture )
+      if ( pStressArtifact->TensionPassedInclinedGirder() )
       {
           (*p_table)(row,5) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(mod_rupture,fTens,true)<<_T(")");
       }
@@ -2013,7 +2036,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
           (*p_table)(row,5) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(mod_rupture,fTens,false)<<_T(")");
       }
 
-      if ( all_comp <= fComp )
+      if ( pStressArtifact->CompressionPassedInclinedGirder() )
       {
           (*p_table)(row,6) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(all_comp,fComp,true)<<_T(")");
       }

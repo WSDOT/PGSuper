@@ -1804,7 +1804,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50069, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAcv(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdrIdx<<std::endl;
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50070, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAvOverS(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdrIdx<<std::endl;
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50071, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetNormalCompressionForce(), unitMeasure::Newton)) <<_T(",15, ")<<gdrIdx<<std::endl;
-               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100208, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetSMax(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdrIdx<<std::endl;
+               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100208, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetSpacing(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdrIdx<<std::endl;
                resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100209, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAvOverSReqd(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdrIdx<<std::endl;
 
                const pgsVerticalShearArtifact* pVertical = psArtifact->GetVerticalShearArtifact();

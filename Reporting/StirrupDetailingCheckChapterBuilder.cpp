@@ -350,41 +350,41 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 
    *pParagraph << petable << rptNewLine;
 
-   GET_IFACE2(pBroker,ITransverseReinforcementSpec,pTransverseReinforcementSpec);
-   Float64 s_under, s_over;
-   pTransverseReinforcementSpec->GetMaxStirrupSpacing(&s_under, &s_over);
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
 
-   if ( bAfter1999 )
-   {
-      (*petable)(1,0) << _T("if V")<<Sub(_T("u"))<<_T(" < 0.125 ") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"))<<_T(" : ");
-   }
-   else
-   {
-      (*petable)(1,0) << _T("if V")<<Sub(_T("u"))<<_T(" < 0.1 ") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"))<<_T(" : ");
-   }
+   Float64 k1,s1,k2,s2;
+   pSpecEntry->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
 
-   (*petable)(1,1) << _T(" S")<<Sub(_T("max"))<<_T("= min(0.8 d")<<Sub(_T("v"))<<_T(", ")<<dim.SetValue(s_under)<<dim.GetUnitTag()<<_T(")");
-   (*petable)(2,0) <<_T("Else : ");
-   (*petable)(2,1) <<_T(" S")<<Sub(_T("max"))<<_T("= min(0.4 d")<<Sub(_T("v"))<<_T(", ")<<dim.SetValue(s_over)<<dim.GetUnitTag()<<_T(")");
+   if ( bAfter1999 )
+      (*petable)(1,0) << Sub2(_T("v"),_T("u"))<<_T(" < 0.125") << RPT_FC;
+   else
+      (*petable)(1,0) << Sub2(_T("V"),_T("u"))<<_T(" < 0.1") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"));
+
+   (*petable)(1,1) << Sub2(_T("S"),_T("max"))<<_T("= min(") << k1 << Sub2(_T("d"),_T("v"))<<_T(", ")<<dim.SetValue(s1)<<dim.GetUnitTag()<<_T(")");
+   
+   if ( bAfter1999 )
+      (*petable)(2,0) << Sub2(_T("v"),_T("u"))<< _T(" ") << symbol(GTE) << _T(" 0.125") << RPT_FC;
+   else
+      (*petable)(2,0) << Sub2(_T("V"),_T("u"))<< _T(" ") << symbol(GTE) <<_T(" 0.1") << RPT_FC <<Sub2(_T("b"),_T("v"))<<Sub2(_T("d"),_T("v"));
+
+   (*petable)(2,1) << Sub2(_T("S"),_T("max"))<<_T("= min(") << k2 << Sub2(_T("d"),_T("v"))<<_T(", ")<<dim.SetValue(s2)<<dim.GetUnitTag()<<_T(")");
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6);
    *pParagraph << table << rptNewLine;
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,1)  << COLHDR( Sub2(_T("V"),_T("u")),       rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
-
    if ( bAfter1999 )
    {
-      (*table)(0,2)  << COLHDR(_T("0.125 ") << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+      (*table)(0,1)  << COLHDR(Sub2(_T("v"),_T("u")),   rptStressUnitTag,  pDisplayUnits->GetStressUnit() );
+      (*table)(0,2)  << COLHDR(_T("0.125") << RPT_FC,  rptStressUnitTag,  pDisplayUnits->GetStressUnit() );
    }
    else
    {
-      (*table)(0,2)  << COLHDR(_T("0.1 ")   << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+      (*table)(0,1)  << COLHDR(Sub2(_T("V"),_T("u")),       rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+      (*table)(0,2)  << COLHDR(_T("0.1") << RPT_FC <<Sub2(_T("b"),_T("v"))<<Sub2(_T("d"),_T("v")),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    }
 
    (*table)(0,3)  << COLHDR(Sub2(_T("b"),_T("v")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -428,11 +428,20 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
          }
 
          (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
-         (*table)(row,1) << shear.SetValue(pArtifact->GetVu());
-         (*table)(row,2) << shear.SetValue(pArtifact->GetVuLimit());
+         if ( bAfter1999 )
+         {
+            Float64 bvdv = pArtifact->GetBv()*pArtifact->GetDv();
+            (*table)(row,1) << stress.SetValue(pArtifact->GetVu()/bvdv);
+            (*table)(row,2) << stress.SetValue(pArtifact->GetVuLimit()/bvdv);
+         }
+         else
+         {
+            (*table)(row,1) << shear.SetValue(pArtifact->GetVu());
+            (*table)(row,2) << shear.SetValue(pArtifact->GetVuLimit());
+         }
          (*table)(row,3) << dim.SetValue(pArtifact->GetBv());
          (*table)(row,4) << dim.SetValue(pArtifact->GetDv());
-
+   
          if (pArtifact->IsApplicable())
          {
             (*table)(row,5) << dim.SetValue(pArtifact->GetSMax());

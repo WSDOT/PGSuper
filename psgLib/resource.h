@@ -209,6 +209,7 @@
 #define IDC_NWC_GIRDER_FCI              1017
 #define IDC_REMOVEHORIZROWS             1017
 #define IDC_MAX_SPACING_CHG             1017
+#define IDC_MAX_SPACING_1               1017
 #define IDC_BETA                        1017
 #define IDC_OD                          1017
 #define IDC_WEIGHT                      1018
@@ -222,6 +223,7 @@
 #define IDC_CREEP_DURATION2_MIN         1018
 #define IDC_LWC_GIRDER_FCI              1018
 #define IDC_MAX_SHEARCAP_CHG            1018
+#define IDC_MAX_SPACING_2               1018
 #define IDC_HE_ROADWAY_SUPERELEVATION   1019
 #define IDC_RELEASE_TENSION_MAX         1019
 #define IDC_APPEND_HARPED_STRAND        1019
@@ -1051,14 +1053,21 @@
 #define IDC_RADIO1                      1559
 #define IDC_GROSS                       1559
 #define IDC_CHECK_PT_AT_JACKING         1559
+#define IDC_SMAX                        1560
 #define IDC_TRANSFORMED                 1560
+#define IDC_SMAX_UNIT                   1561
 #define IDC_NOTES                       1561
+#define IDC_DEPTH_OF_UNIT               1562
 #define IDC_CHECK_PT_BEFORE_TRANSFER    1562
+#define IDC_SPACING_COEFFICIENT_1       1563
 #define IDC_FATIGUE_GROUP               1563
+#define IDC_MAX_SPACING_1_UNIT          1564
 #define IDC_LOWER_VEHICLE_WEIGHT_UNIT   1565
+#define IDC_SPACING_COEFFICIENT_2       1565
 #define IDC_KDOT_TRUCK_SUPPORT_DESIGN_ACCURACY_UNIT 1565
 #define IDC_LOWER_VEHICLE_WEIGHT_LABEL  1566
 #define IDC_RELEASE_PTZ_TENSION         1566
+#define IDC_MAX_SPACING_2_UNIT          1566
 #define IDC_UPPER_VEHICLE_WEIGHT_LABEL  1567
 #define IDC_RELEASE_PTZ_TENSION_UNIT    1567
 #define IDC_UPPER_VEHICLE_WEIGHT        1568
@@ -1098,7 +1107,9 @@
 #define IDC_ADTT3                       1583
 #define IDC_ZDIM                        1583
 #define IDC_LF_LOWER3_LABEL             1584
+#define IDC_SPACING_LABEL_1             1584
 #define IDC_LF_LOWER3                   1585
+#define IDC_SPACING_LABEL_2             1585
 #define IDC_LF_UPPER3_LABEL             1586
 #define IDC_LF_UPPER3                   1587
 #define IDC_ADTT4                       1588
@@ -1152,7 +1163,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        310
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1584
+#define _APS_NEXT_CONTROL_VALUE         1586
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

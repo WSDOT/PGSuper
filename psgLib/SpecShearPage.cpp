@@ -188,4 +188,26 @@ void CSpecShearPage::FillShearMethodList()
       }
       break;
    }
+
+   if ( lrfdVersionMgr::SecondEditionWith2000Interims <= pDad->GetSpecVersion() )
+   {
+      GetDlgItem(IDC_SPACING_LABEL_1)->SetWindowText(_T("vu < 0.125f'c Smax = "));
+      GetDlgItem(IDC_SPACING_LABEL_2)->SetWindowText(_T("vu >= 0.125f'c Smax = "));
+   }
+   else
+   {
+      GetDlgItem(IDC_SPACING_LABEL_1)->SetWindowText(_T("Vu < 0.1*f'c*bv*dv Smax = "));
+      GetDlgItem(IDC_SPACING_LABEL_2)->SetWindowText(_T("Vu >= 0.1*f'c*bv*dv Smax = "));
+   }
+
+
+   // this text only applies for 7th Edition, 2014 and later
+   if ( lrfdVersionMgr::SeventhEdition2014 <= pDad->GetSpecVersion() )
+   {
+      GetDlgItem(IDC_DEPTH_OF_UNIT)->ShowWindow(SW_SHOW);
+   }
+   else
+   {
+      GetDlgItem(IDC_DEPTH_OF_UNIT)->ShowWindow(SW_HIDE);
+   }
 }
