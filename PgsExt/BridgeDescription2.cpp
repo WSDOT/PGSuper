@@ -1096,6 +1096,19 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
                pNewPier->SetGirderEndDistance(face,endDist,endDistMeasure);
             }
          }
+
+         if ( pierFace == pgsTypes::Back && m_Piers[refPierIdx]->GetNextSpan() == NULL )
+         {
+            // the new pier is an interior pier, but it got its information from the last pier
+            // the spacing was only defined on the back side... copy the spacing to the ahead side
+            pNewPier->SetGirderSpacing(pgsTypes::Ahead,*pNewPier->GetGirderSpacing(pgsTypes::Back));
+         }
+         else if ( pierFace == pgsTypes::Ahead && m_Piers[refPierIdx]->GetPrevSpan() == NULL )
+         {
+            // the new pier is an interior pier, but it got its information from the first pier
+            // the spacing was only defined on the ahead side... copy the spacing to the back side
+            pNewPier->SetGirderSpacing(pgsTypes::Back,*pNewPier->GetGirderSpacing(pgsTypes::Ahead));
+         }
       }
    }
 

@@ -87,9 +87,7 @@ BEGIN_MESSAGE_MAP(CLibChildFrame, CLibraryEditorChildFrame)
 	ON_COMMAND(IDM_RENAME_ENTRY, OnRenameEntry)
 	ON_UPDATE_COMMAND_UI(IDM_RENAME_ENTRY, OnUpdateRenameEntry)
 	//}}AFX_MSG_MAP
-	ON_COMMAND(ID_HELP_FINDER, OnHelpFinder)
 	ON_COMMAND(ID_HELP, OnHelp)
-	ON_COMMAND(ID_CONTEXT_HELP, OnHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -183,13 +181,6 @@ void CLibChildFrame::OnUpdateRenameEntry(CCmdUI* pCmdUI)
 
 void CLibChildFrame::OnHelp()
 {
-#pragma Reminder("HELP: why two help calls?")
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LIBRARY_VIEW);
-}
-
-void CLibChildFrame::OnHelpFinder()
-{
-#pragma Reminder("HELP: why two help calls?")
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LIBRARY_VIEW);
 }
 

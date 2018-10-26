@@ -127,12 +127,8 @@ BEGIN_MESSAGE_MAP(CPsgLibApp, CWinApp)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG_MAP
-	//ON_COMMAND(ID_HELP_FINDER, OnHelpFinder)
 	ON_COMMAND(ID_HELP, OnHelp)
-	//ON_COMMAND(ID_CONTEXT_HELP, OnContextHelp)
-	//ON_COMMAND(ID_DEFAULT_HELP, OnHelpFinder)
 END_MESSAGE_MAP()
-#pragma Reminder("HELP: do we need OnHelpFinder and OnHelp") // commented out during development of new documentation system
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsgLibApp construction
@@ -193,7 +189,6 @@ int CPsgLibApp::ExitInstance()
 void CPsgLibApp::OnHelp()
 {
    // must have a handler for ID_HELP otherwise CDialog::InitDialog() will hide the help button
-#pragma Reminder("HELP: need to provide help")
 }
 
 std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)

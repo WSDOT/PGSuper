@@ -8,6 +8,8 @@
 
 #include <IFace\Bridge.h>
 
+#include <EAF\EAFDocument.h>
+
 void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeometry& ductGeometry)
 {
    CLinearDuctGeometry::MeasurementType measurementType = ductGeometry.GetMeasurementType();
@@ -173,8 +175,7 @@ void CLinearDuctDlg::OnMeasurementTypeChanged()
 
 void CLinearDuctDlg::OnHelp()
 {
-#pragma Reminder("HELP: OnHelp")
-   AfxMessageBox(_T("Implement Help Topic"));
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_LINEAR_DUCT);
 }
 
 CLinearDuctGeometry::MeasurementType CLinearDuctDlg::GetMeasurementType()

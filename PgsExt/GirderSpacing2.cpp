@@ -852,19 +852,28 @@ SpacingIndexType CGirderSpacing2::GetSpacingCount() const
       }
       else
       {
-         // using a different number of girders in each span
+         // using a different number of girders in each group
          const CGirderGroupData* pGroup;
-         if ( m_pPier->GetGirderSpacing(pgsTypes::Back) == this )
+         if ( m_pPier )
          {
-            // this spacing is for the back side of this pier
-            // get the girder group for the span on the back side of this pier
-            pGroup = pBridgeDesc->GetGirderGroup(m_pPier->GetSpan(pgsTypes::Back));
+            // this spacing is measured at a pier
+            if ( m_pPier->GetGirderSpacing(pgsTypes::Back) == this )
+            {
+               // this spacing is for the back side of this pier
+               // get the girder group for the span on the back side of this pier
+               pGroup = pBridgeDesc->GetGirderGroup(m_pPier->GetSpan(pgsTypes::Back));
+            }
+            else
+            {
+               // this spacing is for the ahead side of this pier
+               // get the girder group for the span on the ahead side of this pier
+               pGroup = pBridgeDesc->GetGirderGroup(m_pPier->GetSpan(pgsTypes::Ahead));
+            }
          }
-         else
+         else if ( m_pTempSupport )
          {
-            // this spacing is for the ahead side of this pier
-            // get the girder group for the span on the ahead side of this pier
-            pGroup = pBridgeDesc->GetGirderGroup(m_pPier->GetSpan(pgsTypes::Ahead));
+            // this spacing is measured at a temporary support
+            pGroup = pBridgeDesc->GetGirderGroup(m_pTempSupport->GetSpan());
          }
 
          if ( pGroup == NULL )

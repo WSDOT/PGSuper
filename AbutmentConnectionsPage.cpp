@@ -224,7 +224,6 @@ void CAbutmentConnectionsPage::FillDiaphragmLoadComboBox()
 
 void CAbutmentConnectionsPage::OnHelp() 
 {
-#pragma Reminder("HELP: need correct help topic id")
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PIERDETAILS_CONNECTIONS );
 }
 

@@ -58,7 +58,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CDuctEntryDlg)
-   afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
+   afx_msg void OnHelp();
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

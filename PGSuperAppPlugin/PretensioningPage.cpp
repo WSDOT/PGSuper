@@ -28,6 +28,7 @@
 #include "PretensioningPage.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
@@ -128,8 +129,7 @@ BOOL CPretensioningPage::OnInitDialog()
 
 void CPretensioningPage::OnHelp()
 {
-#pragma Reminder("HELP: implement Help button")
-   //EAFHelp( IDH_PIERDETAILS_GIRDERSPACING );
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_PRETENSIONING);
 }
 
 #define ENABLE_WINDOW(x) pWnd = GetDlgItem(x); pWnd->EnableWindow(bEnable)

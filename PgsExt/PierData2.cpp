@@ -1758,6 +1758,17 @@ void CPierData2::GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhan
    *pRightOverhang = m_XBeamOverhang[pgsTypes::pstRight];
 }
 
+Float64 CPierData2::GetXBeamLength() const
+{
+   Float64 L = 0;
+   BOOST_FOREACH(Float64 s,m_ColumnSpacing)
+   {
+      L += s;
+   }
+   L += (m_XBeamOverhang[pgsTypes::pstLeft]-m_XBeamEndSlopeOffset[pgsTypes::pstLeft]) + (m_XBeamOverhang[pgsTypes::pstRight]-m_XBeamEndSlopeOffset[pgsTypes::pstRight]);
+   return L;
+}
+
 void CPierData2::SetColumnFixity(pgsTypes::ColumnFixityType fixityType)
 {
    m_ColumnFixity = fixityType;

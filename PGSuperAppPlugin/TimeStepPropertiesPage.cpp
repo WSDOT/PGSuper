@@ -26,6 +26,7 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "TimeStepPropertiesPage.h"
+#include <EAF\EAFDocument.h>
 
 
 // CTimeStepPropertiesPage dialog
@@ -64,6 +65,5 @@ END_MESSAGE_MAP()
 
 void CTimeStepPropertiesPage::OnHelp()
 {
-#pragma Reminder("HELP: implement Help button")
-   //EAFHelp( IDH_TIMESTEP_PARAMETERS );
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_TIMESTEP_PROPERTIES);
 }

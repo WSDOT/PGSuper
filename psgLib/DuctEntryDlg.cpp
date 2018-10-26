@@ -27,6 +27,7 @@
 #include <psgLib\psgLib.h>
 #include "DuctEntryDlg.h"
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -83,19 +84,16 @@ void CDuctEntryDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CDuctEntryDlg, CDialog)
 	//{{AFX_MSG_MAP(CDuctEntryDlg)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(ID_HELP,OnHelp)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CDuctEntryDlg message handlers
-LRESULT CDuctEntryDlg::OnCommandHelp(WPARAM, LPARAM lParam)
+void CDuctEntryDlg::OnHelp()
 {
-#pragma Reminder("HELP: need to add help topic")
-   AfxMessageBox(_T("Implement help topic"));
-   //EAFHelp( IDH_DUCT_DIALOG );
-   return TRUE;
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DUCT_DIALOG );
 }
 
 

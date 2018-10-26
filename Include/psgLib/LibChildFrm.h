@@ -82,7 +82,6 @@ protected:
 	afx_msg void OnRenameEntry();
 	afx_msg void OnUpdateRenameEntry(CCmdUI* pCmdUI);
 	//}}AFX_MSG
-   afx_msg void OnHelpFinder();
    afx_msg void OnHelp();
 	DECLARE_MESSAGE_MAP()
 

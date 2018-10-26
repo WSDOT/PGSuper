@@ -238,7 +238,6 @@ BOOL CPierLayoutPage::OnInitDialog()
    OnUserEc();
 
    OnPierModelTypeChanged();
-   UpdateEcControls();
 
    OnHeightMeasureChanged();
 
@@ -449,7 +448,7 @@ void CPierLayoutPage::OnPierModelTypeChanged()
    int curSel = pcbPierModel->GetCurSel();
    m_PierModelType = (pgsTypes::PierModelType)pcbPierModel->GetItemData(curSel);
    
-   BOOL bEnable = (m_PierModelType == pgsTypes::pmtIdealized ? FALSE : TRUE);
+   int nShow = (m_PierModelType == pgsTypes::pmtIdealized ? SW_HIDE : SW_SHOW);
 
    // enable/disable all the controls, except pier model type selector
    CWnd* pWnd = pcbPierModel->GetNextWindow(GW_HWNDNEXT);
@@ -460,24 +459,15 @@ void CPierLayoutPage::OnPierModelTypeChanged()
       {
          if ( nID == IDC_EC_LABEL )
          {
-            m_ctrlEcCheck.EnableWindow(bEnable);
+            m_ctrlEcCheck.ShowWindow(nShow);
          }
          else
          {
-            pWnd->EnableWindow(bEnable);
+            pWnd->ShowWindow(nShow);
          }
       }
       pWnd = pWnd->GetNextWindow(GW_HWNDNEXT);
    }
-
-   UpdateEcControls(); // the blanket enable/disable messes up the modulus of elasticity controls... fix it
-}
-
-void CPierLayoutPage::UpdateEcControls()
-{
-   BOOL bEnable = (m_PierModelType == pgsTypes::pmtPhysical && IsDlgButtonChecked(IDC_EC_LABEL)) == BST_CHECKED ? TRUE : FALSE;
-   GetDlgItem(IDC_EC)->EnableWindow(bEnable);
-   GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
 }
 
 void CPierLayoutPage::OnAddColumn()

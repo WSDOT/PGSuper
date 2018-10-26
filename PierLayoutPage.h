@@ -92,8 +92,6 @@ protected:
    void FillHeightMeasureComboBox();
    void FillTransverseLocationComboBox();
 
-   void UpdateEcControls();
-
    CPierData2* m_pPier;
    PierIndexType m_PierIdx;
 

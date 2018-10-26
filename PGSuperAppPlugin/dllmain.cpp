@@ -88,8 +88,7 @@ int CPGSuperAppPluginApp::ExitInstance()
 
 void CPGSuperAppPluginApp::OnHelp()
 {
-#pragma Reminder("HELP: Help topic")
-   //EAFHelp( 0 );
+   // just need a default handler so the CDialog doesn't hide our help buttons
 }
 
 CString CPGSuperAppPluginApp::GetVersion(bool bIncludeBuildNumber) const

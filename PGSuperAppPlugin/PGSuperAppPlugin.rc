@@ -3279,7 +3279,7 @@ BEGIN
     COMBOBOX        IDC_PIER_MODEL_TYPE,63,7,120,179,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "All dimensions are in the plane of the pier",IDC_DIMENSIONS_NOTE,226,9,132,8
     CONTROL         "",IDC_PIER_LAYOUT,"Static",SS_ENHMETAFILE,15,25,335,110
-    GROUPBOX        "Material Properties",IDC_STATIC,7,140,351,29
+    GROUPBOX        "Material Properties",IDC_MATERIAL_GROUP,7,140,351,29
     LTEXT           "f'c",IDC_FC_LABEL,19,154,8,8
     EDITTEXT        IDC_FC,35,151,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_FC_UNIT,79,154,19,8
@@ -3288,7 +3288,7 @@ BEGIN
     LTEXT           "Static",IDC_EC_UNIT,171,153,19,8
     PUSHBUTTON      "More Properties...",IDC_MORE_PROPERTIES,196,151,84,14
     LTEXT           "Concrete Type Label",IDC_CONCRETE_TYPE_LABEL,284,153,67,8
-    GROUPBOX        "Pier Cap Dimensions",IDC_STATIC,7,174,351,61
+    GROUPBOX        "Pier Cap Dimensions",IDC_CAP_GROUP,7,174,351,61
     LTEXT           "H1",IDC_H1_LABEL,20,190,10,8
     EDITTEXT        IDC_H1,34,187,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_H1_UNIT,76,190,19,8
@@ -3322,7 +3322,7 @@ BEGIN
     LTEXT           "W",IDC_W_LABEL,271,219,8,8
     EDITTEXT        IDC_W,285,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_W_UNIT,327,219,19,8
-    GROUPBOX        "Column Layout",IDC_STATIC,7,241,351,142
+    GROUPBOX        "Column Layout",IDC_COLUMN_GROUP,7,241,351,142
     LTEXT           "Base of column is defined by",IDC_STATIC,15,255,92,8
     COMBOBOX        IDC_HEIGHT_MEASURE,109,253,73,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Longit. Base Fixity",IDC_FIXITY_LABEL,193,255,60,8
@@ -3387,8 +3387,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,46
- PRODUCTVERSION 3,0,0,46
+ FILEVERSION 3,0,0,47
+ PRODUCTVERSION 3,0,0,47
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3405,12 +3405,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.46"
+            VALUE "FileVersion", "3.0.0.47"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.46"
+            VALUE "ProductVersion", "3.0.0.47"
         END
     END
     BLOCK "VarFileInfo"

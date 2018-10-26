@@ -3,7 +3,7 @@ Support {#support}
 
 Technical Support
 -----------------
-Non-TxDOT users may request technical support when this software product is used to perform services for department.
+Non-TxDOT users may request technical support when this software product is used to perform services for TxDOT.
 
 Reporting Problems
 ------------------

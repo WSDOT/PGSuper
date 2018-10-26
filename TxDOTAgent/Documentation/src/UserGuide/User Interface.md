@@ -15,8 +15,3 @@ TOGA is a simple Form View application consisting of a @subpage ui_main_menu and
 Advanced Usage
 --------------
 All TOGA analyses use simplified, limited input data to generate a PGSuper model behind the scenes. If questions arise about the assumptions made in TOGA you can use the "Export PGSuper Model" command from the main menu to save the generated PGSuper model. Then use the full power of PGSuper to examine all input data, assumptions, and results. Refer to the section [Generation of the PGSuper Model](@ref model_generation) in the Techinical Guide for details.
-
- 
-Other UI Elements
------------------
-* @subpage ui_select_strands_dialog

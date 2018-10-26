@@ -105,6 +105,5 @@ BOOL CPostTensioningPage::OnInitDialog()
 
 void CPostTensioningPage::OnHelp()
 {
-#pragma Reminder("HELP: implement Help button")
-   //EAFHelp( IDH_PIERDETAILS_GIRDERSPACING );
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_POST_TENSIONING);
 }

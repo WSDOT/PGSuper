@@ -5,6 +5,8 @@
 #include "PGSuperAppPlugin.h"
 #include "ParabolicDuctDlg.h"
 
+#include <EAF\EAFDocument.h>
+
 
 void DDX_DuctGeometry(CDataExchange* pDX,CParabolicDuctGrid& grid,CParabolicDuctGeometry& ductGeometry)
 {
@@ -136,6 +138,5 @@ void CParabolicDuctDlg::OnDuctChanged()
 
 void CParabolicDuctDlg::OnHelp()
 {
-#pragma Reminder("HELP: OnHelp")
-   AfxMessageBox(_T("Implement Help Topic"));
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_PARABOLIC_DUCT);
 }

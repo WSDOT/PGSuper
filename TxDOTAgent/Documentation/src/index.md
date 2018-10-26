@@ -14,7 +14,7 @@ BridgeLink, PGSuper and TOGA are licensed under the terms and conditions of the 
 
 This Manual
 -----------
-TOGA documentation consists of two manuals to help you use, manage, and understand this state of the art software.  The [User Guide](@ref user_guide) provides in-depth coverage of the software's features and functionality. The [Technical Guide](@ref technical_guide) details how TOGA fits into TxDOT's work flow and how it performs its engineering tasks. The [Administrator Guide](@ref adminstrator_guide) documents how administrators can modify TOGA's installation defaults.
+TOGA documentation consists of three manuals to help you use, manage, and understand this state of the art software.  The [User Guide](@ref user_guide) provides in-depth coverage of the software's features and functionality. The [Technical Guide](@ref technical_guide) details how TOGA fits into TxDOT's work flow and how it performs its engineering tasks. The [Administrator Guide](@ref adminstrator_guide) documents how administrators can modify TOGA's installation defaults.
 
 Additional Resources
 --------------------

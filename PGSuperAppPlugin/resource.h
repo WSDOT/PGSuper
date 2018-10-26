@@ -1606,7 +1606,6 @@
 #define IDC_FY_LABEL                    1863
 #define IDC_BOTTOM_COVER_LABEL          1863
 #define IDC_FY                          1864
-#define IDC_SERVICE_III_PLUS            1899
 #define IDC_TOP_MAT_BAR_LABEL           1864
 #define IDC_SERVICE_III_CR_LABEL        1865
 #define IDC_BOTTOM_MAT_BAR_LABEL        1865
@@ -1638,6 +1637,10 @@
 #define IDC_HAUNCH_SHAPE_LABEL          1880
 #define IDC_FILLET_TITLE                1881
 #define IDC_ALLOWABLE_TENSION_LABEL     1882
+#define IDC_MATERIAL_GROUP              1883
+#define IDC_CAP_GROUP                   1884
+#define IDC_COLUMN_GROUP                1885
+#define IDC_SERVICE_III_PLUS            1899
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
 #define IDR_PGSUPER_STDTOOLBAR          12129
@@ -1799,7 +1802,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        372
 #define _APS_NEXT_COMMAND_VALUE         36994
-#define _APS_NEXT_CONTROL_VALUE         1883
+#define _APS_NEXT_CONTROL_VALUE         1886
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

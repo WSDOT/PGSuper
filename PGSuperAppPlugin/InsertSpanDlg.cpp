@@ -197,9 +197,7 @@ BOOL CInsertSpanDlg::OnInitDialog()
 
 void CInsertSpanDlg::OnHelp() 
 {
-#pragma Reminder("HELP: CInsertSpanDlg::OnHelp")
-   AfxMessageBox(_T("IMPLEMENT"));
-   //EAFHelp( IDH_DIALOG_DESIGNCRITERIA );
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_INSERT_SPAN);
 }
 
 void CInsertSpanDlg::OnPierChanged()

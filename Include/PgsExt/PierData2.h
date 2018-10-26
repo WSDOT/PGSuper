@@ -228,6 +228,7 @@ public:
    void SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang);
    Float64 GetXBeamOverhang(pgsTypes::PierSideType side) const;
    void GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const;
+   Float64 GetXBeamLength() const;
 
    /////////////////////////////////////////////////////////////////////
    // Columns

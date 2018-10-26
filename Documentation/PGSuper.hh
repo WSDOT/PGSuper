@@ -143,6 +143,16 @@
 #define IDH_EFFECTIVE_FLANGE_WIDTH                                3742
 #define IDH_GIRDER_HAUNCH_AND_CAMBER                                     3743
 #define IDH_PROJECT_CRITERIA_CLOSURE_JOINTS                       3744
+#define IDH_DUCT_DIALOG                                            3745
+#define IDH_TIMELINE_MANAGER                                      3746
+#define IDH_TIMELINE_EVENT                                      3747
+#define IDH_TIMESTEP_PROPERTIES                                  3748
+#define IDH_INSERT_SPAN                                        3749
+#define IDH_LINEAR_DUCT                                     3750
+#define IDH_PARABOLIC_DUCT                                     3751
+#define IDH_POST_TENSIONING                                   3752
+#define IDH_PRETENSIONING                                     3753
+#define IDH_SPLICED_GIRDER_GENERAL                            3754
 
 #define IDH_SELECT_LIVELOAD			  	          3790
 

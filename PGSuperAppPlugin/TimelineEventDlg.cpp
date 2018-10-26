@@ -34,6 +34,8 @@
 #include "StressTendonDlg.h"
 #include "CastDeckDlg.h"
 
+#include <EAF\EAFDocument.h>
+
 
 
 // CTimelineEventDlg dialog
@@ -344,7 +346,5 @@ void CTimelineEventDlg::OnStressTendons()
 
 void CTimelineEventDlg::OnHelp()
 {
-   // TODO: Add your control notification handler code here
-#pragma Reminder("HELP: CTimelineEventDlg::OnHelp")
-   AfxMessageBox(_T("Implement"));
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_TIMELINE_EVENT);
 }

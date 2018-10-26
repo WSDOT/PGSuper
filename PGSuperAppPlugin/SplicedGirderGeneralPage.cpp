@@ -29,6 +29,7 @@
 #include "..\SplicedGirderDescDlg.h"
 #include <LRFD\StrandPool.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 
 #include <PgsExt\BridgeDescription2.h>
@@ -519,8 +520,7 @@ int CSplicedGirderGeneralPage::GetDuctCount()
 
 void CSplicedGirderGeneralPage::OnHelp()
 {
-#pragma Reminder("HELP: Help topic")
-   AfxMessageBox(_T("Add Help topic"));
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_SPLICED_GIRDER_GENERAL);
 }
 
 LRESULT CSplicedGirderGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam)

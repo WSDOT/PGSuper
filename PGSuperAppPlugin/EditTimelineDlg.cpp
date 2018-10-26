@@ -26,6 +26,7 @@
 #include "PGSuperAppPlugin.h"
 #include "EditTimelineDlg.h"
 #include "TimelineEventDlg.h"
+#include <EAF\EAFDocument.h>
 
 
 // CEditTimelineDlg dialog
@@ -132,7 +133,5 @@ void CEditTimelineDlg::OnRemoveEvent()
 
 void CEditTimelineDlg::OnHelp()
 {
-   // TODO: Add your control notification handler code here
-#pragma Reminder("HELP: implement help topic")
-   AfxMessageBox(_T("Implement"));
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_TIMELINE_MANAGER);
 }
