@@ -41,7 +41,10 @@ class PGSEXTCLASS CMomentLoadData
 {
 public:
 	CMomentLoadData();
+   CMomentLoadData(const CMomentLoadData& other);
 	virtual ~CMomentLoadData();
+
+   CMomentLoadData& operator=(const CMomentLoadData& other);
 
    HRESULT Save(IStructuredSave* pSave);
    HRESULT Load(IStructuredLoad* pSave);
@@ -59,6 +62,10 @@ public:
    bool     m_Fractional;
    Float64  m_Magnitude;
    std::_tstring m_Description;
+
+protected:
+   void MakeCopy(const CMomentLoadData& rOther);
+   virtual void MakeAssignment(const CMomentLoadData& rOther);
 };
 
 #endif // !defined(AFX_MOMENTLOADDATA_H__83982300_F548_44FC_B84A_A7C9731FE381__INCLUDED_)

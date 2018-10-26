@@ -81,6 +81,12 @@ END_MESSAGE_MAP()
 
 BOOL CACIConcretePage::OnInitDialog() 
 {
+   CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
+   if ( !pParent->m_bEnableComputeTimeParamters )
+   {
+      GetDlgItem(IDC_COMPUTE)->ShowWindow(SW_HIDE);
+   }
+
    CComboBox* pcbCureMethod = (CComboBox*)GetDlgItem(IDC_CURE_METHOD);
    pcbCureMethod->SetItemData(pcbCureMethod->AddString(_T("Moist")),pgsTypes::Moist);
    pcbCureMethod->SetItemData(pcbCureMethod->AddString(_T("Steam")),pgsTypes::Steam);
@@ -147,21 +153,20 @@ void CACIConcretePage::OnCompute()
 {
    UpdateData(TRUE);
 
+   CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
+
    CACIParametersDlg dlg;
-   dlg.m_t1 = m_TimeAtInitialStrength;
-   dlg.m_fc1 = m_fci;
-   dlg.m_fc2 = m_fc28;
+   dlg.m_t1  = pParent->m_TimeAtInitialStrength;
+   dlg.m_fc1 = pParent->m_fci;
+   dlg.m_fc2 = pParent->m_fc28;
    if ( dlg.DoModal() )
    {
       m_A = dlg.m_A;
       m_B = dlg.m_B;
-      m_fci = dlg.m_fc1;
-      m_fc28 = dlg.m_fc2;
+      pParent->m_fci = dlg.m_fc1;
+      pParent->m_fc28 = dlg.m_fc2;
 
       UpdateData(FALSE);
-
-      CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
-      pParent->m_General.SetFc(m_fc28);
    }
 }
 

@@ -149,9 +149,11 @@ struct PGSEXTCLASS UserLoads
 class PGSEXTCLASS CPointLoadData  
 {
 public:
-
 	CPointLoadData();
+   CPointLoadData(const CPointLoadData& other);
 	virtual ~CPointLoadData();
+
+   CPointLoadData& operator=(const CPointLoadData& other);
 
    HRESULT Save(IStructuredSave* pSave);
    HRESULT Load(IStructuredLoad* pSave);
@@ -169,6 +171,10 @@ public:
    bool     m_Fractional;
    Float64  m_Magnitude;
    std::_tstring m_Description;
+
+protected:
+   void MakeCopy(const CPointLoadData& rOther);
+   virtual void MakeAssignment(const CPointLoadData& rOther);
 };
 
 #endif // !defined(AFX_POINTLOADDATA_H__9A3E66DC_E7F7_494B_A4FC_CE1C68668647__INCLUDED_)

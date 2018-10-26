@@ -58,6 +58,7 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
 
       Float64 age;
       DDX_Text(pDX,IDC_AGE,age);
+      DDV_GreaterThanZero(pDX,IDC_AGE,age);
       m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity().SetConcreteAgeAtContinuity(age);
    }
    else

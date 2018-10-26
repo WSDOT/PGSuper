@@ -118,6 +118,31 @@ void CPGSuperBaseAppPlugin::LoadSettings()
    m_CacheUpdateFrequency = (CacheUpdateFrequency)pApp->GetProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),iDefaultCacheUpdateFrequency);
 }
 
+LPCTSTR CPGSuperBaseAppPlugin::GetCatalogServerKey()
+{
+   return _T("CatalogServer");
+}
+
+LPCTSTR CPGSuperBaseAppPlugin::GetPublisherKey()
+{
+   return _T("Publisher");
+}
+
+LPCTSTR CPGSuperBaseAppPlugin::GetMasterLibraryCacheKey()
+{
+   return _T("MasterLibraryCache");
+}
+
+LPCTSTR CPGSuperBaseAppPlugin::GetMasterLibraryURLKey()
+{
+   return _T("MasterLibraryURL");
+}
+
+LPCTSTR CPGSuperBaseAppPlugin::GetWorkgroupTemplatesCacheKey()
+{
+   return _T("WorkgroupTemplatesCache");
+}
+
 void CPGSuperBaseAppPlugin::LoadOptions()
 {
    CEAFApp* pParentApp = EAFGetApp();
@@ -128,8 +153,8 @@ void CPGSuperBaseAppPlugin::LoadOptions()
    CAutoRegistry autoReg(GetAppName());
 
    CString strDefaultUserTemplateFolder     = pApp->GetLocalMachineString(_T("Options"),_T("UserTemplateLocation"), _T("C:\\"));
-   CString strDefaultCatalogServer          = pApp->GetLocalMachineString(_T("Options"),_T("CatalogServer"),_T("WSDOT"));
-   CString strDefaultPublisher              = pApp->GetLocalMachineString(_T("Options"),_T("Publisher"),_T("WSDOT"));
+   CString strDefaultCatalogServer          = pApp->GetLocalMachineString(_T("Options"),GetCatalogServerKey(),_T("WSDOT"));
+   CString strDefaultPublisher              = pApp->GetLocalMachineString(_T("Options"),GetPublisherKey(),_T("WSDOT"));
    CString strDefaultLocalMasterLibraryFile = pApp->GetLocalMachineString(_T("Options"),_T("MasterLibraryLocal"),     GetDefaultMasterLibraryFile());
    CString strLocalWorkgroupTemplateFolder  = pApp->GetLocalMachineString(_T("Options"),_T("WorkgroupTemplatesLocal"),GetDefaultWorkgroupTemplateFolder());
 
@@ -148,9 +173,9 @@ void CPGSuperBaseAppPlugin::LoadOptions()
 
    // Internet resources
    m_CatalogServers.LoadFromRegistry(pApp);
-   m_CurrentCatalogServer = pApp->GetProfileString(_T("Options"),_T("CatalogServer"),strDefaultCatalogServer);
+   m_CurrentCatalogServer = pApp->GetProfileString(_T("Options"),GetCatalogServerKey(),strDefaultCatalogServer);
 
-   m_Publisher = pApp->GetProfileString(_T("Options"),_T("Publisher"),strDefaultPublisher);
+   m_Publisher = pApp->GetProfileString(_T("Options"),GetPublisherKey(),strDefaultPublisher);
 
 
    // defaults
@@ -161,11 +186,11 @@ void CPGSuperBaseAppPlugin::LoadOptions()
    CString strDefaultWorkgroupTemplateFolderURL;
    strDefaultWorkgroupTemplateFolderURL.Format(_T("%s/Version_%s/WSDOT_Templates/"),strFTPServer,strVersion);
 
-   m_MasterLibraryFileURL = pApp->GetProfileString(_T("Options"),_T("MasterLibraryURL"),strDefaultMasterLibraryURL);
+   m_MasterLibraryFileURL = pApp->GetProfileString(_T("Options"),GetMasterLibraryURLKey(),strDefaultMasterLibraryURL);
 
    // Cache file/folder for Internet or Local Network resources
-   m_MasterLibraryFileCache       = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache"),     GetCacheFolder()+GetMasterLibraryFileName());
-   m_WorkgroupTemplateFolderCache = pApp->GetProfileString(_T("Options"),_T("WorkgroupTemplatesCache"),GetCacheFolder()+GetTemplateSubFolderName()+"\\");
+   m_MasterLibraryFileCache       = pApp->GetProfileString(_T("Options"),GetMasterLibraryCacheKey(),     GetCacheFolder()+GetMasterLibraryFileName());
+   m_WorkgroupTemplateFolderCache = pApp->GetProfileString(_T("Options"),GetWorkgroupTemplatesCacheKey(),GetCacheFolder()+GetTemplateSubFolderName()+"\\");
 }
 
 void CPGSuperBaseAppPlugin::LoadReportOptions()
@@ -230,13 +255,13 @@ void CPGSuperBaseAppPlugin::SaveOptions()
 
    // Internet resources
    m_CatalogServers.SaveToRegistry(pApp);
-   pApp->WriteProfileString(_T("Options"),_T("CatalogServer"),m_CurrentCatalogServer);
-   pApp->WriteProfileString(_T("Options"),_T("Publisher"),m_Publisher);
-   pApp->WriteProfileString(_T("Options"),_T("MasterLibraryURL"),m_MasterLibraryFileURL);
+   pApp->WriteProfileString(_T("Options"),GetCatalogServerKey(),m_CurrentCatalogServer);
+   pApp->WriteProfileString(_T("Options"),GetPublisherKey(),m_Publisher);
+   pApp->WriteProfileString(_T("Options"),GetMasterLibraryURLKey(),m_MasterLibraryFileURL);
 
    // Cache file/folder for Internet or Local Network resources
-   pApp->WriteProfileString(_T("Options"),_T("MasterLibraryCache"),     m_MasterLibraryFileCache);
-   pApp->WriteProfileString(_T("Options"),_T("WorkgroupTemplatesCache"),m_WorkgroupTemplateFolderCache);
+   pApp->WriteProfileString(_T("Options"),GetMasterLibraryCacheKey(),     m_MasterLibraryFileCache);
+   pApp->WriteProfileString(_T("Options"),GetWorkgroupTemplatesCacheKey(),m_WorkgroupTemplateFolderCache);
 }
 
 void CPGSuperBaseAppPlugin::SaveReportOptions()
@@ -849,7 +874,9 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
       progress->put_Message(0,CComBSTR("The configuration have been updated"));
    }
    else
+   {
       progress->put_Message(0,CComBSTR("Update failed. Previous settings restored."));
+   }
 
    if ( bSuccessful )
    {
@@ -939,6 +966,9 @@ CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
 {
    CEAFApp* pApp = EAFGetApp();
 
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pMyApp     = AfxGetApp();
+
    TCHAR buffer[MAX_PATH];
    BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
 
@@ -948,7 +978,7 @@ CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
    }
    else
    {
-      return CString(buffer) + CString(_T("\\PGSuper_Save\\"));
+      return CString(buffer) + CString(pMyApp->m_pszProfileName) + CString(_T("_Save\\"));
    }
 }
 

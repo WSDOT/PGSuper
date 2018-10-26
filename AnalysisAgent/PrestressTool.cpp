@@ -58,6 +58,8 @@ void CPrestressTool::GetPretensionStress(IntervalIndexType intervalIdx,ResultsTy
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
    
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+      pgsTypes::LimitState limitState = (intervalIdx < liveLoadIntervalIdx ? pgsTypes::ServiceI : pgsTypes::ServiceIII);
       if ( intervalIdx < releaseIntervalIdx )
       {
          pfTop->push_back(0);
@@ -77,7 +79,7 @@ void CPrestressTool::GetPretensionStress(IntervalIndexType intervalIdx,ResultsTy
             StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
             if ( 0 < nStrands )
             {
-               Float64 P = pPrestressForce->GetPrestressForce(poi,strandType,intervalIdx,pgsTypes::End);
+               Float64 P = pPrestressForce->GetPrestressForce(poi,strandType,intervalIdx,pgsTypes::End,limitState);
                
                Float64 nEffectiveStrands;
                Float64 e = pStrandGeom->GetEccentricity(releaseIntervalIdx,poi,strandType,&nEffectiveStrands);

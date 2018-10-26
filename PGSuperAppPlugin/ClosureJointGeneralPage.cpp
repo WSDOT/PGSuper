@@ -134,8 +134,14 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
       m_ctrlEci.GetWindowText(m_strUserEci);
    }
 
-   OnUserEci();
-   OnUserEc();
+   if ( pParent->m_ClosureJoint.GetConcrete().bBasePropertiesOnInitialValues )
+   {
+      OnChangeFci();
+   }
+   else
+   {
+      OnChangeFc();
+   }
    OnConcreteStrength();
 
    EnableToolTips(TRUE);
@@ -212,20 +218,28 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CConcreteDetailsDlg dlg;
+   int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+   bool bFinalProperties = (i == IDC_FC2 ? true : false);
+
+   CConcreteDetailsDlg dlg(bFinalProperties);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
+   dlg.m_fci  = pParent->m_ClosureJoint.GetConcrete().Fci;
+   dlg.m_fc28 = pParent->m_ClosureJoint.GetConcrete().Fc;
+   dlg.m_Eci  = pParent->m_ClosureJoint.GetConcrete().Eci;
+   dlg.m_Ec28 = pParent->m_ClosureJoint.GetConcrete().Ec;
+   dlg.m_bUserEci     = pParent->m_ClosureJoint.GetConcrete().bUserEci;
+   dlg.m_bUserEc28    = pParent->m_ClosureJoint.GetConcrete().bUserEc;
+   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
+
    dlg.m_General.m_Type        = pParent->m_ClosureJoint.GetConcrete().Type;
-   dlg.m_General.m_Fc          = pParent->m_ClosureJoint.GetConcrete().Fc;
    dlg.m_General.m_AggSize     = pParent->m_ClosureJoint.GetConcrete().MaxAggregateSize;
-   dlg.m_General.m_bUserEc     = pParent->m_ClosureJoint.GetConcrete().bUserEc;
    dlg.m_General.m_Ds          = pParent->m_ClosureJoint.GetConcrete().StrengthDensity;
    dlg.m_General.m_Dw          = pParent->m_ClosureJoint.GetConcrete().WeightDensity;
-   dlg.m_General.m_Ec          = pParent->m_ClosureJoint.GetConcrete().Ec;
 
    dlg.m_AASHTO.m_EccK1       = pParent->m_ClosureJoint.GetConcrete().EcK1;
    dlg.m_AASHTO.m_EccK2       = pParent->m_ClosureJoint.GetConcrete().EcK2;
@@ -241,23 +255,28 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_B               = pParent->m_ClosureJoint.GetConcrete().B;
    dlg.m_ACI.m_CureMethod      = pParent->m_ClosureJoint.GetConcrete().CureMethod;
    dlg.m_ACI.m_CementType      = pParent->m_ClosureJoint.GetConcrete().ACI209CementType;
-   dlg.m_ACI.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
-   dlg.m_ACI.m_fci             = pParent->m_ClosureJoint.GetConcrete().Fci;
-   dlg.m_ACI.m_fc28            = pParent->m_ClosureJoint.GetConcrete().Fc;
 
-   dlg.m_CEBFIP.m_CementType = pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType;
+   dlg.m_CEBFIP.m_bUserParameters = pParent->m_ClosureJoint.GetConcrete().bCEBFIPUserParameters;
+   dlg.m_CEBFIP.m_S               = pParent->m_ClosureJoint.GetConcrete().S;
+   dlg.m_CEBFIP.m_BetaSc          = pParent->m_ClosureJoint.GetConcrete().BetaSc;
+   dlg.m_CEBFIP.m_CementType      = pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
    if ( dlg.DoModal() == IDOK )
    {
       pParent->m_ClosureJoint.GetConcrete().Type             = dlg.m_General.m_Type;
-      pParent->m_ClosureJoint.GetConcrete().Fc               = dlg.m_General.m_Fc;
+
+      pParent->m_ClosureJoint.GetConcrete().Fci              = dlg.m_fci;
+      pParent->m_ClosureJoint.GetConcrete().Fc               = dlg.m_fc28;
+      pParent->m_ClosureJoint.GetConcrete().Eci              = dlg.m_Eci;
+      pParent->m_ClosureJoint.GetConcrete().Ec               = dlg.m_Ec28;
+      pParent->m_ClosureJoint.GetConcrete().bUserEci         = dlg.m_bUserEci;
+      pParent->m_ClosureJoint.GetConcrete().bUserEc          = dlg.m_bUserEc28;
+
       pParent->m_ClosureJoint.GetConcrete().MaxAggregateSize = dlg.m_General.m_AggSize;
-      pParent->m_ClosureJoint.GetConcrete().bUserEc          = dlg.m_General.m_bUserEc;
       pParent->m_ClosureJoint.GetConcrete().StrengthDensity  = dlg.m_General.m_Ds;
       pParent->m_ClosureJoint.GetConcrete().WeightDensity    = dlg.m_General.m_Dw;
-      pParent->m_ClosureJoint.GetConcrete().Ec               = dlg.m_General.m_Ec;
 
       pParent->m_ClosureJoint.GetConcrete().EcK1             = dlg.m_AASHTO.m_EccK1;
       pParent->m_ClosureJoint.GetConcrete().EcK2             = dlg.m_AASHTO.m_EccK2;
@@ -273,9 +292,11 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
       pParent->m_ClosureJoint.GetConcrete().B                  = dlg.m_ACI.m_B;
       pParent->m_ClosureJoint.GetConcrete().CureMethod         = dlg.m_ACI.m_CureMethod;
       pParent->m_ClosureJoint.GetConcrete().ACI209CementType   = dlg.m_ACI.m_CementType;
-      pParent->m_ClosureJoint.GetConcrete().Fci                = dlg.m_ACI.m_fci;
 
-      pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType   = dlg.m_CEBFIP.m_CementType;
+      pParent->m_ClosureJoint.GetConcrete().bCEBFIPUserParameters = dlg.m_CEBFIP.m_bUserParameters;
+      pParent->m_ClosureJoint.GetConcrete().S                     = dlg.m_CEBFIP.m_S;
+      pParent->m_ClosureJoint.GetConcrete().BetaSc                = dlg.m_CEBFIP.m_BetaSc;
+      pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
@@ -288,7 +309,7 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
       UpdateEci();
       UpdateEc();
 
-      UpdateConcreteControls();
+      UpdateConcreteControls(true);
    }
 	
 }
@@ -431,7 +452,8 @@ void CClosureJointGeneralPage::UpdateEci()
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(pParent->m_ClosureJoint.GetConcrete().Fc);
          concrete.SetStrengthDensity(pParent->m_ClosureJoint.GetConcrete().StrengthDensity);
-         concrete.SetCementType((matCEBFIPConcrete::CementType)pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType);
+         concrete.SetS(pParent->m_ClosureJoint.GetConcrete().S);
+         concrete.SetBetaSc(pParent->m_ClosureJoint.GetConcrete().BetaSc);
          Eci = concrete.GetEc(m_AgeAtContinuity);
       }
 
@@ -515,7 +537,7 @@ void CClosureJointGeneralPage::UpdateEc()
       else
       {
          ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
-         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtContinuity,(matCEBFIPConcrete::CementType)pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType);
+         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
       }
 
       CString strEc;
@@ -571,7 +593,7 @@ void CClosureJointGeneralPage::UpdateFc()
       else
       {
          ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtContinuity,(matCEBFIPConcrete::CementType)pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType);
+         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
       }
 
       CString strFc;
@@ -616,7 +638,8 @@ void CClosureJointGeneralPage::UpdateFci()
          matCEBFIPConcrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
-         concrete.SetCementType((matCEBFIPConcrete::CementType)pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType);
+         concrete.SetS(pParent->m_ClosureJoint.GetConcrete().S);
+         concrete.SetBetaSc(pParent->m_ClosureJoint.GetConcrete().BetaSc);
          fci = concrete.GetFc(m_AgeAtContinuity);
       }
 
@@ -626,7 +649,7 @@ void CClosureJointGeneralPage::UpdateFci()
    }
 }
 
-void CClosureJointGeneralPage::UpdateConcreteControls()
+void CClosureJointGeneralPage::UpdateConcreteControls(bool bSkipEcCheckBoxes)
 {
    int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
    INT idFci[5] = {IDC_FCI, IDC_FCI_UNIT, IDC_USER_ECI, IDC_ECI, IDC_ECI_UNIT};
@@ -640,16 +663,19 @@ void CClosureJointGeneralPage::UpdateConcreteControls()
       GetDlgItem(idFc[j] )->EnableWindow( !bEnableFci );
    }
 
-   if ( i == IDC_FC1 ) // input based on f'ci
+   if ( !bSkipEcCheckBoxes )
    {
-      m_ctrlEciCheck.SetCheck(m_ctrlEcCheck.GetCheck());
-      m_ctrlEcCheck.SetCheck(FALSE); // can't check Ec
-   }
+      if ( i == IDC_FC1 ) // input based on f'ci
+      {
+         m_ctrlEciCheck.SetCheck(m_ctrlEcCheck.GetCheck());
+         m_ctrlEcCheck.SetCheck(FALSE); // can't check Ec
+      }
 
-   if ( i == IDC_FC2 ) // input is based on f'ci
-   {
-      m_ctrlEcCheck.SetCheck(m_ctrlEciCheck.GetCheck());
-      m_ctrlEciCheck.SetCheck(FALSE); // can't check Eci
+      if ( i == IDC_FC2 ) // input is based on f'ci
+      {
+         m_ctrlEcCheck.SetCheck(m_ctrlEciCheck.GetCheck());
+         m_ctrlEciCheck.SetCheck(FALSE); // can't check Eci
+      }
    }
 
    BOOL bEnable = m_ctrlEcCheck.GetCheck();

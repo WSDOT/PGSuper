@@ -44,7 +44,7 @@ protected:
    afx_msg void OnUserEci();
    afx_msg void OnUserEc();
 	afx_msg void OnChangeFci();
-	afx_msg void OnChangeGirderFc();
+	afx_msg void OnChangeFc();
    afx_msg void OnChangeEc();
    afx_msg void OnChangeEci();
 	afx_msg void OnMoreConcreteProperties();
@@ -55,7 +55,7 @@ protected:
    afx_msg void OnErectionEventChanged();
    afx_msg void OnErectionEventChanging();
 
-   void UpdateConcreteControls();
+   void UpdateConcreteControls(bool bSkipEcCheckBoxes = false);
    void UpdateConcreteParametersToolTip();
    CString m_strTip;
 

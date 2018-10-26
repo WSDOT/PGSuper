@@ -670,10 +670,13 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
 void CPGSuperDocBase::AddPointLoad(const CPointLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CEditPointLoadDlg dlg(loadData);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditPointLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -686,13 +689,16 @@ bool CPGSuperDocBase::EditPointLoad(CollectionIndexType loadIdx)
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CPointLoadData* pLoadData = pUserDefinedLoads->GetPointLoad(loadIdx);
 
-   CEditPointLoadDlg dlg(*pLoadData);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditPointLoadDlg dlg(*pLoadData,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,*pLoadData,dlg.m_Load);
+         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,*pLoadData,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -716,10 +722,14 @@ void CPGSuperDocBase::DeletePointLoad(CollectionIndexType loadIdx)
 void CPGSuperDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CEditDistributedLoadDlg dlg(loadData);
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditDistributedLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,&dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -732,13 +742,16 @@ bool CPGSuperDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
 
-   CEditDistributedLoadDlg dlg(*pLoadData);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditDistributedLoadDlg dlg(*pLoadData,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,*pLoadData,dlg.m_Load);
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,*pLoadData,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -762,10 +775,14 @@ void CPGSuperDocBase::DeleteDistributedLoad(CollectionIndexType loadIdx)
 void CPGSuperDocBase::AddMomentLoad(const CMomentLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CEditMomentLoadDlg dlg(loadData);
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditMomentLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -778,13 +795,16 @@ bool CPGSuperDocBase::EditMomentLoad(CollectionIndexType loadIdx)
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
 
-   CEditMomentLoadDlg dlg(*pLoadData);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditMomentLoadDlg dlg(*pLoadData,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,*pLoadData,dlg.m_Load);
+         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,*pLoadData,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -2881,11 +2901,14 @@ void CPGSuperDocBase::OnAddPointload()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
    CPointLoadData load;
-   CEditPointLoadDlg dlg( load );
+   CEditPointLoadDlg dlg( load, pTimelineMgr );
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -2896,11 +2919,14 @@ void CPGSuperDocBase::OnAddDistributedLoad()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
    CDistributedLoadData load;
-	CEditDistributedLoadDlg dlg(load);
+	CEditDistributedLoadDlg dlg(load,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -2911,11 +2937,14 @@ void CPGSuperDocBase::OnAddMomentLoad()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
    CMomentLoadData load;
-	CEditMomentLoadDlg dlg(load);
+	CEditMomentLoadDlg dlg(load,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }

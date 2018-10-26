@@ -45,7 +45,7 @@ CSelectClosureJointDlg::CSelectClosureJointDlg(const CBridgeDescription2* pBridg
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pDisplayUnits = pDisplayUnits;
 }
 
@@ -147,7 +147,7 @@ void CSelectClosureJointDlg::FillSupportComboBox()
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
-      if ( pPier->GetClosureJoint(m_GirderIdx) )
+      if ( pPier->IsInteriorPier() && pPier->GetClosureJoint(m_GirderIdx) )
       {
          CString strLabel(GetLabel(pPier,m_pDisplayUnits));
          int idx = pCB->AddString(strLabel);

@@ -608,6 +608,14 @@ void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
 void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
+
+   if ( !pAllowableConcreteStress->CheckTemporaryStresses() )
+   {
+      // not checking stresses here so nothing to report
+      return;
+   }
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    if ( tsRemovalIntervalIdx != INVALID_INDEX )
@@ -621,21 +629,27 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
 
       INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
-      GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
-
       pgsPointOfInterest poi(segmentKey,0.0);
       Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI);
-      *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
+      *pPara<<_T("Allowable Compressive Concrete Stresses")<<rptNewLine;
       *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
       Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, false);
-      *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
+      *pPara<<_T("Allowable Tensile Concrete Stresses")<<rptNewLine;
       *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
     }
 }
 
 void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
+
+   if ( !pAllowableConcreteStress->CheckTemporaryStresses() )
+   {
+      // not checking stresses here so nothing to report
+      return;
+   }
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
 
@@ -648,15 +662,13 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
-
    pgsPointOfInterest poi(segmentKey,0.0);
    Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, castDeckIntervalIdx, pgsTypes::ServiceI);
-   *pPara << _T("Allowable Compressive Concrete Stresses (5.9.4.2.1)") << rptNewLine;
+   *pPara << _T("Allowable Compressive Concrete Stresses") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fcsp) << rptNewLine;
 
    Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, castDeckIntervalIdx, pgsTypes::ServiceI, false);
-   *pPara << _T("Allowable Tensile Concrete Stresses (5.9.4.2.2)") << rptNewLine;
+   *pPara << _T("Allowable Tensile Concrete Stresses") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fts) << rptNewLine;
 }
 
@@ -698,6 +710,13 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, compositeDeckIntervalIdx,pgsTypes::ServiceI);
    *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
+
+   if ( pAllowableConcreteStress->CheckFinalDeadLoadTensionStress() )
+   {
+      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, compositeDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
+      *pPara<<_T("Allowable Tensile Concrete Stresses")<<rptNewLine;
+      *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
+   }
 
    *pPara << rptNewLine;
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth )

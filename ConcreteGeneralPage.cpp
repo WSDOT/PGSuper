@@ -81,14 +81,30 @@ void CConcreteGeneralPage::DoDataExchange(CDataExchange* pDX)
 
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-      DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_UNIT, m_Fc, pDisplayUnits->GetStressUnit() );
-      DDV_UnitValueGreaterThanZero(pDX,IDC_FC, m_Fc, pDisplayUnits->GetStressUnit() );
-
-      DDX_Check_Bool(pDX, IDC_MOD_E, m_bUserEc);
-      if (m_bUserEc || !pDX->m_bSaveAndValidate)
+      CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
+      if ( pParent->m_bFinalProperties )
       {
-         DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, m_Ec, pDisplayUnits->GetModEUnit() );
-         DDV_UnitValueGreaterThanZero(pDX, IDC_EC, m_Ec, pDisplayUnits->GetModEUnit() );
+         DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_UNIT, pParent->m_fc28, pDisplayUnits->GetStressUnit() );
+         DDV_UnitValueGreaterThanZero(pDX,IDC_FC, pParent->m_fc28, pDisplayUnits->GetStressUnit() );
+
+         DDX_Check_Bool(pDX, IDC_MOD_E, pParent->m_bUserEc28);
+         if (pParent->m_bUserEc28 || !pDX->m_bSaveAndValidate)
+         {
+            DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, pParent->m_Ec28, pDisplayUnits->GetModEUnit() );
+            DDV_UnitValueGreaterThanZero(pDX, IDC_EC, pParent->m_Ec28, pDisplayUnits->GetModEUnit() );
+         }
+      }
+      else
+      {
+         DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_UNIT, pParent->m_fci, pDisplayUnits->GetStressUnit() );
+         DDV_UnitValueGreaterThanZero(pDX,IDC_FC, pParent->m_fci, pDisplayUnits->GetStressUnit() );
+
+         DDX_Check_Bool(pDX, IDC_MOD_E, pParent->m_bUserEci);
+         if (pParent->m_bUserEci || !pDX->m_bSaveAndValidate)
+         {
+            DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, pParent->m_Eci, pDisplayUnits->GetModEUnit() );
+            DDV_UnitValueGreaterThanZero(pDX, IDC_EC, pParent->m_Eci, pDisplayUnits->GetModEUnit() );
+         }
       }
 
       DDX_UnitValueAndTag(pDX, IDC_DS, IDC_DS_UNIT, m_Ds, pDisplayUnits->GetDensityUnit() );
@@ -110,7 +126,14 @@ void CConcreteGeneralPage::DoDataExchange(CDataExchange* pDX)
 
       if (!pDX->m_bSaveAndValidate)
       {
-         ShowStrengthDensity(!m_bUserEc);
+         if ( pParent->m_bFinalProperties )
+         {
+            ShowStrengthDensity(!pParent->m_bUserEc28);
+         }
+         else
+         {
+            ShowStrengthDensity(!pParent->m_bUserEci);
+         }
       }
    }
    catch(...)
@@ -138,6 +161,20 @@ END_MESSAGE_MAP()
 
 BOOL CConcreteGeneralPage::OnInitDialog() 
 {
+   CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
+   if ( pParent->m_bFinalProperties )
+   {
+      GetDlgItem(IDC_FC_LABEL)->SetWindowText(_T("Strength - f'c"));
+      GetDlgItem(IDC_DS_TITLE)->SetWindowText(_T("Unit Weight (used to compute Ec)"));
+      GetDlgItem(IDC_MOD_E)->SetWindowText(_T("Mod. Elasticity, Ec"));
+   }
+   else
+   {
+      GetDlgItem(IDC_FC_LABEL)->SetWindowText(_T("Strength - f'ci"));
+      GetDlgItem(IDC_DS_TITLE)->SetWindowText(_T("Unit Weight (used to compute Eci)"));
+      GetDlgItem(IDC_MOD_E)->SetWindowText(_T("Mod. Elasticity, Eci"));
+   }
+
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
    int idx = pcbConcreteType->AddString(_T("Normal weight"));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
@@ -243,12 +280,21 @@ void CConcreteGeneralPage::OnCopyMaterial()
       {
          CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
 
-         m_Fc      = entry->GetFc();
+         if ( pParent->m_bFinalProperties )
+         {
+            pParent->m_fc28 = entry->GetFc();
+            pParent->m_Ec28 = entry->GetEc();
+            pParent->m_bUserEc28 = entry->UserEc();
+         }
+         else
+         {
+            pParent->m_fci = entry->GetFc();
+            pParent->m_Eci = entry->GetEc();
+         }
+
          m_Dw      = entry->GetWeightDensity();
          m_Ds      = entry->GetStrengthDensity();
          m_AggSize = entry->GetAggregateSize();
-         m_bUserEc = entry->UserEc();
-         m_Ec      = entry->GetEc();
          m_Type    = entry->GetType();
 
          pParent->m_AASHTO.m_EccK1       = entry->GetModEK1();
@@ -370,11 +416,4 @@ bool CConcreteGeneralPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteTy
    {
       return ( IsLE(density,m_MaxLWCDensity) );
    }
-}
-
-void CConcreteGeneralPage::SetFc(Float64 fc)
-{
-   UpdateData(TRUE);
-   m_Fc = fc;
-   UpdateData(FALSE);
 }

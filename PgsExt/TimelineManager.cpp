@@ -1243,7 +1243,15 @@ EventIDType CTimelineManager::GetSegmentConstructionEventID(SegmentIDType segmen
 void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentID,EventIndexType eventIdx)
 {
    ATLASSERT(segmentID != INVALID_ID);
-   Float64 ageAtRelease, relaxationTime;
+
+   // if eventIdx == INVALID_INDEX, we are just removing the construction from the timeline
+
+   bool bUpdateConstructionTiming = false;
+   Float64 ageAtRelease = 1.0;
+   Float64 relaxationTime = 1.0;
+
+   // If this construction of this segment is currently being modeled, get the construction
+   // timing information.
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1251,9 +1259,17 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
       CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
       {
+         if ( iter - m_TimelineEvents.begin() == eventIdx )
+         {
+            // the construction event isn't really changing... do nothing and return
+            return;
+         }
+
+         // construction of this segment is being modeled and it is moving to a different timeline event
+         bUpdateConstructionTiming = true;
          ageAtRelease   = pTimelineEvent->GetConstructSegmentsActivity().GetAgeAtRelease();
          relaxationTime = pTimelineEvent->GetConstructSegmentsActivity().GetRelaxationTime();
-         pTimelineEvent->GetConstructSegmentsActivity().RemoveSegment(segmentID);
+         pTimelineEvent->GetConstructSegmentsActivity().RemoveSegment(segmentID); // remove segment from timeline
          break;
       }
    }
@@ -1261,8 +1277,11 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
    if ( eventIdx != INVALID_INDEX )
    {
       m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().AddSegment(segmentID);
-      m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetAgeAtRelease(ageAtRelease);
-      m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetRelaxationTime(relaxationTime);
+      if ( bUpdateConstructionTiming )
+      {
+         m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetAgeAtRelease(ageAtRelease);
+         m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetRelaxationTime(relaxationTime);
+      }
    }
 
    ASSERT_VALID;
@@ -1326,6 +1345,8 @@ EventIDType CTimelineManager::GetSegmentErectionEventID(SegmentIDType segmentID)
 
 void CTimelineManager::SetSegmentErectionEventByIndex(SegmentIDType segmentID,EventIndexType eventIdx)
 {
+   // if eventIdx == INVALID_INDEX we are just moving the erection of this segment from the timeline
+
    ATLASSERT(segmentID != INVALID_ID);
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
@@ -1478,7 +1499,9 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
       return;
    }
 
-   Float64 ageAtContinuity;
+   Float64 ageAtContinuity = 7.0;
+   bool bUpdateAge = false;
+
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1486,12 +1509,14 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
       CTimelineEvent* pTimelineEvent = *iter;
       if ( pClosure->GetPier() && pTimelineEvent->GetCastClosureJointActivity().HasPier(pClosure->GetPier()->GetID()) )
       {
+         bUpdateAge = true;
          ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
          break;
       }
 
       if ( pClosure->GetTemporarySupport() && pTimelineEvent->GetCastClosureJointActivity().HasTempSupport(pClosure->GetTemporarySupport()->GetID()) )
       {
+         bUpdateAge = true;
          ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
          pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
          break;
@@ -1501,7 +1526,11 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
    if ( eventIdx != INVALID_INDEX )
    {
       m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().Enable(true);
-      m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().SetConcreteAgeAtContinuity(ageAtContinuity);
+
+      if ( bUpdateAge )
+      {
+         m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().SetConcreteAgeAtContinuity(ageAtContinuity);
+      }
 
       if ( pClosure->GetPier() )
       {
@@ -1644,7 +1673,8 @@ EventIDType CTimelineManager::GetCastDeckEventID() const
 
 int CTimelineManager::SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline)
 {
-   Float64 age_at_continuity = 0;
+   bool bUpdateAge = false;
+   Float64 age_at_continuity = 7.0;
    CTimelineEvent* pOldCastDeckEvent = NULL;
 
    // search for the event where the deck is cast
@@ -1655,6 +1685,7 @@ int CTimelineManager::SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdju
       CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
       {
+         bUpdateAge = true;
          age_at_continuity = pTimelineEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity();
          pTimelineEvent->GetCastDeckActivity().Enable(false);
          pOldCastDeckEvent = pTimelineEvent; // hang onto the event in case the edit needs to be rolled back
@@ -1664,7 +1695,11 @@ int CTimelineManager::SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdju
 
    CTimelineEvent cast_deck_event = *m_TimelineEvents[eventIdx];
    cast_deck_event.GetCastDeckActivity().Enable(true);
-   cast_deck_event.GetCastDeckActivity().SetConcreteAgeAtContinuity(age_at_continuity);
+
+   if ( bUpdateAge )
+   {
+      cast_deck_event.GetCastDeckActivity().SetConcreteAgeAtContinuity(age_at_continuity);
+   }
 
    int result = SetEventByIndex(eventIdx,cast_deck_event,bAdjustTimeline);
    if ( result != TLM_SUCCESS )
@@ -2303,8 +2338,10 @@ int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
    }
    else
    {
+      found++; // advance to next event
       pNextEvent = *found;
-      found--;
+      found--; // back up to this event
+      found--; // back up to previous event
       pPrevEvent = *found;
    }
 

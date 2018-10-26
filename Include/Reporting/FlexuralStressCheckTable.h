@@ -80,16 +80,6 @@ public:
                       bool bGirderStresses
                       ) const;
 
-   /* Dummy */
-   virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,
-                      const pgsSegmentArtifact* pSegmentArtifact,
-                      IEAFDisplayUnits* pDisplayUnits,
-                      IntervalIndexType intervalIdx,
-                      pgsTypes::LimitState ls,
-                      pgsTypes::StressType stress=pgsTypes::Tension
-                      ) const;
-
    //------------------------------------------------------------------------
    // Builds the notes above stress table
    void BuildNotes(rptChapter* pChapter, 
@@ -100,15 +90,6 @@ public:
                    IntervalIndexType intervalIdx,
                    pgsTypes::LimitState ls,
                    bool bGirderStresses) const;
-
-   /* Dummy */
-   void BuildNotes(rptChapter* pChapter, 
-                   IBroker* pBroker,
-                   const pgsSegmentArtifact* pSegmentArtifact,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   pgsTypes::StressType stress=pgsTypes::Tension) const;
 
    //------------------------------------------------------------------------
    // Builds the table only

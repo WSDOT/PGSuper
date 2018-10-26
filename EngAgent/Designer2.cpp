@@ -1384,25 +1384,12 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
    std::vector<StressCheckTask>::iterator end(m_StressCheckTasks.end());
    for ( ; iter != end; iter++ )
    {
-      StressCheckTask task = *iter;
-      if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && task.limitState == pgsTypes::FatigueI) || 
-           (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& task.limitState == pgsTypes::ServiceIA)
-           )
+      StressCheckTask& task = *iter;
+      if ( !pAllowable->IsStressCheckApplicable(segmentKey,task.intervalIdx,task.limitState,task.stressType) )
       {
-         // if before LRFD 2009 and Fatigue I 
-         // - OR -
-         // LRFD 2009 and later and Service IA
-         //
-         // ... don't evaluate this case
+         // this stress check is not applicable... continue to the next task
          continue;
       }
-
-      // temporary strand remove task is not in the task list if there aren't any temporary strands
-      // this check is no longer needed
-      //if ( task.intervalIdx == tsRemovalIntervalIdx && (0 == NtMax || 0 == m_StrandDesignTool.GetNt()) )
-      //{
-      //   continue; // skip temporary strand removal if this girder doesn't support temporary strands
-      //}
 
       Float64 fcgdr;
       if ( task.intervalIdx == releaseIntervalIdx )
@@ -1418,25 +1405,18 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
       Float64 fAllowable(0.0);
       if(task.stressType == pgsTypes::Compression)
       {
-         if ( task.limitState != pgsTypes::ServiceIII )
-         {
-            fAllowable = pAllowable->GetSegmentAllowableCompressionStress(poi,task.intervalIdx,task.limitState,fcgdr);
-         }
-         else
-         {
-            continue;
-         }
+         ATLASSERT(task.limitState != pgsTypes::ServiceIII);
+         fAllowable = pAllowable->GetSegmentAllowableCompressionStress(poi,task.intervalIdx,task.limitState,fcgdr);
       }
       else // tension
       {
-         if ( task.intervalIdx != railingSystemIntervalIdx )
+#if defined _DEBUG
+         if ( task.intervalIdx == railingSystemIntervalIdx )
          {
-            fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi,task.intervalIdx,task.limitState,fcgdr,false/*bWithBondedReinforcement*/);
+            ATLASSERT(pAllowable->CheckFinalDeadLoadTensionStress());
          }
-         else
-         {
-            continue;
-         }
+#endif
+         fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi,task.intervalIdx,task.limitState,fcgdr,false/*bWithBondedReinforcement*/);
       }
 
       pgsTypes::BridgeAnalysisType batTop, batBottom;
@@ -1450,8 +1430,9 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
       pLimitStateForces->GetDesignStress(task.intervalIdx,task.limitState,poi,pgsTypes::TopGirder,   fcgdr,startSlabOffset,endSlabOffset,batTop,   &fTopMinExt,&fTopMaxExt);
       pLimitStateForces->GetDesignStress(task.intervalIdx,task.limitState,poi,pgsTypes::BottomGirder,fcgdr,startSlabOffset,endSlabOffset,batBottom,&fBotMinExt,&fBotMaxExt);
 
-      Float64 Pperm = pPrestressForce->GetPrestressForce(poi,config,pgsTypes::Permanent,task.intervalIdx,pgsTypes::End);
-      Float64 Ptemp = pPrestressForce->GetPrestressForce(poi,config,pgsTypes::Temporary,task.intervalIdx,pgsTypes::End);
+      pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= task.intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
+      Float64 Pperm = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,task.intervalIdx,pgsTypes::End,limitState,config);
+      Float64 Ptemp = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,task.intervalIdx,pgsTypes::End,limitState,config);
       Float64 Pps = Pperm + Ptemp;
 
       Float64 k = pLoadFactors->DCmax[task.limitState];
@@ -1717,22 +1698,23 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
 
       if ( pAllow->CheckStressAtJacking() )
       {
-         pArtifact->SetCheckAtJacking( strandType, pPsForce->GetEffectivePrestress(mid_span_poi,strandType,jackIntervalIdx,pgsTypes::Start), pAllow->GetAllowableAtJacking(segmentKey,strandType) );
+         pArtifact->SetCheckAtJacking( strandType, pPsForce->GetEffectivePrestress(mid_span_poi,strandType,jackIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI), pAllow->GetAllowableAtJacking(segmentKey,strandType) );
       }
 
       if ( pAllow->CheckStressBeforeXfer() )
       {
-         pArtifact->SetCheckBeforeXfer( strandType, pPsForce->GetEffectivePrestress(mid_span_poi,strandType,jackIntervalIdx,pgsTypes::End/*pgsTypes::BeforeXfer*/), pAllow->GetAllowableBeforeXfer(segmentKey,strandType) );
+         pArtifact->SetCheckBeforeXfer( strandType, pPsForce->GetEffectivePrestress(mid_span_poi,strandType,jackIntervalIdx,pgsTypes::End/*pgsTypes::BeforeXfer*/,pgsTypes::ServiceI), pAllow->GetAllowableBeforeXfer(segmentKey,strandType) );
       }
 
       if ( pAllow->CheckStressAfterXfer() )
       {
-         pArtifact->SetCheckAfterXfer( strandType, pPsForce->GetEffectivePrestress(mid_span_poi,strandType,releaseIntervalIdx,pgsTypes::Start/*pgsTypes::AfterXfer*/), pAllow->GetAllowableAfterXfer(segmentKey,strandType) );
+         pArtifact->SetCheckAfterXfer( strandType, pPsForce->GetEffectivePrestress(mid_span_poi,strandType,releaseIntervalIdx,pgsTypes::Start/*pgsTypes::AfterXfer*/,pgsTypes::ServiceI), pAllow->GetAllowableAfterXfer(segmentKey,strandType) );
       }
 
       if ( pAllow->CheckStressAfterLosses() && strandType != pgsTypes::Temporary )
       {
-         pArtifact->SetCheckAfterLosses( strandType, pPsForce->GetEffectivePrestressWithLiveLoad(mid_span_poi,strandType), pAllow->GetAllowableAfterLosses(segmentKey,strandType) );
+#pragma Reminder("REVIEW: wouldn't Service I be the worst case?")
+         pArtifact->SetCheckAfterLosses( strandType, pPsForce->GetEffectivePrestressWithLiveLoad(mid_span_poi,strandType,pgsTypes::ServiceIII), pAllow->GetAllowableAfterLosses(segmentKey,strandType) );
       }
    }
 }
@@ -1940,7 +1922,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
                artifact.SetCapacity(stressLocation,fAllowable);
 
                Float64 c = pAllowable->GetAllowableCompressionStressCoefficient(poi,stressLocation,task.intervalIdx,task.limitState);
-               Float64 fc_reqd = (IsZero(c) ? -1 : f/-c);
+               Float64 fc_reqd = (IsZero(c) ? -99999 : f/-c);
                
                if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
                {
@@ -1971,7 +1953,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
                   // if t is zero the allowable will be zero... demand "f" is > 0 so there
                   // isn't a concrete strength that will work.... if t is not zero, compute
                   // the required concrete strength
-                  fc_reqd = (IsZero(t) ? -1 : BinarySign(f)*pow(f/t,2));
+                  fc_reqd = (IsZero(t) ? -99999 : BinarySign(f)*pow(f/t,2));
 
                   if ( bCheckMax &&                  // allowable stress is limited -AND-
                        (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
@@ -2250,8 +2232,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
       }
       else
       {
-         fTopPretension = pPretensionStresses->GetDesignStress(task.intervalIdx,poi,pgsTypes::TopGirder,*pConfig);
-         fBotPretension = pPretensionStresses->GetDesignStress(task.intervalIdx,poi,pgsTypes::BottomGirder,*pConfig);
+         fTopPretension = pPretensionStresses->GetDesignStress(task.intervalIdx,task.limitState,poi,pgsTypes::TopGirder,*pConfig);
+         fBotPretension = pPretensionStresses->GetDesignStress(task.intervalIdx,task.limitState,poi,pgsTypes::BottomGirder,*pConfig);
       }
 
       // get segment stress due to post-tensioning
@@ -2291,7 +2273,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          fAllowable = fAllowableWithoutRebar;
 
          // req'd strength
-         Float64 fc_reqd = (IsZero(c) ? 0 : Min(fTop,fBot)/-c);
+         Float64 fc_reqd = (IsZero(c) ? -99999 : Min(fTop,fBot)/-c);
          
          if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
          {
@@ -2337,7 +2319,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
                     (pow(ftmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
                {
                   // too bad... this isn't going to work
-                  fc_reqd = -1;
+                  fc_reqd = -99999;
                }
             }
          }
@@ -2384,7 +2366,7 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
    MINMOMENTCAPDETAILS mmcd;
    pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx, poi, config, bPositiveMoment, &mmcd);
 
-   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,mcd,mmcd,pArtifact);
+   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,mcd,mmcd,true/*designing*/,pArtifact);
 }
 
 void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact)
@@ -2397,10 +2379,10 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
    MINMOMENTCAPDETAILS mmcd;
    pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, &mmcd);
 
-   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,mcd,mmcd,pArtifact);
+   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,mcd,mmcd,false/*checking*/,pArtifact);
 }
 
-void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const MINMOMENTCAPDETAILS& mmcd,pgsFlexuralCapacityArtifact* pArtifact)
+void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact)
 {
    GET_IFACE(ILimitStateForces, pLimitStateForces);
    GET_IFACE(ILibrary,pLib);
@@ -2431,6 +2413,26 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
       }
 
       Mu = MuMax;
+
+      if ( bDesign )
+      {
+         // Mu is based on the current input values. Since we are doing design, the "A" dimension
+         // is likely different than the input value. This changes the slab and slab pad moment.
+         // Add the moment adjustments to Mu here.
+         Float64 fcgdr = m_StrandDesignTool.GetConcreteStrength();
+         Float64 startSlabOffset = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
+         Float64 endSlabOffset   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
+
+         GET_IFACE(IProductForces,pProductForces);
+         Float64 dMslab     = pProductForces->GetDesignSlabMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi);
+         Float64 dMslab_pad = pProductForces->GetDesignSlabPadMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi);
+
+         GET_IFACE(ILoadFactors,pLF);
+         const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+         Float64 k = pLoadFactors->DCmax[limitState];
+         
+         Mu += k*(dMslab + dMslab_pad);
+      }
    }
    else
    {
@@ -4060,19 +4062,19 @@ void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCON
    Float64 start_dFpT, end_dFpT;
    if (pConfig == NULL)
    {
-      start_Fpj  = pPrestressForce->GetEffectivePrestress(start_poi, pgsTypes::Permanent, jackingIntervalIdx, pgsTypes::Start);
-      start_dFpT = pLosses->GetPrestressLoss( start_poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End);
+      start_Fpj  = pPrestressForce->GetEffectivePrestress(start_poi, pgsTypes::Permanent, jackingIntervalIdx, pgsTypes::Start,pgsTypes::ServiceI);
+      start_dFpT = pLosses->GetPrestressLoss( start_poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End,pgsTypes::ServiceI);
 
-      end_Fpj  = pPrestressForce->GetEffectivePrestress(end_poi, pgsTypes::Permanent, jackingIntervalIdx, pgsTypes::Start);
-      end_dFpT = pLosses->GetPrestressLoss( end_poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End);
+      end_Fpj  = pPrestressForce->GetEffectivePrestress(end_poi, pgsTypes::Permanent, jackingIntervalIdx, pgsTypes::Start,pgsTypes::ServiceI);
+      end_dFpT = pLosses->GetPrestressLoss( end_poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End,pgsTypes::ServiceI);
    }
    else
    {
-      start_Fpj  = pPrestressForce->GetEffectivePrestress(start_poi, *pConfig, pgsTypes::Permanent, jackingIntervalIdx, pgsTypes::Start);
-      start_dFpT = pLosses->GetPrestressLoss( start_poi, pgsTypes::Permanent, *pConfig, releaseIntervalIdx, pgsTypes::End);
+      start_Fpj  = pPrestressForce->GetEffectivePrestress(start_poi, pgsTypes::Permanent, jackingIntervalIdx, pgsTypes::Start,pgsTypes::ServiceI, *pConfig);
+      start_dFpT = pLosses->GetPrestressLoss( start_poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End,pgsTypes::ServiceI, *pConfig);
 
-      end_Fpj  = pPrestressForce->GetEffectivePrestress(end_poi, *pConfig, pgsTypes::Permanent, jackingIntervalIdx, pgsTypes::Start);
-      end_dFpT = pLosses->GetPrestressLoss( end_poi, pgsTypes::Permanent, *pConfig, releaseIntervalIdx, pgsTypes::End);
+      end_Fpj  = pPrestressForce->GetEffectivePrestress(end_poi, pgsTypes::Permanent, jackingIntervalIdx, pgsTypes::Start,pgsTypes::ServiceI, *pConfig);
+      end_dFpT = pLosses->GetPrestressLoss( end_poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End,pgsTypes::ServiceI, *pConfig);
    }
 
    StrandIndexType Ns, Nh, Nt;
@@ -4524,6 +4526,64 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than have the deck thickness"
       Float64 tSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(CSegmentKey(girderKey,0),0.0));
       pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && tSlab/2 < fabs(haunch_details.HaunchDiff) );
+   }
+
+   
+   ///////////////////////////////////////////////////////////////
+   //
+   // Check Bottom Flange Clearance
+   //
+   ///////////////////////////////////////////////////////////////
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   pgsTypes::SupportedBeamSpacing spacingType = pIBridgeDesc->GetGirderSpacingType();
+
+   if ( pSpecEntry->CheckBottomFlangeClearance() && ::IsGirderSpacing(spacingType) )
+   {
+      pArtifact->SetBottomFlangeClearanceApplicability(true);
+
+      Float64 C = Float64_Max;
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey segmentKey(girderKey,segIdx);
+
+         Float64 CleftStart, CrightStart;
+         pBridge->GetBottomFlangeClearance(pgsPointOfInterest(segmentKey,0.0),&CleftStart,&CrightStart);
+
+         Float64 CleftEnd, CrightEnd;
+         Float64 L = pBridge->GetSegmentLength(segmentKey);
+         pBridge->GetBottomFlangeClearance(pgsPointOfInterest(segmentKey,L),&CleftEnd,&CrightEnd);
+
+         Float64 Cleft  = min(CleftStart, CleftEnd);
+         Float64 Cright = min(CrightStart,CrightEnd);
+
+         Float64 CthisSegment = 0;
+         if ( 0 < Cleft && 0 < Cright )
+         {
+            CthisSegment = Min(Cleft,Cright);
+         }
+         else if ( Cleft < 0 )
+         {
+            CthisSegment = Cright;
+         }
+         else if ( Cright < 0 )
+         {
+            CthisSegment = Cleft;
+         }
+         else 
+         {
+            // Cleft and Cright < 0... this is a single girder bridges
+            pArtifact->SetBottomFlangeClearanceApplicability(false); // not applicable
+         }
+         C = Min(C,CthisSegment);
+      } // next segment
+
+      Float64 Cmin = pSpecEntry->GetMinBottomFlangeClearance();
+      pArtifact->SetBottomFlangeClearanceParameters(C,Cmin);
+   }
+   else
+   {
+      pArtifact->SetBottomFlangeClearanceApplicability(false);
    }
 }
 
@@ -5156,6 +5216,35 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
    m_DesignerOutcome.Reset();
 }
 
+struct ConcreteStrengthParameters
+{
+   pgsTypes::LimitState limit_state;
+   IntervalIndexType intervalIdx;
+   pgsTypes::StressType stress_type;
+   pgsTypes::StressLocation stress_location;
+   std::_tstring strLimitState;
+   PoiAttributeType find_type;
+   Float64 fmax;
+
+   Float64 fbpre;
+   pgsPointOfInterest poi; // location of controlling concrete strength (for debugging and logging)
+
+   ConcreteStrengthParameters(pgsTypes::LimitState ls,
+                              LPCTSTR lpszLimitState,
+                              IntervalIndexType intervalIdx,
+                              pgsTypes::StressType stressType,
+                              pgsTypes::StressLocation stressLocation,
+                              PoiAttributeType findType) :
+      limit_state(ls),
+      strLimitState(lpszLimitState),
+      intervalIdx(intervalIdx),
+      stress_type(stressType),
+      stress_location(stressLocation),
+      find_type(findType)
+   {fmax = (stress_type == pgsTypes::Tension ? -Float64_Max : Float64_Max);}
+
+};
+
 void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
 {
    // Note that the name of this function is a bit of a misnomer since most of the 
@@ -5180,37 +5269,40 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
 
    // Maximize stresses at pois for their config
-   pgsTypes::LimitState limit_state[] =         {pgsTypes::ServiceI,          lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,         pgsTypes::ServiceIII,         pgsTypes::ServiceI,          pgsTypes::ServiceI,    pgsTypes::ServiceI};
-   IntervalIndexType interval_type[] =          {liveLoadIntervalIdx,         liveLoadIntervalIdx,       liveLoadIntervalIdx,        compositeDeckIntervalIdx,       castDeckIntervalIdx, compositeDeckIntervalIdx};
-   pgsTypes::StressType stress_type[] =         {pgsTypes::Compression,       pgsTypes::Compression,       pgsTypes::Tension,            pgsTypes::Compression,       pgsTypes::Compression, pgsTypes::Compression};
-   pgsTypes::StressLocation stress_location[] = {pgsTypes::BottomGirder,      pgsTypes::BottomGirder,      pgsTypes::BottomGirder,       pgsTypes::BottomGirder,      pgsTypes::TopGirder,   pgsTypes::TopGirder};
-   std::_tstring strLimitState[] =              {_T("Service I (BSS3)"),      lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),                _T("Service III"),                _T("Service I (BSS2)"),           _T("Service I (BSS1)"),    _T("Service I (BSS2)")};
-   PoiAttributeType find_type[] =               {POI_HARPINGPOINT|POI_PSXFER, POI_HARPINGPOINT|POI_PSXFER, POI_HARPINGPOINT|(POI_ERECTED_SEGMENT|POI_5L), POI_HARPINGPOINT|POI_PSXFER, (POI_ERECTED_SEGMENT|POI_5L),           (POI_ERECTED_SEGMENT|POI_5L)};
-   Float64 fmax[] =                             {Float64_Max,                 Float64_Max,                 -Float64_Max,                 Float64_Max,                 Float64_Max,           Float64_Max};
+   std::vector<ConcreteStrengthParameters> vConcreteStrengthParameters;
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS3)"),liveLoadIntervalIdx,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),liveLoadIntervalIdx,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceIII,_T("Service III"),liveLoadIntervalIdx,pgsTypes::Tension,pgsTypes::BottomGirder,POI_HARPINGPOINT|(POI_SPAN | POI_5L)));
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),railingSystemIntervalIdx,pgsTypes::Compression,pgsTypes::TopGirder,POI_HARPINGPOINT|POI_PSXFER));
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS1)"),castDeckIntervalIdx,pgsTypes::Compression,pgsTypes::TopGirder,(POI_SPAN | POI_5L)));
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),railingSystemIntervalIdx,pgsTypes::Compression,pgsTypes::BottomGirder,(POI_SPAN | POI_5L)));
 
-   const int NCases=6;
-   Float64 fbpre[NCases];
+   GET_IFACE(IAllowableConcreteStress,pAllowable);
+   if ( pAllowable->CheckFinalDeadLoadTensionStress() )
+   {
+      vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),railingSystemIntervalIdx,pgsTypes::Tension,pgsTypes::BottomGirder,POI_HARPINGPOINT|(POI_SPAN | POI_5L)));
+   }
 
    GET_IFACE(ILimitStateForces,pForces);
    GET_IFACE(IPretensionStresses,pPrestress);
    const GDRCONFIG& config = m_StrandDesignTool.GetSegmentConfiguration();
 
-   // store poi and case where max happened (for debugging)
-   pgsPointOfInterest maxPoi[NCases];
-   Uint32 maxCase[NCases] = {-1,-1,-1,-1,-1,-1};
 
-   int i = 0;
-   for ( i = 0; i < NCases; i++ )
+   std::vector<ConcreteStrengthParameters>::iterator iter(vConcreteStrengthParameters.begin());
+   std::vector<ConcreteStrengthParameters>::iterator end(vConcreteStrengthParameters.end());
+   for ( ; iter != end; iter++ )
    {
+      ConcreteStrengthParameters& concParams(*iter);
+
       // Get Points of Interest at the expected
-      std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoi(interval_type[i],find_type[i]) );
+      std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoi(concParams.intervalIdx,concParams.find_type) );
       ATLASSERT(!vPOI.empty());
 
-      LOG(_T("Checking for ") << strLimitState[i] << StrTopBot(stress_location[i]) << (stress_type[i]==pgsTypes::Tension?_T(" Tension"):_T(" Compression")) );
+      LOG(_T("Checking for ") << concParams.strLimitState << StrTopBot(concParams.stress_location) << (concParams.stress_type==pgsTypes::Tension?_T(" Tension"):_T(" Compression")) );
 
       std::vector<pgsPointOfInterest>::iterator poiIter(vPOI.begin());
       std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPOI.end());
@@ -5222,37 +5314,35 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
          Float64 min,max;
          if ( analysisType == pgsTypes::Envelope )
          {
-            pForces->GetDesignStress(interval_type[i],limit_state[i],poi,stress_location[i],fc_current,startSlabOffset,endSlabOffset,pgsTypes::MaxSimpleContinuousEnvelope,&min,&max);
+            pForces->GetDesignStress(concParams.intervalIdx,concParams.limit_state,poi,concParams.stress_location,fc_current,startSlabOffset,endSlabOffset,pgsTypes::MaxSimpleContinuousEnvelope,&min,&max);
          }
          else
          {
-            pForces->GetDesignStress(interval_type[i],limit_state[i],poi,stress_location[i],fc_current,startSlabOffset,endSlabOffset,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,&min,&max);
+            pForces->GetDesignStress(concParams.intervalIdx,concParams.limit_state,poi,concParams.stress_location,fc_current,startSlabOffset,endSlabOffset,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,&min,&max);
          }
 
          LOG(_T("     max = ") << ::ConvertFromSysUnits(max,unitMeasure::KSI) << _T(" ksi, min = ") << ::ConvertFromSysUnits(min,unitMeasure::KSI) << _T(" ksi, at ")<< ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Feet) << _T(" ft") );
 
          // save max stress and corresponding prestress stress
-         if (stress_type[i] == pgsTypes::Tension)
+         if (concParams.stress_type == pgsTypes::Tension)
          {
-            if (fmax[i] < max)
+            if (concParams.fmax < max)
             {
-               fmax[i]  = max;
-               fbpre[i] = pPrestress->GetDesignStress(interval_type[i],poi,stress_location[i],config);
+               concParams.fmax = max;
+               concParams.fbpre = pPrestress->GetDesignStress(concParams.intervalIdx,concParams.limit_state,poi,concParams.stress_location,config);
 
-               maxPoi[i]  = poi;
-               maxCase[i] = i;
+               concParams.poi = poi;
             }
          }
          else
          {
             // compression
-            if (min < fmax[i])
+            if (min < concParams.fmax)
             {
-               fmax[i]  = min;
-               fbpre[i] = pPrestress->GetDesignStress(interval_type[i],poi,stress_location[i],config);
+               concParams.fmax = min;
+               concParams.fbpre = pPrestress->GetDesignStress(concParams.intervalIdx,concParams.limit_state,poi,concParams.stress_location,config);
 
-               maxPoi[i]  = poi;
-               maxCase[i] = i;
+               concParams.poi = poi;
             }
          }
       }
@@ -5261,25 +5351,27 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
    GET_IFACE(ILoadFactors,pLF);
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
 
-   Float64 fc_reqd[NCases];
-
-   for ( i = 0; i < NCases; i++ )
+   iter = vConcreteStrengthParameters.begin();
+   for ( ; iter != end; iter++ )
    {
-      Float64 k = pLoadFactors->DCmax[limit_state[i]];
+      ConcreteStrengthParameters& concParams(*iter);
 
-      LOG(_T("Stress Demand (") << strLimitState[i] << StrTopBot(stress_location[i]) << _T(" fmax = ") << ::ConvertFromSysUnits(fmax[i],unitMeasure::KSI) << _T(" ksi, fbpre = ") << ::ConvertFromSysUnits(fbpre[i],unitMeasure::KSI) << _T(" ksi, ftotal = ") << ::ConvertFromSysUnits(fmax[i] + k*fbpre[i],unitMeasure::KSI) << _T(" ksi, at ")<< ::ConvertFromSysUnits(maxPoi[i].GetDistFromStart(), unitMeasure::Feet) << _T(" ft") );
+      Float64 k = pLoadFactors->DCmax[concParams.limit_state];
 
-      fmax[i] += k*fbpre[i];
+      LOG(_T("Stress Demand (") << concParams.strLimitState << StrTopBot(concParams.stress_location) << _T(" fmax = ") << ::ConvertFromSysUnits(concParams.fmax,unitMeasure::KSI) << _T(" ksi, fbpre = ") << ::ConvertFromSysUnits(concParams.fbpre,unitMeasure::KSI) << _T(" ksi, ftotal = ") << ::ConvertFromSysUnits(concParams.fmax + k*concParams.fbpre,unitMeasure::KSI) << _T(" ksi, at ")<< ::ConvertFromSysUnits(concParams.poi.GetDistFromStart(), unitMeasure::Feet) << _T(" ft") );
+
+      concParams.fmax += k*concParams.fbpre;
 
 
-      ConcStrengthResultType success = m_StrandDesignTool.ComputeRequiredConcreteStrength(fmax[i],interval_type[i],limit_state[i],stress_type[i],&fc_reqd[i]);
+      Float64 fc_reqd;
+      ConcStrengthResultType success = m_StrandDesignTool.ComputeRequiredConcreteStrength(concParams.fmax,concParams.intervalIdx,concParams.limit_state,concParams.stress_type,&fc_reqd);
       if ( ConcFailed == success )
       {
          ATLASSERT(false);
       }
       else
       {
-         m_StrandDesignTool.UpdateConcreteStrength(fc_reqd[i],interval_type[i],limit_state[i],stress_type[i],stress_location[i]);
+         m_StrandDesignTool.UpdateConcreteStrength(fc_reqd,concParams.intervalIdx,concParams.limit_state,concParams.stress_type,concParams.stress_location);
       }
       LOG(_T(""));
    }
@@ -5327,7 +5419,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
       pForces->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::BottomGirder,&min,&max);
 
       Float64  fBotPretension;
-      fBotPretension = pPrestress->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,config);
+      fBotPretension = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::BottomGirder,config);
 
       min += fBotPretension;
 
@@ -5410,7 +5502,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
       Float64 mine, maxe;
       pForces->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::TopGirder,&mine,&maxe);
 
-      Float64 fTopPretension = pPrestress->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,config);
+      Float64 fTopPretension = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::TopGirder,config);
 
       Float64 max = maxe+fTopPretension;
 
@@ -5446,7 +5538,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
          LOG(_T("Eccentricity Required to control Top Tension   = ") << ::ConvertFromSysUnits(ecc_target, unitMeasure::Inch) << _T(" in"));
 
          // See if eccentricity can be adjusted and keep Final ServiceIII stresses under control
-         Float64 min_ecc = m_StrandDesignTool.GetMinimumFinalMzEccentricity();
+         Float64 min_ecc = m_StrandDesignTool.GetMinimumFinalMidZoneEccentricity();
          LOG(_T("Min eccentricity for bottom tension at BridgeSite3   = ") << ::ConvertFromSysUnits(min_ecc, unitMeasure::Inch) << _T(" in"));
 
         StrandIndexType Nh = m_StrandDesignTool.GetNh();
@@ -5509,7 +5601,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
             LOG(_T("Attempt to trade straight strands for harped to releive top tension - TxDOT non-standard adjustment"));
 
             StrandIndexType nh_reqd, ns_reqd;
-            if (m_StrandDesignTool.ComputeAddHarpedForMzReleaseEccentricity(top_poi, ecc_target, min_ecc, &ns_reqd, &nh_reqd))
+            if (m_StrandDesignTool.ComputeAddHarpedForMidZoneReleaseEccentricity(top_poi, ecc_target, min_ecc, &ns_reqd, &nh_reqd))
             {
                // number of straight/harped were changed. Set them
                LOG(_T("Number of Straight/Harped were changed from ")<<m_StrandDesignTool.GetNs()<<_T("/")<<Nh<<_T(" to ")<<ns_reqd<<_T("/")<<nh_reqd);
@@ -5740,6 +5832,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG(_T("M shear key   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M construction= ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M slab        = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("dM slab       = ") << ::ConvertFromSysUnits(pProductForces->GetDesignSlabMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M slab pad    = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPad,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("dM slab pad   = ") << ::ConvertFromSysUnits(pProductForces->GetDesignSlabPadMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M panel       = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
@@ -5768,52 +5861,53 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG(_T("LLDF = ") << gpM);
    LOG(_T(""));
 
-   // Get Service III stress at bottom of girder
+   // Initial potential controlling design cases
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
    GET_IFACE(ILimitStateForces,pForces);
-   Float64 fmin[3], fmax[3]; // 0 = Service I, 1 = Service IA, 2 = Service III
-   Float64 fAllow[3];
-   Float64 fpre[3];
-   std::_tstring strLimitState[] = { _T("Service I"), lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"), _T("Service III") };
-   std::_tstring strStressLocation[] = { _T("Top"), _T("Top"), _T("Bottom") };
-   pgsTypes::LimitState limit_state[] = { pgsTypes::ServiceI, lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI, pgsTypes::ServiceIII };
-   pgsTypes::StressLocation stress_location[] = { pgsTypes::TopGirder, pgsTypes::TopGirder, pgsTypes::BottomGirder };
-   pgsTypes::StressType stress_type[] = { pgsTypes::Compression, pgsTypes::Compression, pgsTypes::Tension };
+   std::vector<InitialDesignParameters> vInitialDesignParameters;
+   vInitialDesignParameters.push_back(InitialDesignParameters(liveLoadIntervalIdx,pgsTypes::ServiceI,_T("Service I"),pgsTypes::TopGirder,_T("Top"),pgsTypes::Compression));
+   vInitialDesignParameters.push_back(InitialDesignParameters(liveLoadIntervalIdx,lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),pgsTypes::TopGirder,_T("Top"),pgsTypes::Compression));
+   vInitialDesignParameters.push_back(InitialDesignParameters(liveLoadIntervalIdx,pgsTypes::ServiceIII,_T("Service III"),pgsTypes::BottomGirder,_T("Bottom"),pgsTypes::Tension));
+   if ( pAllowStress->CheckFinalDeadLoadTensionStress() )
+   {
+      vInitialDesignParameters.push_back(InitialDesignParameters(railingSystemIntervalIdx,pgsTypes::ServiceI,_T("Service I"),pgsTypes::BottomGirder,_T("Bottom"),pgsTypes::Tension));
+   }
    
    GET_IFACE(ILoadFactors,pLF);
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
 
    Float64 fc = m_StrandDesignTool.GetConcreteStrength();
 
-   int i = 0;
-   for ( i = 0; i < 3; i++ )
-   {
-      LOG(_T(""));
-      Float64 min,max;
-      pForces->GetDesignStress(liveLoadIntervalIdx,limit_state[i],poi,stress_location[i],fc,startSlabOffset,endSlabOffset,bat,&min,&max);
-      fmax[i] = max;
-      fmin[i] = min;
 
-      Float64 f_demand = ( stress_type[i] == pgsTypes::Compression ) ? fmin[i] : fmax[i];
-      LOG(_T("Stress Demand (") << strLimitState[i] << _T(", ") << strStressLocation[i] << _T(", mid-span) = ") << ::ConvertFromSysUnits(f_demand,unitMeasure::KSI) << _T(" KSI") );
+   std::vector<InitialDesignParameters>::iterator iter(vInitialDesignParameters.begin());
+   std::vector<InitialDesignParameters>::iterator end(vInitialDesignParameters.end());
+   for ( ; iter != end; iter++ )
+   {
+      InitialDesignParameters& designParams(*iter);
+
+      LOG(_T(""));
+      pForces->GetDesignStress(designParams.intervalIdx,designParams.limit_state,poi,designParams.stress_location,fc,startSlabOffset,endSlabOffset,bat,&designParams.fmin,&designParams.fmax);
+
+      Float64 f_demand = ( designParams.stress_type == pgsTypes::Compression ) ? designParams.fmin : designParams.fmax;
+      LOG(_T("Stress Demand (") << pIntervals->GetDescription(segmentKey,designParams.intervalIdx) << _T(", ") << designParams.strLimitState << _T(", ") << designParams.strStressLocation << _T(", mid-span) = ") << ::ConvertFromSysUnits(f_demand,unitMeasure::KSI) << _T(" KSI") );
 
 
       // Get allowable stress 
-      if ( stress_type[i] == pgsTypes::Compression )
+      if ( designParams.stress_type == pgsTypes::Compression )
       {
-         fAllow[i] = pAllowStress->GetSegmentAllowableCompressionStress(poi,liveLoadIntervalIdx,limit_state[i],m_StrandDesignTool.GetConcreteStrength());
+         designParams.fAllow = pAllowStress->GetSegmentAllowableCompressionStress(poi,liveLoadIntervalIdx,designParams.limit_state,m_StrandDesignTool.GetConcreteStrength());
       }
       else
       {
-         fAllow[i] = pAllowStress->GetSegmentAllowableTensionStress(poi,liveLoadIntervalIdx,limit_state[i],m_StrandDesignTool.GetConcreteStrength(),false);
+         designParams.fAllow = pAllowStress->GetSegmentAllowableTensionStress(poi,liveLoadIntervalIdx,designParams.limit_state,m_StrandDesignTool.GetConcreteStrength(),false);
       }
-      LOG(_T("Allowable stress (") << strLimitState[i] << _T(") = ") << ::ConvertFromSysUnits(fAllow[i],unitMeasure::KSI)  << _T(" KSI"));
+      LOG(_T("Allowable stress (") << designParams.strLimitState << _T(") = ") << ::ConvertFromSysUnits(designParams.fAllow,unitMeasure::KSI)  << _T(" KSI"));
 
       // Compute required stress due to prestressing
-      Float64 k = pLoadFactors->DCmax[limit_state[i]];
-      fpre[i] = (fAllow[i] - f_demand)/k;
+      Float64 k = pLoadFactors->DCmax[designParams.limit_state];
+      designParams.fpre = (designParams.fAllow - f_demand)/k;
 
-      LOG(_T("Reqd stress due to prestressing (") << strLimitState[i] << _T(") = ") << ::ConvertFromSysUnits(fpre[i],unitMeasure::KSI) << _T(" KSI") );
+      LOG(_T("Reqd stress due to prestressing (") << designParams.strLimitState << _T(") = ") << ::ConvertFromSysUnits(designParams.fpre,unitMeasure::KSI) << _T(" KSI") );
    }
 
    // Guess the number of strands if first time through. otherwise use previous guess
@@ -5835,6 +5929,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
       if (npmin < np)
       {
          np = m_StrandDesignTool.GetPreviousNumPermanentStrands(np);
+         LOG(_T(""));
          LOG(_T("Reducing num permanent strands from ")<<m_StrandDesignTool.GetNumPermanentStrands()<<_T(" to ")<<np);
          ATLASSERT(0 < np);
          m_StrandDesignTool.SetNumPermanentStrands(np);
@@ -5879,46 +5974,85 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
       LOG(_T("Eccentricity at mid-span = ") << ::ConvertFromSysUnits(ecc,unitMeasure::Inch) << _T(" in"));
 
       // Compute prestress force required to acheive fpre
-      Float64 P_reqd[3];
-      LOG(_T("Required prestress force, P = fpre / [1/Ag + ecc/S]"));
-      for ( i = 0; i < 3; i++ )
+      Float64 fNreqd = -Float64_Max;
+      std::vector<InitialDesignParameters>::iterator controllingParameterIter;
+      iter = vInitialDesignParameters.begin();
+      for ( ; iter != end; iter++ )
       {
-         Float64 S = (stress_location[i] == pgsTypes::TopGirder ? Stg : Sbg);
-         P_reqd[i] = fpre[i]/(1.0/Ag + ecc/S);
-         LOG(_T("Required prestress force (") << strLimitState[i] << _T(") = ") << ::ConvertFromSysUnits(fpre[i],unitMeasure::KSI) << _T("/[ 1/") << ::ConvertFromSysUnits(Ag,unitMeasure::Inch2) << _T(" + ") << ::ConvertFromSysUnits(ecc,unitMeasure::Inch) << _T("/") << ::ConvertFromSysUnits(S,unitMeasure::Inch3) << _T("] = ") << ::ConvertFromSysUnits(-P_reqd[i],unitMeasure::Kip) << _T(" Kip"));
+         InitialDesignParameters& designParams(*iter);
+
+         LOG(_T(""));
+         LOG(_T("Determine required prestressing for ") << designParams.strLimitState);
+
+         LOG(_T("Required prestress force, P = fpre / [1/Ag + ecc/S]"));
+         Float64 S = (designParams.stress_location == pgsTypes::TopGirder ? Stg : Sbg);
+         designParams.Preqd = designParams.fpre/(1.0/Ag + ecc/S);
+         LOG(_T("Required prestress force (") << designParams.strLimitState << _T(") = ") << ::ConvertFromSysUnits(designParams.fpre,unitMeasure::KSI) << _T("/[ 1/") << ::ConvertFromSysUnits(Ag,unitMeasure::Inch2) << _T(" + ") << ::ConvertFromSysUnits(ecc,unitMeasure::Inch) << _T("/") << ::ConvertFromSysUnits(S,unitMeasure::Inch3) << _T("] = ") << ::ConvertFromSysUnits(-designParams.Preqd,unitMeasure::Kip) << _T(" Kip"));
+         m_StrandDesignTool.ComputePermanentStrandsRequiredForPrestressForce(poi,&designParams);
+         LOG(_T("Required number of strands = ") << designParams.fN << _T(" (") << designParams.Np << _T(")"));
+         if ( fNreqd < designParams.fN )
+         {
+            fNreqd = designParams.fN;
+            controllingParameterIter = iter;
+         }
+
+         LOG(_T(""));
       }
 
-      Float64 P = Min(P_reqd[0],P_reqd[1],P_reqd[2]);
-      LOG(_T("Required prestress force = ") << ::ConvertFromSysUnits(-P,unitMeasure::Kip) << _T(" Kip"));
+      InitialDesignParameters& controllingParams(*controllingParameterIter);
+      LOG(_T("Required prestress force = ") << ::ConvertFromSysUnits(-controllingParams.Preqd,unitMeasure::Kip) << _T(" Kip"));
       LOG(_T(""));
 
-      long idx = MinIndex(P_reqd[0],P_reqd[1],P_reqd[2]);
-      if ( stress_type[idx] == pgsTypes::Compression )
+      // Get the controlling tension case... we need this for both cases of initial design controlled by
+      // tension or by compression
+      Np = controllingParams.Np;
+
+      // the controlling tension case is the one that needs the most strands
+      InitialDesignParameters* pTensionDesignParameters;
+      // we put the tension ones at the end of vInitialDesignParameters
+      if ( pAllowStress->CheckFinalDeadLoadTensionStress() )
+      {
+         ATLASSERT(vInitialDesignParameters.size() == 4);
+         if ( fabs(vInitialDesignParameters[2].fN) < fabs(vInitialDesignParameters[3].fN) )
+         {
+            pTensionDesignParameters = &vInitialDesignParameters[3];
+         }
+         else
+         {
+            pTensionDesignParameters = &vInitialDesignParameters[2];
+         }
+      }
+      else
+      {
+         pTensionDesignParameters = &vInitialDesignParameters.back(); 
+      }
+
+      if ( controllingParams.stress_type == pgsTypes::Compression )
       {
          LOG(_T("COMPRESSION CONTROLS"));
 
          // stress required at top of girder to make tension control
-         Float64 fpre = P_reqd[2]/Ag + P_reqd[2]*ecc/Stg; 
-         LOG(_T("Stress due to prestressing required at top of girder to make tension control = P/Ag + Pe/Stg, where P (") << strLimitState[idx] << _T(") = P (Service III)"));
-         LOG(_T("Stress due to prestressing required at top of girder to make tension control = ") << ::ConvertFromSysUnits(P_reqd[2],unitMeasure::Kip) << _T("/") << ::ConvertFromSysUnits(Ag,unitMeasure::Inch2) << _T(" + (") << ::ConvertFromSysUnits(P_reqd[2],unitMeasure::Kip) << _T(")(") << ::ConvertFromSysUnits(ecc,unitMeasure::Inch) << _T(")/") << ::ConvertFromSysUnits(Stg,unitMeasure::Inch3) << _T(" = ") << ::ConvertFromSysUnits(fpre,unitMeasure::KSI) << _T(" KSI"));
+         Float64 fpre = pTensionDesignParameters->Preqd/Ag + pTensionDesignParameters->Preqd*ecc/Stg; 
+         LOG(_T("Stress due to prestressing required at top of girder to make tension control = P/Ag + Pe/Stg, where P (") << controllingParams.strLimitState << _T(") = P (Service III)"));
+         LOG(_T("Stress due to prestressing required at top of girder to make tension control = ") << ::ConvertFromSysUnits(pTensionDesignParameters->Preqd,unitMeasure::Kip) << _T("/") << ::ConvertFromSysUnits(Ag,unitMeasure::Inch2) << _T(" + (") << ::ConvertFromSysUnits(pTensionDesignParameters->Preqd,unitMeasure::Kip) << _T(")(") << ::ConvertFromSysUnits(ecc,unitMeasure::Inch) << _T(")/") << ::ConvertFromSysUnits(Stg,unitMeasure::Inch3) << _T(" = ") << ::ConvertFromSysUnits(fpre,unitMeasure::KSI) << _T(" KSI"));
 
-         Float64 c = pAllowStress->GetAllowableCompressionStressCoefficient(poi,pgsTypes::TopGirder,liveLoadIntervalIdx,limit_state[idx]);
+         Float64 c = pAllowStress->GetAllowableCompressionStressCoefficient(poi,pTensionDesignParameters->stress_location,pTensionDesignParameters->intervalIdx,pTensionDesignParameters->limit_state);
          LOG(_T("Compression stress coefficient ") << c);
 
-         Float64 k = pLoadFactors->DCmax[limit_state[idx]];
-         Float64 fc = (fmin[idx]+k*fpre)/-c;
+         Float64 k = pLoadFactors->DCmax[controllingParams.limit_state];
+         Float64 fc = (controllingParams.fmin+k*fpre)/-c;
 
-         LOG(_T("Solve for required concrete strength: f ") << strLimitState[idx] << _T(" + (") << k << _T(")(f prestress) = f allowable = (c)(f'c)"));
+         LOG(_T("Solve for required concrete strength: f ") << controllingParams.strLimitState << _T(" + (") << k << _T(")(f prestress) = f allowable = (c)(f'c)"));
 
-         LOG(_T("Required concrete strength = [") << ::ConvertFromSysUnits(fmin[idx],unitMeasure::KSI) << _T(" + (") << k << _T(")(") << ::ConvertFromSysUnits(fpre,unitMeasure::KSI) << _T(")] / ") << -c << _T(" = ") << ::ConvertFromSysUnits(fc,unitMeasure::KSI) << _T(" KSI"));
+         LOG(_T("Required concrete strength = [") << ::ConvertFromSysUnits(controllingParams.fmin,unitMeasure::KSI) << _T(" + (") << k << _T(")(") << ::ConvertFromSysUnits(fpre,unitMeasure::KSI) << _T(")] / ") << -c << _T(" = ") << ::ConvertFromSysUnits(fc,unitMeasure::KSI) << _T(" KSI"));
 
          Float64 fc_min = m_StrandDesignTool.GetMinimumConcreteStrength();
-         fc = Max(fc,fc_min);
+         fc = _cpp_max(fc,fc_min);
 
          LOG(_T("Required concrete strength (adjusting for minimum allowed value) = ") << ::ConvertFromSysUnits(fc,unitMeasure::KSI) << _T(" KSI"));
          LOG(_T(""));
 
-         bool bFcUpdated = m_StrandDesignTool.UpdateConcreteStrength(fc,liveLoadIntervalIdx,limit_state[idx],stress_type[idx],stress_location[idx]);
+         bool bFcUpdated = m_StrandDesignTool.UpdateConcreteStrength(fc,pTensionDesignParameters->intervalIdx,controllingParams.limit_state,controllingParams.stress_type,controllingParams.stress_location);
 
          if (bFcUpdated)
          {
@@ -5929,9 +6063,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
          else
          {
             // probably should never get here. intial strand selection too high?
-            P = P_reqd[2]; // force tension to control and use service III
             LOG(_T("** Oddball case - compressioned controlled, but did not increase concrete strength. Initial Ns too high?"));
-
 
             if (cIter==0)
             {
@@ -5940,18 +6072,16 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
             }
             else
             {
-
                LOG(_T("Find concrete strength required to satisfy tension limit"));
-
                const GDRCONFIG& config = m_StrandDesignTool.GetSegmentConfiguration();
                GET_IFACE(IPretensionStresses,pPsStress);
-               Float64 fBotPre = pPsStress->GetDesignStress(liveLoadIntervalIdx,poi,pgsTypes::BottomGirder,config);
+               Float64 fBotPre = pPsStress->GetDesignStress(pTensionDesignParameters->intervalIdx,pTensionDesignParameters->limit_state,poi,pTensionDesignParameters->stress_location,config);
                Float64 fc_rq;
-               Float64 k = pLoadFactors->DCmax[pgsTypes::ServiceIII];
+               Float64 k = pLoadFactors->DCmax[pTensionDesignParameters->limit_state];
 
-               Float64 f_allow_required = fmax[2]+k*fBotPre;
-               LOG(_T("Required allowable = fb Service III + fb Prestress = ") << ::ConvertFromSysUnits(fmax[2],unitMeasure::KSI) << _T(" + ") << ::ConvertFromSysUnits(fBotPre,unitMeasure::KSI) << _T(" = ") << ::ConvertFromSysUnits(f_allow_required,unitMeasure::KSI) << _T(" KSI"));
-               if ( ConcFailed != m_StrandDesignTool.ComputeRequiredConcreteStrength(f_allow_required,liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,&fc_rq) )
+               Float64 f_allow_required = pTensionDesignParameters->fmax+k*fBotPre;
+               LOG(_T("Required allowable = fb ") << pTensionDesignParameters->strLimitState << _T(" + fb Prestress = ") << ::ConvertFromSysUnits(pTensionDesignParameters->fmax,unitMeasure::KSI) << _T(" + ") << ::ConvertFromSysUnits(fBotPre,unitMeasure::KSI) << _T(" = ") << ::ConvertFromSysUnits(f_allow_required,unitMeasure::KSI) << _T(" KSI"));
+               if ( ConcFailed != m_StrandDesignTool.ComputeRequiredConcreteStrength(f_allow_required,pTensionDesignParameters->intervalIdx,pTensionDesignParameters->limit_state,pTensionDesignParameters->stress_type,&fc_rq) )
                {
                   // Practical upper limit here - if we are going above 15ksi, we are wasting time
                   Float64 max_girder_fc = m_StrandDesignTool.GetMaximumConcreteStrength();
@@ -5959,7 +6089,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
 
                   if (fc_rq < max_girder_fc)
                   {
-                     bool bFcUpdated = m_StrandDesignTool.UpdateConcreteStrength(fc_rq,liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pgsTypes::BottomGirder);
+                     bool bFcUpdated = m_StrandDesignTool.UpdateConcreteStrength(fc_rq,pTensionDesignParameters->intervalIdx,pTensionDesignParameters->limit_state,pTensionDesignParameters->stress_type,pTensionDesignParameters->stress_location);
                      if ( bFcUpdated )
                      {
                         m_DesignerOutcome.SetOutcome(pgsDesignCodes::FcChanged);
@@ -5978,9 +6108,16 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
          }
       }
 
-      // if we are here, tension is controlling, see if we can match Np and ecc
-      Np = m_StrandDesignTool.ComputePermanentStrandsRequiredForPrestressForce(poi,P);
+      // if we are here, tension is controlling
 
+      // make sure the controlling case and the assumed controlling tension case match (since tension is controlling)
+      ATLASSERT(IsEqual(controllingParams.Preqd,pTensionDesignParameters->Preqd));
+      ATLASSERT(controllingParams.intervalIdx == pTensionDesignParameters->intervalIdx);
+      ATLASSERT(controllingParams.limit_state == pTensionDesignParameters->limit_state);
+      ATLASSERT(controllingParams.stress_location == pTensionDesignParameters->stress_location);
+      ATLASSERT(controllingParams.stress_type == pTensionDesignParameters->stress_type);
+
+      // see if we can match Np and ecc
       if ( Np == INVALID_INDEX )
       {
          StrandIndexType npmax = m_StrandDesignTool.GetMaxPermanentStrands();
@@ -5993,12 +6130,12 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
             LOG(_T("Hail Mary - See if reasonable concrete strength can satisfy tension limit"));
             const GDRCONFIG& config = m_StrandDesignTool.GetSegmentConfiguration();
             GET_IFACE(IPretensionStresses,pPsStress);
-            Float64 fBotPre = pPsStress->GetDesignStress(liveLoadIntervalIdx,poi,pgsTypes::BottomGirder,config);
-            Float64 k = pLoadFactors->DCmax[pgsTypes::ServiceIII];
-            Float64 f_allow_required = fmax[2]+k*fBotPre;
-            LOG(_T("Required allowable = fb Service III + fb Prestress = ") << ::ConvertFromSysUnits(fmax[2],unitMeasure::KSI) << _T(" + ") << ::ConvertFromSysUnits(fBotPre,unitMeasure::KSI) << _T(" = ") << ::ConvertFromSysUnits(f_allow_required,unitMeasure::KSI) << _T(" KSI"));
+            Float64 fBotPre = pPsStress->GetDesignStress(pTensionDesignParameters->intervalIdx,pTensionDesignParameters->limit_state,poi,pTensionDesignParameters->stress_location,config);
+            Float64 k = pLoadFactors->DCmax[pTensionDesignParameters->limit_state];
+            Float64 f_allow_required = pTensionDesignParameters->fmax+k*fBotPre;
+            LOG(_T("Required allowable = fb ") << pTensionDesignParameters->strLimitState << _T(" + fb Prestress = ") << ::ConvertFromSysUnits(pTensionDesignParameters->fmax,unitMeasure::KSI) << _T(" + ") << ::ConvertFromSysUnits(fBotPre,unitMeasure::KSI) << _T(" = ") << ::ConvertFromSysUnits(f_allow_required,unitMeasure::KSI) << _T(" KSI"));
             Float64 fc_rqd;
-            if ( ConcFailed != m_StrandDesignTool.ComputeRequiredConcreteStrength(f_allow_required,liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,&fc_rqd) )
+            if ( ConcFailed != m_StrandDesignTool.ComputeRequiredConcreteStrength(f_allow_required,pTensionDesignParameters->intervalIdx,pTensionDesignParameters->limit_state,pTensionDesignParameters->stress_type,&fc_rqd) )
             {
                // Use user-defined practical upper limit here - if we are going for 15ksi, we are wasting time
                GET_IFACE(ILimits,pLimits);
@@ -6022,7 +6159,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
                      if (fc_curr-fci_curr > fc_2k)
                      {
                         LOG(_T("  Release strength was more than 2 ksi smaller than final, bump release as well"));
-                        m_StrandDesignTool.UpdateReleaseStrength(fci_curr+fc_2k, strength_result, liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pgsTypes::BottomGirder);
+                        m_StrandDesignTool.UpdateReleaseStrength(fci_curr+fc_2k, strength_result, pTensionDesignParameters->intervalIdx,pTensionDesignParameters->limit_state,pTensionDesignParameters->stress_type,pTensionDesignParameters->stress_location);
                         m_DesignerOutcome.SetOutcome(pgsDesignCodes::FciChanged);
                      }
 
@@ -6075,11 +6212,11 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
          // solution has converged - compute and save the minimum eccentricity that we can have with
          // Np and our allowable. This will be used later to limit strand adjustments in mid-zone
          // We know that Service III controlled because w'ere here:
-         Float64 pps = m_StrandDesignTool.GetPrestressForceMidZone(liveLoadIntervalIdx,poi);
-         Float64 ecc_min = ComputeBottomCompressionEccentricity( pps, fAllow[2], fmax[2], Ag, Sbg);
+         Float64 pps = m_StrandDesignTool.GetPrestressForceMidZone(pTensionDesignParameters->intervalIdx,poi);
+         Float64 ecc_min = ComputeBottomCompressionEccentricity( pps, pTensionDesignParameters->fAllow, pTensionDesignParameters->fmax, Ag, Sbg);
          LOG(_T("Minimum eccentricity Required to control Bottom Tension  = ") << ::ConvertFromSysUnits(ecc_min, unitMeasure::Inch) << _T(" in"));
-         LOG(_T("Actual current eccentricity   = ") << ::ConvertFromSysUnits(m_StrandDesignTool.ComputeEccentricity(poi, liveLoadIntervalIdx), unitMeasure::Inch) << _T(" in"));
-         m_StrandDesignTool.SetMinimumFinalMzEccentricity(ecc_min);
+         LOG(_T("Actual current eccentricity   = ") << ::ConvertFromSysUnits(m_StrandDesignTool.ComputeEccentricity(poi, pTensionDesignParameters->intervalIdx), unitMeasure::Inch) << _T(" in"));
+         m_StrandDesignTool.SetMinimumFinalMidZoneEccentricity(ecc_min);
       }
 
       cIter++;
@@ -6213,8 +6350,8 @@ void pgsDesigner2::DesignEndZoneReleaseStrength(IProgress* pProgress)
       pForces->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::BottomGirder,&mine,&bogus);
 
       Float64 fTopPretension, fBotPretension;
-      fTopPretension = pPrestress->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,config);
-      fBotPretension = pPrestress->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,config);
+      fTopPretension = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::TopGirder,config);
+      fBotPretension = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::BottomGirder,config);
 
       Float64 max = maxe + fTopPretension;
       Float64 min = mine + fBotPretension;
@@ -6288,8 +6425,8 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(const arDesignOptions& options, I
       pForces->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::BottomGirder,&mine,&bogus);
 
       Float64 fTopPretension, fBotPretension;
-      fTopPretension = pPrestress->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,config);
-      fBotPretension = pPrestress->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,config);
+      fTopPretension = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::TopGirder,config);
+      fBotPretension = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::BottomGirder,config);
 
       Float64 max = maxe + fTopPretension;
       Float64 min = mine + fBotPretension;
@@ -6378,7 +6515,7 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(const arDesignOptions& options, I
       StrandIndexType nh_reqd, ns_reqd;
 
       LOG(_T("Try to raise end eccentricity by trading harped to straight and lowering ends"));
-      if (m_StrandDesignTool.ComputeMinHarpedForEzEccentricity(poi_control, ecc_control, releaseIntervalIdx, &ns_reqd, &nh_reqd))
+      if (m_StrandDesignTool.ComputeMinHarpedForEndZoneEccentricity(poi_control, ecc_control, releaseIntervalIdx, &ns_reqd, &nh_reqd))
       {
          // number of straight/harped were changed. Set them
          LOG(_T("Number of Straight/Harped were changed from ")<<Ns<<_T("/")<<Nh<<_T(" to ")<<ns_reqd<<_T("/")<<nh_reqd);
@@ -6438,8 +6575,8 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(const arDesignOptions& options, I
 
 
    Float64 fTopPs, fBotPs;
-   fTopPs = pPrestress->GetDesignStress(releaseIntervalIdx,top_poi,pgsTypes::TopGirder,config);
-   fBotPs = pPrestress->GetDesignStress(releaseIntervalIdx,bot_poi,pgsTypes::BottomGirder,config);
+   fTopPs = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,top_poi,pgsTypes::TopGirder,config);
+   fBotPs = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,bot_poi,pgsTypes::BottomGirder,config);
 
    ftop = fetop + fTopPs;
    fbot = febot + fBotPs;
@@ -6511,7 +6648,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgre
    LOG(_T("Debond Design sample POI for prestressing force taken at ")<<::ConvertFromSysUnits(sample_poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft"));
 
    GET_IFACE(IPretensionForce,pPrestressForce);
-   Float64 strand_force = pPrestressForce->GetPrestressForcePerStrand(sample_poi, config, pgsTypes::Straight, releaseIntervalIdx, pgsTypes::Start );
+   Float64 strand_force = pPrestressForce->GetPrestressForcePerStrand(sample_poi, pgsTypes::Straight, releaseIntervalIdx, pgsTypes::Start, pgsTypes::ServiceI, config );
 
    StrandIndexType nss = config.PrestressConfig.GetStrandCount(pgsTypes::Straight);
    LOG(_T("Average force per strand at sampling location = ") << ::ConvertFromSysUnits(strand_force,unitMeasure::Kip) << _T(" kip, with ")<<nss<<_T(" strands"));
@@ -6538,8 +6675,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgre
       pForces->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::BottomGirder,&fBotAppl,&bogus);
 
       Float64 fTopPretension, fBotPretension;
-      fTopPretension = pPrestress->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,config);
-      fBotPretension = pPrestress->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,config);
+      fTopPretension = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::TopGirder,config);
+      fBotPretension = pPrestress->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::BottomGirder,config);
 
       // demand stress with fully bonded straight strands
       Float64 fTop = fTopAppl + fTopPretension;
@@ -6934,7 +7071,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
          if (m_StrandDesignTool.GetOriginalStrandFillType() == ftMinimizeHarping)
          {
             LOG(_T("Try to increase end eccentricity by trading harped to straight"));
-            if (m_StrandDesignTool.ComputeMinHarpedForEzEccentricity(poi_control, required_eccentricity, liftSegmentIntervalIdx, &ns_reqd, &nh_reqd))
+            if (m_StrandDesignTool.ComputeMinHarpedForEndZoneEccentricity(poi_control, required_eccentricity, liftSegmentIntervalIdx, &ns_reqd, &nh_reqd))
             {
                // number of straight/harped were changed. Set them
                LOG(_T("Number of Straight/Harped were changed from ")<<Ns<<_T("/")<<Nh<<_T(" to ")<<ns_reqd<<_T("/")<<nh_reqd);
@@ -7614,33 +7751,16 @@ void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
 
-   std::vector<StressCheckTask>::iterator iter(m_StressCheckTasks.begin());
-   std::vector<StressCheckTask>::iterator end(m_StressCheckTasks.end());
+   GET_IFACE(IAllowableConcreteStress,pAllowable);
 
    // Our only option is to increase concrete strength, so let loop finish unless we fail.
-   for ( ; iter != end; iter++ )
+   BOOST_FOREACH(StressCheckTask& task,m_StressCheckTasks)
    {
-      StressCheckTask task = *iter;
-
-     // skip the temporary strand removal check if the girder can't or doesn't have temporary strands
-      if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && task.limitState == pgsTypes::FatigueI) || 
-           (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& task.limitState == pgsTypes::ServiceIA)
-           )
+      if ( !pAllowable->IsStressCheckApplicable(segmentKey,task.intervalIdx,task.limitState,task.stressType) )
       {
-         // if before LRFD 2009 and Fatigue I 
-         // - OR -
-         // LRFD 2009 and later and Service IA
-         //
-         // ... don't evaluate this case
+         // stress check isn't applicable so move on to the next one
          continue;
       }
-
-      // temporary strand remove task is not in the task list if there aren't any temporary strands
-      // this check is no longer needed
-      //if ( task.intervalIdx == tsRemovalIntervalIdx && (0 == NtMax || 0 == m_StrandDesignTool.GetNt()) )
-      //{
-      //   continue; // skip temporary strand removal if this girder doesn't support temporary strands
-      //}
 
       LOG(_T(""));
       LOG(_T("*** Refining design for Interval ") << LABEL_INTERVAL(task.intervalIdx) << _T(", ") << pIntervals->GetDescription(segmentKey,task.intervalIdx) << _T(" ") << g_LimitState[task.limitState] << _T(" ") << g_Type[task.stressType] );
@@ -7777,8 +7897,8 @@ void pgsDesigner2::RefineDesignForAllowableStress(const StressCheckTask& task,IP
       //
       // Get the stresses due to prestressing (adjust for losses)
       //
-      Float64 fTopPre = pPsStress->GetDesignStress(task.intervalIdx,poi,pgsTypes::TopGirder,config);
-      Float64 fBotPre = pPsStress->GetDesignStress(task.intervalIdx,poi,pgsTypes::BottomGirder,config);
+      Float64 fTopPre = pPsStress->GetDesignStress(task.intervalIdx,task.limitState,poi,pgsTypes::TopGirder,config);
+      Float64 fBotPre = pPsStress->GetDesignStress(task.intervalIdx,task.limitState,poi,pgsTypes::BottomGirder,config);
       LOG(_T("Prestress Stress     :: Top = ") << ::ConvertFromSysUnits(fTopPre,unitMeasure::KSI) << _T(" KSI") << _T("    Bot = ") << ::ConvertFromSysUnits(fBotPre,unitMeasure::KSI) << _T(" KSI"));
 
       //
@@ -7873,9 +7993,9 @@ void pgsDesigner2::RefineDesignForAllowableStress(const StressCheckTask& task,IP
 
       // Try the next highest concrete strength
       Float64 fc_reqd;
-      ConcStrengthResultType success = m_StrandDesignTool.ComputeRequiredConcreteStrength(fControl,task.intervalIdx,task.limitState,task.stressType,&fc_reqd);
+      ConcStrengthResultType result = m_StrandDesignTool.ComputeRequiredConcreteStrength(fControl,task.intervalIdx,task.limitState,task.stressType,&fc_reqd);
 
-      if ( ConcFailed==success )
+      if ( ConcFailed == result )
       {
          // could not find a concrete strength that would work
          m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::StressExceedsConcreteStrength);
@@ -7885,7 +8005,7 @@ void pgsDesigner2::RefineDesignForAllowableStress(const StressCheckTask& task,IP
 
       if( task.intervalIdx == releaseIntervalIdx )
       {
-         if (m_StrandDesignTool.UpdateReleaseStrength(fc_reqd,success, task.intervalIdx,task.limitState,task.stressType,stress_location))
+         if (m_StrandDesignTool.UpdateReleaseStrength(fc_reqd,result, task.intervalIdx,task.limitState,task.stressType,stress_location))
          {
             m_DesignerOutcome.SetOutcome(pgsDesignCodes::FciChanged);
          }
@@ -7956,7 +8076,7 @@ void pgsDesigner2::RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,p
       LOG(_T("Moment Arm = ") << ::ConvertFromSysUnits( mcd.MomentArm, unitMeasure::Inch) << _T(" inch"));
 
       GET_IFACE(ILosses,pILosses);
-      Float64 check_loss = pILosses->GetPrestressLoss(poi,pgsTypes::Permanent,config,pIntervals->GetLiveLoadInterval(segmentKey),pgsTypes::Start);
+      Float64 check_loss = pILosses->GetPrestressLoss(poi,pgsTypes::Permanent,pIntervals->GetLiveLoadInterval(segmentKey),pgsTypes::Start,pgsTypes::ServiceIII,config);
       LOG(_T("Losses = ") << ::ConvertFromSysUnits( check_loss, unitMeasure::KSI) << _T(" KSI") );
 
       CRACKINGMOMENTDETAILS cmd;

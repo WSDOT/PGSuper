@@ -40,11 +40,14 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
+   afx_msg void OnCheckServiceITensileStress();
    afx_msg void OnCheckReleaseTensionMax();
    afx_msg void OnCheckTSRemovalTensionMax();
    afx_msg void OnCheckAfterDeckTensionMax();
-	afx_msg void OnCheckServiceTensionMax();
-	afx_msg void OnCheckSevereServiceTensionMax();
+	afx_msg void OnCheckServiceITensionMax();
+	afx_msg void OnCheckServiceIIITensionMax();
+	afx_msg void OnCheckSevereServiceIIITensionMax();
+   afx_msg void OnCheckTemporaryStresses();
 
    DECLARE_MESSAGE_MAP()
 

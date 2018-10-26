@@ -201,9 +201,9 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
          {
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-            strLabel.Format(_T("%s, ACI 209R-92, A=%s, B=%4.2f"),
+            strLabel.Format(_T("%s, ACI 209R-92, a = %s, Beta = %4.2f"),
                matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
-               ::FormatDimension(concrete.A,pDisplayUnits->GetWholeDaysUnit()),
+               ::FormatDimension(concrete.A,pDisplayUnits->GetFractionalDaysUnit()),
                concrete.B);
          }
          else
@@ -216,9 +216,19 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
       }
       else
       {
-         strLabel.Format(_T("%s, CEB-FIP, Type %s cement"),
-               matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
-               matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType));
+         if ( concrete.bCEBFIPUserParameters )
+         {
+            strLabel.Format(_T("%s, CEB-FIP, s = %.6f, Beta SC = %.6f"),
+                  matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+                  concrete.S,
+                  concrete.BetaSc);
+         }
+         else
+         {
+            strLabel.Format(_T("%s, CEB-FIP, Type %s cement"),
+                  matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+                  matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType));
+         }
       }
    }
    else

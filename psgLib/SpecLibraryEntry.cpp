@@ -128,11 +128,16 @@ m_TempStrandRemovalCompStress(0.45),
 m_TempStrandRemovalTensStress(0.0),
 m_TempStrandRemovalDoTensStressMax(false),
 m_TempStrandRemovalTensStressMax(0.0),
+m_bCheckTemporaryStresses(true), // true is consistant with the original default value
 m_Bs1CompStress(0.6),
 m_Bs1TensStress(0.0),
 m_Bs1DoTensStressMax(false),
-m_Bs1TensStressMax(0.0),
+m_Bs1TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_Bs2CompStress(0.6),
+m_bCheckBs2Tension(false), // false is consistent with the original features of the program (it didn't do this)
+m_Bs2TensStress(0.0),
+m_Bs2DoTensStressMax(false),
+m_Bs2TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_TrafficBarrierDistributionType(pgsTypes::tbdGirder),
 m_Bs2MaxGirdersTrafficBarrier(4),
 m_Bs2MaxGirdersUtility(4),
@@ -141,10 +146,10 @@ m_Bs3CompStressServ(0.6),
 m_Bs3CompStressService1A(0.4),
 m_Bs3TensStressServNc(0),
 m_Bs3DoTensStressServNcMax(false),
-m_Bs3TensStressServNcMax(0),
+m_Bs3TensStressServNcMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_Bs3TensStressServSc(0),   
 m_Bs3DoTensStressServScMax(false),
-m_Bs3TensStressServScMax(0),
+m_Bs3TensStressServScMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_Bs3IgnoreRangeOfApplicability(false),
 m_Bs3LRFDOverReinforcedMomentCapacity(0),
 m_CreepMethod(CREEP_LRFD),
@@ -216,7 +221,9 @@ m_ClosureTensStressPTZAtService(0.0),
 m_ClosureTensStressPTZWithRebarAtService(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
 m_ClosureTensStressAtService(0.0),
 m_ClosureTensStressWithRebarAtService(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
-m_ClosureCompStressFatigue(0.40)
+m_ClosureCompStressFatigue(0.40),
+m_bCheckBottomFlangeClearance(false),
+m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -569,11 +576,18 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TempStrandRemovalDoTensStressMax") ,m_TempStrandRemovalDoTensStressMax);
    pSave->Property(_T("TempStrandRemovalTensStressMax") ,  m_TempStrandRemovalTensStressMax);
 
+   pSave->Property(_T("CheckTemporaryStresses"),m_bCheckTemporaryStresses); // added in version 47
    pSave->Property(_T("Bs1CompStress") ,     m_Bs1CompStress); // removed m_ in version 30
    pSave->Property(_T("Bs1TensStress") ,     m_Bs1TensStress); // removed m_ in version 30
    pSave->Property(_T("Bs1DoTensStressMax") ,m_Bs1DoTensStressMax); // removed m_ in version 30
    pSave->Property(_T("Bs1TensStressMax") ,  m_Bs1TensStressMax); // removed m_ in version 30
    pSave->Property(_T("Bs2CompStress") ,     m_Bs2CompStress); // removed m_ in version 30
+
+   pSave->Property(_T("CheckBs2Tension"),    m_bCheckBs2Tension); // added in version 47
+   pSave->Property(_T("Bs2TensStress") ,     m_Bs2TensStress); // added in version 47
+   pSave->Property(_T("Bs2DoTensStressMax") ,m_Bs2DoTensStressMax); // added in version 47
+   pSave->Property(_T("Bs2TensStressMax") ,  m_Bs2TensStressMax); // added in version 47
+
    pSave->Property(_T("Bs2TrafficBarrierDistributionType"),(Int16)m_TrafficBarrierDistributionType); // added in version 36
    pSave->Property(_T("Bs2MaxGirdersTrafficBarrier"), m_Bs2MaxGirdersTrafficBarrier);
    pSave->Property(_T("Bs2MaxGirdersUtility"), m_Bs2MaxGirdersUtility);
@@ -888,6 +902,10 @@ pSave->EndUnit(); // Shear
       pSave->Property(_T("ClosureTensStressWithRebarAtService"),      m_ClosureTensStressWithRebarAtService);
       pSave->Property(_T("ClosureCompStressFatigue"),                 m_ClosureCompStressFatigue);
    pSave->EndUnit(); // Closure Joint
+
+   // added in version 48
+   pSave->Property(_T("CheckBottomFlangeClearance"),m_bCheckBottomFlangeClearance);
+   pSave->Property(_T("MinBottomFlangeClearance"),m_Cmin);
 
    pSave->EndUnit();
 
@@ -1714,6 +1732,23 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
+            if ( 46 < version )
+            {
+               // added in version 47
+               if ( !pLoad->Property(_T("CheckTemporaryStresses"),&m_bCheckTemporaryStresses) )
+               {
+                  m_bCheckTemporaryStresses = true; // make sure it is set to the default value
+                  if ( MAX_OVERLAP_VERSION < version )
+                  {
+                     // This was added in version 47 for PGSuper version 2.9.
+                     // At the same time, PGSuper 3.0 was being built. The data block version was
+                     // MAX_OVERLAP_VERSION. It is ok to fail for 44 <= version <= MAX_OVERLAP_VERSION. If version is more than MAX_OVERLAP_VERSION
+                     // then the data file format is invalid.
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
+               }
+            }
+
             // for the following 5 items, the m_ was removed from the keyword in version 30
             if(!pLoad->Property(_T("Bs1CompStress") ,     &m_Bs1CompStress))
             {
@@ -1738,6 +1773,40 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("Bs2CompStress") ,     &m_Bs2CompStress))
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if ( 46 < version )
+            {
+               bool bOKToFail = false;
+               if ( version <= MAX_OVERLAP_VERSION )
+               {
+                  // This was added in version 45 for PGSuper version 2.9.
+                  // At the same time, PGSuper 3.0 was being built. The data block version was
+                  // MAX_OVERLAP_VERSION. It is ok to fail for 44 <= version <= MAX_OVERLAP_VERSION. If version is more than MAX_OVERLAP_VERSION
+                  // then the data file format is invalid.
+                  bOKToFail = true;
+               }
+
+               // added in version 47
+               bool bSucceeded = pLoad->Property(_T("CheckBs2Tension"),&m_bCheckBs2Tension);
+               if ( bSucceeded )
+               {
+                  if ( !pLoad->Property(_T("Bs2TensStress") , &m_Bs2TensStress) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+
+                  if ( !pLoad->Property(_T("Bs2DoTensStressMax"), &m_Bs2DoTensStressMax) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+
+                  if ( !pLoad->Property(_T("Bs2TensStressMax") ,  &m_Bs2TensStressMax) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+               }
+               else
+               {
+                  if ( !bOKToFail )
+                  {
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
+               }
             }
          }
          else
@@ -3644,6 +3713,34 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
 
+      // added in version 48
+      if ( 47 < version )
+      {
+         bool bOKToFail = false;
+         if ( version <= MAX_OVERLAP_VERSION )
+         {
+            // This was added in version 48 for PGSuper version 2.9.
+            // At the same time, PGSuper 3.0 was being built. The data block version was
+            // MAX_OVERLAP_VERSION. It is ok to fail for 44 <= version <= MAX_OVERLAP_VERSION. If version is more than MAX_OVERLAP_VERSION
+            // then the data file format is invalid.
+            bOKToFail = true;
+         }
+
+         bool bSucceeded = pLoad->Property(_T("CheckBottomFlangeClearance"),&m_bCheckBottomFlangeClearance);
+         if ( bSucceeded )
+         {
+            if ( !pLoad->Property(_T("MinBottomFlangeClearance"),&m_Cmin) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         else
+         {
+            if ( !bOKToFail )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+      }
+
       if(!pLoad->EndUnit())
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -3748,11 +3845,16 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_TempStrandRemovalDoTensStressMax, rOther.m_TempStrandRemovalDoTensStressMax         );
    TESTD(m_TempStrandRemovalTensStressMax  , rOther.m_TempStrandRemovalTensStressMax           );
 
+   TEST(m_bCheckTemporaryStresses, rOther.m_bCheckTemporaryStresses);
    TESTD(m_Bs1CompStress              , rOther.m_Bs1CompStress              );
    TESTD(m_Bs1TensStress              , rOther.m_Bs1TensStress              );
    TEST (m_Bs1DoTensStressMax         , rOther.m_Bs1DoTensStressMax         );
    TESTD(m_Bs1TensStressMax           , rOther.m_Bs1TensStressMax           );
    TESTD(m_Bs2CompStress              , rOther.m_Bs2CompStress              );
+   TEST( m_bCheckBs2Tension           , rOther.m_bCheckBs2Tension           );
+   TESTD(m_Bs2TensStress              , rOther.m_Bs2TensStress              );
+   TEST( m_Bs2DoTensStressMax         , rOther.m_Bs2DoTensStressMax         );
+   TESTD(m_Bs2TensStressMax           , rOther.m_Bs2TensStressMax           );
    TEST (m_TrafficBarrierDistributionType, rOther.m_TrafficBarrierDistributionType);
    TEST (m_Bs2MaxGirdersTrafficBarrier, rOther.m_Bs2MaxGirdersTrafficBarrier );
    TEST (m_Bs2MaxGirdersUtility       , rOther.m_Bs2MaxGirdersUtility        );
@@ -3915,6 +4017,9 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_ClosureTensStressWithRebarAtService      , rOther.m_ClosureTensStressWithRebarAtService);
    TESTD(m_ClosureCompStressFatigue                 , rOther.m_ClosureCompStressFatigue);
 
+
+   TEST(m_bCheckBottomFlangeClearance,rOther.m_bCheckBottomFlangeClearance);
+   TESTD(m_Cmin,rOther.m_Cmin);
 
    if (considerName)
    {
@@ -4624,7 +4729,15 @@ void SpecLibraryEntry::SetTempStrandRemovalMaximumTensionStress(bool doCheck, Fl
 }
 
 
+void SpecLibraryEntry::CheckTemporaryStresses(bool bCheck)
+{
+   m_bCheckTemporaryStresses = bCheck;
+}
 
+bool SpecLibraryEntry::CheckTemporaryStresses() const
+{
+   return m_bCheckTemporaryStresses;
+}
 
 Float64 SpecLibraryEntry::GetErectionCompressionStressFactor() const
 {
@@ -4666,6 +4779,38 @@ Float64 SpecLibraryEntry::GetFinalWithoutLiveLoadCompressionStressFactor() const
 void SpecLibraryEntry::SetFinalWithoutLiveLoadCompressionStressFactor(Float64 stress)
 {
    m_Bs2CompStress = stress;
+}
+
+void SpecLibraryEntry::CheckBs2Tension(bool bCheck)
+{
+   m_bCheckBs2Tension = bCheck;
+}
+
+bool SpecLibraryEntry::CheckBs2Tension() const
+{
+   return m_bCheckBs2Tension;
+}
+
+Float64 SpecLibraryEntry::GetBs2MaxConcreteTens() const
+{
+   return m_Bs2TensStress;
+}
+
+void SpecLibraryEntry::SetBs2MaxConcreteTens(Float64 stress)
+{
+   m_Bs2TensStress = stress;
+}
+
+void SpecLibraryEntry::GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const
+{
+   *doCheck = m_Bs2DoTensStressMax;
+   *stress = m_Bs2TensStressMax;
+}
+
+void SpecLibraryEntry::SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress)
+{
+   m_Bs2DoTensStressMax = doCheck;
+   m_Bs2TensStressMax = stress;
 }
 
 Float64 SpecLibraryEntry::GetFinalWithLiveLoadCompressionStressFactor() const
@@ -5689,6 +5834,26 @@ void SpecLibraryEntry::SetClosureFatigueCompressionStressFactor(Float64 stress)
    m_ClosureCompStressFatigue = stress;
 }
 
+void SpecLibraryEntry::CheckBottomFlangeClearance(bool bCheck)
+{
+   m_bCheckBottomFlangeClearance = bCheck;
+}
+
+bool SpecLibraryEntry::CheckBottomFlangeClearance() const
+{
+   return m_bCheckBottomFlangeClearance;
+}
+
+void SpecLibraryEntry::SetMinBottomFlangeClearance(Float64 Cmin)
+{
+   m_Cmin = Cmin;
+}
+
+Float64 SpecLibraryEntry::GetMinBottomFlangeClearance() const
+{
+   return m_Cmin;
+}
+
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -5787,11 +5952,16 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_TempStrandRemovalDoTensStressMax         = rOther.m_TempStrandRemovalDoTensStressMax;
    m_TempStrandRemovalTensStressMax           = rOther.m_TempStrandRemovalTensStressMax;
 
+   m_bCheckTemporaryStresses    = rOther.m_bCheckTemporaryStresses;
    m_Bs1CompStress              = rOther.m_Bs1CompStress;
    m_Bs1TensStress              = rOther.m_Bs1TensStress;
    m_Bs1DoTensStressMax         = rOther.m_Bs1DoTensStressMax;
    m_Bs1TensStressMax           = rOther.m_Bs1TensStressMax;
    m_Bs2CompStress              = rOther.m_Bs2CompStress;
+   m_bCheckBs2Tension           = rOther.m_bCheckBs2Tension;
+   m_Bs2TensStress              = rOther.m_Bs2TensStress;
+   m_Bs2DoTensStressMax         = rOther.m_Bs2DoTensStressMax;
+   m_Bs2TensStressMax           = rOther.m_Bs2TensStressMax;
    m_TrafficBarrierDistributionType = rOther.m_TrafficBarrierDistributionType;
    m_Bs2MaxGirdersTrafficBarrier= rOther.m_Bs2MaxGirdersTrafficBarrier;
    m_Bs2MaxGirdersUtility       = rOther.m_Bs2MaxGirdersUtility;
@@ -5957,6 +6127,9 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_ClosureTensStressAtService               = rOther.m_ClosureTensStressAtService;
    m_ClosureTensStressWithRebarAtService      = rOther.m_ClosureTensStressWithRebarAtService;
    m_ClosureCompStressFatigue                 = rOther.m_ClosureCompStressFatigue;
+
+   m_bCheckBottomFlangeClearance = rOther.m_bCheckBottomFlangeClearance;
+   m_Cmin = rOther.m_Cmin;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)

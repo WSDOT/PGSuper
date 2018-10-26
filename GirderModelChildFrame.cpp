@@ -682,10 +682,12 @@ void CGirderModelChildFrame::OnAddPointload()
       data.m_LoadCase = UserLoads::LL_IM;
    }
 
-	CEditPointLoadDlg dlg(data);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditPointLoadDlg dlg(data,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
@@ -716,10 +718,12 @@ void CGirderModelChildFrame::OnAddDistributedLoad()
       data.m_LoadCase = UserLoads::LL_IM;
    }
 
-	CEditDistributedLoadDlg dlg(data);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditDistributedLoadDlg dlg(data,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
@@ -748,10 +752,12 @@ void CGirderModelChildFrame::OnAddMoment()
       data.m_LoadCase = UserLoads::LL_IM;
    }
 
-	CEditMomentLoadDlg dlg(data);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CEditMomentLoadDlg dlg(data,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }

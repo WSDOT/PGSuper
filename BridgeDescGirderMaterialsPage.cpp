@@ -533,7 +533,8 @@ void CGirderDescGeneralPage::UpdateEci()
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(pParent->m_pSegment->Material.Concrete.Fc);
          concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
-         concrete.SetCementType((matCEBFIPConcrete::CementType)pParent->m_pSegment->Material.Concrete.CEBFIPCementType);
+         concrete.SetS(pParent->m_pSegment->Material.Concrete.S);
+         concrete.SetBetaSc(pParent->m_pSegment->Material.Concrete.BetaSc);
          Eci = concrete.GetEc(m_AgeAtRelease);
       }
 
@@ -631,7 +632,7 @@ void CGirderDescGeneralPage::UpdateEc()
       else
       {
          ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
-         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,(matCEBFIPConcrete::CementType)pParent->m_pSegment->Material.Concrete.CEBFIPCementType);
+         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.S);
       }
 
       CString strEc;
@@ -689,7 +690,7 @@ void CGirderDescGeneralPage::UpdateFc()
          else
          {
             ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-            fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,(matCEBFIPConcrete::CementType)pParent->m_pSegment->Material.Concrete.CEBFIPCementType);
+            fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.S);
          }
 
          CString strFc;
@@ -736,7 +737,8 @@ void CGirderDescGeneralPage::UpdateFci()
             matCEBFIPConcrete concrete;
             concrete.SetTimeAtCasting(0);
             concrete.SetFc28(fc);
-            concrete.SetCementType((matCEBFIPConcrete::CementType)pParent->m_pSegment->Material.Concrete.CEBFIPCementType);
+            concrete.SetS(pParent->m_pSegment->Material.Concrete.S);
+            concrete.SetBetaSc(pParent->m_pSegment->Material.Concrete.BetaSc);
             fci = concrete.GetFc(m_AgeAtRelease);
          }
 
@@ -751,20 +753,21 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CConcreteDetailsDlg dlg;
+   CConcreteDetailsDlg dlg(true/*f'c*/);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
+   dlg.m_fc28 = pParent->m_pSegment->Material.Concrete.Fc;
+   dlg.m_Ec28 = pParent->m_pSegment->Material.Concrete.Ec;
+   dlg.m_bUserEc28 = pParent->m_pSegment->Material.Concrete.bUserEc;
+
    dlg.m_General.m_Type        = pParent->m_pSegment->Material.Concrete.Type;
-   dlg.m_General.m_Fc          = pParent->m_pSegment->Material.Concrete.Fc;
    dlg.m_General.m_AggSize     = pParent->m_pSegment->Material.Concrete.MaxAggregateSize;
-   dlg.m_General.m_bUserEc     = pParent->m_pSegment->Material.Concrete.bUserEc;
    dlg.m_General.m_Ds          = pParent->m_pSegment->Material.Concrete.StrengthDensity;
    dlg.m_General.m_Dw          = pParent->m_pSegment->Material.Concrete.WeightDensity;
-   dlg.m_General.m_Ec          = pParent->m_pSegment->Material.Concrete.Ec;
 
    dlg.m_AASHTO.m_EccK1       = pParent->m_pSegment->Material.Concrete.EcK1;
    dlg.m_AASHTO.m_EccK2       = pParent->m_pSegment->Material.Concrete.EcK2;
@@ -781,19 +784,23 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_CureMethod      = pParent->m_pSegment->Material.Concrete.CureMethod;
    dlg.m_ACI.m_CementType      = pParent->m_pSegment->Material.Concrete.ACI209CementType;
 
-   dlg.m_CEBFIP.m_CementType  = pParent->m_pSegment->Material.Concrete.CEBFIPCementType;
+   dlg.m_CEBFIP.m_bUserParameters = pParent->m_pSegment->Material.Concrete.bCEBFIPUserParameters;
+   dlg.m_CEBFIP.m_S               = pParent->m_pSegment->Material.Concrete.S;
+   dlg.m_CEBFIP.m_BetaSc          = pParent->m_pSegment->Material.Concrete.BetaSc;
+   dlg.m_CEBFIP.m_CementType      = pParent->m_pSegment->Material.Concrete.CEBFIPCementType;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
    if ( dlg.DoModal() == IDOK )
    {
+      pParent->m_pSegment->Material.Concrete.Fc               = dlg.m_fc28;
+      pParent->m_pSegment->Material.Concrete.Ec               = dlg.m_Ec28;
+      pParent->m_pSegment->Material.Concrete.bUserEc          = dlg.m_bUserEc28;
+
       pParent->m_pSegment->Material.Concrete.Type             = dlg.m_General.m_Type;
-      pParent->m_pSegment->Material.Concrete.Fc               = dlg.m_General.m_Fc;
       pParent->m_pSegment->Material.Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
-      pParent->m_pSegment->Material.Concrete.bUserEc          = dlg.m_General.m_bUserEc;
       pParent->m_pSegment->Material.Concrete.StrengthDensity  = dlg.m_General.m_Ds;
       pParent->m_pSegment->Material.Concrete.WeightDensity    = dlg.m_General.m_Dw;
-      pParent->m_pSegment->Material.Concrete.Ec               = dlg.m_General.m_Ec;
 
       pParent->m_pSegment->Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
       pParent->m_pSegment->Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
@@ -810,10 +817,16 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
       pParent->m_pSegment->Material.Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
       pParent->m_pSegment->Material.Concrete.ACI209CementType   = dlg.m_ACI.m_CementType;
 
-      pParent->m_pSegment->Material.Concrete.CEBFIPCementType   = dlg.m_CEBFIP.m_CementType;
+      pParent->m_pSegment->Material.Concrete.bCEBFIPUserParameters = dlg.m_CEBFIP.m_bUserParameters;
+      pParent->m_pSegment->Material.Concrete.S                     = dlg.m_CEBFIP.m_S;
+      pParent->m_pSegment->Material.Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
+      pParent->m_pSegment->Material.Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
+
+      dx.m_bSaveAndValidate = FALSE;
+      ExchangeConcreteData(&dx);
 
       UpdateFci();
       UpdateFc();

@@ -1426,19 +1426,24 @@ void CEngAgentImp::ClearDesignLosses()
    m_PsForceEngineer.ClearDesignLosses();
 }
 
-Float64 CEngAgentImp::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetPrestressLoss(poi,strandType,intervalIdx,intervalTime);
+   return m_PsForceEngineer.GetPrestressLoss(poi,strandType,intervalIdx,intervalTime,limitState);
 }
 
-Float64 CEngAgentImp::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetPrestressLoss(poi,strandType,intervalIdx,intervalTime,&config);
+   return m_PsForceEngineer.GetPrestressLoss(poi,strandType,intervalIdx,intervalTime,limitState,&config);
 }
 
-Float64 CEngAgentImp::GetPrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
+Float64 CEngAgentImp::GetPrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetPrestressLossWithLiveLoad(poi,strandType,NULL);
+   return m_PsForceEngineer.GetPrestressLossWithLiveLoad(poi,strandType,limitState,NULL);
+}
+
+Float64 CEngAgentImp::GetPrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+{
+   return m_PsForceEngineer.GetPrestressLossWithLiveLoad(poi,strandType,limitState,&config);
 }
 
 Float64 CEngAgentImp::GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx)
@@ -1565,26 +1570,26 @@ Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCO
    return m_PsForceEngineer.GetHoldDownForce(segmentKey,config);
 }
 
-Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,limitState);
    Float64 Hp = fabs(cos*P); // this should always be positive
    return Hp;
 }
 
-Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi,config);
-   Float64 P = GetPrestressForce(poi,config,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,limitState,config);
    Float64 Hp = fabs(cos*P); // this should always be positive
    return Hp;
 }
 
-Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,limitState);
    if ( IsZero(P) )
    {
       return 0;
@@ -1632,10 +1637,10 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,Int
    return Vp;
 }
 
-Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,config,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,limitState,config);
    Float64 Vp = sin*P;
 
    // determine sign of Vp. If Vp has the opposite sign as the shear due to the externally applied
@@ -1678,22 +1683,22 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,con
    return Vp;
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime);
+   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,limitState);
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,config);
+   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,limitState,config);
 }
 
-Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   Float64 Ps = GetPrestressForce(poi,strandType,intervalIdx,intervalTime);
+   Float64 Ps = GetPrestressForce(poi,strandType,intervalIdx,intervalTime,limitState);
 
    StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
    if ( nStrands == 0 )
@@ -1719,11 +1724,11 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
    return Ps/nStrands;
 }
 
-Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   Float64 Ps = GetPrestressForce(poi,config,strandType,intervalIdx,intervalTime);
+   Float64 Ps = GetPrestressForce(poi,strandType,intervalIdx,intervalTime,limitState,config);
    StrandIndexType nStrands = config.PrestressConfig.GetStrandCount(strandType);
    if ( nStrands == 0 )
    {
@@ -1747,24 +1752,24 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,c
    return Ps/nStrands;
 }
 
-Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime);
+   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,limitState);
 }
 
-Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,&config);
+   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,limitState,&config);
 }
 
-Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
+Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi,strandType,NULL);
+   return m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi,strandType,limitState,NULL);
 }
 
-Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
+Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi,strandType,NULL);
+   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,NULL);
 }
 
 void CEngAgentImp::GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config, Float64* pLowerBound, Float64* pUpperBound)
@@ -2531,6 +2536,127 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    GetNegMomentDistFactorPoints(spanKey,&dfPoints[0],&nPoints);
 
    *V  = GetShearDistFactor(spanKey,limitState);
+
+
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      // LRFD 7th Edition, 2014 added variable skew correction factor for shear
+      Float64 skewFactor = GetSkewCorrectionFactorForShear(spanKey,limitState);
+      if ( !IsEqual(skewFactor,1.0) )
+      {
+#if defined _DEBUG
+         // girder must be an exterior or first interior girder
+         GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanKey.spanIndex);
+         ATLASSERT( spanKey.girderIndex <= 1 || nGirders-2 <= spanKey.girderIndex );
+#endif
+
+         Float64 span_length = pBridge->GetSpanLength(spanKey);
+         Float64 L = span_length/2;
+
+         // (*V) contains the skew correct factor.... divide it out so
+         // we are working with the base LLDF
+         Float64 gV = (*V)/skewFactor;
+
+         bool bObtuseStart = pBridge->IsObtuseCorner(spanKey,pgsTypes::metStart);
+         bool bObtuseEnd   = pBridge->IsObtuseCorner(spanKey,pgsTypes::metEnd);
+         if ( bObtuseStart && !bObtuseEnd )
+         {
+            // obtuse corner is at the start of the span...
+            if ( dist_from_start <= L )
+            {
+               // ... and this poi is in the first half of the span so 
+               // the skew factor needs to vary from its full value to 1.0 at mid-span
+               Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+               (*V) = gV*adjustedSkewFactor;
+            }
+            else
+            {
+               // ... and this poi is past the first half of the span so
+               // the skew correction factor isn't used
+               (*V) = gV;
+            }
+         }
+         else if ( !bObtuseStart && bObtuseEnd )
+         {
+            ATLASSERT(pBridge->IsObtuseCorner(spanKey,pgsTypes::metEnd) == true);
+            // obtuse corner is at the end of the span...
+            if ( dist_from_start <= L )
+            {
+               // ... and this poi is in the first half of the span so
+               // the skew correction factor isn't used
+               (*V) = gV;
+            }
+            else
+            {
+               // ... and this poi is past the first half of the span so
+               // the skew factor needs vary from 1.0 at mid-span to its full value
+               // at the end of the span
+               Float64 adjustedSkewFactor = (dist_from_start - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
+               (*V) = gV*adjustedSkewFactor;
+            }
+         }
+         else if ( bObtuseStart && bObtuseEnd )
+         {
+            // obtuse on both ends
+            if ( dist_from_start <= L )
+            {
+               Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+               (*V) = gV*adjustedSkewFactor;
+            }
+            else
+            {
+               Float64 adjustedSkewFactor = (dist_from_start - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
+               (*V) = gV*adjustedSkewFactor;
+            }
+         }
+         else
+         {
+            // There is a skew correct factor and neither end is obtuse... that means one end is in an acute corner
+            // and the other is a right angle. The skew "spanning" effect is still applicable. Shear spans from
+            // the obtuse corner to the right angle. Figure out which end has the right angle
+            CComPtr<IAngle> objSkewAngle;
+            pBridge->GetPierSkew((PierIndexType)spanKey.spanIndex,&objSkewAngle);
+            Float64 skewAngle;
+            objSkewAngle->get_Value(&skewAngle);
+            if ( IsZero(skewAngle) )
+            {
+               // right angle is at the start, treat is as the obtuse corner...
+               if ( dist_from_start <= L )
+               {
+                  // ... and this poi is in the first half of the span so 
+                  // the skew factor needs to vary from its full value to 1.0 at mid-span
+                  Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+                  (*V) = gV*adjustedSkewFactor;
+               }
+               else
+               {
+                  // ... and this poi is past the first half of the span so
+                  // the skew correction factor isn't used
+                  (*V) = gV;
+               }
+            }
+            else
+            {
+               // right angle is at the end, treat it as the obtuse corner...
+               if ( dist_from_start <= L )
+               {
+                  // ... and this poi is in the first half of the span so
+                  // the skew correction factor isn't used
+                  (*V) = gV;
+               }
+               else
+               {
+                  // ... and this poi is past the first half of the span so
+                  // the skew factor needs vary from 1.0 at mid-span to its full value
+                  // at the end of the span
+                  Float64 adjustedSkewFactor = (dist_from_start - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
+                  (*V) = gV*adjustedSkewFactor;
+               }
+            }
+         }
+      }
+   }
+
    *pM = GetMomentDistFactor(spanKey,limitState);
 
    if ( nPoints == 0 )
@@ -3680,8 +3806,8 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       Float64 fBotLimitStateMin,fBotLimitStateMax;
       pLS->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::BottomGirder,&fBotLimitStateMin,&fBotLimitStateMax);
 
-      Float64 fTopPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,config_WithoutTTS);
-      Float64 fBotPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,config_WithoutTTS);
+      Float64 fTopPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::TopGirder,config_WithoutTTS);
+      Float64 fBotPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::BottomGirder,config_WithoutTTS);
 
       Float64 fTopMin_WithoutTTS = fTopLimitStateMin + fTopPre_WithoutTTS;
       Float64 fTopMax_WithoutTTS = fTopLimitStateMax + fTopPre_WithoutTTS;

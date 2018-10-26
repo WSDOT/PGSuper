@@ -122,7 +122,7 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
 
       // Determine the prestress force
       GET_IFACE(IPretensionForce,pPrestressForce);
-      Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::Start);
+      Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI);
 
       // get harping point locations
       vPoi.clear(); // recycle the vector
@@ -215,7 +215,7 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
       Float64 nSsEffective;
       ecc_straight_start = pStrandGeom->GetSsEccentricity(releaseIntervalIdx, poiStart, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetSsEccentricity(releaseIntervalIdx, poiEnd,   &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::Start);
+      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI);
 
       Msl = Ps*ecc_straight_start;
       Msr = Ps*ecc_straight_end;
@@ -255,7 +255,7 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
             // (ok, not at this section but lt past this section)
             Float64 nSsEffective;
 
-            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::Start);
+            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI);
             ecc_straight_debond = pStrandGeom->GetSsEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location), &nSsEffective);
 
             Ms = sign*Ps*ecc_straight_debond;
@@ -274,7 +274,7 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
       GET_IFACE(IPretensionForce,pPrestressForce);
 
       Float64 nTsEffective;
-      Pt = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start);
+      Pt = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI);
       ecc_temporary_start = pStrandGeom->GetTempEccentricity(releaseIntervalIdx,poiStart,&nTsEffective);
       ecc_temporary_end   = pStrandGeom->GetTempEccentricity(releaseIntervalIdx,poiEnd,  &nTsEffective);
 

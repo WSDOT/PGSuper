@@ -1069,7 +1069,7 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Concrete Properties"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,_T("Concrete Properties"));
    pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -1087,6 +1087,7 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    (*pTable)(row,col++) << COLHDR(_T("(") << RPT_EC << _T(")") << Sub(_T("28")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(row,col++) << _T("Cement Type");
    (*pTable)(row,col++) << _T("s");
+   (*pTable)(row,col++) << Sub2(symbol(beta),_T("SC"));
    (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("s")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*pTable)(row,col++) << COLHDR(Sub2(_T("D"),_T("agg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -1160,6 +1161,7 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
       row++;
    }
 
+   (*pPara) << Sub2(symbol(beta),_T("SC")) << _T(" is used in CEB-FIP Eq'n. 2.1-76") << rptNewLine;
    (*pPara) << Sub2(symbol(gamma),_T("w")) << _T(" =  Unit weight including reinforcement (used for dead load calculations)") << rptNewLine;
    (*pPara) << Sub2(symbol(gamma),_T("s")) << _T(" =  Unit weight (used to compute ") << Sub2(_T("E"),_T("c")) << _T(")") << rptNewLine;
    (*pPara) << Sub2(_T("D"),_T("agg")) << _T(" =  Maximum aggregate size") << rptNewLine;
@@ -1178,8 +1180,17 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
-   (*pTable)(row,col++) << matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
-   (*pTable)(row,col++) << matCEBFIPConcrete::GetS((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
+   if ( concrete.bCEBFIPUserParameters )
+   {
+      (*pTable)(row,col++) << RPT_NA;
+   }
+   else
+   {
+      (*pTable)(row,col++) << matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
+   }
+
+   (*pTable)(row,col++) << concrete.S;
+   (*pTable)(row,col++) << concrete.BetaSc;
 
    (*pTable)(row,col++) << density.SetValue( concrete.WeightDensity );
 

@@ -1899,7 +1899,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
          capTens = tensCapacityBottom;
       }
 
-      if ( pStressArtifact->TensionPassedInclinedGirder() )
+      if ( pStressArtifact->TensionPassedPlumbGirder() )
       {
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,true)<<_T(")");
       }
@@ -1910,7 +1910,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
 
       Float64 fComp = Min(fTopMin, fBotMin);
       
-      if ( pStressArtifact->CompressionPassedInclinedGirder() )
+      if ( pStressArtifact->CompressionPassedPlumbGirder() )
       {
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
       }

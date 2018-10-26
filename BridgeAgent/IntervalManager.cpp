@@ -683,6 +683,8 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
       {
          CInterval applyLoadInterval;
 
+         bool bIncrementStage = true;
+
          // this is an abrupt change in loading
          applyLoadInterval.StartEventIdx = eventIdx;
          applyLoadInterval.EndEventIdx   = eventIdx;
@@ -765,9 +767,31 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
 
                // some sort of loading was applied during this activity
                // create the interval and the stage
-               vIntervals.push_back(applyLoadInterval);
-               IntervalIndexType applyLoadIntervalIdx = vIntervals.size()-1;
-               AddToStageMap(girderKey,applyLoadIntervalIdx,stageIdx);
+               IntervalIndexType applyLoadIntervalIdx;
+               if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
+               {
+                  // for Non-timestep analysis (PGSuper w/o time-step), if the user defined load
+                  // is applied at the same time as when the deck is cast, don't add a new interval... go
+                  // back to the deck casting interval and use it. The deck casting interval is two intervals before the end
+
+                  if ( m_bTimeStepMethod )
+                  {
+                     // (one back is composite deck, two back is deck curing, three back is cast deck)
+                     applyLoadIntervalIdx = vIntervals.size()-3;
+                  }
+                  else
+                  {
+                     // (one back is composite deck, two back is cast deck)
+                     applyLoadIntervalIdx = vIntervals.size()-2;
+                  }
+                  bIncrementStage = false;
+               }
+               else
+               {
+                  vIntervals.push_back(applyLoadInterval);
+                  applyLoadIntervalIdx = vIntervals.size()-1;
+                  AddToStageMap(girderKey,applyLoadIntervalIdx,stageIdx);
+               }
 
                // if the loading was use railing, overlay, or live load, keep a record
                // so it is easier to look up this information later
@@ -826,7 +850,11 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                }
             } // next gdrIdx
          } // next grpIdx
-         stageIdx++;
+
+         if ( bIncrementStage )
+         {
+            stageIdx++;
+         }
       } // end if loading activity
 
       if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() && 
@@ -1312,17 +1340,10 @@ IntervalIndexType CIntervalManager::GetCastDeckInterval(const CGirderKey& girder
 
 IntervalIndexType CIntervalManager::GetCompositeDeckInterval(const CGirderKey& girderKey) const
 {
-   if ( m_bTimeStepMethod )
-   {
-      ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
-      std::map<CGirderKey,IntervalIndexType>::const_iterator found(m_CompositeDeckInterval.find(girderKey));
-      ATLASSERT(found != m_CompositeDeckInterval.end());
-      return found->second;
-   }
-   else
-   {
-      return GetInstallRailingSystemInterval(girderKey) - 1;
-   }
+   ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
+   std::map<CGirderKey,IntervalIndexType>::const_iterator found(m_CompositeDeckInterval.find(girderKey));
+   ATLASSERT(found != m_CompositeDeckInterval.end());
+   return found->second;
 }
 
 IntervalIndexType CIntervalManager::GetFirstStressStrandInterval(const CGirderKey& girderKey) const

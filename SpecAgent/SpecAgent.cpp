@@ -48,6 +48,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\ResistanceFactors.h>
 #include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
 
 
 #ifdef _DEBUG

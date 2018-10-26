@@ -2521,11 +2521,10 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription2* pBridgeDesc)
       else
       {
          // depth not explicitly input... estimate based on 140 pcf material
-         Float64 unit_weight = ::ConvertToSysUnits(140.0,unitMeasure::LbfPerFeet3);
-         Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
-         Float64 density = unit_weight / g;
+         Float64 density = ::ConvertToSysUnits(140.0,unitMeasure::LbfPerFeet3);
          m_Bridge->put_WearingSurfaceDensity(density);
-         Float64 depth = (pDeck->OverlayWeight/g) / unit_weight;
+         Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+         Float64 depth = (pDeck->OverlayWeight/g) / density;
          m_Bridge->put_WearingSurfaceDepth(depth);
       }
 
@@ -5857,6 +5856,84 @@ void CBridgeAgentImp::GetDistanceBetweenGirders(const pgsPointOfInterest& poi,Fl
       *pRight = 0;
    }
 }
+void CBridgeAgentImp::GetBottomFlangeClearance(const pgsPointOfInterest& poi,Float64* pLeft,Float64* pRight)
+{
+   VALIDATE( BRIDGE );
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+
+   const CGirderSpacing2* pStartSpacing;
+   const CGirderSpacing2* pEndSpacing;
+   pSegment->GetSpacing(&pStartSpacing,&pEndSpacing);
+
+   // girder spacing is on the right hand side of the girder
+
+   // Get spacing on the left side of the girder at start and end
+   Float64 left_start = 0;
+   Float64 left_end   = 0;
+
+   if ( 0 != segmentKey.girderIndex )
+   {
+      SpacingIndexType spaceIdx = segmentKey.girderIndex-1;
+      left_start = pStartSpacing->GetGirderSpacing(spaceIdx);
+      left_end   = pEndSpacing->GetGirderSpacing(spaceIdx);
+   }
+
+   // Get spacing on the right side of the girder at start and end
+   GirderIndexType nGirders = pGroup->GetGirderCount();
+   Float64 right_start = 0;
+   Float64 right_end   = 0;
+   if ( segmentKey.girderIndex < nGirders-1 )
+   {
+      SpacingIndexType spaceIdx = segmentKey.girderIndex;
+      right_start = pStartSpacing->GetGirderSpacing(spaceIdx);
+      right_end   = pEndSpacing->GetGirderSpacing(spaceIdx);
+   }
+
+   Float64 gdrLength = GetSegmentLength(segmentKey);
+
+   Float64 left  = ::LinInterp( poi.GetDistFromStart(), left_start,  left_end,  gdrLength );
+   Float64 right = ::LinInterp( poi.GetDistFromStart(), right_start, right_end, gdrLength );
+
+   // if the spacing is a joint spacing, we have what we are after
+   if ( IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) )
+   {
+      *pLeft  = left;
+      *pRight = right;
+      return;
+   }
+
+   // not a joint spacing so the spacing is between CL girders.... deduct the width
+   // of the adjacent girders and this girder
+   Float64 left_width = 0;
+   Float64 width = 0;
+   Float64 right_width = 0;
+   if ( 0 != segmentKey.girderIndex )
+   {
+      pgsPointOfInterest leftPoi(poi);
+      leftPoi.SetSegmentKey( CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex-1,segmentKey.segmentIndex) );
+      left_width = GetBottomWidth(leftPoi);
+   }
+
+   width = GetBottomWidth(poi);
+
+   if ( segmentKey.girderIndex < nGirders-1 )
+   {
+      pgsPointOfInterest rightPoi(poi);
+      rightPoi.SetSegmentKey( segmentKey );
+      right_width = GetBottomWidth(rightPoi);
+   }
+
+   // clear spacing is C-C spacing minus half the width of the adjacent girder minus the width of this girder
+   *pLeft  = left  - left_width/2  - width/2;
+   *pRight = right - right_width/2 - width/2;
+}
 
 std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType)
 {
@@ -6719,7 +6796,7 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
             }
          }
 
-         GroupIndexType grpIdx = GetGirderCountBySpan(spanKey.spanIndex);
+         GroupIndexType grpIdx = GetGirderGroupAtPier((PierIndexType)spanKey.spanIndex,pgsTypes::Ahead);
          pgsPointOfInterest poiStartLeft  = GetPierPointOfInterest(CGirderKey(grpIdx,0),startPierIdx);
          pgsPointOfInterest poiEndLeft    = GetPierPointOfInterest(CGirderKey(grpIdx,0),endPierIdx);
          pgsPointOfInterest poiStartRight = GetPierPointOfInterest(CGirderKey(grpIdx,nGirders-1),startPierIdx);
@@ -7657,10 +7734,10 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(cons
             // of mlCenterlineOfGirder is CL Span for spliced girders
 #if defined _DEBUG
             GET_IFACE(IDocumentType,pDocType);
-            ATLASSERT(pDocType->IsPGSuperDocument());
+            ATLASSERT(pDocType->IsPGSpliceDocument());
 #endif
-            location1 = span_length/2 - location1;
-            location2 = span_length/2 + location2; // locate the diaphragm -/+ from cl span
+            location1 = span_length/2 - rule.Location;
+            location2 = span_length/2 + rule.Location; // locate the diaphragm -/+ from cl span
          }
          else
          {
@@ -7669,8 +7746,8 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(cons
             ATLASSERT(pDocType->IsPGSuperDocument());
             ATLASSERT(nSegments == 1);
 #endif
-            location1 = girder_length/2 - location1;
-            location2 = girder_length/2 + location2; // locate the diaphragm -/+ from cl girder
+            location1 = girder_length/2 - rule.Location;
+            location2 = girder_length/2 + rule.Location; // locate the diaphragm -/+ from cl girder
          }
       }
 

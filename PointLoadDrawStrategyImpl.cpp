@@ -410,12 +410,15 @@ void CPointLoadDrawStrategyImpl::EditLoad()
 
    const CPointLoadData* pLoad = pUdl->GetPointLoad(m_LoadIndex);
 
-	CEditPointLoadDlg dlg(*pLoad);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+	CEditPointLoadDlg dlg(*pLoad,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       if (*pLoad != dlg.m_Load)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(m_LoadIndex,*pLoad,dlg.m_Load);
+         txnEditPointLoad* pTxn = new txnEditPointLoad(m_LoadIndex,*pLoad,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
    }

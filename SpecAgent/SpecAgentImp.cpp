@@ -36,6 +36,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
+#include <IFace\DocumentType.h>
 
 #include <Units\SysUnits.h>
 
@@ -420,8 +421,6 @@ void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInteres
    }
 }
 
-
-
 Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -473,6 +472,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
    if ( IsLoadRatingServiceIIILimitState(ls) )
    {
 #if defined _DEBUG
+      // allowable stresses during load rating only make sense if live load is applied
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
@@ -498,6 +498,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
    if ( IsLoadRatingServiceIIILimitState(ls) )
    {
 #if defined _DEBUG
+      // allowable stresses during load rating only make sense if live load is applied
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
@@ -523,6 +524,7 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
    if ( IsLoadRatingServiceIIILimitState(ls) )
    {
 #if defined _DEBUG
+      // allowable stresses during load rating only make sense if live load is applied
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
@@ -987,8 +989,16 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    else if ( intervalIdx == tempStrandRemovalIdx )
    {
       ATLASSERT( ls == pgsTypes::ServiceI );
+      ATLASSERT( CheckFinalDeadLoadTensionStress() ); // if this fires, why are you asking for this if they aren't being used?
       x = pSpec->GetTempStrandRemovalTensionStressFactor();
       pSpec->GetTempStrandRemovalMaximumTensionStress(&bCheckMax,&fmax);
+   }
+   else if ( intervalIdx == railingSystemIntervalIdx )
+   {
+      ATLASSERT( ls == pgsTypes::ServiceI );
+      ATLASSERT( CheckFinalDeadLoadTensionStress() ); // if this fires, why are you asking for this if they aren't being used?
+      x = pSpec->GetBs2MaxConcreteTens();
+      pSpec->GetBs2AbsMaxConcreteTens(&bCheckMax,&fmax);
    }
    else
    {
@@ -1178,43 +1188,107 @@ std::vector<pgsTypes::LimitState> CSpecAgentImp::GetStressCheckLimitStates()
 
 bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType)
 {
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
-
-   if ( stressType == pgsTypes::Tension && limitState == pgsTypes::ServiceI && (railingSystemIntervalIdx <= intervalIdx && intervalIdx < liveLoadIntervalIdx) )
+   ATLASSERT(::IsServiceLimitState(limitState) || ::IsFatigueLimitState(limitState) ); // must be a service limit state
+   if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && limitState == pgsTypes::FatigueI) || 
+        (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& limitState == pgsTypes::ServiceIA)
+        )
    {
-      // tension is not checked in the Serivce I limit state after the railing system is installed... 
-      // this is the "Effective Prestress + Permanent Loads" case only which is a compression check
-      // tension is only checked in the Service III limit state after the railing system
+      // if before LRFD 2009 and Fatigue I 
+      // - OR -
+      // LRFD 2009 and later and Service IA
+      //
+      // ... don't evaluate this case
       return false;
    }
 
-   // Tension and Compression stresses are always checked in the Service I limit state
-   // if this is before live load, except as noted above
-   if ( limitState == pgsTypes::ServiceI && intervalIdx < liveLoadIntervalIdx )
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
+
+   if ( stressType == pgsTypes::Tension )
    {
-      return true;
+      switch(limitState)
+      {
+      case pgsTypes::ServiceI:
+         if ( (erectSegmentIntervalIdx <= intervalIdx && intervalIdx <= castDeckIntervalIdx && !CheckTemporaryStresses()) 
+              ||
+              (railingSystemIntervalIdx <= intervalIdx && !CheckFinalDeadLoadTensionStress())
+              ||
+              (liveLoadIntervalIdx <= intervalIdx)
+            )
+         {
+            return false;
+         }
+         else
+         {
+            return true;
+         }
+
+      case pgsTypes::ServiceI_PermitRoutine:
+      case pgsTypes::ServiceI_PermitSpecial:
+         return (liveLoadIntervalIdx <= intervalIdx ? true : false);
+
+      case pgsTypes::ServiceIA:
+      case pgsTypes::FatigueI:
+         return false; // these are compression only limit states
+
+      case pgsTypes::ServiceIII:
+      case pgsTypes::ServiceIII_Inventory:
+      case pgsTypes::ServiceIII_Operating:
+      case pgsTypes::ServiceIII_LegalRoutine:
+      case pgsTypes::ServiceIII_LegalSpecial:
+         return (liveLoadIntervalIdx <= intervalIdx ? true : false);
+
+      default:
+         ATLASSERT(false); // either a new service limit state or a non-service limit state was passed in
+      }
+   }
+   else
+   {
+      ATLASSERT(stressType == pgsTypes::Compression);
+
+      switch(limitState)
+      {
+      case pgsTypes::ServiceI:
+         if ( erectSegmentIntervalIdx <= intervalIdx && intervalIdx <= castDeckIntervalIdx && !CheckTemporaryStresses() )
+         {
+            return false;
+         }
+         else
+         {
+            return true;
+         }
+
+      case pgsTypes::ServiceI_PermitRoutine:
+      case pgsTypes::ServiceI_PermitSpecial:
+         return (liveLoadIntervalIdx <= intervalIdx ? true : false);
+
+      case pgsTypes::ServiceIA:
+      case pgsTypes::FatigueI:
+         if ( liveLoadIntervalIdx <= intervalIdx )
+         {
+            return true; // these are compression only limit states
+         }
+         else
+         {
+            return false; // only check if there is live load
+         }
+
+      case pgsTypes::ServiceIII:
+      case pgsTypes::ServiceIII_Inventory:
+      case pgsTypes::ServiceIII_Operating:
+      case pgsTypes::ServiceIII_LegalRoutine:
+      case pgsTypes::ServiceIII_LegalSpecial:
+         return false;
+
+      default:
+         ATLASSERT(false); // either a new service limit state or a non-service limit state was passed in
+      }
    }
 
-   if ( liveLoadIntervalIdx <= intervalIdx )
-   {
-      // After live load is applied...
-      if ( stressType == pgsTypes::Tension && IsServiceIIILimitState(limitState) )
-      {
-
-         // ... Service III tension check is applicable
-         return true;
-      }
-      else if ( stressType == pgsTypes::Compression && 
-               (limitState == pgsTypes::ServiceI || 
-                limitState == (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI) )
-          )
-      {
-         // ... Service I/Service IA/Fatigue I compression check is applicable
-         return true;
-      }
-   }
+   ATLASSERT(false); // I think the code above should have covered all possible cases... why did we get here?
 
    // not other stress check are applicable
    return false;
@@ -1242,6 +1316,30 @@ bool CSpecAgentImp::HasAllowableTensionWithRebarOption(IntervalIndexType interva
 
    // there is no "with rebar" in the other intervals
    return false;
+}
+
+bool CSpecAgentImp::CheckTemporaryStresses()
+{
+   // I hate using the IDocumentType interface, but I don't
+   // think there is a better way to figure out if we have a PGSuper or PGSplice file
+   // The temporary stress checks are always required for spliced girders
+   GET_IFACE(IDocumentType,pDocType);
+   if ( pDocType->IsPGSpliceDocument() )
+   {
+      // always checking for spliced girders (See LRFD 5.14.1.3.3)
+      return true;
+   }
+   else
+   {
+      const SpecLibraryEntry* pSpec = GetSpec();
+      return pSpec->CheckTemporaryStresses();
+   }
+}
+
+bool CSpecAgentImp::CheckFinalDeadLoadTensionStress()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->CheckBs2Tension();
 }
 
 /////////////////////////////////////////////////////////////////////////////

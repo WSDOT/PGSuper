@@ -919,6 +919,11 @@ void CPGSuperDocProxyAgent::HoldEvents(bool bHold)
 void CPGSuperDocProxyAgent::FirePendingEvents()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
+   if ( m_EventHoldCount == 0 )
+   {
+      return;
+   }
+
    if ( 1 == m_EventHoldCount )
    {
       m_EventHoldCount--;

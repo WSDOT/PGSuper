@@ -180,8 +180,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
          {
             IntervalIndexType intervalIdx = *iter;
 
-            Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,intervalTime);
-            Float64 Ft = pForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,intervalTime);
+            Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,intervalTime,pgsTypes::ServiceI);
+            Float64 Ft = pForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,intervalTime,pgsTypes::ServiceI);
             (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
             (*p_table)(row,col) << _T("P (temporary) = ") << force.SetValue(Ft) << rptNewLine;
 
@@ -195,7 +195,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       else
       {
          // Rating
-         Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,loadRatingIntervalIdx,intervalTime);
+         Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,loadRatingIntervalIdx,intervalTime,pgsTypes::ServiceI);
          (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
 
          Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);

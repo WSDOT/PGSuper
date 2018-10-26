@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,21
- PRODUCTVERSION 3,0,0,21
+ FILEVERSION 3,0,0,22
+ PRODUCTVERSION 3,0,0,22
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.21"
+            VALUE "FileVersion", "3.0.0.22"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.21"
+            VALUE "ProductVersion", "3.0.0.22"
         END
     END
     BLOCK "VarFileInfo"
@@ -1016,7 +1016,7 @@ BEGIN
     COMBOBOX        IDC_SAG_OPTIONS,116,243,170,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 363
+IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 372
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Design and Spec Checking"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1069,21 +1069,26 @@ BEGIN
     CONTROL         "Not to be less than",IDC_IS_SUPPORT_LESS_THAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,219,73,10
     EDITTEXT        IDC_SUPPORT_LESS_THAN,101,217,25,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,129,219,44,8
-    GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,244,462,52
+    GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,244,462,70
     LTEXT           "Slab Offset (""A"" Dimension)",IDC_STATIC,23,261,94,8
     CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,261,37,8
     CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,201,261,37,8
-    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,25,279,100,8
+    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,23,279,100,8
     CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,278,45,10
     LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,201,279,84,8
     EDITTEXT        IDC_DEFLECTION_LIMIT,281,276,40,14,ES_AUTOHSCROLL
-    GROUPBOX        "Strand Fill Order to be Used for Automated Harped Pattern Design",IDC_STATIC,12,304,462,51
+    GROUPBOX        "Strand Fill Order to be Used for Automated Harped Pattern Design",IDC_STATIC,12,321,462,44
     CONTROL         "Add Strands Using the Permanent Strand Grid Fill Order",IDC_RADIO_FILL_PERMANENT,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,23,320,193,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,23,337,193,10
     CONTROL         "Minimize Number of Harped Strands (*)",IDC_RADIO2,
-                    "Button",BS_AUTORADIOBUTTON,23,335,137,10
-    CTEXT           "* Strand Grid is defined in the Girder Library. If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,236,325,220,22
+                    "Button",BS_AUTORADIOBUTTON,23,352,137,10
+    CTEXT           "* Strand Grid is defined in the Girder Library. If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,236,342,220,22
     LTEXT           "(For Kansas method only)",IDC_STATIC,184,219,80,8
+    LTEXT           "Bottom Flange Clearance",IDC_STATIC,25,296,80,8
+    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,296,37,10
+    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,202,296,48,8
+    EDITTEXT        IDC_CLEARANCE,255,293,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CLEARANCE_UNIT,303,296,19,8
 END
 
 IDD_SPEC_SHEAR DIALOGEX 0, 0, 441, 380
@@ -1398,7 +1403,7 @@ BEGIN
     LTEXT           "Modulus of Elasticity",IDC_STATIC,7,4,66,8
 END
 
-IDD_ACI_CONCRETE DIALOGEX 0, 0, 192, 98
+IDD_ACI_CONCRETE DIALOGEX 0, 0, 192, 114
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ACI 209R-92"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1409,11 +1414,12 @@ BEGIN
     COMBOBOX        IDC_CURE_METHOD,7,55,66,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Cement Type",IDC_CEMENT_TYPE_LABEL,93,40,44,8
     COMBOBOX        IDC_CEMENT_TYPE,88,55,65,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "A",IDC_ALPHA_LABEL,7,80,8,8
-    EDITTEXT        IDC_ALPHA,21,77,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "B",IDC_BETA_LABEL,91,81,8,8
-    EDITTEXT        IDC_BETA,103,77,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ALPHA_UNIT,63,80,19,8
+    LTEXT           "a",IDC_ALPHA_LABEL,7,78,8,8
+    EDITTEXT        IDC_ALPHA,21,75,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Beta",IDC_BETA_LABEL,91,79,17,8
+    EDITTEXT        IDC_BETA,110,75,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ALPHA_UNIT,63,78,19,8
+    LTEXT           "For use in Eq'n 2-1",IDC_STATIC,7,92,60,8
 END
 
 IDD_LIVE_LOAD_FACTORS2 DIALOGEX 0, 0, 403, 206
@@ -1513,7 +1519,7 @@ BEGIN
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,14,132,154,18
 END
 
-IDD_SPEC_GIRDER DIALOGEX 0, 0, 428, 338
+IDD_SPEC_GIRDER DIALOGEX 0, 0, 428, 414
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1533,54 +1539,65 @@ BEGIN
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC,15,68,147,8
     EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,169,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,214,68,52,8
-    GROUPBOX        "Stress Limits immediately after Temporary Strand Removal",IDC_STATIC,7,88,414,48
-    LTEXT           "Compressive Stress",IDC_STATIC,15,102,68,8
-    EDITTEXT        IDC_TS_REMOVAL_COMPRESSION,86,99,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "f'c",IDC_STATIC,129,102,8,8
-    LTEXT           "Tensile Stress",IDC_STATIC,15,118,57,8
-    EDITTEXT        IDC_TS_REMOVAL_TENSION,86,116,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_TS_REMOVAL_TENSION_UNIT,129,118,52,8
+    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_STATIC,7,87,414,124
+    LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,104,204,8
+    EDITTEXT        IDC_SERVICE_COMPRESSION,274,100,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "f'c",IDC_STATIC,318,103,8,8
+    LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,119,260,8
+    EDITTEXT        IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,274,116,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "f'c",IDC_STATIC,318,119,13,8
+    CONTROL         "Tensile Stress (Service I) (Effective Prestress + Permanent Loads)",IDC_CHECK_SERVICE_I_TENSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,135,228,10
+    EDITTEXT        IDC_SERVICE_I_TENSION,28,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_I_TENSION_UNIT,72,149,52,8
+    CONTROL         "But not greater than ",IDC_CHECK_SERVICE_I_TENSION_MAX,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,149,78,10
+    EDITTEXT        IDC_SERVICE_I_TENSION_MAX,208,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_SERVICE_I_TENSION_MAX_UNIT,252,149,20,8
+    LTEXT           "Tensile Stress (Service III) (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,164,278,8
+    LTEXT           "Not worse than moderate corrosion conditions",IDC_STATIC,19,177,148,8
+    EDITTEXT        IDC_SERVICE_III_TENSION,169,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,213,177,52,8
+    CONTROL         "But not greater than ",IDC_CHECK_SERVICE_III_TENSION_MAX,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,177,78,10
+    EDITTEXT        IDC_SERVICE_III_TENSION_MAX,349,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_SERVICE_III_TENSION_MAX_UNIT,393,177,20,8
+    LTEXT           "Severe corrosive conditions",IDC_STATIC,19,191,89,8
+    EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION,169,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SEVERE_SERVICE_III_TENSION_UNIT,213,191,52,8
+    CONTROL         "But not greater than ",IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,191,79,10
+    EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION_MAX,349,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT,393,191,15,8
+    GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,218,414,35
+    LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,234,216,8
+    EDITTEXT        IDC_FATIGUE_COMPRESSION,233,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "f'c",IDC_STATIC,277,234,13,8
+    GROUPBOX        "Stress Limits for Temporary Loading Conditions (Only used by PGSuper)",IDC_STATIC,7,260,414,147
+    CONTROL         "Evaluate stress limits for temporary loading conditions",IDC_CHECK_TEMPORARY_STRESSES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,275,188,10
+    GROUPBOX        "Stress Limits immediately after Temporary Strand Removal",IDC_TEMP_STRAND_REMOVAL_GROUP,20,289,386,48
+    LTEXT           "Compressive Stress",IDC_TS_REMOVAL_COMPRESSION_LABEL,28,303,68,8
+    EDITTEXT        IDC_TS_REMOVAL_COMPRESSION,99,300,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "f'c",IDC_TS_REMOVAL_COMPRESS_FC,142,303,8,8
+    LTEXT           "Tensile Stress",IDC_TS_REMOVAL_TENSION_LABEL,28,319,57,8
+    EDITTEXT        IDC_TS_REMOVAL_TENSION,99,317,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_TS_REMOVAL_TENSION_UNIT,142,319,52,8
     CONTROL         "But not greater than ",IDC_CHECK_TS_REMOVAL_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,118,78,10
-    EDITTEXT        IDC_TS_REMOVAL_TENSION_MAX,263,116,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_TS_REMOVAL_TENSION_MAX_UNIT,308,118,25,8
-    GROUPBOX        "Stress Limits immediately after Deck Placement",IDC_STATIC,7,140,414,56
-    LTEXT           "Compressive Stress",IDC_STATIC,15,161,68,8
-    EDITTEXT        IDC_AFTER_DECK_COMPRESSION,86,158,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "f'c",IDC_STATIC,129,161,8,8
-    LTEXT           "Tensile Stress",IDC_STATIC,15,177,57,8
-    EDITTEXT        IDC_AFTER_DECK_TENSION,86,176,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_AFTER_DECK_TENSION_UNIT,129,177,77,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,195,319,78,10
+    EDITTEXT        IDC_TS_REMOVAL_TENSION_MAX,276,317,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_TS_REMOVAL_TENSION_MAX_UNIT,321,319,25,8
+    GROUPBOX        "Stress Limits immediately after Deck Placement",IDC_AFTER_DECK_GROUP,20,341,386,56
+    LTEXT           "Compressive Stress",IDC_AFTER_DECK_COMPRESSION_LABEL,28,362,68,8
+    EDITTEXT        IDC_AFTER_DECK_COMPRESSION,99,359,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "f'c",IDC_AFTER_DECK_COMPRESSION_FC,142,362,8,8
+    LTEXT           "Tensile Stress",IDC_AFTER_DECK_TENSION_LABEL,28,378,57,8
+    EDITTEXT        IDC_AFTER_DECK_TENSION,99,377,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_AFTER_DECK_TENSION_UNIT,142,378,77,8
     CONTROL         "But not greater than ",IDC_CHECK_AFTER_DECK_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,177,78,10
-    EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,263,176,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,308,177,25,8
-    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_STATIC,7,201,414,94
-    LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,218,204,8
-    EDITTEXT        IDC_SERVICE_COMPRESSION,274,214,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "f'c",IDC_STATIC,318,217,8,8
-    LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,233,260,8
-    EDITTEXT        IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,274,230,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "f'c",IDC_STATIC,318,233,13,8
-    LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,312,216,8
-    EDITTEXT        IDC_FATIGUE_COMPRESSION,233,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "f'c",IDC_STATIC,277,312,13,8
-    LTEXT           "Tensile Stress",IDC_STATIC,15,248,45,8
-    LTEXT           "Not worse than moderate corrosion conditions",IDC_STATIC,19,261,148,8
-    EDITTEXT        IDC_SERVICE_TENSION,169,258,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_TENSION_UNIT,213,261,52,8
-    CONTROL         "But not greater than ",IDC_CHECK_SERVICE_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,261,78,10
-    EDITTEXT        IDC_SERVICE_TENSION_MAX,349,258,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_SERVICE_TENSION_MAX_UNIT,393,261,20,8
-    LTEXT           "Severe corrosive conditions",IDC_STATIC,19,275,89,8
-    EDITTEXT        IDC_SEVERE_SERVICE_TENSION,169,273,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SEVERE_SERVICE_TENSION_UNIT,213,275,52,8
-    CONTROL         "But not greater than ",IDC_CHECK_SEVERE_SERVICE_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,275,79,10
-    EDITTEXT        IDC_SEVERE_SERVICE_TENSION_MAX,349,273,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_SEVERE_SERVICE_TENSION_MAX_UNIT,393,275,15,8
-    GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,296,414,35
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,195,378,78,10
+    EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,276,377,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,321,378,25,8
 END
 
 IDD_SPEC_LOADS DIALOGEX 0, 0, 351, 311
@@ -1656,11 +1673,11 @@ BEGIN
     LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,221,238,52,8
     LTEXT           "Tensile Stress in Other Areas",IDC_STATIC,15,258,94,8
     LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,272,149,15
-    EDITTEXT        IDC_SERVICE_TENSION,177,269,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_TENSION_UNIT,221,272,52,8
+    EDITTEXT        IDC_SERVICE_III_TENSION,177,269,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,221,272,52,8
     LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,290,149,15
-    EDITTEXT        IDC_SERVICE_TENSION_WITH_REBAR,177,288,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_TENSION_WITH_REBAR_UNIT,221,290,52,8
+    EDITTEXT        IDC_SERVICE_III_TENSION_WITH_REBAR,177,288,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,221,290,52,8
     GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,319,414,35
     LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,335,216,8
     EDITTEXT        IDC_FATIGUE_COMPRESSION,233,332,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1694,8 +1711,16 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "CEB-FIP"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Cement Type",IDC_STATIC,7,7,44,8
-    COMBOBOX        IDC_CEMENT_TYPE,61,7,161,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Cement Type",IDC_STATIC,7,27,44,8
+    COMBOBOX        IDC_CEMENT_TYPE,61,26,161,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use time parameters from CEB-FIP Model Code",IDC_USER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,166,10
+    LTEXT           "S",IDC_S_LABEL,7,55,8,8
+    EDITTEXT        IDC_S,27,52,40,14,ES_AUTOHSCROLL
+    LTEXT           "Beta SC",IDC_BETA_SC_LABEL,112,55,26,8
+    EDITTEXT        IDC_BETA_SC,155,51,40,14,ES_AUTOHSCROLL
+    LTEXT           "For use in Eq'n 2.1-54",IDC_STATIC,7,68,71,8
+    LTEXT           "For use in Eq'n 2.1-76",IDC_STATIC,112,68,71,8
 END
 
 
@@ -1900,7 +1925,7 @@ BEGIN
         LEFTMARGIN, 12
         RIGHTMARGIN, 474
         TOPMARGIN, 7
-        BOTTOMMARGIN, 356
+        BOTTOMMARGIN, 365
     END
 
     IDD_SPEC_SHEAR, DIALOG
@@ -1979,7 +2004,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 185
         TOPMARGIN, 7
-        BOTTOMMARGIN, 91
+        BOTTOMMARGIN, 107
     END
 
     IDD_LIVE_LOAD_FACTORS2, DIALOG
@@ -2011,7 +2036,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 421
         TOPMARGIN, 7
-        BOTTOMMARGIN, 331
+        BOTTOMMARGIN, 407
     END
 
     IDD_SPEC_LOADS, DIALOG
@@ -2446,7 +2471,6 @@ LANGUAGE 9, 1
 #if !defined NOGRID
 #include "grid\gxres.rc"               // Objective Grid resources
 #endif
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

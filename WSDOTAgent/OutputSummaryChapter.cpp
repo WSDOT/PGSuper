@@ -37,6 +37,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Intervals.h>
+#include <IFace\Allowables.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 
@@ -313,13 +314,19 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
    IntervalIndexType lastIntervalIdx        = pIntervals->GetIntervalCount(segmentKey)-1;
 
    (*pTable)(0,0) << _T("Prestress Loss at Lifting");
-   (*pTable)(0,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,liftSegmentIntervalIdx,pgsTypes::Middle) );
+   (*pTable)(0,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) );
 
    (*pTable)(1,0) << _T("Prestress Loss at Shipping");
-   (*pTable)(1,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,haulSegmentIntervalIdx,pgsTypes::Middle) );
+   (*pTable)(1,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,haulSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) );
 
    (*pTable)(2,0) << _T("Prestress Loss at Final (without live load)");
-   (*pTable)(2,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle) );
+   (*pTable)(2,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) );
+
+   (*pTable)(3,0) << _T("Prestress Loss at Final with Live Load (Service I)");
+   (*pTable)(3,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) );
+
+   (*pTable)(4,0) << _T("Prestress Loss at Final with Live Load (Service III)");
+   (*pTable)(4,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceIII) );
 }
 
 void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
@@ -833,6 +840,13 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
 void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   if ( !pAllowable->CheckTemporaryStresses() )
+   {
+      return;
+   }
+
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
 
@@ -1135,6 +1149,27 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,4) << RPT_FAIL;
    }
    row++;
+
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   if ( pAllowable->CheckFinalDeadLoadTensionStress() )
+   {
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(railingSystemIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,cl.GetID());
+      fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
+      fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
+      (*pTable)(row,0) << _T("Bottom of girder at mid-span");
+      (*pTable)(row,1) << _T("Service I");
+      (*pTable)(row,2) << stress.SetValue( fBot );
+      (*pTable)(row,3) << stress.SetValue( fAllowBot );
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
+      {
+         (*pTable)(row,4) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row,4) << RPT_FAIL;
+      }
+      row++;
+   }
 
    if ( h_right.GetID() != INVALID_ID )
    {

@@ -120,7 +120,6 @@
 #define IDH_DISTRIBUTION_FACTORS                                  3730
 #define IDH_SPEC_DESIGN                                           3732
 #define IDH_SPEC_LIMITS                                           3733
-#define IDH_SPEC_LOADFACTORS                                      3734
 #define IDH_SHEAR_TAB                                             3735
 #define IDH_MOMENT_TAB                                            3736
 #define IDH_DEFLECTIONS_TAB                                       3737

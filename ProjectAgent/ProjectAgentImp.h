@@ -848,6 +848,7 @@ private:
    void ReleaseGirderLibraryEntries();
    void ReleaseDuctLibraryEntries();
 
+   void UpdateStrandMaterial();
    void VerifyRebarGrade();
 
    void ValidateBridgeModel();

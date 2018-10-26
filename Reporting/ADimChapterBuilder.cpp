@@ -194,8 +194,8 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    else
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
-      Float64 Astart = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),girderKey.groupIndex);
-      Float64 Aend   = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  girderKey.groupIndex);
+      Float64 Astart = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),girderKey.girderIndex);
+      Float64 Aend   = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  girderKey.girderIndex);
       *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset at the start of the girder of ") << comp.SetValue(Astart);
       *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(".") << rptNewLine;
 

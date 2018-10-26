@@ -29,11 +29,13 @@
 #include <PgsExt\PointLoadData.h>
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
+#include <PgsExt\TimelineManager.h>
 
 class PGSEXTCLASS txnInsertPointLoad : public txnTransaction
 {
 public:
-   txnInsertPointLoad(const CPointLoadData& loadData);
+   txnInsertPointLoad(const CPointLoadData& loadData,CTimelineManager* pTimelineMgr);
+   virtual ~txnInsertPointLoad();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool Execute();
@@ -44,6 +46,8 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CPointLoadData m_LoadData;
+   CTimelineManager* m_pTimelineMgr;
+   CTimelineManager m_OldTimelineMgr;
 };
 
 class PGSEXTCLASS txnDeletePointLoad : public txnTransaction
@@ -65,7 +69,8 @@ private:
 class PGSEXTCLASS txnEditPointLoad : public txnTransaction
 {
 public:
-   txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData);
+   txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData,CTimelineManager* pTimelineMgr);
+   virtual ~txnEditPointLoad();
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -77,12 +82,15 @@ private:
    void DoExecute(int i);
    CollectionIndexType m_LoadIdx;
    CPointLoadData m_LoadData[2];
+   CTimelineManager* m_pTimelineMgr;
+   CTimelineManager m_OldTimelineMgr;
 };
 
 class PGSEXTCLASS txnInsertDistributedLoad : public txnTransaction
 {
 public:
-   txnInsertDistributedLoad(const CDistributedLoadData& loadData);
+   txnInsertDistributedLoad(const CDistributedLoadData& loadData,CTimelineManager* pTimelineMgr);
+   ~txnInsertDistributedLoad();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool Execute();
@@ -93,6 +101,8 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CDistributedLoadData m_LoadData;
+   CTimelineManager* m_pTimelineMgr;
+   CTimelineManager m_OldTimelineMgr;
 };
 
 class PGSEXTCLASS txnDeleteDistributedLoad : public txnTransaction
@@ -114,7 +124,8 @@ private:
 class PGSEXTCLASS txnEditDistributedLoad : public txnTransaction
 {
 public:
-   txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData);
+   txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData,CTimelineManager* pTimelineMgr);
+   virtual ~txnEditDistributedLoad();
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -126,12 +137,15 @@ private:
    void DoExecute(int i);
    CollectionIndexType m_LoadIdx;
    CDistributedLoadData m_LoadData[2];
+   CTimelineManager* m_pTimelineMgr;
+   CTimelineManager m_OldTimelineMgr;
 };
 
 class PGSEXTCLASS txnInsertMomentLoad : public txnTransaction
 {
 public:
-   txnInsertMomentLoad(const CMomentLoadData& loadData);
+   txnInsertMomentLoad(const CMomentLoadData& loadData,CTimelineManager* pTimelineMgr);
+   virtual ~txnInsertMomentLoad();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool Execute();
@@ -142,6 +156,8 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CMomentLoadData m_LoadData;
+   CTimelineManager* m_pTimelineMgr;
+   CTimelineManager m_OldTimelineMgr;
 };
 
 class PGSEXTCLASS txnDeleteMomentLoad : public txnTransaction
@@ -163,7 +179,8 @@ private:
 class PGSEXTCLASS txnEditMomentLoad : public txnTransaction
 {
 public:
-   txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData);
+   txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData,CTimelineManager* pTimelineMgr);
+   virtual ~txnEditMomentLoad();
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -175,6 +192,8 @@ private:
    void DoExecute(int i);
    CollectionIndexType m_LoadIdx;
    CMomentLoadData m_LoadData[2];
+   CTimelineManager* m_pTimelineMgr;
+   CTimelineManager m_OldTimelineMgr;
 };
 
 #endif // INCLUDED_INSERTDELETELOAD_H_

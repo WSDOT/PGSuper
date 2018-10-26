@@ -163,7 +163,7 @@ BEGIN_MESSAGE_MAP(CGirderSegmentGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_MOD_ECI, OnUserEci)
    ON_BN_CLICKED(IDC_MOD_EC, OnUserEc)
 	ON_EN_CHANGE(IDC_FCI, OnChangeFci)
-	ON_EN_CHANGE(IDC_GIRDER_FC, OnChangeGirderFc)
+	ON_EN_CHANGE(IDC_GIRDER_FC, OnChangeFc)
 	ON_EN_CHANGE(IDC_ECI, OnChangeEci)
 	ON_EN_CHANGE(IDC_EC, OnChangeEc)
 	ON_BN_CLICKED(IDC_MORE, OnMoreConcreteProperties)
@@ -238,8 +238,15 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
       m_ctrlEci.GetWindowText(m_strUserEci);
    }
 
-   OnUserEci();
-   OnUserEc();
+   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
+   if ( pSegment->Material.Concrete.bBasePropertiesOnInitialValues )
+   {
+      OnChangeFci();
+   }
+   else
+   {
+      OnChangeFc();
+   }
    OnConcreteStrength();
 
    OnVariationTypeChanged();
@@ -384,7 +391,7 @@ void CGirderSegmentGeneralPage::OnChangeFci()
    UpdateEc();
 }
 
-void CGirderSegmentGeneralPage::OnChangeGirderFc() 
+void CGirderSegmentGeneralPage::OnChangeFc() 
 {
    UpdateEc();
    UpdateFci();
@@ -478,7 +485,8 @@ void CGirderSegmentGeneralPage::UpdateEci()
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(pSegment->Material.Concrete.Fc);
          concrete.SetStrengthDensity(pSegment->Material.Concrete.StrengthDensity);
-         concrete.SetCementType((matCEBFIPConcrete::CementType)pSegment->Material.Concrete.CEBFIPCementType);
+         concrete.SetS(pSegment->Material.Concrete.S);
+         concrete.SetBetaSc(pSegment->Material.Concrete.BetaSc);
          Eci = concrete.GetEc(m_AgeAtRelease);
       }
 
@@ -564,7 +572,7 @@ void CGirderSegmentGeneralPage::UpdateEc()
       else
       {
          ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
-         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,(matCEBFIPConcrete::CementType)pSegment->Material.Concrete.CEBFIPCementType);
+         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.S);
       }
 
       CString strEc;
@@ -622,7 +630,7 @@ void CGirderSegmentGeneralPage::UpdateFc()
       else
       {
          ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,(matCEBFIPConcrete::CementType)pSegment->Material.Concrete.CEBFIPCementType);
+         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.S);
       }
 
       CString strFc;
@@ -668,7 +676,8 @@ void CGirderSegmentGeneralPage::UpdateFci()
          matCEBFIPConcrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
-         concrete.SetCementType((matCEBFIPConcrete::CementType)pSegment->Material.Concrete.CEBFIPCementType);
+         concrete.SetS(pSegment->Material.Concrete.S);
+         concrete.SetBetaSc(pSegment->Material.Concrete.BetaSc);
          fci = concrete.GetFc(m_AgeAtRelease);
       }
 
@@ -682,7 +691,10 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CConcreteDetailsDlg dlg;
+   int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+   bool bFinalProperties = (i == IDC_FC2 ? true : false);
+
+   CConcreteDetailsDlg dlg(bFinalProperties);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
@@ -690,13 +702,18 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
+   dlg.m_fci  = pSegment->Material.Concrete.Fci;
+   dlg.m_fc28 = pSegment->Material.Concrete.Fc;
+   dlg.m_Eci  = pSegment->Material.Concrete.Eci;
+   dlg.m_Ec28 = pSegment->Material.Concrete.Ec;
+   dlg.m_bUserEci  = pSegment->Material.Concrete.bUserEci;
+   dlg.m_bUserEc28 = pSegment->Material.Concrete.bUserEc;
+   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtRelease,unitMeasure::Day);
+
    dlg.m_General.m_Type        = pSegment->Material.Concrete.Type;
-   dlg.m_General.m_Fc          = pSegment->Material.Concrete.Fc;
    dlg.m_General.m_AggSize     = pSegment->Material.Concrete.MaxAggregateSize;
-   dlg.m_General.m_bUserEc     = pSegment->Material.Concrete.bUserEc;
    dlg.m_General.m_Ds          = pSegment->Material.Concrete.StrengthDensity;
    dlg.m_General.m_Dw          = pSegment->Material.Concrete.WeightDensity;
-   dlg.m_General.m_Ec          = pSegment->Material.Concrete.Ec;
 
    dlg.m_AASHTO.m_EccK1       = pSegment->Material.Concrete.EcK1;
    dlg.m_AASHTO.m_EccK2       = pSegment->Material.Concrete.EcK2;
@@ -712,23 +729,27 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_B               = pSegment->Material.Concrete.B;
    dlg.m_ACI.m_CureMethod      = pSegment->Material.Concrete.CureMethod;
    dlg.m_ACI.m_CementType      = pSegment->Material.Concrete.ACI209CementType;
-   dlg.m_ACI.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtRelease,unitMeasure::Day);
-   dlg.m_ACI.m_fci             = pSegment->Material.Concrete.Fci;
-   dlg.m_ACI.m_fc28            = pSegment->Material.Concrete.Fc;
 
-   dlg.m_CEBFIP.m_CementType = pSegment->Material.Concrete.CEBFIPCementType;
+   dlg.m_CEBFIP.m_bUserParameters = pSegment->Material.Concrete.bCEBFIPUserParameters;
+   dlg.m_CEBFIP.m_S               = pSegment->Material.Concrete.S;
+   dlg.m_CEBFIP.m_BetaSc          = pSegment->Material.Concrete.BetaSc;
+   dlg.m_CEBFIP.m_CementType      = pSegment->Material.Concrete.CEBFIPCementType;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
    if ( dlg.DoModal() == IDOK )
    {
+      pSegment->Material.Concrete.Fci = dlg.m_fci;
+      pSegment->Material.Concrete.Fc  = dlg.m_fc28;
+      pSegment->Material.Concrete.Eci = dlg.m_Eci;
+      pSegment->Material.Concrete.Ec  = dlg.m_Ec28;
+      pSegment->Material.Concrete.bUserEci         = dlg.m_bUserEci;
+      pSegment->Material.Concrete.bUserEc          = dlg.m_bUserEc28;
+
       pSegment->Material.Concrete.Type             = dlg.m_General.m_Type;
-      pSegment->Material.Concrete.Fc               = dlg.m_General.m_Fc;
       pSegment->Material.Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
-      pSegment->Material.Concrete.bUserEc          = dlg.m_General.m_bUserEc;
       pSegment->Material.Concrete.StrengthDensity  = dlg.m_General.m_Ds;
       pSegment->Material.Concrete.WeightDensity    = dlg.m_General.m_Dw;
-      pSegment->Material.Concrete.Ec               = dlg.m_General.m_Ec;
 
       pSegment->Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
       pSegment->Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
@@ -744,10 +765,11 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       pSegment->Material.Concrete.B                  = dlg.m_ACI.m_B;
       pSegment->Material.Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
       pSegment->Material.Concrete.ACI209CementType   = dlg.m_ACI.m_CementType;
-      pSegment->Material.Concrete.Fci                = dlg.m_ACI.m_fci;
-      pSegment->Material.Concrete.Fc                 = dlg.m_ACI.m_fc28;
 
-      pSegment->Material.Concrete.CEBFIPCementType   = dlg.m_CEBFIP.m_CementType;
+      pSegment->Material.Concrete.bCEBFIPUserParameters = dlg.m_CEBFIP.m_bUserParameters;
+      pSegment->Material.Concrete.S                     = dlg.m_CEBFIP.m_S;
+      pSegment->Material.Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
+      pSegment->Material.Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
@@ -760,12 +782,12 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       UpdateEci();
       UpdateEc();
 
-      UpdateConcreteControls();
+      UpdateConcreteControls(true);
    }
 	
 }
 
-void CGirderSegmentGeneralPage::UpdateConcreteControls()
+void CGirderSegmentGeneralPage::UpdateConcreteControls(bool bSkipEcCheckBoxes)
 {
    int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
    INT idFci[5] = {IDC_FCI,       IDC_FCI_UNIT,       IDC_MOD_ECI, IDC_ECI, IDC_ECI_UNIT};
@@ -779,16 +801,21 @@ void CGirderSegmentGeneralPage::UpdateConcreteControls()
       GetDlgItem(idFc[j] )->EnableWindow( !bEnableFci );
    }
 
-   if ( i == IDC_FC1 ) // input based on f'ci
+   if ( !bSkipEcCheckBoxes )
    {
-      m_ctrlEciCheck.SetCheck(m_ctrlEcCheck.GetCheck());
-      m_ctrlEcCheck.SetCheck(FALSE); // can't check Ec
-   }
+      // We only want to do this when the f'ci/f'c radio buttons are checked
 
-   if ( i == IDC_FC2 ) // input is based on f'ci
-   {
-      m_ctrlEcCheck.SetCheck(m_ctrlEciCheck.GetCheck());
-      m_ctrlEciCheck.SetCheck(FALSE); // can't check Eci
+      if ( i == IDC_FC1 ) // input based on f'ci
+      {
+         m_ctrlEciCheck.SetCheck(m_ctrlEcCheck.GetCheck());
+         m_ctrlEcCheck.SetCheck(FALSE); // can't check Ec
+      }
+
+      if ( i == IDC_FC2 ) // input is based on f'ci
+      {
+         m_ctrlEcCheck.SetCheck(m_ctrlEciCheck.GetCheck());
+         m_ctrlEciCheck.SetCheck(FALSE); // can't check Eci
+      }
    }
 
    BOOL bEnable = m_ctrlEcCheck.GetCheck();

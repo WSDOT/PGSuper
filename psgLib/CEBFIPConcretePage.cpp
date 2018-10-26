@@ -49,12 +49,24 @@ void CCEBFIPConcretePage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
+   DDX_Check_Bool(pDX,IDC_USER,m_bUseCEBFIPParameters);
    DDX_CBItemData(pDX,IDC_CEMENT_TYPE,m_CementType);
+
+   DDX_Text(pDX,IDC_S,m_S);
+   DDX_Text(pDX,IDC_BETA_SC,m_BetaSc);
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      m_bUserParameters = !m_bUseCEBFIPParameters;
+   }
+
 }
 
 
 BEGIN_MESSAGE_MAP(CCEBFIPConcretePage, CPropertyPage)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+   ON_CBN_SELCHANGE(IDC_CEMENT_TYPE, &CCEBFIPConcretePage::OnCbnSelchangeCementType)
+   ON_BN_CLICKED(IDC_USER, &CCEBFIPConcretePage::OnBnClickedUser)
 END_MESSAGE_MAP()
 
 
@@ -68,7 +80,11 @@ BOOL CCEBFIPConcretePage::OnInitDialog()
    pcbCementType->SetItemData(pcbCementType->AddString(_T("Rapid Hardening Cement (R)")),pgsTypes::R);
    pcbCementType->SetItemData(pcbCementType->AddString(_T("Slowly Hardening Cement (SL)")),pgsTypes::SL);
 
+   m_bUseCEBFIPParameters = !m_bUserParameters;
+
 	CPropertyPage::OnInitDialog();
+
+   OnBnClickedUser();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -79,4 +95,36 @@ LRESULT CCEBFIPConcretePage::OnCommandHelp(WPARAM, LPARAM lParam)
 #pragma Reminder("UPDATE: Update help file reference for this topic")
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_CONCRETE_ENTRY_DIALOG );
    return TRUE;
+}
+
+void CCEBFIPConcretePage::OnCbnSelchangeCementType()
+{
+   BOOL bUseCEBFIP = IsDlgButtonChecked(IDC_USER);
+   if ( bUseCEBFIP )
+      UpdateParameters();
+}
+
+void CCEBFIPConcretePage::OnBnClickedUser()
+{
+   BOOL bEnable = IsDlgButtonChecked(IDC_USER);
+   GetDlgItem(IDC_CEMENT_TYPE)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_S_LABEL)->EnableWindow(!bEnable);
+   GetDlgItem(IDC_S)->EnableWindow(!bEnable);
+   GetDlgItem(IDC_BETA_SC_LABEL)->EnableWindow(!bEnable);
+   GetDlgItem(IDC_BETA_SC)->EnableWindow(!bEnable);
+
+   if ( bEnable )
+   {
+      UpdateParameters();
+   }
+}
+
+void CCEBFIPConcretePage::UpdateParameters()
+{
+   UpdateData(TRUE);
+
+   matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)m_CementType,&m_S,&m_BetaSc);
+
+   UpdateData(FALSE);
 }

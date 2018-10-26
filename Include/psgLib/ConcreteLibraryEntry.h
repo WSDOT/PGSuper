@@ -232,6 +232,12 @@ public:
 
    //------------------------------------------------------------------------
    // Parameters for the CEB-FIP model
+   bool UserCEBFIPParameters() const;
+   void UserCEBFIPParameters(bool bUser);
+   Float64 GetS() const;
+   void SetS(Float64 s);
+   Float64 GetBetaSc() const;
+   void SetBetaSc(Float64 betaSc);
    pgsTypes::CEBFIPCementType GetCEBFIPCementType() const;
    void SetCEBFIPCementType(pgsTypes::CEBFIPCementType cementType);
 
@@ -280,6 +286,8 @@ private:
    pgsTypes::ACI209CementType m_ACI209CementType;
 
    // CEB-FIP Model Parameters
+   bool m_bUserCEBFIPParameters;
+   Float64 m_S,m_BetaSc;
    pgsTypes::CEBFIPCementType m_CEBFIPCementType;
 
    // GROUP: LIFECYCLE

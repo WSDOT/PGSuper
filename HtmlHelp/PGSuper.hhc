@@ -277,7 +277,7 @@
         <param name="Local" value="User's Guide\Girder_Editing\Strands.htm">
       </object>
       <li><object type="text/sitemap">
-        <param name="Name" value="Debonding">
+        <param name="Name" value="Strand Extensions/Debonding">
         <param name="Local" value="Girder Editing Wizard\Debonding.htm">
       </object>
       <li><object type="text/sitemap">
@@ -592,6 +592,19 @@
         </object>
         </ul>
       <li><object type="text/sitemap">
+        <param name="Name" value="Custom and Favorite Reports">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Favorite Reports">
+          <param name="Local" value="User's Guide\Appendix A - PGSuper Dialogs\FavoriteReports.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Custom Reports">
+          <param name="Local" value="User's Guide\Appendix A - PGSuper Dialogs\Custom_Reports.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
         <param name="Name" value="Pier Details">
         <param name="Local" value="PierDetails\General.htm">
       </object>
@@ -689,7 +702,11 @@
           <param name="Local" value="Girder Editing Wizard\Prestressing.htm">
         </object>
         <li><object type="text/sitemap">
-          <param name="Name" value="Debonding">
+          <param name="Name" value="Select Strands">
+          <param name="Local" value="Dialogs\Direct_Selection_of_Strand_Fill.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Strand Extensions/Debonding">
           <param name="Local" value="Girder Editing Wizard\Debonding.htm">
         </object>
         <li><object type="text/sitemap">
@@ -837,7 +854,7 @@
         <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\GenerateStrands.htm">
       </object>
       <li><object type="text/sitemap">
-        <param name="Name" value="Girder Connection Dialog">
+        <param name="Name" value="Connection Dialog">
         <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Connection_Dialog.htm">
       </object>
       <li><object type="text/sitemap">
@@ -946,10 +963,6 @@
         <li><object type="text/sitemap">
           <param name="Name" value="Limits and Warnings Tab">
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Limits_Tab.htm">
-        </object>
-        <li><object type="text/sitemap">
-          <param name="Name" value="Load Factors Tab">
-          <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Factors_Tab.htm">
         </object>
         <li><object type="text/sitemap">
           <param name="Name" value="Design Tab">
@@ -1069,12 +1082,20 @@
         <param name="Local" value="Theoretical Manual\Lifting_of_Long_Prestressed_Girders.htm">
       </object>
       <li><object type="text/sitemap">
-        <param name="Name" value="Hauling of Long Prestressed Girders">
+        <param name="Name" value="Hauling of Long Prestressed Girders - WSDOT Method">
         <param name="Local" value="Theoretical Manual\Hauling_of_Long_Prestressed_Girders.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Hauling of Long Prestressed Girders - KDOT Method">
+        <param name="Local" value="Theoretical Manual\hauling_of_long_prestressed_girders_kdot_method.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="References - Lateral Stability for Lifting and Hauling Analyses">
+        <param name="Local" value="Theoretical Manual\PsglibLateral_Stability_of_Long_Prestr.htm">
       </object>
       </ul>
     <li><object type="text/sitemap">
-      <param name="Name" value="Longitudinal Reinforcement For Shear">
+      <param name="Name" value="Longitudinal Reinforcement in Girders">
       <param name="Local" value="Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm">
     </object>
     <li><object type="text/sitemap">
@@ -1085,6 +1106,12 @@
       <param name="Name" value="Prestress Losses">
       <param name="Local" value="Theoretical Manual\Prestress_Losses.htm">
     </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="TxDOT Losses: Research Report 0-6374-2">
+        <param name="Local" value="Theoretical Manual\txdot_research_report_0-6374-2.htm">
+      </object>
+      </ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Shear Design (Determination of Beta and Theta)">
       <param name="Local" value="Theoretical Manual\Shear_Design_(Determination_of_Beta_and_Theta).htm">
@@ -1094,16 +1121,16 @@
       <param name="Local" value="Theoretical Manual\Bursting_Zone_Checks.htm">
     </object>
     <li><object type="text/sitemap">
-      <param name="Name" value="Structural Analysis Models">
-      <param name="Local" value="Theoretical Manual\AnalyticalModels.htm">
-    </object>
-    <li><object type="text/sitemap">
       <param name="Name" value="Ultimate Moment Capacity Analysis">
       <param name="Local" value="Theoretical Manual\Ultimate_Moment_Capacity_Analysis.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Vehicular Live Loads">
       <param name="Local" value="Theoretical Manual\User-Defined_Live_Loads.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Structural Analysis Models">
+      <param name="Local" value="Theoretical Manual\AnalyticalModels.htm">
     </object>
     </ul>
   <li><object type="text/sitemap">

@@ -53,9 +53,20 @@ m_Description(_T(""))
 
 }
 
+CPointLoadData::CPointLoadData(const CPointLoadData& other)
+{
+   MakeCopy(other);
+}
+
 CPointLoadData::~CPointLoadData()
 {
 
+}
+
+CPointLoadData& CPointLoadData::operator=(const CPointLoadData& other)
+{
+   MakeAssignment(other);
+   return *this;
 }
 
 bool CPointLoadData::operator == (const CPointLoadData& rOther) const
@@ -333,4 +344,21 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
 
    hr = pLoad->EndUnit();
    return hr;
+}
+
+void CPointLoadData::MakeCopy(const CPointLoadData& rOther)
+{
+   m_ID          = rOther.m_ID;
+   m_EventIndex  = rOther.m_EventIndex;
+   m_LoadCase    = rOther.m_LoadCase;
+   m_SpanKey     = rOther.m_SpanKey;
+   m_Location    = rOther.m_Location;
+   m_Fractional  = rOther.m_Fractional;
+   m_Magnitude   = rOther.m_Magnitude;
+   m_Description = rOther.m_Description;
+}
+
+void CPointLoadData::MakeAssignment(const CPointLoadData& rOther)
+{
+   MakeCopy(rOther);
 }

@@ -310,15 +310,15 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    {
       eps = pStrandGeometry->GetEccentricity( castDeckIntervalIdx, poi, *pConfig, false, &neff);
 
-      Pps = pPsForce->GetHorizHarpedStrandForce(poi, *pConfig, finalIntervalIdx,pgsTypes::End)
-          + pPsForce->GetPrestressForce(poi,*pConfig,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End);
+      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI, *pConfig)
+         + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
    }
    else
    {
       eps = pStrandGeometry->GetEccentricity( castDeckIntervalIdx, poi, false, &neff);
 
-      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End)
-          + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End);
+      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI)
+          + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI);
    }
 
 
@@ -674,12 +674,12 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    // vertical component of prestress force
    if (pConfig == NULL)
    {
-      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End);
+      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
       pscd->Vpt = pPTForce->GetVerticalTendonForce(poi,intervalIdx,pgsTypes::End,ALL_DUCTS);
    }
    else
    {
-      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,*pConfig,intervalIdx,pgsTypes::End);
+      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
 
       // if there is a config, this is a pretensioned bridge so no tendons.
       pscd->Vpt = 0;
@@ -743,12 +743,12 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    if (pConfig == NULL)
    {
       pscd->fpc = pShearCapacity->GetFpc(poi);
-      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
    }
    else
    {
       pscd->fpc = pShearCapacity->GetFpc(poi, *pConfig);
-      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,*pConfig,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
    }
 
    if ( bAfter1999 )

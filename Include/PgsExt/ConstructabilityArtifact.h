@@ -112,6 +112,12 @@ public:
    void CheckStirrupLength(bool bCheck);
    bool CheckStirrupLength() const;
 
+   void SetBottomFlangeClearanceApplicability(bool bSet);
+   bool IsBottomFlangeClearnceApplicable() const;
+   void SetBottomFlangeClearanceParameters(Float64 C,Float64 Cmin);
+   void GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const;
+   bool BottomFlangeClearancePassed() const;
+
    bool Passed() const;
 
    // GROUP: INQUIRY
@@ -136,6 +142,10 @@ private:
    Float64 m_Required; // The required required slab offset
    bool m_bCheckStirrupLength;
    bool m_bIsSlabOffsetApplicable;
+
+   bool m_bIsBottomFlangeClearanceApplicable;
+   Float64 m_C;
+   Float64 m_Cmin;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

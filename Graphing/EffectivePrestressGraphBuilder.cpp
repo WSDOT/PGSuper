@@ -343,6 +343,14 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
 
          IntervalIndexType stressStrandIntervalIdx = pIntervals->GetStressStrandInterval(thisSegmentKey);
          IntervalIndexType releaseIntervalIdx      = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+         IntervalIndexType liveLoadIntervalIdx     = pIntervals->GetLiveLoadInterval(thisSegmentKey);
+
+         pgsTypes::LimitState limitState = pgsTypes::ServiceI;
+         if ( liveLoadIntervalIdx <= intervalIdx )
+         {
+            limitState = pgsTypes::ServiceIII;
+         }
+
 
          Float64 X = *xIter;
 
@@ -358,12 +366,12 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
          
          if ( bStresses )
          {
-            Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,time);
+            Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,time,limitState);
             AddGraphPoint(dataSeries,X,fpe);
          }
          else
          {
-            Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,time);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,time,limitState);
             AddGraphPoint(dataSeries,X,Fpe);
          }
 
@@ -373,12 +381,12 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
             // elastic shortening that occurs during this interval
             if ( bStresses )
             {
-               Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+               Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,limitState);
                AddGraphPoint(dataSeries2,X,fpe);
             }
             else
             {
-               Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+               Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,limitState);
                AddGraphPoint(dataSeries2,X,Fpe);
             }
          }

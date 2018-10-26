@@ -20,34 +20,34 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ACIParametersDlg.cpp : implementation file
+// CEBFIPParametersDlg.cpp : implementation file
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin.h"
-#include "ACIParametersDlg.h"
+#include "CEBFIPParametersDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
-#include <Material\ACI209Concrete.h>
+#include <Material\CEBFIPConcrete.h>
 
 
-// CACIParametersDlg dialog
+// CCEBFIPParametersDlg dialog
 
-IMPLEMENT_DYNAMIC(CACIParametersDlg, CDialog)
+IMPLEMENT_DYNAMIC(CCEBFIPParametersDlg, CDialog)
 
-CACIParametersDlg::CACIParametersDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CACIParametersDlg::IDD, pParent)
+CCEBFIPParametersDlg::CCEBFIPParametersDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CCEBFIPParametersDlg::IDD, pParent)
 {
    m_fc1 = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
    m_fc2 = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
-   m_t1 = ::ConvertToSysUnits(1.0,unitMeasure::Day);
+   m_t1  = ::ConvertToSysUnits(1.0,unitMeasure::Day);
 }
 
-CACIParametersDlg::~CACIParametersDlg()
+CCEBFIPParametersDlg::~CCEBFIPParametersDlg()
 {
 }
 
-void CACIParametersDlg::DoDataExchange(CDataExchange* pDX)
+void CCEBFIPParametersDlg::DoDataExchange(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -59,13 +59,13 @@ void CACIParametersDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CACIParametersDlg, CDialog)
+BEGIN_MESSAGE_MAP(CCEBFIPParametersDlg, CDialog)
 	ON_EN_CHANGE(IDC_FCI, UpdateParameters)
 	ON_EN_CHANGE(IDC_FC, UpdateParameters)
 END_MESSAGE_MAP()
 
 
-BOOL CACIParametersDlg::OnInitDialog()
+BOOL CCEBFIPParametersDlg::OnInitDialog()
 {
    CDialog::OnInitDialog();
 
@@ -84,18 +84,14 @@ BOOL CACIParametersDlg::OnInitDialog()
 }
 
 // CACIParametersDlg message handlers
-void CACIParametersDlg::UpdateParameters()
+void CCEBFIPParametersDlg::UpdateParameters()
 {
    UpdateData();
 
    Float64 t1 = ::ConvertFromSysUnits(m_t1,unitMeasure::Day);
-   matACI209Concrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_A,&m_B);
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   matCEBFIPConcrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_S);
 
    CString strResult;
-   strResult.Format(_T("a = %s, Beta = %4.2f\r\nFor use in Eq'n. 2-1"),::FormatDimension(m_A,pDisplayUnits->GetFractionalDaysUnit()),m_B);
+   strResult.Format(_T("S = %.6f\r\nFor use in Eq'n. 2.1-54"),m_S);
    GetDlgItem(IDC_RESULT)->SetWindowText(strResult);
 }

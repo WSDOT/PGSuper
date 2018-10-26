@@ -574,8 +574,15 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
 
 
          var.vt = VT_BSTR;
-         if( FAILED(pStrLoad->get_Property(_T("DiaphragmLoadType"),&var)) )
-            return STRLOAD_E_INVALIDFORMAT;
+         hr = pStrLoad->get_Property(_T("DiaphragmLoadType"),&var);
+         if ( FAILED(hr) )
+         {
+            // there was a bug in version 2.8.2 that caused the DiaphragmLoadType to
+            // be omitted when it was set to "DontApply". If there is a problem loading
+            // the DiaphragmLoadType, assume it should be "DontApply"
+            var.bstrVal = T2BSTR(_T("DontApply"));
+            hr = S_OK;
+         }
 
          std::_tstring tmp(OLE2T(var.bstrVal));
          if (tmp==_T("ApplyAtBearingCenterline"))
@@ -651,8 +658,15 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
 
 
          var.vt = VT_BSTR;
-         if( FAILED(pStrLoad->get_Property(_T("DiaphragmLoadType"),&var)) )
-            return STRLOAD_E_INVALIDFORMAT;
+         hr = pStrLoad->get_Property(_T("DiaphragmLoadType"),&var);
+         if ( FAILED(hr) )
+         {
+            // there was a bug in version 2.8.2 that caused the DiaphragmLoadType to
+            // be omitted when it was set to "DontApply". If there is a problem loading
+            // the DiaphragmLoadType, assume it should be "DontApply"
+            var.bstrVal = T2BSTR(_T("DontApply"));
+            hr = S_OK;
+         }
 
          tmp = OLE2T(var.bstrVal);
          if (tmp==_T("ApplyAtBearingCenterline"))

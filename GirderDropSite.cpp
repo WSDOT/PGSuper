@@ -122,6 +122,11 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       source->SetDataObject(pDataObject);
       draggable->OnDrop(source); // Rebuild the tool object from the data object
 
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
       // Was it the concentrated load tool?
       if ( tool->GetID() == IDC_POINT_LOAD_DRAG )
       {
@@ -129,9 +134,6 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          CPointLoadData data;
          data.m_SpanKey = pThis->m_SpanKey;
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
 
          data.m_EventIndex = pThis->m_pFrame->GetEvent();
@@ -172,10 +174,10 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          data.m_Fractional = false;
          data.m_Location   = load_loc;
 
-	      CEditPointLoadDlg dlg(data);
+	      CEditPointLoadDlg dlg(data,pTimelineMgr);
          if (dlg.DoModal() == IDOK)
          {
-            txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
+            txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
             txnTxnManager::GetInstance()->Execute(pTxn);
          }
       }
@@ -186,9 +188,6 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          CDistributedLoadData data;
          data.m_SpanKey = pThis->m_SpanKey;
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
 
          data.m_EventIndex = pThis->m_pFrame->GetEvent();
@@ -223,10 +222,10 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          data.m_StartLocation = load_loc;
          data.m_EndLocation = load_loc+load_length;
 
-	      CEditDistributedLoadDlg dlg(data);
+	      CEditDistributedLoadDlg dlg(data,pTimelineMgr);
          if (dlg.DoModal() == IDOK)
          {
-            txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
+            txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
             txnTxnManager::GetInstance()->Execute(pTxn);
          }
       }
@@ -236,9 +235,6 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          CMomentLoadData data;
          data.m_SpanKey = pThis->m_SpanKey;
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
 
          data.m_EventIndex = pThis->m_pFrame->GetEvent();
@@ -268,10 +264,10 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          data.m_Fractional = false;
          data.m_Location   = load_loc;
 
-	      CEditMomentLoadDlg dlg(data);
+	      CEditMomentLoadDlg dlg(data,pTimelineMgr);
          if (dlg.DoModal() == IDOK)
          {
-            txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
+            txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
             txnTxnManager::GetInstance()->Execute(pTxn);
          }
       }

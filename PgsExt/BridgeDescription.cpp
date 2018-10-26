@@ -209,9 +209,9 @@ HRESULT CBridgeDescription::Load(Float64 version,IStructuredLoad* pStrLoad,IProg
          if ( 4 <= version )
          {
             // added in version 4
-            var.vt = VT_INDEX;
+            var.vt = VT_I8;
             hr = pStrLoad->get_Property(_T("RefGirder"),&var);
-            m_RefGirderIdx = VARIANT2INDEX(var);
+            m_RefGirderIdx = (IndexType)var.llVal;
 
             var.vt = VT_I4;
             hr = pStrLoad->get_Property(_T("RefGirderOffsetType"),&var);
@@ -634,6 +634,9 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
                                                 (matACI209Concrete::CementType)pNewSegment->Material.Concrete.ACI209CementType,
                                                  &pNewSegment->Material.Concrete.A,
                                                  &pNewSegment->Material.Concrete.B);
+         matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)pNewSegment->Material.Concrete.CEBFIPCementType,
+                                                &pNewSegment->Material.Concrete.S,
+                                                &pNewSegment->Material.Concrete.BetaSc);
 
          if ( girderData.m_bUsedShearData2 )
          {

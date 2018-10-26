@@ -760,20 +760,21 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
-   CConcreteDetailsDlg dlg;
+   CConcreteDetailsDlg dlg(true/*f'c*/,false/*don't enable Compute Time Parameters option*/);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
 
    CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
 
+   dlg.m_fc28 = pDeck->Concrete.Fc;
+   dlg.m_Ec28 = pDeck->Concrete.Ec;
+   dlg.m_bUserEc28 = pDeck->Concrete.bUserEc;
+
    dlg.m_General.m_Type    = pDeck->Concrete.Type;
-   dlg.m_General.m_Fc      = pDeck->Concrete.Fc;
    dlg.m_General.m_AggSize = pDeck->Concrete.MaxAggregateSize;
-   dlg.m_General.m_bUserEc = pDeck->Concrete.bUserEc;
    dlg.m_General.m_Ds      = pDeck->Concrete.StrengthDensity;
    dlg.m_General.m_Dw      = pDeck->Concrete.WeightDensity;
-   dlg.m_General.m_Ec      = pDeck->Concrete.Ec;
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
    dlg.m_AASHTO.m_EccK1       = pDeck->Concrete.EcK1;
@@ -797,21 +798,25 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    concrete.SetA(pDeck->Concrete.A);
    concrete.SetBeta(pDeck->Concrete.B);
    Float64 fci = concrete.GetFc(m_AgeAtContinuity);
-   dlg.m_ACI.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
-   dlg.m_ACI.m_fci = fci;
-   dlg.m_ACI.m_fc28 = pDeck->Concrete.Fc;
+   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
+   dlg.m_fci = fci;
+   dlg.m_fc28 = pDeck->Concrete.Fc;
 
-   dlg.m_CEBFIP.m_CementType = pDeck->Concrete.CEBFIPCementType;
+   dlg.m_CEBFIP.m_bUserParameters = pDeck->Concrete.bCEBFIPUserParameters;
+   dlg.m_CEBFIP.m_S               = pDeck->Concrete.S;
+   dlg.m_CEBFIP.m_BetaSc          = pDeck->Concrete.BetaSc;
+   dlg.m_CEBFIP.m_CementType      = pDeck->Concrete.CEBFIPCementType;
 
    if ( dlg.DoModal() == IDOK )
    {
+      pDeck->Concrete.Fc               = dlg.m_fc28;
+      pDeck->Concrete.Ec               = dlg.m_Ec28;
+      pDeck->Concrete.bUserEc          = dlg.m_bUserEc28;
+
       pDeck->Concrete.Type             = dlg.m_General.m_Type;
-      pDeck->Concrete.Fc               = dlg.m_General.m_Fc;
       pDeck->Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
-      pDeck->Concrete.bUserEc          = dlg.m_General.m_bUserEc;
       pDeck->Concrete.StrengthDensity  = dlg.m_General.m_Ds;
       pDeck->Concrete.WeightDensity    = dlg.m_General.m_Dw;
-      pDeck->Concrete.Ec               = dlg.m_General.m_Ec;
       pDeck->Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
       pDeck->Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
       pDeck->Concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
@@ -827,7 +832,10 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
       pDeck->Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
       pDeck->Concrete.ACI209CementType   = dlg.m_ACI.m_CementType;
 
-      pDeck->Concrete.CEBFIPCementType   = dlg.m_CEBFIP.m_CementType;
+      pDeck->Concrete.bCEBFIPUserParameters = dlg.m_CEBFIP.m_bUserParameters;
+      pDeck->Concrete.S                     = dlg.m_CEBFIP.m_S;
+      pDeck->Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
+      pDeck->Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

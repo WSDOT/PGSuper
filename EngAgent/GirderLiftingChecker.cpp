@@ -579,20 +579,20 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
 
       if ( bUseConfig && !liftConfig.bIgnoreGirderConfig )
       {
-         hps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle);
+         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,liftConfig.GdrConfig);
          he        = pStrandGeometry->GetHsEccentricity(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig, &nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Straight,liftSegmentIntervalIdx,pgsTypes::Middle);
+         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,liftConfig.GdrConfig);
          se        = pStrandGeometry->GetSsEccentricity(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig, &nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Middle);
+         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,liftConfig.GdrConfig);
          te        = pStrandGeometry->GetTempEccentricity(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig, &nft);
       }
       else
       {
-         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle);
+         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
          he        = pStrandGeometry->GetHsEccentricity(liftSegmentIntervalIdx,poi,&nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,liftSegmentIntervalIdx,pgsTypes::Middle);
+         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
          se        = pStrandGeometry->GetSsEccentricity(liftSegmentIntervalIdx,poi,&nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Middle);
+         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
          te        = pStrandGeometry->GetTempEccentricity(liftSegmentIntervalIdx,poi,&nft);
       }
 

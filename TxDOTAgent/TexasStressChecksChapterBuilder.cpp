@@ -113,8 +113,11 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
    *pChapter << p;
 
    CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,releaseIntervalIdx,      pgsTypes::ServiceI, true /*girder stress*/);
+
    CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,castDeckIntervalIdx,     pgsTypes::ServiceI, true /*girder stress*/);
+
    CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,compositeDeckIntervalIdx,pgsTypes::ServiceI, true /*girder stress*/);
+
    CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI, true /*girder stress*/);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )

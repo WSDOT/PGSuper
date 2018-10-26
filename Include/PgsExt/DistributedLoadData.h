@@ -42,7 +42,10 @@ class PGSEXTCLASS CDistributedLoadData
 {
 public:
 	CDistributedLoadData();
+   CDistributedLoadData(const CDistributedLoadData& other);
 	virtual ~CDistributedLoadData();
+
+   CDistributedLoadData& operator=(const CDistributedLoadData& other);
 
    HRESULT Save(IStructuredSave* pSave);
    HRESULT Load(IStructuredLoad* pSave);
@@ -63,6 +66,10 @@ public:
    Float64  m_WEnd;
    bool     m_Fractional;
    std::_tstring m_Description;
+
+protected:
+   void MakeCopy(const CDistributedLoadData& rOther);
+   virtual void MakeAssignment(const CDistributedLoadData& rOther);
 };
 
 #endif // !defined(AFX_DISTRIBUTEDLOADDATA_H__83982300_F548_44FC_B84A_A7C9731FE381__INCLUDED_)

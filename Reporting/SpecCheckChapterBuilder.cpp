@@ -188,7 +188,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
    else
    {
-      ATLASSERT(fc_reqd != -99999);
+      ATLASSERT(fc_reqd == -99999);
       *p << _T("Required ") << RPT_FC << _T(" = Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 
@@ -470,6 +470,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Global Stability Check
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+
+   // Bottom Flange Clearance Check
+   CConstructabilityCheckTable().BuildBottomFlangeClearanceCheck(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Load rating
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);

@@ -95,6 +95,15 @@ public:
 protected:
    void ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdInfo);
 
+#if defined _BETA_VERSION
+   virtual LPCTSTR GetCatalogServerKey();
+   virtual LPCTSTR GetPublisherKey();
+   virtual LPCTSTR GetMasterLibraryCacheKey();
+   virtual LPCTSTR GetMasterLibraryURLKey();
+   virtual LPCTSTR GetWorkgroupTemplatesCacheKey();
+   virtual CString GetCacheFolder();
+#endif //_BETA_VERSION
+
 // IEAFAppPlugin
 public:
    virtual BOOL Init(CEAFApp* pParent);

@@ -132,8 +132,7 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
    const pgsSegmentArtifact* pSegmentArtifact = pFactoredGdrArtifact->GetSegmentArtifact(0);
 
    // Write notes from pgsuper default table, then our notes, then table
-   CFlexuralStressCheckTable().BuildNotes(pChapter, pBroker, pSegmentArtifact, pDisplayUnits, intervalIdx, ls, stress);
-
+   CFlexuralStressCheckTable().BuildNotes(pChapter, pBroker, pFactoredGdrArtifact, 0, pDisplayUnits, intervalIdx, ls, true);
 
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
@@ -187,13 +186,14 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(fabrSegmentKey);
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(fabrSegmentKey);
 
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
 
    // create and set up table
    const ColumnIndexType add_cols = 2;
    rptRcTable* p_table;
    if (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
       p_table = pgsReportStyleHolder::CreateDefaultTable(5+1,_T(""));
-   else if (intervalIdx == compositeDeckIntervalIdx || intervalIdx == liveLoadIntervalIdx)
+   else if ( (intervalIdx == compositeDeckIntervalIdx && !pAllowable->CheckFinalDeadLoadTensionStress()) || intervalIdx == liveLoadIntervalIdx)
       p_table = pgsReportStyleHolder::CreateDefaultTable(8+add_cols,_T(""));
    else if (intervalIdx == releaseIntervalIdx )
       p_table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
@@ -282,7 +282,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    Float64 allowable_tension;
    Float64 allowable_tension_with_rebar;
 
-   if (stressType==pgsTypes::Tension && (intervalIdx != compositeDeckIntervalIdx))
+   if (stressType==pgsTypes::Tension && ((intervalIdx != compositeDeckIntervalIdx) || (intervalIdx != compositeDeckIntervalIdx && pAllowable->CheckFinalDeadLoadTensionStress())) )
    {
       pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0 );
       allowable_tension = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
@@ -304,7 +304,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
       }
 
-      if ( intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII )
+      if ( (intervalIdx == compositeDeckIntervalIdx && limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress()) || (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII) )
       {
          p_table->SetRowSpan(0,col1,2);
          p_table->SetRowSpan(1,col2++,-1);
@@ -424,6 +424,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       if ( intervalIdx == releaseIntervalIdx || 
            intervalIdx == tsRemovalIntervalIdx || 
            intervalIdx == castDeckIntervalIdx || 
+          (intervalIdx == compositeDeckIntervalIdx && limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress() ) ||
           (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
          )
       {
@@ -477,7 +478,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          )
       {
          bool bPassed;
-         if ( intervalIdx == compositeDeckIntervalIdx || intervalIdx == liveLoadIntervalIdx )
+         if ( (intervalIdx == compositeDeckIntervalIdx && !pAllowable->CheckFinalDeadLoadTensionStress()) || intervalIdx == liveLoadIntervalIdx )
          {
             bPassed = pFactoredStressArtifact->BeamPassed();
          }

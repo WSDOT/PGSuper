@@ -34,10 +34,24 @@ static char THIS_FILE[] = __FILE__;
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-txnInsertPointLoad::txnInsertPointLoad(const CPointLoadData& loadData)
+txnInsertPointLoad::txnInsertPointLoad(const CPointLoadData& loadData,CTimelineManager* pTimelineMgr)
 {
+   m_pTimelineMgr = NULL;
+   if ( pTimelineMgr )
+   {
+      m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
+   }
+
    m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
+}
+
+txnInsertPointLoad::~txnInsertPointLoad()
+{
+   if ( m_pTimelineMgr )
+   {
+      delete m_pTimelineMgr;
+   }
 }
 
 std::_tstring txnInsertPointLoad::Name() const
@@ -47,7 +61,7 @@ std::_tstring txnInsertPointLoad::Name() const
 
 txnTransaction* txnInsertPointLoad::CreateClone() const
 {
-   return new txnInsertPointLoad(m_LoadData);
+   return new txnInsertPointLoad(m_LoadData,m_pTimelineMgr);
 }
 
 bool txnInsertPointLoad::IsUndoable()
@@ -67,6 +81,17 @@ bool txnInsertPointLoad::Execute()
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation
+      // update the timeline in the main bridge model before
+      // updating the loading
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
+      pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
+   }
+
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddPointLoad(m_LoadData);
 
@@ -85,6 +110,18 @@ void txnInsertPointLoad::Undo()
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeletePointLoad(m_LoadIdx);
+
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation...
+      // the timeline was updated when we exectued the transaction
+      // so now it needs to be put back the way it was because
+      // we are undoing the transaction
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
+   }
+
 
    pEvents->FirePendingEvents();
 }
@@ -148,11 +185,25 @@ void txnDeletePointLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnEditPointLoad::txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData)
+txnEditPointLoad::txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData,CTimelineManager* pTimelineMgr)
 {
+   m_pTimelineMgr = NULL;
+   if ( pTimelineMgr )
+   {
+      m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
+   }
+
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;
    m_LoadData[1] = newLoadData;
+}
+
+txnEditPointLoad::~txnEditPointLoad()
+{
+   if ( m_pTimelineMgr )
+   {
+      delete m_pTimelineMgr;
+   }
 }
 
 std::_tstring txnEditPointLoad::Name() const
@@ -162,7 +213,7 @@ std::_tstring txnEditPointLoad::Name() const
 
 txnTransaction* txnEditPointLoad::CreateClone() const
 {
-   return new txnEditPointLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1]);
+   return new txnEditPointLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1],m_pTimelineMgr);
 }
 
 bool txnEditPointLoad::Execute()
@@ -193,6 +244,24 @@ void txnEditPointLoad::DoExecute(int i)
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation
+      // update the timeline in the main bridge model before
+      // updating the loading
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      if ( i == 1 )
+      {
+         m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
+         pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
+      }
+      else
+      {
+         pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
+      }
+   }
+
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdatePointLoad(m_LoadIdx,m_LoadData[i]);
 
@@ -203,10 +272,24 @@ void txnEditPointLoad::DoExecute(int i)
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-txnInsertDistributedLoad::txnInsertDistributedLoad(const CDistributedLoadData& loadData)
+txnInsertDistributedLoad::txnInsertDistributedLoad(const CDistributedLoadData& loadData,CTimelineManager* pTimelineMgr)
 {
+   m_pTimelineMgr = NULL;
+   if ( pTimelineMgr )
+   {
+      m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
+   }
+
    m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
+}
+
+txnInsertDistributedLoad::~txnInsertDistributedLoad()
+{
+   if ( m_pTimelineMgr )
+   {
+      delete m_pTimelineMgr;
+   }
 }
 
 std::_tstring txnInsertDistributedLoad::Name() const
@@ -216,7 +299,7 @@ std::_tstring txnInsertDistributedLoad::Name() const
 
 txnTransaction* txnInsertDistributedLoad::CreateClone() const
 {
-   return new txnInsertDistributedLoad(m_LoadData);
+   return new txnInsertDistributedLoad(m_LoadData,m_pTimelineMgr);
 }
 
 bool txnInsertDistributedLoad::IsUndoable()
@@ -236,6 +319,17 @@ bool txnInsertDistributedLoad::Execute()
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation
+      // update the timeline in the main bridge model before
+      // updating the loading
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
+      pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
+   }
+
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddDistributedLoad(m_LoadData);
 
@@ -254,6 +348,17 @@ void txnInsertDistributedLoad::Undo()
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeleteDistributedLoad(m_LoadIdx);
+
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation...
+      // the timeline was updated when we exectued the transaction
+      // so now it needs to be put back the way it was because
+      // we are undoing the transaction
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
+   }
 
    pEvents->FirePendingEvents();
 }
@@ -318,11 +423,25 @@ void txnDeleteDistributedLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnEditDistributedLoad::txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData)
+txnEditDistributedLoad::txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData,CTimelineManager* pTimelineMgr)
 {
+   m_pTimelineMgr = NULL;
+   if ( pTimelineMgr )
+   {
+      m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
+   }
+
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;
    m_LoadData[1] = newLoadData;
+}
+
+txnEditDistributedLoad::~txnEditDistributedLoad()
+{
+   if (m_pTimelineMgr)
+   {
+      delete m_pTimelineMgr;
+   }
 }
 
 std::_tstring txnEditDistributedLoad::Name() const
@@ -332,7 +451,7 @@ std::_tstring txnEditDistributedLoad::Name() const
 
 txnTransaction* txnEditDistributedLoad::CreateClone() const
 {
-   return new txnEditDistributedLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1]);
+   return new txnEditDistributedLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1],m_pTimelineMgr);
 }
 
 bool txnEditDistributedLoad::Execute()
@@ -363,6 +482,24 @@ void txnEditDistributedLoad::DoExecute(int i)
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation
+      // update the timeline in the main bridge model before
+      // updating the loading
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      if ( i == 1 )
+      {
+         m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
+         pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
+      }
+      else
+      {
+         pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
+      }
+   }
+
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdateDistributedLoad(m_LoadIdx,m_LoadData[i]);
 
@@ -373,10 +510,23 @@ void txnEditDistributedLoad::DoExecute(int i)
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-txnInsertMomentLoad::txnInsertMomentLoad(const CMomentLoadData& loadData)
+txnInsertMomentLoad::txnInsertMomentLoad(const CMomentLoadData& loadData,CTimelineManager* pTimelineMgr)
 {
+   m_pTimelineMgr = NULL;
+   if ( pTimelineMgr )
+   {
+      m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
+   }
    m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
+}
+
+txnInsertMomentLoad::~txnInsertMomentLoad()
+{
+   if ( m_pTimelineMgr )
+   {
+      delete m_pTimelineMgr;
+   }
 }
 
 std::_tstring txnInsertMomentLoad::Name() const
@@ -386,7 +536,7 @@ std::_tstring txnInsertMomentLoad::Name() const
 
 txnTransaction* txnInsertMomentLoad::CreateClone() const
 {
-   return new txnInsertMomentLoad(m_LoadData);
+   return new txnInsertMomentLoad(m_LoadData,m_pTimelineMgr);
 }
 
 bool txnInsertMomentLoad::IsUndoable()
@@ -406,6 +556,17 @@ bool txnInsertMomentLoad::Execute()
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation
+      // update the timeline in the main bridge model before
+      // updating the loading
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
+      pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
+   }
+
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddMomentLoad(m_LoadData);
 
@@ -424,6 +585,17 @@ void txnInsertMomentLoad::Undo()
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeleteMomentLoad(m_LoadIdx);
+
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation...
+      // the timeline was updated when we exectued the transaction
+      // so now it needs to be put back the way it was because
+      // we are undoing the transaction
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
+   }
 
    pEvents->FirePendingEvents();
 }
@@ -487,11 +659,25 @@ void txnDeleteMomentLoad::Undo()
 
 ///////////////////////////////////////////////
 
-txnEditMomentLoad::txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData)
+txnEditMomentLoad::txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData,CTimelineManager* pTimelineMgr)
 {
+   m_pTimelineMgr = NULL;
+   if ( pTimelineMgr )
+   {
+      m_pTimelineMgr = new CTimelineManager(*pTimelineMgr);
+   }
+
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;
    m_LoadData[1] = newLoadData;
+}
+
+txnEditMomentLoad::~txnEditMomentLoad()
+{
+   if ( m_pTimelineMgr )
+   {
+      delete m_pTimelineMgr;
+   }
 }
 
 std::_tstring txnEditMomentLoad::Name() const
@@ -501,7 +687,7 @@ std::_tstring txnEditMomentLoad::Name() const
 
 txnTransaction* txnEditMomentLoad::CreateClone() const
 {
-   return new txnEditMomentLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1]);
+   return new txnEditMomentLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1],m_pTimelineMgr);
 }
 
 bool txnEditMomentLoad::Execute()
@@ -531,6 +717,24 @@ void txnEditMomentLoad::DoExecute(int i)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
+
+   if ( m_pTimelineMgr )
+   {
+      // if we have a timeline manager object, it means that the
+      // timeline was changed as part of this load creation
+      // update the timeline in the main bridge model before
+      // updating the loading
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      if ( i == 1 )
+      {
+         m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
+         pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
+      }
+      else
+      {
+         pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
+      }
+   }
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdateMomentLoad(m_LoadIdx,m_LoadData[i]);

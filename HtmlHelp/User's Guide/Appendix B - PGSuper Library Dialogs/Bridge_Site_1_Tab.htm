@@ -19,17 +19,18 @@
 <meta name=topic-time-estimate content=0>
 <meta name=topic-comment content>
 <meta name=topic-id content>
+<meta name=topic-check-list content="Ran Smart Index">
 <meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
 <meta name=generator-major-version content=0.1>
 <meta name=generator-minor-version content=1>
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=851>
-<meta name=layout-width content=675>
+<meta name=layout-height content=1047>
+<meta name=layout-width content=774>
 
 
- <meta name="topic-check-list" content="Ran Smart Index"><!--(Links)=========================================================-->
+<!--(Links)=========================================================-->
 
 <link REL="StyleSheet" HREF="..\..\default.css">
 
@@ -45,10 +46,23 @@
 <h1>Bridge Site 1 Tab</h1>
 
 <p>Use this tab to define criteria pertinent at bridge site stage 1. Stage 
- 1 is just after the slab and diaphragms have been poured. Slab material 
- has weight, but no strength (the girder is noncomposite).</p>
+ 1 occurs when the non-composite girder is erected onto its permanent piers. 
+ Stresses are checked when temporary strands are removed prior to slab 
+ and diaphragm casting. Stresses are also checked after the slab and diaphragms 
+ have been cast. Slab material has weight, but no strength (the girder 
+ is noncomposite).</p>
 
-<h2>Allowable Concrete Stresses</h2>
+<p>Girder stress evaluation at this stage is not required by AASHTO. However 
+ some bridge owners do require stress limitations.</p>
+
+<h2>Evaluate stress limits for temporary loading conditions</h2>
+
+<p>Check this box to enable the evaluation of these stress limits.</p>
+
+<h2>Allowable Concrete Stresses - Temporary Strand Removal Stage</h2>
+
+<p>Allowable concrete stress limits used for evaluating girder stresses 
+ just after temporary strand removal</p>
 
 <h3><span style="font-weight: bold;">Compressive Stress</span></h3>
 
@@ -60,9 +74,41 @@
 <h3><span style="font-weight: bold;">Tensile Stress</span></h3>
 
 <p>Enter the multiplier to determine the maximum allowable concrete tensile 
+ stress for Service I limit state loads at Bridge Site Stage 1. A maximum 
+ value for the allowable stress can be specified. Refer to Section 5.9.4.1.2 
+ in the AASHTO LRFD Specifications for the recommended value.<span style="margin-bottom: 0;">&nbsp; 
+ </span></p>
+
+<h2>Allowable Concrete Stresses - Service I</h2>
+
+<p>Allowable concrete stress limits used for evaluating girder stresses 
+ just after slab and diaphragms have been cast.</p>
+
+<h3><span style="font-weight: bold;">Compressive Stress</span></h3>
+
+<p>Enter the multiplier to determine the maximum allowable concrete compressive 
  stress for Service I limit state loads at Bridge Site Stage 1. Refer to 
- Section 5.9.4.1.2 in the AASHTO LRFD Specifications for the recommended 
- value.<span style="margin-bottom: 0;">&nbsp; </span></p>
+ Section 5.9.4.1.1 in the AASHTO LRFD Specifications for the recommended 
+ value.</p>
+
+<h3><span style="font-weight: bold;">Tensile Stress</span></h3>
+
+<p>Enter the multiplier to determine the maximum allowable concrete tensile 
+ stress for Service I limit state loads at Bridge Site Stage 1. A maximum 
+ value for the allowable stress can be specified. Refer to Section 5.9.4.1.2 
+ in the AASHTO LRFD Specifications for the recommended value.<span style="margin-bottom: 0;">&nbsp; 
+ </span></p>
+
+<h2>Constructability</h2>
+
+<h3><span>Check Bottom Flange Clearance</span></h3>
+
+<p>Check the box to enable bottom flange clearance checks. When enabled, 
+ the clear distance between bottom flanges will be computed and compared 
+ to the minimum bottom flange clearance specified in this setting. Owners 
+ may want to use this option to alert engineers to situations where the 
+ clearance between bottom flanges may cause construction or inspection 
+ access issues.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

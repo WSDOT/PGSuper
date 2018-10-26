@@ -75,7 +75,7 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    *pPara << rptRcImage(strImagePath + _T("CEBFIP_Shrinkage.png")) << rptNewLine;
    *pPara << rptNewLine;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9);
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(8);
    *pPara << pTable << rptNewLine;
 
    pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -88,7 +88,6 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FC << Sub(_T("28")),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*pTable)(rowIdx,colIdx++) << _T("RH (%)");
    (*pTable)(rowIdx,colIdx++) << Sub2(symbol(beta),_T("RH"));
-   (*pTable)(rowIdx,colIdx++) << _T("Cement") << rptNewLine << _T("Type");
    (*pTable)(rowIdx,colIdx++) << Sub2(symbol(beta),_T("SC"));
    (*pTable)(rowIdx,colIdx++) << COLHDR(_T("h"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pTable)(rowIdx,colIdx++) << Sub2(symbol(epsilon),_T("s")) << _T("(") << RPT_FC << Sub(_T("28")) << _T(")") << _T("x10") << Super(_T("6"));
@@ -108,8 +107,7 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       (*pTable)(rowIdx,colIdx++) << stress.SetValue(pCEBFIPConcrete->GetFc28());
       (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
       (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaRH();
-      (*pTable)(rowIdx,colIdx++) << matCEBFIPConcrete::GetCementType(pCEBFIPConcrete->GetCementType());
-      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaSC();
+      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaSc();
       (*pTable)(rowIdx,colIdx++) << hDim.SetValue(pCEBFIPConcrete->GetH());
       (*pTable)(rowIdx,colIdx++) << 1E6*pCEBFIPConcrete->GetEpsilonS();
       (*pTable)(rowIdx,colIdx++) << 1E6*pCEBFIPConcrete->GetNotionalShrinkageCoefficient();
@@ -128,8 +126,7 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          (*pTable)(rowIdx,colIdx++) << stress.SetValue(pCEBFIPConcrete->GetFc28());
          (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
          (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaRH();
-         (*pTable)(rowIdx,colIdx++) << matCEBFIPConcrete::GetCementType(pCEBFIPConcrete->GetCementType());
-         (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaSC();
+         (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaSc();
          (*pTable)(rowIdx,colIdx++) << hDim.SetValue(pCEBFIPConcrete->GetH());
          (*pTable)(rowIdx,colIdx++) << 1E6*pCEBFIPConcrete->GetEpsilonS();
          (*pTable)(rowIdx,colIdx++) << 1E6*pCEBFIPConcrete->GetNotionalShrinkageCoefficient();
@@ -149,8 +146,7 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       (*pTable)(rowIdx,colIdx++) << stress.SetValue(pCEBFIPConcrete->GetFc28());
       (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
       (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaRH();
-      (*pTable)(rowIdx,colIdx++) << matCEBFIPConcrete::GetCementType(pCEBFIPConcrete->GetCementType());
-      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaSC();
+      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaSc();
       (*pTable)(rowIdx,colIdx++) << hDim.SetValue(pCEBFIPConcrete->GetH());
       (*pTable)(rowIdx,colIdx++) << 1E6*pCEBFIPConcrete->GetEpsilonS();
       (*pTable)(rowIdx,colIdx++) << 1E6*pCEBFIPConcrete->GetNotionalShrinkageCoefficient();

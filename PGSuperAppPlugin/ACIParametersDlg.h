@@ -45,8 +45,6 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-   Float64 m_t2; // must be 28 days
-
    afx_msg void UpdateParameters();
 
 	DECLARE_MESSAGE_MAP()

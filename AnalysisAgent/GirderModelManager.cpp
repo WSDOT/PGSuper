@@ -11312,7 +11312,7 @@ void CGirderModelManager::ApplyLLDF_PinPin(const CSpanKey& spanKey,IDblArray* cf
             bUseLinearLLDF = true;
             bTaperStart = true;
          }
-         else if ( bObtuseEnd && !bObtuseStart )
+         else if ( !bObtuseStart && bObtuseEnd )
          {
             gVStart = gV/skewFactor;
             gVMid   = gV;
@@ -11339,15 +11339,51 @@ void CGirderModelManager::ApplyLLDF_PinPin(const CSpanKey& spanKey,IDblArray* cf
             bTaperStart = true;
             bTaperEnd = true;
          }
-#if defined _DEBUG
-         else if ( !bObtuseStart && !bObtuseEnd )
+         else
          {
-            // skew correction is not zero and yet it isn't applied
-            ATLASSERT(false); 
-            gV  /= skewFactor;
-            gFV /= skewFactor;
+            ATLASSERT(!bObtuseStart && !bObtuseEnd);
+            // neither corner is obtuse, but there is a skew correction factor
+            // that means one corner is acute and the other is a right angle
+            // the "spanning" effect of shear still applies. The shortest span
+            // is from the obtuse corner to the right angle corner
+            CComPtr<IAngle> objSkewAngle;
+            pBridge->GetPierSkew((PierIndexType)spanKey.spanIndex,&objSkewAngle);
+            Float64 skewAngle;
+            objSkewAngle->get_Value(&skewAngle);
+
+            if ( IsZero(skewAngle) )
+            {
+               // right angle is at the start of the span
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV/skewFactor;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV/skewFactor;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else
+            {
+               objSkewAngle.Release();
+               pBridge->GetPierSkew((PierIndexType)(spanKey.spanIndex+1),&objSkewAngle);
+               objSkewAngle->get_Value(&skewAngle);
+               ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+               gVStart = gV/skewFactor;
+               gVMid   = gV;
+               gVEnd   = gV;
+
+               gFVStart = gFV/skewFactor;
+               gFVMid   = gFV;
+               gFVEnd   = gFV;
+
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
          }
-#endif
       }
    }
 
@@ -11501,15 +11537,51 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
             bTaperStart = true;
             bTaperEnd = true;
          }
-#if defined _DEBUG
-         else if ( !bObtuseStart && !bObtuseEnd )
+         else
          {
-            // skew correction is not zero and yet it isn't applied
-            ATLASSERT(false); 
-            gV  /= skewFactor;
-            gFV /= skewFactor;
+            ATLASSERT(!bObtuseStart && !bObtuseEnd);
+            // neither corner is obtuse, but there is a skew correction factor
+            // that means one corner is acute and the other is a right angle
+            // the "spanning" effect of shear still applies. The shortest span
+            // is from the obtuse corner to the right angle corner
+            CComPtr<IAngle> objSkewAngle;
+            pBridge->GetPierSkew((PierIndexType)spanKey.spanIndex,&objSkewAngle);
+            Float64 skewAngle;
+            objSkewAngle->get_Value(&skewAngle);
+
+            if ( IsZero(skewAngle) )
+            {
+               // right angle is at the start of the span
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV/skewFactor;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV/skewFactor;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else
+            {
+               objSkewAngle.Release();
+               pBridge->GetPierSkew((PierIndexType)(spanKey.spanIndex+1),&objSkewAngle);
+               objSkewAngle->get_Value(&skewAngle);
+               ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+               gVStart = gV/skewFactor;
+               gVMid   = gV;
+               gVEnd   = gV;
+
+               gFVStart = gFV/skewFactor;
+               gFVMid   = gFV;
+               gFVEnd   = gFV;
+
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
          }
-#endif
       }
    }
 
@@ -11713,15 +11785,51 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
             bTaperStart = true;
             bTaperEnd = true;
          }
-#if defined _DEBUG
-         else if ( !bObtuseStart && !bObtuseEnd )
+         else
          {
-            // skew correction is not zero and yet it isn't applied
-            ATLASSERT(false); 
-            gV  /= skewFactor;
-            gFV /= skewFactor;
+            ATLASSERT(!bObtuseStart && !bObtuseEnd);
+            // neither corner is obtuse, but there is a skew correction factor
+            // that means one corner is acute and the other is a right angle
+            // the "spanning" effect of shear still applies. The shortest span
+            // is from the obtuse corner to the right angle corner
+            CComPtr<IAngle> objSkewAngle;
+            pBridge->GetPierSkew((PierIndexType)spanKey.spanIndex,&objSkewAngle);
+            Float64 skewAngle;
+            objSkewAngle->get_Value(&skewAngle);
+
+            if ( IsZero(skewAngle) )
+            {
+               // right angle is at the start of the span
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV/skewFactor;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV/skewFactor;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else
+            {
+               objSkewAngle.Release();
+               pBridge->GetPierSkew((PierIndexType)(spanKey.spanIndex+1),&objSkewAngle);
+               objSkewAngle->get_Value(&skewAngle);
+               ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+               gVStart = gV/skewFactor;
+               gVMid   = gV;
+               gVEnd   = gV;
+
+               gFVStart = gFV/skewFactor;
+               gFVMid   = gFV;
+               gFVEnd   = gFV;
+
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
          }
-#endif
       }
    }
 
@@ -11882,15 +11990,51 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
                bTaperStart = true;
                bTaperEnd = true;
             }
-#if defined _DEBUG
-            else if ( !bObtuseStart && !bObtuseEnd )
+            else
             {
-               // skew correction is not zero and yet it isn't applied
-               ATLASSERT(false); 
-               gV  /= skewFactor;
-               gFV /= skewFactor;
+               ATLASSERT(!bObtuseStart && !bObtuseEnd);
+               // neither corner is obtuse, but there is a skew correction factor
+               // that means one corner is acute and the other is a right angle
+               // the "spanning" effect of shear still applies. The shortest span
+               // is from the obtuse corner to the right angle corner
+               CComPtr<IAngle> objSkewAngle;
+               pBridge->GetPierSkew((PierIndexType)spanKey.spanIndex,&objSkewAngle);
+               Float64 skewAngle;
+               objSkewAngle->get_Value(&skewAngle);
+
+               if ( IsZero(skewAngle) )
+               {
+                  // right angle is at the start of the span
+                  gVStart = gV;
+                  gVMid   = gV/skewFactor;
+                  gVEnd   = gV/skewFactor;
+
+                  gFVStart = gFV;
+                  gFVMid   = gFV/skewFactor;
+                  gFVEnd   = gFV/skewFactor;
+
+                  bUseLinearLLDF = true;
+                  bTaperStart = true;
+               }
+               else
+               {
+                  objSkewAngle.Release();
+                  pBridge->GetPierSkew((PierIndexType)(spanKey.spanIndex+1),&objSkewAngle);
+                  objSkewAngle->get_Value(&skewAngle);
+                  ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+                  gVStart = gV/skewFactor;
+                  gVMid   = gV;
+                  gVEnd   = gV;
+
+                  gFVStart = gFV/skewFactor;
+                  gFVMid   = gFV;
+                  gFVEnd   = gFV;
+
+                  bUseLinearLLDF = true;
+                  bTaperEnd = true;
+               }
             }
-#endif
          }
       }
 
@@ -12014,15 +12158,51 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
                bTaperStart = true;
                bTaperEnd = true;
             }
-#if defined _DEBUG
-            else if ( !bObtuseStart && !bObtuseEnd )
+            else
             {
-               // skew correction is not zero and yet it isn't applied
-               ATLASSERT(false); 
-               gV  /= skewFactor;
-               gFV /= skewFactor;
+               ATLASSERT(!bObtuseStart && !bObtuseEnd);
+               // neither corner is obtuse, but there is a skew correction factor
+               // that means one corner is acute and the other is a right angle
+               // the "spanning" effect of shear still applies. The shortest span
+               // is from the obtuse corner to the right angle corner
+               CComPtr<IAngle> objSkewAngle;
+               pBridge->GetPierSkew((PierIndexType)spanKey.spanIndex,&objSkewAngle);
+               Float64 skewAngle;
+               objSkewAngle->get_Value(&skewAngle);
+
+               if ( IsZero(skewAngle) )
+               {
+                  // right angle is at the start of the span
+                  gVStart = gV;
+                  gVMid   = gV/skewFactor;
+                  gVEnd   = gV/skewFactor;
+
+                  gFVStart = gFV;
+                  gFVMid   = gFV/skewFactor;
+                  gFVEnd   = gFV/skewFactor;
+
+                  bUseLinearLLDF = true;
+                  bTaperStart = true;
+               }
+               else
+               {
+                  objSkewAngle.Release();
+                  pBridge->GetPierSkew((PierIndexType)(spanKey.spanIndex+1),&objSkewAngle);
+                  objSkewAngle->get_Value(&skewAngle);
+                  ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+                  gVStart = gV/skewFactor;
+                  gVMid   = gV;
+                  gVEnd   = gV;
+
+                  gFVStart = gFV/skewFactor;
+                  gFVMid   = gFV;
+                  gFVEnd   = gFV;
+
+                  bUseLinearLLDF = true;
+                  bTaperEnd = true;
+               }
             }
-#endif
          }
       }
 
@@ -12190,15 +12370,51 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
                bTaperStart = true;
                bTaperEnd = true;
             }
-#if defined _DEBUG
-            else if ( !bObtuseStart && !bObtuseEnd )
+            else
             {
-               // skew correction is not zero and yet it isn't applied
-               ATLASSERT(false); 
-               gV  /= skewFactor;
-               gFV /= skewFactor;
+               ATLASSERT(!bObtuseStart && !bObtuseEnd);
+               // neither corner is obtuse, but there is a skew correction factor
+               // that means one corner is acute and the other is a right angle
+               // the "spanning" effect of shear still applies. The shortest span
+               // is from the obtuse corner to the right angle corner
+               CComPtr<IAngle> objSkewAngle;
+               pBridge->GetPierSkew((PierIndexType)spanKey.spanIndex,&objSkewAngle);
+               Float64 skewAngle;
+               objSkewAngle->get_Value(&skewAngle);
+
+               if ( IsZero(skewAngle) )
+               {
+                  // right angle is at the start of the span
+                  gVStart = gV;
+                  gVMid   = gV/skewFactor;
+                  gVEnd   = gV/skewFactor;
+
+                  gFVStart = gFV;
+                  gFVMid   = gFV/skewFactor;
+                  gFVEnd   = gFV/skewFactor;
+
+                  bUseLinearLLDF = true;
+                  bTaperStart = true;
+               }
+               else
+               {
+                  objSkewAngle.Release();
+                  pBridge->GetPierSkew((PierIndexType)(spanKey.spanIndex+1),&objSkewAngle);
+                  objSkewAngle->get_Value(&skewAngle);
+                  ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+                  gVStart = gV/skewFactor;
+                  gVMid   = gV;
+                  gVEnd   = gV;
+
+                  gFVStart = gFV/skewFactor;
+                  gFVMid   = gFV;
+                  gFVEnd   = gFV;
+
+                  bUseLinearLLDF = true;
+                  bTaperEnd = true;
+               }
             }
-#endif
          }
       }
 
@@ -13916,7 +14132,7 @@ MemberIDType CGirderModelManager::GetSuperstructureMemberID(const CSegmentKey& s
    // count number of SSMBRs in all groups and segments before the segment we are interested in
    for ( GroupIndexType g = 0; g < grpIdx; g++ )
    {
-      CGirderKey thisGirderKey(g,grpIdx);
+      CGirderKey thisGirderKey(g,gdrIdx);
       SegmentIndexType nSegmentsThisGroup = pBridge->GetSegmentCount( thisGirderKey );
       for ( SegmentIndexType s = 0; s < nSegmentsThisGroup; s++ )
       {
@@ -14777,6 +14993,8 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval(segmentKey);
 
+   pgsTypes::LimitState limitState = (intervalIdx < liveLoadIntervalIdx ? pgsTypes::ServiceI : pgsTypes::ServiceIII);
+
    // This method can be optimized by caching the results.
    GET_IFACE(IPretensionForce,pPsForce);
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -14794,18 +15012,18 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
       // If gross properties analysis, we want the prestress force at the end of the interval. It will include
       // elastic effects. If transformed properties analysis, we want the force at the start of the interval.
       pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
-      P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType);
+      P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType,limitState);
       if ( bIncTempStrands )
       {
-        P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,timeType);
+        P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,timeType,limitState);
       }
    }
    else
    {
-      P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent);
+      P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,limitState);
       if ( bIncTempStrands )
       {
-         P += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary);
+         P += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary,limitState);
       }
    }
 

@@ -410,12 +410,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    	/* 23. LOSSES (INITIAL)  */
       Float64 aps = pStrandGeometry->GetAreaPrestressStrands(segmentKey,releaseIntervalIdx,false);
-      value = pLosses->GetPrestressLoss(pmid[0],pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start) * aps;
+      value = pLosses->GetPrestressLoss(pmid[0],pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI) * aps;
 
       Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 
    	/* 24. LOSSES (FINAL)  */
-      value = pLosses->GetPrestressLoss(pmid[0],pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle) * aps;
+      value = pLosses->GetPrestressLoss(pmid[0],pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) * aps;
 
       Float64 finalLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 

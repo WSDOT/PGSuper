@@ -41,7 +41,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-   void UpdateConcreteControls();
+   void UpdateConcreteControls(bool bSkipEcCheckBoxes = false);
    void UpdateConcreteParametersToolTip();
    CString m_strTip;
 

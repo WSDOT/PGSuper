@@ -132,7 +132,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       }
       else
       {
-         (*pTable)(row,col++) << scalar.SetValue(Aduct/Apt);
+         (*pTable)(row,col++) << scalar.SetValue(Apt/Aduct);
       }
 
       if ( pDuctSizeArtifact->PassedDuctArea() )

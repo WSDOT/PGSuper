@@ -1037,6 +1037,19 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          segIter++;
          ATLASSERT(*segIter == pRightSegment);
 
+         // Copy the right segment's right end end block to the right end of the left segment.
+         // Any end blocks at the right end of the left segment and the left end of the right segment
+         // are lost (though, there should not be any)
+         ATLASSERT(IsZero(pLeftSegment->EndBlockLength[pgsTypes::metEnd]));
+         ATLASSERT(IsZero(pLeftSegment->EndBlockTransitionLength[pgsTypes::metEnd]));
+         ATLASSERT(IsZero(pLeftSegment->EndBlockWidth[pgsTypes::metEnd]));
+         ATLASSERT(IsZero(pRightSegment->EndBlockLength[pgsTypes::metStart]));
+         ATLASSERT(IsZero(pRightSegment->EndBlockTransitionLength[pgsTypes::metStart]));
+         ATLASSERT(IsZero(pRightSegment->EndBlockWidth[pgsTypes::metStart]));
+         pLeftSegment->EndBlockLength[pgsTypes::metEnd]           = pRightSegment->EndBlockLength[pgsTypes::metEnd];
+         pLeftSegment->EndBlockTransitionLength[pgsTypes::metEnd] = pRightSegment->EndBlockTransitionLength[pgsTypes::metEnd];
+         pLeftSegment->EndBlockWidth[pgsTypes::metEnd]            = pRightSegment->EndBlockWidth[pgsTypes::metEnd];
+
          RemoveSegmentFromTimelineManager(pRightSegment);
 
          delete pRightSegment;
@@ -1198,6 +1211,19 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
 
          segIter++;
          ATLASSERT(*segIter == pRightSegment);
+
+         // Copy the right segment's right end end block to the right end of the left segment.
+         // Any end blocks at the right end of the left segment and the left end of the right segment
+         // are lost (though, there should not be any)
+         ATLASSERT(IsZero(pLeftSegment->EndBlockLength[pgsTypes::metEnd]));
+         ATLASSERT(IsZero(pLeftSegment->EndBlockTransitionLength[pgsTypes::metEnd]));
+         ATLASSERT(IsZero(pLeftSegment->EndBlockWidth[pgsTypes::metEnd]));
+         ATLASSERT(IsZero(pRightSegment->EndBlockLength[pgsTypes::metStart]));
+         ATLASSERT(IsZero(pRightSegment->EndBlockTransitionLength[pgsTypes::metStart]));
+         ATLASSERT(IsZero(pRightSegment->EndBlockWidth[pgsTypes::metStart]));
+         pLeftSegment->EndBlockLength[pgsTypes::metEnd]           = pRightSegment->EndBlockLength[pgsTypes::metEnd];
+         pLeftSegment->EndBlockTransitionLength[pgsTypes::metEnd] = pRightSegment->EndBlockTransitionLength[pgsTypes::metEnd];
+         pLeftSegment->EndBlockWidth[pgsTypes::metEnd]            = pRightSegment->EndBlockWidth[pgsTypes::metEnd];
 
          RemoveSegmentFromTimelineManager(pRightSegment);
 
@@ -1500,6 +1526,24 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
       // General
       ATLASSERT(false); // general variation isn't supported yet
    }
+
+#pragma Reminder("UPDATE: need to split end block data")
+   // Case 1: Split is in middle of segment (not in an end block)
+   //   Copy right end block of left segment to right end of right segment
+   // 
+   // Case 2: Split is in left end block
+   //   ???
+   //   Portion of end block stays in left segment and portion is at left end of right segment
+   //   Right end end block is copied to right end of right segment
+   //
+   // Case 3: Split is in left end block transition
+   //   ??? Same as case 2 except for the shape of the end block
+   // 
+   // Case 4: Split is in right end block transition
+   //   ??? Similar to case 3
+   //
+   // Case 5: Split is in the right end block
+   //   ??? Similar to case 4
 
    ASSERT_VALID;
 }

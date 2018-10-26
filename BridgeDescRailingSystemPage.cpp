@@ -432,30 +432,33 @@ void CBridgeDescRailingSystemPage::OnRightInteriorBarrier()
 
 void CBridgeDescRailingSystemPage::OnLeftMoreProperties()
 {
-   OnMoreProperties(&m_LeftRailingSystem);
+   OnMoreProperties(&m_LeftRailingSystem,&m_strLeftUserEc);
+   OnLeftUserEc();
 }
 
 void CBridgeDescRailingSystemPage::OnRightMoreProperties()
 {
-   OnMoreProperties(&m_RightRailingSystem);
+   OnMoreProperties(&m_RightRailingSystem,&m_strRightUserEc);
+   OnRightUserEc();
 }
 
-void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSystem)
+void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSystem,CString* pStrUserEc)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CConcreteDetailsDlg dlg;
+   CConcreteDetailsDlg dlg(true/*f'c*/);
 
    UpdateData(TRUE);
 
+   dlg.m_fc28 = pRailingSystem->Concrete.Fc;
+   dlg.m_Ec28 = pRailingSystem->Concrete.Ec;
+   dlg.m_bUserEc28 = pRailingSystem->Concrete.bUserEc;
+
    dlg.m_General.m_Type    = pRailingSystem->Concrete.Type;
-   dlg.m_General.m_Fc      = pRailingSystem->Concrete.Fc;
    dlg.m_General.m_AggSize = pRailingSystem->Concrete.MaxAggregateSize;
-   dlg.m_General.m_bUserEc = pRailingSystem->Concrete.bUserEc;
    dlg.m_General.m_Ds      = pRailingSystem->Concrete.StrengthDensity;
    dlg.m_General.m_Dw      = pRailingSystem->Concrete.WeightDensity;
-   dlg.m_General.m_Ec      = pRailingSystem->Concrete.Ec;
-   dlg.m_General.m_strUserEc  = m_strRightUserEc;
+   dlg.m_General.m_strUserEc  = *pStrUserEc;
 
    dlg.m_AASHTO.m_EccK1       = pRailingSystem->Concrete.EcK1;
    dlg.m_AASHTO.m_EccK2       = pRailingSystem->Concrete.EcK2;
@@ -472,16 +475,20 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
    dlg.m_ACI.m_CureMethod      = pRailingSystem->Concrete.CureMethod;
    dlg.m_ACI.m_CementType      = pRailingSystem->Concrete.ACI209CementType;
 
-   dlg.m_CEBFIP.m_CementType   = pRailingSystem->Concrete.CEBFIPCementType;
+   dlg.m_CEBFIP.m_bUserParameters = pRailingSystem->Concrete.bCEBFIPUserParameters;
+   dlg.m_CEBFIP.m_S               = pRailingSystem->Concrete.S;
+   dlg.m_CEBFIP.m_BetaSc          = pRailingSystem->Concrete.BetaSc;
+   dlg.m_CEBFIP.m_CementType      = pRailingSystem->Concrete.CEBFIPCementType;
 
    if ( dlg.DoModal() == IDOK )
    {
+      pRailingSystem->Concrete.Fc                 = dlg.m_fc28;
+      pRailingSystem->Concrete.Ec                 = dlg.m_Ec28;
+      pRailingSystem->Concrete.bUserEc            = dlg.m_bUserEc28;
+
       pRailingSystem->Concrete.Type               = dlg.m_General.m_Type;
-      pRailingSystem->Concrete.Fc                 = dlg.m_General.m_Fc;
-      pRailingSystem->Concrete.bUserEc            = dlg.m_General.m_bUserEc;
       pRailingSystem->Concrete.StrengthDensity    = dlg.m_General.m_Ds;
       pRailingSystem->Concrete.WeightDensity      = dlg.m_General.m_Dw;
-      pRailingSystem->Concrete.Ec                 = dlg.m_General.m_Ec;
       pRailingSystem->Concrete.MaxAggregateSize   = dlg.m_General.m_AggSize;
 
       pRailingSystem->Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
@@ -499,9 +506,12 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
       pRailingSystem->Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
       pRailingSystem->Concrete.ACI209CementType   = dlg.m_ACI.m_CementType;
 
-      pRailingSystem->Concrete.CEBFIPCementType = dlg.m_CEBFIP.m_CementType;
+      pRailingSystem->Concrete.bCEBFIPUserParameters = dlg.m_CEBFIP.m_bUserParameters;
+      pRailingSystem->Concrete.S                     = dlg.m_CEBFIP.m_S;
+      pRailingSystem->Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
+      pRailingSystem->Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
-      m_strRightUserEc                 = dlg.m_General.m_strUserEc;
+      *pStrUserEc                 = dlg.m_General.m_strUserEc;
 
       UpdateData(FALSE);
    }

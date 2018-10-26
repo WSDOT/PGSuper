@@ -1732,7 +1732,7 @@ CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_CONCRETE_TYPE,108,6,77,99,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Strength - f'c",IDC_STATIC,22,28,41,8
+    LTEXT           "Strength - f'c",IDC_FC_LABEL,22,28,41,8
     EDITTEXT        IDC_FC,130,22,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_FC_UNIT,190,28,28,8
     LTEXT           "Unit Weight (used to compute Ec)",IDC_DS_TITLE,22,38,68,20
@@ -3180,12 +3180,13 @@ BEGIN
     COMBOBOX        IDC_CURE_METHOD,7,55,66,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Cement Type",IDC_CEMENT_TYPE_LABEL,93,40,44,8
     COMBOBOX        IDC_CEMENT_TYPE,88,55,65,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "A",IDC_ALPHA_LABEL,7,80,8,8
-    EDITTEXT        IDC_ALPHA,20,78,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "B",IDC_BETA_LABEL,91,81,8,8
-    EDITTEXT        IDC_BETA,102,78,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ALPHA_UNIT,63,80,19,8
+    LTEXT           "a",IDC_ALPHA_LABEL,7,76,8,8
+    EDITTEXT        IDC_ALPHA,20,74,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Beta",IDC_BETA_LABEL,91,77,16,8
+    EDITTEXT        IDC_BETA,110,74,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ALPHA_UNIT,63,76,19,8
     PUSHBUTTON      "Compute Time Parameters...",IDC_COMPUTE,7,100,174,14
+    LTEXT           "For use in Eq'n 2-1",IDC_STATIC,7,89,60,8
 END
 
 IDD_CAST_DECK DIALOGEX 0, 0, 247, 60
@@ -3291,13 +3292,40 @@ BEGIN
     CONTROL         "Ignore Relaxation Effects",IDC_IGNORE_RELAXATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,75,98,10
 END
 
-IDD_CEBFIP_CONCRETE DIALOGEX 0, 0, 229, 92
+IDD_CEBFIP_CONCRETE DIALOGEX 0, 0, 229, 111
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "CEB-FIP"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Cement Type",IDC_STATIC,7,7,44,8
-    COMBOBOX        IDC_CEMENT_TYPE,61,7,161,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use time parameters from CEB-FIP Model Code",IDC_USER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,166,10
+    LTEXT           "Cement Type",IDC_STATIC,7,26,44,8
+    COMBOBOX        IDC_CEMENT_TYPE,61,24,161,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "S",IDC_S_LABEL,7,49,8,8
+    EDITTEXT        IDC_S,27,46,40,14,ES_AUTOHSCROLL
+    LTEXT           "For use in Eq'n 2.1-54",IDC_STATIC,7,62,71,8
+    LTEXT           "Beta SC",IDC_BETA_SC_LABEL,112,49,26,8
+    EDITTEXT        IDC_BETA_SC,155,46,40,14,ES_AUTOHSCROLL
+    LTEXT           "For use in Eq'n 2.1-76",IDC_STATIC,112,62,71,8
+    PUSHBUTTON      "Compute Time Parameters...",IDC_COMPUTE,28,90,174,14
+END
+
+IDD_CEBFIP_PARAMETERS DIALOGEX 0, 0, 316, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Compute CEB-FIP Model Code Time Parameters"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,162,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,162,50,14
+    LTEXT           "Concrete Strength at Time of Initial Loading",IDC_T1,7,7,255,8
+    LTEXT           "f'ci",IDC_STATIC,7,29,10,8
+    EDITTEXT        IDC_FCI,21,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FCI_UNIT,66,28,19,8
+    LTEXT           "Concrete Strength at t = 28 days",IDC_STATIC,7,49,108,8
+    LTEXT           "f'c",IDC_STATIC,7,65,8,8
+    EDITTEXT        IDC_FC,22,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FC_UNIT,66,66,19,8
+    LTEXT           "Static",IDC_RESULT,7,106,220,8
 END
 
 
@@ -3307,8 +3335,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,21
- PRODUCTVERSION 3,0,0,21
+ FILEVERSION 3,0,0,22
+ PRODUCTVERSION 3,0,0,22
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3325,12 +3353,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.21"
+            VALUE "FileVersion", "3.0.0.22"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.21"
+            VALUE "ProductVersion", "3.0.0.22"
         END
     END
     BLOCK "VarFileInfo"
@@ -4145,7 +4173,15 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 222
         TOPMARGIN, 7
-        BOTTOMMARGIN, 85
+        BOTTOMMARGIN, 104
+    END
+
+    IDD_CEBFIP_PARAMETERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -4316,6 +4352,7 @@ BEGIN
 0x7453, 0x6172, 0x6769, 0x7468, "\000" 
     0
 END
+
 IDD_CLOSURE_STIRRUPS DLGINIT
 BEGIN
     IDC_MILD_STEEL_SELECTOR, 0x403, 29, 0

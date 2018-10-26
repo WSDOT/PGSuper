@@ -365,6 +365,39 @@ public:
    void GetTempStrandRemovalMaximumTensionStress(bool* bIsApplicable, Float64* maxStress) const;
    void SetTempStrandRemovalMaximumTensionStress(bool bIsApplicable, Float64 maxStress);
 
+   //------------------------------------------------------------------------
+   // Set/Get flag that indicates if stresses during temporary loading conditions
+   // are to be checked (basically, Bridge Site 1 stresses)
+   void CheckTemporaryStresses(bool bCheck);
+   bool CheckTemporaryStresses() const;
+
+   //------------------------------------------------------------------------
+   void CheckBs2Tension(bool bCheck);
+   bool CheckBs2Tension() const;
+
+   //------------------------------------------------------------------------
+   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
+   // at the bridge site stage 2
+   Float64 GetBs2MaxConcreteTens() const;
+
+   //------------------------------------------------------------------------
+   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
+   // concrete at the bridge site stage 2
+   void SetBs2MaxConcreteTens(Float64 stress);
+
+   //------------------------------------------------------------------------
+   // Get the absolute maximum allowable tensile stress in concrete
+   // at the bridge site stage 2
+   // If the bool is false, this check is not made and the stress value is 
+   // undefined.
+   void GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const;
+
+   //------------------------------------------------------------------------
+   // Set the absolute maximum allowable tensile stress in 
+   // concrete at the bridge site stage 2
+   // If the bool is false, this check is not made and the stress value is undefined.
+   void SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress);
+
    // Set/Get the maximum allowable concrete compressive stress at the serivce limit state,
    // without live load, as a factor times f'c
    Float64 GetFinalWithoutLiveLoadCompressionStressFactor() const;
@@ -1048,6 +1081,11 @@ public:
    // set version of these methods are obsolete and should be removed
    void IgnoreRangeOfApplicabilityRequirements(bool bIgnore);
 
+   void CheckBottomFlangeClearance(bool bCheck);
+   bool CheckBottomFlangeClearance() const;
+   void SetMinBottomFlangeClearance(Float64 Cmin);
+   Float64 GetMinBottomFlangeClearance() const;
+
 
 protected:
    void MakeCopy(const SpecLibraryEntry& rOther);
@@ -1162,6 +1200,7 @@ private:
    Float64 m_TempStrandRemovalTensStressMax;
 
    // bridge site 1
+   bool m_bCheckTemporaryStresses; // indicates if limit state stresses are checked for temporary loading conditions
    Float64 m_Bs1CompStress;
    Float64 m_Bs1TensStress;
    bool    m_Bs1DoTensStressMax;
@@ -1169,6 +1208,10 @@ private:
 
    // bridge site 2
    Float64 m_Bs2CompStress;
+   bool    m_bCheckBs2Tension;
+   Float64 m_Bs2TensStress;
+   bool    m_Bs2DoTensStressMax;
+   Float64 m_Bs2TensStressMax;
    pgsTypes::TrafficBarrierDistribution m_TrafficBarrierDistributionType;
    GirderIndexType  m_Bs2MaxGirdersTrafficBarrier;
    GirderIndexType  m_Bs2MaxGirdersUtility;
@@ -1313,6 +1356,9 @@ private:
    bool m_bIncludeForNegMoment;
 
    bool m_bAllowStraightStrandExtensions;
+
+   bool m_bCheckBottomFlangeClearance;
+   Float64 m_Cmin;
 };
 
 #endif // INCLUDED_PSGLIB_SPECLIBRARYENTRY_H_

@@ -51,8 +51,19 @@ m_Description(_T(""))
 
 }
 
+CDistributedLoadData::CDistributedLoadData(const CDistributedLoadData& other)
+{
+   MakeCopy(other);
+}
+
 CDistributedLoadData::~CDistributedLoadData()
 {
+}
+
+CDistributedLoadData& CDistributedLoadData::operator=(const CDistributedLoadData& other)
+{
+   MakeAssignment(other);
+   return *this;
 }
 
 bool CDistributedLoadData::operator == (const CDistributedLoadData& rOther) const
@@ -323,3 +334,22 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
    return hr;
 }
 
+void CDistributedLoadData::MakeCopy(const CDistributedLoadData& rOther)
+{
+   m_ID            = rOther.m_ID;
+   m_EventIndex    = rOther.m_EventIndex;
+   m_LoadCase      = rOther.m_LoadCase;
+   m_Type          = rOther.m_Type;
+   m_SpanKey       = rOther.m_SpanKey;
+   m_StartLocation = rOther.m_StartLocation;
+   m_EndLocation   = rOther.m_EndLocation;
+   m_WStart        = rOther.m_WStart;
+   m_WEnd          = rOther.m_WEnd;
+   m_Fractional    = rOther.m_Fractional;
+   m_Description   = rOther.m_Description;
+}
+
+void CDistributedLoadData::MakeAssignment(const CDistributedLoadData& rOther)
+{
+   MakeCopy(rOther);
+}

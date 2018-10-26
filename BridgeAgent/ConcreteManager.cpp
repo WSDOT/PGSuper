@@ -1587,9 +1587,34 @@ matACI209Concrete* CConcreteManager::CreateACI209Model(const CConcreteMaterial& 
 matCEBFIPConcrete* CConcreteManager::CreateCEBFIPModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading)
 {
    matCEBFIPConcrete* pConcrete = new matCEBFIPConcrete;
-   pConcrete->SetFc28(concrete.Fc);
-   pConcrete->UserEc28(concrete.bUserEc);
-   pConcrete->SetEc28(concrete.Ec);
-   pConcrete->SetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
+
+   Float64 S,BetaSc;
+   if ( concrete.bCEBFIPUserParameters )
+   {
+      S = concrete.S;
+      BetaSc = concrete.BetaSc;
+   }
+   else
+   {
+      matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType,
+                                            &S,&BetaSc);
+   }
+
+   pConcrete->SetS(S);
+   pConcrete->SetBetaSc(BetaSc);
+
+   if ( concrete.bBasePropertiesOnInitialValues )
+   {
+      pConcrete->SetFc28(concrete.Fci,ageAtInitialLoading);
+      pConcrete->UserEc28(concrete.bUserEci);
+      pConcrete->SetEc28(concrete.Eci,ageAtInitialLoading);
+   }
+   else
+   {
+      pConcrete->SetFc28(concrete.Fc);
+      pConcrete->UserEc28(concrete.bUserEc);
+      pConcrete->SetEc28(concrete.Ec);
+   }
+
    return pConcrete;
 }

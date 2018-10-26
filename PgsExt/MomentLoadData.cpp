@@ -47,9 +47,20 @@ m_Description(_T(""))
 
 }
 
+CMomentLoadData::CMomentLoadData(const CMomentLoadData& other)
+{
+   MakeCopy(other);
+}
+
 CMomentLoadData::~CMomentLoadData()
 {
 
+}
+
+CMomentLoadData& CMomentLoadData::operator=(const CMomentLoadData& other)
+{
+   MakeAssignment(other);
+   return *this;
 }
 
 bool CMomentLoadData::operator == (const CMomentLoadData& rOther) const
@@ -333,4 +344,21 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
 
    hr = pLoad->EndUnit();
    return hr;
+}
+
+void CMomentLoadData::MakeCopy(const CMomentLoadData& rOther)
+{
+   m_ID          = rOther.m_ID;
+   m_EventIndex  = rOther.m_EventIndex;
+   m_LoadCase    = rOther.m_LoadCase;
+   m_SpanKey     = rOther.m_SpanKey;
+   m_Location    = rOther.m_Location;
+   m_Fractional  = rOther.m_Fractional;
+   m_Magnitude   = rOther.m_Magnitude;
+   m_Description = rOther.m_Description;
+}
+
+void CMomentLoadData::MakeAssignment(const CMomentLoadData& rOther)
+{
+   MakeCopy(rOther);
 }

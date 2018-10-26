@@ -46,6 +46,8 @@ protected:
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
+public:
+   afx_msg void OnBnClickedCheckBottomFlangeClearance();
 };
 
 //{{AFX_INSERT_LOCATION}}

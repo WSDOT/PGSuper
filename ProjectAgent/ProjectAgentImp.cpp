@@ -4446,6 +4446,68 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries()
    }
 }
 
+void CProjectAgentImp::UpdateStrandMaterial()
+{
+   // Get the lookup key for the strand material based on the current units
+   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+
+   std::map<CSegmentKey,Int32> keys[3]; // map value is strand pool key, array index is strand type
+
+   GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            for ( int i = 0; i < 3; i++ )
+            {
+               pgsTypes::StrandType type = (pgsTypes::StrandType)i;
+               const matPsStrand* pStrandMaterial = pSegment->Strands.GetStrandMaterial(type);
+               Int32 strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
+               keys[type].insert(std::make_pair(segmentKey,strand_pool_key));
+            }
+         }
+      }
+   }
+
+   // change the units
+   lrfdVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
+   lrfdVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
+
+   // Get the new strand material based on the new units
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            for ( int i = 0; i < 3; i++ )
+            {
+               Int32 strand_pool_key = keys[i][segmentKey];
+               pSegment->Strands.SetStrandMaterial((pgsTypes::StrandType)i,pPool->GetStrand(strand_pool_key));
+            }
+         }
+      }
+   }
+
+   m_bUpdateJackingForce = true;
+}
+
 void CProjectAgentImp::VerifyRebarGrade()
 {
    GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
@@ -4694,6 +4756,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       return E_FAIL;
    }
 
+#pragma Reminder("REVIEW: do we need to do this here?") // this also happes in SpecificationChanged which is called below
    // If the version number for the top data block is less than 3 then
    // that project file is older than PGSuper version 3.0.0 and there isn't
    // any stage information in the file. Create the default PGSuper stage
@@ -7803,65 +7866,7 @@ bool CProjectAgentImp::ImportProjectLibraries(IStructuredLoad* pStrLoad)
 // Events?
 void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
 {
-   // Get the lookup key for the strand material based on the current units
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-
-   std::map<CSegmentKey,Int32> keys[3]; // map value is strand pool key, array index is strand type
-
-   GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-   {
-      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-      {
-         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         SegmentIndexType nSegments = pGirder->GetSegmentCount();
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-         {
-            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-            for ( int i = 0; i < 3; i++ )
-            {
-               pgsTypes::StrandType type = (pgsTypes::StrandType)i;
-               const matPsStrand* pStrandMaterial = GetStrandMaterial(segmentKey,type);
-               Int32 strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
-               keys[type].insert(std::make_pair(segmentKey,strand_pool_key));
-            }
-         }
-      }
-   }
-
-   // change the units
-   lrfdVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
-   lrfdVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
-
-   // Get the new strand material based on the new units
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-   {
-      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-      {
-         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         SegmentIndexType nSegments = pGirder->GetSegmentCount();
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-         {
-            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-            for ( int i = 0; i < 3; i++ )
-            {
-               Int32 strand_pool_key = keys[i][segmentKey];
-               pSegment->Strands.SetStrandMaterial((pgsTypes::StrandType)i,pPool->GetStrand(strand_pool_key));
-            }
-         }
-      }
-   }
-
-   m_bUpdateJackingForce = true;
-
+   UpdateStrandMaterial();
    VerifyRebarGrade();
 
    // analysis type must be continuous if the spec is using the time step loss method
@@ -8360,6 +8365,7 @@ HRESULT CProjectAgentImp::LoadMomentLoads(IStructuredLoad* pLoad)
 // IEvents
 void CProjectAgentImp::HoldEvents()
 {
+   ATLASSERT(0 <= m_EventHoldCount);
    m_EventHoldCount++;
 
 
@@ -8371,6 +8377,11 @@ void CProjectAgentImp::HoldEvents()
 
 void CProjectAgentImp::FirePendingEvents()
 {
+   if ( m_EventHoldCount == 0 )
+   {
+      return;
+   }
+
    if ( m_EventHoldCount == 1 )
    {
       m_EventHoldCount--;

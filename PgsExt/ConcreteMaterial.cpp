@@ -23,9 +23,12 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ConcreteMaterial.h>
 #include <Units\SysUnits.h>
+
 #include <StdIo.h>
 
 #include <Material\Concrete.h>
+#include <Material\ACI209Concrete.h>
+#include <Material\CEBFIPConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -46,7 +49,6 @@ static const Float64 gs_WeightDensity = gs_StrengthDensity;
 static const Float64 gs_MaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
 static const Float64 gs_Eci = ::ConvertToSysUnits(4200., unitMeasure::KSI);
 static const Float64 gs_Ec = ::ConvertToSysUnits(4700., unitMeasure::KSI);
-static const Float64 gs_A = ::ConvertToSysUnits(4.0,unitMeasure::Day);
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -78,12 +80,13 @@ CConcreteMaterial::CConcreteMaterial()
    bBasePropertiesOnInitialValues = false;
 
    bACIUserParameters = false;
-   A = gs_A;
-   B = 0.85;
    CureMethod = pgsTypes::Moist;
    ACI209CementType = pgsTypes::TypeI;
+   matACI209Concrete::GetModelParameters((matACI209Concrete::CureMethod)CureMethod,(matACI209Concrete::CementType)ACI209CementType,&A,&B);
 
+   bCEBFIPUserParameters = false;
    CEBFIPCementType = pgsTypes::N;
+   matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
 }  
 
 CConcreteMaterial::CConcreteMaterial(const CConcreteMaterial& rOther)
@@ -241,6 +244,26 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
       }
    }
 
+   if ( bCEBFIPUserParameters )
+   {
+      if ( !IsEqual(S,rOther.S) )
+      {
+         return false;
+      }
+
+      if ( !IsEqual(BetaSc,rOther.BetaSc) )
+      {
+         return false;
+      }
+   }
+   else
+   {
+      if ( CEBFIPCementType != rOther.CEBFIPCementType )
+      {
+         return false;
+      }
+   }
+
    if ( CEBFIPCementType != rOther.CEBFIPCementType )
    {
       return false;
@@ -290,7 +313,10 @@ void CConcreteMaterial::MakeCopy(const CConcreteMaterial& rOther)
    ACI209CementType   = rOther.ACI209CementType;
 
    // CEB-FIP Parameters
-   CEBFIPCementType   = rOther.CEBFIPCementType;
+   bCEBFIPUserParameters = rOther.bCEBFIPUserParameters;
+   S                     = rOther.S;
+   BetaSc                = rOther.BetaSc;
+   CEBFIPCementType      = rOther.CEBFIPCementType;
 }
 
 
@@ -360,7 +386,10 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->EndUnit(); // ACI
 
    // CEB-FIP (added in version 2)
-   pStrSave->BeginUnit(_T("CEBFIP"),1.0);
+   pStrSave->BeginUnit(_T("CEBFIP"),2.0);
+   pStrSave->put_Property(_T("UserProperties"),CComVariant(bCEBFIPUserParameters)); // added in version 2
+   pStrSave->put_Property(_T("S"),CComVariant(S)); // added in version 2
+   pStrSave->put_Property(_T("BetaSc"),CComVariant(BetaSc)); // added in version 2
    pStrSave->put_Property(_T("CementType"),CComVariant(CEBFIPCementType));
    pStrSave->EndUnit(); // CEBFIP
 
@@ -500,9 +529,31 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    if ( 1.0 < version )
    {
       pStrLoad->BeginUnit(_T("CEBFIP"));
+      Float64 cebFipVersion;
+      pStrLoad->get_Version(&cebFipVersion);
+      if ( 1 < cebFipVersion )
+      {
+         var.vt = VT_BOOL;
+         pStrLoad->get_Property(_T("UserProperties"),&var);
+         bCEBFIPUserParameters = (var.boolVal == VARIANT_TRUE ? true : false);
+
+         var.vt = VT_R8;
+         pStrLoad->get_Property(_T("S"),&var);
+         S = var.dblVal;
+
+         pStrLoad->get_Property(_T("BetaSc"),&var);
+         BetaSc = var.dblVal;
+      }
+
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("CementType"),&var);
       CEBFIPCementType = (pgsTypes::CEBFIPCementType)var.iVal;
+
+      if ( cebFipVersion < 2 )
+      {
+         matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
+      }
+
       pStrLoad->EndUnit(); // CEBFIP
    }
 

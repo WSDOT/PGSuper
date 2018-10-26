@@ -62,7 +62,9 @@ void CConstructSegmentsDlg::DoDataExchange(CDataExchange* pDX)
       Float64 relaxationTime;
       Float64 ageAtRelease;
       DDX_Text(pDX,IDC_RELAXATION_TIME,relaxationTime);
+
       DDX_Text(pDX,IDC_AGE,ageAtRelease);
+      DDV_GreaterThanZero(pDX,IDC_AGE,ageAtRelease);
 
       if ( relaxationTime < ageAtRelease )
       {

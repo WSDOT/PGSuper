@@ -31,14 +31,14 @@ static char THIS_FILE[] = __FILE__;
 
 Float64 CompareConcreteStrength(Float64 maxConc, Float64 newConc)
 {
-   // -1 is magic number meaning no possible value
-   if (maxConc==-1.0)
+   // -99999 is magic number meaning no possible value
+   if (maxConc == -99999)
    {
-      return -1.0;
+      return -99999;
    }
-   else if (newConc<0)
+   else if (newConc < 0)
    {
-      return -1.0;
+      return -99999;
    }
    else
    {

@@ -181,6 +181,13 @@ interface IAllowableConcreteStress : IUnknown
    // precompressed tensile zone. If bSegment is true the result is for a precast segment and segmentKey is for that segment
    // otherwise it is for a closure joint and segmentKey is the closure key
    virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) = 0;
+
+   // returns true if the girder stress checks are to include intermediate, temporary
+   // loading conditions
+   virtual bool CheckTemporaryStresses() = 0;
+
+   // returns true if tension stresses due to final dead load are to be evaluated
+   virtual bool CheckFinalDeadLoadTensionStress() = 0;
 };
 
 

@@ -42,10 +42,6 @@ public:
    pgsTypes::CureMethod m_CureMethod;
    pgsTypes::ACI209CementType m_CementType;
 
-   // Parameters for computing A and B based on user defined values for f'ci and f'c28
-   Float64 m_TimeAtInitialStrength; // time when initial strength is reached (used to compute A and B)
-   Float64 m_fci; // initial strength
-   Float64 m_fc28; // 28 day strength
 
 protected:
    bool m_bUseACIParameters;

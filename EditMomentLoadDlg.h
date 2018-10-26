@@ -29,7 +29,8 @@
 // EditMomentLoadDlg.h : header file
 //
 #include "PGSuperAppPlugin\resource.h"
-#include <pgsExt\MomentLoadData.h>
+#include <PgsExt\MomentLoadData.h>
+#include <PgsExt\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditMomentLoadDlg dialog
@@ -38,7 +39,7 @@ class CEditMomentLoadDlg : public CDialog
 {
 // Construction
 public:
-	CEditMomentLoadDlg(const CMomentLoadData& load,CWnd* pParent = NULL);   // standard constructor
+	CEditMomentLoadDlg(const CMomentLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CEditMomentLoadDlg)
@@ -53,6 +54,10 @@ public:
    CComPtr<IBroker> m_pBroker;
 
    bool                 m_WasLiveLoad;
+
+   CTimelineManager m_TimelineMgr;
+   bool m_bWasNewEventCreated;
+
 
 // Overrides
 	// ClassWizard generated virtual function overrides

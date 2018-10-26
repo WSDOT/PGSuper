@@ -26,6 +26,7 @@
 //
 #include "PGSuperAppPlugin\resource.h"
 #include <PgsExt\PointLoadData.h>
+#include <PgsExt\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditPointLoadDlg dialog
@@ -34,7 +35,7 @@ class CEditPointLoadDlg : public CDialog
 {
 // Construction
 public:
-	CEditPointLoadDlg(const CPointLoadData& load,CWnd* pParent = NULL);   // standard constructor
+	CEditPointLoadDlg(const CPointLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CEditPointLoadDlg)
@@ -51,6 +52,9 @@ public:
    CComPtr<IBroker> m_pBroker;
 
    bool                 m_WasLiveLoad;
+
+   CTimelineManager m_TimelineMgr;
+   bool m_bWasNewEventCreated;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

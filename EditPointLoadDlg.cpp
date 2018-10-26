@@ -48,10 +48,13 @@ static char THIS_FILE[] = __FILE__;
 // CEditPointLoadDlg dialog
 
 
-CEditPointLoadDlg::CEditPointLoadDlg(const CPointLoadData& load,CWnd* pParent /*=NULL*/):
+CEditPointLoadDlg::CEditPointLoadDlg(const CPointLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/):
 	CDialog(CEditPointLoadDlg::IDD, pParent),
-   m_Load(load)
+   m_Load(load),
+   m_TimelineMgr(*pTimelineMgr)
 {
+   m_bWasNewEventCreated = false;
+
 	//{{AFX_DATA_INIT(CEditPointLoadDlg)
 	//}}AFX_DATA_INIT
    EAFGetBroker(&m_pBroker);
@@ -507,29 +510,24 @@ void CEditPointLoadDlg::FillEventList()
       if ( selEventIdx != CB_ERR )
       {
          pcbEvent->SetCurSel(selEventIdx);
-         m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(selEventIdx);
       }
       else
       {
          pcbEvent->SetCurSel(0);
-         m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(0);
       }
    }
 }
 
 EventIndexType CEditPointLoadDlg::CreateEvent()
 {
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
+   CTimelineEventDlg dlg(m_TimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(*dlg.m_pTimelineEvent);
-  }
+      m_bWasNewEventCreated = true;
+      EventIndexType eventIdx;
+      m_TimelineMgr.AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
+      return eventIdx;
+   }
 
    return INVALID_INDEX;
 }   
@@ -542,7 +540,6 @@ void CEditPointLoadDlg::OnEventChanging()
 
 void CEditPointLoadDlg::OnEventChanged()
 {
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
    int curSel = pcbEvent->GetCurSel();
    EventIndexType idx = (IndexType)pcbEvent->GetItemData(curSel);

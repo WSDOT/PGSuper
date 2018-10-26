@@ -41,6 +41,31 @@
 // LOCAL INCLUDES
 //
 
+struct InitialDesignParameters
+{
+   IntervalIndexType intervalIdx;
+   std::_tstring strLimitState;
+   std::_tstring strStressLocation;
+   pgsTypes::LimitState limit_state;
+   pgsTypes::StressLocation stress_location;
+   pgsTypes::StressType stress_type;
+   Float64 fmin;
+   Float64 fmax;
+   Float64 fAllow;
+   Float64 fpre;
+   Float64 Preqd;
+   StrandIndexType Np;
+   Float64 fN;
+
+   InitialDesignParameters(IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState limitState,LPCTSTR lpszLimitState,
+                           pgsTypes::StressLocation stressLocation,LPCTSTR lpszStressLocation,
+                           pgsTypes::StressType stressType) :
+   intervalIdx(intervalIdx),limit_state(limitState),strLimitState(lpszLimitState),
+      stress_location(stressLocation),strStressLocation(lpszStressLocation),
+      stress_type(stressType) {}
+};
+
 typedef IndexType DebondLevelType; 
 
 inline static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
@@ -165,8 +190,8 @@ public:
 
    Float64 GetPrestressForceMidZone(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
 
-   // if INVALID_INDEX, cannot handle force
-   StrandIndexType ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,Float64 force);
+   // if Np is set to INVALID_INDEX, cannot handle force
+   void ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,InitialDesignParameters* pDesignParams);
 
    Float64 ComputeEccentricity(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx);
 
@@ -178,8 +203,8 @@ public:
    // Harped Strand Design
    ///////////////////////
    // Harp adjustments
-   Float64 GetMinimumFinalMzEccentricity(); 
-   void SetMinimumFinalMzEccentricity(Float64 ecc); 
+   Float64 GetMinimumFinalMidZoneEccentricity(); 
+   void SetMinimumFinalMidZoneEccentricity(Float64 ecc); 
 
    // offsets are measured from original strand grid location from library
    Float64 GetHarpStrandOffsetEnd() const;
@@ -192,9 +217,9 @@ public:
    void GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const;
 
    Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc);
-   bool ComputeMinHarpedForEzEccentricity(const pgsPointOfInterest& poi, Float64 ecc, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh);
+   bool ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 ecc, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh);
 
-   bool ComputeAddHarpedForMzReleaseEccentricity(const pgsPointOfInterest& poi, Float64 ecc, Float64 minEcc, StrandIndexType* pNs, StrandIndexType* pNh);
+   bool ComputeAddHarpedForMidZoneReleaseEccentricity(const pgsPointOfInterest& poi, Float64 ecc, Float64 minEcc, StrandIndexType* pNs, StrandIndexType* pNh);
 
    Float64 ComputeHpOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc,IntervalIndexType intervalIdx);
 

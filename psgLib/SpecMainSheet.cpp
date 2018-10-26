@@ -238,7 +238,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
       DDV_UnitValueGreaterThanZero(pDX, IDC_RELEASE_TENSION_MAX,m_Entry.m_CyTensStressServMax, pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_WITH_REBAR, IDC_SERVICE_TENSION_UNIT, m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure);
+   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_WITH_REBAR, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure);
    DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,fciTag);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR,m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure );
 
@@ -247,6 +247,52 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
       AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
    }
+   // Allowable concrete stress at service limit states
+	DDX_Text(pDX, IDC_SERVICE_COMPRESSION, m_Entry.m_Bs2CompStress);
+   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION, m_Entry.m_Bs2CompStress);
+
+	DDX_Text(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_Bs3CompStressServ);
+   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_Bs3CompStressServ);
+
+
+   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_I_TENSION, m_Entry.m_bCheckBs2Tension );
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_I_TENSION, IDC_SERVICE_I_TENSION_UNIT, m_Entry.m_Bs2TensStress, pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_SERVICE_I_TENSION_UNIT,fcTag);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_I_TENSION,m_Entry.m_Bs2TensStress, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_I_TENSION_MAX, m_Entry.m_Bs2DoTensStressMax);
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_I_TENSION_MAX, IDC_SERVICE_I_TENSION_MAX_UNIT, m_Entry.m_Bs2TensStressMax, pDisplayUnits->Stress );
+   if (m_Entry.m_Bs2DoTensStressMax)
+   {
+      DDV_UnitValueGreaterThanZero(pDX, IDC_SERVICE_I_TENSION_MAX,m_Entry.m_Bs2TensStressMax, pDisplayUnits->Stress );
+   }
+
+
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_SERVICE_III_TENSION_UNIT,fcTag);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION,m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_III_TENSION_MAX, m_Entry.m_Bs3DoTensStressServNcMax);
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION_MAX, IDC_SERVICE_III_TENSION_MAX_UNIT, m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
+   if (m_Entry.m_Bs3DoTensStressServNcMax)
+   {
+      DDV_UnitValueGreaterThanZero(pDX, IDC_SERVICE_III_TENSION_MAX,m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
+   }
+
+   DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_III_TENSION, IDC_SEVERE_SERVICE_III_TENSION_UNIT, m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_SEVERE_SERVICE_III_TENSION_UNIT,fcTag);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SEVERE_SERVICE_III_TENSION,m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX, m_Entry.m_Bs3DoTensStressServScMax);
+   DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_III_TENSION_MAX, IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT, m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
+   if (m_Entry.m_Bs3DoTensStressServScMax)
+   {
+      DDV_UnitValueGreaterThanZero(pDX, IDC_SEVERE_SERVICE_III_TENSION_MAX,m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
+   }
+
+   // Allowable concrete stress at fatigue limit state
+   DDX_Text(pDX, IDC_FATIGUE_COMPRESSION, m_Entry.m_Bs3CompStressService1A);
+   DDV_GreaterThanZero(pDX, IDC_FATIGUE_COMPRESSION, m_Entry.m_Bs3CompStressService1A);
+
+   // Temporary Loading Condition (PGSuper only)
+   DDX_Check_Bool(pDX,IDC_CHECK_TEMPORARY_STRESSES,m_Entry.m_bCheckTemporaryStresses);
 
    // Allowable concrete stress after Temporary Strand Removal
 	DDX_Text(pDX, IDC_TS_REMOVAL_COMPRESSION, m_Entry.m_TempStrandRemovalCompStress);
@@ -276,37 +322,6 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    {
       DDV_UnitValueGreaterThanZero(pDX, IDC_AFTER_DECK_TENSION_MAX,m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
    }
-
-   // Allowable concrete stress at service limit states
-	DDX_Text(pDX, IDC_SERVICE_COMPRESSION, m_Entry.m_Bs2CompStress);
-   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION, m_Entry.m_Bs2CompStress);
-
-	DDX_Text(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_Bs3CompStressServ);
-   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_Bs3CompStressServ);
-
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_TENSION, IDC_SERVICE_TENSION_UNIT, m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SERVICE_TENSION_UNIT,fcTag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_TENSION,m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_TENSION_MAX, m_Entry.m_Bs3DoTensStressServNcMax);
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_TENSION_MAX, IDC_SERVICE_TENSION_MAX_UNIT, m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
-   if (m_Entry.m_Bs3DoTensStressServNcMax)
-   {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_SERVICE_TENSION_MAX,m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
-   }
-
-   DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_TENSION, IDC_SEVERE_SERVICE_TENSION_UNIT, m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SEVERE_SERVICE_TENSION_UNIT,fcTag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SEVERE_SERVICE_TENSION,m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_SEVERE_SERVICE_TENSION_MAX, m_Entry.m_Bs3DoTensStressServScMax);
-   DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_TENSION_MAX, IDC_SEVERE_SERVICE_TENSION_MAX_UNIT, m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
-   if (m_Entry.m_Bs3DoTensStressServScMax)
-   {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_SEVERE_SERVICE_TENSION_MAX,m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
-   }
-
-   // Allowable concrete stress at fatigue limit state
-   DDX_Text(pDX, IDC_FATIGUE_COMPRESSION, m_Entry.m_Bs3CompStressService1A);
-   DDV_GreaterThanZero(pDX, IDC_FATIGUE_COMPRESSION, m_Entry.m_Bs3CompStressService1A);
 }
 
 void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
@@ -953,13 +968,13 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,tag);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressPTZWithRebarAtService, pDisplayUnits->SqrtPressure);
 
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_TENSION, IDC_SERVICE_TENSION_UNIT, m_Entry.m_ClosureTensStressAtService, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SERVICE_TENSION_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_TENSION_UNIT,m_Entry.m_ClosureTensStressAtService, pDisplayUnits->SqrtPressure);
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_ClosureTensStressAtService, pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_SERVICE_III_TENSION_UNIT,tag);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_UNIT,m_Entry.m_ClosureTensStressAtService, pDisplayUnits->SqrtPressure);
 
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_TENSION_WITH_REBAR, IDC_SERVICE_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressWithRebarAtService, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SERVICE_TENSION_WITH_REBAR_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressWithRebarAtService, pDisplayUnits->SqrtPressure);
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressWithRebarAtService, pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,tag);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressWithRebarAtService, pDisplayUnits->SqrtPressure);
 
    DDX_Text(pDX,IDC_FATIGUE_COMPRESSION,m_Entry.m_ClosureCompStressFatigue);
    DDV_GreaterThanZero(pDX, IDC_FATIGUE_COMPRESSION,m_Entry.m_ClosureCompStressFatigue);
@@ -1035,6 +1050,11 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    DDX_Check_Bool(pDX, IDC_LL_DEFLECTION, m_Entry.m_bDoEvaluateDeflection );
  	DDX_Text(pDX, IDC_DEFLECTION_LIMIT, m_Entry.m_DeflectionLimit);
    DDV_GreaterThanZero(pDX, IDC_DEFLECTION_LIMIT, m_Entry.m_DeflectionLimit);
+
+   // Bottom Flange Clearance
+   DDX_Check_Bool(pDX,IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,m_Entry.m_bCheckBottomFlangeClearance);
+   DDX_UnitValueAndTag(pDX,IDC_CLEARANCE,IDC_CLEARANCE_UNIT,m_Entry.m_Cmin,pDisplayUnits->SpanLength);
+   DDV_UnitValueZeroOrMore(pDX,IDC_CLEARANCE,m_Entry.m_Cmin,pDisplayUnits->SpanLength);
 
    // Strand Fill
    int value = (int)m_Entry.m_DesignStrandFillType;

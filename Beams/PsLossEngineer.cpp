@@ -2800,8 +2800,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    if ( m_bComputingLossesForDesign )
    {
       // get the additional moment caused by the difference in input and design "A" dimension
-      Float64 M = pProdForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
-      *pMadlg += K_slabpad*M;
+      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+      *pMadlg += K_slab*Mslab;
+
+      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+      *pMadlg += K_slabpad*Mslabpad;
    }
 
    *pMsidl = K_railing * (pProdForces->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, rtCumulative ) +

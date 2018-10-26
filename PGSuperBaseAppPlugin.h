@@ -100,6 +100,12 @@ protected:
 
    CEAFCustomReports m_CustomReports;
 
+   virtual LPCTSTR GetCatalogServerKey();
+   virtual LPCTSTR GetPublisherKey();
+   virtual LPCTSTR GetMasterLibraryCacheKey();
+   virtual LPCTSTR GetMasterLibraryURLKey();
+   virtual LPCTSTR GetWorkgroupTemplatesCacheKey();
+
    virtual void RegistryConvert(); // Convert any old registry settings for current program (move into app plugin class)
    virtual void LoadRegistryValues();
    virtual void LoadSettings();
@@ -124,8 +130,8 @@ protected:
    
    CString GetDefaultMasterLibraryFile();
    CString GetDefaultWorkgroupTemplateFolder();
-   CString GetCacheFolder();
-   CString GetSaveCacheFolder();
+   virtual CString GetCacheFolder();
+   virtual CString GetSaveCacheFolder();
 
    const CPGSuperCatalogServers* GetCatalogServers() const;
 

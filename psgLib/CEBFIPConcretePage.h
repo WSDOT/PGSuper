@@ -34,13 +34,23 @@ public:
 	virtual ~CCEBFIPConcretePage();
 
 // Dialog Data
+   bool m_bUserParameters;
    pgsTypes::CEBFIPCementType m_CementType;
+   Float64 m_S;
+   Float64 m_BetaSc;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+   bool m_bUseCEBFIPParameters;
+
+   virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
 
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 
+   void UpdateParameters();
+
 	DECLARE_MESSAGE_MAP()
+public:
+   afx_msg void OnCbnSelchangeCementType();
+   afx_msg void OnBnClickedUser();
 };

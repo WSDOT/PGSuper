@@ -207,11 +207,14 @@ void CEditLoadsView::OnAddPointload()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
 	CPointLoadData load;
-   CEditPointLoadDlg dlg(load);
+   CEditPointLoadDlg dlg(load,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
@@ -220,11 +223,14 @@ void CEditLoadsView::OnAddMomentload()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
    CMomentLoadData load;
-   CEditMomentLoadDlg dlg(load);
+   CEditMomentLoadDlg dlg(load,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
@@ -288,11 +294,14 @@ void CEditLoadsView::OnAddNewDistributed()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
    CDistributedLoadData load;
-	CEditDistributedLoadDlg dlg(load);
+	CEditDistributedLoadDlg dlg(load,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
@@ -548,18 +557,20 @@ void CEditLoadsView::EditLoad(POSITION pos)
    WORD load_idx = HIWORD(data);
 
    GET_IFACE(IUserDefinedLoadData, pUdl);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    if (load_type == W_POINT_LOAD)
    {
       // edit our point load
       const CPointLoadData* pLoad = pUdl->GetPointLoad(load_idx);
 
-	   CEditPointLoadDlg dlg(*pLoad);
+      CEditPointLoadDlg dlg(*pLoad,pTimelineMgr);
       if (dlg.DoModal() == IDOK)
       {
          if (*pLoad != dlg.m_Load)
          {
-            txnEditPointLoad* pTxn = new txnEditPointLoad(load_idx,*pLoad,dlg.m_Load);
+            txnEditPointLoad* pTxn = new txnEditPointLoad(load_idx,*pLoad,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
             txnTxnManager::GetInstance()->Execute(pTxn);
             UpdatePointLoadItem(nItem, dlg.m_Load);
          }
@@ -570,12 +581,12 @@ void CEditLoadsView::EditLoad(POSITION pos)
       // edit our moment load
       const CMomentLoadData* pLoad = pUdl->GetMomentLoad(load_idx);
 
-	   CEditMomentLoadDlg dlg(*pLoad);
+	   CEditMomentLoadDlg dlg(*pLoad,pTimelineMgr);
       if (dlg.DoModal() == IDOK)
       {
          if (*pLoad != dlg.m_Load)
          {
-            txnEditMomentLoad* pTxn = new txnEditMomentLoad(load_idx,*pLoad,dlg.m_Load);
+            txnEditMomentLoad* pTxn = new txnEditMomentLoad(load_idx,*pLoad,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
             txnTxnManager::GetInstance()->Execute(pTxn);
             UpdateMomentLoadItem(nItem, dlg.m_Load);
          }
@@ -586,12 +597,12 @@ void CEditLoadsView::EditLoad(POSITION pos)
       // edit our distributed load
       const CDistributedLoadData* pLoad = pUdl->GetDistributedLoad(load_idx);
 
-	   CEditDistributedLoadDlg dlg(*pLoad);
+	   CEditDistributedLoadDlg dlg(*pLoad,pTimelineMgr);
       if (dlg.DoModal() == IDOK)
       {
          if (*pLoad != dlg.m_Load)
          {
-            txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(load_idx,*pLoad,dlg.m_Load);
+            txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(load_idx,*pLoad,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
             txnTxnManager::GetInstance()->Execute(pTxn);
             UpdateDistributedLoadItem(nItem, dlg.m_Load);
          }

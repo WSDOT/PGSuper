@@ -86,6 +86,8 @@ public:
    pgsTypes::ACI209CementType ACI209CementType;
 
    // Parameters for the CEB-FIP Model
+   bool bCEBFIPUserParameters; // if true, S and BetaSc are used defined parameters, otherwise look up S and BetaSc based on cement type
+   Float64 S, BetaSc;
    pgsTypes::CEBFIPCementType CEBFIPCementType;
 
 

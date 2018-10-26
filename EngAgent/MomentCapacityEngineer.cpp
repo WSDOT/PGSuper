@@ -155,7 +155,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    {
       // only for positive moment... strands are ignored for negative moment analysis
       GET_IFACE(IPretensionForce, pPrestressForce);
-      fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+      fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
       eps_initial = fpe_ps/Eps;
    }
 
@@ -195,11 +195,11 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       GET_IFACE(IPretensionForce, pPrestressForce);
       if ( pConfig )
       {
-         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,*pConfig,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
       }
       else
       {
-         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
       }
 
       eps_initial = fpe_ps/Eps;
@@ -996,7 +996,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    pgsTypes::StressLocation stressLocation = (bPositiveMoment ? pgsTypes::BottomGirder : pgsTypes::TopDeck);
 
    // Compute stress due to prestressing
-   Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+   Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
    Float64 ns_eff;
 
    GET_IFACE(IIntervals,pIntervals);
@@ -1044,7 +1044,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
       GET_IFACE(IStrandGeometry,pStrandGeom);
       GET_IFACE(IPretensionStresses,pPrestress);
 
-      Float64 P = pPrestressForce->GetPrestressForce(poi,config,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle);
+      Float64 P = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,config);
       Float64 ns_eff;
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
@@ -1139,9 +1139,13 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
 {
    GET_IFACE(IProductForces,pProductForces);
    Float64 Mdnc = GetNonCompositeDeadLoadMoment(intervalIdx,poi,bPositiveMoment);
+
    // add effect of different slab offset
-   Float64 deltaSlab = pProductForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+   Float64 deltaSlab = pProductForces->GetDesignSlabMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
    Mdnc += deltaSlab;
+
+   Float64 deltaSlabPad = pProductForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+   Mdnc += deltaSlabPad;
 
    return Mdnc;
 }

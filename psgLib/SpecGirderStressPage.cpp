@@ -55,12 +55,16 @@ void CSpecGirderStressPage::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CSpecGirderStressPage, CPropertyPage)
+   ON_BN_CLICKED(IDC_CHECK_SERVICE_I_TENSION,OnCheckServiceITensileStress)
 	ON_BN_CLICKED(IDC_CHECK_RELEASE_TENSION_MAX, OnCheckReleaseTensionMax)
 	ON_BN_CLICKED(IDC_CHECK_TS_REMOVAL_TENSION_MAX, OnCheckTSRemovalTensionMax)
    ON_BN_CLICKED(IDC_CHECK_AFTER_DECK_TENSION_MAX, OnCheckAfterDeckTensionMax)
 
-	ON_BN_CLICKED(IDC_CHECK_SERVICE_TENSION_MAX, OnCheckServiceTensionMax)
-	ON_BN_CLICKED(IDC_CHECK_SEVERE_SERVICE_TENSION_MAX, OnCheckSevereServiceTensionMax)
+   ON_BN_CLICKED(IDC_CHECK_SERVICE_I_TENSION_MAX, OnCheckServiceITensionMax)
+	ON_BN_CLICKED(IDC_CHECK_SERVICE_III_TENSION_MAX, OnCheckServiceIIITensionMax)
+	ON_BN_CLICKED(IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX, OnCheckSevereServiceIIITensionMax)
+
+   ON_BN_CLICKED(IDC_CHECK_TEMPORARY_STRESSES, OnCheckTemporaryStresses)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 END_MESSAGE_MAP()
 
@@ -71,11 +75,14 @@ BOOL CSpecGirderStressPage::OnInitDialog()
 {
    CPropertyPage::OnInitDialog();
 
+   OnCheckServiceITensileStress();
 	OnCheckReleaseTensionMax();
 	OnCheckTSRemovalTensionMax();
    OnCheckAfterDeckTensionMax();
-	OnCheckServiceTensionMax();
-	OnCheckSevereServiceTensionMax();
+	OnCheckServiceITensionMax();
+	OnCheckServiceIIITensionMax();
+	OnCheckSevereServiceIIITensionMax();
+   OnCheckTemporaryStresses();
 
    CWnd* pWnd = GetDlgItem(IDC_FATIGUE_LABEL);
    CWnd* pGrp = GetDlgItem(IDC_FATIGUE_GROUP);
@@ -137,32 +144,97 @@ void CSpecGirderStressPage::OnCheckAfterDeckTensionMax()
    pwnd->EnableWindow(ischk);
 }
 
-void CSpecGirderStressPage::OnCheckServiceTensionMax()
+void CSpecGirderStressPage::OnCheckServiceITensileStress()
 {
-   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_SERVICE_TENSION_MAX);
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_SERVICE_I_TENSION);
    ASSERT(pchk);
    BOOL ischk = pchk->GetCheck();
 
-   CWnd* pwnd = GetDlgItem(IDC_SERVICE_TENSION_MAX);
+   CWnd* pwnd = GetDlgItem(IDC_SERVICE_I_TENSION);
    ASSERT(pchk);
    pwnd->EnableWindow(ischk);
-   pwnd = GetDlgItem(IDC_SERVICE_TENSION_MAX_UNIT);
+   pwnd = GetDlgItem(IDC_CHECK_SERVICE_I_TENSION_MAX);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_SERVICE_I_TENSION_UNIT);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_SERVICE_I_TENSION_MAX);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_SERVICE_I_TENSION_MAX_UNIT);
    ASSERT(pchk);
    pwnd->EnableWindow(ischk);
 }
 
-void CSpecGirderStressPage::OnCheckSevereServiceTensionMax()
+void CSpecGirderStressPage::OnCheckServiceITensionMax()
 {
-   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_SEVERE_SERVICE_TENSION_MAX);
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_SERVICE_I_TENSION_MAX);
    ASSERT(pchk);
    BOOL ischk = pchk->GetCheck();
 
-   CWnd* pwnd = GetDlgItem(IDC_SEVERE_SERVICE_TENSION_MAX);
+   CWnd* pwnd = GetDlgItem(IDC_SERVICE_I_TENSION_MAX);
    ASSERT(pchk);
    pwnd->EnableWindow(ischk);
-   pwnd = GetDlgItem(IDC_SEVERE_SERVICE_TENSION_MAX_UNIT);
+   pwnd = GetDlgItem(IDC_SERVICE_I_TENSION_MAX_UNIT);
    ASSERT(pchk);
    pwnd->EnableWindow(ischk);
+}
+
+void CSpecGirderStressPage::OnCheckServiceIIITensionMax()
+{
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_SERVICE_III_TENSION_MAX);
+   ASSERT(pchk);
+   BOOL ischk = pchk->GetCheck();
+
+   CWnd* pwnd = GetDlgItem(IDC_SERVICE_III_TENSION_MAX);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_SERVICE_III_TENSION_MAX_UNIT);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+}
+
+void CSpecGirderStressPage::OnCheckSevereServiceIIITensionMax()
+{
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX);
+   ASSERT(pchk);
+   BOOL ischk = pchk->GetCheck();
+
+   CWnd* pwnd = GetDlgItem(IDC_SEVERE_SERVICE_III_TENSION_MAX);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+}
+
+void CSpecGirderStressPage::OnCheckTemporaryStresses()
+{
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_TEMPORARY_STRESSES);
+   BOOL bIsChecked = pchk->GetCheck();
+
+   GetDlgItem(IDC_TEMP_STRAND_REMOVAL_GROUP)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_COMPRESSION_LABEL)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_COMPRESSION)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_COMPRESS_FC)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION_LABEL)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION_UNIT)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_CHECK_TS_REMOVAL_TENSION_MAX)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION_MAX)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION_MAX_UNIT)->EnableWindow(bIsChecked);
+
+   GetDlgItem(IDC_AFTER_DECK_GROUP)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AFTER_DECK_COMPRESSION_LABEL)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AFTER_DECK_COMPRESSION)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AFTER_DECK_COMPRESSION_FC)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AFTER_DECK_TENSION_LABEL)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AFTER_DECK_TENSION)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AFTER_DECK_TENSION_UNIT)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_CHECK_AFTER_DECK_TENSION_MAX)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AFTER_DECK_TENSION_MAX)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AFTER_DECK_TENSION_MAX_UNIT)->EnableWindow(bIsChecked);
 }
 
 #pragma Reminder("UPDATE: need correct help context id")

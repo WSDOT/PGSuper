@@ -93,7 +93,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   void OnMoreProperties(CRailingSystem* pRailingSystem);
+   void OnMoreProperties(CRailingSystem* pRailingSystem,CString* pStrUserEc);
 
    void FillTrafficBarrierComboBoxes();
    void EnableSidewalkDimensions(BOOL bEnable,BOOL bLeft);

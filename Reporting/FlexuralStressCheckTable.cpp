@@ -898,33 +898,6 @@ bool CFlexuralStressCheckTable::TestMe(dbgLog& rlog)
 }
 #endif // _UNITTEST
 
-void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsSegmentArtifact* pSegmentArtifact,
-                                           IEAFDisplayUnits* pDisplayUnits,
-                                           IntervalIndexType intervalIdx,
-                                           pgsTypes::LimitState limitState,
-                                           pgsTypes::StressType stressType) const
-{
-#pragma Reminder("OBSOLETE: remove obsolete code") // this method should not be called... remove it
-#pragma Reminder("UPDATE: some things still call this method (TxDOT Agent - TOGA)")
-   ATLASSERT(false); // should never get here
-   //// Write notes, then table
-   //BuildNotes(pChapter, pBroker, pSegmentArtifact, pDisplayUnits, intervalIdx, limitState, stressType);
-   //BuildTable(pChapter, pBroker, pSegmentArtifact, pDisplayUnits, intervalIdx, limitState, stressType);
-}
-   
-void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, 
-                   IBroker* pBroker,
-                   const pgsSegmentArtifact* pSegmentArtifact,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   pgsTypes::StressType stress) const
-{
-#pragma Reminder("OBSOLETE: remove obsolete code") // this method should not be called... remove it
-#pragma Reminder("UPDATE: some things still call this method (TxDOT Agent - TOGA)")
-   ATLASSERT(false); // should never get here
-}
-
 void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pChapter, 
                                            IBroker* pBroker,
                                            const pgsGirderArtifact* pGirderArtifact,

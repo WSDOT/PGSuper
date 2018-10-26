@@ -405,7 +405,7 @@ void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(Float64 ft, // str
       if ( rcsBfmax && (rcsFmax < ft) )
       {
          // allowable stress is limited and we hit the limit
-         *pFcNo = -1;
+         *pFcNo = -99999;
       }
       else
       {

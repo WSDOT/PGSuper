@@ -90,15 +90,12 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>( strTitle.GetBuffer(),
                                                                                   true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
-   GET_IFACE2(pBroker,IReactions,pReactions);
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
 
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
@@ -111,10 +108,12 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    std::auto_ptr<IProductReactionAdapter> pForces;
    if( tableType == PierReactionsTable )
    {
+      GET_IFACE2(pBroker,IReactions,pReactions);
       pForces = std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pReactions,girderKey));
    }
    else
    {
+      GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
    }
 

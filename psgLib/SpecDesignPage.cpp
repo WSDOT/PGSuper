@@ -78,6 +78,7 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
    ON_BN_CLICKED(IDC_IS_SUPPORT_LESS_THAN,OnBnClickedIsSupportLessThan)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+   ON_BN_CLICKED(IDC_CHECK_BOTTOM_FLANGE_CLEARANCE, &CSpecDesignPage::OnBnClickedCheckBottomFlangeClearance)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -113,6 +114,8 @@ BOOL CSpecDesignPage::OnInitDialog()
    OnCheckConfinement();
 
    OnBnClickedIsSupportLessThan();
+
+   OnBnClickedCheckBottomFlangeClearance();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -191,4 +194,13 @@ void CSpecDesignPage::OnBnClickedIsSupportLessThan()
    pwnd = GetDlgItem(IDC_SUPPORT_LESS_THAN_UNIT);
    ASSERT(pwnd);
    pwnd->EnableWindow(ischk);
+}
+
+void CSpecDesignPage::OnBnClickedCheckBottomFlangeClearance()
+{
+   // TODO: Add your control notification handler code here
+   BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_BOTTOM_FLANGE_CLEARANCE);
+   GetDlgItem(IDC_CLEARANCE_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_CLEARANCE)->EnableWindow(bEnable);
+   GetDlgItem(IDC_CLEARANCE_UNIT)->EnableWindow(bEnable);
 }

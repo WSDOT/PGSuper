@@ -728,18 +728,14 @@ void CStrandGrid::AppendRow(const CStrandRow& strandRow)
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strandRow.m_bIsExtendedStrand[pgsTypes::metEnd] ? 1L : 0L));
 
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strandRow.m_bIsDebonded[pgsTypes::metStart] ? 1L : 0L));
-   if ( strandRow.m_bIsDebonded[pgsTypes::metStart] )
-   {
-      strValue.Format(_T("%s"),::FormatDimension(strandRow.m_DebondLength[pgsTypes::metStart],pDisplayUnits->GetSpanLengthUnit(),false));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-   }
+   Float64 debondLength = (strandRow.m_bIsDebonded[pgsTypes::metStart] ? strandRow.m_DebondLength[pgsTypes::metStart] : 0);
+   strValue.Format(_T("%s"),::FormatDimension(debondLength,pDisplayUnits->GetSpanLengthUnit(),false));
+   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
 
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strandRow.m_bIsDebonded[pgsTypes::metEnd] ? 1L : 0L));
-   if ( strandRow.m_bIsDebonded[pgsTypes::metEnd] )
-   {
-      strValue.Format(_T("%s"),::FormatDimension(strandRow.m_DebondLength[pgsTypes::metEnd],pDisplayUnits->GetSpanLengthUnit(),false));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-   }
+   debondLength = (strandRow.m_bIsDebonded[pgsTypes::metEnd] ? strandRow.m_DebondLength[pgsTypes::metEnd] : 0);
+   strValue.Format(_T("%s"),::FormatDimension(debondLength,pDisplayUnits->GetSpanLengthUnit(),false));
+   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
 
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 
@@ -1034,6 +1030,22 @@ bool CStrandGrid::Validate(ROWCOL nRow,CStrandRow& strandRow)
       {
          CString strMsg;
          strMsg.Format(_T("Row %d: Debond lengths exceed the length of the segment"),nRow-1);
+         AfxMessageBox(strMsg);
+         return false;
+      }
+
+      if ( strandRow.m_bIsDebonded[pgsTypes::metStart] && ::IsLE(strandRow.m_DebondLength[pgsTypes::metStart],0.0) )
+      {
+         CString strMsg;
+         strMsg.Format(_T("Row %d: Left end debond length must be greater than 0.0"),nRow-1);
+         AfxMessageBox(strMsg);
+         return false;
+      }
+
+      if ( strandRow.m_bIsDebonded[pgsTypes::metEnd] && ::IsLE(strandRow.m_DebondLength[pgsTypes::metEnd],0.0) )
+      {
+         CString strMsg;
+         strMsg.Format(_T("Row %d: Right end debond length must be greater than 0.0"),nRow-1);
          AfxMessageBox(strMsg);
          return false;
       }

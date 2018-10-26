@@ -211,6 +211,7 @@
 #define IDD_TIMESTEP_PARAMETERS         363
 #define IDD_DIALOG3                     364
 #define IDD_CEBFIP_CONCRETE             364
+#define IDD_CEBFIP_PARAMETERS           365
 #define IDD_GIRDER_SELECT_STRANDS       390
 #define IDD_PIERCONNECTIONS2            391
 #define IDR_PGSUPER_TEMPLATE_ICON       500
@@ -243,6 +244,7 @@
 #define IDC_BETA                        1017
 #define IDC_BEFORE_XFER                 1017
 #define IDC_BACK_DIAPHRAGM_OFFSET       1017
+#define IDC_BETA_SC                     1017
 #define IDC_VALUE                       1018
 #define IDC_SERVICE_IA_DW               1018
 #define IDC_AFTER_XFER                  1018
@@ -1085,10 +1087,13 @@
 #define IDC_LEFT_SIDEWALK               1592
 #define IDC_LEFT_SIDEWALK_WIDTH         1593
 #define IDC_LEFT_SIDEWALK_WIDTH_UNIT    1594
+#define IDC_S                           1594
 #define IDC_LEFT_SIDEWALK_LEFT_DEPTH_UNIT 1595
+#define IDC_S_LABEL                     1595
 #define IDC_LEFT_SIDEWALK_RIGHT_DEPTH   1596
 #define IDC_DATA_IMPORTER_LIST          1596
 #define IDC_PLUGIN_LIST                 1596
+#define IDC_BETA_SC_LABEL               1596
 #define IDC_LEFT_SIDEWALK_RIGHT_DEPTH_UNIT 1597
 #define IDC_LIST_TITLE                  1597
 #define IDC_LEFT_EXTERIORBARRIER        1598
@@ -1666,7 +1671,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        365
+#define _APS_NEXT_RESOURCE_VALUE        366
 #define _APS_NEXT_COMMAND_VALUE         36991
 #define _APS_NEXT_CONTROL_VALUE         1808
 #define _APS_NEXT_SYMED_VALUE           113

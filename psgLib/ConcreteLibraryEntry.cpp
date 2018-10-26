@@ -33,6 +33,8 @@
 
 #include <MathEx.h>
 #include <Material\Concrete.h>
+#include <Material\ACI209Concrete.h>
+#include <Material\CEBFIPConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -68,12 +70,13 @@ m_Type(pgsTypes::Normal),
 m_Fct(0), // need a good default value
 m_bHasFct(false),
 m_bUserACIParameters(false),
-m_A(::ConvertToSysUnits(4.0,unitMeasure::Day)),
-m_B(0.85),
 m_CureMethod(pgsTypes::Moist),
 m_ACI209CementType(pgsTypes::TypeI),
+m_bUserCEBFIPParameters(false),
 m_CEBFIPCementType(pgsTypes::N)
 {
+   matACI209Concrete::GetModelParameters((matACI209Concrete::CureMethod)m_CureMethod,(matACI209Concrete::CementType)m_ACI209CementType,&m_A,&m_B);
+   matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)m_CEBFIPCementType,&m_S,&m_BetaSc);
 }
 
 ConcreteLibraryEntry::ConcreteLibraryEntry(const ConcreteLibraryEntry& rOther) :
@@ -144,7 +147,10 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit(); // ACI
 
    // Added version 6
-   pSave->BeginUnit(_T("CEBFIP"),1.0);
+   pSave->BeginUnit(_T("CEBFIP"),2.0);
+   pSave->Property(_T("UserCEBFIP"),m_bUserCEBFIPParameters); // added in version 2
+   pSave->Property(_T("S"),m_S); // added in version 2
+   pSave->Property(_T("BetaSc"),m_BetaSc); // added in version 2
    pSave->Property(_T("CementType"),m_CEBFIPCementType);
    pSave->EndUnit(); // CEBFIP
 
@@ -394,6 +400,27 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         Float64 cebfipVersion = pLoad->GetVersion();
+
+         if ( 1 < cebfipVersion )
+         {
+            // added in version 2
+           if (!pLoad->Property(_T("UserCEBFIP"),&m_bUserCEBFIPParameters))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if ( !pLoad->Property(_T("S"),&m_S) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if ( !pLoad->Property(_T("BetaSc"),&m_BetaSc) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+
          int value;
          if ( !pLoad->Property(_T("CementType"),&value) )
          {
@@ -459,7 +486,16 @@ bool ConcreteLibraryEntry::IsEqual(const ConcreteLibraryEntry& rOther, bool cons
       test &= m_ACI209CementType   == rOther.m_ACI209CementType;
    }
 
-   test &= m_CEBFIPCementType == rOther.m_CEBFIPCementType;
+   test &= (m_bUserCEBFIPParameters == rOther.m_bUserCEBFIPParameters);
+   if ( m_bUserCEBFIPParameters )
+   {
+      test &= ::IsEqual(m_S,rOther.m_S);
+      test &= ::IsEqual(m_BetaSc,rOther.m_BetaSc);
+   }
+   else
+   {
+      test &= m_CEBFIPCementType == rOther.m_CEBFIPCementType;
+   }
 
 
    if (considerName)
@@ -673,6 +709,36 @@ void ConcreteLibraryEntry::SetACI209CementType(pgsTypes::ACI209CementType cement
    m_ACI209CementType = cementType;
 }
 
+bool ConcreteLibraryEntry::UserCEBFIPParameters() const
+{
+   return m_bUserCEBFIPParameters;
+}
+
+void ConcreteLibraryEntry::UserCEBFIPParameters(bool bUser)
+{
+   m_bUserCEBFIPParameters = bUser;
+}
+
+Float64 ConcreteLibraryEntry::GetS() const
+{
+   return m_S;
+}
+
+void ConcreteLibraryEntry::SetS(Float64 s)
+{
+   m_S = s;
+}
+
+Float64 ConcreteLibraryEntry::GetBetaSc() const
+{
+   return m_BetaSc;
+}
+
+void ConcreteLibraryEntry::SetBetaSc(Float64 betaSc)
+{
+   m_BetaSc = betaSc;
+}
+
 pgsTypes::CEBFIPCementType ConcreteLibraryEntry::GetCEBFIPCementType() const
 {
    return m_CEBFIPCementType;
@@ -726,7 +792,10 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_ACI.m_CureMethod      = this->GetCureMethod();
    dlg.m_ACI.m_CementType      = this->GetACI209CementType();
 
-   dlg.m_CEBFIP.m_CementType   = this->GetCEBFIPCementType();
+   dlg.m_CEBFIP.m_bUserParameters      = this->UserCEBFIPParameters();
+   dlg.m_CEBFIP.m_S                    = this->GetS();
+   dlg.m_CEBFIP.m_BetaSc               = this->GetBetaSc();
+   dlg.m_CEBFIP.m_CementType           = this->GetCEBFIPCementType();
 
    INT_PTR i = dlg.DoModal();
    dlg.SetActivePage(nPage);
@@ -756,6 +825,9 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
       this->SetCureMethod(dlg.m_ACI.m_CureMethod);
       this->SetACI209CementType(dlg.m_ACI.m_CementType);
 
+      this->UserCEBFIPParameters(dlg.m_CEBFIP.m_bUserParameters);
+      this->SetS(dlg.m_CEBFIP.m_S);
+      this->SetBetaSc(dlg.m_CEBFIP.m_BetaSc);
       this->SetCEBFIPCementType(dlg.m_CEBFIP.m_CementType);
 
       return true;
@@ -793,7 +865,10 @@ void ConcreteLibraryEntry::MakeCopy(const ConcreteLibraryEntry& rOther)
    m_ACI209CementType   = rOther.m_ACI209CementType;
 
    // CEB-FIP
-   m_CEBFIPCementType = rOther.m_CEBFIPCementType;
+   m_bUserCEBFIPParameters = rOther.m_bUserCEBFIPParameters;
+   m_S                     = rOther.m_S;
+   m_BetaSc                = rOther.m_BetaSc;
+   m_CEBFIPCementType      = rOther.m_CEBFIPCementType;
 }
 
 void ConcreteLibraryEntry::MakeAssignment(const ConcreteLibraryEntry& rOther)

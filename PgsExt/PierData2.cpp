@@ -509,6 +509,13 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          var.vt = VT_BSTR;
          hr = pStrLoad->get_Property(_T("DiaphragmLoadType"),&var);
+         if ( FAILED(hr) )
+         {
+            // there was a bug in version 2.8.2 that caused the DiaphragmLoadType to
+            // be omitted when it was set to "DontApply". If there is a problem loading
+            // the DiaphragmLoadType, assume it should be "DontApply"
+            var.bstrVal = T2BSTR(_T("DontApply"));
+         }
 
          std::_tstring tmp(OLE2T(var.bstrVal));
          if (tmp == _T("ApplyAtBearingCenterline"))
@@ -589,6 +596,13 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          var.vt = VT_BSTR;
          hr = pStrLoad->get_Property(_T("DiaphragmLoadType"),&var);
+         if ( FAILED(hr) )
+         {
+            // there was a bug in version 2.8.2 that caused the DiaphragmLoadType to
+            // be omitted when it was set to "DontApply". If there is a problem loading
+            // the DiaphragmLoadType, assume it should be "DontApply"
+            var.bstrVal = T2BSTR(_T("DontApply"));
+         }
 
          std::_tstring tmp(OLE2T(var.bstrVal));
          if (tmp == _T("ApplyAtBearingCenterline"))

@@ -290,11 +290,11 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
       // Determine the prestress force
       if ( bUseConfig )
       {
-         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,config,pgsTypes::Harped,intervalIdx,pgsTypes::Start);
+         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pgsTypes::ServiceI,config);
       }
       else
       {
-         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start);
+         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pgsTypes::ServiceI);
       }
 
       // get harping point locations
@@ -404,14 +404,14 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
    {
       ecc_straight_start = pStrandGeom->GetSsEccentricity(intervalIdx, poiStart, config, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetSsEccentricity(intervalIdx, poiEnd,   config, &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,config,pgsTypes::Straight,intervalIdx,pgsTypes::Start);
+      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,intervalIdx,pgsTypes::Start,pgsTypes::ServiceI,config);
    }
    else
    {
       StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
       ecc_straight_start = pStrandGeom->GetSsEccentricity(intervalIdx, poiStart, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetSsEccentricity(intervalIdx, poiEnd,   &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,intervalIdx,pgsTypes::Start);
+      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,intervalIdx,pgsTypes::Start,pgsTypes::ServiceI);
    }
    Msl = Ps*ecc_straight_start;
    Msr = Ps*ecc_straight_end;
@@ -444,7 +444,7 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
          // (ok, not at this section but lt past this section)
          Float64 nSsEffective;
 
-         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,config,pgsTypes::Straight,intervalIdx,pgsTypes::Start);
+         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,intervalIdx,pgsTypes::Start,pgsTypes::ServiceI,config);
          ecc_straight_debond = pStrandGeom->GetSsEccentricity(intervalIdx, pgsPointOfInterest(segmentKey,location),config, &nSsEffective);
 
          Ms = sign*Ps*ecc_straight_debond;
@@ -465,7 +465,7 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
 
          Float64 nSsEffective;
 
-         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,config,pgsTypes::Straight,intervalIdx,pgsTypes::Start);
+         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,intervalIdx,pgsTypes::Start,pgsTypes::ServiceI,config);
          ecc_straight_debond = pStrandGeom->GetSsEccentricity(intervalIdx, pgsPointOfInterest(segmentKey,location),config, &nSsEffective);
 
          Ms = sign*Ps*ecc_straight_debond;
@@ -498,7 +498,7 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
             // (ok, not at this section but lt past this section)
             Float64 nSsEffective;
 
-            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,intervalIdx,pgsTypes::Start);
+            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,intervalIdx,pgsTypes::Start,pgsTypes::ServiceI);
             ecc_straight_debond = pStrandGeom->GetSsEccentricity(intervalIdx, pgsPointOfInterest(segmentKey,location), &nSsEffective);
 
             Ms = sign*Ps*ecc_straight_debond;
@@ -603,14 +603,14 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool 
 
    if ( bUseConfig )
    {
-      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,config,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::Start);
-      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,config,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End);
+      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI,config);
+      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,config);
       ecc = pStrandGeom->GetTempEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0.00),config, &nTsEffective);
    }
    else
    {
-      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::Start);
-      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End);
+      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI);
+      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End,pgsTypes::ServiceI);
       ecc = pStrandGeom->GetTempEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0.00),&nTsEffective);
    }
 
@@ -1335,6 +1335,149 @@ void CAnalysisAgentImp::GetDeflLiveLoadDeflection(DeflectionLiveLoadType type, c
    m_pGirderModelManager->GetDeflLiveLoadDeflection(type,poi,bat,pDmin,pDmax);
 }
 
+Float64 CAnalysisAgentImp::GetDesignSlabMomentAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi)
+{
+   // returns the difference in moment between the slab moment for the current value of slab offset
+   // and the input value. Adjustment is positive if the input slab offset is greater than the current value
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   rkPPPartUniformLoad beam = GetDesignSlabModel(fcgdr,startSlabOffset,endSlabOffset,poi);
+
+   GET_IFACE(IBridge,pBridge);
+
+   Float64 start_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+   Float64 x = poi.GetDistFromStart() - start_size;
+   sysSectionValue M = beam.ComputeMoment(x);
+
+   ATLASSERT( IsEqual(M.Left(),M.Right()) );
+   return M.Left();
+}
+
+Float64 CAnalysisAgentImp::GetDesignSlabDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi)
+{
+   Float64 dy,rz;
+   GetDesignSlabDeflectionAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi,&dy,&rz);
+   return dy;
+}
+
+void CAnalysisAgentImp::GetDesignSlabStressAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot)
+{
+   GET_IFACE(ISectionProperties,pSectProp);
+   // returns the difference in top and bottom girder stress between the stresses caused by the current slab
+   // and the input value.
+   Float64 M = GetDesignSlabMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi);
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType castDeckInterval = pIntervals->GetCastDeckInterval(poi.GetSegmentKey());
+
+   Float64 Sbg = pSectProp->GetS(castDeckInterval,poi,pgsTypes::BottomGirder,fcgdr);
+   Float64 Stg = pSectProp->GetS(castDeckInterval,poi,pgsTypes::TopGirder,   fcgdr);
+
+   *pfTop = M/Stg;
+   *pfBot = M/Sbg;
+}
+
+rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabModel(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi)
+{
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IMaterials,pMaterial);
+   GET_IFACE(IGirder,pGdr);
+   GET_IFACE(ISectionProperties,pSectProp);
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
+
+   Float64 Ig = pSectProp->GetIx( castDeckIntervalIdx, poi, fcgdr );
+
+   Float64 E = pMaterial->GetEconc(fcgdr,pMaterial->GetSegmentStrengthDensity(segmentKey), 
+                                         pMaterial->GetSegmentEccK1(segmentKey), 
+                                         pMaterial->GetSegmentEccK2(segmentKey) );
+
+   Float64 L = pBridge->GetSegmentSpanLength(segmentKey);
+
+   Float64 w;
+   bool bIsInteriorGirder = pBridge->IsInteriorGirder(segmentKey);
+   if ( bIsInteriorGirder )
+   {
+      // change in main span loading only occurs for exterior girders
+      w = 0;
+   }
+   else
+   {
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+      if ( pDeck->DeckType == pgsTypes::sdtNone || pDeck->OverhangTaper == pgsTypes::dotNone )
+      {
+         // there isn't a deck, or the overhang doesn't taper, so there isn't
+         // a change in loading
+         w = 0;
+      }
+      else
+      {
+         ATLASSERT( pDeck->OverhangTaper == pgsTypes::dotTopTopFlange || pDeck->OverhangTaper == pgsTypes::dotBottomTopFlange );
+         // There is a triangular shape piece of deck concrete that isn't accounted for
+         // in the main slab loading based on the input value because the "A" dimension has changed.
+         // The slab overhang tapers to either the top or bottom of the top flange and the
+         // distance to the top/bottom of the top flange depends on "A"
+
+         // Compute the change in loading due to the change in "A" dimension
+
+         PierIndexType startPierIdx, endPierIdx;
+         pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
+         ATLASSERT(endPierIdx == startPierIdx+1);
+
+         // current value of "A" dimension
+         Float64 AoStart = pBridge->GetSlabOffset(segmentKey.groupIndex,startPierIdx,segmentKey.girderIndex);
+         Float64 AoEnd   = pBridge->GetSlabOffset(segmentKey.groupIndex,endPierIdx,  segmentKey.girderIndex);
+
+         // change in overhang depth at the flange tip at the start/end of the girder
+         // due to the design "A" dimension
+         Float64 delta_overhang_depth_at_flange_tip_start = startSlabOffset - AoStart;
+         Float64 delta_overhang_depth_at_flange_tip_end   = endSlabOffset   - AoEnd;
+
+         // change in flange overhang depth at this poi
+         // assuming a linear variation between start and end of span
+         Float64 delta_overhang_depth_at_flange_tip = ::LinInterp(poi.GetDistFromStart(),delta_overhang_depth_at_flange_tip_start,delta_overhang_depth_at_flange_tip_end,L);
+
+         // Determine the slab overhang at this poi
+         Float64 station,offset;
+         pBridge->GetStationAndOffset(poi,&station,&offset);
+         Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+
+         // slab overhang from CL of girder (normal to alignment)
+         Float64 slab_overhang = (segmentKey.girderIndex == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
+
+         if (slab_overhang < 0.0)
+         {
+            // negative overhang - girder probably has no slab over it
+            slab_overhang = 0.0;
+         }
+         else
+         {
+            Float64 top_width = pGdr->GetTopWidth(poi);
+
+            // slab overhang from edge of girder (normal to alignment)
+            slab_overhang -= top_width/2;
+         }
+
+         // cross sectional area of the missing dead load
+         Float64 delta_slab_overhang_area = slab_overhang*delta_overhang_depth_at_flange_tip/2;
+
+         Float64 density = pMaterial->GetDeckWeightDensity(segmentKey,castDeckIntervalIdx) ;
+
+         w = delta_slab_overhang_area*density*unitSysUnitsMgr::GetGravitationalAcceleration();
+      }
+   }
+
+#pragma Reminder("UPDATE: This is incorrect if girders are made continuous before slab casting")
+#pragma Reminder("UPDATE: Don't have a roark beam for trapezoidal loads")
+   rkPPPartUniformLoad beam(0,L,-w,L,E,Ig);
+   return beam;
+}
+
 Float64 CAnalysisAgentImp::GetDesignSlabPadMomentAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi)
 {
    // returns the difference in moment between the slab pad moment for the current value of slab offset
@@ -1418,21 +1561,16 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabPadModel(Float64 fcgdr,Float
 
    Float64 L = pBridge->GetSegmentSpanLength(segmentKey);
 
-   Float64 density = pMaterial->GetDeckWeightDensity(segmentKey,castDeckIntervalIdx) ;
-   Float64 wStart = (AdStart - AoStart)*top_flange_width*density*unitSysUnitsMgr::GetGravitationalAcceleration();
-   Float64 wEnd   = (AdEnd   - AoEnd  )*top_flange_width*density*unitSysUnitsMgr::GetGravitationalAcceleration();
-
 #pragma Reminder("NOTE: This is incorrect if girders are made continuous before slab casting")
    // a simple span model is being created. if the girders are continuous before slab casting
    // the change in load due to the change in "A" dimension should be applied to a continuous model
 
+   // Get change in "A" dimension at this poi
+   Float64 density = pMaterial->GetDeckWeightDensity(segmentKey,castDeckIntervalIdx) ;
+   Float64 deltaA = ::LinInterp(poi.GetDistFromStart(),AdStart-AoStart,AdEnd-AoEnd,L);
+   Float64 w = deltaA * top_flange_width * density * unitSysUnitsMgr::GetGravitationalAcceleration();
+
 #pragma Reminder("NOTE: Should be using a trapezoidal load.")
-   // the correct model is a trapezoidal load over a portion of a girder. however, since we don't
-   // have a beam model object for that case use the average load for a partial uniform load case.
-   // This is fine because at present the design only designs for a single "A" dimension. In the future,
-   // the the designer tries to optimize the "A" dimension at each end of the girder, this will need
-   // to be updated.
-   Float64 w = (wStart + wEnd)/2;
 
    rkPPPartUniformLoad beam(0,L,-w,L,E,Ig);
    return beam;
@@ -2936,6 +3074,10 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       ftop1 += dc*ft;   
       fbot1 += dc*fb;
 
+      GetDesignSlabStressAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi,&ft,&fb);
+      ftop1 += dc*ft;   
+      fbot1 += dc*fb;
+
       GetDesignSlabPadStressAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi,&ft,&fb);
       ftop1 += dc*ft;   
       fbot1 += dc*fb;
@@ -3803,7 +3945,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
 
    // NOTE: No need to validate camber models
    Float64 Dslab            = 0;
-   Float64 Dslab_pad        = 0;
+   Float64 Dslab_adj        = 0;
+   Float64 Dslab_pad_adj    = 0;
    Float64 Dtrafficbarrier  = 0;
    Float64 Dsidewalk        = 0;
    Float64 Doverlay         = 0;
@@ -3811,7 +3954,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
    Float64 Duser            = 0;
 
    Float64 Rslab            = 0;
-   Float64 Rslab_pad        = 0;
+   Float64 Rslab_adj        = 0;
+   Float64 Rslab_pad_adj    = 0;
    Float64 Rtrafficbarrier  = 0;
    Float64 Rsidewalk        = 0;
    Float64 Roverlay         = 0;
@@ -3823,7 +3967,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
    // The deflection adjustment factor accounts for the differences in E.
    Float64 k2 = GetDeflectionAdjustmentFactor(poi,config,railingSystemIntervalIdx);
    GetDeckDeflection(poi,config,&Dslab,&Rslab); 
-   GetDesignSlabPadDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_pad,&Rslab_pad);
+   GetDesignSlabDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_adj,&Rslab_adj);
+   GetDesignSlabPadDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_pad_adj,&Rslab_pad_adj);
    GetDiaphragmDeflection(poi,config,&Ddiaphragm,&Rdiaphragm);
 
    
@@ -3863,8 +4008,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
 
    if ( bTempStrands )
    {
-      *pDy = Dslab + Dslab_pad + Dtrafficbarrier + Dsidewalk + Doverlay + Duser;
-      *pRz = Rslab + Rslab_pad + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser;
+      *pDy = Dslab + Dslab_adj + Dslab_pad_adj + Dtrafficbarrier + Dsidewalk + Doverlay + Duser;
+      *pRz = Rslab + Rslab_adj + Rslab_pad_adj + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser;
    }
    else
    {
@@ -3875,8 +4020,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
          Rdiaphragm = 0;
       }
 
-      *pDy = Dslab + Dslab_pad + Dtrafficbarrier + Dsidewalk + Doverlay + Duser + Ddiaphragm;
-      *pRz = Rslab + Rslab_pad + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser + Rdiaphragm;
+      *pDy = Dslab + Dslab_adj + Dslab_pad_adj + Dtrafficbarrier + Dsidewalk + Doverlay + Duser + Ddiaphragm;
+      *pRz = Rslab + Rslab_adj + Rslab_pad_adj + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser + Rdiaphragm;
    }
 
    // Switch the sign. Negative deflection creates positive screed camber
@@ -4012,13 +4157,15 @@ void CAnalysisAgentImp::GetSlabBarrierOverlayDeflection(const pgsPointOfInterest
 {
    // NOTE: No need to validate camber models
    Float64 Dslab           = 0;
-   Float64 Dslab_pad       = 0;
+   Float64 Dslab_adj       = 0;
+   Float64 Dslab_pad_adj   = 0;
    Float64 Dtrafficbarrier = 0;
    Float64 Dsidewalk       = 0;
    Float64 Doverlay        = 0;
 
    Float64 Rslab           = 0;
-   Float64 Rslab_pad       = 0;
+   Float64 Rslab_adj       = 0;
+   Float64 Rslab_pad_adj   = 0;
    Float64 Rtrafficbarrier = 0;
    Float64 Rsidewalk       = 0;
    Float64 Roverlay        = 0;
@@ -4032,7 +4179,8 @@ void CAnalysisAgentImp::GetSlabBarrierOverlayDeflection(const pgsPointOfInterest
    pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GetDeckDeflection(poi,config,&Dslab,&Rslab);
-   GetDesignSlabPadDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_pad,&Rslab_pad);
+   GetDesignSlabDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_adj,&Rslab_adj);
+   GetDesignSlabPadDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_pad_adj,&Rslab_pad_adj);
    
    Float64 k2 = GetDeflectionAdjustmentFactor(poi,config,railingSystemIntervalIdx);
    Dtrafficbarrier = k2*GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat, rtIncremental, false);
@@ -4049,8 +4197,8 @@ void CAnalysisAgentImp::GetSlabBarrierOverlayDeflection(const pgsPointOfInterest
    }
 
    // Switch the sign. Negative deflection creates positive screed camber
-   *pDy = Dslab + Dslab_pad + Dtrafficbarrier + Dsidewalk + Doverlay;
-   *pRz = Rslab + Rslab_pad + Rtrafficbarrier + Rsidewalk + Roverlay;
+   *pDy = Dslab + Dslab_adj + Dslab_pad_adj + Dtrafficbarrier + Dsidewalk + Doverlay;
+   *pRz = Rslab + Rslab_adj + Rslab_pad_adj + Rtrafficbarrier + Rsidewalk + Roverlay;
 }
 
 
@@ -4090,14 +4238,14 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,cons
    // elastic effects. If transformed properties analysis, we want the force at the start of the interval.
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
 
-   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType);
+   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType,pgsTypes::ServiceI);
    Float64 nSEffective;
    Float64 e = pStrandGeom->GetEccentricity(intervalIdx,poi,strandType, &nSEffective);
 
    return GetStress(poi,stressLocation,P,e);
 }
 
-Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,const GDRCONFIG& config)
+Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,const GDRCONFIG& config)
 {
    // Computes design-time stresses due to prestressing
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -4114,16 +4262,16 @@ Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,const p
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
 
    Float64 P;
-   P = pPsForce->GetPrestressForce(poi,config,pgsTypes::Permanent,intervalIdx,timeType);
+   P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType,pgsTypes::ServiceI,config);
 #pragma Reminder("UPDATE: need to get strand force with elastic gain due to live load")
    // NOT YET SUPPORT WHEN CONFIG IS PASSED IN... be really careful with this. need to make sure
    // the stress in the girder includes live load and the stress in the strands includes live load
    // the call to GetPrestressForce above may already include live load if the interval is correct?
    //IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
    //if ( intervalIdx < liveLoadIntervalIdx )
-   //   P = pPsForce->GetPrestressForce(poi,config,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+   //   P = pPsForce->GetPrestressForce(poi,config,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
    //else
-   //   P = pPsForce->GetPrestressForceWithLiveLoad(poi,config,pgsTypes::Permanent);
+   //   P = pPsForce->GetPrestressForceWithLiveLoad(poi,config,pgsTypes::Permanent,pgsTypes::ServiceI);
 
    // NOTE: since we are doing design, the main bridge model may not have temporary strand removal
    // intervals. Use the deck casting interval as the break point for "before temporary strands are removed"
@@ -4132,7 +4280,7 @@ Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,const p
    bool bIncludeTemporaryStrands = intervalIdx < castDeckIntervalIdx ? true : false;
    if ( bIncludeTemporaryStrands ) 
    {
-      P += pPsForce->GetPrestressForce(poi,config,pgsTypes::Temporary,intervalIdx,timeType);
+      P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,timeType,pgsTypes::ServiceI,config);
    }
 
    Float64 nSEffective;
@@ -5126,6 +5274,21 @@ void CAnalysisAgentImp::GetD_NoDeck(const pgsPointOfInterest& poi,bool bUseConfi
    *pRz = R4;
 }
 
+void CAnalysisAgentImp::GetDesignSlabDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
+{
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   rkPPPartUniformLoad beam = GetDesignSlabModel(fcgdr,startSlabOffset,endSlabOffset,poi);
+
+   GET_IFACE(IBridge,pBridge);
+
+   Float64 start_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+   Float64 x = poi.GetDistFromStart() - start_size;
+
+   *pDy = beam.ComputeDeflection(x);
+   *pRz = beam.ComputeRotation(x);
+}
+
 void CAnalysisAgentImp::GetDesignSlabPadDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -5313,7 +5476,30 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 
    GroupIndexType backGroupIdx, aheadGroupIdx;
    pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
-   ATLASSERT(backGroupIdx == aheadGroupIdx-1);
+
+#if defined _DEBUG
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+   if ( pPier->HasCantilever() )
+   {
+      if ( pPier->GetIndex() == 0 )
+      {
+         ATLASSERT(backGroupIdx == INVALID_INDEX);
+         ATLASSERT(aheadGroupIdx == 0);
+      }
+      else
+      {
+         ATLASSERT(pPier->GetIndex() == pIBridgeDesc->GetPierCount()-1);
+         ATLASSERT(backGroupIdx == pIBridgeDesc->GetGirderGroupCount()-1);
+         ATLASSERT(aheadGroupIdx == INVALID_INDEX);
+      }
+   }
+   else
+   {
+      ATLASSERT(backGroupIdx == aheadGroupIdx-1);
+   }
+
+#endif
 
    GirderIndexType gdrIdx = girderKey.girderIndex;
 
@@ -5324,8 +5510,16 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
    // deal with girder index when there are different number of girders in each group
    GirderIndexType prev_group_gdr_idx = gdrIdx;
    GirderIndexType next_group_gdr_idx = gdrIdx;
-   prev_group_gdr_idx = Min(gdrIdx,pBridge->GetGirderCount(backGroupIdx)-1);
-   next_group_gdr_idx = Min(gdrIdx,pBridge->GetGirderCount(aheadGroupIdx)-1);
+
+   if ( backGroupIdx != INVALID_INDEX )
+   {
+      prev_group_gdr_idx = Min(gdrIdx,pBridge->GetGirderCount(backGroupIdx)-1);
+   }
+
+   if ( aheadGroupIdx != INVALID_INDEX )
+   {
+      next_group_gdr_idx = Min(gdrIdx,pBridge->GetGirderCount(aheadGroupIdx)-1);
+   }
 
    CollectionIndexType nPOI = 0;
    pgsPointOfInterest vPOI[2];
@@ -5344,6 +5538,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 
 
    // get poi at cl bearing at end of prev group
+   if ( backGroupIdx != INVALID_INDEX )
    {
       SegmentIndexType nSegments = pBridge->GetSegmentCount(backGroupIdx,prev_group_gdr_idx);
       CSegmentKey thisSegmentKey(backGroupIdx,prev_group_gdr_idx,nSegments-1);
@@ -5355,6 +5550,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
    }
 
    // get poi at cl bearing at start of next group
+   if ( aheadGroupIdx != INVALID_INDEX )
    {
       CSegmentKey thisSegmentKey(aheadGroupIdx,next_group_gdr_idx,0);
       std::vector<pgsPointOfInterest> vPoi(pPOI->GetPointsOfInterest(thisSegmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND));
@@ -5410,13 +5606,21 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
          fbOverlay = 0;
       }
 
-#pragma Reminder("UPDATE: need all user defined load stages")
-      // need to include all intervals when user defined loads are applied, not just compositeDeckIntervalIdx
-      GetStress(compositeDeckIntervalIdx,pftUserDC,poi,bat, rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
-      fbUserDC = fBottom;
+      fbUserDC = 0;
+      std::vector<IntervalIndexType> vUserDCIntervals = pIntervals->GetUserDefinedLoadIntervals(girderKey,pftUserDC);
+      BOOST_FOREACH(IntervalIndexType intervalIdx,vUserDCIntervals)
+      {
+         GetStress(intervalIdx,pftUserDC,poi,bat, rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
+         fbUserDC += fBottom;
+      }
 
-      GetStress(compositeDeckIntervalIdx,pftUserDW,poi,bat, rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
-      fbUserDW = fBottom;
+      fbUserDW = 0;
+      std::vector<IntervalIndexType> vUserDWIntervals = pIntervals->GetUserDefinedLoadIntervals(girderKey,pftUserDW);
+      BOOST_FOREACH(IntervalIndexType intervalIdx,vUserDWIntervals)
+      {
+         GetStress(intervalIdx,pftUserDW,poi,bat, rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
+         fbUserDW += fBottom;
+      }
 
       GetStress(compositeDeckIntervalIdx,pftUserLLIM,poi,bat, rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
       fbUserLLIM = fBottom;
@@ -6261,7 +6465,7 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    Float64 fPreTension, fPostTension;
    if ( pConfig )
    {
-      fPreTension = GetDesignStress(serviceLoadIntervalIdx,poi,stressLocation,*pConfig);
+      fPreTension = GetDesignStress(serviceLoadIntervalIdx,limitState,poi,stressLocation,*pConfig);
       fPostTension = 0; // no post-tensioning for precast girder design
    }
    else

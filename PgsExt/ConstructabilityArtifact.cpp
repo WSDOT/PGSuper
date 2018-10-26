@@ -42,7 +42,11 @@ pgsConstructabilityArtifact::pgsConstructabilityArtifact():
 m_bIsSlabOffsetApplicable(false)
 {
    m_Provided = 0;
-   m_Required =0;
+   m_Required = 0;
+  
+   m_bIsBottomFlangeClearanceApplicable = false;
+   m_C = 0;
+   m_Cmin = 0;
 }
 
 pgsConstructabilityArtifact::pgsConstructabilityArtifact(const pgsConstructabilityArtifact& rOther)
@@ -138,9 +142,46 @@ bool pgsConstructabilityArtifact::CheckStirrupLength() const
    return m_bIsSlabOffsetApplicable && m_bCheckStirrupLength;
 }
 
+void pgsConstructabilityArtifact::SetBottomFlangeClearanceApplicability(bool bSet)
+{
+   m_bIsBottomFlangeClearanceApplicable = bSet;
+}
+
+bool pgsConstructabilityArtifact::IsBottomFlangeClearnceApplicable() const
+{
+   return m_bIsBottomFlangeClearanceApplicable;
+}
+
+void pgsConstructabilityArtifact::SetBottomFlangeClearanceParameters(Float64 C,Float64 Cmin)
+{
+   m_C = C;
+   m_Cmin = Cmin;
+}
+
+void pgsConstructabilityArtifact::GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const
+{
+   *pC = m_C;
+   *pCmin = m_Cmin;
+}
+
+bool pgsConstructabilityArtifact::BottomFlangeClearancePassed() const
+{
+   if ( !m_bIsBottomFlangeClearanceApplicable )
+   {
+      return true;
+   }
+
+   return ::IsGE(m_Cmin,m_C) ? true : false;
+}
+
 bool pgsConstructabilityArtifact::Passed() const
 {
    if ( !SlabOffsetPassed() )
+   {
+      return false;
+   }
+
+   if ( !BottomFlangeClearancePassed() )
    {
       return false;
    }
@@ -161,6 +202,10 @@ void pgsConstructabilityArtifact::MakeCopy(const pgsConstructabilityArtifact& rO
    m_Required = rOther.m_Required;
    m_bCheckStirrupLength = rOther.m_bCheckStirrupLength;
    m_bIsSlabOffsetApplicable = rOther.m_bIsSlabOffsetApplicable;
+
+   m_bIsBottomFlangeClearanceApplicable = rOther.m_bIsBottomFlangeClearanceApplicable;
+   m_C = rOther.m_C;
+   m_Cmin = rOther.m_Cmin;
 }
 
 void pgsConstructabilityArtifact::MakeAssignment(const pgsConstructabilityArtifact& rOther)

@@ -158,6 +158,9 @@ public:
    virtual bool IsStressCheckApplicable(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType);
    virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey);
 
+   virtual bool CheckTemporaryStresses();
+   virtual bool CheckFinalDeadLoadTensionStress();
+
 // ITransverseReinforcementSpec
 public:
    virtual Float64 GetMaxSplittingStress(Float64 fyRebar);

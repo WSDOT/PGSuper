@@ -929,7 +929,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       {
          // positive moment - use fpe (effective prestress)
          GET_IFACE(IPretensionForce,pPrestressForce);
-         fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,loadRatingIntervalIdx,pgsTypes::Middle);
+         fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,loadRatingIntervalIdx,pgsTypes::Middle,ls);
       }
       else
       {

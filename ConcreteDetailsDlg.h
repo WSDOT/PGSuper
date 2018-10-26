@@ -37,7 +37,7 @@ class CConcreteDetailsDlg : public CPropertySheet
 {
 // Construction
 public:
-	CConcreteDetailsDlg(CWnd* pParent = NULL,UINT iSelectPage=0);
+	CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters = true,CWnd* pParent = NULL,UINT iSelectPage=0);
 
    // text strings to in in display units... Ec comes out in display units
    static CString UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2);
@@ -51,6 +51,17 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CConcreteDetailsDlg)
 	//}}AFX_VIRTUAL
+   bool m_bFinalProperties;
+   bool m_bEnableComputeTimeParamters;
+
+   // Common to all property pages
+   Float64 m_TimeAtInitialStrength; // time when initial strength (fci) is reached
+   Float64 m_fci; // initial strength (used if m_bFinalProperties is false)
+   Float64 m_fc28; // 28 day strength (used if m_bFinalProperties is true)
+   Float64 m_Eci; // modulus based on initial strength
+   Float64 m_Ec28; // modulus based on 28 day strength
+   bool m_bUserEci;
+   bool m_bUserEc28;
 
    CConcreteGeneralPage m_General;
    CAASHTOConcretePage m_AASHTO;

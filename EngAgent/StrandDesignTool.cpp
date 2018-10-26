@@ -739,9 +739,11 @@ Float64 pgsStrandDesignTool::GetTransferLength(pgsTypes::StrandType strandType) 
    return m_XFerLength[strandType];
 }
 
-StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,Float64 Force)
+void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,InitialDesignParameters* pDesignParams)
 {
-   LOG(_T("Compute number of strands required to handle a force of ")<<::ConvertFromSysUnits(Force,unitMeasure::Kip) << _T(" kip"));
+   ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
+
+   LOG(_T("Compute number of strands required to handle a force of ")<<::ConvertFromSysUnits(pDesignParams->Preqd,unitMeasure::Kip) << _T(" kip"));
 
    GDRCONFIG guess = GetSegmentConfiguration();
 
@@ -751,6 +753,10 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    StrandIndexType ns = GetNs();
    StrandIndexType nh = GetNh();
    StrandIndexType nt = GetNt();
+
+   ATLASSERT(guess.PrestressConfig.GetStrandCount(pgsTypes::Straight) == ns);
+   ATLASSERT(guess.PrestressConfig.GetStrandCount(pgsTypes::Harped) == nh);
+   ATLASSERT(guess.PrestressConfig.GetStrandCount(pgsTypes::Temporary) == nt);
 
    if ( ns + nh + nt == 0)
    {
@@ -778,19 +784,35 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    pgsPsForceEng psfeng;
    psfeng.SetStatusGroupID(m_StatusGroupID);
    psfeng.SetBroker(m_pBroker);
-   ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
    const LOSSDETAILS* pDetails = psfeng.GetLosses(poi,guess);
 
-   GET_IFACE(ILoadFactors,pLoadFactors);
-   const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
-   Float64 gLL = pLF->LLIMmax[pgsTypes::ServiceIII];
-   Float64 loss = pDetails->pLosses->PermanentStrand_FinalWithLiveLoad(gLL);
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   Float64 loss;
+   if ( pDesignParams->intervalIdx < liveLoadIntervalIdx )
+   {
+      loss = pDetails->pLosses->PermanentStrand_Final();
+   }
+   else
+   {
+      GET_IFACE(ILoadFactors,pLoadFactors);
+      const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+      Float64 gLL = pLF->LLIMmax[pDesignParams->limit_state];
+      loss = pDetails->pLosses->PermanentStrand_FinalWithLiveLoad(gLL);
+   }
 
 #if defined _DEBUG
    GET_IFACE(ILosses,pILosses);
-   GET_IFACE(IIntervals,pIntervals);
-   Float64 check_loss = pILosses->GetPrestressLoss(poi,pgsTypes::Permanent,guess,pIntervals->GetLiveLoadInterval(m_SegmentKey),pgsTypes::End);
-   ATLASSERT(IsEqual(loss,check_loss));
+   if ( pDesignParams->intervalIdx < liveLoadIntervalIdx )
+   {
+      Float64 check_loss = pILosses->GetPrestressLoss(poi,pgsTypes::Permanent,pDesignParams->intervalIdx,pgsTypes::End,pDesignParams->limit_state,guess);
+      ATLASSERT(IsEqual(loss,check_loss));
+   }
+   else
+   {
+      Float64 check_loss = pILosses->GetPrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state,guess);
+      ATLASSERT(IsEqual(loss,check_loss));
+   }
 #endif // _DEBUG
 
    LOG(_T("Estimated losses for this strand configuration = ") << ::ConvertFromSysUnits(loss,unitMeasure::KSI) << _T(" KSI"));
@@ -807,7 +829,7 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    }
    else
    {
-      Aps = -Force/fstrand; // Total required area of prestressing
+      Aps = -pDesignParams->Preqd/fstrand; // Total required area of prestressing
    }
 
    LOG(_T("Strand Area = ") << ::ConvertFromSysUnits(m_Aps[pgsTypes::Straight],unitMeasure::Inch2) << _T(" in^2 per strand"));
@@ -826,11 +848,14 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
 
    ATLASSERT(fN <= N || INVALID_INDEX == N);
 
-   return N;
+   pDesignParams->Np = N;
+   pDesignParams->fN = fN;
 }
 
 StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
 {
+   LOG(_T(""));
+
    // Intialize with low number of strands to force tension to control
    StrandIndexType Np = GetNextNumPermanentStrands(m_MinPermanentStrands);
 
@@ -840,7 +865,7 @@ StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
       LOG(_T("No permanent strands defined in section"));
    }
 
-   LOG(_T("Make initial guess of permanent strands using a couple (WAGOTA) Np = ") << Np);
+   LOG(_T("Make initial guess of permanent strands using a couple, Np = ") << Np);
    
    StrandIndexType ns = SetNumPermanentStrands(Np) ? Np : INVALID_INDEX;
    if (ns != INVALID_INDEX)
@@ -1146,7 +1171,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    GET_IFACE(IPretensionForce,pPrestressForce);
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
-   Float64 strand_force = pPrestressForce->GetPrestressForce(poi,config,pgsTypes::Harped,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/);
+   Float64 strand_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/,pgsTypes::ServiceI,config);
    LOG(_T("PS Force in harped strands ") << ::ConvertFromSysUnits(strand_force,unitMeasure::Kip) << _T(" kip"));
 
    // finally, the hold down force
@@ -2096,9 +2121,12 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
 {
    LOG(_T("Compute total prestessing force in mid-zone for the current configuration"));
 
+   ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(poi.GetSegmentKey());
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(m_SegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
    // NOTE: can't use temp strand removal interval because it is based on the original input which may not have temp strands
    //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(poi.GetSegmentKey());
 
@@ -2133,7 +2161,6 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
    pgsPsForceEng psfeng;
    psfeng.SetStatusGroupID(m_StatusGroupID);
    psfeng.SetBroker(m_pBroker);
-   ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
    const LOSSDETAILS* pDetails = psfeng.GetLosses(poi,guess);
    Float64 loss;
    if (intervalIdx == releaseIntervalIdx)
@@ -2141,9 +2168,17 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
       loss = pDetails->pLosses->PermanentStrand_AfterTransfer();
       LOG(_T("Estimated Release losses for this strand configuration = ") << ::ConvertFromSysUnits(loss,unitMeasure::KSI) << _T(" KSI"));
    }
-   else
+   else if ( intervalIdx < liveLoadIntervalIdx )
    {
       loss = pDetails->pLosses->PermanentStrand_Final();
+      LOG(_T("Estimated Final losses for this strand configuration = ") << ::ConvertFromSysUnits(loss,unitMeasure::KSI) << _T(" KSI"));
+   }
+   else
+   {
+      GET_IFACE(ILoadFactors,pLoadFactors);
+      const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+      Float64 gLL = pLF->LLIMmax[pgsTypes::ServiceIII];
+      loss = pDetails->pLosses->PermanentStrand_FinalWithLiveLoad(gLL);
       LOG(_T("Estimated Final losses for this strand configuration = ") << ::ConvertFromSysUnits(loss,unitMeasure::KSI) << _T(" KSI"));
    }
 
@@ -2272,7 +2307,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
    }
 }
 
-bool pgsStrandDesignTool::ComputeMinHarpedForEzEccentricity(const pgsPointOfInterest& poi, Float64 eccTarget, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh)
+bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 eccTarget, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh)
 {
    // don't do anything if we aren't in minimize harped mode
    if (m_DesignOptions.doStrandFillType != ftMinimizeHarping)
@@ -2402,9 +2437,9 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEzEccentricity(const pgsPointOfInte
       Float64 neff;
       Float64 ms_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, ms_poi, guess, false, &neff);
       LOG(_T("New Eccentricity in mid-zone, without temp strands, is ") <<::ConvertFromSysUnits( ms_ecc , unitMeasure::Inch)<< _T(" in"));
-      LOG(_T("Minimum ecc for release tension mz = ") <<::ConvertFromSysUnits( GetMinimumFinalMzEccentricity() , unitMeasure::Inch)<< _T(" in"));
+      LOG(_T("Minimum ecc for release tension mz = ") <<::ConvertFromSysUnits( GetMinimumFinalMidZoneEccentricity() , unitMeasure::Inch)<< _T(" in"));
 
-      if (ms_ecc < GetMinimumFinalMzEccentricity())
+      if (ms_ecc < GetMinimumFinalMidZoneEccentricity())
       {
          LOG(_T("Swapping harped for straight voilates minimum mid-zone eccentricity for bottom service tension. Abort this strategy"));
          return false;
@@ -2464,7 +2499,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEzEccentricity(const pgsPointOfInte
    }
 }
 
-bool pgsStrandDesignTool::ComputeAddHarpedForMzReleaseEccentricity(const pgsPointOfInterest& poi, Float64 eccMax, Float64 eccMin, StrandIndexType* pNs, StrandIndexType* pNh)
+bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pgsPointOfInterest& poi, Float64 eccMax, Float64 eccMin, StrandIndexType* pNs, StrandIndexType* pNh)
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
@@ -2644,12 +2679,12 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMzReleaseEccentricity(const pgsPoin
 }
 
 
-Float64 pgsStrandDesignTool::GetMinimumFinalMzEccentricity()
+Float64 pgsStrandDesignTool::GetMinimumFinalMidZoneEccentricity()
 {
    return m_MinimumFinalMzEccentricity;
 }
 
-void pgsStrandDesignTool::SetMinimumFinalMzEccentricity(Float64 ecc)
+void pgsStrandDesignTool::SetMinimumFinalMidZoneEccentricity(Float64 ecc)
 {
    m_MinimumFinalMzEccentricity = ecc;
 }

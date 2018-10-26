@@ -537,12 +537,14 @@ void CDistributedLoadDrawStrategyImpl::EditLoad()
 
    const CDistributedLoadData* pLoad = pUdl->GetDistributedLoad(m_LoadIndex);
 
-	CEditDistributedLoadDlg dlg(*pLoad);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+	CEditDistributedLoadDlg dlg(*pLoad,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       if (*pLoad != dlg.m_Load)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(m_LoadIndex,*pLoad,dlg.m_Load);
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(m_LoadIndex,*pLoad,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
    }

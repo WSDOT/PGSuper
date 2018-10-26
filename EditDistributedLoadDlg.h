@@ -28,7 +28,8 @@
 // EditDistributedLoadDlg.h : header file
 //
 #include "PGSuperAppPlugin\resource.h"
-#include <pgsExt\DistributedLoadData.h>
+#include <PgsExt\DistributedLoadData.h>
+#include <PgsExt\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditDistributedLoadDlg dialog
@@ -37,7 +38,7 @@ class CEditDistributedLoadDlg : public CDialog
 {
 // Construction
 public:
-	CEditDistributedLoadDlg(const CDistributedLoadData& load,CWnd* pParent = NULL);   // standard constructor
+	CEditDistributedLoadDlg(const CDistributedLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CEditDistributedLoadDlg)
@@ -56,6 +57,9 @@ public:
    CComPtr<IBroker>  m_pBroker;
 
    bool                 m_WasLiveLoad;
+
+   CTimelineManager m_TimelineMgr;
+   bool m_bWasNewEventCreated;
 
 
 // Overrides

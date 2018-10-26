@@ -23,38 +23,30 @@
 #pragma once
 
 
-// CCEBFIPConcretePage dialog
+// CCEBFIPParametersDlg dialog
 
-class CCEBFIPConcretePage : public CPropertyPage
+class CCEBFIPParametersDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CCEBFIPConcretePage)
+	DECLARE_DYNAMIC(CCEBFIPParametersDlg)
 
 public:
-	CCEBFIPConcretePage();
-	virtual ~CCEBFIPConcretePage();
+	CCEBFIPParametersDlg(CWnd* pParent = NULL);   // standard constructor
+	virtual ~CCEBFIPParametersDlg();
+
+   Float64 m_t1;
+   Float64 m_fc1;
+   Float64 m_fc2;
+   Float64 m_S;
 
 // Dialog Data
-	enum { IDD = IDD_CEBFIP_CONCRETE };
-
-   bool m_bUserParameters;
-   Float64 m_S;
-   Float64 m_BetaSc;
-   pgsTypes::CEBFIPCementType m_CementType;
-
-protected:
-   bool m_bUseCEBFIPParameters;
+	enum { IDD = IDD_CEBFIP_PARAMETERS };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual BOOL OnInitDialog();
 
-   afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
+   afx_msg void UpdateParameters();
 
 	DECLARE_MESSAGE_MAP()
 public:
-   afx_msg void OnUserParameters();
-   afx_msg void OnCementType();
-   afx_msg void OnCompute();
-
-   void UpdateParameters();
+   virtual BOOL OnInitDialog();
 };

@@ -49,13 +49,16 @@ static char THIS_FILE[] = __FILE__;
 // CEditMomentLoadDlg dialog
 
 
-CEditMomentLoadDlg::CEditMomentLoadDlg(const CMomentLoadData& load,CWnd* pParent /*=NULL*/):
+CEditMomentLoadDlg::CEditMomentLoadDlg(const CMomentLoadData& load,const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/):
 	CDialog(CEditMomentLoadDlg::IDD, pParent),
-   m_Load(load)
+   m_Load(load),
+   m_TimelineMgr(*pTimelineMgr)
 {
 	//{{AFX_DATA_INIT(CEditMomentLoadDlg)
 	//}}AFX_DATA_INIT
    EAFGetBroker(&m_pBroker);
+
+   m_bWasNewEventCreated = false;
 }
 
 
@@ -451,12 +454,10 @@ void CEditMomentLoadDlg::FillEventList()
       if ( selEventIdx != CB_ERR )
       {
          pcbEvent->SetCurSel(selEventIdx);
-         m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(selEventIdx);
       }
       else
       {
          pcbEvent->SetCurSel(0);
-         m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(0);
       }
    }
 }
@@ -469,7 +470,6 @@ void CEditMomentLoadDlg::OnEventChanging()
 
 void CEditMomentLoadDlg::OnEventChanged()
 {
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
    {
@@ -495,15 +495,14 @@ void CEditMomentLoadDlg::OnEventChanged()
 
 EventIndexType CEditMomentLoadDlg::CreateEvent()
 {
-#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
+   CTimelineEventDlg dlg(m_TimelineMgr,INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(*dlg.m_pTimelineEvent);
-  }
+      m_bWasNewEventCreated = true;
+      EventIndexType eventIdx;
+      m_TimelineMgr.AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
+      return eventIdx;
+   }
 
    return INVALID_INDEX;
 }

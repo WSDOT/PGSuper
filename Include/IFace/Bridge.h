@@ -319,6 +319,10 @@ interface IBridge : IUnknown
    // be zero
    virtual void GetDistanceBetweenGirders(const pgsPointOfInterest& poi,Float64 *pLeft,Float64* pRight) = 0;
 
+   // clear distance between the bottom flanges of the girder. If poi is on an exterior girder, the
+   // left/right parameter will be < 0 (meaning not applicable)
+   virtual void GetBottomFlangeClearance(const pgsPointOfInterest& poi,Float64* pLeft,Float64* pRight) = 0;
+
    // returns the spacing between girders. adjacent spaces that are the same are grouped together
    // the returned vector is empty if the spacings could not be determined (e.g. station is off the bridge)
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station) = 0;
