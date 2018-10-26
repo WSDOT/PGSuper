@@ -25,6 +25,7 @@
 #include "TotalPrestressLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\PrestressForce.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
 #ifdef _DEBUG
@@ -60,8 +61,8 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   bool bUseGrossProperties = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false;
+   GET_IFACE2(pBroker,ILosses, pLosses);
+   bool bDeckShrinkage = pLosses->IsDeckShrinkageApplicable();
 
    ColumnIndexType numColumns = 9;
    if ( !bIgnoreInitialRelaxation )
@@ -163,7 +164,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    table->m_NtMax = NtMax;
    table->m_pStrands = pStrands;
    table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
-   table->m_bUseGrossProperties = bUseGrossProperties;
+   table->m_bIsDeckShinkageApplied = bDeckShrinkage;
 
    return table;
 }
@@ -206,7 +207,7 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
    Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
    Float64 fpe = fpj - fpT + dfpED + dfpSIDL;
-   if ( m_bUseGrossProperties )
+   if ( m_bIsDeckShinkageApplied )
    {
       Float64 dfpSS = pDetails->pLosses->ElasticGainDueToDeckShrinkage();
       fpe += dfpSS;

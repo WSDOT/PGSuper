@@ -245,6 +245,7 @@ void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(pgsTypes::
    m_AsProvided[stressLocation]          = AsProvided;
    m_AsRequired[stressLocation]          = AsRequired;
    m_fAltAllowableStress[stressLocation] = fHigherAllow;
+   m_bIsAltTensileStressApplicable[stressLocation] = true;
 }
 
 void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const
@@ -261,9 +262,15 @@ Float64 pgsFlexuralStressArtifact::GetAlternativeAllowableTensileStress(pgsTypes
    return m_fAltAllowableStress[stressLocation];
 }
 
+bool pgsFlexuralStressArtifact::IsWithRebarAllowableStressApplicable(pgsTypes::StressLocation stressLocation) const
+{
+   return m_bIsAltTensileStressApplicable[stressLocation];
+}
+
 bool pgsFlexuralStressArtifact::WasWithRebarAllowableStressUsed(pgsTypes::StressLocation stressLocation) const
 {
    // If na<0.0, then section was in compression
+   ATLASSERT(m_bIsAltTensileStressApplicable[stressLocation]);
    return (0.0 < m_Yna[stressLocation]) && (m_AsRequired[stressLocation] <= m_AsProvided[stressLocation]) ? true : false;
 }
 

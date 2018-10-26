@@ -242,6 +242,7 @@ bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType inter
 
 bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
 {
+   ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
@@ -340,6 +341,115 @@ bool pgsSegmentArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType i
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       if ( artifact.WasWithRebarAllowableStressUsed(pgsTypes::TopDeck) || 
            artifact.WasWithRebarAllowableStressUsed(pgsTypes::BottomDeck) )
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
+{
+   ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
+
+   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
+   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      pgsFlexuralStressArtifact& artifact(*iter);
+      const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
+      CClosureKey closureKey;
+      bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
+      if ( (attribute == POI_CLOSURE &&  bIsClosure) || // test if attribute is POI_CLOSURE and artifact is for a closure -OR-
+           (attribute == 0           && !bIsClosure)    // test if attribute is 0 and artifact is not for a closure
+          )
+      {
+         if ( artifact.IsWithRebarAllowableStressApplicable(stressLocation) )
+         {
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+
+bool pgsSegmentArtifact::IsSegmentWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
+   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
+   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      pgsFlexuralStressArtifact& artifact(*iter);
+      const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
+      CClosureKey closureKey;
+      bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
+      if ( !bIsClosure )
+      {
+         if ( artifact.IsWithRebarAllowableStressApplicable(pgsTypes::TopGirder) ||
+              artifact.IsWithRebarAllowableStressApplicable(pgsTypes::BottomGirder))
+         {
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+
+bool pgsSegmentArtifact::IsClosureJointWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
+   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
+   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      pgsFlexuralStressArtifact& artifact(*iter);
+      const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
+      CClosureKey closureKey;
+      bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
+      if ( bIsClosure )
+      {
+         if ( (artifact.IsInPrecompressedTensileZone(pgsTypes::TopGirder) == bIsInPTZ && // PTZ status of top matches bIsInPTZ
+               artifact.IsWithRebarAllowableStressApplicable(pgsTypes::TopGirder)) // AND allowable with rebar was used in top of girder
+               ||                                                             // -OR-
+              (artifact.IsInPrecompressedTensileZone(pgsTypes::BottomGirder) == bIsInPTZ && // PTZ status of bottom matches bIsInPTZ
+               artifact.IsWithRebarAllowableStressApplicable(pgsTypes::BottomGirder)) // AND allowable with rebar was used in bot of girder
+            )
+         {
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+
+bool pgsSegmentArtifact::IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+{
+   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
+   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      pgsFlexuralStressArtifact& artifact(*iter);
+      const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
+      if ( artifact.IsWithRebarAllowableStressApplicable(pgsTypes::TopDeck) || 
+           artifact.IsWithRebarAllowableStressApplicable(pgsTypes::BottomDeck) )
       {
          return true;
       }

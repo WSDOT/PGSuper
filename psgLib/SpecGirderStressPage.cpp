@@ -232,6 +232,10 @@ void CSpecGirderStressPage::OnCheckTemporaryStresses()
    GetDlgItem(IDC_TS_REMOVAL_TENSION_MAX)->EnableWindow(bEnable2);
    GetDlgItem(IDC_TS_REMOVAL_TENSION_MAX_UNIT)->EnableWindow(bEnable2);
 
+   GetDlgItem(IDC_TS_TENSION_WITH_REBAR_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TS_TENSION_WITH_REBAR)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TS_TENSION_WITH_REBAR_UNIT)->EnableWindow(bEnable);
+
    GetDlgItem(IDC_AFTER_DECK_GROUP)->EnableWindow(bEnable);
    GetDlgItem(IDC_AFTER_DECK_COMPRESSION_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_AFTER_DECK_COMPRESSION)->EnableWindow(bEnable);

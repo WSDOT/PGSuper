@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,32
- PRODUCTVERSION 3,0,0,32
+ FILEVERSION 3,0,0,33
+ PRODUCTVERSION 3,0,0,33
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.32"
+            VALUE "FileVersion", "3.0.0.33"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.32"
+            VALUE "ProductVersion", "3.0.0.33"
         END
     END
     BLOCK "VarFileInfo"
@@ -510,7 +510,7 @@ BEGIN
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,14,310,154,18
 END
 
-IDD_SPEC_STRANDS DIALOGEX 0, 0, 408, 337
+IDD_SPEC_STRANDS DIALOGEX 0, 0, 408, 430
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION
 CAPTION "Strands"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -588,6 +588,15 @@ BEGIN
     COMBOBOX        IDC_COMBO_TRANSFER,20,311,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Allow Extended Straight Strands",IDC_STRAND_EXTENSIONS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,284,117,10
+    GROUPBOX        "Size of Ducts (LRFD 5.4.6.2)",IDC_STATIC,7,335,394,88
+    LTEXT           "Minimum ratio of inside area of duct to net area of prestressing steel",IDC_STATIC,16,349,212,8
+    EDITTEXT        IDC_PUSH_METHOD,31,361,30,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "for strands placed by the push method",IDC_STATIC,65,364,121,8
+    EDITTEXT        IDC_PULL_METHOD,31,377,30,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "for strands placed by the pull-through method",IDC_STATIC,65,380,142,8
+    LTEXT           "Outside diameter of duct shall not exceed ",IDC_STATIC,17,400,133,8
+    EDITTEXT        IDC_DUCT_SIZE_RATIO,150,398,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "times the least gross concrete thickness at the duct",IDC_STATIC,179,400,162,8
 END
 
 IDD_SPEC_CREEP DIALOGEX 0, 0, 275, 244
@@ -1541,7 +1550,7 @@ BEGIN
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,14,132,154,18
 END
 
-IDD_SPEC_GIRDER DIALOGEX 0, 0, 428, 414
+IDD_SPEC_GIRDER DIALOGEX 0, 0, 428, 435
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1595,31 +1604,34 @@ BEGIN
     LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,234,216,8
     EDITTEXT        IDC_FATIGUE_COMPRESSION,233,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC,277,234,13,8
-    GROUPBOX        "Stress Limits for Temporary Loading Conditions (Only used by PGSuper)",IDC_STATIC,7,260,414,147
+    GROUPBOX        "Stress Limits for Temporary Loading Conditions (Only used by PGSuper)",IDC_STATIC,7,257,414,171
     CONTROL         "Evaluate stress limits for temporary loading conditions",IDC_CHECK_TEMPORARY_STRESSES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,275,188,10
-    GROUPBOX        "Stress Limits immediately after Temporary Strand Removal",IDC_TEMP_STRAND_REMOVAL_GROUP,20,289,386,48
-    LTEXT           "Compressive Stress",IDC_TS_REMOVAL_COMPRESSION_LABEL,28,303,68,8
-    EDITTEXT        IDC_TS_REMOVAL_COMPRESSION,99,300,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "f'c",IDC_TS_REMOVAL_COMPRESS_FC,142,303,8,8
-    LTEXT           "Tensile Stress",IDC_TS_REMOVAL_TENSION_LABEL,28,319,57,8
-    EDITTEXT        IDC_TS_REMOVAL_TENSION,99,317,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_TS_REMOVAL_TENSION_UNIT,142,319,52,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,270,188,10
+    GROUPBOX        "Stress Limits immediately after Temporary Strand Removal",IDC_TEMP_STRAND_REMOVAL_GROUP,20,282,386,79
+    LTEXT           "Compressive Stress",IDC_TS_REMOVAL_COMPRESSION_LABEL,28,295,68,8
+    EDITTEXT        IDC_TS_REMOVAL_COMPRESSION,99,292,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "f'c",IDC_TS_REMOVAL_COMPRESS_FC,142,295,8,8
+    LTEXT           "Tensile Stress in areas other than the precompressed tensile zone",IDC_TS_REMOVAL_TENSION_LABEL,28,311,261,8
+    EDITTEXT        IDC_TS_REMOVAL_TENSION,31,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_TS_REMOVAL_TENSION_UNIT,74,325,52,8
     CONTROL         "But not greater than ",IDC_CHECK_TS_REMOVAL_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,195,319,78,10
-    EDITTEXT        IDC_TS_REMOVAL_TENSION_MAX,276,317,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_TS_REMOVAL_TENSION_MAX_UNIT,321,319,25,8
-    GROUPBOX        "Stress Limits immediately after Deck Placement",IDC_AFTER_DECK_GROUP,20,341,386,56
-    LTEXT           "Compressive Stress",IDC_AFTER_DECK_COMPRESSION_LABEL,28,362,68,8
-    EDITTEXT        IDC_AFTER_DECK_COMPRESSION,99,359,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "f'c",IDC_AFTER_DECK_COMPRESSION_FC,142,362,8,8
-    LTEXT           "Tensile Stress",IDC_AFTER_DECK_TENSION_LABEL,28,378,57,8
-    EDITTEXT        IDC_AFTER_DECK_TENSION,99,377,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_AFTER_DECK_TENSION_UNIT,142,378,77,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,325,78,10
+    EDITTEXT        IDC_TS_REMOVAL_TENSION_MAX,208,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_TS_REMOVAL_TENSION_MAX_UNIT,253,325,25,8
+    LTEXT           "In areas with sufficient bonded reinforcement",IDC_TS_TENSION_WITH_REBAR_LABEL,30,342,147,8
+    EDITTEXT        IDC_TS_TENSION_WITH_REBAR,184,339,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_TS_TENSION_WITH_REBAR_UNIT,228,342,52,8
+    GROUPBOX        "Stress Limits immediately after Deck Placement",IDC_AFTER_DECK_GROUP,20,367,386,53
+    LTEXT           "Compressive Stress",IDC_AFTER_DECK_COMPRESSION_LABEL,28,385,68,8
+    EDITTEXT        IDC_AFTER_DECK_COMPRESSION,99,382,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "f'c",IDC_AFTER_DECK_COMPRESSION_FC,142,385,8,8
+    LTEXT           "Tensile Stress",IDC_AFTER_DECK_TENSION_LABEL,28,399,57,8
+    EDITTEXT        IDC_AFTER_DECK_TENSION,99,398,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_AFTER_DECK_TENSION_UNIT,142,399,77,8
     CONTROL         "But not greater than ",IDC_CHECK_AFTER_DECK_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,195,378,78,10
-    EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,276,377,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,321,378,25,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,195,399,78,10
+    EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,276,398,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,321,399,25,8
 END
 
 IDD_SPEC_LOADS DIALOGEX 0, 0, 351, 311
@@ -1666,19 +1678,19 @@ BEGIN
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
     LTEXT           "Tensile Stress in the Precompressed Tensile Zone",IDC_STATIC,15,36,168,8
-    LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,48,149,15
-    EDITTEXT        IDC_RELEASE_PTZ_TENSION,177,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_PTZ_TENSION_UNIT,222,48,49,8
-    LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,69,149,15
-    EDITTEXT        IDC_RELEASE_PTZ_TENSION_WITH_REBAR,177,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,222,68,52,8
+    LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,48,187,8
+    EDITTEXT        IDC_RELEASE_PTZ_TENSION,213,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_PTZ_TENSION_UNIT,258,48,49,8
+    LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,68,187,8
+    EDITTEXT        IDC_RELEASE_PTZ_TENSION_WITH_REBAR,213,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,258,68,52,8
     LTEXT           "Tensile Stress in Other Areas",IDC_STATIC,15,92,168,8
-    LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,104,149,15
-    EDITTEXT        IDC_RELEASE_TENSION,177,102,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,221,104,49,8
-    LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,125,149,15
-    EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,177,121,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,221,124,52,8
+    LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,104,187,8
+    EDITTEXT        IDC_RELEASE_TENSION,213,102,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,257,104,49,8
+    LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,124,187,8
+    EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,213,121,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,257,124,52,8
     GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2, 5.14.1.3.2d)",IDC_STATIC,7,156,414,157
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,175,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,171,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
@@ -1687,19 +1699,19 @@ BEGIN
     EDITTEXT        IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,274,187,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC,318,190,13,8
     LTEXT           "Tensile Stress in the Precompressed Tensile Zone",IDC_STATIC,15,207,158,8
-    LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,220,149,15
-    EDITTEXT        IDC_SERVICE_PTZ_TENSION,177,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_UNIT,221,220,52,8
-    LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,238,149,15
-    EDITTEXT        IDC_SERVICE_PTZ_TENSION_WITH_REBAR,177,236,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,221,238,52,8
+    LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,220,187,8
+    EDITTEXT        IDC_SERVICE_PTZ_TENSION,213,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_UNIT,257,220,52,8
+    LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,238,187,8
+    EDITTEXT        IDC_SERVICE_PTZ_TENSION_WITH_REBAR,213,236,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,257,238,52,8
     LTEXT           "Tensile Stress in Other Areas",IDC_STATIC,15,258,94,8
-    LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,272,149,15
-    EDITTEXT        IDC_SERVICE_III_TENSION,177,269,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,221,272,52,8
-    LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,290,149,15
-    EDITTEXT        IDC_SERVICE_III_TENSION_WITH_REBAR,177,288,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,221,290,52,8
+    LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,272,187,8
+    EDITTEXT        IDC_SERVICE_III_TENSION,213,269,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,257,272,52,8
+    LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,290,187,8
+    EDITTEXT        IDC_SERVICE_III_TENSION_WITH_REBAR,213,288,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,257,290,52,8
     GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,319,414,35
     LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,335,216,8
     EDITTEXT        IDC_FATIGUE_COMPRESSION,233,332,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1849,7 +1861,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 401
         TOPMARGIN, 7
-        BOTTOMMARGIN, 330
+        BOTTOMMARGIN, 423
     END
 
     IDD_SPEC_CREEP, DIALOG
@@ -2059,7 +2071,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 421
         TOPMARGIN, 7
-        BOTTOMMARGIN, 407
+        BOTTOMMARGIN, 428
     END
 
     IDD_SPEC_LOADS, DIALOG

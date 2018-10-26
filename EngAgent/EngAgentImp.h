@@ -146,6 +146,10 @@ public:
    virtual Float64 GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx);
 
+   virtual bool AreElasticGainsApplicable();
+   virtual bool IsDeckShrinkageApplicable();
+
+
 // IPretensionForce
 public:
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands);

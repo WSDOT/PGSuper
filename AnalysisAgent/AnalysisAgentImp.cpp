@@ -4771,7 +4771,9 @@ Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsType
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
    Float64 e = pStrandGeom->GetEccentricity(spType,intervalIdx,poi, config, bIncludeTemporaryStrands, &nSEffective);
 
-   return GetStress(intervalIdx,poi,stressLocation,P,e);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   return GetStress(releaseIntervalIdx,poi,stressLocation,P,e);
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -325,8 +325,8 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    bool bApplicableCompressionBot = pGirderArtifact->IsFlexuralStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression,botLocation);
 
    // Was allowable with mild rebar used anywhere along the girder
-   bool bWasWithRebarAllowableUsedTop = pGirderArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,topLocation);
-   bool bWasWithRebarAllowableUsedBot = pGirderArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,botLocation);
+   bool bIsWithRebarAllowableApplicableTop = pGirderArtifact->IsWithRebarAllowableStressApplicable(intervalIdx,limitState,topLocation);
+   bool bIsWithRebarAllowableApplicableBot = pGirderArtifact->IsWithRebarAllowableStressApplicable(intervalIdx,limitState,botLocation);
 
 
    ColumnIndexType columnInc = 0;
@@ -359,18 +359,18 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    nColumns += columnInc;
 
    // Tension allowable with rebar
-   if ( bWasWithRebarAllowableUsedTop && bWasWithRebarAllowableUsedBot )
+   if ( bIsWithRebarAllowableApplicableTop && bIsWithRebarAllowableApplicableBot )
    {
       nColumns += 2;
    }
    else
    {
-      if ( bApplicableTensionTop && bWasWithRebarAllowableUsedTop )
+      if ( bApplicableTensionTop && bIsWithRebarAllowableApplicableTop )
       {
          nColumns++;
       }
 
-      if ( bApplicableTensionBot && bWasWithRebarAllowableUsedBot )
+      if ( bApplicableTensionBot && bIsWithRebarAllowableApplicableBot )
       {
          nColumns++;
       }
@@ -491,9 +491,9 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       }
    }
 
-   if ( (bApplicableTensionTop && bWasWithRebarAllowableUsedTop) || (bApplicableTensionBot && bWasWithRebarAllowableUsedBot) )
+   if ( (bApplicableTensionTop && bIsWithRebarAllowableApplicableTop) || (bApplicableTensionBot && bIsWithRebarAllowableApplicableBot) )
    {
-      if ( bWasWithRebarAllowableUsedTop && bWasWithRebarAllowableUsedBot )
+      if ( bIsWithRebarAllowableApplicableTop && bIsWithRebarAllowableApplicableBot )
       {
          p_table->SetColumnSpan(0,col1,2);
          (*p_table)(0,col1++) << _T("Tensile Capacity");
@@ -504,7 +504,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       {
          p_table->SetRowSpan(0,col1,2);
          p_table->SetRowSpan(1,col2++,SKIP_CELL);
-         if ( bWasWithRebarAllowableUsedTop )
+         if ( bIsWithRebarAllowableApplicableTop )
          {
             (*p_table)(0,col1++) << COLHDR(_T("Tension") << rptNewLine << _T("Capacity") << rptNewLine << _T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
@@ -669,13 +669,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                   fTop = pTensionArtifact->GetAlternativeAllowableTensileStress(topLocation);
                   (*p_table)(row,col++) << stress.SetValue( fTop );
                }
-               else if ( bWasWithRebarAllowableUsedTop )
+               else if ( bIsWithRebarAllowableApplicableTop )
                {
                   fTop = pTensionArtifact->GetCapacity(topLocation);
                   (*p_table)(row,col++) << stress.SetValue( fTop );
                }
             }
-            else if ( bWasWithRebarAllowableUsedTop )
+            else if ( bIsWithRebarAllowableApplicableTop )
             {
                (*p_table)(row,col++) << _T("-");
             }
@@ -687,13 +687,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                   fBot = pTensionArtifact->GetAlternativeAllowableTensileStress(botLocation);
                   (*p_table)(row,col++) << stress.SetValue( fBot );
                }
-               else if ( bWasWithRebarAllowableUsedBot )
+               else if ( bIsWithRebarAllowableApplicableBot )
                {
                   fBot = pTensionArtifact->GetCapacity(botLocation);
                   (*p_table)(row,col++) << stress.SetValue( fBot );
                }
             }
-            else if ( bWasWithRebarAllowableUsedBot )
+            else if ( bIsWithRebarAllowableApplicableBot )
             {
                (*p_table)(row,col++) << _T("-");
             }
@@ -806,12 +806,12 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                   }
                }
 
-               if ( bApplicableTensionTop && bWasWithRebarAllowableUsedTop )
+               if ( bApplicableTensionTop && bIsWithRebarAllowableApplicableTop )
                {
                   (*p_table)(row,col++) << _T("-");
                }
 
-               if ( bApplicableTensionBot && bWasWithRebarAllowableUsedBot )
+               if ( bApplicableTensionBot && bIsWithRebarAllowableApplicableBot )
                {
                   (*p_table)(row,col++) << _T("-");
                }
@@ -1231,7 +1231,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
          Float64 fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi,intervalIdx,limitState,false/*without rebar*/);
          *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
 
-         if ( pSegmentArtifact->WasSegmentWithRebarAllowableStressUsed(intervalIdx,limitState) )
+         if ( pSegmentArtifact->IsSegmentWithRebarAllowableStressApplicable(intervalIdx,limitState) )
          {
             Float64 t_with_rebar; // allowable tension when sufficient rebar is used
             pAllowable->GetSegmentAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,&t_with_rebar,&b_t_max,&t_max);

@@ -997,8 +997,15 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    {
       ATLASSERT( ls == pgsTypes::ServiceI );
       ATLASSERT( CheckTemporaryStresses() ); // if this fires, why are you asking for this if they aren't being used?
-      x = pSpec->GetTempStrandRemovalTensionStressFactor();
-      pSpec->GetTempStrandRemovalMaximumTensionStress(&bCheckMax,&fmax);
+      if ( bWithBondedReinforcement )
+      {
+         x = pSpec->GetTempStrandRemovalTensionStressFactorWithRebar();
+      }
+      else
+      {
+         x = pSpec->GetTempStrandRemovalTensionStressFactor();
+         pSpec->GetTempStrandRemovalMaximumTensionStress(&bCheckMax,&fmax);
+      }
    }
    else if ( intervalIdx == railingSystemIntervalIdx )
    {
@@ -1163,20 +1170,10 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
    else
    {
       // if this is a non-stressing interval, use allowables from Table 5.9.4.2.2-1
-      if ( intervalIdx < railingSystemIntervalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetErectionTensionStressFactor();
-         pSpec->GetErectionMaximumTensionStress(&bCheckMax,&fmax);
-      }
-      else
-      {
-         ATLASSERT( (ls == pgsTypes::ServiceIII)  );
-         GET_IFACE(IEnvironment,pEnv);
-         int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
-         x = pSpec->GetFinalTensionStressFactor(exposureCondition);
-         pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
-      }
+      GET_IFACE(IEnvironment,pEnv);
+      int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
+      x = pSpec->GetFinalTensionStressFactor(exposureCondition);
+      pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
    }
 
    *pCoeff    = x;
@@ -1311,13 +1308,19 @@ bool CSpecAgentImp::HasAllowableTensionWithRebarOption(IntervalIndexType interva
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-   if ( intervalIdx < erectionIntervalIdx )
+   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   if ( intervalIdx < erectionIntervalIdx ||
+        intervalIdx == tsRemovalIntervalIdx ||
+        intervalIdx == castDeckIntervalIdx )
    {
       // LRFD Table 5.9.4.1.2-1, third bullet... there is always a "with rebar" option
       // in both the PTZ and other areas.
 
       // by looking at intervals before segment erection, we cover release, lifting, storage, and hauling
       // all of which have a "with rebar" option.
+
+      // Temporary conditions for deck casting and temporary strand removal are also "with rebar" cases
       return true;
    }
 
@@ -2241,15 +2244,20 @@ Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(const CGirderKey& girderKey)
 Float64 CSpecAgentImp::GetTendonAreaLimit(const CGirderKey& girderKey)
 {
    // LRFD 5.4.6.2
+   const SpecLibraryEntry* pSpecEntry = GetSpec();
+   Float64 pushRatio, pullRatio;
+   pSpecEntry->GetDuctAreaRatio(&pushRatio,&pullRatio);
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPTData* pPTData = pIBridgeDesc->GetPostTensioning(girderKey);
-   return (pPTData->InstallationType == pgsTypes::sitPush ? 2.0 : 2.5);
+   return (pPTData->InstallationType == pgsTypes::sitPush ? pushRatio : pullRatio);
 }
 
 Float64 CSpecAgentImp::GetDuctSizeLimit(const CGirderKey& girderKey)
 {
    // LRFD 5.4.6.2
-   return 0.4;
+   const SpecLibraryEntry* pSpecEntry = GetSpec();
+   return pSpecEntry->GetDuctDiameterRatio();
 }
 
 ////////////////////

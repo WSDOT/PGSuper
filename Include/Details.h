@@ -81,7 +81,8 @@ struct MOMENTCAPACITYDETAILS
    Float64 etl;       // Tension Control Strain Limit
    Float64 ecl;       // Compression Control Strain Limit
 
-   Float64 fps;       // Stress in strand an nominal resistance
+   Float64 fps_avg;   // Average stress in strands at nominal resistance
+   Float64 fpt_avg;   // Average stress in tendons at nominal resistance
 
    // LRFD_METHOD 
    // For C5.7.3.3.1... Capacity of over reinforced section

@@ -59,6 +59,10 @@ LPCTSTR CLoadRatingChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
+#if defined _BETA_VERSION
+   sysTime startTime;
+#endif // _BETA_VERSION
+
    CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -70,6 +74,12 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
+#if defined _BETA_VERSION
+   rptParagraph* pTimingPara;
+   pTimingPara = new rptParagraph;
+   (*pChapter) << pTimingPara;
+#endif // _BETA_VERSION
 
    rptParagraph* pPara;
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -160,6 +170,12 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
          }
       }
    }
+
+#if defined _BETA_VERSION
+   sysTime endTime;
+   Uint32 duration = endTime.Seconds() - startTime.Seconds();
+   (*pTimingPara) << _T("Elapsed time = ") << duration << _T(" seconds") << rptNewLine;
+#endif // _BETA_VERSION
 
    return pChapter;
 }

@@ -436,10 +436,10 @@ private:
    IndexType GetSuperstructureMemberCount(const CSegmentKey& segmentKey);
 
    // Returns the number of superstructure members used in the LBAM model at this pier
-   IndexType GetSuperstructureMemberCount(const CPierData2* pPier);
+   IndexType GetSuperstructureMemberCount(const CPierData2* pPier,GirderIndexType gdrIdx);
 
    // Returns the number of superstructure members used in the LBAM model at this temporary support
-   IndexType GetSuperstructureMemberCount(const CTemporarySupportData* pTS);
+   IndexType GetSuperstructureMemberCount(const CTemporarySupportData* pTS,GirderIndexType gdrIdx);
 
    // Converts a location in segment coordinates to a position in the LBAM
    void GetPosition(ILBAMModel* pModel,const CSegmentKey& segmentKey,Float64 Xs,MemberType* pMbrType,MemberIDType* pMbrID,Float64* pX);

@@ -421,7 +421,15 @@ rptParagraph* create_table1_design(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T("Longitudinal Reinforcement Shear Check Details - Table 1 of 3"));
+   ColumnIndexType nColumns = 8;
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   if ( 0 < nDucts )
+   {
+      nColumns += 2;
+   }
+
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Longitudinal Reinforcement Shear Check Details - Table 1 of 3"));
    *pParagraph << table;
 
    ColumnIndexType col = 0;
@@ -431,6 +439,13 @@ rptParagraph* create_table1_design(IBroker* pBroker,
    (*table)(0,col++)  << COLHDR(RPT_FY << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++)  << COLHDR(Sub2(_T("A"),_T("ps")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,col++)  << COLHDR(_T("f")<<Sub(_T("ps")) << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   if ( 0 < nDucts )
+   {
+      (*table)(0,col++)  << COLHDR(Sub2(_T("A"),_T("pt")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+      (*table)(0,col++)  << COLHDR(_T("f")<<Sub(_T("pt")) << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+
    (*table)(0,col++)  << COLHDR(_T("M")<<Sub(_T("u")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++)  << COLHDR(_T("d")<<Sub(_T("v")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++)  << _T("Flexure") << rptNewLine << Sub2(symbol(phi),_T("f"));
@@ -470,6 +485,11 @@ rptParagraph* create_table1_design(IBroker* pBroker,
             (*table)(row,col++) << stress.SetValue( pArtifact->GetFy());
             (*table)(row,col++) << area.SetValue( pArtifact->GetAps());
             (*table)(row,col++) << stress.SetValue( pArtifact->GetFps());
+            if ( 0 < nDucts )
+            {
+               (*table)(row,col++) << area.SetValue( pArtifact->GetApt());
+               (*table)(row,col++) << stress.SetValue( pArtifact->GetFpt());
+            }
             (*table)(row,col++) << moment.SetValue( pArtifact->GetMu());
             (*table)(row,col++) << dim.SetValue( pArtifact->GetDv());
             (*table)(row,col++) << pArtifact->GetFlexuralPhi();
@@ -673,8 +693,10 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
 {
    rptParagraph* pParagraph = new rptParagraph();
 
+   const CSegmentKey& segmentKey = shearRatings.front().first.GetSegmentKey();
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(shearRatings.front().first.GetSegmentKey());
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),       false );
@@ -685,29 +707,44 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(true);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T("Longitudinal Reinforcement Shear Check Details - Table 1 of 3"));
+   ColumnIndexType nColumns = 8;
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   if ( 0 < nDucts )
+   {
+      nColumns += 2;
+   }
+
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Longitudinal Reinforcement Shear Check Details - Table 1 of 3"));
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pParagraph << table;
 
+   ColumnIndexType col = 0;
+
    if ( intervalIdx == releaseIntervalIdx )
    {
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*table)(0,col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
    else
    {
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
 
-   (*table)(0,1)  << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,2)  << COLHDR(RPT_FY << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3)  << COLHDR(Sub2(_T("A"),_T("ps")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,4)  << COLHDR(RPT_FPS << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,5)  << COLHDR(_T("M")<<Sub(_T("u")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,6)  << COLHDR(_T("d")<<Sub(_T("v")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,7)  << _T("Flexure") << rptNewLine << Sub2(symbol(phi),_T("f"));
+   (*table)(0,col++)  << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++)  << COLHDR(RPT_FY << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++)  << COLHDR(Sub2(_T("A"),_T("ps")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++)  << COLHDR(RPT_FPS << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   if ( 0 < nDucts )
+   {
+      (*table)(0,col++)  << COLHDR(Sub2(_T("A"),_T("pt")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+      (*table)(0,col++)  << COLHDR(RPT_FPT << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+   (*table)(0,col++)  << COLHDR(_T("M")<<Sub(_T("u")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++)  << COLHDR(_T("d")<<Sub(_T("v")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++)  << _T("Flexure") << rptNewLine << Sub2(symbol(phi),_T("f"));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
@@ -717,6 +754,7 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
    pgsRatingArtifact::ShearRatings::const_iterator end(shearRatings.end());
    for ( ; i != end; i++ )
    {
+      col = 0;
       const pgsPointOfInterest& poi = i->first;
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -727,14 +765,19 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( POI_SPAN, poi );
-         (*table)(row,1) << area.SetValue( artifact.GetAs());
-         (*table)(row,2) << stress.SetValue( artifact.GetFy());
-         (*table)(row,3) << area.SetValue( artifact.GetAps());
-         (*table)(row,4) << stress.SetValue( artifact.GetFps());
-         (*table)(row,5) << moment.SetValue( artifact.GetMu());
-         (*table)(row,6) << dim.SetValue( artifact.GetDv());
-         (*table)(row,7) << artifact.GetFlexuralPhi();
+         (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
+         (*table)(row,col++) << area.SetValue( artifact.GetAs());
+         (*table)(row,col++) << stress.SetValue( artifact.GetFy());
+         (*table)(row,col++) << area.SetValue( artifact.GetAps());
+         (*table)(row,col++) << stress.SetValue( artifact.GetFps());
+         if ( 0 < nDucts )
+         {
+            (*table)(row,col++) << area.SetValue( artifact.GetApt());
+            (*table)(row,col++) << stress.SetValue( artifact.GetFpt());
+         }
+         (*table)(row,col++) << moment.SetValue( artifact.GetMu());
+         (*table)(row,col++) << dim.SetValue( artifact.GetDv());
+         (*table)(row,col++) << artifact.GetFlexuralPhi();
 
          row++;
       }

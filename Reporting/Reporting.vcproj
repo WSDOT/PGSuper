@@ -235,7 +235,7 @@
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -328,7 +328,7 @@
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -1249,30 +1249,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TSRemovalDisplacementsTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TSRemovalMomentsTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TSRemovalReactionTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TSRemovalRotationTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TSRemovalShearTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TSRemovalStressTable.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\UserDefinedLoadsChapterBuilder.cpp"
 				>
 			</File>
@@ -1946,30 +1922,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\TimeStepParametersChapterBuilder.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\TSRemovalDisplacementsTable.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\TSRemovalMomentsTable.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\TSRemovalReactionTable.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\TSRemovalRotationTable.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\TSRemovalShearTable.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\TSRemovalStressTable.h"
 				>
 			</File>
 			<File

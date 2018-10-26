@@ -174,6 +174,12 @@ std::_tstring rptPointOfInterest::AsString() const
       }
    }
 
+//#if defined _DEBUG || defined _BETA_VERSION
+//   CString strID;
+//   strID.Format(_T(" (ID = %d )"),m_POI.GetID());
+//   str += strID;
+//#endif
+
    return str;
 }
 

@@ -30,7 +30,6 @@
 #include <Reporting\PretensionStressTable.h>
 #include <Reporting\PosttensionStressTable.h>
 #include <Reporting\LiveLoadDistributionFactorTable.h>
-#include <Reporting\TSRemovalStressTable.h>
 
 #include <IFace\Bridge.h>
 
@@ -243,9 +242,6 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
             }
          }
       }
-
-       CTSRemovalStressTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits,true/*girder stresses*/);
-       CTSRemovalStressTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits,false/*deck stresses*/);
 
       // Load Combinations (DC, DW, etc) & Limit States
 

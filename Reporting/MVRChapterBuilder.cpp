@@ -44,12 +44,6 @@
 #include <Reporting\VehicularLoadReactionTable.h>
 #include <Reporting\CombinedReactionTable.h>
 
-#include <Reporting\TSRemovalMomentsTable.h>
-#include <Reporting\TSRemovalShearTable.h>
-#include <Reporting\TSRemovalDisplacementsTable.h>
-#include <Reporting\TSRemovalReactionTable.h>
-#include <Reporting\TSRemovalRotationTable.h>
-
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -258,8 +252,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          }
       }
 
-      //CTSRemovalMomentsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
-
       // Product Shears
       p = new rptParagraph;
       *pChapter << p;
@@ -290,8 +282,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          }
       }
 
-      //CTSRemovalShearTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
-
       // Product Reactions
       p = new rptParagraph;
       *pChapter << p;
@@ -306,8 +296,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       *p << rptNewLine;
       LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
       *p << rptNewLine;
-
-      //CTSRemovalReactionTable().Build(pChapter,pBroker,thisGirderKey,analysisType,PierReactionsTable,pDisplayUnits);
 
       // For girder bearing reactions
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
@@ -376,8 +364,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             }
          }
 
-         //CTSRemovalDeflectionsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
-
          // Product Rotations
          p = new rptParagraph;
          *pChapter << p;
@@ -406,8 +392,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
                }
             }
          }
-
-         //CTSRemovalRotationTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
 
          if (pSpecEntry->GetDoEvaluateLLDeflection())
          {

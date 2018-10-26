@@ -58,7 +58,7 @@ private:
 
    const CGirderData* m_pGD;
 
-   pgsTypes::LossMethod m_LossMethod;
+   bool m_bIsDeckShinkageApplied;
    bool m_bUseGrossProperties;
    bool m_bIgnoreInitialRelaxation;
    Float64 m_gLL;

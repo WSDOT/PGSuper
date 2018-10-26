@@ -129,6 +129,11 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
 {
    LOSSDETAILS details;
 
+#if defined _DEBUG
+   GET_IFACE(IPointOfInterest,pPoi);
+   ATLASSERT(pPoi->IsOnSegment(poi));
+#endif
+
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 

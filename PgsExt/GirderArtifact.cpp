@@ -318,6 +318,54 @@ bool pgsGirderArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType in
    return false;
 }
 
+bool pgsGirderArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
+{
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      if ( artifact.IsWithRebarAllowableStressApplicable(intervalIdx,ls,stressLocation,0) ||
+           artifact.IsWithRebarAllowableStressApplicable(intervalIdx,ls,stressLocation,POI_CLOSURE) )
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+bool pgsGirderArtifact::IsGirderWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
+{
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      if ( artifact.IsSegmentWithRebarAllowableStressApplicable(intervalIdx,ls) ||
+           artifact.IsClosureJointWithRebarAllowableStressApplicable(intervalIdx,ls,true /*in PTZ*/) ||
+           artifact.IsClosureJointWithRebarAllowableStressApplicable(intervalIdx,ls,false /*not in PTZ*/))
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+bool pgsGirderArtifact::IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
+{
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      if ( artifact.IsDeckWithRebarAllowableStressApplicable(intervalIdx,ls) )
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
 bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const
 {
    std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());

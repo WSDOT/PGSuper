@@ -3000,109 +3000,118 @@ HRESULT CProjectAgentImp::LossesProc(IStructuredSave* pSave,IStructuredLoad* pLo
    }
    else
    {
-      Float64 version;
-      pLoad->get_Version(&version);
-      if ( 4 < version )
+      CHRException hr;
+      try
       {
-         // added in version 5
-         CComVariant var;
-
-         var.vt = VT_BOOL;
-         pLoad->get_Property(_T("UseLumpSumLosses"),&var);
-         pObj->m_bGeneralLumpSum = (var.boolVal == VARIANT_TRUE ? true : false);
-         if ( pObj->m_bGeneralLumpSum )
+         Float64 version;
+         pLoad->get_Version(&version);
+         if ( 4 < version )
          {
-            pLoad->BeginUnit(_T("LumSumLosses"));
+            // added in version 5
+            CComVariant var;
 
-            var.vt = VT_R8;
-            pLoad->get_Property(_T("BeforeXferLosses"),&var);
-            pObj->m_BeforeXferLosses = var.dblVal;
-
-            pLoad->get_Property(_T("AfterXferLosses"),&var);
-            pObj->m_AfterXferLosses = var.dblVal;
-
-            pLoad->get_Property(_T("LiftingLosses"),&var);
-            pObj->m_LiftingLosses = var.dblVal;
-
-            pLoad->get_Property(_T("ShippingLosses"),&var);
-            pObj->m_ShippingLosses = var.dblVal;
-
-            pLoad->get_Property(_T("BeforeTempStrandRemovalLosses"),&var);
-            pObj->m_BeforeTempStrandRemovalLosses = var.dblVal;
-
-            pLoad->get_Property(_T("AfterTempStrandRemovalLosses"),&var);
-            pObj->m_AfterTempStrandRemovalLosses = var.dblVal;
-
-            pLoad->get_Property(_T("AfterDeckPlacementLosses"),&var);
-            pObj->m_AfterDeckPlacementLosses = var.dblVal;
-
-            pLoad->get_Property(_T("AfterSIDLLosses"),&var);
-            pObj->m_AfterSIDLLosses = var.dblVal;
-
-            pLoad->get_Property(_T("FinalLosses"),&var);
-            pObj->m_FinalLosses = var.dblVal;
-
-            pLoad->EndUnit();
-         }
-
-         if ( 6 < version && version < 8 )
-         {
             var.vt = VT_BOOL;
-            pLoad->get_Property(_T("IgnoreTimeDependentEffects"),&var);
-            pObj->m_bIgnoreCreepEffects = (var.boolVal == VARIANT_TRUE ? true : false);
-            pObj->m_bIgnoreShrinkageEffects = (var.boolVal == VARIANT_TRUE ? true : false);
-            pObj->m_bIgnoreRelaxationEffects = (var.boolVal == VARIANT_TRUE ? true : false);
-         }
-         else if ( 8 <= version )
-         {
-            var.vt = VT_BOOL;
-            pLoad->get_Property(_T("IgnoreCreepEffects"),&var);
-            pObj->m_bIgnoreCreepEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+            hr = pLoad->get_Property(_T("UseLumpSumLosses"),&var);
+            pObj->m_bGeneralLumpSum = (var.boolVal == VARIANT_TRUE ? true : false);
+            if ( pObj->m_bGeneralLumpSum )
+            {
+               hr = pLoad->BeginUnit(_T("LumpSumLosses"));
 
-            pLoad->get_Property(_T("IgnoreShrinkageEffects"),&var);
-            pObj->m_bIgnoreShrinkageEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+               var.vt = VT_R8;
+               hr = pLoad->get_Property(_T("BeforeXferLosses"),&var);
+               pObj->m_BeforeXferLosses = var.dblVal;
 
-            pLoad->get_Property(_T("IgnoreRelaxationEffects"),&var);
-            pObj->m_bIgnoreRelaxationEffects = (var.boolVal == VARIANT_TRUE ? true : false);
-         }
+               hr = pLoad->get_Property(_T("AfterXferLosses"),&var);
+               pObj->m_AfterXferLosses = var.dblVal;
 
-         pLoad->BeginUnit(_T("PostTensioning"));
-         
-         var.vt = VT_R8;
-         pLoad->get_Property(_T("AnchorSet"),&var);
-         pObj->m_Dset_PT = var.dblVal;
+               hr = pLoad->get_Property(_T("LiftingLosses"),&var);
+               pObj->m_LiftingLosses = var.dblVal;
 
-         pLoad->get_Property(_T("WobbleFriction"),&var);
-         pObj->m_WobbleFriction_PT = var.dblVal;
+               hr = pLoad->get_Property(_T("ShippingLosses"),&var);
+               pObj->m_ShippingLosses = var.dblVal;
 
-         pLoad->get_Property(_T("FrictionCoefficient"),&var);
-         pObj->m_FrictionCoefficient_PT = var.dblVal;
+               hr = pLoad->get_Property(_T("BeforeTempStrandRemovalLosses"),&var);
+               pObj->m_BeforeTempStrandRemovalLosses = var.dblVal;
 
-         pLoad->EndUnit(); // PostTensioning
+               hr = pLoad->get_Property(_T("AfterTempStrandRemovalLosses"),&var);
+               pObj->m_AfterTempStrandRemovalLosses = var.dblVal;
 
-         // added in version 6
-         if ( 5 < version )
-         {
-            pLoad->BeginUnit(_T("TemporaryStrandPT"));
+               hr = pLoad->get_Property(_T("AfterDeckPlacementLosses"),&var);
+               pObj->m_AfterDeckPlacementLosses = var.dblVal;
+
+               hr = pLoad->get_Property(_T("AfterSIDLLosses"),&var);
+               pObj->m_AfterSIDLLosses = var.dblVal;
+
+               hr = pLoad->get_Property(_T("FinalLosses"),&var);
+               pObj->m_FinalLosses = var.dblVal;
+
+               hr = pLoad->EndUnit();
+            }
+
+            if ( 6 < version && version < 8 )
+            {
+               var.vt = VT_BOOL;
+               hr = pLoad->get_Property(_T("IgnoreTimeDependentEffects"),&var);
+               pObj->m_bIgnoreCreepEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+               pObj->m_bIgnoreShrinkageEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+               pObj->m_bIgnoreRelaxationEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+            }
+            else if ( 8 <= version )
+            {
+               var.vt = VT_BOOL;
+               hr = pLoad->get_Property(_T("IgnoreCreepEffects"),&var);
+               pObj->m_bIgnoreCreepEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+
+               hr = pLoad->get_Property(_T("IgnoreShrinkageEffects"),&var);
+               pObj->m_bIgnoreShrinkageEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+
+               hr = pLoad->get_Property(_T("IgnoreRelaxationEffects"),&var);
+               pObj->m_bIgnoreRelaxationEffects = (var.boolVal == VARIANT_TRUE ? true : false);
+            }
+
+            hr = pLoad->BeginUnit(_T("PostTensioning"));
             
             var.vt = VT_R8;
-            pLoad->get_Property(_T("AnchorSet"),&var);
-            pObj->m_Dset_TTS = var.dblVal;
+            hr = pLoad->get_Property(_T("AnchorSet"),&var);
+            pObj->m_Dset_PT = var.dblVal;
 
-            pLoad->get_Property(_T("WobbleFriction"),&var);
-            pObj->m_WobbleFriction_TTS = var.dblVal;
+            hr = pLoad->get_Property(_T("WobbleFriction"),&var);
+            pObj->m_WobbleFriction_PT = var.dblVal;
 
-            pLoad->get_Property(_T("FrictionCoefficient"),&var);
-            pObj->m_FrictionCoefficient_TTS = var.dblVal;
+            hr = pLoad->get_Property(_T("FrictionCoefficient"),&var);
+            pObj->m_FrictionCoefficient_PT = var.dblVal;
 
-            pLoad->EndUnit(); // TemporaryStrandPT
+            hr = pLoad->EndUnit(); // PostTensioning
+
+            // added in version 6
+            if ( 5 < version )
+            {
+               hr = pLoad->BeginUnit(_T("TemporaryStrandPT"));
+               
+               var.vt = VT_R8;
+               hr = pLoad->get_Property(_T("AnchorSet"),&var);
+               pObj->m_Dset_TTS = var.dblVal;
+
+               hr = pLoad->get_Property(_T("WobbleFriction"),&var);
+               pObj->m_WobbleFriction_TTS = var.dblVal;
+
+               hr = pLoad->get_Property(_T("FrictionCoefficient"),&var);
+               pObj->m_FrictionCoefficient_TTS = var.dblVal;
+
+               hr = pLoad->EndUnit(); // TemporaryStrandPT
+            }
+            else
+            {
+               pObj->m_Dset_TTS                = pObj->m_Dset_PT;
+               pObj->m_WobbleFriction_TTS      = pObj->m_WobbleFriction_PT;
+               pObj->m_FrictionCoefficient_TTS = pObj->m_FrictionCoefficient_PT;
+            }
          }
-         else
-         {
-            pObj->m_Dset_TTS                = pObj->m_Dset_PT;
-            pObj->m_WobbleFriction_TTS      = pObj->m_WobbleFriction_PT;
-            pObj->m_FrictionCoefficient_TTS = pObj->m_FrictionCoefficient_PT;
-         }
+      }
+      catch (HRESULT)
+      {
+         ATLASSERT(false);
+         THROW_LOAD(InvalidFileFormat,pStrLoad);
       }
    }
 

@@ -39,7 +39,7 @@ class CSpecDlg : public CDialog
 {
 // Construction
 public:
-   CSpecDlg(const std::vector<std::_tstring>& specs,CWnd* pParent = NULL);   // standard constructor
+   CSpecDlg(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSpecDlg)

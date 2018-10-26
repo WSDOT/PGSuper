@@ -308,6 +308,8 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
       DDV_UnitValueGreaterThanZero(pDX, IDC_TS_REMOVAL_TENSION_MAX,m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
    }
 
+   DDX_UnitValueAndTag(pDX, IDC_TS_TENSION_WITH_REBAR, IDC_TS_TENSION_WITH_REBAR_UNIT, m_Entry.m_TempStrandRemovalTensStressWithRebar, pDisplayUnits->SqrtPressure);
+   DDX_Text(pDX,IDC_TS_TENSION_WITH_REBAR_UNIT,fcTag);
 
    // Allowable concrete stress after deck placement
 	DDX_Text(pDX, IDC_AFTER_DECK_COMPRESSION, m_Entry.m_Bs1CompStress);
@@ -892,6 +894,11 @@ void CSpecMainSheet::ExchangeStrandData(CDataExchange* pDX)
    {
       m_Entry.m_PrestressTransferComputationType = (value==1) ? pgsTypes::ptMinuteValue : pgsTypes::ptUsingSpecification;
    }
+
+   // Duct Size
+   DDX_Text(pDX,IDC_PUSH_METHOD, m_Entry.m_DuctAreaPushRatio);
+   DDX_Text(pDX,IDC_PULL_METHOD, m_Entry.m_DuctAreaPullRatio);
+   DDX_Text(pDX,IDC_DUCT_SIZE_RATIO, m_Entry.m_DuctDiameterRatio);
 }
 
 void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)

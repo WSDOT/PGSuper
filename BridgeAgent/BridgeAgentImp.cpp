@@ -1028,6 +1028,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pPointLoad->m_LoadCase,pPointLoad->m_EventIndex);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
+            ATLASSERT(m_IntervalManager.GetInterval(pPointLoad->m_EventIndex) == intervalIdx);
 
             CUserLoadKey key(thisSpanKey,intervalIdx);
             std::map<CUserLoadKey,std::vector<UserPointLoad>>::iterator found(m_PointLoads.find(key));
@@ -1246,6 +1247,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pDistLoad->m_LoadCase,pDistLoad->m_EventIndex);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
+            ATLASSERT(m_IntervalManager.GetInterval(pDistLoad->m_EventIndex) == intervalIdx);
 
             CUserLoadKey key(thisSpanKey,intervalIdx);
             std::map<CUserLoadKey,std::vector<UserDistributedLoad>>::iterator found(m_DistributedLoads.find(key));
@@ -1415,6 +1417,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
                intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pMomentLoad->m_LoadCase,pMomentLoad->m_EventIndex);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
+            ATLASSERT(m_IntervalManager.GetInterval(pMomentLoad->m_EventIndex) == intervalIdx);
 
             CUserLoadKey key(thisSpanKey,intervalIdx);
             std::map<CUserLoadKey,std::vector<UserMomentLoad>>::iterator found(m_MomentLoads.find(key));
@@ -2218,9 +2221,8 @@ bool CBridgeAgentImp::BuildBridgeModel()
    // This updates the geometry for the items that were added (girder, deck, etc)
    m_Bridge->UpdateBridgeModel();
 
-#pragma Reminder("BUG: Checks suspended for spliced girder development")
-   //// check bridge for errors - will throw an exception if there are errors
-   //CheckBridge();
+   // check bridge for errors - will throw an exception if there are errors
+   CheckBridge();
 
    return true;
 }
@@ -22310,6 +22312,12 @@ std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGir
       vIntervals.push_back(GetCastDeckInterval());
    }
 
+   IntervalIndexType overlayIntervalIdx = GetOverlayInterval();
+   if (overlayIntervalIdx != INVALID_INDEX )
+   {
+      vIntervals.push_back(overlayIntervalIdx);
+   }
+
    vIntervals.push_back(GetInstallRailingSystemInterval());
 
    // Need to spec check whenever a user defined load is applied
@@ -24006,11 +24014,7 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
 
 void CBridgeAgentImp::CheckBridge()
 {
-   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ILibrary,pLib);
-
-   GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter); // only used if there is an issue
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -24036,6 +24040,7 @@ void CBridgeAgentImp::CheckBridge()
             if ( sLength <= 0 )
             {
                std::_tostringstream os;
+               GET_IFACE(IDocumentType,pDocType);
                if ( pDocType->IsPGSuperDocument() )
                {
                   os << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx)
@@ -24073,8 +24078,9 @@ void CBridgeAgentImp::CheckBridge()
                Float64 Y;
                point->get_Y(&Y);
 
-               if ( Y < h_start/2 || Y < h_end/2 )
+               if ( Y < -h_start/2 || Y < -h_end/2 )
                {
+                  GET_IFACE(IDocumentType,pDocType);
                   CString strMsg;
                   if ( pDocType->IsPGSuperDocument() )
                   {
@@ -24088,24 +24094,46 @@ void CBridgeAgentImp::CheckBridge()
                   pStatusCenter->Add(pStatusItem);
                }
             }
+
+            if ( segIdx < nSegments-1 )
+            {
+               // Closure Joints
+               CClosureKey closureKey = segmentKey;
+               Float64 closure_length = GetClosureJointLength(closureKey);
+               if ( ::IsLE(closure_length,0.0) )
+               {
+                  std::_tostringstream os;
+                  os << _T("Length closure joint for Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" at the end of Segment ") << LABEL_SEGMENT(segIdx)
+                     << _T(" must be greater than zero.") << std::endl;
+
+                  pgsBridgeDescriptionStatusItem* pStatusItem = 
+                     new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::Framing,os.str().c_str());
+
+                  pStatusCenter->Add(pStatusItem);
+
+                  os << _T("See Status Center for Details");
+                  THROW_UNWIND(os.str().c_str(),XREASON_INVALID_CLOSURE_JOINT_LENGTH);
+               }
+            }
          } // next segment
       } // next girder
    } // next group
 
-#if defined _DEBUG
-   // Dumps the cogo model to a file so it can be viewed/debugged
-   CComPtr<IStructuredSave2> save;
-   save.CoCreateInstance(CLSID_StructuredSave2);
-   save->Open(CComBSTR(_T("CogoModel.cogo")));
-
-   save->BeginUnit(CComBSTR(_T("Cogo")),1.0);
-
-   CComQIPtr<IStructuredStorage2> ss(m_CogoModel);
-   ss->Save(save);
-
-   save->EndUnit();
-   save->Close();
-#endif _DEBUG
+   // COGO model doesn't save correctly... fix this later
+//#if defined _DEBUG
+//   // Dumps the cogo model to a file so it can be viewed/debugged
+//   CComPtr<IStructuredSave2> save;
+//   save.CoCreateInstance(CLSID_StructuredSave2);
+//   save->Open(CComBSTR(_T("CogoModel.cogo")));
+//
+//   save->BeginUnit(CComBSTR(_T("Cogo")),1.0);
+//
+//   CComQIPtr<IStructuredStorage2> ss(m_CogoModel);
+//   ss->Save(save);
+//
+//   save->EndUnit();
+//   save->Close();
+//#endif // _DEBUG
 }
 
 SpanIndexType CBridgeAgentImp::GetSpanCount_Private()

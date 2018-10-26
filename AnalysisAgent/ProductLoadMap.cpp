@@ -175,9 +175,12 @@ std::vector<ProductForceType> CProductLoadMap::GetProductForces(IBroker* pBroker
       break;
 
    case lcDWf:
-      if ( bFutureOverlay )
+      {
+      GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+      if ( pLossParameters->GetLossMethod() != pgsTypes::TIME_STEP && bFutureOverlay)
       {
          pfTypes.push_back(pftOverlay);
+      }
       }
       break;
 

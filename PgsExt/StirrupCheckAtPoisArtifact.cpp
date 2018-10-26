@@ -42,6 +42,8 @@ m_Fy(0),
 m_As(0),
 m_Aps(0),
 m_Fps(0),
+m_Apt(0),
+m_Fpt(0),
 m_Mu(0),
 m_Mr(0),
 m_Dv(0),
@@ -121,6 +123,26 @@ Float64 pgsLongReinfShearArtifact::GetFps() const
 void pgsLongReinfShearArtifact::SetFps(Float64 fps)
 {
    m_Fps = fps;
+}
+
+Float64 pgsLongReinfShearArtifact::GetApt() const
+{
+   return m_Apt;
+}
+
+void pgsLongReinfShearArtifact::SetApt(Float64 apt)
+{
+   m_Apt = apt;
+}
+
+Float64 pgsLongReinfShearArtifact::GetFpt() const
+{
+   return m_Fpt;
+}
+
+void pgsLongReinfShearArtifact::SetFpt(Float64 fpt)
+{
+   m_Fpt = fpt;
 }
 
 Float64 pgsLongReinfShearArtifact::GetMu() const
@@ -311,6 +333,8 @@ void pgsLongReinfShearArtifact::MakeCopy(const pgsLongReinfShearArtifact& rOther
    m_As = rOther.m_As;
    m_Aps = rOther.m_Aps;
    m_Fps = rOther.m_Fps;
+   m_Apt = rOther.m_Apt;
+   m_Fpt = rOther.m_Fpt;
    m_Mu = rOther.m_Mu;
    m_Mr = rOther.m_Mr;
    m_Dv = rOther.m_Dv;

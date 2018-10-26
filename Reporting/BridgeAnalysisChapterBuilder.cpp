@@ -49,12 +49,6 @@
 #include <Reporting\VehicularLoadReactionTable.h>
 #include <Reporting\CombinedReactionTable.h>
 
-#include <Reporting\TSRemovalMomentsTable.h>
-#include <Reporting\TSRemovalShearTable.h>
-#include <Reporting\TSRemovalDisplacementsTable.h>
-#include <Reporting\TSRemovalReactionTable.h>
-#include <Reporting\TSRemovalRotationTable.h>
-
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -173,8 +167,6 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
-   //CTSRemovalMomentsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
-
    // Product Shears
    p = new rptParagraph;
    *pChapter << p;
@@ -202,8 +194,6 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          }
       }
    }
-
-   //CTSRemovalShearTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
 
    // Product Reactions
    p = new rptParagraph;
@@ -252,8 +242,6 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
-   //CTSRemovalReactionTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,PierReactionsTable,pDisplayUnits);
-
    // Product Deflections
    p = new rptParagraph;
    *pChapter << p;
@@ -282,8 +270,6 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
-   //CTSRemovalDeflectionsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
-
    // Product Rotations
    p = new rptParagraph;
    *pChapter << p;
@@ -311,8 +297,6 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          }
       }
    }
-
-   //CTSRemovalRotationTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
 
    // Responses from individual live load vehicules
    std::vector<pgsTypes::LiveLoadType> live_load_types;

@@ -211,6 +211,10 @@ interface ILosses : IUnknown
    virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
    virtual Float64 GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
    virtual Float64 GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+
+   // Return true if elastic gains and/or deck shrinkage should be included in the losses
+   virtual bool AreElasticGainsApplicable() = 0;
+   virtual bool IsDeckShrinkageApplicable() = 0;
 };
 
 #endif // INCLUDED_IFACE_PRESTRESS_H_

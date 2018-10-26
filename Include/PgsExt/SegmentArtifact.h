@@ -128,6 +128,21 @@ public:
    // anywhere along this segment for the deck
    bool WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
 
+
+   // returns true if the allowable tension capacity with adequate reinforcement
+   // is applicable at any POI in this segment. If attribute = 0, only segments are checked
+   // if attribute is POI_CLOSURE, only closure joints are checked
+   bool IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
+
+   bool IsSegmentWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   bool IsClosureJointWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const;
+
+   // returns true if the allowable tension capacity with adequate reinforcement is applicable
+   // anywhere along this segment for the deck
+   bool IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+
+
+
    void SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,Float64 fAllow);
    Float64 GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
 

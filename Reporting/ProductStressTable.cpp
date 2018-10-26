@@ -32,6 +32,7 @@
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\PrestressForce.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -110,8 +111,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    pgsTypes::LossMethod loss_method = pLossParams->GetLossMethod();
    
-   bool bSlabShrinkage = ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() && 
-                         (loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED) ? true : false);
+   GET_IFACE2(pBroker,ILosses, pLosses);
+   bool bSlabShrinkage = pLosses->IsDeckShrinkageApplicable();
    if ( !bGirderStresses )
    {
       // assume deck shrinkage does not cause shrinkage stresses in the deck itself

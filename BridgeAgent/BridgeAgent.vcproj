@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="BridgeAgent"
 	ProjectGUID="{69BE1B6C-489E-4103-8E2E-82D2EF3258E5}"
+	RootNamespace="BridgeAgent"
 	Keyword="MFCProj"
 	TargetFrameworkVersion="0"
 	>
@@ -652,7 +653,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"

@@ -106,7 +106,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 //
 //   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 //
-//   INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
+   INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    height,        pDisplayUnits->GetComponentDimUnit(),    true);
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          true);
@@ -119,7 +119,9 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 //   INIT_UV_PROTOTYPE(rptLengthUnitValue,    length,     pDisplayUnits->GetSpanLengthUnit(),      true);
 //   INIT_UV_PROTOTYPE(rptLengthUnitValue,    deflection, pDisplayUnits->GetDeflectionUnit(),      true);
 //
-//   location.IncludeSpanAndGirder(true);
+   location.IncludeSpanAndGirder(true);
+   *pPara << _T("Point Of Interest: ID = ") << poi.GetID() << _T(" Location = ") << location.SetValue(POI_SPAN,poi) << rptNewLine;
+   *pPara << rptNewLine;
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
@@ -155,12 +157,14 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       // Properties
       *pPara << _T("Net Properties of Section Components") << rptNewLine;
 
-      *pPara << _T("Girder: An = ") << area.SetValue(tsDetails.Girder.An) << _T(" ")
+      *pPara << _T("Girder: E = ") << modE.SetValue(tsDetails.Girder.E) << _T(" ")
+             << _T("An = ") << area.SetValue(tsDetails.Girder.An) << _T(" ")
              << _T("In = ") << momI.SetValue(tsDetails.Girder.In) << _T(" ")
              << _T("Yn = ") << ecc.SetValue(tsDetails.Girder.Yn)  << _T(" ")
              << _T("H = ") << height.SetValue(tsDetails.Girder.H) << _T(" ") << rptNewLine;
       
-      *pPara << _T("Deck: An = ") << area.SetValue(tsDetails.Deck.An) << _T(" ")
+      *pPara << _T("Deck: E = ") << modE.SetValue(tsDetails.Deck.E) << _T(" ")
+             << _T("An = ") << area.SetValue(tsDetails.Deck.An) << _T(" ")
              << _T("In = ") << momI.SetValue(tsDetails.Deck.In) << _T(" ")
              << _T("Yn = ") << ecc.SetValue(tsDetails.Deck.Yn)  << _T(" ")
              << _T("H = ") << height.SetValue(tsDetails.Deck.H) << _T(" ") << rptNewLine;
@@ -169,8 +173,9 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       BOOST_FOREACH(const TIME_STEP_REBAR& tsRebar,tsDetails.GirderRebar)
       {
-         *pPara << _T("Girder Rebar: As = ") << area.SetValue(tsRebar.As) << _T(" ")
-            << _T("Ys = ") << ecc.SetValue(tsRebar.Ys) << rptNewLine;
+         *pPara << _T("Girder Rebar: Es = ") << modE.SetValue(tsRebar.E) << _T(" ")
+                << _T("As = ") << area.SetValue(tsRebar.As) << _T(" ")
+                << _T("Ys = ") << ecc.SetValue(tsRebar.Ys) << rptNewLine;
       }
 
       *pPara << rptNewLine;
@@ -204,7 +209,8 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
                }
             }
 
-            *pPara << _T("As = ") << area.SetValue(tsDetails.DeckRebar[matType][barType].As) << _T(" ")
+            *pPara << modE.SetValue(tsDetails.DeckRebar[matType][barType].E) << _T(" ")
+                   << _T("As = ") << area.SetValue(tsDetails.DeckRebar[matType][barType].As) << _T(" ")
                    << _T("Ys = ") << ecc.SetValue(tsDetails.DeckRebar[matType][barType].Ys) << rptNewLine;
          }
       }

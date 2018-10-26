@@ -4084,7 +4084,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
          fMax += k*pt;
       }
 
-      if ( railingSystemIntervalIdx <= intervalIdx )
+      if ( railingSystemIntervalIdx <= intervalIdx && pPoi->IsOnSegment(poi) )
       {
          Float64 ft_ss, fb_ss;
          GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
@@ -6604,6 +6604,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
             // end to end length of the closure (distance between ends of the adjacent segments)
             Float64 closure_length = pBridge->GetClosureJointLength(closureKey);
+            ATLASSERT( !IsZero(closure_length) );
 
             SegmentIDType closureID = pIBridgeDesc->GetSegmentID(segmentKey);
 
@@ -7192,13 +7193,13 @@ void CGirderModelManager::ApplySlabLoad(ILBAMModel* pModel,pgsTypes::AnalysisTyp
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -7438,13 +7439,13 @@ void CGirderModelManager::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::Analysis
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -7610,13 +7611,13 @@ void CGirderModelManager::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Ana
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -7691,13 +7692,13 @@ void CGirderModelManager::ApplyShearKeyLoad(ILBAMModel* pModel,pgsTypes::Analysi
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -7959,13 +7960,13 @@ void CGirderModelManager::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -9056,16 +9057,6 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 {
    /////////////////////////////////////////////////
    // NOTE
-   // The LBAM does not model secondary prestress effects. The equivalent PT load
-   // results in the total PT effect. The secondary effects are the total minus
-   // the primary (aka direct or P*e) prestress. The load combinations and limit states
-   // need to include PS. Since PS is not in the LBAM the automated load combiner
-   // cannot include it. PS will have to be added to load combination and limit
-   // state results "manually"
-   /////////////////////////////////////////////////
-
-   /////////////////////////////////////////////////
-   // NOTE
    // The LRFD does not have a load case for relaxation. The time-step analysis computes
    // forces in the structure due to relaxation. These forces need to be included in the
    // load combinations and limit states. We will "invent" the RE load case for relxation.
@@ -9095,7 +9086,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    AddLoadCase(loadcases, CComBSTR("CR"),        CComBSTR("Creep"));
    AddLoadCase(loadcases, CComBSTR("SH"),        CComBSTR("Shrinkage"));
    AddLoadCase(loadcases, CComBSTR("RE"),        CComBSTR("Relaxation")); // not specifically defined in the LRFD, but we need to include relaxation effects somewhere
-   //AddLoadcase(loadcases, CComBSTR("PS"), .... secondary effects aren't modeled in the LBAM
+   AddLoadCase(loadcases, CComBSTR("PS"),        CComBSTR("Secondary Effects"));
 
    AddLoadCase(loadcases, CComBSTR("DWp"), CComBSTR("DW for permanent loads")); // User DW + Overlay
    AddLoadCase(loadcases, CComBSTR("DWf"), CComBSTR("DW for future loads")); // Future Overlay
@@ -9126,6 +9117,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strength1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::StrengthI],   pLoadFactors->CRmax[pgsTypes::StrengthI]);
    hr = strength1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::StrengthI],   pLoadFactors->SHmax[pgsTypes::StrengthI]);
    hr = strength1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::StrengthI],   pLoadFactors->REmax[pgsTypes::StrengthI]);
+   hr = strength1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::StrengthI],   pLoadFactors->PSmax[pgsTypes::StrengthI]);
 
    hr = loadcombos->Add(strength1) ;
 
@@ -9150,6 +9142,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strength2->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::StrengthII],   pLoadFactors->CRmax[pgsTypes::StrengthII]);
    hr = strength2->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::StrengthII],   pLoadFactors->SHmax[pgsTypes::StrengthII]);
    hr = strength2->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::StrengthII],   pLoadFactors->REmax[pgsTypes::StrengthII]);
+   hr = strength2->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::StrengthII],   pLoadFactors->PSmax[pgsTypes::StrengthII]);
 
    hr = loadcombos->Add(strength2) ;
 
@@ -9174,6 +9167,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceI],   pLoadFactors->CRmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceI],   pLoadFactors->SHmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceI],   pLoadFactors->REmax[pgsTypes::ServiceI]);
+   hr = service1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceI],   pLoadFactors->PSmax[pgsTypes::ServiceI]);
 
    hr = loadcombos->Add(service1) ;
 
@@ -9198,6 +9192,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service3->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceIII],   pLoadFactors->CRmax[pgsTypes::ServiceIII]);
    hr = service3->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceIII],   pLoadFactors->SHmax[pgsTypes::ServiceIII]);
    hr = service3->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceIII],   pLoadFactors->REmax[pgsTypes::ServiceIII]);
+   hr = service3->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceIII],   pLoadFactors->PSmax[pgsTypes::ServiceIII]);
  
    hr = loadcombos->Add(service3) ;
 
@@ -9222,6 +9217,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service1a->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceIA],   pLoadFactors->CRmax[pgsTypes::ServiceIA]);
    hr = service1a->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceIA],   pLoadFactors->SHmax[pgsTypes::ServiceIA]);
    hr = service1a->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceIA],   pLoadFactors->REmax[pgsTypes::ServiceIA]);
+   hr = service1a->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceIA],   pLoadFactors->PSmax[pgsTypes::ServiceIA]);
 
    loadcombos->Add(service1a);
 
@@ -9246,11 +9242,12 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::FatigueI],   pLoadFactors->CRmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::FatigueI],   pLoadFactors->SHmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::FatigueI],   pLoadFactors->REmax[pgsTypes::FatigueI]);
+   hr = fatigue1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::FatigueI],   pLoadFactors->PSmax[pgsTypes::FatigueI]);
 
    loadcombos->Add(fatigue1);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
-   Float64 DC, DW, CR, SH, RE, LLIM;
+   Float64 DC, DW, CR, SH, RE, PS, LLIM;
 
    // Deal with pedestrian load applications for rating.
    // All rating limit states are treated the same
@@ -9274,6 +9271,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_Inventory);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Inventory);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_Inventory);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_Inventory);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Inventory,true);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9282,6 +9280,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
    loadcombos->Add(strengthI_inventory);
 
 
@@ -9303,6 +9302,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_Operating);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Operating);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_Operating);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Operating,true);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9311,6 +9311,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthI_operating);
 
@@ -9332,6 +9333,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_Inventory);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Inventory);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_Inventory);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_Inventory);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Inventory,true);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9340,6 +9342,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceIII_inventory);
 
@@ -9361,6 +9364,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_Operating);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Operating);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_Operating);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Operating,true);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9370,6 +9374,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceIII_operating);
 
@@ -9391,6 +9396,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalRoutine);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalRoutine);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_LegalRoutine);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalRoutine,true);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9400,6 +9406,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthI_routine);
 
@@ -9421,6 +9428,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalRoutine);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalRoutine);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_LegalRoutine);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalRoutine,true);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9430,6 +9438,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceIII_routine);
 
@@ -9451,6 +9460,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalSpecial);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalSpecial);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_LegalSpecial);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalSpecial,true);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9460,6 +9470,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthI_special);
 
@@ -9481,6 +9492,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalSpecial);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_LegalSpecial);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalSpecial,true);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9490,6 +9502,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceIII_special);
 
@@ -9511,6 +9524,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitRoutine);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitRoutine);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthII_PermitRoutine);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthII_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitRoutine,true);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9520,6 +9534,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthII_routine);
 
@@ -9540,6 +9555,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitSpecial);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitSpecial);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthII_PermitSpecial);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthII_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitSpecial,true);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9549,6 +9565,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthII_special);
 
@@ -9570,6 +9587,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitRoutine);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitRoutine);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceI_PermitRoutine);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitRoutine,true);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9579,6 +9597,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceI_routine);
 
@@ -9600,6 +9619,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitSpecial);
    SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitSpecial);
    RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceI_PermitSpecial);
+   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitSpecial,true);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
@@ -9609,6 +9629,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceI_special);
 
@@ -9715,7 +9736,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    combos.push_back(lcCR);
    combos.push_back(lcSH);
    combos.push_back(lcRE);
-   //combos.push_back(lcPS); .... secondary effects aren't modeled in the LBAM
+   combos.push_back(lcPS);
    std::vector<LoadingCombinationType>::iterator lcIter(combos.begin());
    std::vector<LoadingCombinationType>::iterator lcIterEnd(combos.end());
    for ( ; lcIter != lcIterEnd; lcIter++ )
@@ -13871,11 +13892,11 @@ MemberIDType CGirderModelManager::GetFirstSuperstructureMemberID(const CSegmentK
          pSegment->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier )
          {
-            nSSMbrs += GetSuperstructureMemberCount(pPier);
+            nSSMbrs += GetSuperstructureMemberCount(pPier,gdrIdx);
          }
          else
          {
-            nSSMbrs += GetSuperstructureMemberCount(pTS);
+            nSSMbrs += GetSuperstructureMemberCount(pTS,gdrIdx);
          }
          mbrID += (MemberIDType)nSSMbrs;
       } // next segment
@@ -13894,11 +13915,11 @@ MemberIDType CGirderModelManager::GetFirstSuperstructureMemberID(const CSegmentK
 
       if ( pPier )
       {
-         nSSMbrs += GetSuperstructureMemberCount(pPier);
+         nSSMbrs += GetSuperstructureMemberCount(pPier,gdrIdx);
       }
       else
       {
-         nSSMbrs += GetSuperstructureMemberCount(pTS);
+         nSSMbrs += GetSuperstructureMemberCount(pTS,gdrIdx);
       }
 
       mbrID += (MemberIDType)nSSMbrs;
@@ -13930,7 +13951,7 @@ IndexType CGirderModelManager::GetSuperstructureMemberCount(const CSegmentKey& s
    return nSSMbrs;
 }
 
-IndexType CGirderModelManager::GetSuperstructureMemberCount(const CPierData2* pPier)
+IndexType CGirderModelManager::GetSuperstructureMemberCount(const CPierData2* pPier,GirderIndexType gdrIdx)
 {
    ATLASSERT(!pPier->IsAbutment()); // SSMbr count at abutments are handled with the segments
 
@@ -13969,10 +13990,17 @@ IndexType CGirderModelManager::GetSuperstructureMemberCount(const CPierData2* pP
    return nSSMbrs;
 }
 
-IndexType CGirderModelManager::GetSuperstructureMemberCount(const CTemporarySupportData* pTS)
+IndexType CGirderModelManager::GetSuperstructureMemberCount(const CTemporarySupportData* pTS,GirderIndexType gdrIdx)
 {
    if ( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint )
    {
+      // This is what we would do if we supported match casting
+      //const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(gdrIdx);
+      //CClosureKey closureKey = pClosureJoint->GetClosureKey();
+      //GET_IFACE(IBridge,pBridge);
+      //Float64 closure_length = pBridge->GetClosureJointLength(closureKey);
+      //return ( IsZero(closure_length) ? 0 : 1);
+
       return 1; // temporary supports with closure joints are modeled with 1 member
    }
    else

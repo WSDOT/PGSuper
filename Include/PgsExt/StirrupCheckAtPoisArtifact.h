@@ -91,6 +91,12 @@ public:
    Float64 GetFps() const;
    void SetFps(Float64 fps);
 
+   Float64 GetApt() const;
+   void SetApt(Float64 apt);
+
+   Float64 GetFpt() const;
+   void SetFpt(Float64 fpt);
+
    Float64 GetMu() const;
    void SetMu(Float64 mu);
 
@@ -193,6 +199,8 @@ private:
    Float64 m_As;
    Float64 m_Aps;
    Float64 m_Fps;
+   Float64 m_Apt;
+   Float64 m_Fpt;
    Float64 m_Mu;
    Float64 m_Mr;
    Float64 m_Dv;

@@ -365,6 +365,11 @@ public:
    void GetTempStrandRemovalMaximumTensionStress(bool* bIsApplicable, Float64* maxStress) const;
    void SetTempStrandRemovalMaximumTensionStress(bool bIsApplicable, Float64 maxStress);
 
+   // Set/Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
+   // at the temporary strand removal with rebar
+   Float64 GetTempStrandRemovalTensionStressFactorWithRebar() const;
+   void SetTempStrandRemovalTensionStressFactorWithRebar(Float64 stress);
+
    //------------------------------------------------------------------------
    // Set/Get flag that indicates if stresses during temporary loading conditions
    // are to be checked (basically, Bridge Site 1 stresses)
@@ -522,6 +527,14 @@ public:
    // Set/Get the method for computing prestress transfer length
    pgsTypes::PrestressTransferComputationType GetPrestressTransferComputationType() const;
    void SetPrestressTransferComputationType(pgsTypes::PrestressTransferComputationType type);
+
+   // Set/Get duct area ratio (LRFD 5.4.6.2)
+   void GetDuctAreaRatio(Float64* pPush,Float64* pPull) const;
+   void SetDuctAreaRatio(Float64 push,Float64 pull);
+
+   // Set/Get duct diameter ratio (LRFD 5.4.6.2)
+   Float64 GetDuctDiameterRatio() const;
+   void SetDuctDiameterRatio(Float64 dr);
 
    //////////////////////////////////////
    //
@@ -1009,6 +1022,12 @@ public:
    void SetFcgpComputationMethod(Int16 method);
    Int16 GetFcgpComputationMethod() const;
 
+   //------------------------------------------------------------------------
+   // Determine if elastic gains or deck shrinkage are applicable
+   bool AreElasticGainsApplicable() const;
+   bool IsDeckShrinkageApplicable() const;
+
+
    //////////////////////////////////////
    //
    // Limits Parameters
@@ -1198,6 +1217,7 @@ private:
    Float64 m_TempStrandRemovalTensStress;
    bool    m_TempStrandRemovalDoTensStressMax;
    Float64 m_TempStrandRemovalTensStressMax;
+   Float64 m_TempStrandRemovalTensStressWithRebar;
 
    // bridge site 1
    bool m_bCheckTemporaryStresses; // indicates if limit state stresses are checked for temporary loading conditions
@@ -1294,6 +1314,10 @@ private:
    bool m_bCheckTendonStressAtJacking;
    bool m_bCheckTendonStressPriorToSeating;
    Float64 m_TendonStressCoeff[5][2];
+
+   Float64 m_DuctAreaPushRatio;
+   Float64 m_DuctAreaPullRatio;
+   Float64 m_DuctDiameterRatio;
 
    // live load deflection
    bool m_bDoEvaluateDeflection;

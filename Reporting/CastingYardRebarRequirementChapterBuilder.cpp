@@ -30,6 +30,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\Allowables.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -56,7 +57,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CCastingYardRebarRequirementChapterBuilder::GetName() const
 {
-   return TEXT("Allowable Tension Reinforcement Requirements");
+   return TEXT("Reinforcement Requirements for Tension Limits");
 }
 
 rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -76,6 +77,8 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowStress);
+
    // Report for Girder Segments
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -90,10 +93,21 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
       CSegmentKey segmentKey(girderKey,segIdx);
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
       pPara = new rptParagraph;
       *pChapter << pPara;
       BuildTable(pBroker,pPara,segmentKey,releaseIntervalIdx);
+
+      if ( pAllowStress->CheckTemporaryStresses() )
+      {
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+         if ( 0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary) )
+         {
+            IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+            pPara = new rptParagraph;
+            *pChapter << pPara;
+            BuildTable(pBroker,pPara,segmentKey,tsRemovalIntervalIdx);
+         }
+      }
    } // next segment
 
    // Report for Closure Joints

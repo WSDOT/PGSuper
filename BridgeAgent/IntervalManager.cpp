@@ -1236,11 +1236,6 @@ m_SpanKey(other.m_SpanKey),m_EventIdx(other.m_EventIdx)
 
 bool CIntervalManager::CUserLoadKey::operator<(const CUserLoadKey& other) const
 {
-   if ( m_SpanKey == other.m_SpanKey )
-   {
-      return false;
-   }
-
    if ( m_SpanKey < other.m_SpanKey )
    {
       return true;

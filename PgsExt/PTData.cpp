@@ -1383,46 +1383,97 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    ATLASSERT(m_pGirder != NULL);
 
-   pStrLoad->BeginUnit(_T("PTData"));
+   hr = pStrLoad->BeginUnit(_T("PTData"));
+   if ( FAILED(hr) )
+   {
+      THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    Float64 version;
    pStrLoad->get_Version(&version);
 
+   var.vt = VT_I4;
+   hr = pStrLoad->get_Property(_T("TendonMaterialKey"),&var);
+   if ( FAILED(hr) )
+   {
+      // prior to verion 3 of this data block, the tendon material key was forgotten
+      // so failing to load the property is ok... the default value works
+      if ( 3 < version )
+      {
+         THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+   }
+   else
+   {
+      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+      Int32 key = var.lVal;
+      pStrand = pPool->GetStrand(key);
+   }
+
    m_Ducts.clear();
 
    var.vt = VT_INDEX;
-   pStrLoad->get_Property(_T("DuctCount"),&var);
+   hr = pStrLoad->get_Property(_T("DuctCount"),&var);
+   if ( FAILED(hr) )
+   {
+      THROW_LOAD(InvalidFileFormat,pLoad);
+   }
+
    DuctIndexType ductCount = VARIANT2INDEX(var);
 
    for ( DuctIndexType ductIdx = 0; ductIdx < ductCount; ductIdx++ )
    {
       CDuctData duct(m_pGirder);
       duct.m_pPTData = this;
-      duct.Load(pStrLoad,pProgress);
+      hr = duct.Load(pStrLoad,pProgress);
+      if ( FAILED(hr) )
+      {
+         THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       m_Ducts.push_back(duct);
    }
 
    var.vt = VT_I4;
-   pStrLoad->get_Property(_T("NumTempStrands"), &var);
+   hr = pStrLoad->get_Property(_T("NumTempStrands"), &var);
+   if ( FAILED(hr) )
+   {
+      THROW_LOAD(InvalidFileFormat,pLoad);
+   }
    nTempStrands = var.iVal;
 
    var.vt = VT_BOOL;
-   pStrLoad->get_Property(_T("CalcPjTemp"),&var);
+   hr = pStrLoad->get_Property(_T("CalcPjTemp"),&var);
+   if ( FAILED(hr) )
+   {
+      THROW_LOAD(InvalidFileFormat,pLoad);
+   }
    bPjTempCalc = (var.boolVal == VARIANT_TRUE);
 
    var.vt = VT_R8;
-   pStrLoad->get_Property(_T("PjTemp"), &var);
+   hr = pStrLoad->get_Property(_T("PjTemp"), &var);
+   if ( FAILED(hr) )
+   {
+      THROW_LOAD(InvalidFileFormat,pLoad);
+   }
    PjTemp = var.dblVal;
 
    var.vt = VT_R8;
-   pStrLoad->get_Property(_T("LastUserPjTemp"), &var);
+   hr = pStrLoad->get_Property(_T("LastUserPjTemp"), &var);
+   if ( FAILED(hr) )
+   {
+      THROW_LOAD(InvalidFileFormat,pLoad);
+   }
    LastUserPjTemp = var.dblVal;
 
    // added in version 2
    if ( 1 < version )
    {
       var.vt = VT_I4;
-      pStrLoad->get_Property(_T("DuctType"),&var);
+      hr = pStrLoad->get_Property(_T("DuctType"),&var);
+      if ( FAILED(hr) )
+      {
+         THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       DuctType = (pgsTypes::DuctType)var.lVal;
    }
 
@@ -1430,7 +1481,11 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    if ( 2 < version )
    {
       var.vt = VT_I4;
-      pStrLoad->get_Property(_T("InstallationType"),&var);
+      hr = pStrLoad->get_Property(_T("InstallationType"),&var);
+      if ( FAILED(hr) )
+      {
+         THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       InstallationType = (pgsTypes::StrandInstallationType)var.lVal;
    }
 
@@ -1444,6 +1499,10 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    HRESULT hr = S_OK;
 
    pStrSave->BeginUnit(_T("PTData"),3.0);
+
+   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   Int32 key = pPool->GetStrandKey(pStrand);
+   pStrSave->put_Property(_T("TendonMaterialKey"),CComVariant(key));
 
    DuctIndexType ductCount = m_Ducts.size();
    pStrSave->put_Property(_T("DuctCount"),CComVariant(ductCount));

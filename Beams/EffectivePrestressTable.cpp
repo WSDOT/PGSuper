@@ -25,6 +25,7 @@
 #include "EffectivePrestressTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\PrestressForce.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\GirderData.h>
 #include <PgsExt\LoadFactors.h>
@@ -73,6 +74,9 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    bool bUseGrossProperties = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false;
 
+   GET_IFACE2(pBroker,ILosses, pLosses);
+   bool bDeckShrinkage = pLosses->IsDeckShrinkageApplicable();
+
    // Create and configure the table
    ColumnIndexType numColumns = 9;
    if ( bUseGrossProperties )
@@ -85,7 +89,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
       numColumns++;
    }
 
-   if ( loss_method == LOSSES_AASHTO_REFINED || loss_method == LOSSES_WSDOT_REFINED )
+   if ( bDeckShrinkage )
    {
       numColumns++;
    }
@@ -93,7 +97,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    CEffectivePrestressTable* table = new CEffectivePrestressTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
-   table->m_LossMethod = loss_method;
+   table->m_bIsDeckShinkageApplied = bDeckShrinkage;
    table->m_bUseGrossProperties = bUseGrossProperties;
    table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
 
@@ -141,7 +145,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
       *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pSIDL"));
-      if ( bUseGrossProperties )
+      if ( bDeckShrinkage )
       {
          *pParagraph << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pSS"));
       }
@@ -173,7 +177,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if ( bUseGrossProperties )
+   if ( bDeckShrinkage )
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -216,7 +220,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    (*this)(row,col++) << stress.SetValue(fpT);
    (*this)(row,col++) << stress.SetValue(fpED);
    (*this)(row,col++) << stress.SetValue(fpSIDL);
-   if ( m_bUseGrossProperties )
+   if ( m_bIsDeckShinkageApplied )
    {
       (*this)(row,col++) << stress.SetValue(fpSS);
    }

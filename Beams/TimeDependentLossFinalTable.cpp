@@ -25,6 +25,7 @@
 #include "TimeDependentLossFinalTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\PrestressForce.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
 #ifdef _DEBUG
@@ -61,12 +62,12 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
-   pgsTypes::SectionPropertyMode spMode = pSectProps->GetSectionPropertiesMode();
+   GET_IFACE2(pBroker,ILosses, pLosses);
+   bool bDeckShrinkage = pLosses->IsDeckShrinkageApplicable();
 
    // Create and configure the table
    ColumnIndexType numColumns = 5;
-   if ( spMode == pgsTypes::spmGross )
+   if ( bDeckShrinkage )
    {
       numColumns++;
    }
@@ -74,7 +75,7 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    CTimeDependentLossFinalTable* table = new CTimeDependentLossFinalTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
-   table->m_SectionPropertiesMode = spMode;
+   table->m_bIsDeckShinkageApplied = bDeckShrinkage;
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
@@ -87,7 +88,7 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    *pChapter << pParagraph;
 
    *pParagraph << symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR2"));
-   if ( table->m_SectionPropertiesMode == pgsTypes::spmGross )
+   if ( table->m_bIsDeckShinkageApplied )
    {
       *pParagraph << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pSS"));
    }
@@ -99,7 +100,7 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if ( table->m_SectionPropertiesMode == pgsTypes::spmGross )
+   if ( table->m_bIsDeckShinkageApplied )
    {
       (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -123,7 +124,7 @@ void CTimeDependentLossFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,
    (*this)(row,colIdx++) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
    (*this)(row,colIdx++) << stress.SetValue(ptl->CreepLossAfterDeckPlacement());
    (*this)(row,colIdx++) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
-   if ( m_SectionPropertiesMode == pgsTypes::spmGross )
+   if ( m_bIsDeckShinkageApplied )
    {
       (*this)(row,colIdx++) << stress.SetValue(ptl->ElasticGainDueToDeckShrinkage());
    }

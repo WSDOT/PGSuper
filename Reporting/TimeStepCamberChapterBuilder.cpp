@@ -517,7 +517,6 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 
    if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
    {
-      vProductForces.push_back(pftSecondaryEffects);
       vProductForces.push_back(pftPostTensioning);
    }
 

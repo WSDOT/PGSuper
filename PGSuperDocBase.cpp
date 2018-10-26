@@ -2051,11 +2051,7 @@ void CPGSuperDocBase::OnProjectSpec()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE( ILibraryNames, pLibNames );
-
-   std::vector<std::_tstring> specs;
-   pLibNames->EnumSpecNames( &specs );
-	CSpecDlg dlg(specs);
+	CSpecDlg dlg;
 
    GET_IFACE( ISpecification, pSpec );
 

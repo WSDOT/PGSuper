@@ -156,6 +156,8 @@
 #define IDC_LWC_PHI                     1010
 #define IDC_SPLITTING_ZL                1010
 #define IDC_DEFLECTION_LIMIT            1010
+#define IDC_EDIT5                       1010
+#define IDC_PULL_METHOD                 1010
 #define IDC_D6                          1011
 #define IDC_DOWN_INC                    1011
 #define IDC_DIAPHRAGM_GRID              1011
@@ -216,6 +218,7 @@
 #define IDC_BETA                        1017
 #define IDC_OD                          1017
 #define IDC_BETA_SC                     1017
+#define IDC_DUCT_SIZE_RATIO             1017
 #define IDC_WEIGHT                      1018
 #define IDC_DEL_HARPED_STRAND           1018
 #define IDC_LONG_GRID                   1018
@@ -419,6 +422,7 @@
 #define IDC_CHECK_AFTER_DECK_TENSION_MAX 1107
 #define IDC_RADIO2                      1108
 #define IDC_AFTER_DECK_TENSION_MAX_UNIT 1108
+#define IDC_TS_TENSION_WITH_REBAR       1109
 #define IDC_CURING_METHOD               1110
 #define IDC_FINAL                       1112
 #define IDC_SHIPPING1_TAG               1113
@@ -474,6 +478,7 @@
 #define IDC_SEVERE_SERVICE_III_TENSION_UNIT 1140
 #define IDC_SERVICE_I_TENSION_UNIT      1141
 #define IDC_ADD_STRAIGHT_STRAND         1142
+#define IDC_TS_TENSION_WITH_REBAR_UNIT  1142
 #define IDC_APPEND_STRAIGHT_STRAND      1143
 #define IDC_ADD_TEMPORARY_STRAND        1144
 #define IDC_APPLY_DR_TO_BEAM            1144
@@ -1184,6 +1189,8 @@
 #define IDC_DESIGN_STRATEGY_NOTE        1601
 #define IDC_FCI_LABEL                   1602
 #define IDC_FC_LABEL                    1603
+#define IDC_TS_TENSION_WITH_REBAR_LABEL 1604
+#define IDC_PUSH_METHOD                 1606
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
 #define IDS_E_INVALIDFORMAT             1640
@@ -1220,7 +1227,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        311
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1604
+#define _APS_NEXT_CONTROL_VALUE         1607
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

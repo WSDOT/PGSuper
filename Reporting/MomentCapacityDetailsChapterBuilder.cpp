@@ -244,6 +244,8 @@ void write_moment_data_table(IBroker* pBroker,
 
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->DeckType;
 
+   DuctIndexType nTendons = pTendonGeometry->GetDuctCount(girderKey);
+
    std::_tstring strPicture;
    if ( bPositiveMoment )
    {
@@ -266,7 +268,7 @@ void write_moment_data_table(IBroker* pBroker,
    os << _T("Moment Capacity [5.7.3.2.4] - ") << strStageName << std::endl;
 
    ColumnIndexType nColumns;
-   if( bPositiveMoment )
+   if( bPositiveMoment || 0 < nTendons )
    {
       nColumns = 12;
       if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
@@ -284,16 +286,24 @@ void write_moment_data_table(IBroker* pBroker,
       nColumns++; // for epsilon_t
    }
 
-   DuctIndexType nTendons = pTendonGeometry->GetDuctCount(girderKey);
    if ( 0 < nTendons )
    {
       nColumns += 2*nTendons; // fpe and epsilon_pti
    }
 
-   if ( bPositiveMoment || 0 < nTendons )
+   if ( bPositiveMoment )
    {
       nColumns += 1; // for de_shear
+   }
+
+   if ( bPositiveMoment || 0 < nTendons )
+   {
       nColumns += 1; // for fps_avg
+   }
+
+   if ( 0 < nTendons )
+   {
+      nColumns += 1; // for fpt_avg
    }
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str().c_str());
@@ -332,7 +342,7 @@ void write_moment_data_table(IBroker* pBroker,
    (*table)(0,col++) << COLHDR(_T("d") << Sub(_T("c")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++) << COLHDR(_T("d") << Sub(_T("e")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    
-   if ( bPositiveMoment || 0 < nTendons)
+   if ( bPositiveMoment )
    {
       (*table)(0,col++) << COLHDR(_T("d") << Sub(_T("e")) << rptNewLine << _T("(Shear *)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
@@ -364,6 +374,11 @@ void write_moment_data_table(IBroker* pBroker,
 
       (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
+      if ( 0 < nTendons )
+      {
+         (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
+
       if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
       {
          (*table)(0,col++) << _T("PPR");
@@ -373,6 +388,8 @@ void write_moment_data_table(IBroker* pBroker,
    {
       if ( 0 < nTendons )
       {
+         (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(0,col++) << Sub2(symbol(epsilon),_T("psi")) << rptNewLine << _T("x 1000");
          for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
          {
             (*table)(0,col++) << COLHDR(_T("Duct ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -380,6 +397,7 @@ void write_moment_data_table(IBroker* pBroker,
          }
 
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
    }
    (*table)(0,col++) << symbol(phi);
@@ -422,7 +440,7 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(row,col++) << dim.SetValue( mcd.dc );
       (*table)(row,col++) << dim.SetValue( mcd.de );
 
-      if ( bPositiveMoment || 0 < nTendons )
+      if ( bPositiveMoment )
       {
          (*table)(row,col++) << dim.SetValue( mcd.de_shear );
       }
@@ -444,7 +462,12 @@ void write_moment_data_table(IBroker* pBroker,
             (*table)(row,col++) << strain.SetValue(mcd.ept_initial[tendonIdx]*1000);
          }
 
-         (*table)(row,col++) << stress.SetValue( mcd.fps );
+         (*table)(row,col++) << stress.SetValue( mcd.fps_avg );
+
+         if ( 0 < nTendons )
+         {
+            (*table)(row,col++) << stress.SetValue( mcd.fpt_avg );
+         }
 
          if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
          {
@@ -455,13 +478,16 @@ void write_moment_data_table(IBroker* pBroker,
       {
          if ( 0 < nTendons )
          {
+            (*table)(row,col++) << stress.SetValue( mcd.fpe_ps );
+            (*table)(row,col++) << strain.SetValue(mcd.eps_initial * 1000);
             for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
             {
                (*table)(row,col++) << stress.SetValue(mcd.fpe_pt[tendonIdx]);
                (*table)(row,col++) << strain.SetValue(mcd.ept_initial[tendonIdx]*1000);
             }
 
-            (*table)(row,col++) << stress.SetValue( mcd.fps );
+            (*table)(row,col++) << stress.SetValue( mcd.fps_avg );
+            (*table)(row,col++) << stress.SetValue( mcd.fpt_avg );
          }
       }
       (*table)(row,col++) << scalar.SetValue( mcd.Phi );
@@ -478,7 +504,7 @@ void write_moment_data_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2005 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEditionWith2006Interims ? true : false );
+   bool bAfter2005 = ( lrfdVersionMgr::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    pPara = new rptParagraph;
    *pChapter << pPara;

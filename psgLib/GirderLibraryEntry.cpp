@@ -749,9 +749,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( 22 < version )
          {
             bool bOkToFail = false;
-            if ( version == 23 || version == 24 )
+            if ( version == 23 || version == 24  || version == 25 )
             {
-               bOkToFail = true; // it is OK if version 23 datablock fails
+               bOkToFail = true; // it is OK if version 23, 24, or 25 datablock fails
             }
 
             bool bDidBeginUnit = true;

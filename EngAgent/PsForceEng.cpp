@@ -551,7 +551,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    STRANDDEVLENGTHDETAILS details;
    details.db = pStrand->GetNominalDiameter();
    details.fpe = fpe;
-   details.fps = mcd.fps;
+   details.fps = mcd.fps_avg;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
    details.lt = GetXferLength(segmentKey,pgsTypes::Permanent);
@@ -605,7 +605,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    STRANDDEVLENGTHDETAILS details;
    details.db = pStrand->GetNominalDiameter();
    details.fpe = fpe;
-   details.fps = mcd.fps;
+   details.fps = mcd.fps_avg;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
    details.lt = GetXferLength(segmentKey,pgsTypes::Permanent);

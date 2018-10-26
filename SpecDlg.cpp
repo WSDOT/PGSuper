@@ -27,6 +27,9 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SpecDlg.h"
 
+#include <IFace\DocumentType.h>
+#include <IFace\Project.h>
+
 #include "HtmlHelp\HelpTopics.hh"
 
 #ifdef _DEBUG
@@ -39,9 +42,8 @@ static char THIS_FILE[] = __FILE__;
 // CSpecDlg dialog
 
 
-CSpecDlg::CSpecDlg(const std::vector<std::_tstring>& specs,CWnd* pParent /*=NULL*/)
-	: CDialog(CSpecDlg::IDD, pParent),
-   m_Specs( specs )
+CSpecDlg::CSpecDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CSpecDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSpecDlg)
 	//}}AFX_DATA_INIT
@@ -72,11 +74,27 @@ BOOL CSpecDlg::OnInitDialog()
    CComboBox* pBox = (CComboBox*)GetDlgItem( IDC_SPEC );
    ASSERT( pBox );
 
-   std::vector<std::_tstring>::iterator iter;
-   for ( iter = m_Specs.begin(); iter < m_Specs.end(); iter++ )
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bIsPGSplice = pDocType->IsPGSpliceDocument();
+
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ILibraryNames, pLibNames );
+
+   std::vector<std::_tstring> specs;
+   pLibNames->EnumSpecNames( &specs );
+
+   BOOST_FOREACH(const std::_tstring& spec,specs)
    {
-      CString spec( (*iter).c_str() );
-      pBox->AddString( spec );
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec.c_str() );
+      if ( (bIsPGSplice && pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP) ) 
+      {
+         // only project criteria using time-step losses can be used with spliced girders
+         continue;
+      }
+      pBox->AddString( spec.c_str() );
    }
 
    CDialog::OnInitDialog();

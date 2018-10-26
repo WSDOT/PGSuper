@@ -60,7 +60,7 @@ private:
    const CStrandData* m_pStrands;
    StrandIndexType m_NtMax;
    bool m_bIgnoreInitialRelaxation;
-   bool m_bUseGrossProperties;
+   bool m_bIsDeckShinkageApplied;
 };
 
 #endif //__TOTALPRESTRESSLOSSTABLE_H_

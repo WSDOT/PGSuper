@@ -57,7 +57,7 @@ private:
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);
    rptRcScalar scalar;
 
-   pgsTypes::SectionPropertyMode m_SectionPropertiesMode;
+   bool m_bIsDeckShinkageApplied;
 };
 
 #endif //__TIMEDEPENDENTLOSSFINALTABLE_H_

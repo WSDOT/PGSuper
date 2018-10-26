@@ -37,6 +37,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
+#include <IFace\Allowables.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\BridgeDescription2.h>
@@ -642,8 +643,9 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    Float64 aps = pStrand->GetNominalArea();
 
    // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel
-   pgsTypes::StrandInstallationType installationType = pParent->GetInstallationType();
-   Float64 K = (installationType == pgsTypes::sitPush ? 2.0 : 2.5);
+   GET_IFACE2(pBroker,IDuctLimits,pDuctLimits);
+   CGirderKey girderKey = m_pPTData->GetGirder()->GetGirderKey();
+   Float64 K = pDuctLimits->GetTendonAreaLimit(girderKey);
 
    StrandIndexType maxStrands = (StrandIndexType)fabs(A/(K*aps));
 
@@ -660,7 +662,10 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    else
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      CString strMsg(_T("The number of strands exceeds the maximum value for this duct size.\r\n\r\nNumber of strands will be set to the maximum value."));
+      pgsTypes::StrandInstallationType installationType = pParent->GetInstallationType();
+      CString strMsg;
+      strMsg.Format(_T("The number of strands exceeds the maximum for this duct size and %s installation (See LRFD 5.4.6.2).\r\n\r\nThe number of strands will be set to the maximum value."),
+         (installationType == pgsTypes::sitPush ? _T("push") : _T("pull")));
       AfxMessageBox(strMsg);
       SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)maxStrands);
    }

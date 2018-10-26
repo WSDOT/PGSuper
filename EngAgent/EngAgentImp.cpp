@@ -1311,6 +1311,7 @@ STDMETHODIMP CEngAgentImp::GetClassID(CLSID* pCLSID)
 
 STDMETHODIMP CEngAgentImp::Reset()
 {
+   InvalidateAll();
    return S_OK;
 }
 
@@ -1523,6 +1524,25 @@ Float64 CEngAgentImp::GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIn
 {
    return m_PsForceEngineer.GetAverageAnchorSetLoss(girderKey,ductIdx);
 }
+
+bool CEngAgentImp::AreElasticGainsApplicable()
+{
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   return pSpecEntry->AreElasticGainsApplicable();
+}
+
+bool CEngAgentImp::IsDeckShrinkageApplicable()
+{
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   return pSpecEntry->IsDeckShrinkageApplicable();
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // IPretensionForce

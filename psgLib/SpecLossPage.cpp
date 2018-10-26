@@ -88,11 +88,10 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableTxDOT2013(method==3);
       EnableTimeDependentModel(FALSE);
 
-      BOOL bEnable = lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 3 || method == 4) ? TRUE : FALSE;
-      CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
-      bEnable = pParent->m_Entry.GetSectionPropertyMode() == pgsTypes::spmTransformed ? FALSE : bEnable;
+      BOOL bEnable = lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
+      BOOL bEnableShrk = bEnable && method != 4 ? TRUE : FALSE;
 
-      EnableElasticGains(bEnable);
+      EnableElasticGains(bEnable, bEnableShrk);
 
       bEnable = (0 <= method && method < 4) ? TRUE : FALSE;
       EnableRelaxation(bEnable);
@@ -105,12 +104,13 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableApproximateShippingTime(FALSE);
       EnableTxDOT2013(FALSE);
       EnableTimeDependentModel(TRUE);
-      EnableElasticGains(FALSE);
+      EnableElasticGains(FALSE, FALSE);
       EnableRelaxation(FALSE);
    }
 }
 
 #define ENABLE_WINDOW(x) pWnd = GetDlgItem(x); pWnd->EnableWindow(bEnable); pWnd->ShowWindow(bEnable ? SW_SHOW : SW_HIDE)
+#define ENABLE_WINDOW_EX(x,y) pWnd = GetDlgItem(x); pWnd->EnableWindow(y); pWnd->ShowWindow(y ? SW_SHOW : SW_HIDE)
 void CSpecLossPage::EnableShippingLosses(BOOL bEnable)
 {
    CWnd* pWnd;
@@ -157,7 +157,7 @@ void CSpecLossPage::EnableRelaxation(BOOL bEnable)
    ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD);
 }
 
-void CSpecLossPage::EnableElasticGains(BOOL bEnable)
+void CSpecLossPage::EnableElasticGains(BOOL bEnable, BOOL bEnableDeckShrinkage)
 {
    CWnd* pWnd;
    ENABLE_WINDOW(IDC_ELASTIC_GAINS_GROUP);
@@ -200,9 +200,9 @@ void CSpecLossPage::EnableElasticGains(BOOL bEnable)
    ENABLE_WINDOW(IDC_EG_OVERLAY_UNIT);
    ENABLE_WINDOW(IDC_EG_OVERLAY_LABEL);
 
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE);
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE_UNIT);
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE_LABEL);
+   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE, bEnableDeckShrinkage);
+   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE_UNIT, bEnableDeckShrinkage);
+   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE_LABEL, bEnableDeckShrinkage);
 
    ENABLE_WINDOW(IDC_EG_LIVELOAD);
    ENABLE_WINDOW(IDC_EG_LIVELOAD_UNIT);

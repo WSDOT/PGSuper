@@ -36,6 +36,7 @@ CLASS
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\PrestressForce.h>
 
 #include <Lrfd\VersionMgr.h>
 
@@ -638,8 +639,10 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
       *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
       Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, false);
+      Float64 ft  = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, true);
       *pPara<<_T("Allowable Tensile Concrete Stresses")<<rptNewLine;
-      *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
+      *pPara<<_T("- Service I (w/o mild rebar) = ")<<stress.SetValue(fts) << rptNewLine;
+      *pPara<<_T("- Service I (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
     }
 }
 
@@ -1077,7 +1080,12 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          *pPara << _T("Overlay = ") << pSpecEntry->GetOverlayElasticGain()*100.0 << _T("%") << rptNewLine;
          *pPara << _T("User DC (After Deck Placement) = ") << pSpecEntry->GetUserLoadAfterDeckDCElasticGain()*100.0 << _T("%") << rptNewLine;
          *pPara << _T("User DW (After Deck Placement) = ") << pSpecEntry->GetUserLoadAfterDeckDWElasticGain()*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("Deck Shrinkage = ") << pSpecEntry->GetDeckShrinkageElasticGain()*100.0 << _T("%") << rptNewLine;
+
+         GET_IFACE2(pBroker,ILosses, pLosses);
+         if( pLosses->IsDeckShrinkageApplicable() )
+         {
+            *pPara << _T("Deck Shrinkage = ") << pSpecEntry->GetDeckShrinkageElasticGain()*100.0 << _T("%") << rptNewLine;
+         }
       }
    }
 }

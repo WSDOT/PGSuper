@@ -25,8 +25,6 @@
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\ProductRotationTable.h>
-#include <Reporting\TSRemovalReactionTable.h>
-#include <Reporting\TSRemovalRotationTable.h>
 #include <Reporting\UserReactionTable.h>
 #include <Reporting\UserRotationTable.h>
 #include <Reporting\VehicularLoadResultsTable.h>
@@ -122,8 +120,6 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       return pChapter;
    }
 
-   CTSRemovalReactionTable().Build(pChapter,pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,pDisplayUnits);
-
    *p << rptNewLine;
 
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girderKey);
@@ -172,8 +168,6 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    {
       *p << _T("$ Pedestrian values are per girder") << rptNewLine;
    }
-
-   CTSRemovalRotationTable().Build(pChapter,pBroker,girderKey,pSpec->GetAnalysisType(),pDisplayUnits);
 
    *p << rptNewLine;
 

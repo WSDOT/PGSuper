@@ -157,12 +157,15 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    bool bIsOnSegment = pPoi->IsOnSegment(poi);
    bool bIsOnGirder  = pPoi->IsOnGirder(poi);
 
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+
    Float64 Eps = pStrand->GetE();
    Float64 fpe_ps = 0.0; // effective prestress after all losses
    Float64 eps_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
-   if ( bPositiveMoment )
+   if ( bPositiveMoment || 0 < nDucts )
    {
-      // only for positive moment... strands are ignored for negative moment analysis
+      // only for positive moment... strands are ignored for negative moment analysis unless there are tendons
       if ( bIsOnSegment )
       {
          GET_IFACE(IPretensionForce, pPrestressForce);
@@ -175,9 +178,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    std::vector<Float64> ept_initial;
    const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
    Float64 Ept = pTendon->GetE();
-   GET_IFACE(ITendonGeometry,pTendonGeom);
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if 0 < nDucts
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       Float64 fpe = 0;
@@ -203,10 +204,13 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
 
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+
    Float64 Eps = pStrand->GetE();
    Float64 fpe_ps = 0.0; // effective prestress after all losses
    Float64 eps_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
-   if ( bPositiveMoment )
+   if ( bPositiveMoment || 0 < nDucts )
    {
       // only for positive moment... strands are ignored for negative moment analysis
       GET_IFACE(IPretensionForce, pPrestressForce);
@@ -230,8 +234,6 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
    Float64 Ept = pTendon->GetE();
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // not used if there aren't any tendons
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       Float64 fpe = 0;
@@ -259,17 +261,18 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
 void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial,const std::vector<Float64>& fpe_pt,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
    GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
 
    GET_IFACE_NOCHECK(IStrandGeometry,pStrandGeom); // only used for positive moment
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
    StrandIndexType Ns = 0;
    StrandIndexType Nh = 0;
-   if ( bPositiveMoment )
+   if ( bPositiveMoment || 0 < nDucts )
    {
-      // Strands only modeled for positive moment calculations
+      // Strands only modeled for positive moment calculations or all calculations when ducts are present
       if ( pConfig )
       {
          Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
@@ -283,7 +286,6 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    }
 
    DuctIndexType Npt = 0;
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       Npt += pTendonGeom->GetTendonStrandCount(segmentKey,ductIdx);
@@ -546,6 +548,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    solution->get_TensionResultantLocation(&cgT);
 
    Float64 fps_avg = 0;
+   Float64 fpt_avg = 0;
 
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
    const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
@@ -560,6 +563,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       pmcd->de_shear   = 0.0;
       
       fps_avg          = 0.0;
+      fpt_avg          = 0.0;
    }
    else
    {
@@ -592,22 +596,17 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       szOffset->get_Dx(&dx);
       szOffset->get_Dy(&dy);
 
-      // calculate average resultant stress in strands/tendonds at ultimate
+      // calculate average resultant stress in strands/tendons at ultimate
 
-      if ( 0 < Ns+Nh+Npt )
+      if ( 0 < Ns+Nh )
       {
          Float64 aps = pStrand->GetNominalArea();
-
          Float64 Aps[2] = {0,0}; // total area of straight/harped
-         Float64 Apt = 0; // total area of tendon
 
          CComPtr<IStressStrain> ssStrand;
          CreateStrandMaterial(segmentKey,&ssStrand);
 
-         CComPtr<IStressStrain> ssTendon;
-         CreateTendonMaterial(segmentKey,&ssTendon);
-
-         if ( bPositiveMoment )
+         if ( bPositiveMoment || 0 < nDucts )
          {
             for ( int i = 0; i < 2; i++ ) // straight and harped strands
             {
@@ -647,8 +646,17 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             }
          }
 
+         fps_avg /= (Aps[pgsTypes::Straight]+Aps[pgsTypes::Harped]);
+      }
+
+      if ( 0 < Npt )
+      {
+         Float64 Apt = 0; // total area of tendon
          if ( bIsOnGirder )
          {
+            CComPtr<IStressStrain> ssTendon;
+            CreateTendonMaterial(segmentKey,&ssTendon);
+
             for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
             {
                CComPtr<IPoint2d> point;
@@ -666,13 +674,13 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
                //stress *= bond_factor;
 
-               fps_avg += apt*stress;
+               fpt_avg += apt*stress;
 
                point.Release();
             }
          }
 
-         fps_avg /= (Aps[pgsTypes::Straight]+Aps[pgsTypes::Harped]+Apt);
+         fpt_avg /= Apt;
       }
 
       // determine de (see PCI BDM 8.4.1.2).
@@ -733,7 +741,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
    WATCHX(MomCap,0, _T("X = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft") << _T("   Mn = ") << ::ConvertFromSysUnits(Mn,unitMeasure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/Mn << _T(" fps_avg = ") << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << _T(" KSI"));
 
-   pmcd->fps = fps_avg;
+   pmcd->fps_avg = fps_avg;
+   pmcd->fpt_avg = fpt_avg;
    pmcd->dt  = dt;
    pmcd->bOverReinforced = false;
 
@@ -1600,9 +1609,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
    CClosureKey closureKey;
    bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
-
-   bool bIsOnSegment = pPoi->IsOnGirder(poi);
+   bool bIsOnSegment = pPoi->IsOnSegment(poi);
    bool bIsOnGirder  = pPoi->IsOnGirder(poi);
+
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
@@ -1653,17 +1664,17 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          // poi is in a closure joint
          matGirder->put_fc( pMaterial->GetClosureJointFc(closureKey,intervalIdx) );
       }
-      else if ( pPoi->IsOffSegment(poi) )
+      else if ( bIsOnSegment )
+      {
+         matGirder->put_fc( pMaterial->GetSegmentFc(segmentKey,intervalIdx) );
+      }
+      else
       {
          // poi is not in the segment and isn't in a closure joint
          // this means the POI is in a cast-in-place diaphragm between girder groups
          // assume cast in place diaphragms between groups is the same material as the deck
          // because they are typically cast together
          matGirder->put_fc( pMaterial->GetDeckFc(intervalIdx) );
-      }
-      else
-      {
-         matGirder->put_fc( pMaterial->GetSegmentFc(segmentKey,intervalIdx) );
       }
    }
    CComQIPtr<IStressStrain> ssGirder(matGirder);
@@ -1682,10 +1693,15 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    {
       pMaterial->GetClosureJointLongitudinalRebarProperties(closureKey,&E,&Fy,&Fu);
    }
-   else
+   else if ( bIsOnSegment )
    {
       pMaterial->GetSegmentLongitudinalRebarProperties(segmentKey,&E,&Fy,&Fu);
    }
+   else
+   {
+      pMaterial->GetDeckRebarProperties(&E,&Fy,&Fu);
+   }
+
    matGirderRebar->Init( Fy, E, 1.00 );
    CComQIPtr<IStressStrain> ssGirderRebar(matGirderRebar);
 
@@ -1794,7 +1810,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    Float64 Yc; // elevation of the extreme compression fiber
    (*pntCompression)->get_Y(&Yc);
 
-   if ( bPositiveMoment ) // only model strands for positive moment
+   if ( bPositiveMoment || 0 < nDucts ) // only model strands for positive moment or if there are tendons in the model
    {
       // strands
       if ( bIsOnSegment )
@@ -1899,8 +1915,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    // PT Tendons
    if ( bIsOnGirder )
    {
-      GET_IFACE(ITendonGeometry,pTendonGeom);
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
          CComPtr<IPoint2d> point;

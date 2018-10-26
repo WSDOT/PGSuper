@@ -40,12 +40,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 51.0 // jumped to version 50 for PGSplice development... this leaves a gap
+#define CURRENT_VERSION 52.0 // jumped to version 50 for PGSplice development... this leaves a gap
 // between version 44 (PGSuper head branch, version 2.9) and PGSplice 
 // when loading data that was added after version 44 it is ok for the load to fail for now.
 // once this is merged to the head branch, data added from the then CURRENT_VERSION and later can't fail
 // MAX_OVERLAP_VERSION is the maximum version number where there is overlap between 2.9 and 3.0 data
-// once PGSplice is release, replace CURRENT_VERSION with the action version number at release
+// once PGSplice is release, replace CURRENT_VERSION with the active version number at release
+#pragma Reminder("UPDATE - FIX THE MAX_OVERLAP_VERSION when Version 3.0 is officially released")
 #define MAX_OVERLAP_VERSION CURRENT_VERSION
 
 
@@ -125,12 +126,13 @@ m_HeErectionCrackFs(1.0),
 m_HeErectionFailFs(1.5),
 m_RoadwaySuperelevation(0.06),
 m_TempStrandRemovalCompStress(0.45),
-m_TempStrandRemovalTensStress(0.0),
+m_TempStrandRemovalTensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
+m_TempStrandRemovalTensStressWithRebar(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
 m_TempStrandRemovalDoTensStressMax(false),
-m_TempStrandRemovalTensStressMax(0.0),
+m_TempStrandRemovalTensStressMax(::ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_bCheckTemporaryStresses(true), // true is consistant with the original default value
 m_Bs1CompStress(0.6),
-m_Bs1TensStress(0.0),
+m_Bs1TensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
 m_Bs1DoTensStressMax(false),
 m_Bs1TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_Bs2CompStress(0.6),
@@ -223,7 +225,10 @@ m_ClosureTensStressAtService(0.0),
 m_ClosureTensStressWithRebarAtService(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
 m_ClosureCompStressFatigue(0.40),
 m_bCheckBottomFlangeClearance(false),
-m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet))
+m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet)),
+m_DuctAreaPushRatio(2),
+m_DuctAreaPullRatio(2.5),
+m_DuctDiameterRatio(0.4)
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -579,6 +584,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TempStrandRemovalTensStress") ,     m_TempStrandRemovalTensStress);
    pSave->Property(_T("TempStrandRemovalDoTensStressMax") ,m_TempStrandRemovalDoTensStressMax);
    pSave->Property(_T("TempStrandRemovalTensStressMax") ,  m_TempStrandRemovalTensStressMax);
+   pSave->Property(_T("TempStrandRemovalTensStressWithRebar"), m_TempStrandRemovalTensStressWithRebar); // added version 49
 
    pSave->Property(_T("CheckTemporaryStresses"),m_bCheckTemporaryStresses); // added in version 47
    pSave->Property(_T("Bs1CompStress") ,     m_Bs1CompStress); // removed m_ in version 30
@@ -878,7 +884,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
          pSave->Property(_T("AllLightweight"),m_PhiClosureJointShear[pgsTypes::AllLightweight]);
          pSave->Property(_T("SandLightweight"),m_PhiClosureJointShear[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // ResistanceFactor
-pSave->EndUnit(); // Shear
+   pSave->EndUnit(); // Shear
 
    // added in version 26
    pSave->Property(_T("PedestrianLoad"),m_PedestrianLoad);
@@ -889,7 +895,14 @@ pSave->EndUnit(); // Shear
 
    pSave->BeginUnit(_T("StrandExtensions"),1.0);
    pSave->Property(_T("AllowStraightStrandExtensions"),m_bAllowStraightStrandExtensions);
-   pSave->EndUnit();
+   pSave->EndUnit(); // StrandExtensions
+
+   // added in version 52
+   pSave->BeginUnit(_T("DuctSize"),1.0);
+      pSave->Property(_T("DuctAreaPushRatio"),m_DuctAreaPushRatio);
+      pSave->Property(_T("DuctAreaPullRatio"),m_DuctAreaPullRatio);
+      pSave->Property(_T("DuctDiameterRatio"),m_DuctDiameterRatio);
+   pSave->EndUnit(); // DuctSize
 
    // added version 50
    pSave->BeginUnit(_T("ClosureJoint"),1.0);
@@ -1712,6 +1725,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          m_TempStrandRemovalCompStress      = m_Bs1CompStress;
          m_TempStrandRemovalTensStress      = m_Bs1TensStress;
+         m_TempStrandRemovalTensStressWithRebar = m_CyTensStressServWithRebar;
          m_TempStrandRemovalDoTensStressMax = m_Bs1DoTensStressMax;
          m_TempStrandRemovalTensStressMax   = m_Bs1TensStressMax;
       }
@@ -1738,6 +1752,23 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("TempStrandRemovalTensStressMax") ,  &m_TempStrandRemovalTensStressMax))
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if ( 48 < version )
+            {
+               // added version 49
+               if(!pLoad->Property(_T("TempStrandRemovalTensStressWithRebar") ,     &m_TempStrandRemovalTensStressWithRebar))
+               {
+                  m_TempStrandRemovalTensStressWithRebar = m_CyTensStressServWithRebar; // make sure it is set to the defalut value
+                  if ( MAX_OVERLAP_VERSION < version )
+                  {
+                     // This was added in version 49 for PGSuper version 2.9.
+                     // At the same time, PGSuper 3.0 was being built. The data block version was
+                     // MAX_OVERLAP_VERSION. It is ok to fail for 44 <= version <= MAX_OVERLAP_VERSION. If version is more than MAX_OVERLAP_VERSION
+                     // then the data file format is invalid.
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
+               }
             }
 
             if ( 46 < version )
@@ -1848,6 +1879,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_TempStrandRemovalTensStress      = m_Bs1TensStress;
             m_TempStrandRemovalDoTensStressMax = m_Bs1DoTensStressMax;
             m_TempStrandRemovalTensStressMax   = m_Bs1TensStressMax;
+            m_TempStrandRemovalTensStressWithRebar = m_CyTensStressServWithRebar;
          }
 
          if ( version < 5.0 )
@@ -3652,6 +3684,31 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if ( 52 <= version )
+      {
+         // added in version 52
+         bool bBeginUnit = pLoad->BeginUnit(_T("DuctSize"));
+         if ( bBeginUnit )
+         {
+            if ( !pLoad->Property(_T("DuctAreaPushRatio"),&m_DuctAreaPushRatio) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if ( !pLoad->Property(_T("DuctAreaPullRatio"),&m_DuctAreaPullRatio) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if ( !pLoad->Property(_T("DuctDiameterRatio"),&m_DuctDiameterRatio) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            pLoad->EndUnit(); // DuctSize
+         }
+      }
+
 
       if ( 50 <= version )
       {
@@ -3852,6 +3909,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_TempStrandRemovalTensStress     , rOther.m_TempStrandRemovalTensStress              );
    TEST (m_TempStrandRemovalDoTensStressMax, rOther.m_TempStrandRemovalDoTensStressMax         );
    TESTD(m_TempStrandRemovalTensStressMax  , rOther.m_TempStrandRemovalTensStressMax           );
+   TESTD(m_TempStrandRemovalTensStressWithRebar, rOther.m_TempStrandRemovalTensStressWithRebar );
 
    TEST(m_bCheckTemporaryStresses, rOther.m_bCheckTemporaryStresses);
    TESTD(m_Bs1CompStress              , rOther.m_Bs1CompStress              );
@@ -4028,6 +4086,10 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
 
    TEST(m_bCheckBottomFlangeClearance,rOther.m_bCheckBottomFlangeClearance);
    TESTD(m_Cmin,rOther.m_Cmin);
+
+   TESTD(m_DuctAreaPushRatio, rOther.m_DuctAreaPushRatio);
+   TESTD(m_DuctAreaPullRatio, rOther.m_DuctAreaPullRatio);
+   TESTD(m_DuctDiameterRatio, rOther.m_DuctDiameterRatio);
 
    if (considerName)
    {
@@ -4736,6 +4798,15 @@ void SpecLibraryEntry::SetTempStrandRemovalMaximumTensionStress(bool doCheck, Fl
    m_TempStrandRemovalTensStressMax   = stress;
 }
 
+Float64 SpecLibraryEntry::GetTempStrandRemovalTensionStressFactorWithRebar() const
+{
+   return m_TempStrandRemovalTensStressWithRebar;
+}
+
+void SpecLibraryEntry::SetTempStrandRemovalTensionStressFactorWithRebar(Float64 stress)
+{
+   m_TempStrandRemovalTensStressWithRebar = stress;
+}
 
 void SpecLibraryEntry::CheckTemporaryStresses(bool bCheck)
 {
@@ -5245,6 +5316,36 @@ Int16 SpecLibraryEntry::GetFcgpComputationMethod() const
    return m_FcgpComputationMethod;
 }
 
+bool SpecLibraryEntry::AreElasticGainsApplicable() const
+{
+   bool isapp(false);
+   if (lrfdVersionMgr::ThirdEdition2004 < this->GetSpecificationType())
+   {
+      int lm = this->GetLossMethod();
+      if(LOSSES_AASHTO_REFINED == lm || LOSSES_WSDOT_REFINED  == lm || LOSSES_AASHTO_LUMPSUM == lm )
+      {
+         isapp = true;
+      }
+   }
+
+   return isapp;
+}
+
+bool SpecLibraryEntry::IsDeckShrinkageApplicable() const
+{
+   bool isapp(false);
+   if (lrfdVersionMgr::ThirdEdition2004 < this->GetSpecificationType())
+   {
+      int lm = this->GetLossMethod();
+      if(LOSSES_AASHTO_REFINED == lm || LOSSES_WSDOT_REFINED  == lm )
+      {
+         isapp = true;
+      }
+   }
+
+   return isapp;
+}
+
 Int16 SpecLibraryEntry::GetLiveLoadDistributionMethod() const
 {
    return m_LldfMethod;
@@ -5656,6 +5757,28 @@ void SpecLibraryEntry::SetPrestressTransferComputationType(pgsTypes::PrestressTr
    m_PrestressTransferComputationType = type;
 }
 
+void SpecLibraryEntry::GetDuctAreaRatio(Float64* pPush,Float64* pPull) const
+{
+   *pPush = m_DuctAreaPushRatio;
+   *pPull = m_DuctAreaPullRatio;
+}
+
+void SpecLibraryEntry::SetDuctAreaRatio(Float64 push,Float64 pull)
+{
+   m_DuctAreaPushRatio = push;
+   m_DuctAreaPullRatio = pull;
+}
+
+Float64 SpecLibraryEntry::GetDuctDiameterRatio() const
+{
+   return m_DuctDiameterRatio;
+}
+
+void SpecLibraryEntry::SetDuctDiameterRatio(Float64 dr)
+{
+   m_DuctDiameterRatio = dr;
+}
+
 void SpecLibraryEntry::SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiTensionSpliced,Float64 phiCompression)
 {
    m_PhiFlexureTensionPS[type]      = phiTensionPS;
@@ -5959,6 +6082,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_TempStrandRemovalTensStress              = rOther.m_TempStrandRemovalTensStress;
    m_TempStrandRemovalDoTensStressMax         = rOther.m_TempStrandRemovalDoTensStressMax;
    m_TempStrandRemovalTensStressMax           = rOther.m_TempStrandRemovalTensStressMax;
+   m_TempStrandRemovalTensStressWithRebar     = rOther.m_TempStrandRemovalTensStressWithRebar;
 
    m_bCheckTemporaryStresses    = rOther.m_bCheckTemporaryStresses;
    m_Bs1CompStress              = rOther.m_Bs1CompStress;
@@ -6135,6 +6259,11 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_ClosureTensStressAtService               = rOther.m_ClosureTensStressAtService;
    m_ClosureTensStressWithRebarAtService      = rOther.m_ClosureTensStressWithRebarAtService;
    m_ClosureCompStressFatigue                 = rOther.m_ClosureCompStressFatigue;
+
+   m_DuctAreaPushRatio = rOther.m_DuctAreaPushRatio;
+   m_DuctAreaPullRatio = rOther.m_DuctAreaPullRatio;
+   m_DuctDiameterRatio = rOther.m_DuctDiameterRatio;
+
 
    m_bCheckBottomFlangeClearance = rOther.m_bCheckBottomFlangeClearance;
    m_Cmin = rOther.m_Cmin;

@@ -53,4 +53,7 @@
 // The project criteria doesn't have the correct settings
 #define XREASON_PROJECT_CRITERIA             0x0100
 
+// Closure joint length must be greater than zero
+#define XREASON_INVALID_CLOSURE_JOINT_LENGTH 0x0200
+
 #endif // INCLUDED_PGSUPEREXCEPTION_H_

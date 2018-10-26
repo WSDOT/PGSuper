@@ -630,7 +630,6 @@ bool pgsPointOfInterest::IsAt15H() const
 Uint16 pgsPointOfInterest::IsTenthPoint(PoiAttributeType refAttribute) const
 {
    IndexType index = GetIndex(refAttribute);
-   ATLASSERT(index != INVALID_INDEX);
 
    if ( index == INVALID_INDEX )
    {

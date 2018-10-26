@@ -132,9 +132,6 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Strand(pDX,IDC_STRAND,&pParent->m_pGirder->GetPostTensioning()->pStrand);
 
-   DDV_GXGridWnd(pDX,&m_DuctGrid);
-   DDX_PTData(pDX,IDC_DUCT_GRID,pParent->m_pGirder->GetPostTensioning());
-
    DDX_SlabOffsetGrid(pDX,IDC_SLABOFFSET_GRID);
 
    // Validate the timeline
@@ -193,6 +190,10 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
       installationType = pParent->m_pGirder->GetPostTensioning()->InstallationType;
       DDX_CBEnum(pDX, IDC_INSTALLATION_TYPE, installationType);
    }
+
+   // NOTE: must come after DDX for strand installation type
+   DDV_GXGridWnd(pDX,&m_DuctGrid);
+   DDX_PTData(pDX,IDC_DUCT_GRID,pParent->m_pGirder->GetPostTensioning());
 }
 
 

@@ -694,7 +694,8 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
 //      std::vector<pgsPointOfInterest> erectedPois( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
       std::vector<pgsPointOfInterest> erectedPois( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
 
-      std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL,POIFIND_OR));
+      // get all special POI, except for the closure joints... we'll get them later if applicable
+      std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL & ~POI_CLOSURE,POIFIND_OR));
       releasePois.insert(releasePois.end(),vOtherPoi.begin(),vOtherPoi.end());
       erectedPois.insert(erectedPois.end(),vOtherPoi.begin(),vOtherPoi.end());
 
@@ -982,6 +983,13 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
 #pragma Reminder("UPDATE: assuming precast girder bridge")
       // the girder should have an overall outcome for all designed segments
       SegmentIndexType segIdx = 0;
+      if (outcome == pgsSegmentDesignArtifact::DesignCancelled )
+      {
+         CSegmentKey segmentKey(girderKey,segIdx);
+         pgsSegmentDesignArtifact segmentArtifact(segmentKey);
+         artifact.AddSegmentDesignArtifact(segIdx,segmentArtifact);
+      }
+
       pgsSegmentDesignArtifact* pSegmentDesignArtifact = artifact.GetSegmentDesignArtifact(segIdx);
       pSegmentDesignArtifact->SetOutcome(outcome);
    }
@@ -1824,11 +1832,11 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx              = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx             = pIntervals->GetCastDeckInterval();
+   IntervalIndexType tsRemovalIntervalIdx            = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx        = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType liveLoadIntervalIdx             = pIntervals->GetLiveLoadInterval();
    IntervalIndexType compositeClosureIntervalIdx     = pIntervals->GetCompositeClosureJointInterval(segmentKey);
-   IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(segmentKey);
-   IntervalIndexType lastTendonStressingIntervalIdx  = pIntervals->GetLastTendonStressingInterval(segmentKey);
 
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
 
@@ -1837,8 +1845,9 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
    GET_IFACE(ILimitStateForces,         pLimitStateForces);
    GET_IFACE(IAllowableConcreteStress,  pAllowable );
    GET_IFACE(IPrecompressedTensileZone, pPrecompressedTensileZone);
+   GET_IFACE(ITendonGeometry,           pTendonGeometry);
 
-   // this interfaces only get used if the task type is tension. however we need them
+   // these interfaces only get used if the task type is tension. however we need them
    // inside the POI loop and don't want to get them every time.
    GET_IFACE_NOCHECK(IBridge,            pBridge);
    GET_IFACE_NOCHECK(IGirder,            pGirder);
@@ -1853,17 +1862,24 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
 
    bool bIsDeckPrecompressed = pPrecompressedTensileZone->IsDeckPrecompressed(segmentKey);
 
+   bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,task.intervalIdx);
+
+   // in this context, we are only checking tension stresses for temporary conditions for
+   // regular pre-tensioned girders (no ducts)
+   // This refers to the PGSuper-only tension checks at temp strand removal and deck casting
+   DuctIndexType nDucts = pTendonGeometry->GetDuctCount(segmentKey);
+   bool bCheckTemporaryStresses = (nDucts == 0 ? pAllowable->CheckTemporaryStresses() : false);
+
    std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
    for ( ; poiIter != poiIterEnd; poiIter++)
    {
       const pgsPointOfInterest& poi = *poiIter;
+      ATLASSERT(poi.GetSegmentKey() == segmentKey);
 
       pgsFlexuralStressArtifact artifact(poi);
       artifact.SetLimitState(task.limitState);
       artifact.SetStressType(task.stressType);
-
-      bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,task.intervalIdx);
 
       for ( int i = 0; i < 4; i++ )
       {
@@ -1906,6 +1922,17 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
                      // During a stressing activity, stress checks are only performed in areas
                      // other that the precompressed tensile zone
                      artifact.IsApplicable( stressLocation, !bIsInPTZ );
+                  }
+                  else if ( bCheckTemporaryStresses )
+                  {
+                     if ( task.intervalIdx == tsRemovalIntervalIdx )
+                     {
+                        artifact.IsApplicable( stressLocation, !bIsInPTZ );
+                     }
+                     else if ( task.intervalIdx == castDeckIntervalIdx )
+                     {
+                        artifact.IsApplicable( stressLocation, bIsInPTZ );
+                     }
                   }
                   else
                   {
@@ -2107,11 +2134,17 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
          pgsAlternativeTensileStressCalculator altCalc(segmentKey, task.intervalIdx, pBridge, pGirder, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress to 30 ksi*/, bSISpec, i == 0 ? true /*girder stresses*/ : false /*deck stresses*/);
 
 
+         CSegmentKey thisSegmentKey = segmentKey;
          CClosureKey closureKey;
          bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
-         if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[TOP],!bIsInClosure,segmentKey) )
+         if ( bIsInClosure )
          {
-            if ( i == 0 && bIsInClosure && bIsInPTZ[TOP] )
+            thisSegmentKey = closureKey;
+         }
+
+         if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[TOP],!bIsInClosure,thisSegmentKey) )
+         {
+            if ( i == 0 /*girder stresses*/ && bIsInClosure && bIsInPTZ[TOP] )
             {
                // the bar stress is not limited to 30 ksi (see LRFD Tables 5.9.4.1.2-1 and -2)
                // in the precompressed tensile zone for closure joints
@@ -2139,9 +2172,9 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
          }
 
 
-         if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[BOT],!bIsInClosure,segmentKey) )
+         if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[BOT],!bIsInClosure,thisSegmentKey) )
          {
-            if ( i == 0 && bIsInClosure && bIsInPTZ[BOT] )
+            if ( i == 0 /*girder stresses*/ && bIsInClosure && bIsInPTZ[BOT] )
             {
                // the bar stress is not limited to 30 ksi (see LRFD Tables 5.9.4.1.2-1 and -2)
                // in the precompressed tensile zone for closure joints
@@ -3447,19 +3480,22 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
 
    // prestress
    GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE(ITendonGeometry,pTendonGeom);
 
    // area of prestress on flexural tension side
    // NOTE: fps (see below) from the moment capacity analysis already accounts for a reduction
    //       in strand effectiveness based on lack of development. DO NOT ADJUST THE AREA OF PRESTRESS
    //       HERE TO ACCOUNT FOR THE SAME TIME...
-   Float64 aps;
+   Float64 aps,apt;
    if ( pConfig == NULL)
    {
       aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,dlaNone) : pStrandGeom->GetApsTopHalf(poi,dlaNone));
+      apt = (scd.bTensionBottom ? pTendonGeom->GetAptBottomHalf(poi)         : pTendonGeom->GetAptTopHalf(poi));
    }
    else
    {
       aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,*pConfig,dlaNone) : pStrandGeom->GetApsTopHalf(poi,*pConfig,dlaNone));
+      apt = 0;
    }
 
    // get prestress level at ultimate
@@ -3474,10 +3510,13 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
       pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,*pConfig,scd.bTensionBottom,&mcd);
    }
 
-   Float64 fps = mcd.fps;
-   
+   Float64 fps = mcd.fps_avg;
    pArtifact->SetAps(aps);
    pArtifact->SetFps(fps);
+
+   Float64 fpt = mcd.fpt_avg;
+   pArtifact->SetApt(apt);
+   pArtifact->SetFpt(fpt);
 
    // set up demands... if this section is in a critical section zone, use the values at the critical section
    // see C5.8.3.5
@@ -4002,7 +4041,19 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
       std::vector<pgsPointOfInterest> morePoi( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM, POIFIND_OR) );
       pois.insert(pois.end(),morePoi.begin(),morePoi.end()); 
 
-      // these poi are for the WSDOT summary report. They are traditinoal location for reporting shear checks
+      // if closures can take any load, add it to the list of poi
+      GET_IFACE_NOCHECK(IIntervals,pIntervals);
+      GET_IFACE(IBridge,pBridge);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
+      if ( segmentKey.segmentIndex < nSegments-1 && pIntervals->GetCompositeClosureJointInterval(segmentKey) <= intervalIdx )
+      {
+         std::vector<pgsPointOfInterest> vCJPoi(pPoi->GetPointsOfInterest(segmentKey,POI_CLOSURE));
+         pois.insert(pois.end(),vCJPoi.begin(),vCJPoi.end());
+         std::sort(pois.begin(),pois.end());
+      }
+
+
+      // these poi are for the WSDOT summary report. They are traditional location for reporting shear checks
       morePoi = pPoi->GetPointsOfInterest(segmentKey,POI_H | POI_15H, POIFIND_OR);
       pois.insert(pois.end(),morePoi.begin(),morePoi.end()); 
 
@@ -4010,7 +4061,6 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
 
       // remove all POI from the container that are outside of the CL Bearings...
       // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
-      GET_IFACE(IBridge,pBridge);
       Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
       Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
       std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(endDist,endDist+segmentSpanLength));
@@ -8353,7 +8403,8 @@ void pgsDesigner2::RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,p
       pMomentCapacity->GetMomentCapacityDetails( intervalIdx, poi, config, true, &mcd );
 
       LOG(_T("fpe = ") << ::ConvertFromSysUnits( mcd.fpe_ps, unitMeasure::KSI) << _T(" KSI") );
-      LOG(_T("fps = ") << ::ConvertFromSysUnits( mcd.fps, unitMeasure::KSI) << _T(" KSI") );
+      LOG(_T("fps_avg = ") << ::ConvertFromSysUnits( mcd.fps_avg, unitMeasure::KSI) << _T(" KSI") );
+      LOG(_T("fpt_avg = ") << ::ConvertFromSysUnits( mcd.fpt_avg, unitMeasure::KSI) << _T(" KSI") );
       LOG(_T("e initial = ") << mcd.eps_initial );
       LOG(_T("phi = ") << mcd.Phi );
       LOG(_T("C = ") << ::ConvertFromSysUnits( mcd.C, unitMeasure::Kip) << _T(" kip"));
