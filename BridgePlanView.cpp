@@ -483,6 +483,10 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    {
       if ( lHint == HINT_BRIDGECHANGED )
       {
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridge,pBridge);
+
          if ( pHint )
          {
             // The span configuration of the bridge changed
@@ -491,9 +495,6 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
             // We want to know if the span that was added or removed
             // is within the range of spans being displayed. If it is,
             // adjust the display range.
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker,IBridge,pBridge);
             SpanIndexType nSpans = pBridge->GetSpanCount();
             SpanIndexType nPrevSpans = nSpans + (pBridgeHint->bAdded ? -1 : 1);
 
@@ -518,6 +519,11 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
                }
             }
          }
+
+         // Make sure we aren't displaying spans past the end of the bridge
+         SpanIndexType nSpans = pBridge->GetSpanCount();
+         m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
+
          m_pFrame->InitSpanRange();
       }
 

@@ -13005,7 +13005,7 @@ void CAnalysisAgentImp::GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadTyp
   // TRICKY:
    // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
    // that the optimization must go the opposite way as well when using the envelopers
-   BridgeAnalysisType right_bat;
+   BridgeAnalysisType right_bat(bat);
    if (bat==MinSimpleContinuousEnvelope)
    {
       right_bat = MaxSimpleContinuousEnvelope;

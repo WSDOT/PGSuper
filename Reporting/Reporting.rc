@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,3,1
- PRODUCTVERSION 2,7,3,1
+ FILEVERSION 2,7,3,2
+ PRODUCTVERSION 2,7,3,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Reporting"
-            VALUE "FileVersion", "2.7.3.1"
+            VALUE "FileVersion", "2.7.3.2"
             VALUE "InternalName", "Reporting"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperReporting.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.3.1"
+            VALUE "ProductVersion", "2.7.3.2"
         END
     END
     BLOCK "VarFileInfo"

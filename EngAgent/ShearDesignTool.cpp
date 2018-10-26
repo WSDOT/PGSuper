@@ -727,7 +727,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
 
                // FUDGE: Give concrete strength a small bump up. Found some regression tests that were missing
                //        by just a smidge...
-               fcreq *= 1.03;
+               fcreq *= 1.01;
 
                FcRequiredForStrutTieStress = max(FcRequiredForStrutTieStress, fcreq);
             }

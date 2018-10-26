@@ -198,6 +198,10 @@ void CBridgeModelViewChildFrame::InitSpanRange()
 
    pStartSpinner->SetPos32((int)startSpanIdx+1);
    pEndSpinner->SetPos32((int)endSpanIdx+1);
+
+   CString str;
+   str.Format(_T("of %d Spans"),nSpans);
+   m_SettingsBar.GetDlgItem(IDC_SPAN_COUNT)->SetWindowText(str);
 }
 
 #if defined _DEBUG

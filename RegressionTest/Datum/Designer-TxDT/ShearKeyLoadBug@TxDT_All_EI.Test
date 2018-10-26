@@ -314,6 +314,7 @@ Hauling checks failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
@@ -336,6 +337,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.

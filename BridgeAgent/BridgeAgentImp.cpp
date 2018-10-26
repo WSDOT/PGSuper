@@ -1736,7 +1736,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       CollectionIndexType curveIdx = 0;
 
       std::vector<HorzCurveData>::iterator iter;
-      for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++ )
+      for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++, curveID++, curveIdx++ )
       {
          HorzCurveData& curve_data = *iter;
 
@@ -1807,13 +1807,27 @@ bool CBridgeAgentImp::BuildCogoModel()
             if ( IsZero(fabs(back_tangent - fwd_tangent)) || IsEqual(fabs(back_tangent - fwd_tangent),M_PI) )
             {
                std::_tostringstream os;
-               os << _T("The central angle of curve ") << curveID << _T(" is 0 or 180 degrees");
+               os << _T("The central angle of horizontal curve ") << curveID << _T(" is 0 or 180 degrees. Horizontal curve was modeled as a single point at the PI location.");
                std::_tstring strMsg = os.str();
                pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
-               strMsg += std::_tstring(_T("\nSee Status Center for Details"));
-               THROW_UNWIND(strMsg.c_str(),-1);
+               
+               alignment->AddEx(pi);
+
+               back_tangent = fwd_tangent;
+               prev_curve_ST_station = pi_station;
+
+               if ( curveIdx == 0 )
+               {
+                  // this is the first curve so set the reference station at the PI
+                  alignment->put_RefStation( CComVariant(pi_station) );
+               }
+
+               continue; // GO TO NEXT HORIZONTAL CURVE
+
+               //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
+               //THROW_UNWIND(strMsg.c_str(),-1);
             }
 
             CComPtr<IHorzCurve> hc;
@@ -1899,9 +1913,6 @@ bool CBridgeAgentImp::BuildCogoModel()
             // this is the first curve so set the reference station at the TS 
             alignment->put_RefStation( CComVariant(pi_station - T) );
          }
-
-         curveID++;
-         curveIdx++;  
       }
    }
 

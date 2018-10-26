@@ -2,7 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by PGSuperAppPlugin.rc
 //
-
+#define ID_INDICATOR_MODIFIED           1
+#define ID_INDICATOR_STATUS             2
 #define ID_INDICATOR_ANALYSIS           3
 #define IDCANCEL2                       3
 #define ID_INDICATOR_AUTOCALC_ON        4
@@ -13,12 +14,14 @@
 #define IDS_E_ONLINERESOURCES           9
 #define IDS_LIVE_LOAD_FACTOR_DISABLED_TOOLTIP 10
 #define IDS_NWC_MESSAGE                 12
+#define EAF_TOOLBAR_MENU_COUNT          40
+#define EAF_REPORT_MENU_COUNT           50
 #define IDS_PROJNAME                    100
 #define IDR_PGSUPERAPPPLUGIN            101
 #define IDR_PGSUPERCOMPONENTINFO        102
 #define IDR_PGSUPERAPPPLUGINIMPL        103
 #define IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN 104
-#define IDR_PGSUPER                 130
+#define IDR_PGSUPER                     130
 #define IDD_PROJECTPROPERTIES           131
 #define IDR_BRIDGEMODELEDITOR           132
 #define IDR_PROJECTIMPORTER             133
@@ -955,6 +958,7 @@
 #define IDC_STRAIGHT                    1639
 #define IDS_E_INVALIDFORMAT             1640
 #define IDC_HARPED                      1640
+#define IDC_SPAN_COUNT                  1640
 #define IDC_LOCAL_STATIC                1641
 #define IDS_E_FILENOTFOUND              1642
 #define IDC_LOCALS_STATIC2              1643
@@ -1018,7 +1022,7 @@
 #define IDC_LLDF_SINGLE_VALUE           1710
 #define IDC_ALPHA                       1711
 #define IDC_RADIO_MULTIPLE              1711
-#define IDS_PGSUPER_TEMPLATE_FILE_SUFFIX        1712
+#define IDS_PGSUPER_TEMPLATE_FILE_SUFFIX 1712
 #define IDC_ADIM_START_LABEL            1714
 #define IDC_ADIM_START_UNIT             1716
 #define IDS_DEFAULT_MASTER_LIB          1717
@@ -1097,7 +1101,21 @@
 #define IDC_JOIN                        12879
 #define IDS_INCOMPATIBLE_BEARING_MSG    13100
 #define IDS_INCOMPATIBLE_BEARING_MSG2   13101
-
+#define EAF_RESERVED_COMMAND_BASE       0x8000
+#define ID_VIEW_STATUSCENTER            32768
+#define ID_VIEW_STATUSCENTER2           32769
+#define ID_VIEW_STATUSCENTER3           32770
+#define ID_APP_LEGAL                    32771
+#define ID_UNITS_SI                     32772
+#define ID_UNITS_US                     32773
+#define ID_EDIT_UNITS                   32774
+#define ID_TIPOFTHEDAY                  32775
+#define EAF_FIRST_USER_COMMAND          0x80FF
+#define ID_HELP_JOINARPLIST             33024
+#define ID_HELP_INET_ARP                33025
+#define ID_HELP_INET_WSDOT              33026
+#define ID_HELP_INET_PGSUPER            33027
+#define ID_SCREEN_SIZE                  33028
 #define FIRST_DATA_IMPORTER_PLUGIN      33033
 #define LAST_DATA_IMPORTER_PLUGIN       33053
 #define FIRST_DATA_EXPORTER_PLUGIN      33054
@@ -1138,7 +1156,7 @@
 #define ID_VIEWSETTINGS_GIRDEREDITOR    36897
 #define ID_VIEWSETTINGS_ANALYSISMODELEDITOR 36898
 #define ID_VIEWSETTINGS_LIBRARYEDITOR   36899
-#define ID_CONFIGURE_PGSUPER            36900 
+#define ID_CONFIGURE_PGSUPER            36900
 #define ID_PROJECT_AUTOCALC             36901
 #define ID_PROJECT_UPDATENOW            36902
 #define ID_PROJECT_DESIGNGIRDER         36903
@@ -1208,7 +1226,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        325
 #define _APS_NEXT_COMMAND_VALUE         36968
-#define _APS_NEXT_CONTROL_VALUE         1640
+#define _APS_NEXT_CONTROL_VALUE         1641
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

@@ -101,8 +101,11 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
    }
 
-   // Stirrup Layout Check
-   BuildStirrupLayoutCheck(pChapter, pBroker, span, girder, pDisplayUnits);
+   if (!m_BasicVersion)
+   {
+      // Stirrup Layout Check
+      BuildStirrupLayoutCheck(pChapter, pBroker, span, girder, pDisplayUnits);
+   }
 }
 
 //======================== ACCESS     =======================================

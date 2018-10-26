@@ -121,7 +121,7 @@ void CHorizontalAlignmentGrid::InitRowData(ROWCOL row)
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    SetValueRange(CGXRange(row,1),unit_mode == umUS ? "0+00" : "0+000");
-   SetValueRange(CGXRange(row,2),"N 90 E");
+   SetValueRange(CGXRange(row,2),"45 L");
    SetValueRange(CGXRange(row,3),"1000");
    SetValueRange(CGXRange(row,4),"0");
    SetValueRange(CGXRange(row,5),"0");

@@ -1,8 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include "..\PGSuperCommandIDs.h"
-#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -2112,6 +2110,7 @@ BEGIN
     LTEXT           "to",IDC_STATIC,83,3,8,8
     EDITTEXT        IDC_END_SPAN_EDIT,90,1,32,12,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
     CONTROL         "",IDC_END_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,111,1,10,12
+    LTEXT           "of n Spans",IDC_SPAN_COUNT,124,3,76,8
 END
 
 IDD_LOAD_FACTORS DIALOGEX 0, 0, 240, 179
@@ -2214,8 +2213,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,3,1
- PRODUCTVERSION 2,7,3,1
+ FILEVERSION 2,7,3,2
+ PRODUCTVERSION 2,7,3,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2232,12 +2231,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.7.3.1"
+            VALUE "FileVersion", "2.7.3.2"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.3.1"
+            VALUE "ProductVersion", "2.7.3.2"
         END
     END
     BLOCK "VarFileInfo"
