@@ -27,6 +27,7 @@
 #include "StrandGrid.h"
 
 struct IStrandGeometry;
+class CPrecastSegmentData;
 
 // CGirderSegmentStrandsPage dialog
 
@@ -37,6 +38,8 @@ class CGirderSegmentStrandsPage : public CPropertyPage
 public:
 	CGirderSegmentStrandsPage();
 	virtual ~CGirderSegmentStrandsPage();
+
+   void Init(CPrecastSegmentData* pSegment);
 
 
 // Dialog Data
@@ -73,6 +76,9 @@ protected:
 
    CStrandGrid m_Grid;
 	int	m_StrandSizeIdx;
+
+   CPrecastSegmentData* m_pSegment;
+
 public:
    afx_msg void OnBnClickedAdd();
    afx_msg void OnBnClickedRemove();

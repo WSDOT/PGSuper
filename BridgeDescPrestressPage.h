@@ -120,11 +120,12 @@ protected:
 
    void InitHarpStrandOffsetMeasureComboBox(CComboBox* pCB);
 
-   void HideControls(int key, CStrandData::PermanentStrandType numPermStrandsType);
+   void HideControls(int key, CStrandData::StrandDefinitionType numPermStrandsType);
    void HideEndOffsetControls(BOOL hide);
    void HideHpOffsetControls(BOOL hide);
-   void DisappearHpOffsetControls();
-   void ShowHideNumStrandControls(CStrandData::PermanentStrandType numPermStrandsType);
+   void DisappearEndOffsetControls(int show = SW_HIDE);
+   void DisappearHpOffsetControls(int show = SW_HIDE);
+   void ShowHideNumStrandControls(CStrandData::StrandDefinitionType numPermStrandsType);
    void UpdateStrandControls();
 
 
@@ -143,9 +144,12 @@ protected:
    bool m_AllowEndAdjustment;
 
    bool m_bAreHarpedStrandsForcedStraight;
-   CStrandData::PermanentStrandType m_CurrNumPermStrandsType; 
+   CStrandData::StrandDefinitionType m_CurrStrandDefinitionType; 
 
    void UpdateStrandList(UINT nIDC);
+
+   void EditDirectSelect();
+   void EditDirectInput();
 
    CString m_strTip;
 public:

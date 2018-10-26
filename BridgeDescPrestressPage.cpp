@@ -32,6 +32,8 @@
 #include "DebondDlg.h"
 #include "GirderSelectStrandsDlg.h"
 
+#include "PGSuperAppPlugin\GirderSegmentStrandsPage.h" // replace with real dialog header when we have it
+
 #include <PgsExt\DesignConfigUtil.h>
 
 #include <Material\PsStrand.h>
@@ -54,6 +56,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+#pragma Reminder("UPDATE: problems with this dialog")
+// 1) Reverse how the Pjack check box works so that it is consistent with the DirectSelect and DirectInput input methods
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescPrestressPage property page
@@ -91,50 +96,50 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
    if (!pDX->m_bSaveAndValidate)
    {
-      m_CurrNumPermStrandsType = pParent->m_Segment.Strands.GetStrandDefinitionType();
+      m_CurrStrandDefinitionType = pParent->m_pSegment->Strands.GetStrandDefinitionType();
    }
 
-   DDX_CBItemData(pDX, IDC_STRAND_INPUT_TYPE, m_CurrNumPermStrandsType);
+   DDX_CBItemData(pDX, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
 
    // First deal with various ways to describe number of strands
    StrandIndexType ns(0), nh(0), nt(0);
-   if (m_CurrNumPermStrandsType == CStrandData::npsTotal)
+   if (m_CurrStrandDefinitionType == CStrandData::sdtTotal)
    {
       StrandIndexType np;
       if (!pDX->m_bSaveAndValidate)
       {
-         np = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Permanent);
+         np = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Permanent);
       }
 
       DDX_Text(pDX, IDC_NUM_HS, np);
 
-      bool bPjackCalc = pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Permanent);
+      bool bPjackCalc = pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Permanent);
       DDX_Check_Bool(pDX, IDC_HS_JACK, bPjackCalc);
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Permanent,bPjackCalc);
+         pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Permanent,bPjackCalc);
       }
 
       if (!pDX->m_bSaveAndValidate)
       {
-         Float64 Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Permanent);
+         Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Permanent);
          DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
       }
       else
       {
          // value is dialog is chopped. recompute to get full precision
-         if (pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Permanent))
+         if (pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Permanent))
          {
-            pParent->m_Segment.Strands.SetPjack(pgsTypes::Permanent,GetMaxPjack(np, pgsTypes::Permanent));
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Permanent,GetMaxPjack(np, pgsTypes::Permanent));
          }
          else
          {
             ATLASSERT(pDX->m_bSaveAndValidate);
             Float64 Pjack;
             DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack,   pDisplayUnits->GetGeneralForceUnit() );
-            pParent->m_Segment.Strands.SetPjack(pgsTypes::Permanent,Pjack);
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Permanent,Pjack);
          }
-         Float64 Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Permanent);
+         Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Permanent);
          DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, Pjack, GetUltPjack(np, pgsTypes::Permanent ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
       }
 
@@ -143,150 +148,150 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       if (pDX->m_bSaveAndValidate)
       {
-         pParent->m_Segment.Strands.SetTotalPermanentNstrands(np, ns, nh);
+         pParent->m_pSegment->Strands.SetTotalPermanentNstrands(np, ns, nh);
       }
 
       UpdateStraightHarped(ns, nh);
    }
-   else if (m_CurrNumPermStrandsType == CStrandData::npsStraightHarped)
+   else if (m_CurrStrandDefinitionType == CStrandData::sdtStraightHarped)
    {
       if (!pDX->m_bSaveAndValidate)
       {
-         nh = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Harped);
+         nh = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
       }
 
       DDX_Text(pDX, IDC_NUM_HS, nh);
 
       if (!pDX->m_bSaveAndValidate)
       {
-         ns = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Straight);
+         ns = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
       }
 
 	   DDX_Text(pDX, IDC_NUM_SS, ns);
 
       if (pDX->m_bSaveAndValidate)
       {
-         pParent->m_Segment.Strands.SetHarpedStraightNstrands(ns, nh);
+         pParent->m_pSegment->Strands.SetHarpedStraightNstrands(ns, nh);
       }
    }
-   else if (m_CurrNumPermStrandsType == CStrandData::npsDirectSelection)
+   else if (m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection || m_CurrStrandDefinitionType == CStrandData::sdtDirectInput)
    {
       // Data is kept up to date in pParent->m_GirderData.PrestressData
-      nh = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Harped);
-      ns = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Straight);
-      nt = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Temporary);
+      nh = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+      ns = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+      nt = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary);
    }
    else
    {
       ATLASSERT(false);
    }
 
-   // Jacking force controls for harped/straight are same for CStrandData::npsStraightHarped and CStrandData::npsDirectSelection
-   if (m_CurrNumPermStrandsType==CStrandData::npsStraightHarped || m_CurrNumPermStrandsType==CStrandData::npsDirectSelection)
+   // Jacking force controls for harped/straight are same for CStrandData::sdtStraightHarped and CStrandData::sdtDirectSelection
+   if (m_CurrStrandDefinitionType==CStrandData::sdtStraightHarped || m_CurrStrandDefinitionType==CStrandData::sdtDirectSelection || m_CurrStrandDefinitionType==CStrandData::sdtDirectInput)
    {
       // Harped
-      bool bPjackCalc = pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Harped);
+      bool bPjackCalc = pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped);
       DDX_Check_Bool(pDX, IDC_HS_JACK, bPjackCalc);
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Harped,bPjackCalc);
+         pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped,bPjackCalc);
       }
 
-      if (pDX->m_bSaveAndValidate && pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Harped))
+      if (pDX->m_bSaveAndValidate && pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped))
       {
-         pParent->m_Segment.Strands.SetPjack(pgsTypes::Harped, GetMaxPjack(nh, pgsTypes::Harped));
+         pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped, GetMaxPjack(nh, pgsTypes::Harped));
       }
       else
       {
-         Float64 Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Harped);
+         Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
          DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack,   pDisplayUnits->GetGeneralForceUnit() );
          if ( pDX->m_bSaveAndValidate )
          {
-            pParent->m_Segment.Strands.SetPjack(pgsTypes::Harped,Pjack);
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped,Pjack);
          }
       }
 
-      Float64 Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Harped);
+      Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
       DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, Pjack, 
                                 GetUltPjack(nh, pgsTypes::Harped), pDisplayUnits->GetGeneralForceUnit(), 
                                 _T("PJack must be less than the ultimate value of %f %s"));
 
       // Straight
-      bPjackCalc = pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Straight);
+      bPjackCalc = pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight);
 	   DDX_Check_Bool(pDX, IDC_SS_JACK, bPjackCalc );
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Straight,bPjackCalc);
+         pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight,bPjackCalc);
       }
 
-      if (pDX->m_bSaveAndValidate && pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Straight) )
+      if (pDX->m_bSaveAndValidate && pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight) )
       {
-         pParent->m_Segment.Strands.SetPjack(pgsTypes::Straight,GetMaxPjack(ns, pgsTypes::Straight));
+         pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight,GetMaxPjack(ns, pgsTypes::Straight));
       }
       else
       {
-         Float64 Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Straight);
+         Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight);
          DDX_UnitValueAndTag( pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          if ( pDX->m_bSaveAndValidate )
          {
-            pParent->m_Segment.Strands.SetPjack(pgsTypes::Straight,Pjack);
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight,Pjack);
          }
       }
 
-      Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Straight);
+      Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight);
       DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, Pjack, GetUltPjack(ns, pgsTypes::Straight ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
    }
 
    // Temporary
-   if (m_CurrNumPermStrandsType != CStrandData::npsDirectSelection)
+   if (m_CurrStrandDefinitionType != CStrandData::sdtDirectSelection && m_CurrStrandDefinitionType != CStrandData::sdtDirectInput)
    {
       if (!pDX->m_bSaveAndValidate)
       {
-         nt = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Temporary);
+         nt = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary);
       }
 
 	   DDX_Text(pDX, IDC_NUM_TEMP, nt);
 
       if (pDX->m_bSaveAndValidate)
       {
-         pParent->m_Segment.Strands.SetTemporaryNstrands(nt);
+         pParent->m_pSegment->Strands.SetTemporaryNstrands(nt);
       }
    }
 
    if (!pDX->m_bSaveAndValidate)
    {
-      ShowHideNumStrandControls(m_CurrNumPermStrandsType);
+      ShowHideNumStrandControls(m_CurrStrandDefinitionType);
    }
 
-   bool bPjackCalc = pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Temporary);
+   bool bPjackCalc = pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary);
 	DDX_Check_Bool(pDX, IDC_TEMP_JACK, bPjackCalc);
    if ( pDX->m_bSaveAndValidate )
    {
-         pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Temporary,bPjackCalc);
+         pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary,bPjackCalc);
    }
 
-   pgsTypes::TTSUsage ttsUsage = pParent->m_Segment.Strands.GetTemporaryStrandUsage();
+   pgsTypes::TTSUsage ttsUsage = pParent->m_pSegment->Strands.GetTemporaryStrandUsage();
    DDX_CBItemData(pDX, IDC_TTS_USE, ttsUsage );
    if ( pDX->m_bSaveAndValidate )
    {
-      pParent->m_Segment.Strands.SetTemporaryStrandUsage(ttsUsage);
+      pParent->m_pSegment->Strands.SetTemporaryStrandUsage(ttsUsage);
    }
 
-   if (pDX->m_bSaveAndValidate && pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Temporary))
+   if (pDX->m_bSaveAndValidate && pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary))
    {
-      pParent->m_Segment.Strands.SetPjack(pgsTypes::Temporary,GetMaxPjack(nt, pgsTypes::Temporary));
+      pParent->m_pSegment->Strands.SetPjack(pgsTypes::Temporary,GetMaxPjack(nt, pgsTypes::Temporary));
    }
    else
    {
-      Float64 Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Temporary);
+      Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Temporary);
       DDX_UnitValueAndTag( pDX, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, Pjack,  pDisplayUnits->GetGeneralForceUnit() );
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_Segment.Strands.SetPjack(pgsTypes::Temporary,Pjack);
+         pParent->m_pSegment->Strands.SetPjack(pgsTypes::Temporary,Pjack);
       }
    }
 
-   Float64 Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Temporary);
+   Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Temporary);
    DDV_UnitValueLimitOrLess( pDX, IDC_TEMP_JACK_FORCE, Pjack, GetUltPjack(nt, pgsTypes::Temporary ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
 
    // Set up pjack controls - values that are auto-computed will be refreshed
@@ -300,15 +305,15 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       if (!pDX->m_bSaveAndValidate)
       {
          // must convert data from legacy data files
-         if (pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
+         if (pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
          {
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
                                                                                    m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                    harpFill,
-                                                                                   pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
-                                                                                   pParent->m_Segment.Strands.GetHarpStrandOffsetAtEnd());
+                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd());
 
             Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(pParent->m_strGirderName.c_str(), 
                                                                                        m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
@@ -316,21 +321,21 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
                                                                                        hsoCGFROMTOP, 
                                                                                        absol_offset);
 
-            pParent->m_Segment.Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoCGFROMTOP);
-            pParent->m_Segment.Strands.SetHarpStrandOffsetAtEnd(topcg_offset);
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoCGFROMTOP);
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtEnd(topcg_offset);
          }
 
-         UpdateEndRangeLength(pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtEnd(), nh);
+         UpdateEndRangeLength(pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), nh);
       }
 
-      Float64 offset = pParent->m_Segment.Strands.GetHarpStrandOffsetAtEnd();
-      HarpedStrandOffsetType offsetType = pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtEnd();
+      Float64 offset = pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd();
+      HarpedStrandOffsetType offsetType = pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd();
       DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
    	DDX_CBItemData(pDX, IDC_HP_COMBO_END, offsetType);
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_Segment.Strands.SetHarpStrandOffsetAtEnd(offset);
-         pParent->m_Segment.Strands.SetHarpStrandOffsetMeasurementAtEnd(offsetType);
+         pParent->m_pSegment->Strands.SetHarpStrandOffsetAtEnd(offset);
+         pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(offsetType);
       }
 
       if ( nh <=0)
@@ -350,36 +355,36 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       // must convert data from legacy data files
       if (!pDX->m_bSaveAndValidate)
       {
-         if(pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoLEGACY)
+         if(pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoLEGACY)
          {
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(),
                                                                                   m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                   harpFill,
-                                                                                  pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
-                                                                                  pParent->m_Segment.Strands.GetHarpStrandOffsetAtHarpPoint());
+                                                                                  pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                                  pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint());
 
             Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(pParent->m_strGirderName.c_str(), 
                                                                                       m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                       harpFill, 
                                                                                       hsoCGFROMBOTTOM, absol_offset);
 
-            pParent->m_Segment.Strands.SetHarpStrandOffsetMeasurementAtHarpPoint( hsoCGFROMBOTTOM );
-            pParent->m_Segment.Strands.SetHarpStrandOffsetAtHarpPoint( botcg_offset );
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint( hsoCGFROMBOTTOM );
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint( botcg_offset );
          }
 
-         UpdateHpRangeLength(pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), nh);
+         UpdateHpRangeLength(pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), nh);
       }
 
-      Float64 offset = pParent->m_Segment.Strands.GetHarpStrandOffsetAtHarpPoint();
-      HarpedStrandOffsetType offsetType = pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint();
+      Float64 offset = pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint();
+      HarpedStrandOffsetType offsetType = pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint();
       DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
    	DDX_CBItemData(pDX, IDC_HP_COMBO_HP, offsetType);
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_Segment.Strands.SetHarpStrandOffsetAtHarpPoint(offset);
-         pParent->m_Segment.Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(offsetType);
+         pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(offset);
+         pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(offsetType);
       }
 
       if ( nh <= 0)
@@ -402,8 +407,8 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          if( m_bAreHarpedStrandsForcedStraight && m_AllowEndAdjustment)
          {
             ATLASSERT(m_AllowHpAdjustment); // should always be true because we must be able to adjust both locations
-            pParent->m_Segment.Strands.SetHarpStrandOffsetAtHarpPoint( pParent->m_Segment.Strands.GetHarpStrandOffsetAtEnd() );
-            pParent->m_Segment.Strands.SetHarpStrandOffsetMeasurementAtHarpPoint( pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtEnd() );
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint( pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd() );
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint( pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() );
          }
 
          // girder ends
@@ -416,8 +421,8 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
                                                                                    m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                    harpFill,
-                                                                                   pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
-                                                                                   pParent->m_Segment.Strands.GetHarpStrandOffsetAtEnd());
+                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd());
 
             Float64 max_end_offset, min_end_offset;
             pStrandGeometry->GetHarpedEndOffsetBoundsEx(pParent->m_strGirderName.c_str(), 
@@ -447,8 +452,8 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(), 
                                                                           m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                           harpFill,
-                                                                          pParent->m_Segment.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
-                                                                          pParent->m_Segment.Strands.GetHarpStrandOffsetAtHarpPoint());
+                                                                          pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                          pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint());
 
             Float64 max_hp_offset, min_hp_offset;
             pStrandGeometry->GetHarpedHpOffsetBoundsEx(pParent->m_strGirderName.c_str(), 
@@ -474,16 +479,16 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       // Get rid of any debonded strands that aren't filled
       ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-      ReconcileDebonding(strtvec, pParent->m_Segment.Strands.GetDebonding(pgsTypes::Straight)); 
+      ReconcileDebonding(strtvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight)); 
 
       for ( int i = 0; i < 2; i++ )
       {
-         std::vector<GridIndexType> extStrands = pParent->m_Segment.Strands.GetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i);
+         std::vector<GridIndexType> extStrands = pParent->m_pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i);
          bool bChanged = ReconcileExtendedStrands(strtvec, extStrands);
 
          if ( bChanged )
          {
-            pParent->m_Segment.Strands.SetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i,extStrands);
+            pParent->m_pSegment->Strands.SetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i,extStrands);
          }
       }
    }
@@ -497,12 +502,12 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
       CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
       Int32 key = (Int32)pList->GetItemData( (int)m_StrandSizeIdx );
-      pParent->m_Segment.Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( key ));
-      pParent->m_Segment.Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( key ));
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( key ));
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( key ));
 
       pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
       key = (Int32)pList->GetItemData( (int)m_TempStrandSizeIdx );
-      pParent->m_Segment.Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
    }
 }
 
@@ -583,7 +588,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    // Select the strand size
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 target_key = pPool->GetStrandKey(pParent->m_Segment.Strands.GetStrandMaterial(pgsTypes::Straight));
+   Int32 target_key = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
    int cStrands = pList->GetCount();
    for ( int i = 0; i < cStrands; i++ )
@@ -596,7 +601,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
       }
    }
 
-   target_key = pPool->GetStrandKey(pParent->m_Segment.Strands.GetStrandMaterial(pgsTypes::Temporary));
+   target_key = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
    pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
    cStrands = pList->GetCount();
    for ( int i = 0; i < cStrands; i++ )
@@ -634,11 +639,11 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    pCB = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
    idx = pCB->AddString(_T("Total Number of Permanent Strands"));
-   pCB->SetItemData(idx,(DWORD_PTR)CStrandData::npsTotal);
+   pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtTotal);
    if(m_bAreHarpedStrandsForcedStraight)
    {
       idx = pCB->AddString(_T("Number of Straight and Number of Straight-Web"));
-      pCB->SetItemData(idx,(DWORD_PTR)CStrandData::npsStraightHarped);
+      pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtStraightHarped);
 
       GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Straight-Web Strands"));
       GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder"));
@@ -648,14 +653,17 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    else
    {
       idx = pCB->AddString(_T("Number of Straight and Number of Harped"));
-      pCB->SetItemData(idx,(DWORD_PTR)CStrandData::npsStraightHarped);
+      pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtStraightHarped);
 
       GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Harped Strands"));
       GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Girder Ends"));
    }
 
    idx = pCB->AddString(_T("Direct Selection of Strand Locations"));
-   pCB->SetItemData(idx,(DWORD_PTR)CStrandData::npsDirectSelection);
+   pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtDirectSelection);
+
+   idx = pCB->AddString(_T("Direct Input of Strand Locations"));
+   pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtDirectInput);
 
    CPropertyPage::OnInitDialog();
 
@@ -664,6 +672,12 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    EnableToolTips(TRUE);
 
+   if ( m_CurrStrandDefinitionType == CStrandData::sdtDirectInput )
+   {
+      DisappearEndOffsetControls();
+      DisappearHpOffsetControls();
+      GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_HIDE);
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -805,11 +819,11 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   if (m_CurrNumPermStrandsType==CStrandData::npsTotal)
+   if (m_CurrStrandDefinitionType==CStrandData::sdtTotal)
    {
       pNMUpDown->iDelta  = (int)PermStrandSpinnerInc( pStrandGeom, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
    }
-   else if (m_CurrNumPermStrandsType==CStrandData::npsStraightHarped)
+   else if (m_CurrStrandDefinitionType==CStrandData::sdtStraightHarped)
    {
       pNMUpDown->iDelta  = (int)StrandSpinnerInc( pStrandGeom, pgsTypes::Harped, pNMUpDown->iPos, pNMUpDown->iDelta > 0 );
    }
@@ -824,7 +838,7 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
    UpdatePjackEditEx(nStrands, IDC_HS_JACK );
 
    StrandIndexType numHarped;
-   if (m_CurrNumPermStrandsType==CStrandData::npsTotal)
+   if (m_CurrStrandDefinitionType==CStrandData::sdtTotal)
    {
       StrandIndexType numStraight;
       bool was_valid = pStrandGeom->ComputeNumPermanentStrands(nStrands,pParent->m_strGirderName.c_str(), &numStraight, &numHarped);
@@ -892,7 +906,7 @@ void CGirderDescPrestressPage::UpdatePjackEdits()
 {
    UpdatePjackEdit( IDC_HS_JACK );
 
-   if (m_CurrNumPermStrandsType != CStrandData::npsTotal)
+   if (m_CurrStrandDefinitionType != CStrandData::sdtTotal)
    {
       UpdatePjackEdit( IDC_SS_JACK );
    }
@@ -905,19 +919,19 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    StrandIndexType nStrands;
-   bool dirsel = m_CurrNumPermStrandsType == CStrandData::npsDirectSelection;
+   bool bIsDirect = (m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection || m_CurrStrandDefinitionType == CStrandData::sdtDirectInput);
    switch( nCheckBox )
    {
    case IDC_HS_JACK:
-      nStrands = dirsel ? pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Harped) : GetDlgItemInt( IDC_NUM_HS );
+      nStrands = bIsDirect ? pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped) : GetDlgItemInt( IDC_NUM_HS );
       break;
 
    case IDC_SS_JACK:
-      nStrands = dirsel ? pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Straight) : GetDlgItemInt( IDC_NUM_SS );
+      nStrands = bIsDirect ? pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight) : GetDlgItemInt( IDC_NUM_SS );
       break;
 
    case IDC_TEMP_JACK:
-      nStrands = dirsel ? pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Temporary) : GetDlgItemInt( IDC_NUM_TEMP );
+      nStrands = bIsDirect ? pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary) : GetDlgItemInt( IDC_NUM_TEMP );
       break;
    }
 
@@ -929,7 +943,6 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    UINT nEdit, nUnit;
-   bool dirsel = m_CurrNumPermStrandsType == CStrandData::npsDirectSelection;
    switch( nCheckBox )
    {
    case IDC_HS_JACK:
@@ -984,7 +997,7 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       {
       case IDC_HS_JACK:
          {
-            if (m_CurrNumPermStrandsType == CStrandData::npsTotal)
+            if (m_CurrStrandDefinitionType == CStrandData::sdtTotal)
             {
                Pjack = GetMaxPjack(nStrands,pgsTypes::Permanent);
             }
@@ -1052,7 +1065,7 @@ Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    try
    {
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-      PjackMax = pPSForce->GetPjackMax(pParent->m_SegmentKey,*pParent->m_Segment.Strands.GetStrandMaterial(strandType), nStrands);
+      PjackMax = pPSForce->GetPjackMax(pParent->m_SegmentKey,*pParent->m_pSegment->Strands.GetStrandMaterial(strandType), nStrands);
    }
    catch (... )
    {
@@ -1075,7 +1088,7 @@ Float64 CGirderDescPrestressPage::GetUltPjack(StrandIndexType nStrands,pgsTypes:
    }
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   const matPsStrand* pStrand = pParent->m_Segment.Strands.GetStrandMaterial(strandType);
+   const matPsStrand* pStrand = pParent->m_pSegment->Strands.GetStrandMaterial(strandType);
 
    // Ultimate strength of strand group
    Float64 ult  = pStrand->GetUltimateStrength();
@@ -1118,7 +1131,7 @@ void CGirderDescPrestressPage::UpdateStrandControls()
    StrandIndexType nStrandsMax;
 
    // harped/straight or permanent strands
-   if (m_CurrNumPermStrandsType==CStrandData::npsTotal)
+   if (m_CurrStrandDefinitionType==CStrandData::sdtTotal)
    {
       nStrandsMax = pStrandGeom->GetMaxStrands(pParent->m_strGirderName.c_str(), pgsTypes::Permanent);
 
@@ -1129,7 +1142,7 @@ void CGirderDescPrestressPage::UpdateStrandControls()
       pSpin->SetAccel(1,&uda);
       pSpin->SetRange( 0, short(nStrandsMax) );
    }
-   else if  (m_CurrNumPermStrandsType==CStrandData::npsStraightHarped)
+   else if  (m_CurrStrandDefinitionType==CStrandData::sdtStraightHarped)
    {
       nStrandsMax = pStrandGeom->GetMaxStrands(pParent->m_strGirderName.c_str(), pgsTypes::Straight);
 
@@ -1163,9 +1176,9 @@ void CGirderDescPrestressPage::UpdateStrandControls()
    // We have to do this here instead of in OnInitDialog because the strand pattern
    // objects are initialized here and not in OnInitDialog.  HideControls disables
    // the strand input controls if the pattern cannot accept any strands.
-   HideControls(0,m_CurrNumPermStrandsType);  // Straight Strands
-   HideControls(1,m_CurrNumPermStrandsType);  // Harped Strands
-   HideControls(2,m_CurrNumPermStrandsType);  // Temporary Strands
+   HideControls(0,m_CurrStrandDefinitionType);  // Straight Strands
+   HideControls(1,m_CurrStrandDefinitionType);  // Harped Strands
+   HideControls(2,m_CurrStrandDefinitionType);  // Temporary Strands
 
    UpdatePjackEdits();
 }
@@ -1199,7 +1212,7 @@ HBRUSH CGirderDescPrestressPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor
 	return hbr;
 }
 
-void CGirderDescPrestressPage::HideControls(int key, CStrandData::PermanentStrandType numPermStrandsType)
+void CGirderDescPrestressPage::HideControls(int key, CStrandData::StrandDefinitionType numPermStrandsType)
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -1237,7 +1250,7 @@ void CGirderDescPrestressPage::HideControls(int key, CStrandData::PermanentStran
          nPjackEdit     = IDC_HS_JACK_FORCE;
          nPjackUnit     = IDC_HS_JACK_FORCE_UNIT;
 
-         if (numPermStrandsType==CStrandData::npsTotal)
+         if (numPermStrandsType==CStrandData::sdtTotal)
          {
             nStrandPoints = pStrandGeom->GetMaxNumPermanentStrands(pParent->m_strGirderName.c_str());
          }
@@ -1355,30 +1368,56 @@ void CGirderDescPrestressPage::HideHpOffsetControls(BOOL hide)
    pWnd->EnableWindow( show );
 }
 
-void CGirderDescPrestressPage::DisappearHpOffsetControls()
+void CGirderDescPrestressPage::DisappearHpOffsetControls(int show)
 {
    CWnd* pWnd;
 
    // These are the strand pattern offset controls
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_TITLE );
    ASSERT( pWnd );
-   pWnd->ShowWindow( SW_HIDE );
+   pWnd->ShowWindow( show );
 
    pWnd = GetDlgItem( IDC_HP_COMBO_HP );
    ASSERT( pWnd );
-   pWnd->ShowWindow( SW_HIDE );
+   pWnd->ShowWindow( show );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_HP );
    ASSERT( pWnd );
-   pWnd->ShowWindow( SW_HIDE );
+   pWnd->ShowWindow( show );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_UNIT );
    ASSERT( pWnd );
-   pWnd->ShowWindow( SW_HIDE );
+   pWnd->ShowWindow( show );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_NOTE );
    ASSERT( pWnd );
-   pWnd->ShowWindow( SW_HIDE );
+   pWnd->ShowWindow( show );
+}
+
+void CGirderDescPrestressPage::DisappearEndOffsetControls(int show)
+{
+   CWnd* pWnd;
+
+   // These are the strand pattern offset controls
+   pWnd = GetDlgItem( IDC_HPOFFSET_END_TITLE );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( show );
+
+   pWnd = GetDlgItem( IDC_HP_COMBO_END );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( show );
+
+   pWnd = GetDlgItem( IDC_HPOFFSET_END );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( show );
+
+   pWnd = GetDlgItem( IDC_HPOFFSET_END_UNIT );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( show );
+
+   pWnd = GetDlgItem( IDC_HPOFFSET_END_NOTE );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( show );
 }
 
 
@@ -1396,7 +1435,7 @@ StrandIndexType CGirderDescPrestressPage::GetStraightStrandCount()
    {
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      if (m_CurrNumPermStrandsType == CStrandData::npsTotal )
+      if (m_CurrStrandDefinitionType == CStrandData::sdtTotal )
       {
          StrandIndexType total_strands;
          CDataExchange DX(this,FALSE);
@@ -1411,15 +1450,15 @@ StrandIndexType CGirderDescPrestressPage::GetStraightStrandCount()
 
          nStraightStrands = numStraight;
       }
-      else if (m_CurrNumPermStrandsType == CStrandData::npsStraightHarped )
+      else if (m_CurrStrandDefinitionType == CStrandData::sdtStraightHarped )
       {
          CDataExchange DX(this,FALSE);
 	      DDX_Text(&DX, IDC_NUM_SS, nStraightStrands);
       }
-      else if (m_CurrNumPermStrandsType == CStrandData::npsDirectSelection )
+      else if (m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection )
       {
          // data is stored when direct input dialog is closed
-        nStraightStrands = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Straight);
+        nStraightStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
       }
       else
       {
@@ -1442,7 +1481,7 @@ StrandIndexType CGirderDescPrestressPage::GetHarpedStrandCount()
    {
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      if (m_CurrNumPermStrandsType == CStrandData::npsTotal)
+      if (m_CurrStrandDefinitionType == CStrandData::sdtTotal)
       {
          StrandIndexType total_strands;
          CDataExchange DX(this,TRUE);
@@ -1457,15 +1496,15 @@ StrandIndexType CGirderDescPrestressPage::GetHarpedStrandCount()
 
          nHarpedStrands = numHarped;
       }
-      else if (m_CurrNumPermStrandsType == CStrandData::npsStraightHarped)
+      else if (m_CurrStrandDefinitionType == CStrandData::sdtStraightHarped)
       {
          CDataExchange DX(this,TRUE);
 	      DDX_Text(&DX, IDC_NUM_HS, nHarpedStrands);
       }
-      else if (m_CurrNumPermStrandsType == CStrandData::npsDirectSelection)
+      else if (m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection || m_CurrStrandDefinitionType == CStrandData::sdtDirectInput)
       {
          // data is stored when direct input dialog is closed
-         nHarpedStrands = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Harped);
+         nHarpedStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
       }
       else
       {
@@ -1493,7 +1532,7 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // use passed nh value if continuous fill (control might not have data yet)
-      ConfigStrandFillVector harpFill = m_CurrNumPermStrandsType == CStrandData::npsDirectSelection ? 
+      ConfigStrandFillVector harpFill = m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection ? 
                                         ComputeHarpedStrandFillVector() :
                                         pStrandGeom->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, Nh);
 
@@ -1535,7 +1574,7 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // use passed nh value if continuous fill (control might not have data yet)
-      ConfigStrandFillVector harpFill = m_CurrNumPermStrandsType == CStrandData::npsDirectSelection ? 
+      ConfigStrandFillVector harpFill = m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection ? 
                                         ComputeHarpedStrandFillVector() :
                                         pStrandGeom->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, Nh);
 
@@ -1655,7 +1694,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
    UpdateEndRangeLength(measureType, Nh);
 }
 
-void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::PermanentStrandType numPermStrandsType)
+void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::StrandDefinitionType strandDefinitionType)
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -1677,7 +1716,7 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::PermanentS
    }
 
 
-   if(numPermStrandsType==CStrandData::npsDirectSelection)
+   if(strandDefinitionType == CStrandData::sdtDirectSelection || strandDefinitionType == CStrandData::sdtDirectInput)
    {
       // hide spinners if direct-select
       int topids[] = {IDC_NUM_HS_SPIN, IDC_NUM_HS, IDC_NUM_SS_SPIN, IDC_NUM_SS, IDC_NUM_TEMP_SPIN, IDC_NUM_TEMP, -12345};
@@ -1690,6 +1729,14 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::PermanentS
 
       GetDlgItem(IDC_HARP_STRAIGHT)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_EDIT_STRAND_FILL)->ShowWindow(SW_SHOW);
+      if ( strandDefinitionType == CStrandData::sdtDirectSelection )
+      {
+         GetDlgItem(IDC_EDIT_STRAND_FILL)->SetWindowText(_T("Select Strands..."));
+      }
+      else
+      {
+         GetDlgItem(IDC_EDIT_STRAND_FILL)->SetWindowText(_T("Define Strands..."));
+      }
 
       // always show ss title and jacking info
       GetDlgItem(IDC_SS_TITLE)->ShowWindow(SW_SHOW);
@@ -1699,23 +1746,23 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::PermanentS
 
       // labels by strand spinners
       CString msg;
-      msg.Format(_T("Number of Straight Strands = %d"), (int)pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Straight) );
+      msg.Format(_T("Number of Straight Strands = %d"), (int)pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight) );
       CWnd* pWnd = GetDlgItem( IDC_SS_TITLE );
       pWnd->SetWindowText( msg);
 
       if (m_bAreHarpedStrandsForcedStraight)
       {
-         msg.Format(_T("Number of Straight-Web Strands = %d"), (int)pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Harped));
+         msg.Format(_T("Number of Straight-Web Strands = %d"), (int)pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped));
       }
       else
       {
-         msg.Format(_T("Number of Harped Strands = %d"), (int)pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Harped));
+         msg.Format(_T("Number of Harped Strands = %d"), (int)pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped));
       }
 
       pWnd = GetDlgItem( IDC_HS_TITLE );
       pWnd->SetWindowText( msg );
 
-      msg.Format(_T("Number of Temporary Strands = %d"), (int)pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Temporary));
+      msg.Format(_T("Number of Temporary Strands = %d"), (int)pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary));
       pWnd = GetDlgItem( IDC_TEMP_TITLE );
       pWnd->SetWindowText( msg );
    }
@@ -1731,7 +1778,7 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::PermanentS
          pWnd->ShowWindow( SW_SHOW );
       }
 
-      int show = numPermStrandsType==CStrandData::npsTotal ? SW_HIDE : SW_SHOW;
+      int show = strandDefinitionType == CStrandData::sdtTotal ? SW_HIDE : SW_SHOW;
 
       int topids[] = {IDC_SS_TITLE, IDC_NUM_SS, IDC_NUM_SS_SPIN, IDC_SS_JACK, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, -12345};
       for (int id=0; topids[id]!=-12345; id++)
@@ -1742,7 +1789,7 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::PermanentS
       }
 
       // num harped/straight indicator
-      int nsshow = numPermStrandsType == CStrandData::npsTotal ? SW_SHOW : SW_HIDE;
+      int nsshow = strandDefinitionType == CStrandData::sdtTotal ? SW_SHOW : SW_HIDE;
       CWnd* pWnd = GetDlgItem( IDC_HARP_STRAIGHT );
       ASSERT( pWnd );
       pWnd->ShowWindow( nsshow );
@@ -1752,7 +1799,7 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::PermanentS
       pWnd->SetWindowText( _T("Number of Straight Strands") );
 
       CString msg;
-      if(numPermStrandsType == CStrandData::npsTotal)
+      if(strandDefinitionType == CStrandData::sdtTotal)
       {
          msg = _T("Total Number of Permanent Strands");
       }
@@ -1782,17 +1829,15 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
 
    CComboBox* box = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
    int idx = box->GetCurSel();
-   CStrandData::PermanentStrandType newStrandType = (CStrandData::PermanentStrandType)box->GetItemData(idx);
+   CStrandData::StrandDefinitionType newStrandDefinitionType = (CStrandData::StrandDefinitionType)box->GetItemData(idx);
 
    // If fill type didnt change, do nothing
-   if(newStrandType == m_CurrNumPermStrandsType)
+   if(newStrandDefinitionType == m_CurrStrandDefinitionType)
    {
       return;
    }
@@ -1800,7 +1845,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
    // First get number of current strands we are converting from
    StrandIndexType num_straight(0), num_harped(0), num_perm(0), num_temp(0);
 
-   if  (m_CurrNumPermStrandsType == CStrandData::npsStraightHarped)
+   if  (m_CurrStrandDefinitionType == CStrandData::sdtStraightHarped)
    {
       // convert from num straight, num harped 
       num_straight = GetDlgItemInt( IDC_NUM_SS );
@@ -1808,27 +1853,39 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       num_temp     = GetDlgItemInt( IDC_NUM_TEMP );
       num_perm     = num_straight + num_harped;
    }
-   else if (m_CurrNumPermStrandsType == CStrandData::npsTotal )
+   else if (m_CurrStrandDefinitionType == CStrandData::sdtTotal )
    {
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
       num_perm = GetDlgItemInt( IDC_NUM_HS );
       pStrandGeometry->ComputeNumPermanentStrands( num_perm, pParent->m_strGirderName.c_str(), &num_straight, &num_harped);
       num_temp     = GetDlgItemInt( IDC_NUM_TEMP );
    }
-   else if  (m_CurrNumPermStrandsType == CStrandData::npsDirectSelection)
+   else if (m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection || m_CurrStrandDefinitionType == CStrandData::sdtDirectInput)
    {
       // convert from num straight, num harped 
-      num_straight = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Straight);
-      num_harped   = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Harped);
-      num_temp     = pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Temporary );
+      num_straight = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+      num_harped   = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+      num_temp     = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary );
       num_perm     = num_straight + num_harped;
    }
    else
+   {
       ATLASSERT(false); // new fill type?
+   }
+
+   // show hidden controls
+   DisappearEndOffsetControls(SW_SHOW);
+   DisappearHpOffsetControls(SW_SHOW);
+   GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_SHOW);
+
+#pragma Reminder("IMPLEMENT: if converting from direct input to a library strand fill type, ask user if it is ok to throw away all strands")
+   // direct input is not going to be, in general, compatible with a library.
 
    // Next: "To" new fill  type
-   if (newStrandType == CStrandData::npsDirectSelection)
+   if (newStrandDefinitionType == CStrandData::sdtDirectSelection)
    {
       // Going from sequential strand fill to direct fill
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
       ConfigStrandFillVector straight_fill = pStrandGeometry->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Straight, num_straight);
       ConfigStrandFillVector harped_fill   = pStrandGeometry->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, num_harped);
       ConfigStrandFillVector temp_fill     = pStrandGeometry->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Temporary, num_temp);
@@ -1848,7 +1905,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
             if (st == IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrNumPermStrandsType);
+               box->SetCurSel(m_CurrStrandDefinitionType);
                return;
             }
 
@@ -1861,19 +1918,20 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       ATLASSERT(PRESTRESSCONFIG::CountStrandsInFill(harped_fill) == num_harped);
       ATLASSERT(PRESTRESSCONFIG::CountStrandsInFill(temp_fill) == num_temp);
 
-      pParent->m_Segment.Strands.SetDirectStrandFillStraight( ConvertConfigToDirectStrandFill(straight_fill) );
-      pParent->m_Segment.Strands.SetDirectStrandFillHarped( ConvertConfigToDirectStrandFill(harped_fill) );
-      pParent->m_Segment.Strands.SetDirectStrandFillTemporary( ConvertConfigToDirectStrandFill(temp_fill) );
+      pParent->m_pSegment->Strands.SetDirectStrandFillStraight( ConvertConfigToDirectStrandFill(straight_fill) );
+      pParent->m_pSegment->Strands.SetDirectStrandFillHarped( ConvertConfigToDirectStrandFill(harped_fill) );
+      pParent->m_pSegment->Strands.SetDirectStrandFillTemporary( ConvertConfigToDirectStrandFill(temp_fill) );
 
-      HideControls(0, newStrandType); 
-      HideControls(1, newStrandType); 
+      HideControls(0, newStrandDefinitionType); 
+      HideControls(1, newStrandDefinitionType); 
    }
    else 
    {
       // Going to a sequential strand fill
       // See if we are coming from direct selection - if so, we need to convert strand data
-      if(m_CurrNumPermStrandsType == CStrandData::npsDirectSelection)
+      if(m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection)
       {
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
          if (0 < num_temp)
          {
             bool success = pStrandGeometry->IsValidNumStrands( pParent->m_strGirderName.c_str(), pgsTypes::Temporary, num_temp);
@@ -1885,7 +1943,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
                if (st==IDCANCEL)
                {
                   // Let user cancel operation
-                  box->SetCurSel(m_CurrNumPermStrandsType);
+                  box->SetCurSel(m_CurrStrandDefinitionType);
                   return;
                }
 
@@ -1905,8 +1963,9 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       }
 
       // Deal with permanent strands
-      if (newStrandType == CStrandData::npsTotal)
+      if (newStrandDefinitionType == CStrandData::sdtTotal)
       {
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
          StrandIndexType newNumStraight, newNumHarped;
          bool success = pStrandGeometry->ComputeNumPermanentStrands( num_perm, pParent->m_strGirderName.c_str(), &newNumStraight, &newNumHarped);
          if (!success)
@@ -1917,7 +1976,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
             if (st==IDCANCEL)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrNumPermStrandsType);
+               box->SetCurSel(m_CurrStrandDefinitionType);
                return;
             }
 
@@ -1931,18 +1990,18 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrNumPermStrandsType);
+               box->SetCurSel(m_CurrStrandDefinitionType);
                return;
             }
          }
-         else if (0 < num_perm && m_CurrNumPermStrandsType == CStrandData::npsDirectSelection)
+         else if (0 < num_perm && m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection)
          {
             CString str(_T("Strands from direct selection may not be in the same locations in the new fill mode. Is this Ok?"));
             int st = ::AfxMessageBox(str, MB_YESNO | MB_ICONINFORMATION );
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrNumPermStrandsType);
+               box->SetCurSel(m_CurrStrandDefinitionType);
                return;
             }
          }
@@ -1957,12 +2016,13 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
          pSpin->SetRange( 0, short(nStrandsMax) );
          pSpin->SetPos((int)num_perm);
 
-         HideControls(1, newStrandType); 
+         HideControls(1, newStrandDefinitionType); 
          UpdateStraightHarped(newNumStraight, newNumHarped);
          UpdateHarpedOffsets(newNumHarped);
       }
-      else if  (newStrandType == CStrandData::npsStraightHarped)
+      else if  (newStrandDefinitionType == CStrandData::sdtStraightHarped)
       {
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
          bool success = pStrandGeometry->IsValidNumStrands(pParent->m_strGirderName.c_str(), pgsTypes::Harped, num_harped);
          if (!success)
          {
@@ -1972,7 +2032,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
             if (st==IDCANCEL)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrNumPermStrandsType);
+               box->SetCurSel(m_CurrStrandDefinitionType);
                return;
             }
 
@@ -1989,7 +2049,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
             if (st==IDCANCEL)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrNumPermStrandsType);
+               box->SetCurSel(m_CurrStrandDefinitionType);
                return;
             }
 
@@ -1997,14 +2057,14 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
             num_perm = num_harped;
          }
 
-         if  (m_CurrNumPermStrandsType == CStrandData::npsDirectSelection)
+         if  (m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection)
          {
             CString str(_T("Strands from direct selection may not be in the same locations in the new fill mode. Is this Ok?"));
             int st = ::AfxMessageBox(str, MB_YESNO | MB_ICONINFORMATION );
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrNumPermStrandsType);
+               box->SetCurSel(m_CurrStrandDefinitionType);
                return;
             }
          }
@@ -2028,43 +2088,83 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
          pSpin->SetRange( 0, (short)nStrandsMax );
          pSpin->SetPos((int)num_harped);
 
-         HideControls(0, newStrandType); 
-         HideControls(1, newStrandType); 
+         HideControls(0, newStrandDefinitionType); 
+         HideControls(1, newStrandDefinitionType); 
+      }
+      else if  (newStrandDefinitionType == CStrandData::sdtDirectInput)
+      {
+#pragma Reminder("IMPLEMENT - need to convert library strands into user defined strands")
+         HideControls(0, newStrandDefinitionType); 
+         HideControls(1, newStrandDefinitionType); 
+         DisappearEndOffsetControls();
+         DisappearHpOffsetControls();
+         GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_HIDE);
+      }
+      else
+      {
+         ATLASSERT(false); // new type?
       }
    }
 
    // convert user-input pjack if coming from or going to total strands
-   if  (m_CurrNumPermStrandsType == CStrandData::npsTotal)
+   if  (m_CurrStrandDefinitionType == CStrandData::sdtTotal)
    {
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       ConvertPJackFromNumPerm(num_straight, num_harped, pDisplayUnits);
    }
-   else if  (newStrandType == CStrandData::npsTotal)
+   else if  (newStrandDefinitionType == CStrandData::sdtTotal)
    {
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       ConvertPJackToNumPerm(num_straight, num_harped, pDisplayUnits);
    }
 
    // Strands have changed - take care of any invalid debonding
    ConfigStrandFillVector fillvec = ComputeStraightStrandFillVector(num_straight);
     
-   ReconcileDebonding(fillvec, pParent->m_Segment.Strands.GetDebonding(pgsTypes::Straight));
+   ReconcileDebonding(fillvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight));
 
    for ( int i = 0; i < 2; i++ )
    {
-      std::vector<GridIndexType> extStrands = pParent->m_Segment.Strands.GetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i);
+      std::vector<GridIndexType> extStrands = pParent->m_pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i);
       bool bChanged = ReconcileExtendedStrands(fillvec, extStrands);
 
       if ( bChanged )
       {
-         pParent->m_Segment.Strands.SetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i,extStrands);
+         pParent->m_pSegment->Strands.SetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i,extStrands);
       }
    }
 
    // Save new adjustment type
-   m_CurrNumPermStrandsType = newStrandType;
+   m_CurrStrandDefinitionType = newStrandDefinitionType;
+   pParent->m_pSegment->Strands.SetStrandDefinitionType(newStrandDefinitionType);
 
    UpdatePjackEdits();
 
-   ShowHideNumStrandControls(newStrandType);
+   ShowHideNumStrandControls(newStrandDefinitionType);
+
+   // show/hide the Extend Strands tab on the parent dialog
+   if ( m_CurrStrandDefinitionType == CStrandData::sdtDirectInput )
+   {
+      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+      pParent->OnGirderTypeChanged(false,false);
+   }
+   else
+   {
+      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+      
+      // add/remove property pages if needed
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2( pBroker, ILibrary, pLib );
+      GET_IFACE2( pBroker, ISpecification, pSpec);
+      const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+      bool bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();
+      bool bCanDebond = pGdrEntry->CanDebondStraightStrands();
+
+      pParent->OnGirderTypeChanged(bCanExtendStrands,bCanDebond);
+   }
 }
 
 void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits) 
@@ -2079,8 +2179,8 @@ void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraig
    ASSERT( pbut );
    pbut->SetCheck( calc_permanent ? 1 : 0);
 
-   pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Harped,   calc_permanent);
-   pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Straight, calc_permanent);
+   pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped,   calc_permanent);
+   pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight, calc_permanent);
 
    if (!calc_permanent)
    {
@@ -2094,20 +2194,20 @@ void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraig
       StrandIndexType num_perm = numStraight+numHarped;
       if (num_perm>0)
       {
-         pParent->m_Segment.Strands.SetPjack(pgsTypes::Harped,   Pjack * (Float64)numHarped/(Float64)num_perm);
-         pParent->m_Segment.Strands.SetPjack(pgsTypes::Straight, Pjack * (Float64)numStraight/(Float64)num_perm);
+         pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped,   Pjack * (Float64)numHarped/(Float64)num_perm);
+         pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight, Pjack * (Float64)numStraight/(Float64)num_perm);
       }
       else
       {
-         pParent->m_Segment.Strands.SetPjack(pgsTypes::Harped,   0.0);
-         pParent->m_Segment.Strands.SetPjack(pgsTypes::Straight, 0.0);
+         pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped,   0.0);
+         pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight, 0.0);
       }
 
       CDataExchange dx(this,FALSE);
-      Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Harped);
+      Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
       DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
 
-      Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Straight);
+      Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight);
       DDX_UnitValueAndTag( &dx, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
    }
 }
@@ -2129,7 +2229,7 @@ void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight
 
    pbut->SetCheck( user_input ? 0 : 1);
 
-   pParent->m_Segment.Strands.IsPjackCalculated(pgsTypes::Permanent, !user_input);
+   pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Permanent, !user_input);
 
    if (user_input)
    {
@@ -2164,10 +2264,10 @@ void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight
          jack_harped = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       }
 
-      pParent->m_Segment.Strands.SetPjack(pgsTypes::Permanent, jack_straight + jack_harped);
+      pParent->m_pSegment->Strands.SetPjack(pgsTypes::Permanent, jack_straight + jack_harped);
 
       CDataExchange dx(this,FALSE);
-      Float64 Pjack = pParent->m_Segment.Strands.GetPjack(pgsTypes::Permanent);
+      Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Permanent);
       DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
    }
 }
@@ -2269,8 +2369,8 @@ void CGirderDescPrestressPage::OnStrandTypeChanged()
    Int32 key = (Int32)pList->GetItemData( (int)m_StrandSizeIdx );
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_Segment.Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( key ));
-   pParent->m_Segment.Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( key ));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( key ));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( key ));
 
    // Now we can update pjack values in dialog
    UpdatePjackEdits();
@@ -2287,7 +2387,7 @@ void CGirderDescPrestressPage::OnTempStrandTypeChanged()
    Int32 key = (Int32)pList->GetItemData( (int)m_TempStrandSizeIdx );
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_Segment.Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
 
    // Now we can update pjack values in dialog
    UpdatePjackEdits();
@@ -2322,6 +2422,19 @@ BOOL CGirderDescPrestressPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* p
 }
 
 void CGirderDescPrestressPage::OnBnClickedEditStrandFill()
+{
+   if ( m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection )
+   {
+      EditDirectSelect();
+   }
+   else
+   {
+      ASSERT(m_CurrStrandDefinitionType == CStrandData::sdtDirectInput);
+      EditDirectInput();
+   }
+}
+
+void CGirderDescPrestressPage::EditDirectSelect()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -2361,7 +2474,7 @@ void CGirderDescPrestressPage::OnBnClickedEditStrandFill()
    Float64 maxDebondLength = pBridge->GetSegmentLength(pParent->m_SegmentKey)/2.0;
 
    CGirderSelectStrandsDlg dlg;
-   dlg.m_SelectStrandsPage.InitializeData(pParent->m_SegmentKey, &pParent->m_Segment.Strands, pSpecEntry, pGdrEntry,
+   dlg.m_SelectStrandsPage.InitializeData(pParent->m_SegmentKey, &pParent->m_pSegment->Strands, pSpecEntry, pGdrEntry,
                       m_AllowEndAdjustment, m_AllowHpAdjustment, endMeasureType, hpMeasureType, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
 
    if ( dlg.DoModal() == IDOK )
@@ -2372,20 +2485,36 @@ void CGirderDescPrestressPage::OnBnClickedEditStrandFill()
       //CDataExchange DX(this, FALSE);
       //if (m_AllowEndAdjustment)
       //{
-      //   Float64 offset = pParent->m_Segment.Strands.HpOffsetAtEnd;
+      //   Float64 offset = pParent->m_pSegment->Strands.HpOffsetAtEnd;
       //   DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
       //}
 
       //if (m_AllowHpAdjustment)
       //{
-      //   Float64 offset = pParent->m_Segment.Strands.HpOffsetAtHp;
+      //   Float64 offset = pParent->m_pSegment->Strands.HpOffsetAtHp;
       //   DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
       //}
 
       // update pjack and display elements
-      ShowHideNumStrandControls(m_CurrNumPermStrandsType);
+      ShowHideNumStrandControls(m_CurrStrandDefinitionType);
       UpdatePjackEdits();
-      UpdateHarpedOffsets(pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Harped));
+      UpdateHarpedOffsets(pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped));
+   }
+}
+
+void CGirderDescPrestressPage::EditDirectInput()
+{
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+   CPropertySheet dlg(_T("Define Strands"),this);
+   CGirderSegmentStrandsPage page;
+   page.Init(pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex));
+   dlg.AddPage(&page);
+   if ( dlg.DoModal() == IDOK )
+   {
+      UpdateData(FALSE);
+      ShowHideNumStrandControls(m_CurrStrandDefinitionType);
+      UpdatePjackEdits();
    }
 }
 
@@ -2397,14 +2526,14 @@ ConfigStrandFillVector CGirderDescPrestressPage::ComputeStraightStrandFillVector
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   if (m_CurrNumPermStrandsType == CStrandData::npsDirectSelection)
+   if (m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection)
    {
       // Fill is stored locally in compacted form
-      ATLASSERT(pParent->m_Segment.Strands.GetStrandCount(pgsTypes::Straight)==Ns);
+      ATLASSERT(pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight)==Ns);
 
       ConfigStrandFillVector vec = ConvertDirectToConfigFill(pStrandGeometry, pgsTypes::Straight, 
                                    pParent->m_strGirderName.c_str(), 
-                                   *(pParent->m_Segment.Strands.GetDirectStrandFillStraight()));
+                                   *(pParent->m_pSegment->Strands.GetDirectStrandFillStraight()));
 
       return vec;
    }
@@ -2422,11 +2551,11 @@ ConfigStrandFillVector CGirderDescPrestressPage::ComputeHarpedStrandFillVector()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   if (m_CurrNumPermStrandsType == CStrandData::npsDirectSelection)
+   if (m_CurrStrandDefinitionType == CStrandData::sdtDirectSelection)
    {
       ConfigStrandFillVector vec = ConvertDirectToConfigFill(pStrandGeometry, pgsTypes::Harped, 
                                    pParent->m_strGirderName.c_str(), 
-                                   *(pParent->m_Segment.Strands.GetDirectStrandFillHarped()));
+                                   *(pParent->m_pSegment->Strands.GetDirectStrandFillHarped()));
 
       return vec;
    }

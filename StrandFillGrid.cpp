@@ -302,10 +302,6 @@ void CStrandFillGrid::SetRowStyle(ROWCOL nRow)
 
 void CStrandFillGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
@@ -355,11 +351,17 @@ void CStrandFillGrid::FillGrid()
 
       CString strStrand;
       if (oneOrTwo==1)
+      {
          strStrand.Format(_T("%d"),currPositionNo+1);
+      }
       else if (oneOrTwo==2)
+      {
          strStrand.Format(_T("%d-%d"),currPositionNo+1,currPositionNo+2);
+      }
       else
+      {
          ATLASSERT(false); // new fill type?
+      }
 
       SetStyleRange(CGXRange(row,0), CGXStyle().SetValue(strStrand).SetHorizontalAlignment(DT_CENTER));
 
@@ -368,16 +370,24 @@ void CStrandFillGrid::FillGrid()
       if (strandType==GirderLibraryEntry::stStraight)
       {
          if(canDebond)
+         {
             strType = _T("S-DB");
+         }
          else
+         {
             strType = _T("S");
+         }
       }
       else if (strandType==GirderLibraryEntry::stHarped)
       {
          if(m_pGdrEntry->IsForceHarpedStrandsStraight())
+         {
             strType = _T("S-W");
+         }
          else
+         {
             strType = _T("H");
+         }
       }
 
 
@@ -458,6 +468,10 @@ void CStrandFillGrid::FillGrid()
 
          if ( bIsDebonded )
          {
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
             // strand is debonded
             SetStyleRange(CGXRange(row,FIRST_DEBOND_COL), CGXStyle()
                .SetValue(FormatDimension(leftDebond, pDisplayUnits->GetXSectionDimUnit(), false))
@@ -588,11 +602,17 @@ void CStrandFillGrid::FillGrid()
 
       CString strStrand;
       if (oneOrTwo==1)
+      {
          strStrand.Format(_T("%d"),currPositionNo+1);
+      }
       else if (oneOrTwo==2)
+      {
          strStrand.Format(_T("%d-%d"),currPositionNo+1,currPositionNo+2);
+      }
       else
+      {
          ATLASSERT(false); // new fill type?
+      }
 
       SetStyleRange(CGXRange(row,0), CGXStyle().SetValue(strStrand));
       SetStyleRange(CGXRange(row,TYPE_COL), CGXStyle().SetValue(_T("T")));
@@ -674,7 +694,9 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
       CGXStyle style;
       GetStyleRowCol(nRow, SELECT_CHECK_COL, style);
       if ( style.GetValue() == _T("0") )
+      {
          continue; // strand are not selected... continue to the next row
+      }
 
       const CUserData& userData = dynamic_cast<const CUserData&>(style.GetUserAttribute(0));
 
@@ -777,7 +799,9 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 {
    if ( nRow == 0 )
+   {
       return;
+   }
 
    if(nCol == SELECT_CHECK_COL)
    {
@@ -1048,7 +1072,9 @@ bool CStrandFillGrid::IsStrandExtended(GridIndexType gridIdx,pgsTypes::MemberEnd
    {
       GridIndexType idx = *iter++;
       if ( idx == gridIdx )
+      {
          return true;
+      }
    }
 
    return false;

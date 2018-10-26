@@ -276,7 +276,7 @@ bool CStrandRow::operator!=(const CStrandRow& other) const
 
 HRESULT CStrandRow::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("StrandRow"),2.0);
+   pStrSave->BeginUnit(_T("StrandRow"),3.0);
 
    pStrSave->put_Property(_T("InnerSpacing"),CComVariant(m_InnerSpacing));
    pStrSave->put_Property(_T("Spacing"),CComVariant(m_Spacing));
@@ -287,6 +287,7 @@ HRESULT CStrandRow::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("NStrands"),CComVariant(m_nStrands));
 
+   pStrSave->put_Property(_T("XStart"),CComVariant(m_X[LOCATION_START])); // added in version 3
    pStrSave->put_Property(_T("YStart"),CComVariant(m_Y[LOCATION_START]));
    pStrSave->put_Property(_T("FaceStart"),CComVariant(m_Face[LOCATION_START] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
 
@@ -300,6 +301,7 @@ HRESULT CStrandRow::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("YRHP"),CComVariant(m_Y[LOCATION_RIGHT_HP]));
    pStrSave->put_Property(_T("FaceRHP"),CComVariant(m_Face[LOCATION_RIGHT_HP] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
 
+   pStrSave->put_Property(_T("XEnd"),CComVariant(m_X[LOCATION_END])); // added in version 3
    pStrSave->put_Property(_T("YEnd"),CComVariant(m_Y[LOCATION_END]));
    pStrSave->put_Property(_T("FaceEnd"),CComVariant(m_Face[LOCATION_END] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
 
@@ -358,6 +360,14 @@ HRESULT CStrandRow::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("NStrands"),&var);
       m_nStrands = VARIANT2INDEX(var);
 
+      if ( 2 < version )
+      {
+         // added in version 3
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("XStart"),&var);
+         m_X[LOCATION_START] = var.dblVal;
+      }
+
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("YStart"),&var);
       m_Y[LOCATION_START] = var.dblVal;
@@ -390,6 +400,15 @@ HRESULT CStrandRow::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_BSTR;
          pStrLoad->get_Property(_T("FaceRHP"),&var);
          m_Face[LOCATION_RIGHT_HP] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+      }
+
+
+      if ( 2 < version )
+      {
+         // added in version 3
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("XEnd"),&var);
+         m_X[LOCATION_END] = var.dblVal;
       }
 
       var.vt = VT_R8;
@@ -447,7 +466,7 @@ CStrandData::CStrandData()
 
    ResetPrestressData();
 
-   m_NumPermStrandsType = CStrandData::npsStraightHarped;
+   m_NumPermStrandsType = CStrandData::sdtStraightHarped;
    m_bConvertExtendedStrands = false;
 }  
 
@@ -486,7 +505,7 @@ bool CStrandData::operator==(const CStrandData& rOther) const
       return false;
    }
 
-   if ( m_NumPermStrandsType == npsUser )
+   if ( m_NumPermStrandsType == sdtDirectInput )
    {
       if ( m_StrandRows.size() != rOther.m_StrandRows.size() )
       {
@@ -635,17 +654,17 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
 
       if (version<8.0)
       {
-         m_NumPermStrandsType = npsStraightHarped;
+         m_NumPermStrandsType = sdtStraightHarped;
       }
       else
       {
          var.Clear();
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("NumPermStrandsType"), &var );
-         m_NumPermStrandsType = (PermanentStrandType)var.lVal;
+         m_NumPermStrandsType = (StrandDefinitionType)var.lVal;
       }
 
-      if ( m_NumPermStrandsType == npsUser )
+      if ( m_NumPermStrandsType == sdtDirectInput )
       {
          // added in version 13
          hr = pStrLoad->BeginUnit(_T("StrandRows"));
@@ -663,7 +682,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       }
       else
       {
-         // stopped write this out in version 13 if NumPerStrandType is npsUser
+         // stopped write this out in version 13 if NumPerStrandType is sdtDirectInput
          var.Clear();
          var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("NumHarpedStrands"), &var );
@@ -783,7 +802,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
             hr = pStrLoad->EndUnit(); // ExtendedStrands
          }
 
-         if (12 <= version && m_NumPermStrandsType == CStrandData::npsDirectSelection)
+         if (12 <= version && m_NumPermStrandsType == CStrandData::sdtDirectSelection)
          {
             hr = hr = pStrLoad->BeginUnit(_T("DirectSelectStrandFill"));
             if (FAILED(hr))
@@ -941,9 +960,9 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       }
 
 
-      if ( 5.0 <= version && m_NumPermStrandsType != npsUser )
+      if ( 5.0 <= version && m_NumPermStrandsType != sdtDirectInput )
       {
-         // not writing this data if NumPermStrandsType is npsUser... this was added in version 13 of the data block
+         // not writing this data if NumPermStrandsType is sdtDirectInput... this was added in version 13 of the data block
 
          var.Clear();
          var.vt = VT_I4;
@@ -1054,7 +1073,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   if ( m_NumPermStrandsType == npsUser )
+   if ( m_NumPermStrandsType == sdtDirectInput )
    {
       ProcessStrandRowData();
    }
@@ -1075,7 +1094,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("NumPermStrandsType"), CComVariant(m_NumPermStrandsType));
 
-   if ( m_NumPermStrandsType == npsUser )
+   if ( m_NumPermStrandsType == sdtDirectInput )
    {
       // added in version 13
       pStrSave->BeginUnit(_T("StrandRows"),1.0);
@@ -1091,7 +1110,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    }
    else
    {
-      // stopped write this out in version 13 if NumPerStrandType is npsUser
+      // stopped write this out in version 13 if NumPerStrandType is sdtDirectInput
       pStrSave->put_Property(_T("NumHarpedStrands"), CComVariant(m_Nstrands[pgsTypes::Harped]));
       pStrSave->put_Property(_T("NumStraightStrands"), CComVariant(m_Nstrands[pgsTypes::Straight]));
       pStrSave->put_Property(_T("NumTempStrands"), CComVariant(m_Nstrands[pgsTypes::Temporary]));
@@ -1165,7 +1184,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->EndUnit(); // End
       pStrSave->EndUnit(); // ExtendedStrands
 
-      if (m_NumPermStrandsType == CStrandData::npsDirectSelection)
+      if (m_NumPermStrandsType == CStrandData::sdtDirectSelection)
       {
          // Added this in version 12
          pStrSave->BeginUnit(_T("DirectSelectStrandFill"), 1.0);
@@ -1212,9 +1231,9 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("LastUserPjPermanent"), CComVariant(m_LastUserPjack[pgsTypes::Permanent]));
    pStrSave->put_Property(_T("TempStrandUsage"),CComVariant(m_TempStrandUsage));
 
-   if ( m_NumPermStrandsType != npsUser )
+   if ( m_NumPermStrandsType != sdtDirectInput )
    {
-      // not writing this data if NumPermStrandsType is npsUser... this was added in version 13 of the data block
+      // not writing this data if NumPermStrandsType is sdtDirectInput... this was added in version 13 of the data block
       pStrSave->put_Property(_T("SymmetricDebond"),CComVariant(m_bSymmetricDebond));
 
       pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
@@ -1285,12 +1304,12 @@ void CStrandData::SetTotalPermanentNstrands(StrandIndexType nPermanent,StrandInd
 {
    ATLASSERT(nPermanent==nStraight+nHarped);
 
-   if (m_NumPermStrandsType != CStrandData::npsTotal)
+   if (m_NumPermStrandsType != CStrandData::sdtTotal)
    {
       // Fill type change - clear and direct fill data
       ClearDirectFillData();
 
-      m_NumPermStrandsType = CStrandData::npsTotal;
+      m_NumPermStrandsType = CStrandData::sdtTotal;
    }
 
    m_Nstrands[pgsTypes::Permanent] = nPermanent;
@@ -1300,12 +1319,12 @@ void CStrandData::SetTotalPermanentNstrands(StrandIndexType nPermanent,StrandInd
 
 void CStrandData::SetHarpedStraightNstrands(StrandIndexType nStraight, StrandIndexType nHarped)
 {
-   if (m_NumPermStrandsType != CStrandData::npsStraightHarped)
+   if (m_NumPermStrandsType != CStrandData::sdtStraightHarped)
    {
       // Fill type change - clear and direct fill data
       ClearDirectFillData();
 
-      m_NumPermStrandsType = CStrandData::npsStraightHarped;
+      m_NumPermStrandsType = CStrandData::sdtStraightHarped;
    }
 
    m_Nstrands[pgsTypes::Permanent] = nStraight+nHarped;
@@ -1315,16 +1334,16 @@ void CStrandData::SetHarpedStraightNstrands(StrandIndexType nStraight, StrandInd
 
 void CStrandData::SetTemporaryNstrands(StrandIndexType nStrands)
 {
-   ATLASSERT(m_NumPermStrandsType != CStrandData::npsDirectSelection); // if changing fill mode - don't change temp strands first
+   ATLASSERT(m_NumPermStrandsType != CStrandData::sdtDirectSelection); // if changing fill mode - don't change temp strands first
 
    m_Nstrands[pgsTypes::Temporary] = nStrands;
 }
 
 void CStrandData::SetDirectStrandFillStraight(const CDirectStrandFillCollection& rCollection)
 {
-   if(m_NumPermStrandsType != CStrandData::npsDirectSelection)
+   if(m_NumPermStrandsType != CStrandData::sdtDirectSelection)
    {
-      m_NumPermStrandsType = CStrandData::npsDirectSelection;
+      m_NumPermStrandsType = CStrandData::sdtDirectSelection;
    }
 
    // make sure our collection is clean
@@ -1337,7 +1356,7 @@ void CStrandData::SetDirectStrandFillStraight(const CDirectStrandFillCollection&
 
 const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillStraight() const
 {
-   if(m_NumPermStrandsType == CStrandData::npsDirectSelection)
+   if(m_NumPermStrandsType == CStrandData::sdtDirectSelection)
    {
       return &m_StraightStrandFill;
    }
@@ -1350,9 +1369,9 @@ const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillStraight() co
 
 void CStrandData::SetDirectStrandFillHarped(const CDirectStrandFillCollection& rCollection)
 {
-   if(m_NumPermStrandsType != CStrandData::npsDirectSelection)
+   if(m_NumPermStrandsType != CStrandData::sdtDirectSelection)
    {
-      m_NumPermStrandsType = CStrandData::npsDirectSelection;
+      m_NumPermStrandsType = CStrandData::sdtDirectSelection;
    }
 
    // make sure our collection is clean
@@ -1365,7 +1384,7 @@ void CStrandData::SetDirectStrandFillHarped(const CDirectStrandFillCollection& r
 
 const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillHarped() const
 {
-   if(m_NumPermStrandsType == CStrandData::npsDirectSelection)
+   if(m_NumPermStrandsType == CStrandData::sdtDirectSelection)
    {
       return &m_HarpedStrandFill;
    }
@@ -1378,9 +1397,9 @@ const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillHarped() cons
 
 void CStrandData::SetDirectStrandFillTemporary(const CDirectStrandFillCollection& rCollection)
 {
-   if(m_NumPermStrandsType != CStrandData::npsDirectSelection)
+   if(m_NumPermStrandsType != CStrandData::sdtDirectSelection)
    {
-      m_NumPermStrandsType = CStrandData::npsDirectSelection;
+      m_NumPermStrandsType = CStrandData::sdtDirectSelection;
    }
 
    // make sure our collection is clean
@@ -1392,7 +1411,7 @@ void CStrandData::SetDirectStrandFillTemporary(const CDirectStrandFillCollection
 
 const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillTemporary() const
 {
-   if(m_NumPermStrandsType == CStrandData::npsDirectSelection)
+   if(m_NumPermStrandsType == CStrandData::sdtDirectSelection)
    {
       return &m_TemporaryStrandFill;
    }
@@ -1428,7 +1447,7 @@ const CStrandRowCollection& CStrandData::GetStrandRows() const
 
 void CStrandData::SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands)
 {
-   ATLASSERT( m_NumPermStrandsType != npsUser);
+   ATLASSERT( m_NumPermStrandsType != sdtDirectInput);
    m_Nstrands[strandType] = nStrands;
 }
 
@@ -1500,7 +1519,7 @@ StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,cons
    }
 
    StrandIndexType nDebondedStrands = 0;
-   if ( m_NumPermStrandsType == npsUser )
+   if ( m_NumPermStrandsType == sdtDirectInput )
    {
       CStrandRowCollection::const_iterator rowIter(m_StrandRows.begin());
       CStrandRowCollection::const_iterator rowIterEnd(m_StrandRows.end());
@@ -1515,7 +1534,7 @@ StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,cons
    }
    else
    {
-      ATLASSERT( m_NumPermStrandsType == npsTotal || m_NumPermStrandsType == npsStraightHarped || m_NumPermStrandsType == npsDirectSelection );
+      ATLASSERT( m_NumPermStrandsType == sdtTotal || m_NumPermStrandsType == sdtStraightHarped || m_NumPermStrandsType == sdtDirectSelection );
 
       std::vector<CDebondData>::const_iterator iter(m_Debond[strandType].begin());
       std::vector<CDebondData>::const_iterator end(m_Debond[strandType].end());
@@ -1670,12 +1689,12 @@ pgsTypes::TTSUsage CStrandData::GetTemporaryStrandUsage() const
    return m_TempStrandUsage;
 }
 
-void CStrandData::SetStrandDefinitionType(CStrandData::PermanentStrandType permStrandsType)
+void CStrandData::SetStrandDefinitionType(CStrandData::StrandDefinitionType permStrandsType)
 {
    m_NumPermStrandsType = permStrandsType;
 }
 
-CStrandData::PermanentStrandType CStrandData::GetStrandDefinitionType() const
+CStrandData::StrandDefinitionType CStrandData::GetStrandDefinitionType() const
 {
    return m_NumPermStrandsType;
 }

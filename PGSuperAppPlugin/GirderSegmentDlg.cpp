@@ -68,9 +68,13 @@ INT_PTR CGirderSegmentDlg::DoModal()
    if ( result == IDOK )
    {
       if ( 0 < m_SplicedGirderExtensionPages.size() )
+      {
          NotifySplicedGirderExtensionPages();
+      }
       else
+      {
          NotifyExtensionPages();
+      }
    }
 
    return result;
@@ -111,6 +115,8 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_Girder = *pGirder;
    m_SegmentKey = segmentKey;
    m_SegmentID = pSegment->GetID();
+
+   m_StrandsPage.Init(m_Girder.GetSegment(segmentKey.segmentIndex));
 
    // if statement short circuit evaluation can cause interface to not be used
    GET_IFACE2_NOCHECK(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
@@ -275,7 +281,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CPrecastSegmentData* pSegment = m_Girder.GetSegment(m_SegmentKey.segmentIndex);
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::npsDirectSelection)
+   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
    {
       // first get in girderdata format
       const CDirectStrandFillCollection* pDirectFillData(NULL);

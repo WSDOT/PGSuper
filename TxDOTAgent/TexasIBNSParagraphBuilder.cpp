@@ -50,12 +50,12 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /// Inline functions
-inline bool IsNonStandardStrands(StrandIndexType nperm, bool isHarpedDesign, int npsType)
+inline bool IsNonStandardStrands(StrandIndexType nperm, bool isHarpedDesign, int sdtType)
 {
    if (nperm>0)
    {
-      return npsType == CStrandData::npsDirectSelection ||
-         (isHarpedDesign && npsType != CStrandData::npsTotal );
+      return sdtType == CStrandData::sdtDirectSelection ||
+         (isHarpedDesign && sdtType != CStrandData::sdtTotal );
    }
    else
       return false;

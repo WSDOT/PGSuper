@@ -2284,7 +2284,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             girder->get_HarpedStrandGridHP(etEnd,&harpGrdHP[etEnd]);
             girder->get_TemporaryStrandGrid(etEnd,&tempGrd[etEnd]);
 
-            if ( pSegment->Strands.GetStrandDefinitionType() == CStrandData::npsUser )
+            if ( pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectInput )
             {
                // Not using the strand grid in the library... create the strand grid based on user input
                const CStrandRowCollection& strandRows = pSegment->Strands.GetStrandRows();
@@ -2363,6 +2363,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
                      case pgsTypes::Harped:
 #pragma Reminder("REVIEW: verify that harp point locations are in Segment Coordinates")
                         // ie. measured from the start face of the girder segment... if not, adjust them
+                        girder->SetEndHarpingPoints(Z[LOCATION_START],segmentLength - Z[LOCATION_END]);
                         girder->SetHarpingPoints(Z[LOCATION_LEFT_HP],segmentLength - Z[LOCATION_RIGHT_HP]);
                         girder->put_HarpingPointMeasure(hpmAbsoluteDistance);
                         girder->put_HarpingPointReference(hprEndOfGirder);
@@ -3557,10 +3558,10 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
             girder->ClearStraightStrandDebonding();
 
             // Fill strands
-            CStrandData::PermanentStrandType permFillType = pSegment->Strands.GetStrandDefinitionType();
-            if (permFillType == CStrandData::npsTotal || 
-                permFillType == CStrandData::npsStraightHarped ||
-                permFillType == CStrandData::npsUser )
+            CStrandData::StrandDefinitionType strandDefinitionType = pSegment->Strands.GetStrandDefinitionType();
+            if (strandDefinitionType == CStrandData::sdtTotal || 
+                strandDefinitionType == CStrandData::sdtStraightHarped ||
+                strandDefinitionType == CStrandData::sdtDirectInput )
             {
                // Continuous fill
                CContinuousStrandFiller* pfiller = GetContinuousStrandFiller(segmentKey);
@@ -3573,7 +3574,7 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
                hr = pfiller->SetTemporaryContinuousFill(girder, pSegment->Strands.GetStrandCount(pgsTypes::Temporary));
                ATLASSERT( SUCCEEDED(hr));
             }
-            else if (permFillType == CStrandData::npsDirectSelection)
+            else if (strandDefinitionType == CStrandData::sdtDirectSelection)
             {
                // Direct fill
                CDirectStrandFiller* pfiller = GetDirectStrandFiller(segmentKey);
@@ -3591,34 +3592,37 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
                ATLASSERT(false); // is there a new fill type?
             }
 
-            // Apply harped strand pattern offsets.
-            // Get fill array for harped and convert to ConfigStrandFillVector
-            CComPtr<IIndexArray> hFillArray;
-            girder->get_HarpedStrandFill(&hFillArray);
-            ConfigStrandFillVector hFillVec;
-            IndexArray2ConfigStrandFillVec(hFillArray, hFillVec);
-
-            bool force_straight = pGirderEntry->IsForceHarpedStrandsStraight();
-            Float64 adjustment(0.0);
-            if ( pGirderEntry->IsVerticalAdjustmentAllowedEnd() )
+            if ( strandDefinitionType != CStrandData::sdtDirectInput )
             {
-               adjustment = this->ComputeAbsoluteHarpedOffsetEnd(segmentKey, hFillVec, pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), pSegment->Strands.GetHarpStrandOffsetAtEnd());
-               girder->put_HarpedStrandAdjustmentEnd(adjustment);
+               // Apply harped strand pattern offsets.
+               // Get fill array for harped and convert to ConfigStrandFillVector
+               CComPtr<IIndexArray> hFillArray;
+               girder->get_HarpedStrandFill(&hFillArray);
+               ConfigStrandFillVector hFillVec;
+               IndexArray2ConfigStrandFillVec(hFillArray, hFillVec);
 
-               // use same adjustment at harping points if harped strands are forced to straight
-               if (force_straight)
+               bool force_straight = pGirderEntry->IsForceHarpedStrandsStraight();
+               Float64 adjustment(0.0);
+               if ( pGirderEntry->IsVerticalAdjustmentAllowedEnd() )
                {
-                  girder->put_HarpedStrandAdjustmentHP(adjustment);
+                  adjustment = this->ComputeAbsoluteHarpedOffsetEnd(segmentKey, hFillVec, pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), pSegment->Strands.GetHarpStrandOffsetAtEnd());
+                  girder->put_HarpedStrandAdjustmentEnd(adjustment);
+
+                  // use same adjustment at harping points if harped strands are forced to straight
+                  if (force_straight)
+                  {
+                     girder->put_HarpedStrandAdjustmentHP(adjustment);
+                  }
                }
-            }
 
-            if ( pGirderEntry->IsVerticalAdjustmentAllowedHP() && !force_straight )
-            {
-               adjustment = this->ComputeAbsoluteHarpedOffsetHp(segmentKey, hFillVec, 
-                                                                pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), pSegment->Strands.GetHarpStrandOffsetAtHarpPoint());
-               girder->put_HarpedStrandAdjustmentHP(adjustment);
+               if ( pGirderEntry->IsVerticalAdjustmentAllowedHP() && !force_straight )
+               {
+                  adjustment = this->ComputeAbsoluteHarpedOffsetHp(segmentKey, hFillVec, 
+                                                                   pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), pSegment->Strands.GetHarpStrandOffsetAtHarpPoint());
+                  girder->put_HarpedStrandAdjustmentHP(adjustment);
 
-               ATLASSERT(!pGirderEntry->IsForceHarpedStrandsStraight()); // should not happen
+                  ATLASSERT(!pGirderEntry->IsForceHarpedStrandsStraight()); // should not happen
+               }
             }
 
             // Apply debonding
@@ -4003,6 +4007,9 @@ void CBridgeAgentImp::ModelCantilevers(const CSegmentKey& segmentKey,bool* pbSta
 {
    // This method determines if the overhangs at the ends of a segment are modeled as cantilevers
    ASSERT_SEGMENT_KEY(segmentKey);
+
+   *pbStartCantilever = false;
+   *pbEndCantilever   = false;
 
    if ( segmentKey.groupIndex == 0 && segmentKey.segmentIndex == 0 )
    {
@@ -13225,6 +13232,17 @@ void CBridgeAgentImp::GetHarpingPointLocations(const CSegmentKey& segmentKey,Flo
    girder->GetHarpingPointLocations(lhp,rhp);
 }
 
+void CBridgeAgentImp::GetHarpingPointLocations(const CSegmentKey& segmentKey,Float64* pX1,Float64* pX2,Float64* pX3,Float64* pX4)
+{
+   VALIDATE( GIRDER );
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey,&girder);
+
+   girder->GetHarpingPointLocations(pX2,pX3);
+   girder->GetEndHarpingPointLocations(pX1,pX4);
+}
+
 void CBridgeAgentImp::GetHighestHarpedStrandLocation(const CSegmentKey& segmentKey,Float64* pElevation)
 {
    // determine distance from bottom of girder to highest harped strand at end of girder 
@@ -22357,7 +22375,7 @@ StrandIndexType CBridgeAgentImp::GetMaxNumPermanentStrands(LPCTSTR strGirderName
 {
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName );
-   std::vector<GirderLibraryEntry::PermanentStrandType> permStrands = pGirderEntry->GetPermanentStrands();
+   std::vector<GirderLibraryEntry::StrandDefinitionType> permStrands = pGirderEntry->GetPermanentStrands();
    return permStrands.size()-1;
 }
 

@@ -181,10 +181,12 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
    // resequence page if no debonding
    bool bExtraPage = pSegment->Strands.IsSymmetricDebond() || pSpecEntry->AllowStraightStrandExtensions();
    if (EGD_DEBONDING <= nPage  && !bExtraPage)
+   {
       nPage--;
+   }
 
 
-   CGirderDescDlg dlg(segmentKey);
+   CGirderDescDlg dlg(pBridgeDesc,segmentKey);
    dlg.SetActivePage(nPage);
 
    INT_PTR st = dlg.DoModal();
@@ -203,7 +205,7 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
 
       // copy original girder and then modify the segment that changed
       newGirderData.m_Girder = *pGirder;
-      *newGirderData.m_Girder.GetSegment(segmentKey.segmentIndex) = dlg.GetSegment();
+      *newGirderData.m_Girder.GetSegment(segmentKey.segmentIndex) = *dlg.GetSegment();
 
       newGirderData.m_SlabOffsetType = dlg.m_General.m_SlabOffsetType;
       newGirderData.m_SlabOffset[pgsTypes::metStart] = dlg.m_General.m_SlabOffset[pgsTypes::metStart];

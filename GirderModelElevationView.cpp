@@ -1341,8 +1341,8 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,
          EventIndexType erectSegmentEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segID);
          if ( erectSegmentEventIdx <= eventIdx )
          {
-            Float64 lft_harp, rgt_harp;
-            pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
+            Float64 X1, X2, X3, X4;
+            pStrandGeometry->GetHarpingPointLocations(segmentKey,&X1,&X2,&X3,&X4);
 
             CComPtr<IPoint2d> from_point, to_point;
             from_point.CoCreateInstance(__uuidof(Point2d));
@@ -1448,22 +1448,37 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,
                   Float64 end_x, end_y;
                   end_pos->Location(&end_x,&end_y);
 
-                  from_point->put_X(group_offset + running_segment_length);
+
+                  from_point->put_X(group_offset + running_segment_length + 0.0);
                   from_point->put_Y(start_y);
-                  to_point->put_X(group_offset + running_segment_length + lft_harp);
+                  to_point->put_X(group_offset + running_segment_length + X1);
+                  to_point->put_Y(start_y);
+                  
+                  BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+
+                  from_point->put_X(group_offset + running_segment_length + X1);
+                  from_point->put_Y(start_y);
+                  to_point->put_X(group_offset + running_segment_length + X2);
                   to_point->put_Y(hp1_y);
                   
                   BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
 
-                  from_point->put_X(group_offset + running_segment_length + lft_harp);
+                  from_point->put_X(group_offset + running_segment_length + X2);
                   from_point->put_Y(hp1_y);
-                  to_point->put_X(group_offset + running_segment_length + rgt_harp);
+                  to_point->put_X(group_offset + running_segment_length + X3);
                   to_point->put_Y(hp2_y);
                   
                   BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
 
-                  from_point->put_X(group_offset + running_segment_length + rgt_harp);
+                  from_point->put_X(group_offset + running_segment_length + X3);
                   from_point->put_Y(hp2_y);
+                  to_point->put_X(group_offset + running_segment_length + X4);
+                  to_point->put_Y(end_y);
+
+                  BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+
+                  from_point->put_X(group_offset + running_segment_length + X4);
+                  from_point->put_Y(end_y);
                   to_point->put_X(group_offset + running_segment_length + segment_length);
                   to_point->put_Y(end_y);
 

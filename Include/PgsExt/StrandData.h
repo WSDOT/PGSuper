@@ -31,7 +31,7 @@ class matPsStrand;
 class GirderLibraryEntry;
 
 // Class to store direct-select strand fill input
-// Only used for CStrandData::npsDirectSelection
+// Only used for CStrandData::sdtDirectSelection
 class PGSEXTCLASS CDirectStrandFillInfo
 {
 public:
@@ -119,6 +119,10 @@ public:
 
    // Location of the strand measured from the left end of the girder
    Float64 m_X[4]; // values that are less than zero are fractional distances of the segment length
+   // if m_StrandType is pgsTypes::Harped and this segment is cantilevered over the start/end abutment
+   // of the bridge, m_X[LOCATION_START] and m_X[LOCATION_END] is the distance from the start/end
+   // of the girder to the point where the strands transition to the harp points at m_X[LOCATION_LEFT_HP]
+   // and m_X[LOCATION_RIGHT_HP]. This effectively creates four harp points
 
    // Location of the strand measured from the top or bottom of the girder
    Float64 m_Y[4];
@@ -152,11 +156,11 @@ DESCRIPTION
 class PGSEXTCLASS CStrandData
 {
 public:
-   enum PermanentStrandType { 
-      npsTotal, // input is total number of permanent strands
-      npsStraightHarped, // input is number of harped and number of straight strands
-      npsDirectSelection, // input is a fill array of strand positions in the girder strand grid
-      npsUser // input is user defined rows of straight strands. the strand grid in the girder library is ignored
+   enum StrandDefinitionType { 
+      sdtTotal, // input is total number of permanent strands
+      sdtStraightHarped, // input is number of harped and number of straight strands
+      sdtDirectSelection, // input is a fill array of strand positions in the girder strand grid
+      sdtDirectInput // input is direct input by user. the strand grid in the girder library is ignored
    };
 
 public:
@@ -175,13 +179,13 @@ public:
    //    -When changing from one fill type to another, YOU MUST SET THE NUMBER OR FILL OF STRANDS FIRST
    //     because a type change will reset all other strand data
    //
-   // Fill using CStrandData::npsTotal
+   // Fill using CStrandData::sdtTotal
    void SetTotalPermanentNstrands(StrandIndexType nPermanent,StrandIndexType nStraight, StrandIndexType nHarped);
-   // Fill using CStrandData::npsStraightHarped
+   // Fill using CStrandData::sdtStraightHarped
    void SetHarpedStraightNstrands(StrandIndexType nStraight, StrandIndexType nHarped);
    void SetTemporaryNstrands(StrandIndexType nStrands);
 
-   // Functions to fill selected strands directly (CStrandData::npsDirectSelection)
+   // Functions to fill selected strands directly (CStrandData::sdtDirectSelection)
    // Filling indexes into library fill order
    void SetDirectStrandFillStraight(const CDirectStrandFillCollection& rCollection);
    const CDirectStrandFillCollection* GetDirectStrandFillStraight() const;
@@ -195,11 +199,11 @@ public:
    void SetStrandRows(const CStrandRowCollection& strandRows); // replaces the current collection this collection
    const CStrandRowCollection& GetStrandRows() const;
 
-   // Get number of strands for any fill except CStrandData::npsUser
+   // Get number of strands for any fill except CStrandData::sdtDirectInput
    void SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands);
    StrandIndexType GetStrandCount(pgsTypes::StrandType strandType) const;
 
-   // Strand extension paramaters (not used if using CStrandData::npsUser)
+   // Strand extension paramaters (not used if using CStrandData::sdtDirectInput)
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
    void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<GridIndexType>& extStrands);
@@ -243,8 +247,8 @@ public:
    void SetTemporaryStrandUsage(pgsTypes::TTSUsage ttsUsage);
    pgsTypes::TTSUsage GetTemporaryStrandUsage() const;
 
-   void SetStrandDefinitionType(PermanentStrandType permStrandsType);
-   PermanentStrandType GetStrandDefinitionType() const;
+   void SetStrandDefinitionType(StrandDefinitionType permStrandsType);
+   StrandDefinitionType GetStrandDefinitionType() const;
 
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64* pVersion);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -256,9 +260,9 @@ protected:
    StrandIndexType ProcessDirectFillData(const CDirectStrandFillCollection& rInCollection, CDirectStrandFillCollection& rLocalCollection);
    void ProcessStrandRowData();
 
-   PermanentStrandType m_NumPermStrandsType; // one of PermanentStrandType enum values
+   StrandDefinitionType m_NumPermStrandsType; // one of StrandDefinitionType enum values
    // Note that the arrays with size 3 and 4 below are indexed using pgsTypes::StrandType.
-   // The pgsTypes::Permanent position is used when NumPermStrandsType==npsTotal.
+   // The pgsTypes::Permanent position is used when NumPermStrandsType==sdtTotal.
    // When this is the case, values must be divided proportionally to straight and harped strands into 
    // the pgsTypes::Harped and pgsTypes::Straight strand locations because these are the values
    // used internally by the analysis and engineering agents
@@ -285,11 +289,11 @@ protected:
    bool m_bConvertExtendedStrands;
    friend CProjectAgentImp;
 
-   // Strand fill when direct selection (npsDirectSelection) is used
+   // Strand fill when direct selection (sdtDirectSelection) is used
    CDirectStrandFillCollection m_StraightStrandFill;
    CDirectStrandFillCollection m_HarpedStrandFill;
    CDirectStrandFillCollection m_TemporaryStrandFill;
 
-   // Strand information when user defined strands (npsUser) is used
+   // Strand information when user defined strands (sdtDirectInput) is used
    CStrandRowCollection m_StrandRows;
 };

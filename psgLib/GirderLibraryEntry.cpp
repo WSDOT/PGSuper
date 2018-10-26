@@ -2670,7 +2670,7 @@ void GirderLibraryEntry::ClearAllStrands()
    m_PermanentStrands.clear();
 }
 
-std::vector<GirderLibraryEntry::PermanentStrandType> GirderLibraryEntry::GetPermanentStrands() const
+std::vector<GirderLibraryEntry::StrandDefinitionType> GirderLibraryEntry::GetPermanentStrands() const
 {
    // first need to determine if odd harped strands are possible
    bool allow_odd = false;
@@ -2689,7 +2689,7 @@ std::vector<GirderLibraryEntry::PermanentStrandType> GirderLibraryEntry::GetPerm
 
    GridIndexType nGridPositions = GetPermanentStrandGridSize();
 
-   std::vector<PermanentStrandType> permStrands;
+   std::vector<StrandDefinitionType> permStrands;
    permStrands.reserve(2*nGridPositions);
    permStrands.push_back(ptStraight); // zero is always an option
 

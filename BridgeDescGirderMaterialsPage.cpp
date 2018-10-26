@@ -100,9 +100,9 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    // concrete material
    ExchangeConcreteData(pDX);
 
-   DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, pParent->m_Segment.Material.Concrete.Fci, pDisplayUnits->GetStressUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, pParent->m_pSegment->Material.Concrete.Fci, pDisplayUnits->GetStressUnit() );
    // Validation: 0 < f'ci <= f'c   
-   DDV_UnitValueLimitOrLess( pDX, IDC_FCI, pParent->m_Segment.Material.Concrete.Fci, pParent->m_Segment.Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueLimitOrLess( pDX, IDC_FCI, pParent->m_pSegment->Material.Concrete.Fci, pParent->m_pSegment->Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
 
    // Slab Offset
    DDX_Tag(pDX, IDC_ADIM_START_UNIT, pDisplayUnits->GetComponentDimUnit() );
@@ -163,24 +163,24 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    {
       int value;
       if ( !pDX->m_bSaveAndValidate )
-         value = pParent->m_Segment.Material.Concrete.bBasePropertiesOnInitialValues ? 0 : 1;
+         value = pParent->m_pSegment->Material.Concrete.bBasePropertiesOnInitialValues ? 0 : 1;
       
       DDX_Radio(pDX,IDC_FC1,value);
 
       if ( pDX->m_bSaveAndValidate )
-         pParent->m_Segment.Material.Concrete.bBasePropertiesOnInitialValues = (value == 0 ? true : false);
+         pParent->m_pSegment->Material.Concrete.bBasePropertiesOnInitialValues = (value == 0 ? true : false);
    }
 
-   DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pParent->m_Segment.Material.Concrete.Fc , pDisplayUnits->GetStressUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, IDC_GIRDER_FC,pParent->m_Segment.Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pParent->m_pSegment->Material.Concrete.Fc , pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_GIRDER_FC,pParent->m_pSegment->Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
 
-   DDX_Check_Bool(pDX, IDC_MOD_ECI, pParent->m_Segment.Material.Concrete.bUserEci);
-   DDX_UnitValueAndTag( pDX, IDC_ECI,  IDC_ECI_UNIT,   pParent->m_Segment.Material.Concrete.Eci , pDisplayUnits->GetModEUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, IDC_ECI,pParent->m_Segment.Material.Concrete.Eci, pDisplayUnits->GetModEUnit() );
+   DDX_Check_Bool(pDX, IDC_MOD_ECI, pParent->m_pSegment->Material.Concrete.bUserEci);
+   DDX_UnitValueAndTag( pDX, IDC_ECI,  IDC_ECI_UNIT,   pParent->m_pSegment->Material.Concrete.Eci , pDisplayUnits->GetModEUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_ECI,pParent->m_pSegment->Material.Concrete.Eci, pDisplayUnits->GetModEUnit() );
 
-   DDX_Check_Bool(pDX, IDC_MOD_EC,  pParent->m_Segment.Material.Concrete.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_Segment.Material.Concrete.Ec , pDisplayUnits->GetModEUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, IDC_EC, pParent->m_Segment.Material.Concrete.Ec, pDisplayUnits->GetModEUnit() );
+   DDX_Check_Bool(pDX, IDC_MOD_EC,  pParent->m_pSegment->Material.Concrete.bUserEc);
+   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_pSegment->Material.Concrete.Ec , pDisplayUnits->GetModEUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_EC, pParent->m_pSegment->Material.Concrete.Ec, pDisplayUnits->GetModEUnit() );
 
    if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
    {
@@ -211,23 +211,23 @@ void CGirderDescGeneralPage::OnCopyMaterial()
       if (entry!=NULL)
       {
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-         pParent->m_Segment.Material.Concrete.Type = entry->GetType();
-         pParent->m_Segment.Material.Concrete.Fc = entry->GetFc();
-         pParent->m_Segment.Material.Concrete.WeightDensity = entry->GetWeightDensity();
-         pParent->m_Segment.Material.Concrete.StrengthDensity = entry->GetStrengthDensity();
-         pParent->m_Segment.Material.Concrete.MaxAggregateSize = entry->GetAggregateSize();
-         pParent->m_Segment.Material.Concrete.EcK1 = entry->GetModEK1();
-         pParent->m_Segment.Material.Concrete.EcK2 = entry->GetModEK2();
-         pParent->m_Segment.Material.Concrete.CreepK1 = entry->GetCreepK1();
-         pParent->m_Segment.Material.Concrete.CreepK2 = entry->GetCreepK2();
-         pParent->m_Segment.Material.Concrete.ShrinkageK1 = entry->GetShrinkageK1();
-         pParent->m_Segment.Material.Concrete.ShrinkageK2 = entry->GetShrinkageK2();
+         pParent->m_pSegment->Material.Concrete.Type = entry->GetType();
+         pParent->m_pSegment->Material.Concrete.Fc = entry->GetFc();
+         pParent->m_pSegment->Material.Concrete.WeightDensity = entry->GetWeightDensity();
+         pParent->m_pSegment->Material.Concrete.StrengthDensity = entry->GetStrengthDensity();
+         pParent->m_pSegment->Material.Concrete.MaxAggregateSize = entry->GetAggregateSize();
+         pParent->m_pSegment->Material.Concrete.EcK1 = entry->GetModEK1();
+         pParent->m_pSegment->Material.Concrete.EcK2 = entry->GetModEK2();
+         pParent->m_pSegment->Material.Concrete.CreepK1 = entry->GetCreepK1();
+         pParent->m_pSegment->Material.Concrete.CreepK2 = entry->GetCreepK2();
+         pParent->m_pSegment->Material.Concrete.ShrinkageK1 = entry->GetShrinkageK1();
+         pParent->m_pSegment->Material.Concrete.ShrinkageK2 = entry->GetShrinkageK2();
 
-         pParent->m_Segment.Material.Concrete.bUserEc = entry->UserEc();
-         pParent->m_Segment.Material.Concrete.Ec = entry->GetEc();
+         pParent->m_pSegment->Material.Concrete.bUserEc = entry->UserEc();
+         pParent->m_pSegment->Material.Concrete.Ec = entry->GetEc();
 
-         pParent->m_Segment.Material.Concrete.bHasFct = entry->HasAggSplittingStrength();
-         pParent->m_Segment.Material.Concrete.Fct     = entry->GetAggSplittingStrength();
+         pParent->m_pSegment->Material.Concrete.bHasFct = entry->HasAggSplittingStrength();
+         pParent->m_pSegment->Material.Concrete.Fct     = entry->GetAggSplittingStrength();
 
          CDataExchange dx(this,FALSE);
          ExchangeConcreteData(&dx);
@@ -301,7 +301,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-      SegmentIDType segmentID = pParent->m_Segment.GetID();
+      SegmentIDType segmentID = pParent->m_pSegment->GetID();
       ATLASSERT(segmentID != INVALID_ID);
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -498,11 +498,11 @@ void CGirderDescGeneralPage::UpdateEci()
       matACI209Concrete concrete;
       concrete.UserEc28(true);
       concrete.SetEc28(Ec);
-      concrete.SetA(pParent->m_Segment.Material.Concrete.A);
-      concrete.SetBeta(pParent->m_Segment.Material.Concrete.B);
+      concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
+      concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
       concrete.SetTimeAtCasting(0);
-      concrete.SetFc28(pParent->m_Segment.Material.Concrete.Fc);
-      concrete.SetStrengthDensity(pParent->m_Segment.Material.Concrete.StrengthDensity);
+      concrete.SetFc28(pParent->m_pSegment->Material.Concrete.Fc);
+      concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
       Float64 Eci = concrete.GetEc(m_AgeAtRelease);
 
       CString strEci;
@@ -521,9 +521,9 @@ void CGirderDescGeneralPage::UpdateEci()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      strDensity.Format(_T("%s"),FormatDimension(pParent->m_Segment.Material.Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format(_T("%f"),pParent->m_Segment.Material.Concrete.EcK1);
-      strK2.Format(_T("%f"),pParent->m_Segment.Material.Concrete.EcK2);
+      strDensity.Format(_T("%s"),FormatDimension(pParent->m_pSegment->Material.Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),pParent->m_pSegment->Material.Concrete.EcK1);
+      strK2.Format(_T("%f"),pParent->m_pSegment->Material.Concrete.EcK2);
 
       CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1,strK2);
       m_ctrlEci.SetWindowText(strEci);
@@ -587,7 +587,7 @@ void CGirderDescGeneralPage::UpdateEc()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      Float64 Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_Segment.Material.Concrete.A,pParent->m_Segment.Material.Concrete.B);
+      Float64 Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
 
       CString strEc;
       strEc.Format(_T("%s"),FormatDimension(Ec,pDisplayUnits->GetModEUnit(),false));
@@ -605,9 +605,9 @@ void CGirderDescGeneralPage::UpdateEc()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      strDensity.Format(_T("%s"),FormatDimension(pParent->m_Segment.Material.Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format(_T("%f"),pParent->m_Segment.Material.Concrete.EcK1);
-      strK2.Format(_T("%f"),pParent->m_Segment.Material.Concrete.EcK2);
+      strDensity.Format(_T("%s"),FormatDimension(pParent->m_pSegment->Material.Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),pParent->m_pSegment->Material.Concrete.EcK1);
+      strK2.Format(_T("%f"),pParent->m_pSegment->Material.Concrete.EcK2);
 
       CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
@@ -636,7 +636,7 @@ void CGirderDescGeneralPage::UpdateFc()
          fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-         Float64 fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_Segment.Material.Concrete.A,pParent->m_Segment.Material.Concrete.B);
+         Float64 fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
 
          CString strFc;
          strFc.Format(_T("%s"),FormatDimension(fc,pDisplayUnits->GetStressUnit(),false));
@@ -671,9 +671,9 @@ void CGirderDescGeneralPage::UpdateFci()
          matACI209Concrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
-         concrete.SetA(pParent->m_Segment.Material.Concrete.A);
-         concrete.SetBeta(pParent->m_Segment.Material.Concrete.B);
-         concrete.SetStrengthDensity(pParent->m_Segment.Material.Concrete.StrengthDensity);
+         concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
+         concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
+         concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
          Float64 fci = concrete.GetFc(m_AgeAtRelease);
 
          CString strFci;
@@ -694,28 +694,28 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   dlg.m_General.m_Type        = pParent->m_Segment.Material.Concrete.Type;
-   dlg.m_General.m_Fc          = pParent->m_Segment.Material.Concrete.Fc;
-   dlg.m_General.m_AggSize     = pParent->m_Segment.Material.Concrete.MaxAggregateSize;
-   dlg.m_General.m_bUserEc     = pParent->m_Segment.Material.Concrete.bUserEc;
-   dlg.m_General.m_Ds          = pParent->m_Segment.Material.Concrete.StrengthDensity;
-   dlg.m_General.m_Dw          = pParent->m_Segment.Material.Concrete.WeightDensity;
-   dlg.m_General.m_Ec          = pParent->m_Segment.Material.Concrete.Ec;
+   dlg.m_General.m_Type        = pParent->m_pSegment->Material.Concrete.Type;
+   dlg.m_General.m_Fc          = pParent->m_pSegment->Material.Concrete.Fc;
+   dlg.m_General.m_AggSize     = pParent->m_pSegment->Material.Concrete.MaxAggregateSize;
+   dlg.m_General.m_bUserEc     = pParent->m_pSegment->Material.Concrete.bUserEc;
+   dlg.m_General.m_Ds          = pParent->m_pSegment->Material.Concrete.StrengthDensity;
+   dlg.m_General.m_Dw          = pParent->m_pSegment->Material.Concrete.WeightDensity;
+   dlg.m_General.m_Ec          = pParent->m_pSegment->Material.Concrete.Ec;
 
-   dlg.m_AASHTO.m_EccK1       = pParent->m_Segment.Material.Concrete.EcK1;
-   dlg.m_AASHTO.m_EccK2       = pParent->m_Segment.Material.Concrete.EcK2;
-   dlg.m_AASHTO.m_CreepK1     = pParent->m_Segment.Material.Concrete.CreepK1;
-   dlg.m_AASHTO.m_CreepK2     = pParent->m_Segment.Material.Concrete.CreepK2;
-   dlg.m_AASHTO.m_ShrinkageK1 = pParent->m_Segment.Material.Concrete.ShrinkageK1;
-   dlg.m_AASHTO.m_ShrinkageK2 = pParent->m_Segment.Material.Concrete.ShrinkageK2;
-   dlg.m_AASHTO.m_bHasFct     = pParent->m_Segment.Material.Concrete.bHasFct;
-   dlg.m_AASHTO.m_Fct         = pParent->m_Segment.Material.Concrete.Fct;
+   dlg.m_AASHTO.m_EccK1       = pParent->m_pSegment->Material.Concrete.EcK1;
+   dlg.m_AASHTO.m_EccK2       = pParent->m_pSegment->Material.Concrete.EcK2;
+   dlg.m_AASHTO.m_CreepK1     = pParent->m_pSegment->Material.Concrete.CreepK1;
+   dlg.m_AASHTO.m_CreepK2     = pParent->m_pSegment->Material.Concrete.CreepK2;
+   dlg.m_AASHTO.m_ShrinkageK1 = pParent->m_pSegment->Material.Concrete.ShrinkageK1;
+   dlg.m_AASHTO.m_ShrinkageK2 = pParent->m_pSegment->Material.Concrete.ShrinkageK2;
+   dlg.m_AASHTO.m_bHasFct     = pParent->m_pSegment->Material.Concrete.bHasFct;
+   dlg.m_AASHTO.m_Fct         = pParent->m_pSegment->Material.Concrete.Fct;
 
-   dlg.m_ACI.m_bUserParameters = pParent->m_Segment.Material.Concrete.bACIUserParameters;
-   dlg.m_ACI.m_A               = pParent->m_Segment.Material.Concrete.A;
-   dlg.m_ACI.m_B               = pParent->m_Segment.Material.Concrete.B;
-   dlg.m_ACI.m_CureMethod      = pParent->m_Segment.Material.Concrete.CureMethod;
-   dlg.m_ACI.m_CementType      = pParent->m_Segment.Material.Concrete.CementType;
+   dlg.m_ACI.m_bUserParameters = pParent->m_pSegment->Material.Concrete.bACIUserParameters;
+   dlg.m_ACI.m_A               = pParent->m_pSegment->Material.Concrete.A;
+   dlg.m_ACI.m_B               = pParent->m_pSegment->Material.Concrete.B;
+   dlg.m_ACI.m_CureMethod      = pParent->m_pSegment->Material.Concrete.CureMethod;
+   dlg.m_ACI.m_CementType      = pParent->m_pSegment->Material.Concrete.CementType;
 
 #pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
@@ -723,28 +723,28 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
    if ( dlg.DoModal() == IDOK )
    {
-      pParent->m_Segment.Material.Concrete.Type             = dlg.m_General.m_Type;
-      pParent->m_Segment.Material.Concrete.Fc               = dlg.m_General.m_Fc;
-      pParent->m_Segment.Material.Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
-      pParent->m_Segment.Material.Concrete.bUserEc          = dlg.m_General.m_bUserEc;
-      pParent->m_Segment.Material.Concrete.StrengthDensity  = dlg.m_General.m_Ds;
-      pParent->m_Segment.Material.Concrete.WeightDensity    = dlg.m_General.m_Dw;
-      pParent->m_Segment.Material.Concrete.Ec               = dlg.m_General.m_Ec;
+      pParent->m_pSegment->Material.Concrete.Type             = dlg.m_General.m_Type;
+      pParent->m_pSegment->Material.Concrete.Fc               = dlg.m_General.m_Fc;
+      pParent->m_pSegment->Material.Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
+      pParent->m_pSegment->Material.Concrete.bUserEc          = dlg.m_General.m_bUserEc;
+      pParent->m_pSegment->Material.Concrete.StrengthDensity  = dlg.m_General.m_Ds;
+      pParent->m_pSegment->Material.Concrete.WeightDensity    = dlg.m_General.m_Dw;
+      pParent->m_pSegment->Material.Concrete.Ec               = dlg.m_General.m_Ec;
 
-      pParent->m_Segment.Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
-      pParent->m_Segment.Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
-      pParent->m_Segment.Material.Concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
-      pParent->m_Segment.Material.Concrete.CreepK2          = dlg.m_AASHTO.m_CreepK2;
-      pParent->m_Segment.Material.Concrete.ShrinkageK1      = dlg.m_AASHTO.m_ShrinkageK1;
-      pParent->m_Segment.Material.Concrete.ShrinkageK2      = dlg.m_AASHTO.m_ShrinkageK2;
-      pParent->m_Segment.Material.Concrete.bHasFct          = dlg.m_AASHTO.m_bHasFct;
-      pParent->m_Segment.Material.Concrete.Fct              = dlg.m_AASHTO.m_Fct;
+      pParent->m_pSegment->Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
+      pParent->m_pSegment->Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
+      pParent->m_pSegment->Material.Concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
+      pParent->m_pSegment->Material.Concrete.CreepK2          = dlg.m_AASHTO.m_CreepK2;
+      pParent->m_pSegment->Material.Concrete.ShrinkageK1      = dlg.m_AASHTO.m_ShrinkageK1;
+      pParent->m_pSegment->Material.Concrete.ShrinkageK2      = dlg.m_AASHTO.m_ShrinkageK2;
+      pParent->m_pSegment->Material.Concrete.bHasFct          = dlg.m_AASHTO.m_bHasFct;
+      pParent->m_pSegment->Material.Concrete.Fct              = dlg.m_AASHTO.m_Fct;
 
-      pParent->m_Segment.Material.Concrete.bACIUserParameters = dlg.m_ACI.m_bUserParameters;
-      pParent->m_Segment.Material.Concrete.A                  = dlg.m_ACI.m_A;
-      pParent->m_Segment.Material.Concrete.B                  = dlg.m_ACI.m_B;
-      pParent->m_Segment.Material.Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
-      pParent->m_Segment.Material.Concrete.CementType         = dlg.m_ACI.m_CementType;
+      pParent->m_pSegment->Material.Concrete.bACIUserParameters = dlg.m_ACI.m_bUserParameters;
+      pParent->m_pSegment->Material.Concrete.A                  = dlg.m_ACI.m_A;
+      pParent->m_pSegment->Material.Concrete.B                  = dlg.m_ACI.m_B;
+      pParent->m_pSegment->Material.Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
+      pParent->m_pSegment->Material.Concrete.CementType         = dlg.m_ACI.m_CementType;
 
 #pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
@@ -800,7 +800,7 @@ void CGirderDescGeneralPage::UpdateConcreteControls()
 
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   CString strLabel( ConcreteDescription(pParent->m_Segment.Material.Concrete));
+   CString strLabel( ConcreteDescription(pParent->m_pSegment->Material.Concrete));
    GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( strLabel );
 }
 
@@ -850,10 +850,10 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pParent->m_Segment.Material.Concrete.Type,true).c_str(),
-      _T("Unit Weight"),FormatDimension(pParent->m_Segment.Material.Concrete.StrengthDensity,density),
-      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_Segment.Material.Concrete.WeightDensity,density),
-      _T("Max Aggregate Size"),  FormatDimension(pParent->m_Segment.Material.Concrete.MaxAggregateSize,aggsize)
+      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pParent->m_pSegment->Material.Concrete.Type,true).c_str(),
+      _T("Unit Weight"),FormatDimension(pParent->m_pSegment->Material.Concrete.StrengthDensity,density),
+      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_pSegment->Material.Concrete.WeightDensity,density),
+      _T("Max Aggregate Size"),  FormatDimension(pParent->m_pSegment->Material.Concrete.MaxAggregateSize,aggsize)
       );
 
    //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -866,11 +866,11 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
    //   strTip += strK1;
    //}
 
-   if ( pParent->m_Segment.Material.Concrete.Type != pgsTypes::Normal && pParent->m_Segment.Material.Concrete.bHasFct )
+   if ( pParent->m_pSegment->Material.Concrete.Type != pgsTypes::Normal && pParent->m_pSegment->Material.Concrete.bHasFct )
    {
       CString strLWC;
       strLWC.Format(_T("\r\n%-20s %s"),
-         _T("fct"),FormatDimension(pParent->m_Segment.Material.Concrete.Fct,stress));
+         _T("fct"),FormatDimension(pParent->m_pSegment->Material.Concrete.Fct,stress));
 
       strTip += strLWC;
    }
@@ -1095,7 +1095,7 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    pParent->m_strGirderName = newName;
 
    // reset prestress data
-   pParent->m_Segment.Strands.ResetPrestressData();
+   pParent->m_pSegment->Strands.ResetPrestressData();
 
    // reset stirrups to library
    pParent->m_Shear.m_CurGrdName = newName;

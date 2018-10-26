@@ -1393,7 +1393,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    CTxDOTOptionalDesignGirderData::StrandFillType fill_type =  pOdGirderData->GetStrandFillType();
    if (fill_type == CTxDOTOptionalDesignGirderData::sfStandard)
    {
-      strands.SetStrandDefinitionType(CStrandData::npsTotal);
+      strands.SetStrandDefinitionType(CStrandData::sdtTotal);
 
       StrandIndexType ntot = pOdGirderData->GetStrandCount();
 

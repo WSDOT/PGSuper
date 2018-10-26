@@ -546,7 +546,7 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    oldSegmentData.m_ConstructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(pSegment->GetID());
    oldSegmentData.m_ErectionEventIdx     = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
 
-   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::npsDirectSelection )
+   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectSelection )
    {
       // We can go no further
       ::AfxMessageBox(_T("Programmer Error: EditDirectInputPrestressing - can only be called for Direct Select strand fill"),MB_OK | MB_ICONWARNING);

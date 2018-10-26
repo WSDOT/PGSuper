@@ -52,20 +52,23 @@ IMPLEMENT_DYNAMIC(CGirderSegmentStrandsPage, CPropertyPage)
 CGirderSegmentStrandsPage::CGirderSegmentStrandsPage()
 	: CPropertyPage(CGirderSegmentStrandsPage::IDD)
 {
+   m_pSegment = 0;
 }
 
 CGirderSegmentStrandsPage::~CGirderSegmentStrandsPage()
 {
 }
 
+void CGirderSegmentStrandsPage::Init(CPrecastSegmentData* pSegment)
+{
+   m_pSegment = pSegment;
+}
+
 void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
 {
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
 	CPropertyPage::DoDataExchange(pDX);
 
-   m_Grid.UpdateStrandData(pDX,&(pSegment->Strands));
+   m_Grid.UpdateStrandData(pDX,&(m_pSegment->Strands));
 
 	//{{AFX_DATA_MAP(CGirderDescPrestressPage)
 	//}}AFX_DATA_MAP
@@ -73,9 +76,9 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
    bool bPjackUserInput[3];
    if ( !pDX->m_bSaveAndValidate )
    {
-      bPjackUserInput[pgsTypes::Straight]  = !pSegment->Strands.IsPjackCalculated(pgsTypes::Straight);
-      bPjackUserInput[pgsTypes::Harped]    = !pSegment->Strands.IsPjackCalculated(pgsTypes::Harped);
-      bPjackUserInput[pgsTypes::Temporary] = !pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary);
+      bPjackUserInput[pgsTypes::Straight]  = !m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight);
+      bPjackUserInput[pgsTypes::Harped]    = !m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped);
+      bPjackUserInput[pgsTypes::Temporary] = !m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary);
    }
 
    DDX_Control(pDX,IDC_SPACING, m_Picture);
@@ -86,65 +89,65 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      pSegment->Strands.IsPjackCalculated(pgsTypes::Straight,  !bPjackUserInput[pgsTypes::Straight]);
-      pSegment->Strands.IsPjackCalculated(pgsTypes::Harped,    !bPjackUserInput[pgsTypes::Harped]);
-      pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary, !bPjackUserInput[pgsTypes::Temporary]);
+      m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight,  !bPjackUserInput[pgsTypes::Straight]);
+      m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped,    !bPjackUserInput[pgsTypes::Harped]);
+      m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary, !bPjackUserInput[pgsTypes::Temporary]);
    }
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   if (pDX->m_bSaveAndValidate && pSegment->Strands.IsPjackCalculated(pgsTypes::Harped))
+   if (pDX->m_bSaveAndValidate && m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped))
    {
-      pSegment->Strands.SetPjack(pgsTypes::Harped, GetMaxPjack( pSegment->Strands.GetStrandCount(pgsTypes::Harped) ) );
+      m_pSegment->Strands.SetPjack(pgsTypes::Harped, GetMaxPjack( m_pSegment->Strands.GetStrandCount(pgsTypes::Harped) ) );
    }
    else
    {
-      Float64 Pjack = pSegment->Strands.GetPjack(pgsTypes::Harped);
+      Float64 Pjack = m_pSegment->Strands.GetPjack(pgsTypes::Harped);
       DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
       if ( pDX->m_bSaveAndValidate )
       {
-         pSegment->Strands.SetPjack(pgsTypes::Harped,Pjack);
+         m_pSegment->Strands.SetPjack(pgsTypes::Harped,Pjack);
       }
    }
 
-   if (pDX->m_bSaveAndValidate && pSegment->Strands.IsPjackCalculated(pgsTypes::Straight))
+   if (pDX->m_bSaveAndValidate && m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight))
    {
-      pSegment->Strands.SetPjack(pgsTypes::Straight, GetMaxPjack( pSegment->Strands.GetStrandCount(pgsTypes::Straight)) );
+      m_pSegment->Strands.SetPjack(pgsTypes::Straight, GetMaxPjack( m_pSegment->Strands.GetStrandCount(pgsTypes::Straight)) );
    }
    else
    {
-      Float64 Pjack = pSegment->Strands.GetPjack(pgsTypes::Straight);
+      Float64 Pjack = m_pSegment->Strands.GetPjack(pgsTypes::Straight);
       DDX_UnitValueAndTag( pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
       if ( pDX->m_bSaveAndValidate )
       {
-         pSegment->Strands.SetPjack(pgsTypes::Straight,Pjack);
+         m_pSegment->Strands.SetPjack(pgsTypes::Straight,Pjack);
       }
    }
 
-   if (pDX->m_bSaveAndValidate && pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary))
+   if (pDX->m_bSaveAndValidate && m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary))
    {
-      pSegment->Strands.SetPjack(pgsTypes::Temporary, GetMaxPjack( pSegment->Strands.GetStrandCount(pgsTypes::Temporary) ) );
+      m_pSegment->Strands.SetPjack(pgsTypes::Temporary, GetMaxPjack( m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary) ) );
    }
    else
    {
-      Float64 Pjack = pSegment->Strands.GetPjack(pgsTypes::Temporary);
+      Float64 Pjack = m_pSegment->Strands.GetPjack(pgsTypes::Temporary);
       DDX_UnitValueAndTag( pDX, IDC_TS_JACK_FORCE, IDC_TS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
       if ( pDX->m_bSaveAndValidate )
       {
-         pSegment->Strands.SetPjack(pgsTypes::Temporary,Pjack);
+         m_pSegment->Strands.SetPjack(pgsTypes::Temporary,Pjack);
       }
    }
 
-   Float64 Pjack = pSegment->Strands.GetPjack(pgsTypes::Straight);
-   DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, Pjack,  GetUltPjack( pSegment->Strands.GetStrandCount(pgsTypes::Straight) ), pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
+   Float64 Pjack = m_pSegment->Strands.GetPjack(pgsTypes::Straight);
+   DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, Pjack,  GetUltPjack( m_pSegment->Strands.GetStrandCount(pgsTypes::Straight) ), pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
    
-   Pjack = pSegment->Strands.GetPjack(pgsTypes::Harped);
-   DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, Pjack, GetUltPjack( pSegment->Strands.GetStrandCount(pgsTypes::Harped) ),   pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
+   Pjack = m_pSegment->Strands.GetPjack(pgsTypes::Harped);
+   DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, Pjack, GetUltPjack( m_pSegment->Strands.GetStrandCount(pgsTypes::Harped) ),   pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
    
-   Pjack = pSegment->Strands.GetPjack(pgsTypes::Temporary);
-   DDV_UnitValueLimitOrLess( pDX, IDC_TS_JACK_FORCE, Pjack, GetUltPjack( pSegment->Strands.GetStrandCount(pgsTypes::Temporary) ),   pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
+   Pjack = m_pSegment->Strands.GetPjack(pgsTypes::Temporary);
+   DDV_UnitValueLimitOrLess( pDX, IDC_TS_JACK_FORCE, Pjack, GetUltPjack( m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary) ),   pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
 
 	DDX_CBIndex(pDX, IDC_STRAND_SIZE, m_StrandSizeIdx);
 
@@ -154,9 +157,9 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
       CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
       Int32 key = (Int32)pList->GetItemData( m_StrandSizeIdx );
-      pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,  pPool->GetStrand( key ));
-      pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,    pPool->GetStrand( key ));
-      pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
+      m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,  pPool->GetStrand( key ));
+      m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,    pPool->GetStrand( key ));
+      m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
 
       // Update controls and UI elements
       UpdateStrandControls();
@@ -181,21 +184,18 @@ END_MESSAGE_MAP()
 
 BOOL CGirderSegmentStrandsPage::OnInitDialog() 
 {
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
    m_Grid.SubclassDlgItem(IDC_GRID, this);
-   m_Grid.CustomInit(pSegment);
+   m_Grid.CustomInit(m_pSegment);
 
    m_DrawStrands.SubclassDlgItem(IDC_DRAW_STRANDS,this);
-   m_DrawStrands.CustomInit(pSegment);
+   m_DrawStrands.CustomInit(m_pSegment);
 
    // Fill the strand size combo box.
    UpdateStrandList(IDC_STRAND_SIZE);
 
    // Select the strand size
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 target_key = pPool->GetStrandKey(pSegment->Strands.GetStrandMaterial(pgsTypes::Straight) );
+   Int32 target_key = pPool->GetStrandKey(m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight) );
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
    int cStrands = pList->GetCount();
    for ( int i = 0; i < cStrands; i++ )
@@ -212,7 +212,7 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   Float64 L = pBridge->GetSegmentLength(pParent->m_SegmentKey);
+   Float64 L = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
    CString strSegmentLengthLabel;
    strSegmentLengthLabel.Format(_T("Segment Length: %s"),FormatDimension(L,pDisplayUnits->GetSpanLengthUnit()));
    GetDlgItem(IDC_SEGMENT_LENGTH_LABEL)->SetWindowText(strSegmentLengthLabel);
@@ -244,9 +244,6 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, IPretensionForce, pPrestress );
 
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
    // TRICKY CODE
    // If strand stresses are limited immediate prior to transfer, prestress losses must be computed between jacking and prestress transfer in 
    // order to compute PjackMax. Losses are computed from transfer to final in one shot. The side of effect of this is that a bridge analysis
@@ -265,7 +262,7 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
    Float64 PjackMax;
    try
    {
-      PjackMax = pPrestress->GetPjackMax(pParent->m_SegmentKey,*pSegment->Strands.GetStrandMaterial(pgsTypes::Straight), nStrands);
+      PjackMax = pPrestress->GetPjackMax(m_pSegment->GetSegmentKey(),*m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight), nStrands);
    }
    catch (... )
    {
@@ -281,9 +278,7 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
 
 Float64 CGirderSegmentStrandsPage::GetUltPjack(StrandIndexType nStrands)
 {
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   const matPsStrand& strand = *(pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
+   const matPsStrand& strand = *(m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
 
    // Ultimate strength of strand group
    Float64 ult = strand.GetUltimateStrength();
@@ -309,11 +304,9 @@ void CGirderSegmentStrandsPage::OnUpdateStraightStrandPjEdit()
 
 void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit,UINT nUnit,pgsTypes::StrandType strandType)
 {
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   m_Grid.UpdateStrandData(NULL,&(pSegment->Strands));
+   m_Grid.UpdateStrandData(NULL,&(m_pSegment->Strands));
 
-   StrandIndexType nStrands = pSegment->Strands.GetStrandCount(strandType);
+   StrandIndexType nStrands = m_pSegment->Strands.GetStrandCount(strandType);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -333,7 +326,7 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
    if ( bEnable )
    {
       // Set the edit control value to the last user input force
-      Pjack = pSegment->Strands.GetLastUserPjack(strandType);
+      Pjack = m_pSegment->Strands.GetLastUserPjack(strandType);
    }
    else if ( nStrands != 0 )
    {
@@ -345,7 +338,7 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
       Pjack = _tstof( val_as_text );
       Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       
-      pSegment->Strands.SetLastUserPjack(strandType, Pjack);
+      m_pSegment->Strands.SetLastUserPjack(strandType, Pjack);
       Pjack = GetMaxPjack(nStrands);
    }
 
@@ -448,11 +441,9 @@ void CGirderSegmentStrandsPage::OnStrandTypeChanged()
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
    Int32 key = (Int32)pList->GetItemData( m_StrandSizeIdx );
 
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,  pPool->GetStrand( key ));
-   pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,    pPool->GetStrand( key ));
-   pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
+   m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,  pPool->GetStrand( key ));
+   m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,    pPool->GetStrand( key ));
+   m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
 
    // Now we can update pjack values in dialog
    InitPjackEdits();
@@ -467,11 +458,9 @@ void CGirderSegmentStrandsPage::InitPjackEdits()
 
 void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType)
 {
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   m_Grid.UpdateStrandData(NULL,&(pSegment->Strands));
+   m_Grid.UpdateStrandData(NULL,&(m_pSegment->Strands));
 
-   StrandIndexType nStrands = pSegment->Strands.GetStrandCount(strandType);
+   StrandIndexType nStrands = m_pSegment->Strands.GetStrandCount(strandType);
 
    CButton* chkbox = (CButton*)GetDlgItem(nCalcPjack);
    BOOL bEnable = FALSE; // true is user input model
@@ -494,8 +483,8 @@ void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,U
       CDataExchange dx(this,FALSE);
 
       Float64 Pjack = 0;
-      pSegment->Strands.SetPjack(strandType, GetMaxPjack(nStrands));
-      Pjack = pSegment->Strands.GetPjack(strandType);
+      m_pSegment->Strands.SetPjack(strandType, GetMaxPjack(nStrands));
+      Pjack = m_pSegment->Strands.GetPjack(strandType);
       DDX_UnitValueAndTag( &dx, nPjackEdit, nPjackUnit, Pjack, pDisplayUnits->GetGeneralForceUnit() );
    }
 }
@@ -504,9 +493,7 @@ BOOL CGirderSegmentStrandsPage::OnSetActive()
 {
    // make sure segment geometry is up to date with what ever has been changed during
    // this editing session
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   m_DrawStrands.CustomInit(pSegment);
+   m_DrawStrands.CustomInit(m_pSegment);
 
    OnChange();
 
@@ -537,18 +524,16 @@ void CGirderSegmentStrandsPage::EnableRemoveButton(BOOL bEnable)
 
 void CGirderSegmentStrandsPage::OnChange()
 {
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   m_Grid.UpdateStrandData(NULL,&(pSegment->Strands));
+   m_Grid.UpdateStrandData(NULL,&(m_pSegment->Strands));
 
    CString strLabel;
-   strLabel.Format(_T("Straight Strands (%d)"),pSegment->Strands.GetStrandCount(pgsTypes::Straight));
+   strLabel.Format(_T("Straight Strands (%d)"),m_pSegment->Strands.GetStrandCount(pgsTypes::Straight));
    GetDlgItem(IDC_SS_LABEL)->SetWindowText(strLabel);
 
-   strLabel.Format(_T("Harped Strands (%d)"),pSegment->Strands.GetStrandCount(pgsTypes::Harped));
+   strLabel.Format(_T("Harped Strands (%d)"),m_pSegment->Strands.GetStrandCount(pgsTypes::Harped));
    GetDlgItem(IDC_HS_LABEL)->SetWindowText(strLabel);
 
-   strLabel.Format(_T("Temporary Strands (%d)"),pSegment->Strands.GetStrandCount(pgsTypes::Temporary));
+   strLabel.Format(_T("Temporary Strands (%d)"),m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary));
    GetDlgItem(IDC_TS_LABEL)->SetWindowText(strLabel);
 
    UpdateStrandControls();

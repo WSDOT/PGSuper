@@ -173,19 +173,19 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
       }
 
-      pParent->m_Segment.LongitudinalRebarData = rebarData;
+      pParent->m_pSegment->LongitudinalRebarData = rebarData;
    }
    else
    {
-      int idx = GetStirrupMaterialIndex(pParent->m_Segment.LongitudinalRebarData.BarType,
-                                        pParent->m_Segment.LongitudinalRebarData.BarGrade);
+      int idx = GetStirrupMaterialIndex(pParent->m_pSegment->LongitudinalRebarData.BarType,
+                                        pParent->m_pSegment->LongitudinalRebarData.BarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
 #pragma Reminder("UPDATE: rebar grid should be doing the unit conversions")
       GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
       CLongitudinalRebarData rebardata;
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(pParent->m_Segment.LongitudinalRebarData.RebarRows.begin());
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iterEnd(pParent->m_Segment.LongitudinalRebarData.RebarRows.end());
+      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(pParent->m_pSegment->LongitudinalRebarData.RebarRows.begin());
+      std::vector<CLongitudinalRebarData::RebarRow>::iterator iterEnd(pParent->m_pSegment->LongitudinalRebarData.RebarRows.end());
       for ( ; iter != iterEnd; iter++ )
       {
          CLongitudinalRebarData::RebarRow row = *iter;
@@ -225,7 +225,7 @@ void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults()
 
    // update data member
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_Segment.LongitudinalRebarData.CopyGirderEntryData(*pGirderEntry);
+   pParent->m_pSegment->LongitudinalRebarData.CopyGirderEntryData(*pGirderEntry);
 }
 
 void CGirderDescLongitudinalRebar::OnRestoreDefaults() 

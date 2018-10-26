@@ -79,7 +79,9 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    // if there is only one span or if this is simple span analysis, get the heck outta here
    pgsTypes::AnalysisType analysis_type = pSpec->GetAnalysisType();
    if ( nSpans == 1 || analysis_type == pgsTypes::Simple )
+   {
       return;
+   }
 
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDisplayUnits->GetStressUnit(), false );
 
@@ -108,9 +110,13 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    {
       ColumnIndexType col = 0;
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
+      {
          (*pTable)(row,col++) << _T("Abut ") << LABEL_PIER(pierIdx);
+      }
       else
+      {
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
+      }
 
       if ( pBridge->IsInteriorPier(pierIdx) )
       {
@@ -130,11 +136,17 @@ void CContinuityCheck::Build(rptChapter* pChapter,
          pBridge->IsIntegralAtPier(pierIdx,&bIntegralLeft,&bIntegralRight);
 
          if ( bContinuousLeft || bContinuousRight )
+         {
             (*pTable)(row,col++) << _T("Continuous");
+         }
          else if ( bIntegralLeft || bIntegralRight )
+         {
             (*pTable)(row,col++) << _T("Integral");
+         }
          else
+         {
             (*pTable)(row,col++) << _T("Hinged");
+         }
 
          fBottom = IsZero(fBottom) ? 0 : fBottom;
          (*pTable)(row,col++) << (fBottom < 0 ? _T("Yes") : _T("No"));

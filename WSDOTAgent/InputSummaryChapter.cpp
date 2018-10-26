@@ -109,7 +109,7 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
 
-      if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::npsDirectSelection)
+      if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
       {
          *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes Direct Strand Fill. WSDOT Standard Girders utilize sequentially filled strands.")) << color(Black) << rptNewLine;
       }

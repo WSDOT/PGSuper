@@ -607,6 +607,7 @@ public:
    virtual Float64 GetHarpedHpOffsetIncrement(LPCTSTR strGirderName);
 
    virtual void GetHarpingPointLocations(const CSegmentKey& segmentKey,Float64* lhp,Float64* rhp);
+   virtual void GetHarpingPointLocations(const CSegmentKey& segmentKey,Float64* pX1,Float64* pX2,Float64* pX3,Float64* pX4);
    virtual void GetHighestHarpedStrandLocation(const CSegmentKey& segmentKey,Float64* pElevation);
    virtual IndexType GetNumHarpPoints(const CSegmentKey& segmentKey);
 

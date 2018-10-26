@@ -35,6 +35,7 @@
 #include "DebondDlg.h"
 #include "BridgeDescGirderMaterialsPage.h"
 
+#include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\PrecastSegmentData.h>
 #include <IFace\ExtendUI.h>
 
@@ -96,14 +97,17 @@ class CGirderDescDlg : public CPropertySheet, public IEditGirderData
 
 // Construction
 public:
-	CGirderDescDlg(const CSegmentKey& segmentKey,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CGirderDescDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
    // IEditGirderData
    const CSegmentKey& GetSegmentKey() { return m_SegmentKey; }
 
 // Attributes
 public:
-   CSegmentKey m_SegmentKey;
+   CSplicedGirderData m_Girder; // copy of the girder we are editing (contains the segment we are editing)
+   CPrecastSegmentData* m_pSegment;
+   CSegmentKey m_SegmentKey; // key to the segment we are editing
+   SegmentIDType m_SegmentID; // ID of the segment we are editing
 
    CGirderDescGeneralPage       m_General;
    CGirderDescPrestressPage     m_Prestress;
@@ -114,7 +118,7 @@ public:
 
    std::_tstring m_strGirderName;
    void SetSegment(const CPrecastSegmentData& segment);
-   const CPrecastSegmentData& GetSegment();
+   const CPrecastSegmentData* GetSegment();
 
    void SetConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor);
    pgsTypes::ConditionFactorType GetConditionFactorType();
@@ -149,7 +153,7 @@ public:
 
 
 protected:
-   void Init();
+   void Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey);
    void CreateExtensionPages();
    void DestroyExtensionPages();
 
@@ -181,7 +185,6 @@ protected:
 	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
 
-   CPrecastSegmentData m_Segment;
    pgsTypes::ConditionFactorType m_ConditionFactorType;
    Float64 m_ConditionFactor;
 

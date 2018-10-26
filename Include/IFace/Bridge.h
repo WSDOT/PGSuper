@@ -947,6 +947,7 @@ interface IStrandGeometry : IUnknown
    virtual Float64 GetHarpedHpOffsetIncrement(const CSegmentKey& segmentKey)=0;
 
    virtual void GetHarpingPointLocations(const CSegmentKey& segmentKey,Float64* lhp,Float64* rhp) = 0;
+   virtual void GetHarpingPointLocations(const CSegmentKey& segmentKey,Float64* pX1,Float64* pX2,Float64* pX3,Float64* pX4) = 0;
    virtual void GetHighestHarpedStrandLocation(const CSegmentKey& segmentKey,Float64* pElevation) = 0;
    virtual Float64 GetHarpedEndOffsetIncrement(LPCTSTR strGirderName) = 0;
    virtual Float64 GetHarpedHpOffsetIncrement(LPCTSTR strGirderName) = 0;

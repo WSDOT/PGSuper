@@ -153,7 +153,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       bCanReportPrestressInformation = false;
    }
 
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::npsDirectSelection)
+   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
    {
       bCanReportPrestressInformation = false;
    }

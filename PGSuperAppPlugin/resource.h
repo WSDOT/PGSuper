@@ -1472,6 +1472,7 @@
 #define IDC_AHEAD_DIAPHRAGM_LABEL       1795
 #define IDC_AHEAD_DIAPHRAGM_HEIGHT_LABEL 1796
 #define IDC_AHEAD_DIAPHRAGM_WIDTH_LABEL 1797
+#define IDC_HP_NOTE                     1798
 #define IDC_STRENGTH_I_SH               1843
 #define IDC_STRENGTH_I_PS               1844
 #define IDC_SERVICE_I_CR                1859
@@ -1649,7 +1650,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        364
 #define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1798
+#define _APS_NEXT_CONTROL_VALUE         1799
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

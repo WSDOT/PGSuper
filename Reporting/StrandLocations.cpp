@@ -81,7 +81,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   if (pStrands->GetStrandDefinitionType() == CStrandData::npsDirectSelection)
+   if (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
    {
       rptParagraph* p = new rptParagraph;
       *pChapter << p;

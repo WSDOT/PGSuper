@@ -68,7 +68,7 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderDescDlg)) )
    {
       CGirderDescDlg* pParent = (CGirderDescDlg*)pWnd;
-      pSegment = &pParent->m_Segment;
+      pSegment = pParent->m_pSegment;
       segmentKey = pParent->m_SegmentKey;
    }
    else if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderSegmentDlg)) )

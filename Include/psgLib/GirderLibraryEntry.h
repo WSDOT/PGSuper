@@ -399,8 +399,8 @@ public:
    void ClearAllStrands();
 
    //------------------------------------------------------------------------
-   enum PermanentStrandType {ptNone, ptHarped, ptStraight};
-   std::vector<PermanentStrandType> GetPermanentStrands() const;
+   enum StrandDefinitionType {ptNone, ptHarped, ptStraight};
+   std::vector<StrandDefinitionType> GetPermanentStrands() const;
 
    //------------------------------------------------------------------------
    // Get number of Coordinates for Straight strands 

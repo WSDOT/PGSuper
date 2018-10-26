@@ -967,7 +967,7 @@ BEGIN
     COMBOBOX        IDC_STRAND_SIZE,29,260,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Temporary",IDC_TEMP_STRAND_SIZE_LABEL,198,249,97,8
     COMBOBOX        IDC_TEMP_STRAND_SIZE,198,260,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Note: Hold the Ctrl key while selecting to convert to another location basis",IDC_STATIC,64,215,285,8
+    LTEXT           "Note: Hold the Ctrl key while selecting to convert to another location basis",IDC_HP_NOTE,64,215,285,8
     PUSHBUTTON      "Select Strands...",IDC_EDIT_STRAND_FILL,172,35,70,14
 END
 
@@ -3302,8 +3302,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,13
- PRODUCTVERSION 3,0,0,13
+ FILEVERSION 3,0,0,14
+ PRODUCTVERSION 3,0,0,14
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3320,12 +3320,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.13"
+            VALUE "FileVersion", "3.0.0.14"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.13"
+            VALUE "ProductVersion", "3.0.0.14"
         END
     END
     BLOCK "VarFileInfo"

@@ -208,7 +208,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	/* 4. STRAND PATTERN */
 	TCHAR  strandPat[5+1]; 
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   if (pStrands->GetStrandDefinitionType() != CStrandData::npsTotal)
+   if (pStrands->GetStrandDefinitionType() != CStrandData::sdtTotal)
    {
 	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T("*"));
    }
@@ -292,7 +292,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    /* 17a - Non-Standard Design Data */
    std::_tstring ns_strand_str;
-   bool do_write_ns_data = isHarpedDesign && pStrands->GetStrandDefinitionType() != CStrandData::npsTotal && !isExtendedVersion;
+   bool do_write_ns_data = isHarpedDesign && pStrands->GetStrandDefinitionType() != CStrandData::sdtTotal && !isExtendedVersion;
    if (do_write_ns_data)
    {
       ns_strand_str = MakeNonStandardStrandString(pBroker,pmid[0]);

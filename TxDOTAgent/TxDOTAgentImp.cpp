@@ -612,7 +612,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
 
    if (fills_grid)
    {
-      // CStrandData::npsTotal
+      // CStrandData::sdtTotal
       ATLASSERT(num_permanent==ns+nh);
 
 
@@ -623,7 +623,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
    }
    else
    {
-      // CStrandData::npsStraightHarped;
+      // CStrandData::sdtStraightHarped;
       strands.SetHarpedStraightNstrands(pArtifact->GetNumStraightStrands(), pArtifact->GetNumHarpedStrands());
    }
 

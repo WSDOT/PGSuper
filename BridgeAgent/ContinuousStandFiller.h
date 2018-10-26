@@ -174,7 +174,7 @@ private:
 
    // cache of permanent strand orders
    bool m_NeedToCompute;
-   std::vector<GirderLibraryEntry::PermanentStrandType> m_PermStrands;
+   std::vector<GirderLibraryEntry::StrandDefinitionType> m_PermStrands;
 
    void ValidatePermanent();
    HRESULT GetNextNumberOfStrands(IStrandGridFiller* pGridFiller, StrandIndexType currNum,  StrandIndexType* nextStrands);

@@ -1185,9 +1185,9 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
 bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, StrandIndexType nh, IStrandGeometry* pStrandGeom)
 {
    // compute adjustment distance
-   Float64 lhp, rhp;
-   pStrandGeom->GetHarpingPointLocations(m_SegmentKey, &lhp, &rhp);
-   Float64 adj = lhp * (1/slope - 1/sl_reqd);
+   Float64 X1, X2, X3, X4;
+   pStrandGeom->GetHarpingPointLocations(m_SegmentKey, &X1, &X2, &X3, &X4);
+   Float64 adj = (X2-X1) * (1/slope - 1/sl_reqd);
 
    LOG(_T("Vertical adjustment required to acheive slope = ")<< ::ConvertFromSysUnits(adj,unitMeasure::Inch) << _T(" in"));
 
@@ -1609,7 +1609,6 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
 ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc)
 {
    LOG(_T("Entering ComputeRequiredConcreteStrength"));
-   GET_IFACE(IAllowableConcreteStress,pAllowStress);
    Float64 fc_reqd;
 
    GET_IFACE(IIntervals,pIntervals);
@@ -1620,12 +1619,14 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
    if ( stressType == pgsTypes::Compression )
    {
+      GET_IFACE(IAllowableConcreteStress,pAllowStress);
       Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls);
       fc_reqd = fControl/c;
       LOG(c << _T("F demand (compression) = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << ::ConvertFromSysUnits(fc_reqd,unitMeasure::KSI) << _T(" KSI"));
    }
    else
    {
+      GET_IFACE(IAllowableConcreteStress,pAllowStress);
       fc_reqd = -1;
       if ( 0 < fControl )
       {

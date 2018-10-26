@@ -319,8 +319,8 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    const CStrandRowCollection& strandRows = m_pSegment->Strands.GetStrandRows();
    CStrandRowCollection::const_iterator iter(strandRows.begin());
@@ -425,19 +425,32 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
          pDC->Ellipse(&rect);
 
          // Draw in segment profile
-         centerMapper.WPtoDP(Z[LOCATION_START],Y[LOCATION_START],&dx,&dy);
+         Float64 z = 0.0;
+         z = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(),z);
+         z = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(m_pSegment->GetSegmentKey(),z);
+
+         centerMapper.WPtoDP(z,Y[LOCATION_START],&dx,&dy);
          pDC->MoveTo(dx,dy);
 
          if ( strandRow.m_StrandType == pgsTypes::Harped )
          {
+            centerMapper.WPtoDP(Z[LOCATION_START],Y[LOCATION_START],&dx,&dy);
+            pDC->LineTo(dx,dy);
+
             centerMapper.WPtoDP(Z[LOCATION_LEFT_HP],Y[LOCATION_LEFT_HP],&dx,&dy);
             pDC->LineTo(dx,dy);
 
             centerMapper.WPtoDP(Z[LOCATION_RIGHT_HP],Y[LOCATION_RIGHT_HP],&dx,&dy);
             pDC->LineTo(dx,dy);
+
+            centerMapper.WPtoDP(Z[LOCATION_END],Y[LOCATION_END],&dx,&dy);
+            pDC->LineTo(dx,dy);
          }
 
-         centerMapper.WPtoDP(Z[LOCATION_END],Y[LOCATION_END],&dx,&dy);
+         z = m_SegmentLength;
+         z = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(),z);
+         z = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(m_pSegment->GetSegmentKey(),z);
+         centerMapper.WPtoDP(z,Y[LOCATION_END],&dx,&dy);
          pDC->LineTo(dx,dy);
       }
    }

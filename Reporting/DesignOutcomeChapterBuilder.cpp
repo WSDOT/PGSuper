@@ -308,7 +308,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       *pParagraph << _T("Flexure Design:");
 
       // Make note if original strands were filled using direct input
-      if (pStrands->GetStrandDefinitionType() == CStrandData::npsDirectSelection)
+      if (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
       {
          pParagraph = new rptParagraph();
          *pChapter << pParagraph;

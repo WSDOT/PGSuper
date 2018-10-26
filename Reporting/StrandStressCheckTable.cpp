@@ -104,7 +104,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
       std::vector<pgsTypes::StrandType> strandTypes;
-      if ( pStrands->GetStrandDefinitionType() == CStrandData::npsTotal )
+      if ( pStrands->GetStrandDefinitionType() == CStrandData::sdtTotal )
       {
          strandTypes.push_back(pgsTypes::Permanent);
       }

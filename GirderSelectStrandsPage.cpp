@@ -1266,10 +1266,6 @@ void CGirderSelectStrandsPage::UpdatePjackEdit( UINT nCheckBox  )
 
 void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT nCheckBox  )
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    UINT nEdit, nUnit;
    switch( nCheckBox )
    {
@@ -1307,11 +1303,14 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    CWnd* pUnitWnd = GetDlgItem( nUnit );
    pUnitWnd->EnableWindow( bEnableUserInput );
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
    Float64 Pjack = 0;
    if ( !bEnableUserInput && nStrands != 0 )
    {
       // Compute pjack and fill in value
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
       CString val_as_text;

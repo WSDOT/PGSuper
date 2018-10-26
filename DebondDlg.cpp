@@ -66,7 +66,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
    //{{AFX_DATA_MAP(CGirderDescDebondPage)
 	//}}AFX_DATA_MAP
 
-   bool bSymmetricDebond = pParent->m_Segment.Strands.IsSymmetricDebond();
+   bool bSymmetricDebond = pParent->m_pSegment->Strands.IsSymmetricDebond();
 	DDX_Check_Bool(pDX, IDC_SYMMETRIC_DEBOND, bSymmetricDebond );
 
    CComPtr<IBroker> pBroker;
@@ -74,14 +74,14 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      pParent->m_Segment.Strands.IsSymmetricDebond(bSymmetricDebond);
+      pParent->m_pSegment->Strands.IsSymmetricDebond(bSymmetricDebond);
 
       GET_IFACE2(pBroker, IBridge,pBridge);
       Float64 gdr_length2 = pBridge->GetSegmentLength(pParent->m_SegmentKey)/2.0;
 
-      m_Grid.GetData(pParent->m_Segment);
+      m_Grid.GetData(*(pParent->m_pSegment));
 
-      std::vector<CDebondData>& vDebond = pParent->m_Segment.Strands.GetDebonding(pgsTypes::Straight);
+      std::vector<CDebondData>& vDebond = pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
       std::vector<CDebondData>::iterator iter(vDebond.begin());
       std::vector<CDebondData>::iterator end(vDebond.end());
       for ( ; iter != end; iter++ )
@@ -95,7 +95,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
          }
 
          if (debond_info.Length[pgsTypes::metStart] <= 0.0 || 
-            (!pParent->m_Segment.Strands.IsSymmetricDebond() && debond_info.Length[pgsTypes::metEnd] <= 0.0) )
+            (!pParent->m_pSegment->Strands.IsSymmetricDebond() && debond_info.Length[pgsTypes::metEnd] <= 0.0) )
          {
             HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
 	         AfxMessageBox( _T("Debond lengths must be greater than zero."), MB_ICONEXCLAMATION);
@@ -124,7 +124,7 @@ BOOL CGirderDescDebondPage::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_DEBOND_GRID, this);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   m_Grid.CustomInit(pParent->m_Segment.Strands.IsSymmetricDebond() ? TRUE : FALSE);
+   m_Grid.CustomInit(pParent->m_pSegment->Strands.IsSymmetricDebond() ? TRUE : FALSE);
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -137,7 +137,7 @@ BOOL CGirderDescDebondPage::OnSetActive()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   bool bSymmetricDebond = pParent->m_Segment.Strands.IsSymmetricDebond();
+   bool bSymmetricDebond = pParent->m_pSegment->Strands.IsSymmetricDebond();
    bool bCanDebond = pStrandGeometry->CanDebondStrands(pParent->m_strGirderName.c_str(),pgsTypes::Straight);
    m_Grid.CanDebond(bCanDebond,bSymmetricDebond);
    GetDlgItem(IDC_SYMMETRIC_DEBOND)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
@@ -161,21 +161,21 @@ BOOL CGirderDescDebondPage::OnSetActive()
 
    StrandIndexType nStrands = pParent->GetStraightStrandCount();
    ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-   ReconcileDebonding(strtvec, pParent->m_Segment.Strands.GetDebonding(pgsTypes::Straight)); 
+   ReconcileDebonding(strtvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight)); 
 
    for ( int i = 0; i < 2; i++ )
    {
-      std::vector<GridIndexType> extStrands = pParent->m_Segment.Strands.GetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i);
+      std::vector<GridIndexType> extStrands = pParent->m_pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i);
       bool bChanged = ReconcileExtendedStrands(strtvec, extStrands);
 
       if ( bChanged )
       {
-         pParent->m_Segment.Strands.SetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i,extStrands);
+         pParent->m_pSegment->Strands.SetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i,extStrands);
       }
    }
 
    // fill up the grid
-   m_Grid.FillGrid(pParent->m_Segment);
+   m_Grid.FillGrid(*(pParent->m_pSegment));
 
    BOOL enab = nStrands>0 ? TRUE:FALSE;
    GetDlgItem(IDC_SYMMETRIC_DEBOND)->EnableWindow(enab);
@@ -197,7 +197,7 @@ BOOL CGirderDescDebondPage::OnKillActive()
 const std::vector<CDebondData>& CGirderDescDebondPage::GetDebondInfo() const
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   return pParent->m_Segment.Strands.GetDebonding(pgsTypes::Straight);
+   return pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
 }
 
 
@@ -484,7 +484,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
 
-   CPrecastSegmentData segment = pParent->m_Segment;
+   CPrecastSegmentData segment = *(pParent->m_pSegment);
    m_Grid.GetData(segment);
 
    std::vector<CDebondData>& vDebond(segment.Strands.GetDebonding(pgsTypes::Straight));

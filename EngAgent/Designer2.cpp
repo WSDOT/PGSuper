@@ -1500,7 +1500,7 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    std::vector<pgsTypes::StrandType> strandTypes;
-   if ( pStrands->GetStrandDefinitionType() == CStrandData::npsTotal )
+   if ( pStrands->GetStrandDefinitionType() == CStrandData::sdtTotal )
    {
       strandTypes.push_back(pgsTypes::Permanent);
    }

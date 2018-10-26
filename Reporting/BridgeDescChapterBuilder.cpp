@@ -1816,19 +1816,19 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             }
 
             CString strFillType;
-            if (pStrands->GetStrandDefinitionType() == CStrandData::npsTotal)
+            if (pStrands->GetStrandDefinitionType() == CStrandData::sdtTotal)
             {
                strFillType = "Sequence of Permanent Strands";
             }
-            else if (pStrands->GetStrandDefinitionType() == CStrandData::npsStraightHarped)
+            else if (pStrands->GetStrandDefinitionType() == CStrandData::sdtStraightHarped)
             {
                strFillType = "Sequence of Straight/Harped Strands";
             }
-            else if (pStrands->GetStrandDefinitionType() == CStrandData::npsDirectSelection)
+            else if (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
             {
                strFillType = "Non-Sequential, Direct Fill";
             }
-            else if (pStrands->GetStrandDefinitionType() == CStrandData::npsUser)
+            else if (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectInput)
             {
                strFillType = "User Defined Strands";
             }

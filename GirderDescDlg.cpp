@@ -46,18 +46,14 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CGirderDescDlg, CPropertySheet)
 
-CGirderDescDlg::CGirderDescDlg(const CSegmentKey& segmentKey,CWnd* pParentWnd, UINT iSelectPage)
+CGirderDescDlg::CGirderDescDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
-   m_SegmentKey = segmentKey;
-
-   ATLASSERT(m_SegmentKey.segmentIndex == 0); // this is a PGSuper dialog
-
    CString strTitle;
    strTitle.Format(_T("Girder Details for Span %d, Girder %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
    SetTitle(strTitle);
 
-   Init();
+   Init(pBridgeDesc,segmentKey);
 }
 
 CGirderDescDlg::~CGirderDescDlg()
@@ -76,9 +72,13 @@ INT_PTR CGirderDescDlg::DoModal()
    return result;
 }
 
-void CGirderDescDlg::Init()
+void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey)
 {
-   m_bApplyToAll = false;
+    m_SegmentKey = segmentKey;
+
+   ATLASSERT(m_SegmentKey.segmentIndex == 0); // this is a PGSuper dialog
+
+  m_bApplyToAll = false;
 
    m_psh.dwFlags |= PSH_HASHELP | PSH_NOAPPLYNOW;
 
@@ -95,11 +95,26 @@ void CGirderDescDlg::Init()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey,pgsTypes::Straight) );
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+   m_Girder = *pGirder;
+   m_pSegment = m_Girder.GetSegment(segmentKey.segmentIndex);
+   m_SegmentKey = segmentKey;
+   m_SegmentID = pSegment->GetID();
+
+   if( m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectInput )
+   {
+      AddAdditionalPropertyPages( false, false );
+   }
+   else
+   {
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      GET_IFACE2(pBroker,ISpecification,pSpec);
+      GET_IFACE2(pBroker,ILibrary,pLib);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey,pgsTypes::Straight) );
+   }
 
    CreateExtensionPages();
 }
@@ -139,9 +154,13 @@ void CGirderDescDlg::DestroyExtensionPages()
 txnTransaction* CGirderDescDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
+   {
       return m_Macro.CreateClone();
+   }
    else
+   {
       return NULL;
+   }
 }
 
 void CGirderDescDlg::NotifyExtensionPages()
@@ -187,7 +206,9 @@ LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
 	}
 	else
+   {
 		return 0;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -204,7 +225,8 @@ void CGirderDescDlg::DoUpdate()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(m_SegmentKey.girderIndex);
-   m_Segment = *pGirder->GetSegment(m_SegmentKey.segmentIndex);
+   m_Girder = *pGirder;
+   m_pSegment = m_Girder.GetSegment(m_SegmentKey.segmentIndex);
    m_strGirderName = pGroup->GetGirderName(m_SegmentKey.girderIndex);
 
    m_ConditionFactorType = pGirder->GetConditionFactorType();
@@ -218,7 +240,7 @@ void CGirderDescDlg::DoUpdate()
 
    // shear page
    m_Shear.m_CurGrdName = pGirder->GetGirderName();
-   m_Shear.m_ShearData  = m_Segment.ShearData;
+   m_Shear.m_ShearData  = m_pSegment->ShearData;
 
    // longitudinal rebar page
    m_LongRebar.m_CurGrdName = m_Shear.m_CurGrdName;
@@ -300,24 +322,24 @@ void CGirderDescDlg::SetDebondTabName()
 
 StrandIndexType CGirderDescDlg::GetStraightStrandCount()
 {
-   return m_Segment.Strands.GetStrandCount(pgsTypes::Straight);
+   return m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
 }
 
 StrandIndexType CGirderDescDlg::GetHarpedStrandCount()
 {
-   return m_Segment.Strands.GetStrandCount(pgsTypes::Harped);
+   return m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
 }
 
 void CGirderDescDlg::SetSegment(const CPrecastSegmentData& segment)
 {
-   m_Segment = segment;
-   m_Shear.m_ShearData = m_Segment.ShearData;
+   *m_pSegment = segment;
+   m_Shear.m_ShearData = m_pSegment->ShearData;
 }
 
-const CPrecastSegmentData& CGirderDescDlg::GetSegment()
+const CPrecastSegmentData* CGirderDescDlg::GetSegment()
 {
-   m_Segment.ShearData = m_Shear.m_ShearData;
-   return m_Segment;
+   m_pSegment->ShearData = m_Shear.m_ShearData;
+   return m_pSegment;
 }
 
 void CGirderDescDlg::SetConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor)
@@ -342,21 +364,21 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-   if (m_Segment.Strands.GetStrandDefinitionType() == CStrandData::npsDirectSelection)
+   if (m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
    {
       // first get in girderdata format
       const CDirectStrandFillCollection* pDirectFillData(NULL);
       if (type==pgsTypes::Straight)
       {
-         pDirectFillData = m_Segment.Strands.GetDirectStrandFillStraight();
+         pDirectFillData = m_pSegment->Strands.GetDirectStrandFillStraight();
       }
       else if (type==pgsTypes::Harped)
       {
-         pDirectFillData = m_Segment.Strands.GetDirectStrandFillHarped();
+         pDirectFillData = m_pSegment->Strands.GetDirectStrandFillHarped();
       }
       if (type==pgsTypes::Temporary)
       {
-         pDirectFillData = m_Segment.Strands.GetDirectStrandFillTemporary();
+         pDirectFillData = m_pSegment->Strands.GetDirectStrandFillTemporary();
       }
 
       // Convert girderdata to config
@@ -387,7 +409,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    else
    {
       // Continuous fill
-      StrandIndexType Ns = m_Segment.Strands.GetStrandCount(type);
+      StrandIndexType Ns = m_pSegment->Strands.GetStrandCount(type);
 
       return pStrandGeometry->ComputeStrandFill(m_SegmentKey, type, Ns);
    }
@@ -426,4 +448,11 @@ void CGirderDescDlg::OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebo
 
    AddAdditionalPropertyPages(bAllowExtendedStrands,bIsDebonding);
    SetDebondTabName();
+
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator iter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator end(m_ExtensionPages.end());
+   for ( ; iter != end; iter++ )
+   {
+      AddPage(iter->second);
+   }
 }
