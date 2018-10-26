@@ -29,6 +29,7 @@
 #include <PgsExt\MomentLoadData.h>
 
 #define EBD_ROADWAY        0
+#define EBD_PROFILE        1
 
 #define EBD_GENERAL        0
 #define EBD_FRAMING        1

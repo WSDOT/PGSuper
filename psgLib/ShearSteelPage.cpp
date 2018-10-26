@@ -25,7 +25,6 @@
 #include "stdafx.h"
 #include <PsgLib\ShearData.h>
 #include <PsgLib\ShearSteelPage.h>
-#include <PsgLib\RebarUIUtils.h>
 #include <psglib\LibraryEditorDoc.h>
 
 #include <IFace\Project.h>
@@ -75,6 +74,8 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CShearSteelPage)
 	//}}AFX_DATA_MAP
+
+   DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
 
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -147,20 +148,10 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
    // Primary Grid
 	DDV_GXGridWnd(pDX, m_pGrid.get());
 
+   DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
+
    if (pDX->m_bSaveAndValidate)
    {
-      int idx;
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      if ( idx == CB_ERR )
-      {
-         m_ShearData.ShearBarType = matRebar::A615;
-         m_ShearData.ShearBarGrade = matRebar::Grade60;
-      }
-      else
-      {
-         GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
-      }
-
       // zone info from grid
       m_ShearData.ShearZones.clear();
 
@@ -215,9 +206,6 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
    else
    {
       // fill er up
-      int idx = GetStirrupMaterialIndex(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-
       // grid
       CShearData2::ShearZoneVec vec;
       for (CShearData2::ShearZoneConstIterator it = m_ShearData.ShearZones.begin(); it!=m_ShearData.ShearZones.end(); it++)
@@ -357,7 +345,6 @@ BOOL CShearSteelPage::OnInitDialog()
       bFilterBySpec = false;
    }
 
-   FillRebarMaterialComboBox((CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR),bFilterBySpec);
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_SPLITTING_BAR_SIZE));
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));
 

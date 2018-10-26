@@ -676,6 +676,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\AlignmentPlanView.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\AlignmentProfileView.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ApplyLoadsDlg.cpp"
 				>
 			</File>
@@ -740,7 +748,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\BridgeDisplayObjectEvents.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\BridgeEditorAlignmentSettingsPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\BridgeEditorPlanSettingsPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\BridgeEditorProfileSettingsPage.cpp"
 				>
 			</File>
 			<File
@@ -1476,6 +1496,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ProfileDisplayObjectEvents.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ProfileGrid.cpp"
 				>
 			</File>
@@ -1762,6 +1786,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\AlignmentPlanView.h"
+				>
+			</File>
+			<File
+				RelativePath="..\AlignmentProfileView.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ApplyLoadsDlg.h"
 				>
 			</File>
@@ -1826,7 +1858,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\BridgeDisplayObjectEvents.h"
+				>
+			</File>
+			<File
+				RelativePath="..\BridgeEditorAlignmentSettingsPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\BridgeEditorPlanSettingsPage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\BridgeEditorProfileSettingsPage.h"
 				>
 			</File>
 			<File
@@ -2478,6 +2522,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ProfileDisplayObjectEvents.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ProfileGrid.h"
 				>
 			</File>
@@ -2712,11 +2760,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2892,11 +2940,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -3100,11 +3148,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3112,11 +3160,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>

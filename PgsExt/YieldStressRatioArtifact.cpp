@@ -421,7 +421,7 @@ void pgsYieldStressRatioArtifact::SetTendon(Float64 dpt,Float64 fpt,Float64 fypt
    m_bRFComputed = false;
 }
 
-bool pgsYieldStressRatioArtifact::GetTendon(Float64* pdpt,Float64* pfpt,Float64* pfypt,Float64* pEpt)
+bool pgsYieldStressRatioArtifact::GetTendon(Float64* pdpt,Float64* pfpt,Float64* pfypt,Float64* pEpt) const
 {
    *pdpt  = m_dpt;
    *pfpt  = m_fpt;

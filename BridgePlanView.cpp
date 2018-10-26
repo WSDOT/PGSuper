@@ -106,8 +106,6 @@ CBridgePlanView::~CBridgePlanView()
 
 BEGIN_MESSAGE_MAP(CBridgePlanView, CDisplayView)
 	//{{AFX_MSG_MAP(CBridgePlanView)
-	ON_COMMAND(ID_EDIT_ROADWAY, OnEditRoadway)
-	ON_COMMAND(ID_EDIT_BRIDGE, OnEditBridge)
 	ON_COMMAND(ID_EDIT_DECK, OnEditDeck)
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
 	ON_WM_SIZE()
@@ -1081,16 +1079,6 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
    delete pMenu;
 }
 
-void CBridgePlanView::OnEditRoadway() 
-{
-   ((CPGSuperDocBase*)GetDocument())->EditAlignmentDescription(EBD_ROADWAY);
-}
-
-void CBridgePlanView::OnEditBridge() 
-{
-   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
-}
-
 void CBridgePlanView::OnEditDeck() 
 {
    ((CPGSuperDocBase*)GetDocument())->EditBridgeDescription(EBD_DECK);
@@ -1320,6 +1308,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
    // show that part of the alignment from 1/n of the first span length before the start of the bridge
    // to 1/n of the last span length beyond the end of the bridge
+   Float64 n = 10;
    PierIndexType nPiers = pBridge->GetPierCount();
    PierIndexType startPierIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
    PierIndexType endPierIdx   = (m_EndSpanIdx  == ALL_SPANS ? nPiers-1 : m_EndSpanIdx+1);
@@ -1340,7 +1329,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    pRoadway->GetStationAndOffset(start_bridge,&start3,&offset);
    pRoadway->GetStationAndOffset(start_right,&start4,&offset);
    start_station = Min(start1,start2,start3,start4);
-   start_station -= length1/10;
+   start_station -= length1/n;
 
    CComPtr<IPoint2d> end_left, end_alignment, end_bridge, end_right;
    pBridge->GetPierPoints(endPierIdx,&end_left,&end_alignment,&end_bridge,&end_right);
@@ -1350,7 +1339,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    pRoadway->GetStationAndOffset(end_bridge,&end3,&offset);
    pRoadway->GetStationAndOffset(end_right,&end4,&offset);
    end_station = Max(end1,end2,end3,end4);
-   end_station += length2/10;
+   end_station += length2/n;
 
    // The alignment is represented on the screen by a poly line object
    CComPtr<iPolyLineDisplayObject> doAlignment;
@@ -1358,7 +1347,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
    // Register an event sink with the alignment object so that we can handle Float64 clicks
    // on the alignment differently then a general dbl-click
-   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker,m_pFrame);
+   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker,m_pFrame,CAlignmentDisplayObjectEvents::Bridge);
    CComPtr<iDisplayObjectEvents> events;
    events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
 
@@ -1379,7 +1368,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    CComPtr<IDirection> bearing;
    bearing.CoCreateInstance(CLSID_Direction);
    long nPoints = 50;
-   Float64 station_inc = (end_station - start_station)/nPoints;
+   Float64 station_inc = (end_station - start_station)/(nPoints-1);
    Float64 station = start_station;
    for ( long i = 0; i < nPoints; i++, station += station_inc)
    {
@@ -1397,13 +1386,13 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
       }
    }
 
-   doAlignment->put_Width(3);
+   doAlignment->put_Width(ALIGNMENT_LINE_WEIGHT);
    doAlignment->put_Color(ALIGNMENT_COLOR);
    doAlignment->put_PointType(plpNone);
    doAlignment->Commit();
 
-   doCLBridge->put_Width(1);
-   doCLBridge->put_Color(CLBRIDGE_COLOR);
+   doCLBridge->put_Width(BRIDGELINE_LINE_WEIGHT);
+   doCLBridge->put_Color(BRIDGE_COLOR);
    doCLBridge->put_PointType(plpNone);
    doCLBridge->Commit();
 

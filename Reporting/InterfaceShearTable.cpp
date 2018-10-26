@@ -167,7 +167,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
          ColumnIndexType col = 0;
 
-         (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
          Float64 smax = pArtifact->GetSpacing();
          if (0.0 < smax)
          {
@@ -255,7 +255,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    // Check that avs at end pois are at least that at CSS
    if ( bDidAvsDecreaseAtEnd )
    {
-      *pPara << RPT_FAIL << _T(" - Horizontal ") << Sub2(_T("a"),_T("vf")) << _T(" at ") << location.SetValue(POI_ERECTED_SEGMENT, poiAtEnd)
+      *pPara << RPT_FAIL << _T(" - Horizontal ") << Sub2(_T("a"),_T("vf")) << _T(" at ") << location.SetValue(POI_SPAN, poiAtEnd)
              << _T(" is less than at the design section (CS). Revise stirrup details to increase horizontal ") << Sub2(_T("a"),_T("vf"))
              << _T(" at this location.") << rptNewLine;
    }

@@ -18,12 +18,11 @@ public:
 	enum { IDD = IDD_STRESS_TENDON };
 
    CTimelineManager m_TimelineMgr;
+   EventIndexType m_EventIndex;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
    void FillLists();
-
-   EventIndexType m_EventIndex;
 
    CTimelineItemListBox m_lbSource;
    CTimelineItemListBox m_lbTarget;

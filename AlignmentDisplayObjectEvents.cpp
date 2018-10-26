@@ -44,10 +44,16 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CAlignmentDisplayObjectEvents
 
-CAlignmentDisplayObjectEvents::CAlignmentDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame)
+CAlignmentDisplayObjectEvents::CAlignmentDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,ViewType viewType,iDisplayObject* pDO)
 {
+   m_ViewType = viewType;
    m_pBroker = pBroker;
    m_pFrame = pFrame;
+   
+   if ( pDO )
+   {
+      m_DispObj.Attach(pDO);
+   }
 }
 
 CAlignmentDisplayObjectEvents::~CAlignmentDisplayObjectEvents()
@@ -143,35 +149,39 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayOb
       pThis->EditAlignment();
       return true;
    }
-   else if ( nChar == VK_DOWN )
-   {
-      pThis->m_pFrame->SelectGirder(CSegmentKey(0,0,0));
-      return true;
-   }
-   else if ( nChar == VK_UP )
-   {
-      GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-      GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirderCount();
-      SegmentIndexType nSegments = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirder(nGirders-1)->GetSegmentCount();
-      pThis->m_pFrame->SelectGirder(CSegmentKey(nGroups-1,nGirders-1,nSegments-1));
 
-      return true;
-   }
-   else if ( nChar == VK_LEFT )
+   if ( pThis->m_ViewType == Bridge )
    {
-      GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      pThis->m_pFrame->SelectPier(pBridgeDesc->GetPierCount()-1);
-      return true;
-   }
-   else if ( nChar == VK_RIGHT )
-   {
-      GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      pThis->m_pFrame->SelectPier(0);
-      return true;
+      if ( nChar == VK_DOWN )
+      {
+         pThis->m_pFrame->SelectGirder(CSegmentKey(0,0,0));
+         return true;
+      }
+      else if ( nChar == VK_UP )
+      {
+         GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+         GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+         GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirderCount();
+         SegmentIndexType nSegments = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirder(nGirders-1)->GetSegmentCount();
+         pThis->m_pFrame->SelectGirder(CSegmentKey(nGroups-1,nGirders-1,nSegments-1));
+
+         return true;
+      }
+      else if ( nChar == VK_LEFT )
+      {
+         GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+         pThis->m_pFrame->SelectPier(pBridgeDesc->GetPierCount()-1);
+         return true;
+      }
+      else if ( nChar == VK_RIGHT )
+      {
+         GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+         pThis->m_pFrame->SelectPier(0);
+         return true;
+      }
    }
 
 
@@ -192,22 +202,47 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
       CDisplayView* pView = pDispMgr->GetView();
       CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
 
-      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+      CEAFMenu* pMenu;
 
-      // the alignment doesn't have its own context menu, so if there aren't callbacks to add anything
-      // then just return
-      if ( callbacks.size() == 0 )
+      if ( pThis->m_ViewType == Bridge )
       {
-         return false;
+         const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+
+         // the alignment doesn't have its own context menu, so if there aren't callbacks to add anything
+         // then just return
+         if ( callbacks.size() == 0 )
+         {
+            return false;
+         }
+
+         pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+         std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+         std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+         for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+         {
+            IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+            pCallback->OnAlignmentContextMenu(pMenu);
+         }
       }
-
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      else
       {
-         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnAlignmentContextMenu(pMenu);
+         const std::map<IDType,IAlignmentPlanViewEventCallback*>& callbacks = pDoc->GetAlignmentPlanViewCallbacks();
+
+         // the alignment doesn't have its own context menu, so if there aren't callbacks to add anything
+         // then just return
+         if ( callbacks.size() == 0 )
+         {
+            return false;
+         }
+
+         pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+         std::map<IDType,IAlignmentPlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+         std::map<IDType,IAlignmentPlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+         for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+         {
+            IAlignmentPlanViewEventCallback* pCallback = callbackIter->second;
+            pCallback->OnAlignmentContextMenu(pMenu);
+         }
       }
 
       bool bResult = false;

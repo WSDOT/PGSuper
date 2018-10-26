@@ -48,6 +48,8 @@ protected:
 
    void RestoreToLibraryDefaults();
 
+   CRebarMaterialComboBox m_cbRebar;
+
 public:
    CGirderDescLongRebarGrid m_Grid;
 };

@@ -355,7 +355,7 @@ void CTemporarySupportLayoutPage::OnRemovalEventChanged()
       eventIdx = CreateEvent();
       if ( eventIdx == INVALID_INDEX )
       {
-         pCB->SetCurSel(m_PrevErectionEventIdx);
+         pCB->SetCurSel(m_PrevRemovalEventIdx);
          return;
       }
       else

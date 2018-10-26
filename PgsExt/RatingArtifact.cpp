@@ -90,22 +90,22 @@ void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsYield
    }
 }
 
-pgsRatingArtifact::MomentRatings pgsRatingArtifact::GetMomentRatings(bool bPositiveMoment) const
+const pgsRatingArtifact::MomentRatings& pgsRatingArtifact::GetMomentRatings(bool bPositiveMoment) const
 {
    return (bPositiveMoment ? m_PositiveMomentRatings : m_NegativeMomentRatings);
 }
 
-pgsRatingArtifact::ShearRatings pgsRatingArtifact::GetShearRatings() const
+const pgsRatingArtifact::ShearRatings& pgsRatingArtifact::GetShearRatings() const
 {
    return m_ShearRatings;
 }
 
-pgsRatingArtifact::StressRatings pgsRatingArtifact::GetStressRatings() const
+const pgsRatingArtifact::StressRatings& pgsRatingArtifact::GetStressRatings() const
 {
    return m_StressRatings;
 }
 
-pgsRatingArtifact::YieldStressRatios pgsRatingArtifact::GetYieldStressRatios(bool bPositiveMoment) const
+const pgsRatingArtifact::YieldStressRatios& pgsRatingArtifact::GetYieldStressRatios(bool bPositiveMoment) const
 {
    return (bPositiveMoment ? m_PositiveMomentYieldStressRatios : m_NegativeMomentYieldStressRatios);
 }

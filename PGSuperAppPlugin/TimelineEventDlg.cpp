@@ -45,20 +45,7 @@ CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIn
 {
    m_bEdit = bEditEvent;
    m_TimelineManager = timelineMgr;
-
-   if ( eventIdx == INVALID_INDEX )
-   {
-      // this dialog is for a new event
-      int result = m_TimelineManager.AddTimelineEvent(CTimelineEvent(),false,&m_EventIndex);
-      ATLASSERT(result == TLM_SUCCESS);
-   }
-   else
-   {
-      // this dialog is for an existing event
-      m_EventIndex = eventIdx;
-   }
-
-   m_pTimelineEvent = m_TimelineManager.GetEventByIndex(m_EventIndex);
+   m_EventIndex = eventIdx;
 }
 
 CTimelineEventDlg::~CTimelineEventDlg()
@@ -158,12 +145,23 @@ END_MESSAGE_MAP()
 
 BOOL CTimelineEventDlg::OnInitDialog()
 {
-   if ( m_EventIndex != INVALID_INDEX )
+   if ( m_EventIndex == INVALID_INDEX )
    {
+      // this dialog is being used to create a new event... create a default event and add it
+      int result = m_TimelineManager.AddTimelineEvent(CTimelineEvent(),false,&m_EventIndex);
+      ATLASSERT(result == TLM_SUCCESS);
+
+      SetWindowText(_T("Create Event"));
+   }
+   else
+   {
+      // this dialog is being used to edit an existing event
       CString strTitle;
-      strTitle.Format(_T("Event %d"),LABEL_EVENT(m_EventIndex));
+      strTitle.Format(_T("Edit Event %d"),LABEL_EVENT(m_EventIndex));
       SetWindowText(strTitle);
    }
+
+   m_pTimelineEvent = m_TimelineManager.GetEventByIndex(m_EventIndex);
 
    m_Grid.SubclassDlgItem(IDC_ACTIVITY_GRID, this);
    m_Grid.CustomInit();
@@ -257,6 +255,7 @@ bool EditEvent(CTimelineEventDlg* pTimelineEventDlg,T* pActivityDlg)
       // user pressed OK
       // check the update the timeline... if UpdateTimelineManager returns true
       // it was successful, otherwise, go back to the dialog
+      pTimelineEventDlg->m_EventIndex = pActivityDlg->m_EventIndex;
       while ( pTimelineEventDlg->UpdateTimelineManager(pActivityDlg->m_TimelineMgr) == false )
       {
          if ( pActivityDlg->DoModal() == IDCANCEL )

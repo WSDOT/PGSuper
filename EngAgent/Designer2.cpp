@@ -1616,16 +1616,6 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
    ATLASSERT(vPoi.size() == nSegments);
 #endif
 
-   Float64 tWebMin = DBL_MAX;
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
-   {
-      pgsPointOfInterest& poi(*iter);
-      Float64 minWebWidth = pGirder->GetMinWebWidth(poi);
-      tWebMin = min(tWebMin,minWebWidth);
-   }
-
    // Determine maximum duct area
    GET_IFACE(IDuctLimits,pDuctLimits);
    Float64 Kmax = pDuctLimits->GetTendonAreaLimit(girderKey);
@@ -1643,6 +1633,16 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
       Float64 OD = pTendonGeom->GetOutsideDiameter(girderKey,ductIdx);
 
       Float64 r = pTendonGeom->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
+
+      Float64 tWebMin = DBL_MAX;
+      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+      for ( ; iter != end; iter++ )
+      {
+         pgsPointOfInterest& poi(*iter);
+         Float64 minWebWidth = pGirder->GetWebThicknessAtDuct(poi,ductIdx);
+         tWebMin = min(tWebMin,minWebWidth);
+      }
 
       pgsDuctSizeArtifact artifact;
       artifact.SetDuctArea(Apt,Aduct,Kmax);
@@ -1923,13 +1923,16 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
                      // other that the precompressed tensile zone
                      artifact.IsApplicable( stressLocation, !bIsInPTZ );
                   }
-                  else if ( bCheckTemporaryStresses && task.intervalIdx == tsRemovalIntervalIdx )
+                  else if ( bCheckTemporaryStresses )
                   {
-                     artifact.IsApplicable( stressLocation, !bIsInPTZ );
-                  }
-                  else if ( bCheckTemporaryStresses && task.intervalIdx == castDeckIntervalIdx )
-                  {
-                     artifact.IsApplicable( stressLocation, bIsInPTZ );
+                     if ( task.intervalIdx == tsRemovalIntervalIdx )
+                     {
+                        artifact.IsApplicable( stressLocation, !bIsInPTZ );
+                     }
+                     else if ( task.intervalIdx == castDeckIntervalIdx )
+                     {
+                        artifact.IsApplicable( stressLocation, bIsInPTZ );
+                     }
                   }
                   else
                   {
@@ -4032,7 +4035,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    else
    {
       GET_IFACE(IPointOfInterest, pPoi);
-      std::vector<pgsPointOfInterest> pois( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+      std::vector<pgsPointOfInterest> pois( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
       std::vector<pgsPointOfInterest> csPoi( pPoi->GetPointsOfInterest(segmentKey, limitState == pgsTypes::StrengthII ? POI_CRITSECTSHEAR2 : POI_CRITSECTSHEAR1) );
       pois.insert(pois.end(),csPoi.begin(),csPoi.end());
       std::vector<pgsPointOfInterest> morePoi( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM, POIFIND_OR) );

@@ -1694,22 +1694,26 @@ int CTimelineManager::SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdju
       }
    }
 
-   CTimelineEvent cast_deck_event = *m_TimelineEvents[eventIdx];
-   cast_deck_event.GetCastDeckActivity().Enable(true);
-
-   if ( bUpdateAge )
+   if ( eventIdx != INVALID_INDEX )
    {
-      cast_deck_event.GetCastDeckActivity().SetConcreteAgeAtContinuity(age_at_continuity);
+      CTimelineEvent cast_deck_event = *m_TimelineEvents[eventIdx];
+      cast_deck_event.GetCastDeckActivity().Enable(true);
+
+      if ( bUpdateAge )
+      {
+         cast_deck_event.GetCastDeckActivity().SetConcreteAgeAtContinuity(age_at_continuity);
+      }
+
+      int result = SetEventByIndex(eventIdx,cast_deck_event,bAdjustTimeline);
+      if ( result != TLM_SUCCESS )
+      {
+         // there was a problem... roll back the edit
+         pOldCastDeckEvent->GetCastDeckActivity().Enable(true);
+         return result;
+      }
    }
 
-   int result = SetEventByIndex(eventIdx,cast_deck_event,bAdjustTimeline);
-   if ( result != TLM_SUCCESS )
-   {
-      // there was a problem... roll back the edit
-      pOldCastDeckEvent->GetCastDeckActivity().Enable(true);
-   }
-
-   return result;
+   return TLM_SUCCESS;
 }
 
 int CTimelineManager::SetCastDeckEventByID(EventIDType ID,bool bAdjustTimeline)

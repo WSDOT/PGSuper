@@ -545,8 +545,6 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);
    SegmentIndexType lastSegIdx  = (segIdx == ALL_SEGMENTS ? nSegments-1 : firstSegIdx);
 
-   location.IncludeSpanAndGirder(nSegments == 1 ? false : true);
-
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 

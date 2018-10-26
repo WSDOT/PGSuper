@@ -36,6 +36,8 @@ protected:
 	afx_msg void OnHelp();
 	//}}AFX_MSG
 
+   CRebarMaterialComboBox m_cbRebar;
+
 public:
    CGirderDescLongRebarGrid m_Grid;
 };

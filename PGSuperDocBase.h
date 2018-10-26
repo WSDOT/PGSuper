@@ -59,6 +59,8 @@
 
 #define VS_BRIDGE_PLAN        0
 #define VS_BRIDGE_SECTION     1
+#define VS_BRIDGE_ALIGNMENT   2
+#define VS_BRIDGE_PROFILE     3
 
 class CCopyGirderDlg;
 class pgsSegmentDesignArtifact;
@@ -175,6 +177,10 @@ public:
    UINT GetBridgeEditorSettings() const;
    void SetBridgeEditorSettings(UINT settings);
 
+   // set/get view settings for alignment/profile editor
+   UINT GetAlignmentEditorSettings() const;
+   void SetAlignmentEditorSettings(UINT settings);
+
    // set/get view settings for Girder model editor
    UINT GetGirderEditorSettings() const;
    void SetGirderEditorSettings(UINT settings);
@@ -195,6 +201,14 @@ public:
    IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
    bool UnregisterBridgeSectionViewCallback(IDType ID);
    const std::map<IDType,IBridgeSectionViewEventCallback*>& GetBridgeSectionViewCallbacks();
+
+   IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback);
+   bool UnregisterAlignmentPlanViewCallback(IDType ID);
+   const std::map<IDType,IAlignmentPlanViewEventCallback*>& GetAlignmentPlanViewCallbacks();
+
+   IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback);
+   bool UnregisterAlignmentProfileViewCallback(IDType ID);
+   const std::map<IDType,IAlignmentProfileViewEventCallback*>& GetAlignmentProfileViewCallbacks();
 
    IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
    bool UnregisterGirderElevationViewCallback(IDType ID);
@@ -249,10 +263,12 @@ protected:
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
    IDType m_CallbackID;
-   std::map<IDType,IBridgePlanViewEventCallback*>      m_BridgePlanViewCallbacks;
-   std::map<IDType,IBridgeSectionViewEventCallback*>   m_BridgeSectionViewCallbacks;
-   std::map<IDType,IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
-   std::map<IDType,IGirderSectionViewEventCallback*>   m_GirderSectionViewCallbacks;
+   std::map<IDType,IBridgePlanViewEventCallback*>       m_BridgePlanViewCallbacks;
+   std::map<IDType,IBridgeSectionViewEventCallback*>    m_BridgeSectionViewCallbacks;
+   std::map<IDType,IAlignmentPlanViewEventCallback*>    m_AlignmentPlanViewCallbacks;
+   std::map<IDType,IAlignmentProfileViewEventCallback*> m_AlignmentProfileViewCallbacks;
+   std::map<IDType,IGirderElevationViewEventCallback*>  m_GirderElevationViewCallbacks;
+   std::map<IDType,IGirderSectionViewEventCallback*>    m_GirderSectionViewCallbacks;
 
    std::map<IDType,IEditPierCallback*>             m_EditPierCallbacks;
    std::map<IDType,IEditTemporarySupportCallback*> m_EditTemporarySupportCallbacks;
@@ -279,6 +295,7 @@ protected:
 
    bool m_bAutoCalcEnabled;
    UINT m_BridgeModelEditorSettings;
+   UINT m_AlignmentEditorSettings;
    UINT m_GirderModelEditorSettings;
    UINT m_UIHintSettings;
    bool m_bShowProjectProperties;
@@ -366,6 +383,7 @@ protected:
 	afx_msg void OnAddMomentLoad();
    afx_msg void OnConstructionLoads();
 	afx_msg void OnProjectAlignment();
+   afx_msg void OnProjectProfile();
 	afx_msg void OnEditPier();
 	afx_msg void OnEditSpan();
 	afx_msg void OnDeleteSelection();

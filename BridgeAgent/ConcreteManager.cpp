@@ -1223,32 +1223,12 @@ matConcreteBase* CConcreteManager::GetRailingSystemConcrete(pgsTypes::TrafficBar
 
 Float64 CConcreteManager::GetNWCDensityLimit()
 {
-   Float64 limit;
-   if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
-   {
-      limit = ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3);
-   }
-   else
-   {
-      limit = ::ConvertToSysUnits(2150.0,unitMeasure::KgPerMeter3);
-   }
-
-   return limit;
+   return lrfdConcreteUtil::GetNWCDensityLimit();
 }
 
 Float64 CConcreteManager::GetLWCDensityLimit()
 {
-   Float64 limit;
-   if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
-   {
-      limit = ::ConvertToSysUnits(120.0,unitMeasure::LbfPerFeet3);
-   }
-   else
-   {
-      limit = ::ConvertToSysUnits(1925.0,unitMeasure::KgPerMeter3);
-   }
-
-   return limit;
+   return lrfdConcreteUtil::GetLWCDensityLimit();
 }
 
 Float64 CConcreteManager::GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type)

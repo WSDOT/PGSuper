@@ -31,7 +31,6 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include "HtmlHelp\HelpTopics.hh"
-#include <PsgLib\RebarUIUtils.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,21 +62,20 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 	DDV_GXGridWnd(pDX, &m_Grid);
 
+   DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
+
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
+
+   DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade);
 
    // longitudinal steel information from grid and store it
    if (pDX->m_bSaveAndValidate)
    {
-      int idx;
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade);
       m_Grid.GetRebarData(&pSegment->LongitudinalRebarData);
    }
    else
    {
-      int idx = GetStirrupMaterialIndex(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade);
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
       m_Grid.FillGrid(pSegment->LongitudinalRebarData);
    }
 }
@@ -123,8 +121,6 @@ BOOL CGirderSegmentLongitudinalRebarPage::OnInitDialog()
 {
 	m_Grid.SubclassDlgItem(IDC_LONG_GRID, this);
    m_Grid.CustomInit();
-
-   FillRebarMaterialComboBox((CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR));
 
    // Currently, precast segments don't have default longitudinal reinforcement
    // Hide the button in the UI

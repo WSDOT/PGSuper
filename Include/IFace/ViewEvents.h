@@ -85,6 +85,34 @@ interface IBridgeSectionViewEventCallback
    virtual void OnDeckContextMenu(CEAFMenu* pMenu) = 0;
 };
 
+/////////////////////////////////////////////////////////
+// Callbacks for the Alignment Plan View
+interface IAlignmentPlanViewEventCallback
+{
+   // called when a context menu is created in the view background
+   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for the alignment
+   virtual void OnAlignmentContextMenu(CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for the bridge
+   virtual void OnBridgeContextMenu(CEAFMenu* pMenu) = 0;
+};
+
+/////////////////////////////////////////////////////////
+// Callbacks for the Alignment Profile View
+interface IAlignmentProfileViewEventCallback
+{
+   // called when a context menu is created in the view background
+   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for the profile
+   virtual void OnProfileContextMenu(CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for the bridge
+   virtual void OnBridgeContextMenu(CEAFMenu* pMenu) = 0;
+};
+
 
 /////////////////////////////////////////////////////////
 // Callbacks for the Girder Elevation View
@@ -112,11 +140,15 @@ interface IRegisterViewEvents : IUnknown
 {
    virtual IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback) = 0;
    virtual IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback) = 0;
+   virtual IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback) = 0;
+   virtual IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback) = 0;
    virtual IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback) = 0;
    virtual IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback) = 0;
 
    virtual bool UnregisterBridgePlanViewCallback(IDType ID) = 0;
    virtual bool UnregisterBridgeSectionViewCallback(IDType ID) = 0;
+   virtual bool UnregisterAlignmentPlanViewCallback(IDType ID) = 0;
+   virtual bool UnregisterAlignmentProfileViewCallback(IDType ID) = 0;
    virtual bool UnregisterGirderElevationViewCallback(IDType ID) = 0;
    virtual bool UnregisterGirderSectionViewCallback(IDType ID) = 0;
 };

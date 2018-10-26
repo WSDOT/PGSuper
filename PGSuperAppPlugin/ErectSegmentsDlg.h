@@ -18,13 +18,13 @@ public:
 	enum { IDD = IDD_ERECT_SEGMENTS };
 
    CTimelineManager m_TimelineMgr;
+   EventIndexType m_EventIndex;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
    void FillLists();
 
    const CBridgeDescription2* m_pBridgeDesc;
-   EventIndexType m_EventIndex;
 
    CTimelineItemListBox m_lbSource;
    CTimelineItemListBox m_lbTarget;

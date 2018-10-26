@@ -43,6 +43,13 @@
 
 // #define                   ((DWORD)0x00001000)
 
+
+// Alignment/Profile
+// ======================================
+#define IDA_AP_NORTH_UP         ((DWORD)0x00000001)
+#define IDA_AP_DRAW_BRIDGE      ((DWORD)0x00000002) // draw bridge on alignment
+#define IDP_AP_DRAW_BRIDGE      ((DWORD)0x00000004) // draw bridge on profile
+
 // Girder Model Editor
 // ======================================
 // all possible settings for girder model editor;

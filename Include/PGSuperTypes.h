@@ -1537,6 +1537,21 @@ inline CComBSTR GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType)
    return bstrName;
 }
 
+inline bool IsDesignRatingType(pgsTypes::LoadRatingType ratingType)
+{
+   return (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? true : false;
+}
+
+inline bool IsLegalRatingType(pgsTypes::LoadRatingType ratingType)
+{
+   return (ratingType == pgsTypes::lrLegal_Routine || ratingType == pgsTypes::lrLegal_Special) ? true : false;
+}
+
+inline bool IsPermitRatingType(pgsTypes::LoadRatingType ratingType)
+{
+   return (ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special) ? true : false;
+}
+
 inline bool IsTopStressLocation(pgsTypes::StressLocation stressLocation)
 {
    return (stressLocation == pgsTypes::TopDeck || stressLocation == pgsTypes::TopGirder);

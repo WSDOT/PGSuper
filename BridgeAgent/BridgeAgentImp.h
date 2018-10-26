@@ -95,8 +95,6 @@ public:
       m_Level        = 0;
       m_pBroker      = 0;
 
-      m_AlignmentID = INVALID_ID;
-
       m_bUserLoadsValidated  = false;
 	}
 
@@ -163,6 +161,8 @@ public:
 
 // IRoadway
 public:
+   virtual void GetStartPoint(Float64 n,Float64* pStartStation,Float64* pStartElevation,Float64* pGrade,IPoint2d** ppPoint);
+   virtual void GetEndPoint(Float64 n,Float64* pEndStation,Float64* pEndlevation,Float64* pGrade,IPoint2d** ppPoint);
    virtual Float64 GetSlope(Float64 station,Float64 offset);
    virtual Float64 GetProfileGrade(Float64 station);
    virtual Float64 GetElevation(Float64 station,Float64 offset);
@@ -913,6 +913,7 @@ public:
    virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi);
    virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi);
    virtual Float64 GetMinWebWidth(const pgsPointOfInterest& poi);
+   virtual Float64 GetWebThicknessAtDuct(const pgsPointOfInterest& poi,DuctIndexType ductIdx);
    virtual Float64 GetMinTopFlangeThickness(const pgsPointOfInterest& poi);
    virtual Float64 GetMinBottomFlangeThickness(const pgsPointOfInterest& poi);
    virtual Float64 GetHeight(const pgsPointOfInterest& poi);
@@ -1028,8 +1029,6 @@ private:
    DWORD m_dwLossParametersCookie;
 
    StatusGroupIDType m_LoadStatusGroupID; // ID used to identify user load-related status items created by this agent
-
-   IDType m_AlignmentID;
 
    CComPtr<ICogoEngine> m_CogoEngine; // this is not the cogo model!!! just an engine to do computations with
    CComPtr<ICogoModel> m_CogoModel;

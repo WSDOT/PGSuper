@@ -1956,110 +1956,76 @@ bool CBridgeAgentImp::BuildCogoModel()
             pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
             pStatusCenter->Add(p_status_item);
-
-            // add a profile point
-            if ( iter == profile_data.VertCurves.begin() )
-            {
-               // this is the first item so we need a point before this to model the entry grade
-               CComPtr<IProfilePoint> pbg;
-               pbg.CoCreateInstance(CLSID_ProfilePoint);
-               pbg->put_Station(CComVariant(pvi_station - 100.));
-               pbg->put_Elevation(pvi_elevation - 100.0*entry_grade);
-               profilepoints->AddEx(curveID++,pbg);
-               profile->AddEx(pbg);
-            }
-
-            profilepoints->AddEx(curveID,pvi);
-            profile->AddEx(pvi);
-
-            if ( iter == profile_data.VertCurves.end()-1 )
-            {
-               // this is the last point ... need to add a Profile point on the exit grade
-               CComPtr<IProfilePoint> pfg;
-               pfg.CoCreateInstance(CLSID_ProfilePoint);
-               pfg->put_Station(CComVariant(pvi_station + 100.));
-               pfg->put_Elevation(pvi_elevation + 100.0*curve_data.ExitGrade);
-               profilepoints->AddEx(curveID++,pfg);
-               profile->AddEx(pfg);
-            }
-
-            pbg_station   = pvi_station;
-            pbg_elevation = pvi_elevation;
-            entry_grade   = curve_data.ExitGrade;
-
-            prev_EVC = pvi_station;
          }
-         else
+
+         // add a vertical curve
+         Float64 pfg_station = pvi_station + (iter == iterEnd-1 ? 100 : L2);
+         Float64 pfg_elevation = pvi_elevation + curve_data.ExitGrade*(iter == iterEnd-1 ? 100 : L2);
+
+         CComPtr<IProfilePoint> pfg; // point on forward grade
+         pfg.CoCreateInstance(CLSID_ProfilePoint);
+         pfg->put_Station(CComVariant(pfg_station));
+         pfg->put_Elevation(pfg_elevation);
+
+         Float64 BVC = pvi_station - L1;
+         Float64 EVC = pvi_station + L2;
+         Float64 tolerance = ::ConvertToSysUnits(0.006,unitMeasure::Feet); // sometimes users enter the BVC as the start point
+                                                                           // and the numbers work out such that it differs by 0.01ft
+                                                                           // select a tolerance so that this isn't a problem
+         if( IsLT(BVC,prev_EVC,tolerance) || IsLT(pvi_station,prev_EVC,tolerance) || IsLT(EVC,prev_EVC,tolerance) )
          {
-            // add a vertical curve
-            Float64 pfg_station = pvi_station + L2;
-            Float64 pfg_elevation = pvi_elevation + curve_data.ExitGrade*L2;
+            // some part of this curve is before the end of the previous curve
+            std::_tostringstream os;
 
-            CComPtr<IProfilePoint> pfg; // point on forward grade
-            pfg.CoCreateInstance(CLSID_ProfilePoint);
-            pfg->put_Station(CComVariant(pfg_station));
-            pfg->put_Elevation(pfg_elevation);
-
-            Float64 BVC = pvi_station - L1;
-            Float64 EVC = pvi_station + L2;
-            Float64 tolerance = ::ConvertToSysUnits(0.006,unitMeasure::Feet); // sometimes users enter the BVC as the start point
-                                                                              // and the numbers work out such that it differs by 0.01ft
-                                                                              // select a tolerance so that this isn't a problem
-            if( IsLT(BVC,prev_EVC,tolerance) || IsLT(pvi_station,prev_EVC,tolerance) || IsLT(EVC,prev_EVC,tolerance) )
+            if ( curveID == 1 )
             {
-               // some part of this curve is before the end of the previous curve
-               std::_tostringstream os;
-
-               if ( curveID == 1 )
-               {
-                  os << _T("Vertical Curve ") << curveID << _T(" begins before the profile reference point.");
-               }
-               else
-               {
-                  os << _T("Vertical curve ") << curveID << _T(" begins before curve ") << (curveID-1) << _T(" ends.");
-               }
-
-               std::_tstring strMsg = os.str();
-
-               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,1,strMsg.c_str());
-               GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               pStatusCenter->Add(p_status_item);
-
-               strMsg += std::_tstring(_T("\nSee Status Center for Details"));
-   //            THROW_UNWIND(strMsg.c_str(),-1);
+               os << _T("Vertical Curve ") << curveID << _T(" begins before the profile reference point.");
+            }
+            else
+            {
+               os << _T("Vertical curve ") << curveID << _T(" begins before curve ") << (curveID-1) << _T(" ends.");
             }
 
-            CComPtr<IVertCurve> vc;
-            HRESULT hr = vcurves->Add(curveID,pbg,pvi,pfg,L1,L2,&vc);
-            ATLASSERT(SUCCEEDED(hr));
+            std::_tstring strMsg = os.str();
 
-            m_VertCurveKeys.insert(std::make_pair(curveIdx,curveID));
-           
+            pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,1,strMsg.c_str());
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            pStatusCenter->Add(p_status_item);
 
-            profile->AddEx(vc);
-
-            Float64 g1,g2;
-            vc->get_EntryGrade(&g1);
-            vc->get_ExitGrade(&g2);
-
-            if ( IsEqual(g1,g2) )
-            {
-               // entry and exit grades are the same
-               std::_tostringstream os;
-               os << _T("Entry and exit grades are the same on curve ") << curveID;
-               std::_tstring strMsg = os.str();
-
-               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
-               GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               pStatusCenter->Add(p_status_item);
-            }
-
-            pbg_station   = pvi_station;
-            pbg_elevation = pvi_elevation;
-            entry_grade   = curve_data.ExitGrade;
-
-            prev_EVC = EVC;
+            strMsg += std::_tstring(_T("\nSee Status Center for Details"));
+//            THROW_UNWIND(strMsg.c_str(),-1);
          }
+
+         CComPtr<IVertCurve> vc;
+         HRESULT hr = vcurves->Add(curveID,pbg,pvi,pfg,L1,L2,&vc);
+         ATLASSERT(SUCCEEDED(hr));
+
+         m_VertCurveKeys.insert(std::make_pair(curveIdx,curveID));
+        
+
+         profile->AddEx(vc);
+
+         Float64 g1,g2;
+         vc->get_EntryGrade(&g1);
+         vc->get_ExitGrade(&g2);
+
+         if ( IsEqual(g1,g2) )
+         {
+            // entry and exit grades are the same
+            std::_tostringstream os;
+            os << _T("Entry and exit grades are the same on curve ") << curveID;
+            std::_tstring strMsg = os.str();
+
+            pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            pStatusCenter->Add(p_status_item);
+         }
+
+         pbg_station   = pvi_station;
+         pbg_elevation = pvi_elevation;
+         entry_grade   = curve_data.ExitGrade;
+
+         prev_EVC = EVC;
 
          curveID++;
          curveIdx++;
@@ -5560,6 +5526,179 @@ STDMETHODIMP CBridgeAgentImp::ShutDown()
 /////////////////////////////////////////////////////////////////////////
 // IRoadway
 //
+void CBridgeAgentImp::GetStartPoint(Float64 n,Float64* pStartStation,Float64* pStartElevation,Float64* pGrade,IPoint2d** ppPoint)
+{
+   Float64 pierStation = GetPierStation(0);
+   Float64 spanLength = GetSpanLength(0);
+   *pStartStation = pierStation - spanLength/n;
+
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+
+   IndexType nHCurves = GetCurveCount();
+   if ( 0 < nHCurves )
+   {
+      CComPtr<IHorzCurve> hc;
+      GetCurve(0,&hc);
+      CComPtr<IPoint2d> pntTS;
+      hc->get_TS(&pntTS);
+
+      Float64 tsStation, offset;
+      GetStationAndOffset(pntTS,&tsStation,&offset);
+      *pStartStation = Min(*pStartStation,tsStation);
+   }
+
+   CComPtr<IProfile> profile;
+   alignment->get_Profile(&profile);
+   IndexType nElements;
+   profile->get_Count(&nElements);
+   if ( 0 < nElements )
+   {
+      CComPtr<IProfileElement> profileElement;
+      profile->get_Item(0,&profileElement);
+      ProfileElementType type;
+      profileElement->get_Type(&type);
+      CComPtr<IUnknown> punk;
+      profileElement->get_Value(&punk);
+      if ( type == pePoint )
+      {
+         CComQIPtr<IProfilePoint> pp(punk);
+         CComPtr<IStation> objStation;
+         pp->get_Station(&objStation);
+         Float64 station;
+         objStation->get_NormalizedValue(alignment,&station);
+         *pStartStation = Min(*pStartStation,station);
+      }
+      else 
+      {
+         ATLASSERT( type == peVertCurve );
+         CComQIPtr<IVertCurve> vc(punk);
+         CComPtr<IProfilePoint> pp;
+         vc->get_BVC(&pp);
+         CComPtr<IStation> objStation;
+         pp->get_Station(&objStation);
+         Float64 station;
+         objStation->get_NormalizedValue(alignment,&station);
+         *pStartStation = Min(*pStartStation,station);
+      }
+   }
+
+   CComPtr<ISurfaceCollection> surfaces;
+   profile->get_Surfaces(&surfaces);
+   IndexType nSurfaces;
+   surfaces->get_Count(&nSurfaces);
+   if ( 0 < nSurfaces )
+   {
+      CComPtr<ISurface> surface;
+      surfaces->get_Item(0,&surface);
+
+      CComPtr<IStation> objStartStation, objEndStation;
+      surface->GetStationRange(&objStartStation,&objEndStation);
+      Float64 station;
+      objStartStation->get_NormalizedValue(alignment,&station);
+      *pStartStation = Min(*pStartStation,station);
+   }
+
+   CComPtr<IStation> objRefStation;
+   alignment->get_RefStation(&objRefStation);
+   Float64 refStation;
+   objRefStation->get_NormalizedValue(alignment,&refStation);
+   CComPtr<IPoint2d> refPoint;
+   alignment->LocatePoint(CComVariant(objRefStation),omtNormal,0.0,CComVariant(0),&refPoint);
+   Float64 x,y;
+   refPoint->Location(&x,&y);
+   if ( !IsZero(refStation) || !IsZero(x) || !IsZero(y) )
+   {
+      // we'll ignore the ref point at 0+00 (N 0, E 0)
+      // this is the default and it probably means the user didn't input the values
+      *pStartStation = Min(*pStartStation,refStation);
+   }
+
+   GetPoint(*pStartStation,0,NULL,ppPoint);
+   *pStartElevation = GetElevation(*pStartStation,0);
+   *pGrade = GetProfileGrade(*pStartStation);
+}
+
+void CBridgeAgentImp::GetEndPoint(Float64 n,Float64* pEndStation,Float64* pEndElevation,Float64* pGrade,IPoint2d** ppPoint)
+{
+   PierIndexType nPiers = GetPierCount();
+   SpanIndexType nSpans = GetSpanCount();
+   Float64 pierStation = GetPierStation(nPiers-1);
+   Float64 spanLength = GetSpanLength(nSpans-1);
+   *pEndStation = pierStation + spanLength/n;
+
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+
+   IndexType nHCurves = GetCurveCount();
+   if ( 0 < nHCurves )
+   {
+      CComPtr<IHorzCurve> hc;
+      GetCurve(nHCurves-1,&hc);
+      CComPtr<IPoint2d> pntTS;
+      hc->get_TS(&pntTS);
+
+      Float64 tsStation, offset;
+      GetStationAndOffset(pntTS,&tsStation,&offset);
+      *pEndStation = Max(*pEndStation,tsStation);
+   }
+
+   CComPtr<IProfile> profile;
+   alignment->get_Profile(&profile);
+   IndexType nElements;
+   profile->get_Count(&nElements);
+   if ( 0 < nElements )
+   {
+      CComPtr<IProfileElement> profileElement;
+      profile->get_Item(nElements-1,&profileElement);
+      ProfileElementType type;
+      profileElement->get_Type(&type);
+      CComPtr<IUnknown> punk;
+      profileElement->get_Value(&punk);
+      if ( type == pePoint )
+      {
+         CComQIPtr<IProfilePoint> pp(punk);
+         CComPtr<IStation> objStation;
+         pp->get_Station(&objStation);
+         Float64 station;
+         objStation->get_NormalizedValue(alignment,&station);
+         *pEndStation = Max(*pEndStation,station);
+      }
+      else 
+      {
+         ATLASSERT( type == peVertCurve );
+         CComQIPtr<IVertCurve> vc(punk);
+         CComPtr<IProfilePoint> pp;
+         vc->get_EVC(&pp);
+         CComPtr<IStation> objStation;
+         pp->get_Station(&objStation);
+         Float64 station;
+         objStation->get_NormalizedValue(alignment,&station);
+         *pEndStation = Max(*pEndStation,station);
+      }
+   }
+
+   CComPtr<ISurfaceCollection> surfaces;
+   profile->get_Surfaces(&surfaces);
+   IndexType nSurfaces;
+   surfaces->get_Count(&nSurfaces);
+   if ( 0 < nSurfaces )
+   {
+      CComPtr<ISurface> surface;
+      surfaces->get_Item(nSurfaces-1,&surface);
+
+      CComPtr<IStation> objStartStation, objEndStation;
+      surface->GetStationRange(&objStartStation,&objEndStation);
+      Float64 station;
+      objEndStation->get_NormalizedValue(alignment,&station);
+      *pEndStation = Max(*pEndStation,station);
+   }
+
+   GetPoint(*pEndStation,0,NULL,ppPoint);
+   *pEndElevation = GetElevation(*pEndStation,0);
+   *pGrade = GetProfileGrade(*pEndStation);
+}
+
 Float64 CBridgeAgentImp::GetSlope(Float64 station,Float64 offset)
 {
    VALIDATE( COGO_MODEL );
@@ -19758,6 +19897,16 @@ Float64 CBridgeAgentImp::GetMinWebWidth(const pgsPointOfInterest& poi)
    girder_section->get_MinWebThickness(&width);
 
    return width;
+}
+
+Float64 CBridgeAgentImp::GetWebThicknessAtDuct(const pgsPointOfInterest& poi,DuctIndexType ductIdx)
+{
+#pragma Reminder("UPDATE - use a better implementation")
+   return GetMinWebWidth(poi); // this is good enough for now, but there is a better way to do this
+
+   // If we have a 3D solid model in WBFLGenericBridge we could cut a section at this poi and then
+   // shoot a line across the section at the duct level (line-shape intersection). The points on the
+   // intersecting line define the width of the member at the level of the duct.
 }
 
 Float64 CBridgeAgentImp::GetMinTopFlangeThickness(const pgsPointOfInterest& poi)

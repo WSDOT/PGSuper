@@ -37,6 +37,7 @@ void CStressTendonDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
+      // Add these tendons to the timeline
       int nItems = m_lbTarget.GetCount();
       for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
       {
@@ -47,6 +48,7 @@ void CStressTendonDlg::DoDataExchange(CDataExchange* pDX)
          m_TimelineMgr.SetStressTendonEventByIndex(girderID,ductIdx,m_EventIndex);
       }
 
+      // Remove these tendons from the timeline
       nItems = m_lbSource.GetCount();
       for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
       {

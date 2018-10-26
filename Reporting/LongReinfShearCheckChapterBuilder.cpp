@@ -170,17 +170,34 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
    pgsTypes::LimitState ls = pgsTypes::StrengthI;
 
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+
+   if ( 0 < nDucts )
    {
-      *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005_with_PT.png"))<<rptNewLine;
+      }
+      else
+      {
+         *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear_with_PT.png"))<<rptNewLine;
+      }
    }
    else
    {
-      *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+      }
+      else
+      {
+         *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+      }
    }
 
    pParagraph = new rptParagraph();
@@ -306,6 +323,9 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
       limitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
    }
 
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -327,13 +347,27 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
          pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pParagraph;
          *pParagraph << _T("5.8.3.5") << rptNewLine;
-         if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+         if ( 0 < nDucts )
          {
-            *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+            if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005_with_PT.png"))<<rptNewLine;
+            }
+            else
+            {
+               *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear_with_PT.png"))<<rptNewLine;
+            }
          }
          else
          {
-            *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+            if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+            }
+            else
+            {
+               *pParagraph <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+            }
          }
 
          pParagraph = new rptParagraph();
@@ -455,11 +489,6 @@ rptParagraph* create_table1_design(IBroker* pBroker,
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   if ( 1 < nSegments )
-   {
-      location.IncludeSpanAndGirder(true);
-   }
-
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -559,11 +588,6 @@ rptParagraph* create_table2_design(IBroker* pBroker,
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   if ( 1 < nSegments )
-   {
-      location.IncludeSpanAndGirder(true);
-   }
-
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -646,11 +670,6 @@ rptParagraph* create_table3_design(IBroker* pBroker,
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   if ( 1 < nSegments )
-   {
-      location.IncludeSpanAndGirder(true);
-   }
-
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -670,7 +689,7 @@ rptParagraph* create_table3_design(IBroker* pBroker,
          if ( pArtifact->IsApplicable() )
          {
             col = 0;
-            (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+            (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
             (*table)(row,col++) << shear.SetValue( pArtifact->GetDemandForce());
             (*table)(row,col++) << shear.SetValue( pArtifact->GetCapacityForce());
             (*table)(row,col++) << (pArtifact->GetEquation() == 1 ? _T("5.8.3.5-1") : _T("5.8.3.5-2"));

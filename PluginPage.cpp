@@ -121,8 +121,14 @@ bool CPluginPage::InitList()
          LPOLESTR pszCLSID;
          ::StringFromCLSID(clsid[i],&pszCLSID);
          
+         // The checkbox list is sorted so the position of the various entries can shift around
+         // We need to know the index into the m_CLSIDs vector for each entry. Get the index
+         // here and save it in the entries item data
          CString strState = pApp->GetProfileString(m_Section,OLE2T(pszCLSID),_T("Enabled"));
          m_CLSIDs.push_back(CString(pszCLSID));
+         ATLASSERT(0 < m_CLSIDs.size());
+         int clsidIdx = (int)(m_CLSIDs.size()-1);
+         m_ctlPluginList.SetItemData(idx,(DWORD_PTR)clsidIdx);
 
          ::CoTaskMemFree((void*)pszCLSID);
 
@@ -144,8 +150,9 @@ void CPluginPage::OnOK()
    int nItems = m_ctlPluginList.GetCount();
    for (int idx = 0; idx < nItems; idx++ )
    {
-      CString strCLSID = m_CLSIDs[idx];
       BOOL bEnabled = m_ctlPluginList.GetCheck(idx);
+      int clsidIdx = (int)m_ctlPluginList.GetItemData(idx);
+      CString strCLSID = m_CLSIDs[clsidIdx];
 
       pApp->WriteProfileString(m_Section,strCLSID,(bEnabled ? _T("Enabled") : _T("Disabled")));
    }

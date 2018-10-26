@@ -35,8 +35,6 @@
 
 #include <Lrfd\RebarPool.h>
 
-#include "PsgLib\RebarUIUtils.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -66,28 +64,9 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   if (pDX->m_bSaveAndValidate)
-   {
-      int idx;
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      if ( idx == CB_ERR )
-      {
-         m_RebarData.TopRebarType = matRebar::A615;
-         m_RebarData.TopRebarGrade = matRebar::Grade60;
-         m_RebarData.BottomRebarType = matRebar::A615;
-         m_RebarData.BottomRebarGrade = matRebar::Grade60;
-      }
-      else
-      {
-         GetStirrupMaterial(idx,m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
-         GetStirrupMaterial(idx,m_RebarData.BottomRebarType,m_RebarData.BottomRebarGrade);
-      }
-   }
-   else
-   {
-      int idx = GetStirrupMaterialIndex(m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-   }
+   DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
+   DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
+   DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,m_RebarData.BottomRebarType,m_RebarData.BottomRebarGrade);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -174,9 +153,6 @@ BOOL CBridgeDescDeckReinforcementPage::OnInitDialog()
    CComboBox* pcbBottomRebar = (CComboBox*)GetDlgItem(IDC_BOTTOM_MAT_BAR);
    FillRebarComboBox(pcbTopRebar);
    FillRebarComboBox(pcbBottomRebar);
-
-   CComboBox* pcbMaterial = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pcbMaterial);
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    m_RebarData = pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData;

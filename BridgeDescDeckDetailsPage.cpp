@@ -1161,6 +1161,7 @@ void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
          int result = pParent->m_BridgeDesc.GetTimelineManager()->SetCastDeckEventByIndex(eventIdx,bAdjustTimeline);
          if ( result == TLM_SUCCESS )
          {
+            eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastDeckEventIndex();
             bDone = true;
          }
          else
@@ -1185,6 +1186,9 @@ void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
             }
             else
             {
+               pParent->m_BridgeDesc.GetTimelineManager()->RemoveEventByIndex(eventIdx);
+               pParent->m_BridgeDesc.GetTimelineManager()->SetCastDeckEventByIndex(m_PrevDeckEventIdx,false);
+               pCB->SetCurSel((int)m_PrevDeckEventIdx);
                return;
             }
 

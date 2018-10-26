@@ -142,8 +142,6 @@ protected:
    virtual void HandleContextMenu(CWnd* pWnd,CPoint logPoint);
 
 	//{{AFX_MSG(CBridgePlanView)
-	afx_msg void OnEditRoadway();
-	afx_msg void OnEditBridge();
 	afx_msg void OnEditDeck();
 	afx_msg void OnViewSettings();
 	afx_msg void OnSize(UINT nType, int cx, int cy);

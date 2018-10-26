@@ -69,9 +69,18 @@ bool CTimelineEvent::operator<(const CTimelineEvent& rOther) const
    if ( m_Day == rOther.m_Day )
    {
       // occur on the same day... the one with the shorter duration comes first
-      if ( GetMinElapsedTime() <= rOther.GetMinElapsedTime() )
+      if ( GetMinElapsedTime() < rOther.GetMinElapsedTime() )
       {
          return true;
+      }
+
+      // if same day and same duration... use the ID as a last-ditch tie breaker
+      if ( IsEqual(GetMinElapsedTime(),rOther.GetMinElapsedTime()) )
+      {
+         if ( m_ID < rOther.m_ID )
+         {
+            return true;
+         }
       }
    }
 

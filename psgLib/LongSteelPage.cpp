@@ -27,7 +27,6 @@
 #include <psgLib\psglib.h>
 #include "LongSteelPage.h"
 #include "GirderMainSheet.h"
-#include <psgLib\RebarUIUtils.h>
 #include <psglib\LibraryEditorDoc.h>
 #include "..\htmlhelp\HelpTopics.hh"
 
@@ -63,14 +62,14 @@ void CLongSteelPage::DoDataExchange(CDataExchange* pDX)
 
 	DDV_GXGridWnd(pDX, &m_Grid);
 
+   DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
+
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    if ( pDX->m_bSaveAndValidate )
    {
-      int idx;
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
       matRebar::Type type;
       matRebar::Grade grade;
-      GetStirrupMaterial(idx,type,grade);
+      DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,type,grade);
       pDad->m_Entry.SetLongSteelMaterial(type,grade);
    }
    else
@@ -78,8 +77,7 @@ void CLongSteelPage::DoDataExchange(CDataExchange* pDX)
       matRebar::Type type;
       matRebar::Grade grade;
       pDad->m_Entry.GetLongSteelMaterial(type,grade);
-      int idx = GetStirrupMaterialIndex(type,grade);
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+      DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,type,grade);
    }
 
    // dad is a friend of the entry. use him to transfer data.
@@ -111,18 +109,20 @@ BOOL CLongSteelPage::OnInitDialog()
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    ASSERT(pDad);
 
+	m_Grid.SubclassDlgItem(IDC_LONG_GRID, this);
+   m_Grid.CustomInit();
+
+   CPropertyPage::OnInitDialog();
+
    CEAFDocument* pEAFDoc = EAFGetDocument();
    bool bFilterBySpec = true;
    if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
       bFilterBySpec = false;
 
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc,bFilterBySpec);
-
-	CPropertyPage::OnInitDialog();
+   int curSel = m_cbRebar.GetCurSel();
+   m_cbRebar.Initialize(bFilterBySpec);
+   m_cbRebar.SetCurSel(curSel);
 	
-	m_Grid.SubclassDlgItem(IDC_LONG_GRID, this);
-   m_Grid.CustomInit();
 
    // can't delete strands at start
    CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);

@@ -26,9 +26,11 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperAppPlugin\resource.h"
-#include "pgsuperDoc.h"
+#include "PGSuperDoc.h"
 #include "BridgeModelViewChildFrame.h"
 #include "BridgeSectionView.h"
+#include "AlignmentPlanView.h"
+#include "AlignmentProfileView.h"
 #include "BridgeViewPrintJob.h"
 #include "StationCutDlg.h"
 #include "SelectItemDlg.h"
@@ -118,6 +120,7 @@ BEGIN_MESSAGE_MAP(CBridgeModelViewChildFrame, CSplitChildFrame)
 	ON_MESSAGE(WM_HELP, OnCommandHelp)
    ON_NOTIFY(UDN_DELTAPOS, IDC_START_SPAN_SPIN, &CBridgeModelViewChildFrame::OnStartSpanChanged)
    ON_NOTIFY(UDN_DELTAPOS, IDC_END_SPAN_SPIN, &CBridgeModelViewChildFrame::OnEndSpanChanged)
+   ON_CONTROL_RANGE(BN_CLICKED,IDC_BRIDGE,IDC_ALIGNMENT,OnViewModeChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -155,24 +158,56 @@ void CBridgeModelViewChildFrame::DoFilePrint(bool direct)
    pj.OnFilePrint(direct);
 }
 
-
-
 CBridgePlanView* CBridgeModelViewChildFrame::GetBridgePlanView() 
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane calls AssertValid, Must be in the application module state
-   CWnd* pwnd = m_SplitterWnd.GetPane(0, 0);
-   CBridgePlanView* pvw = dynamic_cast<CBridgePlanView*>(pwnd);
-   ASSERT(pvw);
-   return pvw;
+   CView* pView = GetUpperView();
+   if ( pView->IsKindOf(RUNTIME_CLASS(CBridgePlanView)) )
+   {
+      return (CBridgePlanView*)pView;
+   }
+   return NULL;
 }
 
 CBridgeSectionView* CBridgeModelViewChildFrame::GetBridgeSectionView() 
 {
+   CView* pView = GetLowerView();
+   if ( pView->IsKindOf(RUNTIME_CLASS(CBridgeSectionView)) )
+   {
+      return (CBridgeSectionView*)pView;
+   }
+   return NULL;
+}
+
+CAlignmentPlanView* CBridgeModelViewChildFrame::GetAlignmentPlanView()
+{
+   CView* pView = GetUpperView();
+   if ( pView->IsKindOf(RUNTIME_CLASS(CAlignmentPlanView)) )
+   {
+      return (CAlignmentPlanView*)pView;
+   }
+   return NULL;
+}
+
+CAlignmentProfileView* CBridgeModelViewChildFrame::GetAlignmentProfileView()
+{
+   CView* pView = GetLowerView();
+   if ( pView->IsKindOf(RUNTIME_CLASS(CAlignmentProfileView)) )
+   {
+      return (CAlignmentProfileView*)pView;
+   }
+   return NULL;
+}
+
+CView* CBridgeModelViewChildFrame::GetUpperView()
+{
    AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane calls AssertValid, Must be in the application module state
-   CWnd* pwnd = m_SplitterWnd.GetPane(1, 0);
-   CBridgeSectionView* pvw = dynamic_cast<CBridgeSectionView*>(pwnd);
-   ASSERT(pvw);
-   return pvw;
+   return (CView*)m_SplitterWnd.GetPane(0, 0);
+}
+
+CView* CBridgeModelViewChildFrame::GetLowerView()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane calls AssertValid, Must be in the application module state
+   return (CView*)m_SplitterWnd.GetPane(1, 0);
 }
 
 void CBridgeModelViewChildFrame::InitSpanRange()
@@ -229,9 +264,9 @@ int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 #if defined _EAF_USING_MFC_FEATURE_PACK
-	if ( !m_SettingsBar.Create( _T("Title"), this, FALSE, IDD_BRIDGEVIEW_SETTINGS, CBRS_TOP, IDD_BRIDGEVIEW_SETTINGS) )
+	if ( !m_SettingsBar.Create( _T("Title"), this, FALSE, IDD_BRIDGEVIEW_CONTROLS, CBRS_TOP, IDD_BRIDGEVIEW_CONTROLS) )
 #else
-	if ( !m_SettingsBar.Create( this, IDD_BRIDGEVIEW_SETTINGS, CBRS_TOP, IDD_BRIDGEVIEW_SETTINGS) )
+	if ( !m_SettingsBar.Create( this, IDD_BRIDGEVIEW_CONTROLS, CBRS_TOP, IDD_BRIDGEVIEW_CONTROLS) )
 #endif
 	{
 		TRACE0("Failed to create control bar\n");
@@ -244,6 +279,9 @@ int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    m_SettingsBar.EnableDocking(CBRS_ALIGN_TOP);
    m_SettingsBar.DockToFrameWindow(CBRS_ALIGN_TOP);
 #endif
+
+   m_SettingsBar.CheckRadioButton(IDC_BRIDGE,IDC_ALIGNMENT,IDC_BRIDGE);
+
 
    return 0;
 }
@@ -411,7 +449,7 @@ void CBridgeModelViewChildFrame::OnViewGirder()
 
    if ( GetBridgePlanView()->GetSelectedGirder(&segmentKey) || GetBridgePlanView()->GetSelectedSegment(&segmentKey) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
       pDoc->OnViewGirderEditor();
    }
 }
@@ -421,7 +459,7 @@ void CBridgeModelViewChildFrame::OnEditSpan()
    SpanIndexType spanIdx;
    if ( GetBridgePlanView()->GetSelectedSpan(&spanIdx) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
       pDoc->EditSpanDescription(spanIdx,ESD_GENERAL);
    }
 }
@@ -431,7 +469,7 @@ void CBridgeModelViewChildFrame::OnEditPier()
    PierIndexType pierIdx;
    if ( GetBridgePlanView()->GetSelectedPier(&pierIdx) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
       pDoc->EditPierDescription(pierIdx,EPD_GENERAL);
    }
 }
@@ -442,7 +480,7 @@ void CBridgeModelViewChildFrame::SelectSpan(SpanIndexType spanIdx)
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->SelectSpan(spanIdx);
    m_bSelecting = false;
 }
@@ -453,7 +491,7 @@ void CBridgeModelViewChildFrame::SelectPier(PierIndexType pierIdx)
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->SelectPier(pierIdx);
    m_bSelecting = false;
 }
@@ -464,7 +502,7 @@ void CBridgeModelViewChildFrame::SelectGirder(const CGirderKey& girderKey)
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->SelectGirder(girderKey);
    m_bSelecting = false;
 }
@@ -477,7 +515,7 @@ void CBridgeModelViewChildFrame::SelectSegment(const CSegmentKey& segmentKey)
    ATLASSERT(segmentKey.segmentIndex != INVALID_INDEX);
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->SelectSegment(segmentKey);
    m_bSelecting = false;
 }
@@ -490,7 +528,7 @@ void CBridgeModelViewChildFrame::SelectClosureJoint(const CSegmentKey& closureKe
    ATLASSERT(closureKey.segmentIndex != INVALID_INDEX);
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->SelectClosureJoint(closureKey);
    m_bSelecting = false;
 }
@@ -501,7 +539,7 @@ void CBridgeModelViewChildFrame::SelectTemporarySupport(SupportIDType tsID)
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->SelectTemporarySupport(tsID);
    m_bSelecting = false;
 }
@@ -512,7 +550,7 @@ void CBridgeModelViewChildFrame::SelectDeck()
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->SelectDeck();
    m_bSelecting = false;
 }
@@ -523,14 +561,14 @@ void CBridgeModelViewChildFrame::SelectAlignment()
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->SelectAlignment();
    m_bSelecting = false;
 }
 
 void CBridgeModelViewChildFrame::ClearSelection()
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
    pDoc->ClearSelection();
 }
 
@@ -546,7 +584,7 @@ void CBridgeModelViewChildFrame::OnDeletePier()
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedPier(&pierIdx) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
       pDoc->DeletePier(pierIdx);
    }
    else
@@ -914,4 +952,27 @@ void CBridgeModelViewChildFrame::OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResul
    }
 
    pPlanView->SetSpanRange(startSpanIdx,newEndSpanIdx);
+}
+
+void CBridgeModelViewChildFrame::OnViewModeChanged(UINT nIDC)
+{
+   int show = (nIDC == IDC_BRIDGE ? SW_SHOW : SW_HIDE);
+   m_SettingsBar.GetDlgItem(IDC_SPAN_RANGE_LABEL)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_START_SPAN_SPIN)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_START_SPAN_EDIT)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_SPAN_RANGE_TO)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_END_SPAN_SPIN)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_END_SPAN_EDIT)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_SPAN_COUNT)->ShowWindow(show);
+
+   if ( nIDC == IDC_BRIDGE )
+   {
+      m_SplitterWnd.ReplaceView(0,0,RUNTIME_CLASS(CBridgePlanView));
+      m_SplitterWnd.ReplaceView(1,0,RUNTIME_CLASS(CBridgeSectionView));
+   }
+   else
+   {
+      m_SplitterWnd.ReplaceView(0,0,RUNTIME_CLASS(CAlignmentPlanView));
+      m_SplitterWnd.ReplaceView(1,0,RUNTIME_CLASS(CAlignmentProfileView));
+   }
 }

@@ -21,7 +21,6 @@
 #define IDR_PGSUPERAPPPLUGINIMPL        103
 #define IDR_PGSPLICEAPPPLUGINIMPL       104
 #define IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN 105
-#define IDD_CLOSURE_STIRRUPS            106
 #define IDD_CP_GEOMETRY                 107
 #define IDR_PGSPLICECOMPONENTINFO       110
 #define IDR_HTML_GIRDERSEGMENTSTRANDPAGE 112
@@ -53,14 +52,17 @@
 #define IDD_FILE_LOCATIONS              156
 #define IDD_BRIDGE_EDITOR_PLAN_PAGE     157
 #define IDD_BRIDGE_EDITOR_SECTION_PAGE  158
+#define IDD_BRIDGE_EDITOR_ALIGNMENT_PAGE 159
 #define IDD_GIRDER_EDITOR_SECTION_PAGE  160
 #define IDD_GIRDER_EDITOR_ELEVATION_PAGE 161
+#define IDR_ALIGNMENT_PLAN_CTX          162
 #define IDR_BRIDGE_PLAN_CTX             163
 #define IDB_IN_USE                      164
 #define IDB_IN_USE_AND_READ_ONLY        165
 #define IDB_READ_ONLY                   166
 #define IDR_BRIDGE_XSECTION_CTX         167
 #define IDR_GIRDER_CTX                  168
+#define IDR_ALIGNMENT_PROFILE_CTX       169
 #define IDD_DESIGN_GIRDER               170
 #define IDD_DESIGN_COMPLETE             171
 #define IDD_DESIGN_DETAILS              172
@@ -149,6 +151,7 @@
 #define IDD_SELECT_ITEM                 277
 #define IDD_UIHINTS                     278
 #define IDD_BRIDGEDESC_FRAMING          279
+#define IDD_BRIDGE_EDITOR_PROFILE_PAGE  280
 #define IDD_RESOLVE_GIRDER_SPACING      281
 #define IDR_REPORTS                     293
 #define IDD_GIRDERLABELFORMAT           294
@@ -177,7 +180,7 @@
 #define IDD_PARABOLIC_DUCT              320
 #define IDD_OFFSET_DUCT                 321
 #define IDD_LLDF_FILL                   322
-#define IDD_BRIDGEVIEW_SETTINGS         323
+#define IDD_BRIDGEVIEW_CONTROLS         323
 #define IDD_TS_GENERAL                  324
 #define IDD_CLOSURE_GENERAL             325
 #define IDD_CLOSURE_LONGITUDINAL        326
@@ -185,7 +188,6 @@
 #define IDR_SELECTED_TEMPORARY_SUPPORT_CONTEXT 330
 #define IDD_SEGMENT_GENERAL             331
 #define IDD_SEGMENT_LONGITUDINAL_REBAR  332
-#define IDD_SEGMENT_STIRRUPS            334
 #define IDD_SEGMENT_STRANDS             336
 #define IDD_SEGMENT_SPACING             338
 #define IDD_TIMELINE_MANAGER            339
@@ -220,6 +222,7 @@
 #define IDD_ABOUTBOX                    999
 #define IDC_BRIDGE                      1000
 #define IDD_PIER_LAYOUT                 1000
+#define IDC_ALIGNMENT                   1001
 #define IDC_BULB                        1001
 #define IDC_VERSION                     1002
 #define IDC_BRIDGEID                    1002
@@ -251,7 +254,6 @@
 #define IDC_SERVICE_IA_DW               1018
 #define IDC_AFTER_XFER                  1018
 #define IDC_AHEAD_DIAPHRAGM_OFFSET      1018
-#define IDC_TF_SPACING                  1019
 #define IDC_RADIO3                      1020
 #define IDC_STRENGTH_I_DW_MIN           1020
 #define IDC_UPDATEDESIGN                1021
@@ -320,7 +322,6 @@
 #define IDC_ADIM                        1064
 #define IDC_SLAB_CONCRETE               1065
 #define IDC_SLAB_FC                     1066
-#define IDC_LAST_ZONE                   1067
 #define IDC_OLAY_DENSITY_LABEL          1068
 #define IDC_OLAY_DENSITY                1069
 #define IDC_SACDEPTH                    1070
@@ -328,9 +329,7 @@
 #define IDC_OLAY_DENSITY_UNIT           1072
 #define IDC_SACDEPTH_UNIT               1073
 #define IDC_ADIM_UNIT                   1074
-#define IDC_BAR_SIZE                    1075
 #define IDC_OVERHANG_UNIT               1076
-#define IDC_TF_BAR_SIZE                 1077
 #define IDC_LEFTOVERHANG_UNIT           1078
 #define IDC_GROSS_DEPTH_UNIT            1079
 #define IDC_SLAB_FC_UNIT                1080
@@ -513,7 +512,6 @@
 #define IDC_LIFTING_LOOP_LOCATION_UNITS2 1203
 #define IDC_STORAGE_LOCATION_UNITS      1203
 #define IDC_TRAILINGOVERHANG_UNITS      1204
-#define IDC_ALIGNMENT                   1205
 #define IDC_LEADINGOVERHANG             1206
 #define IDC_PI_STATION                  1207
 #define IDC_LEADINGOVERHANG_UNITS       1208
@@ -546,7 +544,6 @@
 #define IDC_PI_STATION_TAG              1232
 #define IDC_FWD_TANGENT_TAG             1233
 #define IDC_BK_TANGENT_TAG              1234
-#define IDC_TF_SPACING_UNITS            1235
 #define IDC_RADIUS_TAG                  1236
 #define IDC_GRADE_LABEL                 1237
 #define IDC_G1_LABEL                    1238
@@ -702,7 +699,6 @@
 #define IDC_FATIGUE_I_DC                1353
 #define IDC_LOADCASE                    1354
 #define IDC_FATIGUE_I_LLIM              1354
-#define IDC_STIRRUPS_ENGAGE_DECK        1355
 #define IDC_TEMPORARY                   1356
 #define IDC_MAGNITUDE_UNITS2            1357
 #define IDC_LOADTYPE                    1358
@@ -838,7 +834,6 @@
 #define IDC_RATE_FOR_SHEAR              1446
 #define IDC_DESIGN                      1446
 #define IDC_PT                          1446
-#define IDC_ROUGHENED                   1446
 #define IDC_CHECK_SYMM                  1446
 #define IDC_START_WITH_LAYOUT           1446
 #define IDC_USER_ECI                    1446
@@ -849,6 +844,7 @@
 #define IDC_BOTTOM_FLANGE_DEPTH         1446
 #define IDC_TIME_DEPENDENT_EFFECTS      1446
 #define IDC_START_CANTILEVER            1446
+#define IDC_DRAW_BRIDGE                 1446
 #define IDC_SYMMETRIC_DEBOND            1447
 #define IDC_END_CANTILEVER              1447
 #define IDC_FUTURE_WS                   1448
@@ -1557,6 +1553,8 @@
 #define IDC_PIER_MODEL_LABEL            1849
 #define IDC_DIMENSIONS_NOTE             1850
 #define IDC_LOAD_RATING_EVENT_LABEL     1851
+#define IDC_SPAN_RANGE_LABEL            1854
+#define IDC_SPAN_RANGE_TO               1855
 #define IDC_SERVICE_I_CR                1859
 #define IDC_SERVICE_I_SH                1860
 #define IDC_SERVICE_I_PS                1861
@@ -1725,14 +1723,15 @@
 #define ID_VIEW_GRAPHS                  36988
 #define ID_GRAPHS_                      36989
 #define ID_HELP_ABOUT                   36990
+#define ID_PROJECT_PROFILE              36991
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        367
-#define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1852
+#define _APS_NEXT_COMMAND_VALUE         36992
+#define _APS_NEXT_CONTROL_VALUE         1856
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

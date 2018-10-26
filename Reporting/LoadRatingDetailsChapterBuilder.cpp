@@ -280,16 +280,16 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    pRatingArtifact->GetMomentRatingFactorEx(bPositiveMoment,&pControllingRating);
    pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
 
-   pgsRatingArtifact::MomentRatings artifacts = pRatingArtifact->GetMomentRatings(bPositiveMoment);
+   const pgsRatingArtifact::MomentRatings& artifacts = pRatingArtifact->GetMomentRatings(bPositiveMoment);
 
    RowIndexType row = 1;
-   pgsRatingArtifact::MomentRatings::iterator iter(artifacts.begin());
-   pgsRatingArtifact::MomentRatings::iterator end(artifacts.end());
+   pgsRatingArtifact::MomentRatings::const_iterator iter(artifacts.begin());
+   pgsRatingArtifact::MomentRatings::const_iterator end(artifacts.end());
    for ( ; iter != end; iter++ )
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      pgsMomentRatingArtifact& artifact = iter->second;
+      const pgsMomentRatingArtifact& artifact = iter->second;
       Float64 RF = artifact.GetRatingFactor();
       if ( 0 < RF && !ReportAtThisPoi(poi,controllingPoi) )
       {
@@ -416,16 +416,16 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    pRatingArtifact->GetShearRatingFactorEx(&pControllingRating);
    pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
 
-   pgsRatingArtifact::ShearRatings artifacts = pRatingArtifact->GetShearRatings();
+   const pgsRatingArtifact::ShearRatings& artifacts = pRatingArtifact->GetShearRatings();
 
    RowIndexType row = 1;
-   pgsRatingArtifact::ShearRatings::iterator iter(artifacts.begin());
-   pgsRatingArtifact::ShearRatings::iterator end(artifacts.end());
+   pgsRatingArtifact::ShearRatings::const_iterator iter(artifacts.begin());
+   pgsRatingArtifact::ShearRatings::const_iterator end(artifacts.end());
    for ( ; iter != end; iter++ )
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      pgsShearRatingArtifact& artifact = iter->second;
+      const pgsShearRatingArtifact& artifact = iter->second;
       Float64 RF = artifact.GetRatingFactor();
       if ( !poi.HasAttribute(POI_CRITSECTSHEAR1) && !poi.HasAttribute(POI_CRITSECTSHEAR2) && 0 < RF && !ReportAtThisPoi(poi,controllingPoi) )
       {
@@ -557,20 +557,20 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    pRatingArtifact->GetStressRatingFactorEx(&pControllingRating);
    pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
 
-   pgsRatingArtifact::StressRatings artifacts = pRatingArtifact->GetStressRatings();
+   const pgsRatingArtifact::StressRatings& artifacts = pRatingArtifact->GetStressRatings();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    LPCTSTR stressLocation[] = {_T("Bottom Girder"),_T("Top Girder"),_T("Bottom Deck"),_T("Top Deck")};
 
    RowIndexType row = 1;
-   pgsRatingArtifact::StressRatings::iterator iter(artifacts.begin());
-   pgsRatingArtifact::StressRatings::iterator end(artifacts.end());
+   pgsRatingArtifact::StressRatings::const_iterator iter(artifacts.begin());
+   pgsRatingArtifact::StressRatings::const_iterator end(artifacts.end());
    for ( ; iter != end; iter++ )
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      pgsStressRatingArtifact& artifact = iter->second;
+      const pgsStressRatingArtifact& artifact = iter->second;
       Float64 RF = artifact.GetRatingFactor();
 
       if ( 0 < RF && !ReportAtThisPoi(poi,controllingPoi) )
@@ -626,7 +626,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
 void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const
 {
-   pgsRatingArtifact::YieldStressRatios artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
+   const pgsRatingArtifact::YieldStressRatios& artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
    if ( artifacts.size() == 0 )
    {
       return;
@@ -734,13 +734,13 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
 
    RowIndexType row = 1;
-   pgsRatingArtifact::YieldStressRatios::iterator iter(artifacts.begin());
-   pgsRatingArtifact::YieldStressRatios::iterator end(artifacts.end());
+   pgsRatingArtifact::YieldStressRatios::const_iterator iter(artifacts.begin());
+   pgsRatingArtifact::YieldStressRatios::const_iterator end(artifacts.end());
    for ( ; iter != end; iter++ )
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      pgsYieldStressRatioArtifact& artifact = iter->second;
+      const pgsYieldStressRatioArtifact& artifact = iter->second;
 
       Float64 rebarSR = artifact.GetRebarStressRatio();
       Float64 strandSR = artifact.GetStrandStressRatio();

@@ -23,6 +23,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_ERECT_PIERS };
    CTimelineManager m_TimelineMgr;
+   EventIndexType m_EventIndex;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -33,7 +34,6 @@ protected:
 
    CComPtr<IEAFDisplayUnits> m_pDisplayUnits;
    const CBridgeDescription2* m_pBridgeDesc;
-   EventIndexType m_EventIndex;
 
    CTimelineItemListBox m_lbSource;
    CTimelineItemListBox m_lbTarget;

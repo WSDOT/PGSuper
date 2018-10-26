@@ -33,7 +33,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 #include "HtmlHelp\HelpTopics.hh"
-#include <psgLib\RebarUIUtils.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -64,6 +63,8 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 	DDV_GXGridWnd(pDX, &m_Grid);
+
+   DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -142,25 +143,13 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          }
       }
 
-      int idx;
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      if ( idx == CB_ERR )
-      {
-         rebarData.BarType  = matRebar::A615;
-         rebarData.BarGrade = matRebar::Grade60;
-      }
-      else
-      {
-         GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
-      }
+      DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,rebarData.BarType,rebarData.BarGrade);
 
       pParent->m_pSegment->LongitudinalRebarData = rebarData;
    }
    else
    {
-      int idx = GetStirrupMaterialIndex(pParent->m_pSegment->LongitudinalRebarData.BarType,
-                                        pParent->m_pSegment->LongitudinalRebarData.BarGrade);
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+      DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,pParent->m_pSegment->LongitudinalRebarData.BarType,pParent->m_pSegment->LongitudinalRebarData.BarGrade);
 
       m_Grid.FillGrid(pParent->m_pSegment->LongitudinalRebarData);
    }
@@ -212,10 +201,6 @@ BOOL CGirderDescLongitudinalRebar::OnInitDialog()
 {
 	m_Grid.SubclassDlgItem(IDC_LONG_GRID, this);
    m_Grid.CustomInit();
-
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

@@ -520,7 +520,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
       (*table)(row,1) << dim.SetValue( scd.bv );
       (*table)(row,2) << dim.SetValue( scd.de );
       (*table)(row,3) << dim.SetValue( scd.h );
@@ -644,7 +644,7 @@ void write_shear_stress_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << scd.Phi;
       (*table)(row,col++) << force.SetValue( scd.Vu );
       
@@ -770,7 +770,7 @@ void write_fpc_table(IBroker* pBroker,
       FPCDETAILS fpcd;
       pShearCap->GetFpcDetails(poi, &fpcd);
 
-      (*table)(row,col++) << location.SetValue(POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue(POI_SPAN, poi );
       if ( 0 == nDucts )
       {
          (*table)(row,col++) << dim.SetValue( fpcd.eps );
@@ -857,7 +857,7 @@ void write_fpce_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
       (*table)(row,1) << stress.SetValue( scd.McrDetails.fr );
       (*table)(row,2) << stress.SetValue( scd.McrDetails.fcpe);
       (*table)(row,3) << sect_mod.SetValue( scd.McrDetails.Sb );
@@ -1057,7 +1057,7 @@ void write_fpo_table(IBroker* pBroker,
          SHEARCAPACITYDETAILS scd;
          pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-         (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
          (*table)(row,col++) << stress.SetValue( scd.fpeps );
          
          if ( 0 < nDucts )
@@ -1177,7 +1177,7 @@ void write_Fe_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,col++) << location.SetValue(POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue(POI_SPAN, poi );
 
       if ( scd.Fe < 0 )
       {
@@ -1439,7 +1439,7 @@ void write_ex_table(IBroker* pBroker,
 
       
       ColumnIndexType col = 0;
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
       if ( bAfter1999  && shear_capacity_method == scmBTTables )
       {
@@ -1677,7 +1677,7 @@ void write_btsummary_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
       if (print_sxe)
       {
@@ -1835,7 +1835,7 @@ void write_Vs_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
       (*table)(row,1) << stress.SetValue( scd.fy );
       (*table)(row,2) << area.SetValue( scd.Av );
       (*table)(row,3) << dim.SetValue( scd.S );
@@ -2004,7 +2004,7 @@ void write_Vc_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,colIdx++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,colIdx++) << location.SetValue( POI_SPAN, poi );
 
       if (scd.ShearInRange)
       {
@@ -2155,7 +2155,7 @@ void write_Vci_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
       (*table)(row,1) << dim.SetValue( scd.bv );
       (*table)(row,2) << dim.SetValue( scd.dv );
       (*table)(row,3) << shear.SetValue( scd.Vd );
@@ -2273,7 +2273,7 @@ void write_Vcw_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
       (*table)(row,1) << stress.SetValue( scd.fpc );
       (*table)(row,2) << dim.SetValue( scd.bv );
       (*table)(row,3) << dim.SetValue( scd.dv );
@@ -2393,7 +2393,7 @@ void write_theta_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
       (*table)(row,1) << shear.SetValue( scd.Vci );
       (*table)(row,2) << shear.SetValue( scd.Vcw );
       (*table)(row,3) << stress.SetValue( scd.fpc );
@@ -2500,7 +2500,7 @@ void write_Vn_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << stress.SetValue( scd.fc );
       (*table)(row,col++) << dim.SetValue( scd.bv );
       (*table)(row,col++) << dim.SetValue( scd.dv );
@@ -2661,7 +2661,7 @@ void write_Avs_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << shear.SetValue( scd.Vu/scd.Phi );
       (*table)(row,col++) << shear.SetValue( scd.Vc );
       
@@ -2796,7 +2796,7 @@ void write_bar_spacing_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
       if(0.0 < scd.Av && 0.0 < scd.S)
       {

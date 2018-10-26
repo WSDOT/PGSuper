@@ -76,6 +76,8 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   CRebarMaterialComboBox m_cbRebar;
+
 public:
    void RestoreToLibraryDefaults();
 

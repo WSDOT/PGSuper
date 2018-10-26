@@ -55,6 +55,7 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
    {
       // Data coming out of the dialog
       m_TimelineMgr.SetCastDeckEventByIndex(m_EventIndex,true);
+      m_EventIndex = m_TimelineMgr.GetCastDeckEventIndex();
 
       Float64 age;
       DDX_Text(pDX,IDC_AGE,age);

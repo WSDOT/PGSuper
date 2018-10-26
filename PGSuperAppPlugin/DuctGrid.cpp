@@ -70,6 +70,7 @@ ROWCOL nEventCol = 0;
 CDuctGrid::CDuctGrid()
 {
 //   RegisterClass();
+   m_PrevStressTendonEventIdx = INVALID_INDEX;
 }
 
 CDuctGrid::~CDuctGrid()
@@ -563,6 +564,15 @@ void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
    }
 }
 
+BOOL CDuctGrid::OnLButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT flags,WORD nHitState)
+{
+   if ( nHitCol == nEventCol )
+   {
+      m_PrevStressTendonEventIdx = (EventIndexType)_tstoi(GetCellValue(nHitRow,nHitCol).GetString());
+   }
+   return CGXGridWnd::OnLButtonHitRowCol(nHitRow,nHitCol,nDragRow,nDragCol,point,flags,nHitState);
+}
+
 void CDuctGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
    if ( nCol == nDuctTypeCol )
@@ -599,8 +609,8 @@ void CDuctGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
          }
          else
          {
-#pragma Reminder("UPDATE: need to deal with case when event creation fails")
-             /// revert to previous value
+             // revert to previous value
+            SetStyleRange(CGXRange(nRow,nEventCol), CGXStyle().SetValue((LONG)m_PrevStressTendonEventIdx) );            
          }
       }
    }
@@ -832,15 +842,19 @@ void CDuctGrid::OnChangedSelection(const CGXRange* changedRect,BOOL bIsDragging,
 
 EventIndexType CDuctGrid::CreateEvent()
 {
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(GetParent()->GetParent());
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
-   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
+   CTimelineEventDlg dlg(*(pParent->m_BridgeDescription.GetTimelineManager()),INVALID_INDEX,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(*dlg.m_pTimelineEvent);
+      EventIndexType eventIdx;
+      int result = pParent->m_BridgeDescription.GetTimelineManager()->AddTimelineEvent(*dlg.m_pTimelineEvent,true,&eventIdx);
+      return eventIdx;
    }
 
    return INVALID_INDEX;

@@ -501,7 +501,7 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
             (*p_table)(row,2) << dim.SetValue(axle.Spacing);
 
             if (axleIdx == var_axl)
-               (*p_table)(row,2) <<_T("-")<<dim.SetValue(ll_entry->GetMaxVariableAxleSpacing());
+               (*p_table)(row,2) <<_T(" - ")<<dim.SetValue(ll_entry->GetMaxVariableAxleSpacing());
          }
          else
          {

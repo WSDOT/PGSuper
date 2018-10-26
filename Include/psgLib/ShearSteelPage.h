@@ -98,6 +98,7 @@ public:
     virtual void DoRestoreDefaults(); // Allow children to implement
 protected:
     bool m_bAllowRestoreDefaults;
+    CRebarMaterialComboBox m_cbRebar;
 };
 
 //{{AFX_INSERT_LOCATION}}

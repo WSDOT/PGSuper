@@ -86,6 +86,7 @@ public:
    CBridgeDescDeckRebarGrid m_Grid;
 
 private:
+   CRebarMaterialComboBox m_cbRebar;
    CDeckRebarData m_RebarData;
    friend CBridgeDescDeckRebarGrid;
 };

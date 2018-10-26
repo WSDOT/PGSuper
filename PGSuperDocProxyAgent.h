@@ -288,10 +288,14 @@ public:
 public:
    virtual IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
    virtual IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
+   virtual IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback);
+   virtual IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback);
    virtual IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
    virtual IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
    virtual bool UnregisterBridgePlanViewCallback(IDType ID);
    virtual bool UnregisterBridgeSectionViewCallback(IDType ID);
+   virtual bool UnregisterAlignmentPlanViewCallback(IDType ID);
+   virtual bool UnregisterAlignmentProfileViewCallback(IDType ID);
    virtual bool UnregisterGirderElevationViewCallback(IDType ID);
    virtual bool UnregisterGirderSectionViewCallback(IDType ID);
 

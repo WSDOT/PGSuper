@@ -1384,6 +1384,9 @@ interface IGirder : public IUnknown
    // Returns the minimum web width
    virtual Float64 GetMinWebWidth(const pgsPointOfInterest& poi) = 0;
 
+   // Returns the web thickness at the level of the specified duct
+   virtual Float64 GetWebThicknessAtDuct(const pgsPointOfInterest& poi,DuctIndexType ductIdx) = 0;
+
    // Returns the minimum top flange thickness
    virtual Float64 GetMinTopFlangeThickness(const pgsPointOfInterest& poi) = 0;
 

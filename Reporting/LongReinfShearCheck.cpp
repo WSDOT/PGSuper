@@ -101,13 +101,30 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+
+   if ( 0 < nDucts )
    {
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005_with_PT.png"))<<rptNewLine;
+      }
+      else
+      {
+         *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear_with_PT.png"))<<rptNewLine;
+      }
    }
    else
    {
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+      }
+      else
+      {
+         *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+      }
    }
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
@@ -147,7 +164,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
          if ( pArtifact->IsApplicable() )
          {
-            (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+            (*table)(row,0) << location.SetValue( POI_SPAN, poi );
 
             Float64 C = pArtifact->GetCapacityForce();
             Float64 D = pArtifact->GetDemandForce();

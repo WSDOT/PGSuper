@@ -68,10 +68,12 @@ protected:
 
    CPTData* m_pPTData;
    EventIndexType m_CreateEventIndex;
+   EventIndexType m_PrevStressTendonEventIdx;
 
    void AddDuct(const CDuctData& duct,EventIndexType stressingEvent);
 
    virtual int GetColWidth(ROWCOL nCol);
+   virtual BOOL OnLButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT flags,WORD nHitState);
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
 
    void SetRowStyle(ROWCOL row);

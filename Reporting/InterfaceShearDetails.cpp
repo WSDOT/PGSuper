@@ -350,7 +350,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
             // vui table
             col = 0;
             Float64 Vui = pArtifact->GetDemand();
-            (*vui_table)(vui_row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+            (*vui_table)(vui_row,col++) << location.SetValue( POI_SPAN, poi );
 
             if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
             {
@@ -371,7 +371,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          }
 
          // av/s table
-         (*av_table)(av_row,0)  <<  location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*av_table)(av_row,0)  <<  location.SetValue( POI_SPAN, poi );
          (*av_table)(av_row,1)  <<  area.SetValue(pArtifact->GetAvfGirder());
 
          Float64 sv = pArtifact->GetSGirder();
@@ -399,7 +399,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          if (is_app)
          {
             // capacity table
-            (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+            (*table)(row,0) << location.SetValue( POI_SPAN, poi );
             (*table)(row,1) << AvS.SetValue(pArtifact->GetAcv());
             (*table)(row,2) << AvS.SetValue(pArtifact->GetAvOverS());
             (*table)(row,3) << shear_per_length.SetValue( pArtifact->GetNormalCompressionForce() );
@@ -527,7 +527,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
             continue;
          }
 
-         (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
          (*table)(row,col++) << AvS.SetValue(pArtifact->GetAcv());
          (*table)(row,col++) << stress.SetValue( pArtifact->GetVsAvg() );
 

@@ -34,6 +34,8 @@
 
 class CBridgePlanView;
 class CBridgeSectionView;
+class CAlignmentPlanView;
+class CAlignmentProfileView;
 
 #if defined _EAF_USING_MFC_FEATURE_PACK
 #include <EAF\EAFPaneDialog.h>
@@ -94,6 +96,10 @@ public:
 
    CBridgePlanView* GetBridgePlanView();
    CBridgeSectionView* GetBridgeSectionView();
+   CAlignmentPlanView* GetAlignmentPlanView();
+   CAlignmentProfileView* GetAlignmentProfileView();
+   CView* GetUpperView();
+   CView* GetLowerView();
 
    void InitSpanRange(); // call this method to initialize the span range controls
 
@@ -142,6 +148,7 @@ protected:
 public:
    afx_msg void OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
    afx_msg void OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
+   afx_msg void OnViewModeChanged(UINT nIDC);
 };
 
 /////////////////////////////////////////////////////////////////////////////

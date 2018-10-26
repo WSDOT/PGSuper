@@ -83,6 +83,8 @@ protected:
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
+   CRebarMaterialComboBox m_cbRebar;
+
 public:
    void OnEnableDelete(bool canDelete);
 };

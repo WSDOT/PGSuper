@@ -73,6 +73,16 @@ CLongitudinalRebarData& CLongitudinalRebarData::operator= (const CLongitudinalRe
 
 bool CLongitudinalRebarData::operator == (const CLongitudinalRebarData& rOther) const
 {
+   if ( BarType != rOther.BarType )
+   {
+      return false;
+   }
+
+   if ( BarGrade != rOther.BarGrade )
+   {
+      return false;
+   }
+
    return (RebarRows == rOther.RebarRows);
 }
 

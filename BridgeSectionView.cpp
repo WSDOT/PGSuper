@@ -97,7 +97,6 @@ CBridgeSectionView::~CBridgeSectionView()
 
 BEGIN_MESSAGE_MAP(CBridgeSectionView, CDisplayView)
 	//{{AFX_MSG_MAP(CBridgeSectionView)
-	ON_COMMAND(ID_EDIT_BRIDGE, OnEditBridge)
 	ON_COMMAND(ID_EDIT_DECK, OnEditDeck)
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
 	ON_WM_SIZE()
@@ -490,11 +489,6 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
    pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
    delete pMenu;
-}
-
-void CBridgeSectionView::OnEditBridge() 
-{
-   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgeSectionView::OnEditDeck() 

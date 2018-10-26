@@ -883,12 +883,14 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             }
             else
             {
-               if ( bPositiveMoment )
+               if ( bPositiveMoment && (0 < Ns+Nh+Npt) )
                {
+                  // Prestressed case
                   pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);
                }
                else
                {
+                  // Plain reinforced case
                   pmcd->Phi = PhiC + 0.15*(pmcd->et - ecl)/(etl-ecl);
                }
             }

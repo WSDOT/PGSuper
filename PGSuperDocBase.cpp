@@ -242,6 +242,7 @@ BEGIN_MESSAGE_MAP(CPGSuperDocBase, CEAFBrokerDocument)
 	ON_COMMAND(ID_ADD_MOMENT_LOAD, OnAddMomentLoad)
    ON_COMMAND(ID_CONSTRUCTION_LOADS,OnConstructionLoads)
 	ON_COMMAND(ID_PROJECT_ALIGNMENT, OnProjectAlignment)
+   ON_COMMAND(ID_PROJECT_PROFILE, OnProjectProfile)
 	ON_COMMAND(ID_PROJECT_PIERDESC, OnEditPier)
 	ON_COMMAND(ID_PROJECT_SPANDESC, OnEditSpan)
 	ON_COMMAND(ID_DELETE, OnDeleteSelection)
@@ -863,18 +864,24 @@ void CPGSuperDocBase::EditBridgeViewSettings(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   UINT settings = GetBridgeEditorSettings();
+   UINT bridgeViewSettings = GetBridgeEditorSettings();
+   UINT alignmentViewSettings = GetAlignmentEditorSettings();
 
 	CBridgeEditorSettingsSheet dlg(IDS_BM_VIEW_SETTINGS);
-   dlg.SetSettings(settings);
+   dlg.SetBridgeEditorSettings(bridgeViewSettings);
+   dlg.SetAlignmentEditorSettings(alignmentViewSettings);
    dlg.SetActivePage(nPage);
 
    INT_PTR st = dlg.DoModal();
    if (st==IDOK)
    {
-      settings = dlg.GetSettings();
-      settings |= IDB_PV_DRAW_ISOTROPIC;
-      SetBridgeEditorSettings(settings);
+      bridgeViewSettings = dlg.GetBridgeEditorSettings();
+      bridgeViewSettings |= IDB_PV_DRAW_ISOTROPIC;
+      SetBridgeEditorSettings(bridgeViewSettings);
+
+      alignmentViewSettings = dlg.GetAlignmentEditorSettings();
+      alignmentViewSettings |= IDB_PV_DRAW_ISOTROPIC;
+      SetAlignmentEditorSettings(alignmentViewSettings);
    }
 
    // tell the world we've changed settings
@@ -1013,6 +1020,56 @@ bool CPGSuperDocBase::UnregisterBridgeSectionViewCallback(IDType ID)
 const std::map<IDType,IBridgeSectionViewEventCallback*>& CPGSuperDocBase::GetBridgeSectionViewCallbacks()
 {
    return m_BridgeSectionViewCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_AlignmentPlanViewCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterAlignmentPlanViewCallback(IDType ID)
+{
+   std::map<IDType,IAlignmentPlanViewEventCallback*>::iterator found = m_AlignmentPlanViewCallbacks.find(ID);
+   if ( found == m_AlignmentPlanViewCallbacks.end() )
+   {
+      return false;
+   }
+
+   m_AlignmentPlanViewCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IAlignmentPlanViewEventCallback*>& CPGSuperDocBase::GetAlignmentPlanViewCallbacks()
+{
+   return m_AlignmentPlanViewCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_AlignmentProfileViewCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterAlignmentProfileViewCallback(IDType ID)
+{
+   std::map<IDType,IAlignmentProfileViewEventCallback*>::iterator found = m_AlignmentProfileViewCallbacks.find(ID);
+   if ( found == m_AlignmentProfileViewCallbacks.end() )
+   {
+      return false;
+   }
+
+   m_AlignmentProfileViewCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IAlignmentProfileViewEventCallback*>& CPGSuperDocBase::GetAlignmentProfileViewCallbacks()
+{
+   return m_AlignmentProfileViewCallbacks;
 }
 
 IDType CPGSuperDocBase::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
@@ -2979,7 +3036,12 @@ void CPGSuperDocBase::OnConstructionLoads()
 
 void CPGSuperDocBase::OnProjectAlignment() 
 {
-   EditAlignmentDescription(0);
+   EditAlignmentDescription(EBD_ROADWAY);
+}
+
+void CPGSuperDocBase::OnProjectProfile()
+{
+   EditAlignmentDescription(EBD_PROFILE);
 }
 
 void CPGSuperDocBase::OnLiveLoads() 
@@ -3675,6 +3737,10 @@ void CPGSuperDocBase::LoadDocumentSettings()
 
    m_BridgeModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("BridgeEditor"),def_bm);
 
+   // the default north up setting for the alignment is whatever the user has for the bridge plan view
+   UINT def_ap = IDA_AP_DRAW_BRIDGE | IDP_AP_DRAW_BRIDGE;
+   m_AlignmentEditorSettings   = pApp->GetProfileInt(_T("Settings"),_T("AlignmentEditor"), def_ap | ((m_BridgeModelEditorSettings&IDB_PV_NORTH_UP)!=0 ? IDA_AP_NORTH_UP : 0));
+
    m_GirderModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("GirderEditor"),def_bm);
 
    m_UIHintSettings = pApp->GetProfileInt(_T("Settings"),_T("UIHints"),0); // default, all hints enabled
@@ -3718,6 +3784,9 @@ void CPGSuperDocBase::SaveDocumentSettings()
 
    // bridge editor view
    VERIFY(pApp->WriteProfileInt(_T("Settings"),_T("BridgeEditor"),m_BridgeModelEditorSettings));
+
+   // alignment editor view
+   VERIFY(pApp->WriteProfileInt(_T("Settings"),_T("AlignmentEditor"),m_AlignmentEditorSettings));
 
    // girder editor view
    VERIFY(pApp->WriteProfileInt(_T("Settings"),_T("GirderEditor"),m_GirderModelEditorSettings));
@@ -4018,6 +4087,16 @@ UINT CPGSuperDocBase::GetBridgeEditorSettings() const
 void CPGSuperDocBase::SetBridgeEditorSettings(UINT settings)
 {
    m_BridgeModelEditorSettings = settings;
+}
+
+UINT CPGSuperDocBase::GetAlignmentEditorSettings() const
+{
+   return m_AlignmentEditorSettings;
+}
+
+void CPGSuperDocBase::SetAlignmentEditorSettings(UINT settings)
+{
+   m_AlignmentEditorSettings = settings;
 }
 
 UINT CPGSuperDocBase::GetGirderEditorSettings() const

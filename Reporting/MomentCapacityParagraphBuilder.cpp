@@ -106,7 +106,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 
 
       // Get Midspan points of interest
-      std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_ERECTED_SEGMENT | POI_5L, POIFIND_AND) );
+      std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_SPAN | POI_5L, POIFIND_AND) );
       ATLASSERT(vPoi.size() == 1);
       pgsPointOfInterest& poi(vPoi.front());
 

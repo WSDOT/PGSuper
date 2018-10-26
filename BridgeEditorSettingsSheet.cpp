@@ -83,18 +83,20 @@ BOOL CBridgeEditorSettingsSheet::OnInitDialog()
 
 void CBridgeEditorSettingsSheet::Init()
 {
-   m_Settings=0;
-
    // Turn on help for the property sheet
    m_psh.dwFlags |= PSH_HASHELP | PSH_NOAPPLYNOW;
    m_BridgeEditorPlanSettingsPage.m_psp.dwFlags |= PSP_HASHELP;
    m_BridgeEditorSectionPage.m_psp.dwFlags |= PSP_HASHELP;
+   m_BridgeEditorAlignmentPage.m_psp.dwFlags |= PSP_HASHELP;
+   m_BridgeEditorProfilePage.m_psp.dwFlags |= PSP_HASHELP;
 
    AddPage(&m_BridgeEditorPlanSettingsPage);
    AddPage(&m_BridgeEditorSectionPage);
+   AddPage(&m_BridgeEditorAlignmentPage);
+   AddPage(&m_BridgeEditorProfilePage);
 }
 
-void CBridgeEditorSettingsSheet::SetSettings(UINT set)
+void CBridgeEditorSettingsSheet::SetBridgeEditorSettings(UINT set)
 {
    // plan view
    m_BridgeEditorPlanSettingsPage.m_LabelPiers     = (set&IDB_PV_LABEL_PIERS)!=0;
@@ -107,7 +109,7 @@ void CBridgeEditorSettingsSheet::SetSettings(UINT set)
    m_BridgeEditorSectionPage.m_ShowDimensions = (set&IDB_CS_SHOW_DIMENSIONS)!=0;
 }
 
-UINT CBridgeEditorSettingsSheet::GetSettings()const 
+UINT CBridgeEditorSettingsSheet::GetBridgeEditorSettings()const 
 {
    UINT set=0;
 
@@ -136,6 +138,34 @@ UINT CBridgeEditorSettingsSheet::GetSettings()const
 
    if(m_BridgeEditorSectionPage.m_ShowDimensions)
       set |= IDB_CS_SHOW_DIMENSIONS;
+
+   return set;
+}
+
+void CBridgeEditorSettingsSheet::SetAlignmentEditorSettings(UINT set)
+{
+   // Alignment
+   m_BridgeEditorAlignmentPage.m_DrawBridge = (set&IDA_AP_DRAW_BRIDGE)!=0;
+   m_BridgeEditorAlignmentPage.m_NorthUp = (set&IDA_AP_NORTH_UP)!=0;
+
+   // Profile
+   m_BridgeEditorProfilePage.m_DrawBridge = (set&IDP_AP_DRAW_BRIDGE)!=0;
+}
+
+UINT CBridgeEditorSettingsSheet::GetAlignmentEditorSettings()const
+{
+   UINT set=0;
+
+   // Alignment
+   if (m_BridgeEditorAlignmentPage.m_DrawBridge)
+      set |= IDA_AP_DRAW_BRIDGE;
+
+   if(m_BridgeEditorAlignmentPage.m_NorthUp)
+      set |= IDA_AP_NORTH_UP;
+
+   // Profile
+   if (m_BridgeEditorProfilePage.m_DrawBridge)
+      set |= IDP_AP_DRAW_BRIDGE;
 
    return set;
 }

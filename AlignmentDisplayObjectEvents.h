@@ -40,7 +40,13 @@ class CBridgeModelViewChildFrame;
 class CAlignmentDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CAlignmentDisplayObjectEvents(IBroker* pDoc, CBridgeModelViewChildFrame* pFrame);
+   typedef enum ViewType
+   {
+      Bridge,
+      Alignment
+   } ViewType;
+
+   CAlignmentDisplayObjectEvents(IBroker* pDoc, CBridgeModelViewChildFrame* pFrame,ViewType viewType,iDisplayObject* pDO = NULL);
    ~CAlignmentDisplayObjectEvents();
 
    virtual void OnFinalRelease();
@@ -77,6 +83,7 @@ protected:
    END_INTERFACE_PART(DropSite)
 
 private:
+   ViewType m_ViewType;
    IBroker* m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
    CComPtr<iDisplayObject> m_DispObj;

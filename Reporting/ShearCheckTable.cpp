@@ -128,7 +128,7 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
 
          if ( pArtifact->IsApplicable() )
          {
-            (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+            (*table)(row,0) << location.SetValue( POI_SPAN, poi );
             (*table)(row,1) << (pArtifact->GetAreStirrupsReqd()     ? _T("Yes") : _T("No"));
             (*table)(row,2) << (pArtifact->GetAreStirrupsProvided() ? _T("Yes") : _T("No"));
 
@@ -222,7 +222,7 @@ void CShearCheckTable::BuildNotes(rptChapter* pChapter,
 
             if ( pArtifact->DidAvsDecreaseAtEnd() )
             {
-               *p << RPT_FAIL << _T(" - The shear capacity, V")<< Sub(_T("s")) << _T(" at ") << location.SetValue(POI_ERECTED_SEGMENT, poi)
+               *p << RPT_FAIL << _T(" - The shear capacity, V")<< Sub(_T("s")) << _T(" at ") << location.SetValue(POI_SPAN, poi)
                   << _T(" is less than the capacity at the design section (CS). Revise stirrup details to increase ") << Sub2(_T("A"),_T("v")) << _T("/S")
                   << _T(" at this location.") << rptNewLine;
             }

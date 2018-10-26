@@ -133,7 +133,7 @@ public:
    bool GetStrand(Float64* pdps,Float64* pfps,Float64* pfyps,Float64* pEps) const;
 
    void SetTendon(Float64 dpt,Float64 fpt,Float64 fypt,Float64 Ept);
-   bool GetTendon(Float64* pdpt,Float64* pfpt,Float64* pfypt,Float64* pEpt);
+   bool GetTendon(Float64* pdpt,Float64* pfpt,Float64* pfypt,Float64* pEpt) const;
 
    void SetEg(Float64 Eg);
    Float64 GetEg() const;

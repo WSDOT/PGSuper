@@ -9,7 +9,6 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include "HtmlHelp\HelpTopics.hh"
-#include <PsgLib\RebarUIUtils.h>
 
 
 // CClosureJointLongitudinalReinforcementPage dialog
@@ -34,22 +33,21 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
 	//}}AFX_DATA_MAP
 	DDV_GXGridWnd(pDX, &m_Grid);
 
+   DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
+
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
+
 
    // longitudinal steel information from grid and store it
    if (pDX->m_bSaveAndValidate)
    {
       CLongitudinalRebarData& rebarData(pParent->m_ClosureJoint.GetRebar());
-
-      int idx;
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
+      DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,rebarData.BarType,rebarData.BarGrade);
       m_Grid.GetRebarData(&rebarData);
    }
    else
    {
-      int idx = GetStirrupMaterialIndex(pParent->m_ClosureJoint.GetStirrups().ShearBarType,pParent->m_ClosureJoint.GetStirrups().ShearBarGrade);
-      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+      DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,pParent->m_ClosureJoint.GetStirrups().ShearBarType,pParent->m_ClosureJoint.GetStirrups().ShearBarGrade);
       m_Grid.FillGrid(pParent->m_ClosureJoint.GetRebar());
    }
 }
@@ -76,10 +74,6 @@ BOOL CClosureJointLongitudinalReinforcementPage::OnInitDialog()
 {
 	m_Grid.SubclassDlgItem(IDC_LONG_GRID, this);
    m_Grid.CustomInit();
-
-   CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

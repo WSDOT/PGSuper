@@ -30,6 +30,8 @@
 //
 #include "BridgeEditorPlanSettingsPage.h"
 #include "BridgeEditorSectionPage.h"
+#include "BridgeEditorAlignmentSettingsPage.h"
+#include "BridgeEditorProfileSettingsPage.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeEditorSettingsSheet
@@ -70,15 +72,19 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
-   void SetSettings(UINT settings);
-   UINT GetSettings()const;
+   void SetBridgeEditorSettings(UINT settings);
+   UINT GetBridgeEditorSettings()const;
+
+   void SetAlignmentEditorSettings(UINT settings);
+   UINT GetAlignmentEditorSettings()const;
 
 private:
    void Init();
 
    CBridgeEditorPlanSettingsPage m_BridgeEditorPlanSettingsPage;
    CBridgeEditorSectionPage      m_BridgeEditorSectionPage;
-   UINT m_Settings;
+   CBridgeEditorAlignmentSettingsPage    m_BridgeEditorAlignmentPage;
+   CBridgeEditorProfileSettingsPage m_BridgeEditorProfilePage;
 };
 
 /////////////////////////////////////////////////////////////////////////////

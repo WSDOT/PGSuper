@@ -1183,6 +1183,16 @@ IDType CPGSuperDocProxyAgent::RegisterBridgeSectionViewCallback(IBridgeSectionVi
    return m_pMyDocument->RegisterBridgeSectionViewCallback(pCallback);
 }
 
+IDType CPGSuperDocProxyAgent::RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback)
+{
+   return m_pMyDocument->RegisterAlignmentPlanViewCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback)
+{
+   return m_pMyDocument->RegisterAlignmentProfileViewCallback(pCallback);
+}
+
 IDType CPGSuperDocProxyAgent::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
 {
    return m_pMyDocument->RegisterGirderElevationViewCallback(pCallback);
@@ -1201,6 +1211,16 @@ bool CPGSuperDocProxyAgent::UnregisterBridgePlanViewCallback(IDType ID)
 bool CPGSuperDocProxyAgent::UnregisterBridgeSectionViewCallback(IDType ID)
 {
    return m_pMyDocument->UnregisterBridgeSectionViewCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterAlignmentPlanViewCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterAlignmentPlanViewCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterAlignmentProfileViewCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterAlignmentProfileViewCallback(ID);
 }
 
 bool CPGSuperDocProxyAgent::UnregisterGirderElevationViewCallback(IDType ID)

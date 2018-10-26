@@ -435,7 +435,7 @@ void write_moment_data_table(IBroker* pBroker,
 
       col = 0;
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << dim.SetValue( mcd.c );
       (*table)(row,col++) << dim.SetValue( mcd.dc );
       (*table)(row,col++) << dim.SetValue( mcd.de );
@@ -643,7 +643,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
          }
       }
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
       (*table)(row,1) << stress.SetValue( cmd.fr );
       (*table)(row,2) << stress.SetValue( cmd.fcpe);
       (*table)(row,3) << sect_mod.SetValue( cmd.Sb );
@@ -785,7 +785,7 @@ void write_min_moment_data_table(IBroker* pBroker,
       MINMOMENTCAPDETAILS mmcd;
       pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mmcd);
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       if ( bBefore2012 )
       {
          (*table)(row,col++) << moment.SetValue( mmcd.Mcr );
@@ -924,7 +924,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
       if ( mcd.bOverReinforced )
       {
-         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*table)(row,0) << location.SetValue( POI_SPAN, poi );
          (*table)(row,1) << scalar.SetValue( mcd.Beta1Slab );
          (*table)(row,2) << stress.SetValue( mcd.FcSlab );
          (*table)(row,3) << dim.SetValue( mcd.b );

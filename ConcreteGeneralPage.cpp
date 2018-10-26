@@ -334,17 +334,8 @@ void CConcreteGeneralPage::OnConcreteType()
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
    pgsTypes::ConcreteType type = (pgsTypes::ConcreteType)pcbConcreteType->GetItemData(pcbConcreteType->GetCurSel());
 
-   //BOOL bEnable = (type == pgsTypes::Normal ? FALSE : TRUE);
-   //GetDlgItem(IDC_HAS_AGG_STRENGTH)->EnableWindow(bEnable);
-   //GetDlgItem(IDC_AGG_STRENGTH)->EnableWindow(bEnable);
-   //GetDlgItem(IDC_AGG_STRENGTH_T)->EnableWindow(bEnable);
-
    GetDlgItem(IDC_DS)->Invalidate();
    GetDlgItem(IDC_DW)->Invalidate();
-
-#pragma Reminder("UPDATE: need to deal with thsi on the AASHTO page")
-   //if ( bEnable )
-   //   OnAggSplittingStrengthClicked();
 }
 
 HBRUSH CConcreteGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
@@ -399,10 +390,7 @@ void CConcreteGeneralPage::OnOK()
 
    if ( !m_bErrorInDDX && !IsDensityInRange(m_Ds,m_Type) )
    {
-      if (m_Type == pgsTypes::Normal)
-         AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-      else
-         AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+      AfxMessageBox(m_Type == pgsTypes::Normal ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
    }
 }
 

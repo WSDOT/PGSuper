@@ -82,7 +82,6 @@ protected:
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CBridgeSectionView)
-	afx_msg void OnEditBridge();
 	afx_msg void OnEditDeck();
 	afx_msg void OnViewSettings();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
