@@ -26,8 +26,10 @@ var machine = objNet.ComputerName;
 machine = machine.toUpperCase();
 if (machine=="RDPTHINKPAD")
    PGSuperDrive = "C:";
-else if (machine=="HQA7326026")
-   PGSuperDrive = "C:";
+else if (machine=="HQB0630025")
+   PGSuperDrive = "F:";
+else if (machine=="HQA4434036")
+   PGSuperDrive = "F:";
 
 var wsShell = new ActiveXObject("WScript.Shell");
 var FSO = new ActiveXObject("Scripting.FileSystemObject");

@@ -1,0 +1,13 @@
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 13.00   2  0.00     1     1 Stand  *    48   5/8  270  5.23  5.23   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.500  5.000    1.876   -1.877   2267  0.500  1.000  0.04  0.00  0.00 -0.00 -0.00 106.03 411.88   0.00   2.00   2.00
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+
+

@@ -1,5 +1,5 @@
-Build started at  November 28, 2011  12:36:13
-Output Package: C:\ARP_INSTALLER\Install_PGSuper_Source_2.5.2.1.exe
+Build started at  January 23, 2012  11:34:56
+Output Package: F:\ARP_INSTALLER\Install_PGSuper_Source_2.5.3.0.exe
 Creating Package
      File 'AASHTO.lbr' in package.
      File 'AlignmentDescriptionDlg.cpp' in package.
@@ -2406,6 +2406,7 @@ Creating Package
      File 'StdAfx.cpp' in package.
      File 'StdAfx.h' in package.
      File '139th_Street_Span_4.pgs' in package.
+     File 'AREMA_Loading.pgs' in package.
      File 'BSA_BDM_Example.pgs' in package.
      File 'BSA_BDM_Example.xmcd' in package.
      File 'DiaphragmLoadBug.pgs' in package.
@@ -2947,6 +2948,8 @@ Creating Package
      File 'TOGA_9.toga' in package.
      File '139th_Street_Span_4.dbr' in package.
      File '139th_Street_Span_4@TxDT_All_EI.Test' in package.
+     File 'AREMA_Loading.dbr' in package.
+     File 'AREMA_Loading@TxDT_All_EI.Test' in package.
      File 'BSA_BDM_Example.dbr' in package.
      File 'BSA_BDM_Example@TxDT_All_EI.Test' in package.
      File 'DiaphragmLoadBug.dbr' in package.
@@ -4422,4 +4425,4 @@ Creating EXE
      Creating data section...
      Appending Data Section
      Appending File Groups
-Build completed at  November 28, 2011  12:36:59
+Build completed at  January 23, 2012  11:36:08

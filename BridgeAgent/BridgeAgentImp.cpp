@@ -12068,6 +12068,8 @@ void CBridgeAgentImp::GetProfileShape(SpanIndexType spanIdx,GirderIndexType gdrI
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   GirderIndexType nGirders = pSpan->GetGirderCount();
+   gdrIdx = min(nGirders-1,gdrIdx);
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
 
 #if defined _DEBUG
@@ -12086,6 +12088,8 @@ bool CBridgeAgentImp::HasShearKey(SpanIndexType spanIdx,GirderIndexType gdrIdx,p
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   GirderIndexType nGirders = pSpan->GetGirderCount();
+   gdrIdx = min(nGirders-1,gdrIdx);
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    CComPtr<IBeamFactory> beamFactory;
    pGirderEntry->GetBeamFactory(&beamFactory);
@@ -12098,6 +12102,8 @@ void CBridgeAgentImp::GetShearKeyAreas(SpanIndexType spanIdx,GirderIndexType gdr
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   GirderIndexType nGirders = pSpan->GetGirderCount();
+   gdrIdx = min(nGirders-1,gdrIdx);
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    CComPtr<IBeamFactory> beamFactory;
    pGirderEntry->GetBeamFactory(&beamFactory);

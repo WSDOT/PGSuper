@@ -166,7 +166,10 @@ void txnDeleteSpan::Undo()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,m_pDeletedSpan,m_pDeletedPier);
+   if ( m_RefPierIdx == 0 && m_PierFace == pgsTypes::Ahead )
+      pIBridgeDesc->InsertSpan(m_RefPierIdx,pgsTypes::Back,m_SpanLength,m_pDeletedSpan,m_pDeletedPier);
+   else
+      pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,m_pDeletedSpan,m_pDeletedPier);
 
    pEvents->FirePendingEvents();
 }

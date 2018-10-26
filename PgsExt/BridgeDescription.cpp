@@ -203,7 +203,7 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       hr = pStrLoad->BeginUnit(_T("BridgeDescription"));
 
-      double version;
+      Float64 version;
       pStrLoad->get_Version(&version);
       
       CComVariant var;
@@ -826,14 +826,25 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
       pNextPier->SetConnectionLibraryEntry(pgsTypes::Back, pNextPier->GetConnectionLibraryEntry(pgsTypes::Ahead) );
    }
 
-   // offset all piers after the new pier by the length of the new span
-   if (newSpanLength>0.0)
+   // Adjust location of down-station piers
+   if ( refPierIdx == 0 && refSpanIdx == 0 && pierFace == pgsTypes::Back )
    {
-      std::vector<CPierData*>::iterator pierIter;
-      for ( pierIter = backPierIter + 1; pierIter != m_Piers.end(); pierIter++ )
+      // If the new span is inserted before the first span, its station is
+      CPierData* pFirstInteriorPier = m_Piers[1];
+      CPierData* pPier = m_Piers.front();
+      pPier->SetStation(pFirstInteriorPier->GetStation() - newSpanLength);
+   }
+   else
+   {
+      // otherwise, offset all piers after the new pier by the length of the new span
+      if ( 0.0 < newSpanLength )
       {
-         CPierData* pPier = *pierIter;
-         pPier->SetStation( pPier->GetStation() + newSpanLength);
+         std::vector<CPierData*>::iterator pierIter;
+         for ( pierIter = backPierIter + 1; pierIter != m_Piers.end(); pierIter++ )
+         {
+            CPierData* pPier = *pierIter;
+            pPier->SetStation( pPier->GetStation() + newSpanLength);
+         }
       }
    }
 
@@ -852,7 +863,7 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
    CPierData* pPrevPier = pSpan->GetPrevPier();
    CPierData* pNextPier = pSpan->GetNextPier();
 
-   double span_length = pSpan->GetSpanLength();
+   Float64 span_length = pSpan->GetSpanLength();
    PierIndexType removePierIdx;
 
    if ( rmPierType == pgsTypes::PrevPier )
@@ -874,12 +885,19 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
 
    RenumberSpans();
 
-   // offset all piers after the pir that was removed by the length of the span that was removed
-   std::vector<CPierData*>::iterator pierIter;
-   for ( pierIter = m_Piers.begin()+removePierIdx; pierIter != m_Piers.end(); pierIter++ )
+   if ( spanIdx == 0 && removePierIdx == 0 )
    {
-      CPierData* pPier = *pierIter;
-      pPier->SetStation( pPier->GetStation() - span_length );
+      // Don't alter bridge if first pier and span are removed
+   }
+   else
+   {
+      // offset all piers after the pier that was removed by the length of the span that was removed
+      std::vector<CPierData*>::iterator pierIter;
+      for ( pierIter = m_Piers.begin()+removePierIdx; pierIter != m_Piers.end(); pierIter++ )
+      {
+         CPierData* pPier = *pierIter;
+         pPier->SetStation( pPier->GetStation() - span_length );
+      }
    }
 
    AssertValid();
@@ -1033,12 +1051,12 @@ pgsTypes::GirderOrientationType CBridgeDescription::GetGirderOrientation() const
    return m_GirderOrientation;
 }
 
-void CBridgeDescription::SetGirderSpacing(double spacing)
+void CBridgeDescription::SetGirderSpacing(Float64 spacing)
 {
    m_GirderSpacing = spacing;
 }
 
-double CBridgeDescription::GetGirderSpacing() const
+Float64 CBridgeDescription::GetGirderSpacing() const
 {
    return m_GirderSpacing;
 }
@@ -1073,12 +1091,12 @@ pgsTypes::MeasurementLocation CBridgeDescription::GetMeasurementLocation() const
    return m_MeasurementLocation;
 }
 
-bool CBridgeDescription::SetSpanLength(SpanIndexType spanIdx,double newLength)
+bool CBridgeDescription::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
 {
    _ASSERT( 0 < newLength );
    CSpanData* pSpan = GetSpan(spanIdx);
-   double length = pSpan->GetSpanLength();
-   double deltaL = newLength - length;
+   Float64 length = pSpan->GetSpanLength();
+   Float64 deltaL = newLength - length;
 
    if ( IsZero(deltaL) )
       return false;
@@ -1104,12 +1122,12 @@ GirderIndexType CBridgeDescription::GetRefGirder() const
    return m_RefGirderIdx;
 }
 
-void CBridgeDescription::SetRefGirderOffset(double offset)
+void CBridgeDescription::SetRefGirderOffset(Float64 offset)
 {
    m_RefGirderOffset = offset;
 }
 
-double CBridgeDescription::GetRefGirderOffset() const
+Float64 CBridgeDescription::GetRefGirderOffset() const
 {
    return m_RefGirderOffset;
 }
@@ -1124,12 +1142,12 @@ pgsTypes::OffsetMeasurementType CBridgeDescription::GetRefGirderOffsetType() con
    return m_RefGirderOffsetType;
 }
 
-void CBridgeDescription::SetAlignmentOffset(double alignmentOffset)
+void CBridgeDescription::SetAlignmentOffset(Float64 alignmentOffset)
 {
    m_AlignmentOffset = alignmentOffset;
 }
 
-double CBridgeDescription::GetAlignmentOffset() const
+Float64 CBridgeDescription::GetAlignmentOffset() const
 {
    return m_AlignmentOffset;
 }
@@ -1189,7 +1207,7 @@ pgsTypes::DistributionFactorMethod CBridgeDescription::GetDistributionFactorMeth
    return m_LLDFMethod;
 }
 
-bool CBridgeDescription::MovePier(PierIndexType pierIdx,double newStation,pgsTypes::MovePierOption moveOption)
+bool CBridgeDescription::MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption)
 {
    bool bRetVal = false;
    switch( moveOption )
@@ -1214,12 +1232,12 @@ bool CBridgeDescription::MovePier(PierIndexType pierIdx,double newStation,pgsTyp
    return bRetVal;
 }
 
-bool CBridgeDescription::MoveBridge(PierIndexType pierIdx,double newStation)
+bool CBridgeDescription::MoveBridge(PierIndexType pierIdx,Float64 newStation)
 {
    // move pierIdx to newStation and keep all the span lengths constant
    CPierData* pPier = GetPier(pierIdx);
-   double old_station = pPier->GetStation();
-   double deltaStation = newStation - old_station;
+   Float64 old_station = pPier->GetStation();
+   Float64 deltaStation = newStation - old_station;
    if ( IsZero(deltaStation) )
       return false;
 
@@ -1248,14 +1266,14 @@ bool CBridgeDescription::MoveBridge(PierIndexType pierIdx,double newStation)
    return true;
 }
 
-bool CBridgeDescription::MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,double newStation)
+bool CBridgeDescription::MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64 newStation)
 {
    // move pierIdx and all piers that come after it by delta
    // this will retain the length of all spans execpt for the one
    // immedately before the pier
    CPierData* pPier = GetPier(pierIdx);
-   double old_station = pPier->GetStation();
-   double deltaStation = newStation - old_station;
+   Float64 old_station = pPier->GetStation();
+   Float64 deltaStation = newStation - old_station;
    if ( IsZero(deltaStation) )
       return false;
 
@@ -1274,14 +1292,14 @@ bool CBridgeDescription::MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,double n
    return true;
 }
 
-bool CBridgeDescription::MoveBridgeAdjustNextSpan(PierIndexType pierIdx,double newStation)
+bool CBridgeDescription::MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64 newStation)
 {
    // move pierIdx and all piers that come before it by delta
    // this will retain the length of all spans execpt for the one
    // immedately after the pier
    CPierData* pPier = GetPier(pierIdx);
-   double old_station = pPier->GetStation();
-   double deltaStation = newStation - old_station;
+   Float64 old_station = pPier->GetStation();
+   Float64 deltaStation = newStation - old_station;
    if ( IsZero(deltaStation) )
       return false;
 
@@ -1300,11 +1318,11 @@ bool CBridgeDescription::MoveBridgeAdjustNextSpan(PierIndexType pierIdx,double n
    return true;
 }
 
-bool CBridgeDescription::MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,double newStation)
+bool CBridgeDescription::MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Float64 newStation)
 {
    CPierData* pPier = GetPier(pierIdx);
-   double old_station = pPier->GetStation();
-   double deltaStation = newStation - old_station;
+   Float64 old_station = pPier->GetStation();
+   Float64 deltaStation = newStation - old_station;
    if ( IsZero(deltaStation) )
       return false;
 
