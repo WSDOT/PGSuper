@@ -146,6 +146,7 @@
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
+#include <PgsExt\DesignConfigUtil.h>
 
 #include <PgsExt\ReportStyleHolder.h>
 
@@ -535,6 +536,7 @@ bool CPGSuperDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segment
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IStrandGeometry,pStrandGeometry);
 
    const CBridgeDescription2* pBridgeDesc  = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager*    pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -558,15 +560,26 @@ bool CPGSuperDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segment
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
+   bool allowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(segmentKey);
+   bool allowHpAdjustment  = 0.0 <= pStrandGeometry->GetHarpedHpOffsetIncrement(segmentKey);
+
+   // Legacy strand adjustments cause problems in UI. Fix them if need be
+   if (allowEndAdjustment)
+   {
+      DealWithLegacyEndHarpedStrandAdjustment(segmentKey, oldSegmentData.m_SegmentData, pStrandGeometry);
+   }
+
+   if (allowHpAdjustment)
+   {
+      DealWithLegacyHpHarpedStrandAdjustment(segmentKey, oldSegmentData.m_SegmentData, pStrandGeometry);
+   }
+
    // Get current offset input values - dialog will force in bounds if needed
    HarpedStrandOffsetType endMeasureType = pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd();
    HarpedStrandOffsetType hpMeasureType  = pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint();
 
    Float64 hpOffsetAtEnd = pSegment->Strands.GetHarpStrandOffsetAtEnd();
    Float64 hpOffsetAtHp  = pSegment->Strands.GetHarpStrandOffsetAtHarpPoint();
-
-   bool allowEndAdjustment = pGdrEntry->IsVerticalAdjustmentAllowedEnd();
-   bool allowHpAdjustment  = pGdrEntry->IsVerticalAdjustmentAllowedHP();
 
    // Max debond length is 1/2 girder length
    Float64 maxDebondLength = pBridge->GetSegmentLength(segmentKey)/2.0;
@@ -1337,8 +1350,8 @@ void CPGSuperDocBase::InitProjectProperties()
 
    GET_IFACE( IProjectProperties, pProjProp );
 
-   pProjProp->SetEngineer(std::_tstring(engineer_name));
-   pProjProp->SetCompany(std::_tstring(company));
+   pProjProp->SetEngineer(engineer_name);
+   pProjProp->SetCompany(company);
 
    if ( ShowProjectPropertiesOnNewProject() )
    {
@@ -1796,7 +1809,7 @@ BOOL CPGSuperDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
    }
 
    // we want to use some special agents
-   CLSID clsid[] = {CLSID_SysAgent,CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
+   CLSID clsid[] = {CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
    if ( !CEAFBrokerDocument::LoadAgents(pBrokerInit, clsid, sizeof(clsid)/sizeof(CLSID) ) )
    {
       return FALSE;

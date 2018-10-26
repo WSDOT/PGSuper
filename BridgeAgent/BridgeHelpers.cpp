@@ -79,12 +79,12 @@ PierIndexType GetPierIndex(PierIDType pierLineID)
 
 SupportIDType GetTempSupportLineID(SupportIndexType tsIdx)
 {
-   return (SupportIDType)(tsIdx + TEMPORARY_SUPPORT_ID_OFFSET);
+   return -(SupportIDType)(tsIdx + TEMPORARY_SUPPORT_ID_OFFSET);
 }
 
 SupportIndexType GetTempSupportIndex(SupportIDType tsLineID)
 {
-   return (SupportIndexType)(tsLineID - TEMPORARY_SUPPORT_ID_OFFSET);
+   return (SupportIndexType)(-tsLineID - TEMPORARY_SUPPORT_ID_OFFSET);
 }
 
 LineIDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx)

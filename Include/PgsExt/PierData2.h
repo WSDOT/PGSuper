@@ -28,6 +28,7 @@
 #include <PsgLib\ConnectionLibraryEntry.h>
 
 #include <PgsExt\GirderSpacing2.h>
+#include <PgsExt\ColumnData.h>
 
 class CSpanData2;
 class CBridgeDescription2;
@@ -92,7 +93,7 @@ public:
    // =================================================================================
 
    // Returns a consistent string name for a pier connection type.
-   static LPCTSTR AsString(pgsTypes::PierConnectionType type);
+   static LPCTSTR AsString(pgsTypes::BoundaryConditionType type);
 
    // Returns a consistent string name for a pier segment connection type.
    static LPCTSTR AsString(pgsTypes::PierSegmentConnectionType type);
@@ -154,13 +155,11 @@ public:
    Float64 GetCantileverLength() const;
 
    // Set/Get the connection type at the pier (boundary condition)
-   // when used with a Boundary Pier the connection type can be any of the pgsTypes::PierConnectionType enum values
-   // when used with an Interior Pier, the connection type must be limited to Hinge or Roller. The Segment
-   // Connection Type will determine the connectivity between the super- and substructures.
-   pgsTypes::PierConnectionType GetPierConnectionType() const;
-   void SetPierConnectionType(pgsTypes::PierConnectionType type);
+   // Used only with Boundary Piers
+   pgsTypes::BoundaryConditionType GetBoundaryConditionType() const;
+   void SetBoundaryConditionType(pgsTypes::BoundaryConditionType type);
 
-   // Set/Get the segment connection type (not used if pier is a BoundaryPier, i.e not used if IsBoundaryPier() returns true)
+   // Set/Get the segment connection type at Interior Piers
    // When setting the connection type to pgsTypes::psctContinuousSegment or pgsTypes::psctIntegralSegment 
    // the casting event for the closures that are created at this pier are set to castClosureJointEvent
    // otherwise this parameter is not used.
@@ -193,6 +192,62 @@ public:
    CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
    const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
 
+   // =================================================================================
+   // Pier Model - left/right side of pier is based on looking ahead on station
+   // =================================================================================
+
+   // Set/Get the pier model type.
+   pgsTypes::PierModelType GetPierModelType() const;
+   void SetPierModelType(pgsTypes::PierModelType modelType);
+
+   void SetModE(Float64 Ec);
+   Float64 GetModE() const;
+
+   // NOTE: Cross Beam and Column Data is only used if the pier model type is Physical
+
+   void SetTransverseOffset(ColumnIndexType refColumnIdx,Float64 offset,pgsTypes::OffsetMeasurementType offsetType);
+   void GetTransverseOffset(ColumnIndexType* pRefColumnIdx,Float64* pOffset,pgsTypes::OffsetMeasurementType* pOffsetType);
+
+   /////////////////////////////////////////////////////////////////////
+   // Cross Beam
+   /////////////////////////////////////////////////////////////////////
+   void SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,Float64 taperHeight,Float64 taperLength);
+   void GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength) const;
+   void SetXBeamWidth(Float64 width);
+   Float64 GetXBeamWidth() const;
+   void SetXBeamOverhang(pgsTypes::PierSideType side,Float64 overhang);
+   void SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang);
+   Float64 GetXBeamOverhang(pgsTypes::PierSideType side) const;
+   void GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const;
+
+   /////////////////////////////////////////////////////////////////////
+   // Columns
+   /////////////////////////////////////////////////////////////////////
+
+   // removes all but one column from the pier model (there is minimum of one column per pier)
+   void RemoveColumns();
+
+   // Adds a column to the right side of the pier
+   void AddColumn(Float64 offset,const CColumnData& columnData);
+
+   // Sets the column spacing
+   void SetColumnSpacing(SpacingIndexType spaceIdx,Float64 spacing);
+
+   // Sets the definition of a column
+   void SetColumnData(ColumnIndexType colIdx,const CColumnData& columnData);
+
+   // Sets the number of columns... if the column count increses, the new columns
+   // are copies of the right most column at the right most spacing.
+   void SetColumnCount(ColumnIndexType nColumns);
+
+   // Returns the number of columns
+   ColumnIndexType GetColumnCount() const;
+
+   // Returns the column spacing
+   Float64 GetColumnSpacing(SpacingIndexType spaceIdx) const;
+
+   // Returns the definition of a column
+   const CColumnData& GetColumnData(ColumnIndexType colIdx) const;
 
    // =================================================================================
    // Diaphragm
@@ -240,7 +295,7 @@ private:
 
    Float64 m_Station;
    std::_tstring m_strOrientation;
-   pgsTypes::PierConnectionType m_PierConnectionType; // defines connection when pier is at a boundary between girder groups
+   pgsTypes::BoundaryConditionType m_BoundaryConditionType; // defines connection when pier is at a boundary between girder groups
    pgsTypes::PierSegmentConnectionType m_SegmentConnectionType; // defines segment connection when pier is in the middle of a girder group
 
    bool m_bHasCantilever;
@@ -253,6 +308,27 @@ private:
    Float64 m_SupportWidth[2];
 
    CGirderSpacing2 m_GirderSpacing[2]; // index is pgsTypes::PierFaceType
+
+   pgsTypes::PierModelType m_PierModelType; 
+
+   Float64 m_Ec; // modulus of elasticity for the pier
+
+   // This data only used if m_PierModelType is pgsTypes::pmtPhysical
+   // Transverse location of the pier relative to the alignment or bridge line
+   ColumnIndexType m_RefColumnIdx;
+   Float64 m_TransverseOffset;
+   pgsTypes::OffsetMeasurementType m_TransverseOffsetMeasurement;
+
+   // Cross Beam Dimensions (array index is PierSideType enum)
+   Float64 m_XBeamHeight[2];
+   Float64 m_XBeamTaperHeight[2];
+   Float64 m_XBeamTaperLength[2];
+   Float64 m_XBeamOverhang[2];
+   Float64 m_XBeamWidth;
+
+   // Column Dimensions and Layout
+   std::vector<Float64> m_ColumnSpacing;
+   std::vector<CColumnData> m_Columns;
 
    Float64 m_DiaphragmHeight[2];
    Float64 m_DiaphragmWidth[2];
@@ -294,7 +370,7 @@ private:
 
    GirderIndexType GetLldfGirderCount() const;
 
-   void ValidatePierConnectionType();
+   void ValidateBoundaryConditionType();
 
    HRESULT LoadOldPierData(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress,const std::_tstring& strUnitName);
 

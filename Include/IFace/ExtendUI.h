@@ -60,7 +60,7 @@ interface IEditPierData
 {
    virtual PierIndexType GetPierCount() = 0;
    virtual PierIndexType GetPier() = 0;
-   virtual pgsTypes::PierConnectionType GetConnectionType() = 0;
+   virtual pgsTypes::BoundaryConditionType GetConnectionType() = 0;
    virtual GirderIndexType GetGirderCount(pgsTypes::PierFaceType face) = 0;
 };
 
@@ -111,7 +111,7 @@ interface IEditSpanData
 {
    virtual SpanIndexType GetSpanCount() = 0;
    virtual SpanIndexType GetSpan() = 0;
-   virtual pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end) = 0;
+   virtual pgsTypes::BoundaryConditionType GetConnectionType(pgsTypes::MemberEndType end) = 0;
    virtual GirderIndexType GetGirderCount() = 0;
 };
 

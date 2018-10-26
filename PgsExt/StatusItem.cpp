@@ -538,7 +538,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
             CSpanData2* pNextSpan = pPier->GetNextSpan();
             while ( pNextSpan )
             {
-               pPier->SetPierConnectionType(dlg.m_BoundaryCondition);
+               pPier->SetBoundaryConditionType(dlg.m_BoundaryCondition);
                pPier = pNextSpan->GetNextPier();
                pNextSpan = pPier->GetNextSpan();
             }

@@ -82,12 +82,12 @@ void txnEditProjectProperties::Execute(int i)
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 
-   pProjProp->SetBridgeName( m_BridgeName[i] );
-   pProjProp->SetBridgeID(   m_BridgeID[i]   );
-   pProjProp->SetJobNumber(  m_JobNumber[i]  );
-   pProjProp->SetEngineer(   m_Engineer[i]   );
-   pProjProp->SetCompany(    m_Company[i]    );
-   pProjProp->SetComments(   m_Comment[i]    );
+   pProjProp->SetBridgeName( m_BridgeName[i].c_str() );
+   pProjProp->SetBridgeID(   m_BridgeID[i].c_str()   );
+   pProjProp->SetJobNumber(  m_JobNumber[i].c_str()  );
+   pProjProp->SetEngineer(   m_Engineer[i].c_str()   );
+   pProjProp->SetCompany(    m_Company[i].c_str()    );
+   pProjProp->SetComments(   m_Comment[i].c_str()    );
 
    pEvents->FirePendingEvents();
 }

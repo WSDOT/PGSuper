@@ -2250,24 +2250,24 @@ HRESULT CProjectAgentImp::PierDataProc2(IStructuredSave* pSave,IStructuredLoad* 
       // continuous is not a valid input for the first and last pier, but bugs in the preview releases
       // made it possible to have this input
       CPierData2* pFirstPier = pObj->m_BridgeDescription.GetPier(0);
-      if ( pFirstPier->GetPierConnectionType() == pgsTypes::ContinuousAfterDeck )
+      if ( pFirstPier->GetBoundaryConditionType() == pgsTypes::bctContinuousAfterDeck )
       {
-         pFirstPier->SetPierConnectionType(pgsTypes::IntegralAfterDeck );
+         pFirstPier->SetBoundaryConditionType(pgsTypes::bctIntegralAfterDeck );
       }
-      else if ( pFirstPier->GetPierConnectionType() == pgsTypes::ContinuousBeforeDeck )
+      else if ( pFirstPier->GetBoundaryConditionType() == pgsTypes::bctContinuousBeforeDeck )
       {
-         pFirstPier->SetPierConnectionType( pgsTypes::IntegralBeforeDeck );
+         pFirstPier->SetBoundaryConditionType( pgsTypes::bctIntegralBeforeDeck );
       }
 
 
       CPierData2* pLastPier = pObj->m_BridgeDescription.GetPier( pObj->m_BridgeDescription.GetPierCount()-1 );
-      if ( pLastPier->GetPierConnectionType() == pgsTypes::ContinuousAfterDeck )
+      if ( pLastPier->GetBoundaryConditionType() == pgsTypes::bctContinuousAfterDeck )
       {
-         pLastPier->SetPierConnectionType( pgsTypes::IntegralAfterDeck );
+         pLastPier->SetBoundaryConditionType( pgsTypes::bctIntegralAfterDeck );
       }
-      else if ( pLastPier->GetPierConnectionType() == pgsTypes::ContinuousBeforeDeck )
+      else if ( pLastPier->GetBoundaryConditionType() == pgsTypes::bctContinuousBeforeDeck )
       {
-         pLastPier->SetPierConnectionType( pgsTypes::IntegralBeforeDeck );
+         pLastPier->SetBoundaryConditionType( pgsTypes::bctIntegralBeforeDeck );
       }
    }
 
@@ -4446,13 +4446,8 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries()
    }
 }
 
-void CProjectAgentImp::UpdateStrandMaterial()
+void CProjectAgentImp::UpdateConcreteMaterial()
 {
-   // Get the lookup key for the strand material based on the current units
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-
-   std::map<CSegmentKey,Int32> keys[3]; // map value is strand pool key, array index is strand type
-
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -4465,14 +4460,82 @@ void CProjectAgentImp::UpdateStrandMaterial()
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+            if ( !pSegment->Material.Concrete.bUserEci )
+            {
+               pSegment->Material.Concrete.Eci = lrfdConcreteUtil::ModE(pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
+            }
+
+            if ( !pSegment->Material.Concrete.bUserEc )
+            {
+               pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE(pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
+            }
+
+            CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+            if ( pClosureJoint )
+            {
+               if ( !pClosureJoint->GetConcrete().bUserEci )
+               {
+                  pClosureJoint->GetConcrete().Eci = lrfdConcreteUtil::ModE(pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
+               }
+
+               if ( !pClosureJoint->GetConcrete().bUserEc )
+               {
+                  pClosureJoint->GetConcrete().Ec = lrfdConcreteUtil::ModE(pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
+               }
+            }
+         }
+      }
+   }
+
+   CDeckDescription2* pDeck = m_BridgeDescription.GetDeckDescription();
+   if ( pDeck )
+   {
+      if ( !pDeck->Concrete.bUserEci )
+      {
+         pDeck->Concrete.Eci = lrfdConcreteUtil::ModE(pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
+      }
+
+      if ( !pDeck->Concrete.bUserEc )
+      {
+         pDeck->Concrete.Ec = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
+      }
+   }
+}
+
+void CProjectAgentImp::UpdateStrandMaterial()
+{
+   // Get the lookup key for the strand material based on the current units
+   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+
+   std::map<CSegmentKey,Int32> strandKeys[3]; // map value is strand pool key, array index is strand type
+   std::map<CGirderKey,Int32> tendonKeys; // map value of strand pool key for ducts
+
+   GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         CGirderKey girderKey(pGirder->GetGirderKey());
+
+         CPTData* pPTData = pGirder->GetPostTensioning();
+         Int32 strand_pool_key = pPool->GetStrandKey(pPTData->pStrand);
+         tendonKeys.insert(std::make_pair(girderKey,strand_pool_key));
+
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
             for ( int i = 0; i < 3; i++ )
             {
                pgsTypes::StrandType type = (pgsTypes::StrandType)i;
                const matPsStrand* pStrandMaterial = pSegment->Strands.GetStrandMaterial(type);
-               Int32 strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
-               keys[type].insert(std::make_pair(segmentKey,strand_pool_key));
+               strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
+               strandKeys[type].insert(std::make_pair(segmentKey,strand_pool_key));
             }
          }
       }
@@ -4490,6 +4553,12 @@ void CProjectAgentImp::UpdateStrandMaterial()
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         CGirderKey girderKey(pGirder->GetGirderKey());
+
+         Int32 strand_pool_key = tendonKeys[girderKey];
+         CPTData* pPTData = pGirder->GetPostTensioning();
+         pPTData->pStrand = pPool->GetStrand(strand_pool_key);
+
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
@@ -4498,7 +4567,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
             for ( int i = 0; i < 3; i++ )
             {
-               Int32 strand_pool_key = keys[i][segmentKey];
+               strand_pool_key = strandKeys[i][segmentKey];
                pSegment->Strands.SetStrandMaterial((pgsTypes::StrandType)i,pPool->GetStrand(strand_pool_key));
             }
          }
@@ -5245,12 +5314,12 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 
 //////////////////////////////////////////////////////////////////////
 // IProjectProperties
-std::_tstring CProjectAgentImp::GetBridgeName() const
+LPCTSTR CProjectAgentImp::GetBridgeName() const
 {
-   return m_BridgeName;
+   return m_BridgeName.c_str();
 }
 
-void CProjectAgentImp::SetBridgeName(const std::_tstring& name)
+void CProjectAgentImp::SetBridgeName(LPCTSTR name)
 {
    if ( m_BridgeName != name )
    {
@@ -5259,12 +5328,12 @@ void CProjectAgentImp::SetBridgeName(const std::_tstring& name)
    }
 }
 
-std::_tstring CProjectAgentImp::GetBridgeID() const
+LPCTSTR CProjectAgentImp::GetBridgeID() const
 {
-   return m_BridgeID;
+   return m_BridgeID.c_str();
 }
 
-void CProjectAgentImp::SetBridgeID(const std::_tstring& bid)
+void CProjectAgentImp::SetBridgeID(LPCTSTR bid)
 {
    if ( m_BridgeID != bid )
    {
@@ -5273,12 +5342,12 @@ void CProjectAgentImp::SetBridgeID(const std::_tstring& bid)
    }
 }
 
-std::_tstring CProjectAgentImp::GetJobNumber() const
+LPCTSTR CProjectAgentImp::GetJobNumber() const
 {
-   return m_JobNumber;
+   return m_JobNumber.c_str();
 }
 
-void CProjectAgentImp::SetJobNumber(const std::_tstring& jid)
+void CProjectAgentImp::SetJobNumber(LPCTSTR jid)
 {
    if ( m_JobNumber != jid )
    {
@@ -5287,12 +5356,12 @@ void CProjectAgentImp::SetJobNumber(const std::_tstring& jid)
    }
 }
 
-std::_tstring CProjectAgentImp::GetEngineer() const
+LPCTSTR CProjectAgentImp::GetEngineer() const
 {
-   return m_Engineer;
+   return m_Engineer.c_str();
 }
 
-void CProjectAgentImp::SetEngineer(const std::_tstring& eng)
+void CProjectAgentImp::SetEngineer(LPCTSTR eng)
 {
    if ( m_Engineer != eng )
    {
@@ -5301,12 +5370,12 @@ void CProjectAgentImp::SetEngineer(const std::_tstring& eng)
    }
 }
 
-std::_tstring CProjectAgentImp::GetCompany() const
+LPCTSTR CProjectAgentImp::GetCompany() const
 {
-   return m_Company;
+   return m_Company.c_str();
 }
 
-void CProjectAgentImp::SetCompany(const std::_tstring& company)
+void CProjectAgentImp::SetCompany(LPCTSTR company)
 {
    if ( m_Company != company )
    {
@@ -5315,12 +5384,12 @@ void CProjectAgentImp::SetCompany(const std::_tstring& company)
    }
 }
 
-std::_tstring CProjectAgentImp::GetComments() const
+LPCTSTR CProjectAgentImp::GetComments() const
 {
-   return m_Comments;
+   return m_Comments.c_str();
 }
 
-void CProjectAgentImp::SetComments(const std::_tstring& comments)
+void CProjectAgentImp::SetComments(LPCTSTR comments)
 {
    if ( m_Comments != comments )
    {
@@ -5742,9 +5811,9 @@ pgsTypes::SlabOffsetType CProjectAgentImp::GetSlabOffsetType()
    return m_BridgeDescription.GetSlabOffsetType();
 }
 
-std::vector<pgsTypes::PierConnectionType> CProjectAgentImp::GetPierConnectionTypes(PierIndexType pierIdx)
+std::vector<pgsTypes::BoundaryConditionType> CProjectAgentImp::GetBoundaryConditionTypes(PierIndexType pierIdx)
 {
-   return m_BridgeDescription.GetPierConnectionTypes(pierIdx);
+   return m_BridgeDescription.GetBoundaryConditionTypes(pierIdx);
 }
 
 std::vector<pgsTypes::PierSegmentConnectionType> CProjectAgentImp::GetPierSegmentConnectionTypes(PierIndexType pierIdx)
@@ -6265,13 +6334,13 @@ void CProjectAgentImp::SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGir
    }
 }
 
-void CProjectAgentImp::SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType)
+void CProjectAgentImp::SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::BoundaryConditionType connectionType)
 {
    CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
    ATLASSERT(pPier->IsBoundaryPier());// this should be a boundary pier
-   if ( pPier->GetPierConnectionType() != connectionType )
+   if ( pPier->GetBoundaryConditionType() != connectionType )
    {
-      pPier->SetPierConnectionType(connectionType);
+      pPier->SetBoundaryConditionType(connectionType);
       Fire_BridgeChanged();
    }
 }
@@ -7877,6 +7946,7 @@ bool CProjectAgentImp::ImportProjectLibraries(IStructuredLoad* pStrLoad)
 // Events?
 void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
 {
+   UpdateConcreteMaterial();
    UpdateStrandMaterial();
    VerifyRebarGrade();
 
@@ -9368,9 +9438,13 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             
             if(asLibType==pgsTypes::asStraight && asType==pgsTypes::asHarped)
             {
-               // Library and project are out of sync - this is probably due to 421 version update
-               // change project data to match library
+               // Library and project are out of sync - this is probably due to 421 version update, but may
+               // also be due to a library change. Change project data to match library
                pSegment->Strands.SetAdjustableStrandType(pgsTypes::asStraight);
+            }
+            else if(asLibType==pgsTypes::asHarped && asType==pgsTypes::asStraight)
+            {
+               pSegment->Strands.SetAdjustableStrandType(pgsTypes::asHarped);
             }
 
             ValidateStrands(segmentKey,pSegment,fromLibrary);

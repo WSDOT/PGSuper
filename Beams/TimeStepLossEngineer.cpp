@@ -938,13 +938,22 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    if ( compositeDeckIntervalIdx <= intervalIdx  )
    {
       // deck is composite so the rebar is in play
-      tsDetails.DeckRebar[pgsTypes::drmTop   ].As = m_pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
-      tsDetails.DeckRebar[pgsTypes::drmTop   ].Ys = m_pRebarGeom->GetTopMatLocation(poi,ILongRebarGeometry::All);
-      tsDetails.DeckRebar[pgsTypes::drmTop   ].E  = EDeckRebar;
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::DeckRebarMatType matType = pgsTypes::DeckRebarMatType(i);
+         for ( int j = 0; j < 2; j++ )
+         {
+            pgsTypes::DeckRebarBarType barType = pgsTypes::DeckRebarBarType(j);
 
-      tsDetails.DeckRebar[pgsTypes::drmBottom].As = m_pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
-      tsDetails.DeckRebar[pgsTypes::drmBottom].Ys = m_pRebarGeom->GetBottomMatLocation(poi,ILongRebarGeometry::All);
-      tsDetails.DeckRebar[pgsTypes::drmBottom].E  = EDeckRebar;
+            Float64 As, Ys;
+            // don't adjust the bar area for development here because it isn't adjusted for the transformed
+            // section properties. this needs to be consistent
+            m_pRebarGeom->GetDeckReinforcing(poi,matType,barType,pgsTypes::drcAll,false/*don't adjust for dev length*/,&As,&Ys);
+            tsDetails.DeckRebar[matType][barType].As = As;
+            tsDetails.DeckRebar[matType][barType].Ys = Ys;
+            tsDetails.DeckRebar[matType][barType].E  = EDeckRebar;
+         }
+      }
    }
 
    // Girder/Closure Rebar
@@ -1776,10 +1785,15 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       EA  = EaGirder*tsDetails.Girder.An + EaDeck*tsDetails.Deck.An;
       EAy = EaGirder*tsDetails.Girder.An*tsDetails.Girder.Yn + EaDeck*tsDetails.Deck.An*tsDetails.Deck.Yn;
 
-      EA  += EDeckRebar*tsDetails.DeckRebar[pgsTypes::drmTop].As + 
-             EDeckRebar*tsDetails.DeckRebar[pgsTypes::drmBottom].As;
-      EAy += EDeckRebar*tsDetails.DeckRebar[pgsTypes::drmTop].As*tsDetails.DeckRebar[pgsTypes::drmTop].Ys +
-             EDeckRebar*tsDetails.DeckRebar[pgsTypes::drmBottom].As*tsDetails.DeckRebar[pgsTypes::drmBottom].Ys;
+      EA  += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbIndividual].As + 
+                         tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbLumpSum   ].As + 
+                         tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As + 
+                         tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].As);
+
+      EAy += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbIndividual].As*tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbIndividual].Ys +
+                         tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbLumpSum   ].As*tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbLumpSum   ].Ys +
+                         tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As*tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys +
+                         tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].As*tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys);
 
       std::vector<TIME_STEP_REBAR>::iterator rIter(tsDetails.GirderRebar.begin());
       std::vector<TIME_STEP_REBAR>::iterator rIterEnd(tsDetails.GirderRebar.end());
@@ -1839,8 +1853,10 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       EI  = EaGirder*(tsDetails.Girder.In + tsDetails.Girder.An*pow((Ytr - tsDetails.Girder.Yn),2));
       EI += EaDeck*(tsDetails.Deck.In + tsDetails.Deck.An*pow((Ytr - tsDetails.Deck.Yn),2));
 
-      EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmTop   ].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmTop   ].Ys),2));
-      EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmBottom].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom].Ys),2));
+      EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbIndividual].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbIndividual].Ys),2));
+      EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbLumpSum   ].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbLumpSum   ].Ys),2));
+      EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys),2));
+      EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys),2));
 
       rIter = tsDetails.GirderRebar.begin();
       for ( ; rIter != rIterEnd; rIter++ )
@@ -2148,51 +2164,56 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             // Compute change in force in deck rebar
             for ( int i = 0; i < 2; i++ )
             {
-               pgsTypes::DeckRebarMatType mat = (pgsTypes::DeckRebarMatType)i;
+               pgsTypes::DeckRebarMatType matType = (pgsTypes::DeckRebarMatType)i;
 
-               dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
-                   + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EaGirder_Itr);
-               dPi = dei*EDeckRebar*tsDetails.DeckRebar[mat].As;
-
-               tsDetails.DeckRebar[mat].dei[pfType] += dei;
-               tsDetails.DeckRebar[mat].dPi[pfType] += dPi;
-
-               if ( pfType == pftCreep )
+               for ( int j = 0; j < 2; j++ )
                {
-                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
-                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EaGirder_Itr;
-                  dPi  = dei*EDeckRebar*tsDetails.DeckRebar[mat].As;
+                  pgsTypes::DeckRebarBarType barType = (pgsTypes::DeckRebarBarType)j;
 
-                  tsDetails.DeckRebar[mat].dei[pfType] += dei;
-                  tsDetails.DeckRebar[mat].dPi[pfType] += dPi;
-               }
-               else if ( pfType == pftShrinkage )
-               {
-                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
-                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EaGirder_Itr;
-                  dPi  = dei*EDeckRebar*tsDetails.DeckRebar[mat].As;
+                  dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
+                      + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[matType][barType].Ys)/EaGirder_Itr);
+                  dPi = dei*EDeckRebar*tsDetails.DeckRebar[matType][barType].As;
 
-                  tsDetails.DeckRebar[mat].dei[pfType] += dei;
-                  tsDetails.DeckRebar[mat].dPi[pfType] += dPi;
-               }
-               else if ( pfType == pftRelaxation )
-               {
-                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
-                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EaGirder_Itr;
-                  dPi  = dei*EDeckRebar*tsDetails.DeckRebar[mat].As;
+                  tsDetails.DeckRebar[matType][barType].dei[pfType] += dei;
+                  tsDetails.DeckRebar[matType][barType].dPi[pfType] += dPi;
 
-                  tsDetails.DeckRebar[mat].dei[pfType] += dei;
-                  tsDetails.DeckRebar[mat].dPi[pfType] += dPi;
-               }
+                  if ( pfType == pftCreep )
+                  {
+                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tsDetails.DeckRebar[matType][barType].Ys)/EaGirder_Itr;
+                     dPi  = dei*EDeckRebar*tsDetails.DeckRebar[matType][barType].As;
 
-               tsDetails.DeckRebar[mat].Pi[pfType]  += prevTimeStepDetails.DeckRebar[mat].Pi[pfType] + tsDetails.DeckRebar[mat].dPi[pfType];
-               tsDetails.DeckRebar[mat].dP          += tsDetails.DeckRebar[mat].dPi[pfType];
-               tsDetails.DeckRebar[mat].P           += tsDetails.DeckRebar[mat].Pi[pfType];
+                     tsDetails.DeckRebar[matType][barType].dei[pfType] += dei;
+                     tsDetails.DeckRebar[matType][barType].dPi[pfType] += dPi;
+                  }
+                  else if ( pfType == pftShrinkage )
+                  {
+                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tsDetails.DeckRebar[matType][barType].Ys)/EaGirder_Itr;
+                     dPi  = dei*EDeckRebar*tsDetails.DeckRebar[matType][barType].As;
 
-               tsDetails.DeckRebar[mat].ei[pfType]  += prevTimeStepDetails.DeckRebar[mat].ei[pfType] + tsDetails.DeckRebar[mat].dei[pfType];
-               tsDetails.DeckRebar[mat].de          += tsDetails.DeckRebar[mat].dei[pfType];
-               tsDetails.DeckRebar[mat].e           += tsDetails.DeckRebar[mat].ei[pfType];
-            } // next deck rebar type
+                     tsDetails.DeckRebar[matType][barType].dei[pfType] += dei;
+                     tsDetails.DeckRebar[matType][barType].dPi[pfType] += dPi;
+                  }
+                  else if ( pfType == pftRelaxation )
+                  {
+                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tsDetails.DeckRebar[matType][barType].Ys)/EaGirder_Itr;
+                     dPi  = dei*EDeckRebar*tsDetails.DeckRebar[matType][barType].As;
+
+                     tsDetails.DeckRebar[matType][barType].dei[pfType] += dei;
+                     tsDetails.DeckRebar[matType][barType].dPi[pfType] += dPi;
+                  }
+
+                  tsDetails.DeckRebar[matType][barType].Pi[pfType]  += prevTimeStepDetails.DeckRebar[matType][barType].Pi[pfType] + tsDetails.DeckRebar[matType][barType].dPi[pfType];
+                  tsDetails.DeckRebar[matType][barType].dP          += tsDetails.DeckRebar[matType][barType].dPi[pfType];
+                  tsDetails.DeckRebar[matType][barType].P           += tsDetails.DeckRebar[matType][barType].Pi[pfType];
+
+                  tsDetails.DeckRebar[matType][barType].ei[pfType]  += prevTimeStepDetails.DeckRebar[matType][barType].ei[pfType] + tsDetails.DeckRebar[matType][barType].dei[pfType];
+                  tsDetails.DeckRebar[matType][barType].de          += tsDetails.DeckRebar[matType][barType].dei[pfType];
+                  tsDetails.DeckRebar[matType][barType].e           += tsDetails.DeckRebar[matType][barType].ei[pfType];
+               } // neck deck bar type
+            } // next deck bat type
          } // end if deck is composite
 
          // Compute change in force in girder rebar
@@ -2668,13 +2689,17 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       // Sum the change in internal forces in each component of the cross section
       tsDetails.dPint += tsDetails.Girder.dPi[pfType] 
                        + tsDetails.Deck.dPi[pfType]
-                       + tsDetails.DeckRebar[pgsTypes::drmTop   ].dPi[pfType] 
-                       + tsDetails.DeckRebar[pgsTypes::drmBottom].dPi[pfType];
+                       + tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbIndividual].dPi[pfType] 
+                       + tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbLumpSum   ].dPi[pfType] 
+                       + tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dPi[pfType]
+                       + tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].dPi[pfType];
 
       tsDetails.dMint += tsDetails.Girder.dMi[pfType] + tsDetails.Girder.dPi[pfType]*(tsDetails.Ytr - tsDetails.Girder.Yn)
                        + tsDetails.Deck.dMi[pfType]   + tsDetails.Deck.dPi[pfType]  *(tsDetails.Ytr - tsDetails.Deck.Yn)
-                       + tsDetails.DeckRebar[pgsTypes::drmTop   ].dPi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmTop   ].Ys)
-                       + tsDetails.DeckRebar[pgsTypes::drmBottom].dPi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom].Ys);
+                       + tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbIndividual].dPi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbIndividual].Ys)
+                       + tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbLumpSum   ].dPi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmTop   ][pgsTypes::drbLumpSum   ].Ys)
+                       + tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dPi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys)
+                       + tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].dPi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys);
 
 
       std::vector<TIME_STEP_REBAR>::iterator iter(tsDetails.GirderRebar.begin());

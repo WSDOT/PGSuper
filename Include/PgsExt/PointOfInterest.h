@@ -283,6 +283,10 @@ public:
    bool HasGirderPathCoordinate() const;
 
    //------------------------------------------------------------------------
+   // Removes all attributes from this POI
+   void ClearAttributes();
+
+   //------------------------------------------------------------------------
    // Sets the non-referenced POI attributes
    void SetNonReferencedAttributes(PoiAttributeType attrib);
         

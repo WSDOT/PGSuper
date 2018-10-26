@@ -48,7 +48,7 @@ CTemporarySupportData::CTemporarySupportData()
    m_pSpan = NULL;
 
    m_SupportType    = pgsTypes::ErectionTower;
-   m_ConnectionType = pgsTypes::sctContinuousSegment;
+   m_ConnectionType = pgsTypes::tsctContinuousSegment;
 
    m_Station = 0;
    m_strOrientation = _T("Normal");
@@ -121,40 +121,64 @@ void CTemporarySupportData::CopyTemporarySupportData(const CTemporarySupportData
 bool CTemporarySupportData::operator==(const CTemporarySupportData& rOther) const
 {
    if ( m_SupportType != rOther.m_SupportType )
+   {
       return false;
+   }
 
    if ( m_ConnectionType != rOther.m_ConnectionType )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_Station,rOther.m_Station) )
+   {
       return false;
+   }
 
    if ( m_strOrientation != rOther.m_strOrientation )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_GirderEndDistance,rOther.m_GirderEndDistance) )
+   {
       return false;
+   }
 
    if ( m_EndDistanceMeasurementType != rOther.m_EndDistanceMeasurementType )
+   {
       return false;
+   }
 
    if ( !IsEqual( m_GirderBearingOffset, rOther.m_GirderBearingOffset) )
+   {
       return false;
+   }
    
    if ( m_BearingOffsetMeasurementType != rOther.m_BearingOffsetMeasurementType )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_SupportWidth,rOther.m_SupportWidth) )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_ElevationAdjustment,rOther.m_ElevationAdjustment) )
+   {
       return false;
+   }
 
    if ( m_Spacing != rOther.m_Spacing )
+   {
       return false;
+   }
 
    if ( m_pSpan && rOther.m_pSpan && m_pSpan->GetIndex() != rOther.m_pSpan->GetIndex() )
+   {
       return false;
+   }
 
    return true;
 }
@@ -190,26 +214,38 @@ HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
       hr = pStrLoad->get_Property(_T("Type"),&var);
       CString strType = OLE2T(var.bstrVal);
       if ( strType == CString(_T("ErectionTower")) )
+      {
          m_SupportType = pgsTypes::ErectionTower;
+      }
       else if (strType == CString(_T("StrongBack")) )
+      {
          m_SupportType = pgsTypes::StrongBack;
+      }
       else
+      {
          ATLASSERT(false);
+      }
 
       hr = pStrLoad->get_Property(_T("ConnectionType"),&var);
       CString strConnectionType = OLE2T(var.bstrVal);
       if ( strConnectionType == CString(_T("ClosurePour")) )
-         m_ConnectionType = pgsTypes::sctClosureJoint;
+      {
+         m_ConnectionType = pgsTypes::tsctClosureJoint;
+      }
       else if ( strConnectionType == CString(_T("ContinuousSegment")) )
-         m_ConnectionType = pgsTypes::sctContinuousSegment;
+      {
+         m_ConnectionType = pgsTypes::tsctContinuousSegment;
+      }
       else
+      {
          ATLASSERT(false);
+      }
 
 #if defined _DEBUG
       if (m_SupportType == pgsTypes::StrongBack )
       {
          // can't be continuous if strong back
-         ATLASSERT(m_ConnectionType != pgsTypes::sctContinuousSegment);
+         ATLASSERT(m_ConnectionType != pgsTypes::tsctContinuousSegment);
       }
 #endif
 
@@ -253,14 +289,14 @@ HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
 
       if ( version < 2 )
       {
-         if ( m_ConnectionType != pgsTypes::sctContinuousSegment )
+         if ( m_ConnectionType != pgsTypes::tsctContinuousSegment )
          {
             m_Spacing.Load(pStrLoad,pProgress);
          }
       }
       else
       {
-         if ( m_ConnectionType != pgsTypes::sctContinuousSegment && !::IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
+         if ( m_ConnectionType != pgsTypes::tsctContinuousSegment && !::IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
          {
             m_Spacing.Load(pStrLoad,pProgress);
          }
@@ -299,11 +335,11 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
 
    switch( m_ConnectionType )
    {
-   case pgsTypes::sctClosureJoint:
+   case pgsTypes::tsctClosureJoint:
       pStrSave->put_Property(_T("ConnectionType"),CComVariant(_T("ClosurePour")));
       break;
 
-   case pgsTypes::sctContinuousSegment:
+   case pgsTypes::tsctContinuousSegment:
       pStrSave->put_Property(_T("ConnectionType"),CComVariant(_T("ContinuousSegment")));
       break;
 
@@ -327,7 +363,7 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
 
 
    // add check for IsBridgeSpacing in version 2
-   if ( m_ConnectionType != pgsTypes::sctContinuousSegment && !::IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()))
+   if ( m_ConnectionType != pgsTypes::tsctContinuousSegment && !::IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()))
    {
       m_Spacing.Save(pStrSave,pProgress);
    }
@@ -380,7 +416,7 @@ pgsTypes::TemporarySupportType CTemporarySupportData::GetSupportType() const
    return m_SupportType;
 }
 
-void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType newType,EventIndexType castClosureJointEvent)
+void CTemporarySupportData::SetConnectionType(pgsTypes::TempSupportSegmentConnectionType newType,EventIndexType castClosureJointEvent)
 {
    if ( m_ConnectionType == newType )
    {
@@ -390,7 +426,7 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType ne
    m_ConnectionType = newType;
 
    CBridgeDescription2* pBridgeDesc = m_pSpan->GetBridgeDescription();
-   if ( m_ConnectionType == pgsTypes::sctContinuousSegment )
+   if ( m_ConnectionType == pgsTypes::tsctContinuousSegment )
    {
       // before the closure joints go away, remove their casting event from the timeline
       // manager
@@ -412,7 +448,7 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType ne
          pGirder->JoinSegmentsAtTemporarySupport(m_Index);
       }
    }
-   else if ( m_ConnectionType == pgsTypes::sctClosureJoint )
+   else if ( m_ConnectionType == pgsTypes::tsctClosureJoint )
    {
       // connection has changed from continuous to closure joint... split at this temporary support
       CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_pSpan);
@@ -433,7 +469,7 @@ void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType ne
    }
 }
 
-pgsTypes::SegmentConnectionType CTemporarySupportData::GetConnectionType() const
+pgsTypes::TempSupportSegmentConnectionType CTemporarySupportData::GetConnectionType() const
 {
    return m_ConnectionType;
 }
@@ -496,8 +532,10 @@ const CSpanData2* CTemporarySupportData::GetSpan() const
 
 CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx)
 {
-   if ( m_ConnectionType == pgsTypes::sctContinuousSegment )
+   if ( m_ConnectionType == pgsTypes::tsctContinuousSegment )
+   {
       return NULL;
+   }
 
    CGirderGroupData* pGroup = m_pSpan->GetBridgeDescription()->GetGirderGroup(m_pSpan);
    CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
@@ -519,8 +557,10 @@ CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx
 
 const CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx) const
 {
-   if ( m_ConnectionType == pgsTypes::sctContinuousSegment )
+   if ( m_ConnectionType == pgsTypes::tsctContinuousSegment )
+   {
       return NULL;
+   }
 
    const CGirderGroupData* pGroup = m_pSpan->GetBridgeDescription()->GetGirderGroup(m_pSpan);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
@@ -586,7 +626,7 @@ Float64 CTemporarySupportData::GetElevationAdjustment() const
 
 void CTemporarySupportData::SetSegmentSpacing(const CGirderSpacing2& spacing)
 {
-   ATLASSERT( m_ConnectionType != pgsTypes::sctContinuousSegment );
+   ATLASSERT( m_ConnectionType != pgsTypes::tsctContinuousSegment );
    // this is just a warning... spacing doesn't make sence in if the connection is continuous
    // spacing is ignored if this assert fires
 
@@ -606,17 +646,25 @@ const CGirderSpacing2* CTemporarySupportData::GetSegmentSpacing() const
 LPCTSTR CTemporarySupportData::AsString(pgsTypes::TemporarySupportType type)
 {
    if ( type == pgsTypes::ErectionTower )
+   {
       return _T("Erection Tower");
+   }
    else
+   {
       return _T("Strong Back");
+   }
 }
 
-LPCTSTR CTemporarySupportData::AsString(pgsTypes::SegmentConnectionType type)
+LPCTSTR CTemporarySupportData::AsString(pgsTypes::TempSupportSegmentConnectionType type)
 {
-   if ( type == pgsTypes::sctClosureJoint )
+   if ( type == pgsTypes::tsctClosureJoint )
+   {
       return _T("Closure Joint");
+   }
    else
+   {
       return _T("Continous Segment");
+   }
 }
 
 #if defined _DEBUG

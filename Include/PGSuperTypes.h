@@ -183,11 +183,11 @@ typedef struct pgsTypes
 
    // Defines segment to segment connection types
    // at a temporary support.
-   typedef enum SegmentConnectionType
+   typedef enum TempSupportSegmentConnectionType
    {
-      sctClosureJoint,
-      sctContinuousSegment
-   } SegmentConnectionType;
+      tsctClosureJoint,
+      tsctContinuousSegment
+   } TempSupportSegmentConnectionType;
 
    // Defines segment to segment connection types
    // at an intermediate/permanent pier.
@@ -198,6 +198,27 @@ typedef struct pgsTypes
       psctContinuousSegment,    // Precast segment spans over pier with no moment connection to the pier
       psctIntegralSegment       // Precast segment spans over pier and has a moment connection with the pier
    } PierSegmentConnectionType;
+
+   // NOTE: Enum values are out of order so that they match values used in earlier
+   // versions of the software
+   typedef enum BoundaryConditionType { 
+                             bctHinge = 1, 
+                             bctRoller = 6,
+                             bctContinuousAfterDeck = 2,        // continuous are for interior piers only
+                             bctContinuousBeforeDeck = 3, 
+                             bctIntegralAfterDeck = 4,          // these two are fixed both sides (unless abutments. obviously)
+                             bctIntegralBeforeDeck = 5,
+                             bctIntegralAfterDeckHingeBack  = 7, // interior piers only, left or right hinge
+                             bctIntegralBeforeDeckHingeBack = 8,
+                             bctIntegralAfterDeckHingeAhead = 9,
+                             bctIntegralBeforeDeckHingeAhead = 10
+   } BoundaryConditionType;
+
+   typedef enum PierModelType
+   {
+      pmtIdealized, // pier is modeled with an idealized support object
+      pmtPhysical   // pier is modeled with a physical description
+   } PierModelType;
 
    typedef enum StressType { Tension, Compression } StressType;
    
@@ -299,6 +320,12 @@ typedef struct pgsTypes
       Ahead = pgsTypes::metStart  // ahead side of pier is at the start of a span
    } PierFaceType;
 
+   typedef enum PierSideType
+   {
+      pstLeft,
+      pstRight
+   } PierSideType;
+
    typedef enum GirderOrientationType
    {
       Plumb = 0,     // Girder is plumb
@@ -332,6 +359,20 @@ typedef struct pgsTypes
       drmTop,   // top mat
       drmBottom // bottom mat
    } DeckRebarMatType;
+
+   typedef enum DeckRebarBarType
+   {
+      drbIndividual,
+      drbLumpSum,
+      drbAll
+   } DeckRebarBarType;
+
+   typedef enum DeckRebarCategoryType
+   {
+      drcPrimary,
+      drcSupplemental,
+      drcAll
+   } DeckRebarCategoryType;
 
    typedef enum WearingSurfaceType
    {
@@ -396,21 +437,6 @@ typedef struct pgsTypes
 
    typedef enum FaceType 
    {TopFace, BottomFace} FaceType;
-
-   // NOTE: Enum values are out of order so that they match values used in earlier
-   // versions of the software
-   typedef enum PierConnectionType { 
-                             Hinge = 1, 
-                             Roller = 6,
-                             ContinuousAfterDeck = 2,        // continuous are for interior piers only
-                             ContinuousBeforeDeck = 3, 
-                             IntegralAfterDeck = 4,          // these two are fixed both sides (unless abutments. obviously)
-                             IntegralBeforeDeck = 5,
-                             IntegralAfterDeckHingeBack  = 7, // interior piers only, left or right hinge
-                             IntegralBeforeDeckHingeBack = 8,
-                             IntegralAfterDeckHingeAhead = 9,
-                             IntegralBeforeDeckHingeAhead = 10
-   } PierConnectionType;
 
    // Method for computing prestress transfer length
    typedef enum PrestressTransferComputationType { ptUsingSpecification=60, // use current spec

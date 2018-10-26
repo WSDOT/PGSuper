@@ -44,31 +44,31 @@ void CBoundaryConditionComboBox::SetPierType(int pierType)
    m_PierType = pierType;
 }
 
-int CBoundaryConditionComboBox::AddBoundaryCondition(pgsTypes::PierConnectionType type)
+int CBoundaryConditionComboBox::AddBoundaryCondition(pgsTypes::BoundaryConditionType type)
 {
    int idx = AddString( CPierData2::AsString(type) );
    SetItemData(idx,(DWORD)type);
    return idx;
 }
 
-void CBoundaryConditionComboBox::Initialize(bool bIsBoundaryPier,const std::vector<pgsTypes::PierConnectionType>& connections)
+void CBoundaryConditionComboBox::Initialize(bool bIsBoundaryPier,const std::vector<pgsTypes::BoundaryConditionType>& connections)
 {
    m_bIsBoundaryPier = bIsBoundaryPier;
 
    int curSel = GetCurSel();
-   pgsTypes::PierConnectionType currentType;
+   pgsTypes::BoundaryConditionType currentType;
    if ( curSel != CB_ERR )
    {
-      currentType = (pgsTypes::PierConnectionType)GetItemData(curSel);
+      currentType = (pgsTypes::BoundaryConditionType)GetItemData(curSel);
    }
 
    ResetContent();
 
    int currentTypeIdx = CB_ERR;
-   std::vector<pgsTypes::PierConnectionType>::const_iterator iter;
+   std::vector<pgsTypes::BoundaryConditionType>::const_iterator iter;
    for ( iter = connections.begin(); iter != connections.end(); iter++ )
    {
-      pgsTypes::PierConnectionType type = *iter;
+      pgsTypes::BoundaryConditionType type = *iter;
       int idx = AddBoundaryCondition(type);
       if ( curSel != CB_ERR && currentType == type )
       {
@@ -93,8 +93,8 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   pgsTypes::PierConnectionType connectionType = (pgsTypes::PierConnectionType)(lpDrawItemStruct->itemData);
-   CString strText = CPierData2::AsString(connectionType);
+   pgsTypes::BoundaryConditionType boundaryConditionType = (pgsTypes::BoundaryConditionType)(lpDrawItemStruct->itemData);
+   CString strText = CPierData2::AsString(boundaryConditionType);
 
    CDC dc;
    dc.Attach(lpDrawItemStruct->hDC);
@@ -131,7 +131,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    int xSrc, ySrc;
    ySrc = 0;
    
-   if ( connectionType == pgsTypes::Hinge )
+   if ( boundaryConditionType == pgsTypes::bctHinge )
    {
       bmpHinges.LoadBitmap(m_bIsBoundaryPier ? IDB_HINGES : IDB_IP_HINGES);
       dcMemory.SelectObject(&bmpHinges);
@@ -154,7 +154,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
          break;
       }
    }
-   else if ( connectionType == pgsTypes::Roller )
+   else if ( boundaryConditionType == pgsTypes::bctRoller )
    {
       bmpRollers.LoadBitmap(m_bIsBoundaryPier ? IDB_ROLLERS : IDB_IP_ROLLERS);
       dcMemory.SelectObject(&bmpRollers);
@@ -185,12 +185,12 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
       int bmWidth = bmpInfo.bmHeight + 1;
 
-      if ( connectionType == pgsTypes::ContinuousBeforeDeck || connectionType == pgsTypes::ContinuousAfterDeck )
+      if ( boundaryConditionType == pgsTypes::bctContinuousBeforeDeck || boundaryConditionType == pgsTypes::bctContinuousAfterDeck )
       {
          ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
          xSrc = 0;
       }
-      else if ( connectionType == pgsTypes::IntegralBeforeDeck || connectionType == pgsTypes::IntegralAfterDeck )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralBeforeDeck || boundaryConditionType == pgsTypes::bctIntegralAfterDeck )
       {
          switch( m_PierType )
          {
@@ -207,12 +207,12 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
             break;
          }
       }
-      else if ( connectionType == pgsTypes::IntegralAfterDeckHingeBack || connectionType == pgsTypes::IntegralBeforeDeckHingeBack )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack || boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack )
       {
          ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
          xSrc = 5*bmWidth;
       }
-      else if ( connectionType == pgsTypes::IntegralAfterDeckHingeAhead || connectionType == pgsTypes::IntegralBeforeDeckHingeAhead )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead || boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead )
       {
          ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
          xSrc = 4*bmWidth;

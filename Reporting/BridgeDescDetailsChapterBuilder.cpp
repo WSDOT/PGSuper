@@ -201,12 +201,20 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
             pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pHead;
             *pHead << _T("Materials") << rptNewLine;
+#pragma Reminder("WORKING HERE: write out concrete details")
+            //write_segment_concrete_details(pBroker,pDisplayUnits,pChapter,level,segmentKey);
+            if ( segIdx != nSegments-1 )
+            {
+               //write_closure_concrete_details(pBroker,pDisplayUnits,pChapter,level,segmentKey);
+            }
             write_strand_details( pBroker, pDisplayUnits, pChapter, level, segmentKey);
 
 	        write_rebar_details( pBroker, pDisplayUnits, pChapter, segmentKey, level);
          } // next segment
       } // next girder
    } // next group
+
+   //write_deck_concrete_details(pBroker,pDisplayUnits,pChapter,level);
 
 #pragma Reminder("UPDATE: write out tendon information : geometry and material")
 

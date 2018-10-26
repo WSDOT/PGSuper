@@ -125,18 +125,18 @@ DEFINE_GUID(IID_IProjectProperties,
 0x59D50425, 0x265C, 0x11D2, 0x8E, 0xB0, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
 interface IProjectProperties : IUnknown
 {
-   virtual std::_tstring GetBridgeName() const = 0;
-   virtual void SetBridgeName(const std::_tstring& name) = 0;
-   virtual std::_tstring GetBridgeID() const = 0;
-   virtual void SetBridgeID(const std::_tstring& bid) = 0;
-   virtual std::_tstring GetJobNumber() const = 0;
-   virtual void SetJobNumber(const std::_tstring& jid) = 0;
-   virtual std::_tstring GetEngineer() const = 0;
-   virtual void SetEngineer(const std::_tstring& eng) = 0;
-   virtual std::_tstring GetCompany() const = 0;
-   virtual void SetCompany(const std::_tstring& company) = 0;
-   virtual std::_tstring GetComments() const = 0;
-   virtual void SetComments(const std::_tstring& comments) = 0;
+   virtual LPCTSTR GetBridgeName() const = 0;
+   virtual void SetBridgeName(LPCTSTR name) = 0;
+   virtual LPCTSTR GetBridgeID() const = 0;
+   virtual void SetBridgeID(LPCTSTR bid) = 0;
+   virtual LPCTSTR GetJobNumber() const = 0;
+   virtual void SetJobNumber(LPCTSTR jid) = 0;
+   virtual LPCTSTR GetEngineer() const = 0;
+   virtual void SetEngineer(LPCTSTR eng) = 0;
+   virtual LPCTSTR GetCompany() const = 0;
+   virtual void SetCompany(LPCTSTR company) = 0;
+   virtual LPCTSTR GetComments() const = 0;
+   virtual void SetComments(LPCTSTR comments) = 0;
 };
 
 /*****************************************************************************
@@ -936,7 +936,7 @@ interface IBridgeDescription : IUnknown
    virtual void SetGirderName(const CGirderKey& girderKey, LPCTSTR strGirderName) = 0;
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders) = 0;
    virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup) = 0;
-   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType) = 0;
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::BoundaryConditionType connectionType) = 0;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx) = 0;
 
    virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan) = 0;
@@ -977,7 +977,7 @@ interface IBridgeDescription : IUnknown
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() = 0;
 
    // Returns a vector of valid connection types
-   virtual std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx) = 0;
+   virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) = 0;
    virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx) = 0;
 
    // timeline management

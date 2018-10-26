@@ -4331,7 +4331,7 @@ Float64 CAnalysisAgentImp::GetExcessCamber(const pgsPointOfInterest& poi,Int16 t
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
       Float64 Dmin, Dmax;
-      GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false,true,&Dmin,&Dmax);
+      GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false/*exclude live load deflection*/,true,&Dmin,&Dmax);
       ATLASSERT(IsEqual(Dmin,Dmax)); // no live load so these should be the same
 
       ATLASSERT(IsEqual(Dmax,excess));
@@ -6937,8 +6937,8 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
           (poi.IsTenthPoint(POI_ERECTED_SEGMENT)  == 1 && !bModelStartCantilever) ) // CL Brg at start of erected segment
       {
          PierIndexType pierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
-         pgsTypes::PierConnectionType pierConnectionType = pBridge->GetPierConnectionType(pierIdx);
-         if ( pierConnectionType == pgsTypes::Hinge || pierConnectionType == pgsTypes::Roller )
+         pgsTypes::BoundaryConditionType boundaryConditionType = pBridge->GetBoundaryConditionType(pierIdx);
+         if ( boundaryConditionType == pgsTypes::bctHinge || boundaryConditionType == pgsTypes::bctRoller )
          {
             return (stressLocation == pgsTypes::BottomGirder ? true : false);
          }
@@ -6956,8 +6956,8 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
           (poi.IsTenthPoint(POI_ERECTED_SEGMENT)  == 11 && !bModelEndCantilever) )
       {
          PierIndexType pierIdx = pBridge->GetGirderGroupEndPier(segmentKey.groupIndex);
-         pgsTypes::PierConnectionType pierConnectionType = pBridge->GetPierConnectionType(pierIdx);
-         if ( pierConnectionType == pgsTypes::Hinge || pierConnectionType == pgsTypes::Roller )
+         pgsTypes::BoundaryConditionType boundaryConditionType = pBridge->GetBoundaryConditionType(pierIdx);
+         if ( boundaryConditionType == pgsTypes::bctHinge || boundaryConditionType == pgsTypes::bctRoller )
          {
             return (stressLocation == pgsTypes::BottomGirder ? true : false);
          }
@@ -7061,20 +7061,20 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
             {
                // poi is closer to one pier then the other.
                // get the boundary conditions of the nearest pier
-               pgsTypes::PierConnectionType pierConnectionType;
+               pgsTypes::BoundaryConditionType boundaryConditionType;
                if ( offsetStart < offsetEnd )
                {
                   // nearest pier is at the start of the span
-                  pierConnectionType = pBridge->GetPierConnectionType(startPierIdx);
+                  boundaryConditionType = pBridge->GetBoundaryConditionType(startPierIdx);
                }
                else
                {
                   // nearest pier is at the end of the span
-                  pierConnectionType = pBridge->GetPierConnectionType(endPierIdx);
+                  boundaryConditionType = pBridge->GetBoundaryConditionType(endPierIdx);
                }
 
                // if hinge or roller boundary condition, C5.14.1.4.6 doesn't apply.
-               if ( pierConnectionType != pgsTypes::Roller && pierConnectionType != pgsTypes::Hinge )
+               if ( boundaryConditionType != pgsTypes::bctRoller && boundaryConditionType != pgsTypes::bctHinge )
                {
                   // connection type is some sort of continuity/integral boundary condition
                   // The top of the girder is not in the PTZ.

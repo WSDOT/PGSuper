@@ -1,18 +1,16 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.29   7  4.00  1     1     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    4.272   -3.782   6042  1.017  1.017  0.28 -0.06 -0.00 -0.02 -0.08 119.22 235.26   3.00   3.17   3.17
+ 26.29   7  4.00  1     1     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    3.252   -3.404   6042  1.017  1.017  0.28 -0.06  0.00 -0.02 -0.07 119.22 237.15   3.00   3.17   3.17
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.29   7  4.00  1     2     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.800   -2.479   4781  0.451  0.520  0.28 -0.03 -0.00 -0.02 -0.05 119.22 262.21   1.75   5.00   5.00
+ 26.29   7  4.00  1     2     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.217   -2.263   4781  0.451  0.520  0.28 -0.03  0.00 -0.02 -0.05 119.22 264.11   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -21,7 +19,7 @@ Tensile stress check failed for Service I for the Casting Yard Stage (At Release
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.29   7  4.00  1     4     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.588   -2.140   4100  0.451  0.520  0.28 -0.03 -0.00  0.00 -0.03 119.22 282.29   1.75   5.00   5.00
+ 26.29   7  4.00  1     4     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.006   -1.923   4100  0.451  0.520  0.28 -0.03  0.00  0.00 -0.03 119.22 284.18   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

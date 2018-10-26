@@ -826,8 +826,23 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
 
             if ( loadCase != UserLoads::LL_IM )
             {
-               CUserLoadKey key(spanKey,eventIdx);
-               m_UserLoadInterval[loadCase].insert(std::make_pair(key,loadingIntervalIdx));
+               SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
+               SpanIndexType startSpanIdx = (spanKey.spanIndex == ALL_SPANS ? 0 : spanKey.spanIndex);
+               SpanIndexType endSpanIdx   = (spanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
+               for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+               {
+                  const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+                  const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+                  GirderIndexType nGirders = pGroup->GetGirderCount();
+                  GirderIndexType startGirderIdx = (spanKey.girderIndex == ALL_GIRDERS ? 0 : spanKey.girderIndex);
+                  GirderIndexType endGirderIdx   = (spanKey.girderIndex == ALL_GIRDERS ? nGirders-1 : startGirderIdx);
+                  for ( GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++ )
+                  {
+                     CSpanKey thisSpanKey(spanIdx,gdrIdx);
+                     CUserLoadKey key(thisSpanKey,eventIdx);
+                     m_UserLoadInterval[loadCase].insert(std::make_pair(key,loadingIntervalIdx));
+                  }
+               }
             }
          }
       }
@@ -1173,6 +1188,11 @@ m_SpanKey(other.m_SpanKey),m_EventIdx(other.m_EventIdx)
 
 bool CIntervalManager::CUserLoadKey::operator<(const CUserLoadKey& other) const
 {
+   if ( m_SpanKey == other.m_SpanKey )
+   {
+      return false;
+   }
+
    if ( m_SpanKey < other.m_SpanKey )
    {
       return true;

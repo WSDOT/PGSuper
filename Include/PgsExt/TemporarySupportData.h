@@ -62,13 +62,13 @@ public:
    pgsTypes::TemporarySupportType GetSupportType() const;
 
    // Set/Get the connection type when the temporary support type is Erection Tower.
-   // When setting the connection type to pgsTypes::sctClosureJoint the casting event
+   // When setting the connection type to pgsTypes::tsctClosureJoint the casting event
    // for the closures that are created at this temporary support are set to castClosureJointEvent
    // otherwise this parameter is not used.
-   // When setting the connection type to pgsTypes::sctContinuousSegment the casting event
+   // When setting the connection type to pgsTypes::tsctContinuousSegment the casting event
    // for the closure joints that are removed are automatically removed from the timeline manager
-   void SetConnectionType(pgsTypes::SegmentConnectionType type,EventIndexType castClosureJointEvent);
-   pgsTypes::SegmentConnectionType GetConnectionType() const;
+   void SetConnectionType(pgsTypes::TempSupportSegmentConnectionType type,EventIndexType castClosureJointEvent);
+   pgsTypes::TempSupportSegmentConnectionType GetConnectionType() const;
 
    void SetID(SupportIDType id);
    SupportIDType GetID() const;
@@ -121,7 +121,7 @@ public:
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
    
    static LPCTSTR AsString(pgsTypes::TemporarySupportType type);
-   static LPCTSTR AsString(pgsTypes::SegmentConnectionType type);
+   static LPCTSTR AsString(pgsTypes::TempSupportSegmentConnectionType type);
 
 #if defined _DEBUG
    void AssertValid();
@@ -135,7 +135,7 @@ private:
    SupportIDType m_ID;
    SupportIndexType m_Index;
    pgsTypes::TemporarySupportType m_SupportType;
-   pgsTypes::SegmentConnectionType m_ConnectionType;
+   pgsTypes::TempSupportSegmentConnectionType m_ConnectionType;
    Float64 m_Station;
    std::_tstring m_strOrientation;
    Float64 m_GirderEndDistance;

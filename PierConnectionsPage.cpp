@@ -94,11 +94,11 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_AHEAD_DIAPHRAGM_WIDTH,m_DiaphragmWidthEdit[pgsTypes::Ahead]);
 
    // Set the schematic connection image
-   CString image_name = GetImageName(m_PierConnectionType,m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
+   CString image_name = GetImageName(m_BoundaryConditionType,m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
 	DDX_MetaFileStatic(pDX, IDC_CONNECTION_MF, m_ConnectionPicture,image_name, _T("Metafile") );
 
    // Boundary Conditions
-   DDX_CBItemData(pDX,IDC_BOUNDARY_CONDITIONS,m_PierConnectionType);
+   DDX_CBItemData(pDX,IDC_BOUNDARY_CONDITIONS,m_BoundaryConditionType);
 
    // Connection Dimensions
    DDX_UnitValueAndTag(pDX,IDC_LEFT_BEARING_OFFSET, IDC_LEFT_BEARING_OFFSET_T,  m_BearingOffset[pgsTypes::Back],  pDisplayUnits->GetComponentDimUnit());
@@ -194,7 +194,7 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    {
       // all of the data has been extracted from the dialog controls and it has been validated
       // set the values on the actual pier object
-      m_pPier->SetPierConnectionType(m_PierConnectionType);
+      m_pPier->SetBoundaryConditionType(m_BoundaryConditionType);
 
       for ( int i = 0; i < 2; i++ )
       {
@@ -228,7 +228,7 @@ END_MESSAGE_MAP()
 
 BOOL CPierConnectionsPage::OnInitDialog() 
 {
-   m_PierConnectionType = m_pPier->GetPierConnectionType();
+   m_BoundaryConditionType = m_pPier->GetBoundaryConditionType();
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -284,11 +284,11 @@ void CPierConnectionsPage::InitializeComboBoxes()
 
 void CPierConnectionsPage::FillBoundaryConditionComboBox()
 {
-   std::vector<pgsTypes::PierConnectionType> connections( m_pPier->GetBridgeDescription()->GetPierConnectionTypes(m_PierIdx) );
+   std::vector<pgsTypes::BoundaryConditionType> connections( m_pPier->GetBridgeDescription()->GetBoundaryConditionTypes(m_PierIdx) );
    m_cbBoundaryCondition.Initialize(m_pPier->IsBoundaryPier(),connections);
 
    CDataExchange dx(this,FALSE);
-   DDX_CBItemData(&dx,IDC_BOUNDARY_CONDITIONS,m_PierConnectionType);
+   DDX_CBItemData(&dx,IDC_BOUNDARY_CONDITIONS,m_BoundaryConditionType);
 }
 
 void CPierConnectionsPage::FillDiaphragmLoadComboBox()
@@ -419,7 +419,7 @@ void CPierConnectionsPage::UpdateConnectionPicture()
 
    CComboBox* pcbConnectionType = (CComboBox*)GetDlgItem(IDC_BOUNDARY_CONDITIONS);
    curSel = pcbConnectionType->GetCurSel();
-   pgsTypes::PierConnectionType connectionType = (pgsTypes::PierConnectionType)pcbConnectionType->GetItemData(curSel);
+   pgsTypes::BoundaryConditionType connectionType = (pgsTypes::BoundaryConditionType)pcbConnectionType->GetItemData(curSel);
 
    CString image_name = GetImageName(connectionType,bms,ems);
 
@@ -466,7 +466,7 @@ void CPierConnectionsPage::FillEndDistanceComboBox()
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
 }
 
-CString CPierConnectionsPage::GetImageName(pgsTypes::PierConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
 {
    CSpanData2* pPrevSpan = m_pPier->GetPrevSpan();
    CSpanData2* pNextSpan = m_pPier->GetNextSpan();
@@ -704,7 +704,7 @@ BOOL CPierConnectionsPage::OnSetActive()
 
    // re-get the boundary condition. it could have changed if
    // this page is in the span editing dialog and a cantilever was added
-   m_PierConnectionType = m_pPier->GetPierConnectionType();
+   m_BoundaryConditionType = m_pPier->GetBoundaryConditionType();
    FillBoundaryConditionComboBox();
    OnBoundaryConditionChanged();
 

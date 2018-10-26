@@ -285,7 +285,7 @@ bool CSpanKey::operator<(const CSpanKey& other) const
 
 HRESULT CSpanKey::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("spanKey"),1.0);
+   pStrSave->BeginUnit(_T("SpanKey"),1.0);
    pStrSave->put_Property(_T("SpanIndex"),CComVariant(spanIndex));
    pStrSave->put_Property(_T("GirderIndex"),CComVariant(girderIndex));
    pStrSave->EndUnit();
@@ -296,14 +296,14 @@ HRESULT CSpanKey::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 HRESULT CSpanKey::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    CComVariant var;
-   var.vt = VT_I8;
-   pStrLoad->BeginUnit(_T("spanKey"));
+   var.vt = VT_INDEX;
+   pStrLoad->BeginUnit(_T("SpanKey"));
    
    pStrLoad->get_Property(_T("SpanIndex"),&var);
-   spanIndex = var.iVal;
+   spanIndex = VARIANT2INDEX(var);
    
    pStrLoad->get_Property(_T("GirderIndex"),&var);
-   girderIndex = var.iVal;
+   girderIndex = VARIANT2INDEX(var);
 
    pStrLoad->EndUnit();
 

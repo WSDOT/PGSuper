@@ -48,11 +48,11 @@ WsdotCalculationSheet()
    GET_IFACE(IProjectProperties,pProj);
 
    // set pgsuper-specific properties
-   SetBridgeName(pProj->GetBridgeName().c_str());
-   SetBridgeID(pProj->GetBridgeID().c_str());
-   SetJobNumber(pProj->GetJobNumber().c_str());
-   SetEngineer(pProj->GetEngineer().c_str());
-   SetCompany(pProj->GetCompany().c_str());
+   SetBridgeName(pProj->GetBridgeName());
+   SetBridgeID(pProj->GetBridgeID());
+   SetJobNumber(pProj->GetJobNumber());
+   SetEngineer(pProj->GetEngineer());
+   SetCompany(pProj->GetCompany());
 
    GET_IFACE(IVersionInfo,pVerInfo);
    GET_IFACE(IDocumentType,pDocType);

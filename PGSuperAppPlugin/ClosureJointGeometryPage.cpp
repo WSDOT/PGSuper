@@ -98,8 +98,6 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
 	CPropertyPage::DoDataExchange(pDX);
 
-   DDX_Control(pDX,IDC_BOUNDARY_CONDITIONS,m_cbBoundaryCondition);
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
@@ -186,7 +184,6 @@ BEGIN_MESSAGE_MAP(CClosureJointGeometryPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_END_DISTANCE_MEASURE,   OnEndDistanceMeasureChanged)
 	ON_CBN_SELCHANGE(IDC_BEARING_OFFSET_MEASURE, OnBearingOffsetMeasureChanged)
    ON_CBN_SELCHANGE(IDC_CONNECTION_TYPE,        OnConnectionTypeChanged)
-   ON_CBN_SELCHANGE(IDC_BOUNDARY_CONDITIONS,    OnBoundaryConditionsChanged)
    ON_CBN_SELCHANGE(IDC_EVENT,                  OnInstallationStageChanged)
    ON_CBN_DROPDOWN(IDC_EVENT,                   OnInstallationStageChanging)
 END_MESSAGE_MAP()
@@ -204,21 +201,15 @@ BOOL CClosureJointGeometryPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
-   FillBoundaryConditionComboBox(); // must do this after OnInitDialog
-
    if ( m_bIsPier )
    {
-      m_cbBoundaryCondition.SetPierType(PIERTYPE_INTERMEDIATE);
-
       CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
 
       CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
       pgsTypes::PierSegmentConnectionType connectionType = pParent->m_pPier->GetSegmentConnectionType();
-      pgsTypes::PierConnectionType boundaryCondition = pParent->m_pPier->GetPierConnectionType();
 
       CDataExchange dx(this,FALSE);
       DDX_CBItemData(&dx,IDC_CONNECTION_TYPE,connectionType);
-      DDX_CBItemData(&dx,IDC_BOUNDARY_CONDITIONS,boundaryCondition);
 
       if ( connectionType == pgsTypes::psctContinousClosureJoint ||
            connectionType == pgsTypes::psctIntegralClosureJoint )
@@ -233,15 +224,12 @@ BOOL CClosureJointGeometryPage::OnInitDialog()
 
       CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
 
-      pgsTypes::SegmentConnectionType connectionType = pParent->m_pTS->GetConnectionType();
+      pgsTypes::TempSupportSegmentConnectionType connectionType = pParent->m_pTS->GetConnectionType();
       CDataExchange dx(this,FALSE);
       DDX_CBItemData(&dx,IDC_CONNECTION_TYPE,connectionType);
 
       EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastClosureJointEventIndex(m_ClosureID);
       pcbEvent->SetCurSel((int)eventIdx);
-
-      GetDlgItem(IDC_BOUNDARY_CONDITION_LABEL)->ShowWindow(SW_HIDE);
-      m_cbBoundaryCondition.ShowWindow(SW_HIDE);
 
       GetDlgItem(IDC_DIAPHRAGM_GROUP)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_HEIGHT_LABEL)->ShowWindow(SW_HIDE);
@@ -266,17 +254,6 @@ void CClosureJointGeometryPage::OnEndDistanceMeasureChanged()
 void CClosureJointGeometryPage::OnBearingOffsetMeasureChanged() 
 {
    UpdateConnectionPicture();
-}
-
-void CClosureJointGeometryPage::OnBoundaryConditionsChanged()
-{
-   ATLASSERT(m_bIsPier);
-   int curSel = m_cbBoundaryCondition.GetCurSel();
-
-   pgsTypes::PierConnectionType pierConnectionType = (pgsTypes::PierConnectionType)(m_cbBoundaryCondition.GetItemData(curSel));
-
-   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   pParent->m_pPier->SetPierConnectionType(pierConnectionType);
 }
 
 void CClosureJointGeometryPage::OnConnectionTypeChanged()
@@ -311,8 +288,8 @@ void CClosureJointGeometryPage::OnConnectionTypeChanged()
    }
    else
    {
-      pgsTypes::SegmentConnectionType connectionType = (pgsTypes::SegmentConnectionType)pcbConnectionType->GetItemData(curSel);
-      showWindow = (connectionType == pgsTypes::sctClosureJoint ? SW_SHOW : SW_HIDE);
+      pgsTypes::TempSupportSegmentConnectionType connectionType = (pgsTypes::TempSupportSegmentConnectionType)pcbConnectionType->GetItemData(curSel);
+      showWindow = (connectionType == pgsTypes::tsctClosureJoint ? SW_SHOW : SW_HIDE);
 
       CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
       pParent->m_pTS->SetConnectionType(connectionType,castClosureEventIdx);
@@ -354,7 +331,7 @@ void CClosureJointGeometryPage::UpdateConnectionPicture()
    }
    else
    {
-      pgsTypes::SegmentConnectionType connectionType = (pgsTypes::SegmentConnectionType)pcbConnectionType->GetItemData(curSel);
+      pgsTypes::TempSupportSegmentConnectionType connectionType = (pgsTypes::TempSupportSegmentConnectionType)pcbConnectionType->GetItemData(curSel);
       strImageName = GetImageName(connectionType,bms,ems);
    }
 
@@ -377,12 +354,12 @@ void CClosureJointGeometryPage::FillConnectionTypeComboBox()
    }
    else
    {
-      pCB->SetItemData(pCB->AddString(_T("Closure Joint")),(DWORD_PTR)pgsTypes::sctClosureJoint);
+      pCB->SetItemData(pCB->AddString(_T("Closure Joint")),(DWORD_PTR)pgsTypes::tsctClosureJoint);
 
       CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
       if ( pParent->m_pTS->GetSupportType() != pgsTypes::StrongBack )
       {
-         pCB->SetItemData(pCB->AddString(_T("Continuous Segment")),(DWORD_PTR)pgsTypes::sctContinuousSegment);
+         pCB->SetItemData(pCB->AddString(_T("Continuous Segment")),(DWORD_PTR)pgsTypes::tsctContinuousSegment);
       }
    }
 
@@ -432,19 +409,6 @@ void CClosureJointGeometryPage::FillEndDistanceComboBox()
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
 }
 
-void CClosureJointGeometryPage::FillBoundaryConditionComboBox()
-{
-   if ( m_bIsPier )
-   {
-      CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-      PierIndexType pierIdx = pParent->m_pPier->GetIndex();
-
-      std::vector<pgsTypes::PierConnectionType> connections( pParent->m_pPier->GetBridgeDescription()->GetPierConnectionTypes(pierIdx) );
-
-      m_cbBoundaryCondition.Initialize(pParent->m_pPier->IsBoundaryPier(),connections);
-   }
-}
-
 HBRUSH CClosureJointGeometryPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
 {
    HBRUSH hBrush = CDialog::OnCtlColor(pDC,pWnd,nCtlColor);
@@ -456,10 +420,10 @@ HBRUSH CClosureJointGeometryPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
    return hBrush;
 }
 
-CString CClosureJointGeometryPage::GetImageName(pgsTypes::SegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+CString CClosureJointGeometryPage::GetImageName(pgsTypes::TempSupportSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
 {
    CString strName;
-   if ( connectionType == pgsTypes::sctClosureJoint )
+   if ( connectionType == pgsTypes::tsctClosureJoint )
    {
       if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
       {

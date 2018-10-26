@@ -31,12 +31,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierConnectionType oldBC,pgsTypes::PierConnectionType newBC)
+txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::BoundaryConditionType oldBC,pgsTypes::BoundaryConditionType newBC)
 {
    m_bIsBoundaryPier = true;
    m_PierIdx = pierIdx;
-   m_PierConnectionType[0] = oldBC;
-   m_PierConnectionType[1] = newBC;
+   m_BoundaryConditionType[0] = oldBC;
+   m_BoundaryConditionType[1] = newBC;
 }
 
 txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType oldBC,EventIndexType oldEventIdx,pgsTypes::PierSegmentConnectionType newBC,EventIndexType newEventIdx)
@@ -57,7 +57,7 @@ std::_tstring txnEditBoundaryConditions::Name() const
 txnTransaction* txnEditBoundaryConditions::CreateClone() const
 {
    if ( m_bIsBoundaryPier )
-      return new txnEditBoundaryConditions(m_PierIdx,m_PierConnectionType[0],m_PierConnectionType[1]);
+      return new txnEditBoundaryConditions(m_PierIdx,m_BoundaryConditionType[0],m_BoundaryConditionType[1]);
    else
       return new txnEditBoundaryConditions(m_PierIdx,m_SegmentConnectionType[0],m_CastClosureJointEventIdx[0],m_SegmentConnectionType[1],m_CastClosureJointEventIdx[1]);
 }
@@ -94,7 +94,7 @@ bool txnEditBoundaryConditions::DoExecute(int i)
    if ( m_bIsBoundaryPier )
    {
       ATLASSERT( pBridgeDesc->GetPier(m_PierIdx)->IsBoundaryPier() );
-      pBridgeDesc->SetBoundaryCondition( m_PierIdx, m_PierConnectionType[i] );
+      pBridgeDesc->SetBoundaryCondition( m_PierIdx, m_BoundaryConditionType[i] );
    }
    else
    {

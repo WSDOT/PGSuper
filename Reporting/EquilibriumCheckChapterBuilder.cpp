@@ -114,16 +114,28 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << _T("E = ")  << modE.SetValue(tsDetails.Deck.E) << rptNewLine;
    *pPara << rptNewLine;
 
-   *pPara << _T("Deck Rebar - Top Mat") << rptNewLine;
-   *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].As) << rptNewLine;
-   *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].Ys) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].E) << rptNewLine;
+   *pPara << _T("Deck Rebar - Top Mat - Individual Bars") << rptNewLine;
+   *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].As) << rptNewLine;
+   *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].Ys) << rptNewLine;
+   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].E) << rptNewLine;
    *pPara << rptNewLine;
 
-   *pPara << _T("Deck Rebar - Bottom Mat") << rptNewLine;
-   *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].As) << rptNewLine;
-   *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].Ys) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].E) << rptNewLine;
+   *pPara << _T("Deck Rebar - Top Mat - Lump Sum Bars") << rptNewLine;
+   *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].As) << rptNewLine;
+   *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].Ys) << rptNewLine;
+   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].E) << rptNewLine;
+   *pPara << rptNewLine;
+
+   *pPara << _T("Deck Rebar - Bottom Mat - Individual Bars") << rptNewLine;
+   *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As) << rptNewLine;
+   *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys) << rptNewLine;
+   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].E) << rptNewLine;
+   *pPara << rptNewLine;
+
+   *pPara << _T("Deck Rebar - Bottom Mat - Lump Sum Bars") << rptNewLine;
+   *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].As) << rptNewLine;
+   *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].Ys) << rptNewLine;
+   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].E) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Girder Rebar") << rptNewLine;
@@ -236,13 +248,21 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       sum_dP += dP;
       *pPara << _T("Deck dP = ") << force.SetValue(dP) << rptNewLine;
 
-      dP = tsDetails.DeckRebar[pgsTypes::drmTop].dPi[pfType];
+      dP = tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].dPi[pfType];
       sum_dP += dP;
-      *pPara << _T("Deck Rebar Top Mat dP = ") << force.SetValue(dP) << rptNewLine;
+      *pPara << _T("Deck Rebar Top Mat (Individual Bars) dP = ") << force.SetValue(dP) << rptNewLine;
 
-      dP = tsDetails.DeckRebar[pgsTypes::drmBottom].dPi[pfType];
+      dP = tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].dPi[pfType];
       sum_dP += dP;
-      *pPara << _T("Deck Rebar Bot Mat dP = ") << force.SetValue(dP) << rptNewLine;
+      *pPara << _T("Deck Rebar Top Mat (Lump Sum Bars) dP = ") << force.SetValue(dP) << rptNewLine;
+
+      dP = tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dPi[pfType];
+      sum_dP += dP;
+      *pPara << _T("Deck Rebar Bot Mat (Individual Bars) dP = ") << force.SetValue(dP) << rptNewLine;
+
+      dP = tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].dPi[pfType];
+      sum_dP += dP;
+      *pPara << _T("Deck Rebar Bot Mat (Lump Sum Bars) dP = ") << force.SetValue(dP) << rptNewLine;
 
       iter = tsDetails.GirderRebar.begin();
       for ( ; iter != end; iter++ )
@@ -301,15 +321,25 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       sum_dM += dM;
       *pPara << _T("Deck dM = ") << moment.SetValue(dM) << rptNewLine;
 
-      dP = tsDetails.DeckRebar[pgsTypes::drmTop].dPi[pfType];
-      dM = dP*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmTop].Ys);
+      dP = tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].dPi[pfType];
+      dM = dP*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].Ys);
       sum_dM += dM;
-      *pPara << _T("Deck Rebar Top Mat dM = ") << moment.SetValue(dM) << rptNewLine;
+      *pPara << _T("Deck Rebar Top Mat (Individual Bars) dM = ") << moment.SetValue(dM) << rptNewLine;
 
-      dP = tsDetails.DeckRebar[pgsTypes::drmBottom].dPi[pfType];
-      dM = dP*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom].Ys);
+      dP = tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].dPi[pfType];
+      dM = dP*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].Ys);
       sum_dM += dM;
-      *pPara << _T("Deck Rebar Bot Mat dM = ") << moment.SetValue(dM) << rptNewLine;
+      *pPara << _T("Deck Rebar Top Mat (Lump Sum Bars) dM = ") << moment.SetValue(dM) << rptNewLine;
+
+      dP = tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dPi[pfType];
+      dM = dP*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys);
+      sum_dM += dM;
+      *pPara << _T("Deck Rebar Bot Mat (Individual Bars) dM = ") << moment.SetValue(dM) << rptNewLine;
+
+      dP = tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].dPi[pfType];
+      dM = dP*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].Ys);
+      sum_dM += dM;
+      *pPara << _T("Deck Rebar Bot Mat (Lump Sum Bars) dM = ") << moment.SetValue(dM) << rptNewLine;
 
       iter = tsDetails.GirderRebar.begin();
       for ( ; iter != end; iter++ )

@@ -129,8 +129,8 @@ void CSpanDetailsDlg::Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType 
    m_pPrevPier = m_pSpanData->GetPrevPier();
    m_pNextPier = m_pSpanData->GetNextPier();
 
-   m_PierConnectionType[pgsTypes::metStart] = m_pPrevPier->GetPierConnectionType();
-   m_PierConnectionType[pgsTypes::metEnd  ] = m_pNextPier->GetPierConnectionType();
+   m_BoundaryConditionType[pgsTypes::metStart] = m_pPrevPier->GetBoundaryConditionType();
+   m_BoundaryConditionType[pgsTypes::metEnd  ] = m_pNextPier->GetBoundaryConditionType();
 
    m_pGirderGroup = m_BridgeDesc.GetGirderGroup(m_pSpanData);
 
@@ -326,13 +326,13 @@ void CSpanDetailsDlg::NotifyBridgeExtensionPages()
 }
 
 
-pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(pgsTypes::MemberEndType end)
+pgsTypes::BoundaryConditionType CSpanDetailsDlg::GetConnectionType(pgsTypes::MemberEndType end)
 {
-   pgsTypes::PierConnectionType connectionType;
+   pgsTypes::BoundaryConditionType connectionType;
    if ( end == pgsTypes::metStart )
-      connectionType = m_pPrevPier->GetPierConnectionType();
+      connectionType = m_pPrevPier->GetBoundaryConditionType();
    else
-      connectionType = m_pNextPier->GetPierConnectionType();
+      connectionType = m_pNextPier->GetBoundaryConditionType();
 
    return connectionType;
 }

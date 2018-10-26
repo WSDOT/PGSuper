@@ -53,7 +53,6 @@ protected:
    void OnEndDistanceMeasureChanged();
    afx_msg void OnBearingOffsetMeasureChanged();
    afx_msg void OnConnectionTypeChanged();
-   afx_msg void OnBoundaryConditionsChanged();
    afx_msg void OnInstallationStageChanged();
    afx_msg void OnInstallationStageChanging();
 
@@ -61,12 +60,9 @@ protected:
    void FillConnectionTypeComboBox();
    void FillBearingOffsetComboBox();
    void FillEndDistanceComboBox();
-   void FillBoundaryConditionComboBox();
    void FillEventList();
-   CString GetImageName(pgsTypes::SegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+   CString GetImageName(pgsTypes::TempSupportSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
    CString GetImageName(pgsTypes::PierSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
-
-   CBoundaryConditionComboBox m_cbBoundaryCondition;
 
    CMetaFileStatic m_ConnectionPicture;
    CBrush m_WhiteBrush;

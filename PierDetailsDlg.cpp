@@ -87,6 +87,8 @@ CBridgeDescription2* CPierDetailsDlg::GetBridgeDescription()
 void CPierDetailsDlg::CommonInitPages()
 {
    m_psh.dwFlags                            |= PSH_HASHELP | PSH_NOAPPLYNOW;
+   m_PierLocationPage.m_psp.dwFlags         |= PSP_HASHELP;
+   m_AbutmentConnectionsPage.m_psp.dwFlags  |= PSP_HASHELP;
    m_PierLayoutPage.m_psp.dwFlags           |= PSP_HASHELP;
    m_PierConnectionsPage.m_psp.dwFlags      |= PSP_HASHELP;
    m_PierGirderSpacingPage.m_psp.dwFlags    |= PSP_HASHELP;
@@ -94,15 +96,24 @@ void CPierDetailsDlg::CommonInitPages()
    m_ClosureJointGeometryPage.m_psp.dwFlags |= PSP_HASHELP;
    m_GirderSegmentSpacingPage.m_psp.dwFlags |= PSP_HASHELP;
 
-   AddPage(&m_PierLayoutPage);
+   AddPage(&m_PierLocationPage);
 
    if ( m_pPier->IsBoundaryPier() )
    {
-      AddPage(&m_PierConnectionsPage);
+      if ( m_pPier->IsAbutment() )
+      {
+         AddPage(&m_AbutmentConnectionsPage);
+      }
+      else
+      {
+         AddPage(&m_PierLayoutPage);
+         AddPage(&m_PierConnectionsPage);
+      }
       AddPage(&m_PierGirderSpacingPage);
    }
    else
    {
+      AddPage(&m_PierLayoutPage);
       AddPage(&m_ClosureJointGeometryPage);
       AddPage(&m_GirderSegmentSpacingPage);
    }
@@ -127,15 +138,18 @@ void CPierDetailsDlg::Init(const CBridgeDescription2* pBridge,PierIndexType pier
    m_pSpan[pgsTypes::Back]  = m_pPier->GetSpan(pgsTypes::Back);
    m_pSpan[pgsTypes::Ahead] = m_pPier->GetSpan(pgsTypes::Ahead);
 
-   m_PierLayoutPage.Init(m_pPier);
+   m_PierLocationPage.Init(m_pPier);
 
    if ( m_pPier->IsBoundaryPier() )
    {
+      m_AbutmentConnectionsPage.Init(m_pPier);
+      m_PierLayoutPage.Init(m_pPier);
       m_PierConnectionsPage.Init(m_pPier);
       m_PierGirderSpacingPage.Init(this);
    }
    else
    {
+      m_PierLayoutPage.Init(m_pPier);
       m_ClosureJointGeometryPage.Init(m_pPier);
       m_GirderSegmentSpacingPage.Init(m_pPier);
    }
@@ -313,9 +327,9 @@ void CPierDetailsDlg::NotifyBridgeExtensionPages()
    }
 }
 
-pgsTypes::PierConnectionType CPierDetailsDlg::GetConnectionType()
+pgsTypes::BoundaryConditionType CPierDetailsDlg::GetConnectionType()
 {
-   return m_pPier->GetPierConnectionType();
+   return m_pPier->GetBoundaryConditionType();
 }
 
 GirderIndexType CPierDetailsDlg::GetGirderCount(pgsTypes::PierFaceType pierFace)

@@ -25,6 +25,7 @@
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\StrandData.h>
 #include <PgsExt\ShearData.h>
+#include <PgsExt\PrecastSegmentData.h>
 #include <IFace\Bridge.h>
 
 // Various utility functions that operate on CONFIG objects in PGSuperTypes.h
@@ -198,6 +199,79 @@ Float64 PGSEXTFUNC GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::T
 void PGSEXTFUNC GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade, Float64 gdrLength, Float64 reqdStartZl, Float64* pStartAv,Float64 reqdEndZl,   Float64* pEndAv);
 void PGSEXTFUNC WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG& rConfig);
 bool PGSEXTFUNC DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config);
+
+
+// Some other utilities for dealing with strands. Perhaps we should have called this file strandutil.h
+inline ConfigStrandFillVector ComputeHarpedStrandFillVector(const CSegmentKey& segmentKey,const CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
+{
+   if (segmentData.Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection )
+   {
+      ConfigStrandFillVector vec = ConvertDirectToConfigFill(pStrandGeometry, pgsTypes::Harped, 
+                                   segmentKey,
+                                   *segmentData.Strands.GetDirectStrandFillHarped());
+
+      return vec;
+   }
+   else
+   {
+      // Num harped is in a control
+      StrandIndexType Nh = segmentData.Strands.GetStrandCount(pgsTypes::Harped);
+
+      return pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, Nh);
+   }
+}
+
+inline void DealWithLegacyEndHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
+{
+   // New girder types are given legacy status so we must modify data here
+   if(segmentData.Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoLEGACY)
+   {
+      if(0 < segmentData.Strands.GetStrandCount(pgsTypes::Harped))
+      {
+         ConfigStrandFillVector fill = ComputeHarpedStrandFillVector(segmentKey,segmentData,pStrandGeometry);
+
+         Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, fill,
+                                                                               segmentData.Strands.GetHarpStrandOffsetMeasurementAtEnd(),
+                                                                               segmentData.Strands.GetHarpStrandOffsetAtEnd());
+
+         Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, fill,
+                                                                                   hsoCGFROMTOP, absol_offset);
+
+         segmentData.Strands.SetHarpStrandOffsetAtEnd(topcg_offset);
+      }
+
+      segmentData.Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoCGFROMTOP);
+   }
+}
+
+inline void DealWithLegacyHpHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
+{
+   // New girder types are given legacy status so we must modify data here for UI
+   if(segmentData.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoLEGACY)
+   {
+      if ( 0 < segmentData.Strands.GetStrandCount(pgsTypes::Harped) )
+      {
+         ConfigStrandFillVector fill = ComputeHarpedStrandFillVector(segmentKey, segmentData, pStrandGeometry);
+
+         Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, fill,
+                                                                               segmentData.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(),
+                                                                               segmentData.Strands.GetHarpStrandOffsetAtHarpPoint());
+
+         Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey, fill,
+                                                                                   hsoCGFROMBOTTOM, absol_offset);
+
+         segmentData.Strands.SetHarpStrandOffsetAtHarpPoint(botcg_offset);
+      }
+
+      segmentData.Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(hsoCGFROMBOTTOM);
+   }
+}
+
+inline void DealWithLegacyHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
+{
+   DealWithLegacyEndHarpedStrandAdjustment(segmentKey,segmentData, pStrandGeometry);
+   DealWithLegacyHpHarpedStrandAdjustment(segmentKey,segmentData, pStrandGeometry);
+}
 
 // NOTE: The method below could be useful to a design algorithm sometime in the future.
 /*

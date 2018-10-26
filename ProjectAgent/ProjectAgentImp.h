@@ -174,18 +174,18 @@ public:
 
 // IProjectProperties
 public:
-   virtual std::_tstring GetBridgeName() const;
-   virtual void SetBridgeName(const std::_tstring& name);
-   virtual std::_tstring GetBridgeID() const;
-   virtual void SetBridgeID(const std::_tstring& bid);
-   virtual std::_tstring GetJobNumber() const;
-   virtual void SetJobNumber(const std::_tstring& jid);
-   virtual std::_tstring GetEngineer() const;
-   virtual void SetEngineer(const std::_tstring& eng);
-   virtual std::_tstring GetCompany() const;
-   virtual void SetCompany(const std::_tstring& company);
-   virtual std::_tstring GetComments() const;
-   virtual void SetComments(const std::_tstring& comments);
+   virtual LPCTSTR GetBridgeName() const;
+   virtual void SetBridgeName(LPCTSTR name);
+   virtual LPCTSTR GetBridgeID() const;
+   virtual void SetBridgeID(LPCTSTR bid);
+   virtual LPCTSTR GetJobNumber() const;
+   virtual void SetJobNumber(LPCTSTR jid);
+   virtual LPCTSTR GetEngineer() const;
+   virtual void SetEngineer(LPCTSTR eng);
+   virtual LPCTSTR GetCompany() const;
+   virtual void SetCompany(LPCTSTR company);
+   virtual LPCTSTR GetComments() const;
+   virtual void SetComments(LPCTSTR comments);
 
 // IEnvironment
 public:
@@ -244,7 +244,7 @@ public:
    virtual void SetGirderName(const CGirderKey& girderKey, LPCTSTR strGirderName);
    virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup);
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders);
-   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType);
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::BoundaryConditionType connectionType);
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx);
    virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan);
    virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace, Float64 spanLength, const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx);
@@ -272,7 +272,7 @@ public:
    virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset);
    virtual Float64 GetSlabOffset(GroupIndexType grpidx, PierIndexType pierIdx, GirderIndexType gdrIdx);
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType();
-   virtual std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx);
+   virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx);
    virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx);
    virtual const CTimelineManager* GetTimelineManager();
    virtual void SetTimelineManager(const CTimelineManager& timelineMbr);
@@ -847,6 +847,7 @@ private:
    void ReleaseGirderLibraryEntries();
    void ReleaseDuctLibraryEntries();
 
+   void UpdateConcreteMaterial();
    void UpdateStrandMaterial();
    void VerifyRebarGrade();
 

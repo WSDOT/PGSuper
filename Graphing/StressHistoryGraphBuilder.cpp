@@ -30,7 +30,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
-#include <PgsExt\PhysicalConverter.h>
+#include <UnitMgt\UnitValueNumericalFormatTools.h>
 #include <PgsExt\LoadFactors.h>
 
 #include <IFace\Intervals.h>

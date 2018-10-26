@@ -27,7 +27,7 @@
 
 #include "GraphColor.h"
 
-#include <PgsExt\PhysicalConverter.h>
+#include <UnitMgt\UnitValueNumericalFormatTools.h>
 #include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 

@@ -80,6 +80,20 @@ CDeckRebarData& CDeckRebarData::operator= (const CDeckRebarData& rOther)
 }
 
 //======================== OPERATIONS =======================================
+std::vector<CDeckRebarData::NegMomentRebarData> CDeckRebarData::GetSupplementalReinforcement(PierIndexType pierIdx) const
+{
+   std::vector<CDeckRebarData::NegMomentRebarData> vSupplementalRebarData;
+   BOOST_FOREACH(const NegMomentRebarData& nmRebar,NegMomentRebar)
+   {
+      if ( nmRebar.PierIdx == pierIdx )
+      {
+         vSupplementalRebarData.push_back(nmRebar);
+      }
+   }
+
+   return vSupplementalRebarData;
+}
+
 HRESULT CDeckRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;

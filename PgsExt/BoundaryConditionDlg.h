@@ -35,7 +35,7 @@ public:
 	CBoundaryConditionDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CBoundaryConditionDlg();
 
-   pgsTypes::PierConnectionType m_BoundaryCondition;
+   pgsTypes::BoundaryConditionType m_BoundaryCondition;
    PierIndexType m_PierIdx;
 
 // Dialog Data

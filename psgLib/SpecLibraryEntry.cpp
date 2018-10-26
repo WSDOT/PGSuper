@@ -59,7 +59,7 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 SpecLibraryEntry::SpecLibraryEntry() :
-m_SpecificationType(lrfdVersionMgr::SeventhEdition2014),
+m_SpecificationType(lrfdVersionMgr::SeventhEditionWith2015Interims),
 m_SpecificationUnits(lrfdVersionMgr::US),
 m_SectionPropertyMode(pgsTypes::spmGross),
 m_DoCheckStrandSlope(true),
@@ -461,6 +461,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    else if (m_SpecificationType==lrfdVersionMgr::SeventhEdition2014)
    {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2014"));
+   }
+   else if (m_SpecificationType==lrfdVersionMgr::SeventhEditionWith2015Interims)
+   {
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2015"));
    }
    else
    {
@@ -947,7 +951,11 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       std::_tstring tmp;
       if(pLoad->Property(_T("SpecificationType"),&tmp))
       {
-         if(tmp==_T("AashtoLrfd2014"))
+         if(tmp==_T("AashtoLrfd2015"))
+         {
+            m_SpecificationType = lrfdVersionMgr::SeventhEditionWith2015Interims;
+         }
+         else if(tmp==_T("AashtoLrfd2014"))
          {
             m_SpecificationType = lrfdVersionMgr::SeventhEdition2014;
          }

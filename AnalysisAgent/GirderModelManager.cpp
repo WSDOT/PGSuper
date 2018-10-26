@@ -6046,7 +6046,7 @@ void CGirderModelManager::CreateLBAMStages(GirderIndexType gdr,ILBAMModel* pMode
    }
 }
 
-void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousModel,lrfdLoadModifier& loadModifier,ILBAMModel* pModel)
+void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousModel,const lrfdLoadModifier& loadModifier,ILBAMModel* pModel)
 {
    // This method creates the basic layout for the LBAM
    // It creates the support, span, and temporary support objects
@@ -6066,22 +6066,16 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
    //
    // create the first support (abutment 0)
    //
-   CComPtr<ISupport> objSupport;
-   objSupport.CoCreateInstance(CLSID_Support);
-
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
-   BoundaryConditionType boundaryCondition = GetLBAMBoundaryConditions(bContinuousModel,pPier);
-
+   CComPtr<ISupport> objSupport;
+   CreateLBAMSupport(gdr,bContinuousModel,loadModifier,pPier,&objSupport);
+   supports->Add(objSupport);
+   BoundaryConditionType boundaryCondition;
+   objSupport->get_BoundaryCondition(&boundaryCondition);
    if ( boundaryCondition == bcPinned || boundaryCondition == bcFixed )
    {
       bHasXConstraint = true;
    }
-
-   objSupport->put_BoundaryCondition(boundaryCondition);
-
-   objSupport->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
-
-   supports->Add(objSupport);
 
    // Layout the spans and supports along the girderline
    CComPtr<ISpans> spans;
@@ -6114,19 +6108,16 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
 
       // support at right end of the span (left side of pier next pier)
       pPier = pBridgeDesc->GetPier(nextPierIdx);
-      boundaryCondition = GetLBAMBoundaryConditions(bContinuousModel,pPier);
 
+      objSupport.Release();
+      CreateLBAMSupport(gdr,bContinuousModel,loadModifier,pPier,&objSupport);
+      supports->Add(objSupport);
+      BoundaryConditionType boundaryCondition;
+      objSupport->get_BoundaryCondition(&boundaryCondition);
       if ( boundaryCondition == bcPinned || boundaryCondition == bcFixed )
       {
          bHasXConstraint = true;
       }
-
-      objSupport.Release();
-      objSupport.CoCreateInstance(CLSID_Support);
-      objSupport->put_BoundaryCondition(boundaryCondition);
-
-      objSupport->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
-      supports->Add(objSupport);
    } // next span
 
    if ( !bHasXConstraint )
@@ -6175,7 +6166,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
       CComPtr<ITemporarySupports> objTemporarySupports;
       objSpan->get_TemporarySupports(&objTemporarySupports);
 
-      if ( pBridge->GetSegmentConnectionTypeAtTemporarySupport(tsIdx) == pgsTypes::sctContinuousSegment )
+      if ( pBridge->GetSegmentConnectionTypeAtTemporarySupport(tsIdx) == pgsTypes::tsctContinuousSegment )
       {
          // for temporary supports with continuous segments, just put a single temporary support
          // object at the centerline of the TS
@@ -6205,7 +6196,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
       }
       else
       {
-         ATLASSERT(pBridge->GetSegmentConnectionTypeAtTemporarySupport(tsIdx) == pgsTypes::sctClosureJoint);
+         ATLASSERT(pBridge->GetSegmentConnectionTypeAtTemporarySupport(tsIdx) == pgsTypes::tsctClosureJoint);
 
          // There is a discontinuity at this temporary support prior to the closure joint being cast.
          // Model with two support objects to maintain the stability of the LBAM model.
@@ -6266,6 +6257,107 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
          objTemporarySupports->Add(objRightTS);
       }
    }
+}
+
+void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bContinuousModel,const lrfdLoadModifier& loadModifier,const CPierData2* pPier,ISupport** ppSupport)
+{
+   CComPtr<ISupport> objSupport;
+   objSupport.CoCreateInstance(CLSID_Support);
+
+   if ( pPier->GetPierModelType() == pgsTypes::pmtIdealized )
+   {
+      BoundaryConditionType boundaryCondition = GetLBAMBoundaryConditions(bContinuousModel,pPier);
+      objSupport->put_BoundaryCondition(boundaryCondition);
+   }
+   else
+   {
+      BOOL bReleaseTop;
+      if ( pPier->IsBoundaryPier() )
+      {
+         pgsTypes::BoundaryConditionType boundaryCondition = pPier->GetBoundaryConditionType();
+         switch(boundaryCondition)
+         {
+         case pgsTypes::bctContinuousAfterDeck:
+         case pgsTypes::bctContinuousBeforeDeck:
+            bReleaseTop = VARIANT_TRUE;
+            break;
+
+         case pgsTypes::bctIntegralAfterDeck:
+         case pgsTypes::bctIntegralBeforeDeck:
+            bReleaseTop = VARIANT_FALSE;
+            break;
+
+         default:
+            ATLASSERT(false); // should never get here
+            // These boundary condition types aren't support with column support
+            bReleaseTop = VARIANT_FALSE;
+         }
+      }
+      else
+      {
+         ATLASSERT(pPier->IsInteriorPier());
+         pgsTypes::PierSegmentConnectionType connectionType = pPier->GetSegmentConnectionType();
+         bReleaseTop = (connectionType == pgsTypes::psctContinousClosureJoint || connectionType == pgsTypes::psctContinuousSegment) ? VARIANT_TRUE : VARIANT_FALSE;
+      }
+      objSupport->put_TopRelease(bReleaseTop);
+      objSupport->put_BoundaryCondition(bcFixed); // always fixed base
+
+      GET_IFACE(IBridge,pBridge);
+      PierIndexType pierIdx = pPier->GetIndex();
+      GroupIndexType backGroupIdx, aheadGroupIdx;
+      pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
+
+      GirderIndexType nGirdersBack = pBridge->GetGirderCount(backGroupIdx);
+      GirderIndexType nGirdersAhead = pBridge->GetGirderCount(aheadGroupIdx);
+      Float64 nGirders = (nGirdersBack + nGirdersAhead)/2.0;
+      ColumnIndexType nColumns = pBridge->GetColumnCount(pierIdx);
+      Float64 K = nColumns/nGirders;
+
+      Float64 H, A, I, E;
+      pBridge->GetColumnProperties(pierIdx,&H,&A,&I,&E);
+      objSupport->put_Length(H);
+
+      Float64 EA = K*E*A;
+      Float64 EI = K*E*I;
+
+      CComPtr<ISegmentCrossSection> objCrossSection;
+      objCrossSection.CoCreateInstance(CLSID_SegmentCrossSection);
+      objCrossSection->SetStiffness(EA,EI,EA,EI);
+
+      CComPtr<ISegment> objSegment;
+      objSegment.CoCreateInstance(CLSID_Segment);
+      objSegment->put_Length(H);
+      objSegment->putref_SegmentCrossSection(objCrossSection);
+
+      // it seems like we should be using the interval when the pier is erected... however the LBAM model
+      // starts when the first segment is erected... any stage before the first segment erection stage 
+      // is invalid in the LBAM.
+      GET_IFACE(IIntervals,pIntervals);
+      CGirderKey girderKey;
+      if ( gdrLineIdx <= Min(nGirdersBack,nGirdersAhead) )
+      {
+         girderKey.groupIndex = backGroupIdx;
+         girderKey.girderIndex = gdrLineIdx;
+      }
+      else
+      {
+         girderKey = CGirderKey(MinIndex(nGirdersBack,nGirdersAhead) == 0 ? backGroupIdx : aheadGroupIdx,Min(nGirdersBack,nGirdersAhead)-1);
+      }
+      IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+#if defined _DEBUG
+      IntervalIndexType erectPierIntervalIdx = pIntervals->GetErectPierInterval(pierIdx);
+      ATLASSERT(erectPierIntervalIdx <= erectFirstSegmentIntervalIdx);
+#endif
+      IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+      for ( IntervalIndexType intervalIdx = erectFirstSegmentIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+      {
+         objSupport->AddSegment(GetLBAMStageName(intervalIdx),objSegment);
+      }
+   }
+
+   objSupport->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
+
+   objSupport.CopyTo(ppSupport);
 }
 
 void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bool bContinuousModel,lrfdLoadModifier& loadModifier,ILBAMModel* pModel)
@@ -6807,7 +6899,7 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
       // Boundary condition should not be continuous segment at the end of a segment
       // it can only be closure joint which is considered to be a hinge until the
       // stage after it has been cast
-      ATLASSERT( pTS->GetConnectionType() == pgsTypes::sctClosureJoint );
+      ATLASSERT( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint );
 
       // if the temporary support is at an erection tower -OR-
       // if temporary support is at a strong back and the segment is a "drop in"
@@ -6912,30 +7004,30 @@ BoundaryConditionType CGirderModelManager::GetLBAMBoundaryConditions(bool bConti
    BoundaryConditionType bc;
    if ( pPier->IsBoundaryPier() )
    {
-      switch( pPier->GetPierConnectionType() )
+      switch( pPier->GetBoundaryConditionType() )
       {
-      case pgsTypes::Hinge:
+      case pgsTypes::bctHinge:
          bc = bcPinned;
          break;
 
-      case pgsTypes::Roller:
+      case pgsTypes::bctRoller:
          bc = bcRoller;
          break;
 
-      case pgsTypes::ContinuousAfterDeck:
-      case pgsTypes::ContinuousBeforeDeck:
+      case pgsTypes::bctContinuousAfterDeck:
+      case pgsTypes::bctContinuousBeforeDeck:
          bc = bcPinned;
          break;
 
-      case pgsTypes::IntegralAfterDeck:
-      case pgsTypes::IntegralBeforeDeck:
+      case pgsTypes::bctIntegralAfterDeck:
+      case pgsTypes::bctIntegralBeforeDeck:
          bc = bcFixed;
          break;
 
-      case pgsTypes::IntegralAfterDeckHingeBack:
-      case pgsTypes::IntegralBeforeDeckHingeBack:
-      case pgsTypes::IntegralAfterDeckHingeAhead:
-      case pgsTypes::IntegralBeforeDeckHingeAhead:
+      case pgsTypes::bctIntegralAfterDeckHingeBack:
+      case pgsTypes::bctIntegralBeforeDeckHingeBack:
+      case pgsTypes::bctIntegralAfterDeckHingeAhead:
+      case pgsTypes::bctIntegralBeforeDeckHingeAhead:
          bc = bcPinned;
          break;
 
@@ -6947,21 +7039,7 @@ BoundaryConditionType CGirderModelManager::GetLBAMBoundaryConditions(bool bConti
    else
    {
       ATLASSERT(pPier->IsInteriorPier());
-
-      switch( pPier->GetPierConnectionType() )
-      {
-      case pgsTypes::Hinge:
-         bc = bcPinned;
-         break;
-
-      case pgsTypes::Roller:
-         bc = bcRoller;
-         break;
-
-      default:
-         ATLASSERT(FALSE); // is there a new connection type? // interior piers can only be hinge or roller
-         bc = bcPinned;
-      }
+      bc = bcRoller;
 
       switch( pPier->GetSegmentConnectionType() )
       {
@@ -6978,7 +7056,7 @@ BoundaryConditionType CGirderModelManager::GetLBAMBoundaryConditions(bool bConti
 
       default:
          ATLASSERT(FALSE); // is there a new connection type?
-         bc = bcPinned;
+         bc = bcRoller;
       }
    }
 
@@ -7316,7 +7394,7 @@ void CGirderModelManager::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::Analysis
 
             // Determine the load on the right side of the CL Pier
             vOverlayLoads.clear();
-            CSegmentKey nextSegmentKey(segmentKey.groupIndex+1,segmentKey.girderIndex,segmentKey.segmentIndex);
+            CSegmentKey nextSegmentKey(segmentKey.groupIndex+1,segmentKey.girderIndex,0);
             nextSegmentKey.girderIndex = Min(nextSegmentKey.girderIndex,pBridge->GetGirderCount(nextSegmentKey.groupIndex));
             Float64 rightBrgOffset = pBridge->GetSegmentStartBearingOffset(nextSegmentKey);
             if ( !IsZero(rightBrgOffset) )
@@ -12969,6 +13047,19 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
    {
       LinearLoad load = *iter;
 
+      // force the load to be on the segment
+      if ( load.StartLoc < 0 )
+      {
+         load.wStart = ::LinInterp(-load.StartLoc,load.wStart,load.wEnd,load.EndLoc - load.StartLoc);
+         load.StartLoc = 0;
+      }
+
+      if ( segment_length < load.EndLoc )
+      {
+         load.wEnd = ::LinInterp(load.EndLoc-segment_length,load.wStart,load.wEnd,load.EndLoc-load.StartLoc);
+         load.EndLoc = segment_length;
+      }
+
       // If cantilevers are not explicitly  modeled, point loads at start and end to account 
       // for the load in the overhang/cantilever. These are mostly used to make sure
       // the dead load reactions are correct. Moments are not modeled if the length of the
@@ -12984,7 +13075,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
       {
          start[i]  = 0;
          end[i]    = L[i];
-         wStart[i] = 0;
+         wStart[i] = 0; // assume load not on SSMBR so load magnitude is 0
          wEnd[i]   = 0;
       }
 
@@ -13037,9 +13128,9 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
       // load on last superstructure member
       if ( segment_length - end_offset < load.EndLoc )
       {
-         Float64 start_loc  = (load.EndLoc < segment_length - end_offset ?  0.0 : segment_length - end_offset);
-         Float64 start_load = (load.EndLoc < segment_length - end_offset ? ::LinInterp(segment_length-end_offset-load.StartLoc,load.wStart,load.wEnd,load.EndLoc-load.StartLoc) : load.wStart);
-         Float64 end_loc    = Min(load.EndLoc,segment_length);
+         Float64 start_loc  = (segment_length - end_offset < load.StartLoc ? load.StartLoc - (segment_length - end_offset) : 0);
+         Float64 start_load = (segment_length - end_offset < load.StartLoc ? load.wStart : ::LinInterp(segment_length-end_offset-load.StartLoc,load.wStart,load.wEnd,load.EndLoc-load.StartLoc));
+         Float64 end_loc    = Min(load.EndLoc - (segment_length - end_offset),end_offset);
 
          // put load on the cantilever if...
          if ( bModelEndCantilever // cantilever is long enough to be loaded
@@ -13061,7 +13152,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
             end[2]    = end_offset;
             wEnd[2]   = load.wEnd;
 
-            load.EndLoc = start_loc;
+            load.EndLoc -= end_loc - start_loc;
             load.wEnd   = start_load;
          }
          else
@@ -13074,7 +13165,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
             wStart[2] = 0;
             wEnd[2]   = 0;
 
-            load.EndLoc = start_loc;
+            load.EndLoc -= end_loc - start_loc;
             load.wEnd   = start_load;
          }
       }
@@ -13082,7 +13173,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
       // load on main superstructure member
       // load location is measured from start of segment... 
       //subtract the start offset so that it is measured from the start of the SSMBR
-      if ( start_offset <= load.StartLoc && load.StartLoc < segment_length-start_offset)
+      if ( start_offset <= load.StartLoc && load.StartLoc < segment_length-start_offset-end_offset)
       {
          start[1]  = load.StartLoc - start_offset;
          end[1]    = load.EndLoc   - start_offset;
@@ -13157,14 +13248,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
 
    // return the ID of the next superstructure member to be loaded
    // determine how many SSMBRs were loaded/modeled
-   MemberIDType mbrIDInc = 0;
-   for ( int i = 0; i < 3; i++ )
-   {
-      if ( !IsZero(L[i]) )
-      {
-         mbrIDInc++;
-      }
-   }
+   MemberIDType mbrIDInc = GetSuperstructureMemberCount(segmentKey);
    return ssmbrID + mbrIDInc;
 }
 void CGirderModelManager::GetSlabLoad(const CSegmentKey& segmentKey, std::vector<LinearLoad>& vSlabLoads, std::vector<LinearLoad>& vHaunchLoads, std::vector<LinearLoad>& vPanelLoads)
@@ -14290,7 +14374,7 @@ IndexType CGirderModelManager::GetSuperstructureMemberCount(const CPierData2* pP
 
    IndexType nSSMbrs = 0;
 
-   pgsTypes::PierSegmentConnectionType pierSegmentConnectionType = pPier->GetSegmentConnectionType();
+   pgsTypes::PierSegmentConnectionType pierSegmentConnectionType = (pPier->IsInteriorPier() ? pPier->GetSegmentConnectionType() : pgsTypes::psctContinousClosureJoint);
    if ( pPier->IsBoundaryPier() || (pierSegmentConnectionType == pgsTypes::psctContinousClosureJoint || pierSegmentConnectionType == pgsTypes::psctIntegralClosureJoint) )
    {
       // we model left and right side of cast-in-place diaphragm at permanent piers
@@ -14325,13 +14409,13 @@ IndexType CGirderModelManager::GetSuperstructureMemberCount(const CPierData2* pP
 
 IndexType CGirderModelManager::GetSuperstructureMemberCount(const CTemporarySupportData* pTS)
 {
-   if ( pTS->GetConnectionType() == pgsTypes::sctClosureJoint )
+   if ( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint )
    {
       return 1; // temporary supports with closure joints are modeled with 1 member
    }
    else
    {
-      ATLASSERT( pTS->GetConnectionType() == pgsTypes::sctContinuousSegment );
+      ATLASSERT( pTS->GetConnectionType() == pgsTypes::tsctContinuousSegment );
       return 0; // no superstructure members for continuous segments
    }
 }
@@ -15169,7 +15253,7 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
    else
    {
       SupportIndexType tsIdx = supportIdx;
-      if ( pBridge->GetSegmentConnectionTypeAtTemporarySupport(tsIdx) == pgsTypes::sctContinuousSegment )
+      if ( pBridge->GetSegmentConnectionTypeAtTemporarySupport(tsIdx) == pgsTypes::tsctContinuousSegment )
       {
          SupportIDType tsID = GetTemporarySupportID(tsIdx);
          m_LBAMPoi->Add(tsID);

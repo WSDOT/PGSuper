@@ -388,6 +388,16 @@ bool pgsPointOfInterest::HasGirderPathCoordinate() const
    return m_bHasGirderPathCoordinate;
 }
 
+void pgsPointOfInterest::ClearAttributes()
+{
+   m_Attributes = 0;
+   for ( IndexType i = 0; i < gs_nRefAttributes; i++ )
+   {
+      m_RefAttributes[i] = 0;
+   }
+   UPDATE_ATTRIBUTES;
+}
+
 void pgsPointOfInterest::SetNonReferencedAttributes(PoiAttributeType attrib)
 {
    ATLASSERT(GetIndex(GetReference(attrib)) == INVALID_INDEX);

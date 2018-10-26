@@ -28,6 +28,7 @@
 #include <IFace\Bridge.h>
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\DesignConfigUtil.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <EAF\EAFUtilities.h>
 #include <IFace\Intervals.h>
 
@@ -483,6 +484,26 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    return config;
 }
 
+CPrecastSegmentData pgsSegmentDesignArtifact::GetSegmentData() const
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   CPrecastSegmentData segmentData = *(pIBridgeDesc->GetPrecastSegmentData(m_SegmentKey));
+
+   if (GetDesignOptions().doDesignForFlexure != dtNoDesign)
+   {
+      ModSegmentDataForFlexureDesign(pBroker,&segmentData);
+   }
+
+   if (GetDesignOptions().doDesignForShear)
+   {
+      ModSegmentDataForShearDesign(pBroker,&segmentData);
+   }
+
+   return segmentData;
+}
+
 ZoneIndexType pgsSegmentDesignArtifact::GetNumberOfStirrupZonesDesigned() const
 {
    return m_NumShearZones;
@@ -869,3 +890,261 @@ void pgsSegmentDesignArtifact::Init()
 }
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
+
+
+void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const
+{
+   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(m_SegmentKey.girderIndex);
+   std::_tstring gdrName = pGirder->GetGirderName();
+
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   Float64 HgStart, HgHp1, HgHp2, HgEnd;
+   pStrandGeom->GetHarpedStrandControlHeights(m_SegmentKey,&HgStart,&HgHp1,&HgHp2,&HgEnd);
+
+   arDesignOptions design_options = GetDesignOptions();
+
+   if (dtDesignFullyBondedRaised  != design_options.doDesignForFlexure &&
+       dtDesignForDebondingRaised != design_options.doDesignForFlexure)
+   {
+      // Strand Designs using continuous fill for all stands
+      pgsTypes::AdjustableStrandType adjType;
+      if(dtDesignForHarping == design_options.doDesignForFlexure)
+      {
+         adjType = pgsTypes::asHarped;
+      }
+      else
+      {
+         adjType = pgsTypes::asStraight;
+      }
+
+      pSegmentData->Strands.SetAdjustableStrandType(adjType);
+
+      ConfigStrandFillVector harpfillvec = pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Harped, GetNumHarpedStrands());
+
+      // Convert Adjustable strand offset data
+      // offsets are absolute measure in the design artifact
+      // Convert them to the measurement basis that the CGirderData object is using, unless it's the default,
+      // then let's use a favorite
+      if (hsoLEGACY == pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtEnd())
+      {
+         pSegmentData->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoBOTTOM2BOTTOM);
+      }
+
+      pSegmentData->Strands.SetHarpStrandOffsetAtEnd(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), adjType,
+                                                                                          HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                          harpfillvec, 
+                                                                                          pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                          GetHarpStrandOffsetEnd()));
+
+      if (hsoLEGACY == pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint())
+      {
+         pSegmentData->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(hsoBOTTOM2BOTTOM);
+      }
+
+      pSegmentData->Strands.SetHarpStrandOffsetAtHarpPoint(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), adjType,
+                                                                                        HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                        harpfillvec, 
+                                                                                        pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                                        GetHarpStrandOffsetHp()));
+
+      // See if strand design data fits in grid
+      bool fills_grid=false;
+      StrandIndexType num_permanent = GetNumHarpedStrands() + GetNumStraightStrands();
+      StrandIndexType ns(0), nh(0);
+      if (design_options.doStrandFillType == ftGridOrder)
+      {
+         // we asked design to fill using grid, but this may be a non-standard design - let's check
+         if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, m_SegmentKey, &ns, &nh))
+         {
+            if (ns == GetNumStraightStrands() && nh == GetNumHarpedStrands() )
+            {
+               fills_grid = true;
+            }
+         }
+      }
+
+      if ( fills_grid )
+      {
+         ATLASSERT(num_permanent==ns+nh);
+         pSegmentData->Strands.SetTotalPermanentNstrands(num_permanent, ns, nh);
+         pSegmentData->Strands.SetPjack(pgsTypes::Permanent,GetPjackStraightStrands() + GetPjackHarpedStrands());
+         pSegmentData->Strands.IsPjackCalculated(pgsTypes::Permanent, GetUsedMaxPjackStraightStrands());
+      }
+      else
+      {
+         pSegmentData->Strands.SetHarpedStraightNstrands(GetNumStraightStrands(), GetNumHarpedStrands());
+      }
+
+      pSegmentData->Strands.SetTemporaryNstrands(GetNumTempStrands());
+   }
+   else
+   {
+      // Raised straight design
+      pSegmentData->Strands.SetAdjustableStrandType(pgsTypes::asStraight);
+
+      // Raised straight adjustable strands are filled directly, but others use fill order.
+      // must convert all to DirectStrandFillCollection
+      ConfigStrandFillVector strvec = pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Straight, GetNumStraightStrands());
+      CDirectStrandFillCollection strfill = ConvertConfigToDirectStrandFill(strvec);
+      pSegmentData->Strands.SetDirectStrandFillStraight(strfill);
+
+      CDirectStrandFillCollection harpfill =  ConvertConfigToDirectStrandFill(GetRaisedAdjustableStrands());
+      pSegmentData->Strands.SetDirectStrandFillHarped(harpfill);
+
+      ConfigStrandFillVector tempvec = pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Temporary, GetNumTempStrands());
+      CDirectStrandFillCollection tempfill =  ConvertConfigToDirectStrandFill(tempvec);
+      pSegmentData->Strands.SetDirectStrandFillTemporary(tempfill);
+
+      // Convert Adjustable strand offset data. This is typically zero from library, but must be converted to input datum
+      // offsets are absolute measure in the design artifact
+      // convert them to the measurement basis that the CGirderData object is using
+      ConfigStrandFillVector harpfillvec = GetRaisedAdjustableStrands();
+         
+      pSegmentData->Strands.SetHarpStrandOffsetAtEnd(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), pgsTypes::asStraight,
+                                                                                          HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                          harpfillvec, 
+                                                                                          pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                          GetHarpStrandOffsetEnd()));
+
+      pSegmentData->Strands.SetHarpStrandOffsetAtHarpPoint(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asStraight,
+                                                                                        HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                        harpfillvec, 
+                                                                                        pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                                        GetHarpStrandOffsetHp()));
+   }
+
+   pSegmentData->Strands.SetPjack(pgsTypes::Harped,             GetPjackHarpedStrands());
+   pSegmentData->Strands.SetPjack(pgsTypes::Straight,           GetPjackStraightStrands());
+   pSegmentData->Strands.SetPjack(pgsTypes::Temporary,          GetPjackTempStrands());
+   pSegmentData->Strands.IsPjackCalculated(pgsTypes::Harped,    GetUsedMaxPjackHarpedStrands());
+   pSegmentData->Strands.IsPjackCalculated(pgsTypes::Straight,  GetUsedMaxPjackStraightStrands());
+   pSegmentData->Strands.IsPjackCalculated(pgsTypes::Temporary, GetUsedMaxPjackTempStrands());
+   pSegmentData->Strands.SetLastUserPjack(pgsTypes::Harped,     GetPjackHarpedStrands());
+   pSegmentData->Strands.SetLastUserPjack(pgsTypes::Straight,   GetPjackStraightStrands());
+   pSegmentData->Strands.SetLastUserPjack(pgsTypes::Temporary,  GetPjackTempStrands());
+
+   pSegmentData->Strands.SetTemporaryStrandUsage( GetTemporaryStrandUsage() );
+
+   // Get debond information from design artifact
+   pSegmentData->Strands.ClearDebondData();
+   pSegmentData->Strands.IsSymmetricDebond(true);  // design is always symmetric
+
+   // TRICKY: Mapping from DEBONDCONFIG to CDebondInfo is tricky because
+   //         former designates individual strands and latter stores strands
+   //         in grid order.
+   // Use utility tool to make the strand indexing conversion
+   ConfigStrandFillVector strtfillvec = pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Straight, GetNumStraightStrands());
+   ConfigStrandFillTool fillTool( strtfillvec );
+
+   DebondConfigCollection dbcoll = GetStraightStrandDebondInfo();
+   // sort this collection by strand idices to ensure we get it right
+   std::sort( dbcoll.begin(), dbcoll.end() ); // default < operator is by index
+
+   for (DebondConfigConstIterator dbit = dbcoll.begin(); dbit!=dbcoll.end(); dbit++)
+   {
+      const DEBONDCONFIG& rdbrinfo = *dbit;
+
+      CDebondData cdbi;
+
+      StrandIndexType gridIndex, otherPos;
+      fillTool.StrandPositionIndexToGridIndex(rdbrinfo.strandIdx, &gridIndex, &otherPos);
+
+      cdbi.strandTypeGridIdx = gridIndex;
+
+      // If there is another position, this is a pair. Increment to next position
+      if (otherPos != INVALID_INDEX)
+      {
+         dbit++;
+
+#ifdef _DEBUG
+         const DEBONDCONFIG& ainfo = *dbit;
+         StrandIndexType agrid;
+         fillTool.StrandPositionIndexToGridIndex(ainfo.strandIdx, &agrid, &otherPos);
+         ATLASSERT(agrid==gridIndex); // must have the same grid index
+#endif
+      }
+
+      cdbi.Length[pgsTypes::metStart] = rdbrinfo.DebondLength[pgsTypes::metStart];
+      cdbi.Length[pgsTypes::metEnd]   = rdbrinfo.DebondLength[pgsTypes::metEnd];
+
+      pSegmentData->Strands.GetDebonding(pgsTypes::Straight).push_back(cdbi);
+   }
+   
+   // concrete
+   pSegmentData->Material.Concrete.Fci = GetReleaseStrength();
+   if (!pSegmentData->Material.Concrete.bUserEci)
+   {
+      pSegmentData->Material.Concrete.Eci = lrfdConcreteUtil::ModE( pSegmentData->Material.Concrete.Fci, 
+                                                             pSegmentData->Material.Concrete.StrengthDensity, 
+                                                             false  ); // ignore LRFD range checks 
+      pSegmentData->Material.Concrete.Eci *= (pSegmentData->Material.Concrete.EcK1*pSegmentData->Material.Concrete.EcK2);
+   }
+
+   pSegmentData->Material.Concrete.Fc  = GetConcreteStrength();
+   if (!pSegmentData->Material.Concrete.bUserEc)
+   {
+      pSegmentData->Material.Concrete.Ec = lrfdConcreteUtil::ModE( pSegmentData->Material.Concrete.Fc, 
+                                                            pSegmentData->Material.Concrete.StrengthDensity, 
+                                                            false );// ignore LRFD range checks 
+      pSegmentData->Material.Concrete.Ec *= (pSegmentData->Material.Concrete.EcK1*pSegmentData->Material.Concrete.EcK2);
+   }
+
+   // lifting
+   if ( design_options.doDesignLifting )
+   {
+      pSegmentData->HandlingData.LeftLiftPoint  = GetLeftLiftingLocation();
+      pSegmentData->HandlingData.RightLiftPoint = GetRightLiftingLocation();
+   }
+
+   // shipping
+   if ( design_options.doDesignHauling )
+   {
+      pSegmentData->HandlingData.LeadingSupportPoint  = GetLeadingOverhang();
+      pSegmentData->HandlingData.TrailingSupportPoint = GetTrailingOverhang();
+   }
+}
+
+void pgsSegmentDesignArtifact::ModSegmentDataForShearDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const
+{
+   GET_IFACE2(pBroker,IShear,pShear);
+
+   // get the design data
+   pSegmentData->ShearData.ShearZones.clear();
+
+   ZoneIndexType nShearZones = GetNumberOfStirrupZonesDesigned();
+   if (0 < nShearZones)
+   {
+      pSegmentData->ShearData = *GetShearData();
+   }
+   else
+   {
+      // if no shear zones were designed, we had a design failure.
+      // create a single zone with no stirrups in it.
+      CShearZoneData2 dat;
+      pSegmentData->ShearData.ShearZones.push_back(dat);
+   }
+
+   if(GetWasLongitudinalRebarForShearDesigned())
+   {
+      // Rebar data was changed during shear design
+      pSegmentData->LongitudinalRebarData = GetLongitudinalRebarData();
+   }
+
+   // It is possible for shear stress to control final concrete strength
+   // Make sure it is updated if no flexural design was requested
+   if (GetDesignOptions().doDesignForFlexure == dtNoDesign)
+   {
+      pSegmentData->Material.Concrete.Fc = GetConcreteStrength();
+      if ( !pSegmentData->Material.Concrete.bUserEc )
+      {
+         pSegmentData->Material.Concrete.Ec = lrfdConcreteUtil::ModE( pSegmentData->Material.Concrete.Fc, 
+                                                               pSegmentData->Material.Concrete.StrengthDensity, 
+                                                               false );// ignore LRFD range checks 
+         pSegmentData->Material.Concrete.Ec *= (pSegmentData->Material.Concrete.EcK1*pSegmentData->Material.Concrete.EcK2);
+      }
+   }
+}

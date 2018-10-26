@@ -339,7 +339,7 @@ BOOL CTxDOTOptionalDesignDoc::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
       return hr;
 
    // we want to use some special agents
-   CLSID clsid[] = {CLSID_SysAgent,CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
+   CLSID clsid[] = {CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
    if ( !LoadAgents(pBrokerInit, clsid, sizeof(clsid)/sizeof(CLSID) ) )
       return FALSE;
 
@@ -1002,12 +1002,12 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    CBridgeDescription2 bridgeDesc = *(pBridgeDesc->GetBridgeDescription());
 
    // Save comment data
-   pProps->SetEngineer( std::_tstring( m_ProjectData.GetEngineer() ) );
-   pProps->SetCompany( std::_tstring( m_ProjectData.GetCompany() ) );
-   pProps->SetComments( std::_tstring( m_ProjectData.GetComments() ) );
-   pProps->SetBridgeName( std::_tstring( m_ProjectData.GetBridge() ) );
-   pProps->SetBridgeID( std::_tstring( m_ProjectData.GetBridgeID() ) );
-   pProps->SetJobNumber( std::_tstring( m_ProjectData.GetJobNumber() ) );
+   pProps->SetEngineer(   m_ProjectData.GetEngineer()  );
+   pProps->SetCompany(    m_ProjectData.GetCompany()   );
+   pProps->SetComments(   m_ProjectData.GetComments()  );
+   pProps->SetBridgeName( m_ProjectData.GetBridge()    );
+   pProps->SetBridgeID(   m_ProjectData.GetBridgeID()  );
+   pProps->SetJobNumber(  m_ProjectData.GetJobNumber() );
 
    // Start off by setting whole bridge data
    CString gdr_name = m_ProjectData.GetGirderEntryName();

@@ -42,6 +42,11 @@
 
 #include <algorithm>
 
+// for the diagnostic file dump
+#include <initguid.h>
+#include <WBFLTools_i.c>
+#include <EAF\EAFUIIntegration.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -316,7 +321,6 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 #endif // _DEBUG
 
    HRESULT hr = m_MomentCapacitySolver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
-
    if ( hr == RC_E_MATERIALFAILURE )
    {
       WATCHX(MomCap,0,_T("Exceeded material strain limit"));
@@ -368,31 +372,69 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
             GET_IFACE(IDocumentType,pDocType);
 
+            CString strErrorCode;
+            switch(hr)
+            {
+               case RC_E_INITCONCRETE:          strErrorCode = _T("RC_E_INITCONCRETE");          break;
+               case RC_E_SOLUTIONNOTFOUND:      strErrorCode = _T("RC_E_SOLUTIONNOTFOUND");      break;
+               case RC_E_BEAMNOTSYMMETRIC:      strErrorCode = _T("RC_E_BEAMNOTSYMMETRIC");      break;
+               case RC_E_MATERIALFAILURE:       strErrorCode = _T("RC_E_MATERIALFAILURE");       break;
+               case RC_E_NEUTRALAXISNOTBOUNDED: strErrorCode = _T("RC_E_NEUTRALAXISNOTBOUNDED"); break;
+               case RC_E_SECTION:               strErrorCode = _T("RC_E_SECTION");               break;
+               case RC_E_FGMATERIAL:            strErrorCode = _T("RC_E_FGMATERIAL");            break;
+               case RC_E_BGMATERIAL:            strErrorCode = _T("RC_E_BGMATERIAL");            break;
+               case E_FAIL:                     strErrorCode = _T("E_FAIL");                     break;
+               default:                         strErrorCode.Format(_T("0x%X"),hr);
+            }
+
+            // Dump the section for later diagnostics
+            GET_IFACE(IEAFDocument,pDoc);
+            CString strFileRoot = pDoc->GetFileRoot(); // returns the root path for the document such as "C:\My Documents\"
+            CString strFileName;
+            strFileName.Format(_T("%sRCCapacity_POI_%d.txt"),strFileRoot,poi.GetID());
+
+            CComPtr<IStructuredSave2> ss;
+            ss.CoCreateInstance(CLSID_StructuredSave2);
+            CComBSTR bstrFileName(strFileName);
+            ss->Open(bstrFileName);
+
+            CComQIPtr<IStructuredStorage2> stg(section);
+            stg->Save(ss);
+            ss->Close();
+
+            ss.Release();
+            stg.Release();
+
             const unitmgtLengthData& unit = pDisplayUnits->GetSpanLengthUnit();
             CString msg;
             if ( pDocType->IsPGSuperDocument() )
             {
-               msg.Format(_T("An unknown error occured while computing %s moment capacity for Span %d Girder %s at %f %s from the left end of the girder (%d)"),
+               msg.Format(_T("An unknown error occured while computing %s moment capacity for Span %d Girder %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d)\nPlease contact technical support with a screen print of this error message and send the diagnostic file %s."),
                            (bPositiveMoment ? _T("positive") : _T("negative")),
                            LABEL_SPAN(segmentKey.groupIndex),
                            LABEL_GIRDER(segmentKey.girderIndex),
                            ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
                            unit.UnitOfMeasure.UnitTag().c_str(),
-                           hr);
+                           strErrorCode,
+                           poi.GetID(),
+                           strFileName);
             }
             else
             {
-               msg.Format(_T("An unknown error occured while computing %s moment capacity for Group %d Girder %s Segment %d at %f %s from the left end of the segment (%d)"),
+               msg.Format(_T("An unknown error occured while computing %s moment capacity for Group %d Girder %s Segment %d at %f %s from the left end of the segment.\n(hr = %s)\n(Location ID = %d)\nPlease contact technical support with a screen print of this error message and send the diagnostic file %s."),
                            (bPositiveMoment ? _T("positive") : _T("negative")),
                            LABEL_GROUP(segmentKey.groupIndex),
                            LABEL_GIRDER(segmentKey.girderIndex),
                            LABEL_SEGMENT(segmentKey.segmentIndex),
                            ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
                            unit.UnitOfMeasure.UnitTag().c_str(),
-                           hr);
+                           strErrorCode,
+                           poi.GetID(),
+                           strFileName);
             }
             pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg);
             pStatusCenter->Add(pStatusItem);
+
             THROW_UNWIND(msg,-1);
          }
       }
@@ -2061,7 +2103,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          //
          // THIS MUST BE ONE OF THE LAST CHANGES TO MAKE BEFORE MOVING EVERYTHING TO THE 3.0 BRANCH
          GET_IFACE(ILongRebarGeometry, pRebarGeom);
-         Float64 AsTop = pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
+         Float64 AsTop = pRebarGeom->GetAsTopMat(poi,pgsTypes::drbAll,pgsTypes::drcAll);
 
          if ( !IsZero(AsTop) )
          {
@@ -2096,7 +2138,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          }
 
 
-         Float64 AsBottom = pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
+         Float64 AsBottom = pRebarGeom->GetAsBottomMat(poi,pgsTypes::drbAll,pgsTypes::drcAll);
          if ( !IsZero(AsBottom) )
          {
             Float64 coverBottom = pRebarGeom->GetCoverBottomMat();

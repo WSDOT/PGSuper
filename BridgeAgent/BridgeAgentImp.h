@@ -321,8 +321,11 @@ public:
    virtual bool GetPierLocation(PierIndexType pierIdx,const CSegmentKey& segmentKey,Float64* pXs);
    virtual bool GetPierLocation(const CGirderKey& girderKey,PierIndexType pierIdx,Float64* pXgp);
    virtual bool GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew);
+   virtual pgsTypes::PierModelType GetPierModelType(PierIndexType pierIdx);
+   virtual ColumnIndexType GetColumnCount(PierIndexType pierIdx);
+   virtual void GetColumnProperties(PierIndexType pierIdx,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE);
    virtual bool ProcessNegativeMoments(SpanIndexType spanIdx);
-   virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx);
+   virtual pgsTypes::BoundaryConditionType GetBoundaryConditionType(PierIndexType pierIdx);
    virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx);
    virtual bool IsAbutment(PierIndexType pierIdx);
    virtual bool IsPier(PierIndexType pierIdx);
@@ -333,7 +336,7 @@ public:
    virtual bool GetTemporarySupportLocation(SupportIndexType tsIdx,const CSegmentKey& segmentKey,Float64* pXs);
    virtual Float64 GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx);
    virtual pgsTypes::TemporarySupportType GetTemporarySupportType(SupportIndexType tsIdx);
-   virtual pgsTypes::SegmentConnectionType GetSegmentConnectionTypeAtTemporarySupport(SupportIndexType tsIdx);
+   virtual pgsTypes::TempSupportSegmentConnectionType GetSegmentConnectionTypeAtTemporarySupport(SupportIndexType tsIdx);
    virtual void GetSegmentsAtTemporarySupport(GirderIndexType gdrIdx,SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey);
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection);
 
@@ -477,11 +480,12 @@ public:
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetCoverTopMat();
-   virtual Float64 GetTopMatLocation(const pgsPointOfInterest& poi,DeckRebarType drt);
-   virtual Float64 GetAsTopMat(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt);
+   virtual Float64 GetTopMatLocation(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory);
+   virtual Float64 GetAsTopMat(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory);
    virtual Float64 GetCoverBottomMat();
-   virtual Float64 GetBottomMatLocation(const pgsPointOfInterest& poi,DeckRebarType drt);
-   virtual Float64 GetAsBottomMat(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt);
+   virtual Float64 GetBottomMatLocation(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory);
+   virtual Float64 GetAsBottomMat(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory);
+   virtual void GetDeckReinforcing(const pgsPointOfInterest& poi,pgsTypes::DeckRebarMatType matType,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bAdjForDevLength,Float64* pAs,Float64* pYb);
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void GetRebarLayout(const CSegmentKey& segmentKey, IRebarLayout** rebarLayout);
@@ -1169,7 +1173,7 @@ private:
    void LayoutPoiForPrecastDiaphragmLoads(const CSegmentKey& segmentKey,Float64 segmentOffset);
    void LayoutPoiForIntermediateDiaphragmLoads(const CSpanKey& spanKey);
    void LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 segmentOffset);
-   void LayoutPoiForSlabBarCutoffs(const CSegmentKey& segmentKey);
+   void LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey);
    void LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKey,Float64 segmentOffset);
    void LayoutPoiForHandling(const CSegmentKey& segmentKey);
    void LayoutPoiForSectionChanges(const CSegmentKey& segmentKey);
@@ -1247,9 +1251,9 @@ private:
 
    Float64 GetAptTensionSide(const pgsPointOfInterest& poi,bool bTensionTop);
 
-   Float64 GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt,bool bTopMat,bool bBottomMat);
-   Float64 GetLocationDeckMats(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt,bool bTopMat,bool bBottomMat);
-   void GetDeckMatData(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt,bool bTopMat,bool bBottomMat,Float64* pAs,Float64* pYb);
+   Float64 GetAsDeckMats(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bTopMat,bool bBottomMat);
+   Float64 GetLocationDeckMats(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bTopMat,bool bBottomMat);
+   void GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bTopMat,bool bBottomMat,bool bAdjForDevLength,Float64* pAs,Float64* pYb);
 
    void GetShapeProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 Ecgdr,IShapeProperties** ppShapeProps);
    void GetShapeProperties(pgsTypes::SectionPropertyType sectPropType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 Ecgdr,IShapeProperties** ppShapeProps);
@@ -1312,6 +1316,8 @@ private:
    Float64 GetHsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands);
    Float64 GetSsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands);
    Float64 GetTempEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands);
+
+   Float64 GetSuperstructureDepth(PierIndexType pierIdx);
 };
 
 #endif //__BRIDGEAGENT_H_

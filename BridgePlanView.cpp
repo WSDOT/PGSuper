@@ -1927,7 +1927,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
       CString strConnectionTip;
       if ( pPier->IsBoundaryPier() )
       {
-         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetPierConnectionType()));
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetBoundaryConditionType()));
       }
       else
       {
@@ -2410,7 +2410,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       Float64 station = pTS->GetStation();
 
       pgsTypes::TemporarySupportType tsSupportType = pTS->GetSupportType();
-      pgsTypes::SegmentConnectionType segConnectionType = pTS->GetConnectionType();
+      pgsTypes::TempSupportSegmentConnectionType segConnectionType = pTS->GetConnectionType();
 
       EventIndexType erectionEventIdx, removalEventIdx;
       pTimelineMgr->GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
@@ -2496,7 +2496,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
                      FormatStation(pDisplayUnits->GetStationFormat(),station),
                      FormatDirection(direction),
                      FormatAngle(objSkew),
-                     segConnectionType == pgsTypes::sctClosureJoint ? _T("Closure Joint") : _T("Continuous Segment"),
+                     segConnectionType == pgsTypes::tsctClosureJoint ? _T("Closure Joint") : _T("Continuous Segment"),
                      LABEL_EVENT(erectionEventIdx),
                      pErectionEvent == NULL ? _T("Erection stage not defined") : pErectionEvent->GetDescription(),
                      LABEL_EVENT(removalEventIdx),
@@ -3391,47 +3391,47 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
    std::_tstring strConnection;
    if ( pPierData->IsBoundaryPier() )
    {
-      pgsTypes::PierConnectionType connectionType = pPierData->GetPierConnectionType();
+      pgsTypes::BoundaryConditionType connectionType = pPierData->GetBoundaryConditionType();
 
       switch( connectionType )
       {
-      case pgsTypes::Hinge:
+      case pgsTypes::bctHinge:
          strConnection = _T("H");
          break;
 
-      case pgsTypes::Roller:
+      case pgsTypes::bctRoller:
          strConnection = _T("R");
          break;
 
-      case pgsTypes::ContinuousAfterDeck:
+      case pgsTypes::bctContinuousAfterDeck:
          strConnection = _T("Ca");
          break;
 
-      case pgsTypes::ContinuousBeforeDeck:
+      case pgsTypes::bctContinuousBeforeDeck:
          strConnection = _T("Cb");
          break;
 
-      case pgsTypes::IntegralAfterDeck:
+      case pgsTypes::bctIntegralAfterDeck:
          strConnection = _T("Ia");
          break;
 
-      case pgsTypes::IntegralBeforeDeck:
+      case pgsTypes::bctIntegralBeforeDeck:
          strConnection = _T("Ib");
          break;
 
-      case pgsTypes::IntegralAfterDeckHingeBack:
+      case pgsTypes::bctIntegralAfterDeckHingeBack:
          strConnection = _T("H Ia");
          break;
 
-      case pgsTypes::IntegralBeforeDeckHingeBack:
+      case pgsTypes::bctIntegralBeforeDeckHingeBack:
          strConnection = _T("H Ib");
          break;
 
-      case pgsTypes::IntegralAfterDeckHingeAhead:
+      case pgsTypes::bctIntegralAfterDeckHingeAhead:
          strConnection = _T("Ia H");
          break;
 
-      case pgsTypes::IntegralBeforeDeckHingeAhead:
+      case pgsTypes::bctIntegralBeforeDeckHingeAhead:
          strConnection = _T("Ib H");
          break;
 
@@ -3465,23 +3465,6 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
          ATLASSERT(false); // who added a new connection type?
          strConnection = _T("?");
       }
-
-      pgsTypes::PierConnectionType pierConnectionType = pPierData->GetPierConnectionType();
-
-      switch( pierConnectionType )
-      {
-      case pgsTypes::Hinge:
-         strConnection += _T("-H");
-         break;
-
-      case pgsTypes::Roller:
-         strConnection += _T("-R");
-         break;
-
-      default:
-         ATLASSERT(false); // who added a new connection type?
-         strConnection += _T("-?");
-      }
    }
 
    return strConnection;
@@ -3492,47 +3475,47 @@ std::_tstring CBridgePlanView::GetFullConnectionString(const CPierData2* pPierDa
    std::_tstring strConnection;
    if ( pPierData->IsBoundaryPier() )
    {
-      pgsTypes::PierConnectionType connectionType = pPierData->GetPierConnectionType();
+      pgsTypes::BoundaryConditionType connectionType = pPierData->GetBoundaryConditionType();
 
       switch( connectionType )
       {
-      case pgsTypes::Hinge:
+      case pgsTypes::bctHinge:
          strConnection = _T("Hinge");
          break;
 
-      case pgsTypes::Roller:
+      case pgsTypes::bctRoller:
          strConnection = _T("Roller");
          break;
 
-      case pgsTypes::ContinuousAfterDeck:
+      case pgsTypes::bctContinuousAfterDeck:
          strConnection = _T("Continuous after deck placement");
          break;
 
-      case pgsTypes::ContinuousBeforeDeck:
+      case pgsTypes::bctContinuousBeforeDeck:
          strConnection = _T("Continuous before deck placement");
          break;
 
-      case pgsTypes::IntegralAfterDeck:
+      case pgsTypes::bctIntegralAfterDeck:
          strConnection = _T("Integral after deck placement");
          break;
 
-      case pgsTypes::IntegralBeforeDeck:
+      case pgsTypes::bctIntegralBeforeDeck:
          strConnection = _T("Integral before deck placement");
          break;
 
-      case pgsTypes::IntegralAfterDeckHingeBack:
+      case pgsTypes::bctIntegralAfterDeckHingeBack:
          strConnection = _T("Hinge | Integral after deck placement");
          break;
 
-      case pgsTypes::IntegralBeforeDeckHingeBack:
+      case pgsTypes::bctIntegralBeforeDeckHingeBack:
          strConnection = _T("Hinge | Integral before deck placement");
          break;
 
-      case pgsTypes::IntegralAfterDeckHingeAhead:
+      case pgsTypes::bctIntegralAfterDeckHingeAhead:
          strConnection = _T("Integral after deck placement | Hinge");
          break;
 
-      case pgsTypes::IntegralBeforeDeckHingeAhead:
+      case pgsTypes::bctIntegralBeforeDeckHingeAhead:
          strConnection = _T("Integral before deck placement | Hinge");
          break;
 

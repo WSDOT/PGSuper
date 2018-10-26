@@ -1567,11 +1567,23 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
                                                                  m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                  harpFill, measureType, &lowRange, &highRange);
 
-      lowRange  = ::ConvertFromSysUnits(lowRange, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      highRange = ::ConvertFromSysUnits(highRange,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
       Float64 low  = Min(lowRange, highRange);
       Float64 high = Max(lowRange, highRange);
+
+      // If offset value is blank, we need to fill it. Place at highest location in valid range
+      CWnd* pWnd = GetDlgItem( IDC_HPOFFSET_END );
+      ASSERT( pWnd );
+      CString txt;
+      pWnd->GetWindowText(txt);
+      if (txt.IsEmpty())
+      {
+         CDataExchange DX(this, FALSE);
+         DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, high, pDisplayUnits->GetComponentDimUnit() );
+      }
+
+      // Update message
+      low  = ::ConvertFromSysUnits(low, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      high = ::ConvertFromSysUnits(high,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
@@ -1608,11 +1620,22 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
       pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_strGirderName.c_str(), pParent->m_pSegment->Strands.GetAdjustableStrandType(), m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, harpFill, measureType, &lowRange, &highRange);
 
 
-      lowRange = ::ConvertFromSysUnits(lowRange,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      highRange = ::ConvertFromSysUnits(highRange,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
       Float64 low  = Min(lowRange, highRange);
       Float64 high = Max(lowRange, highRange);
+      // If offset value is blank, we need to fill it. Place at lowest location in valid range
+      CWnd* pWnd = GetDlgItem( IDC_HPOFFSET_HP );
+      ASSERT( pWnd );
+      CString txt;
+      pWnd->GetWindowText(txt);
+      if (txt.IsEmpty())
+      {
+         CDataExchange DX(this, FALSE);
+         DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, low, pDisplayUnits->GetComponentDimUnit() );
+      }
+
+      // Update message
+      low = ::ConvertFromSysUnits(low,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      high = ::ConvertFromSysUnits(high,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
@@ -2620,14 +2643,14 @@ void CGirderDescPrestressPage::OnCbnSelchangeAdjustableCombo()
 
 void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
 {
-   ATLASSERT(m_LibraryAdjustableStrandType == pgsTypes::asStraightOrHarped);
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    pgsTypes::AdjustableStrandType adjType = pParent->m_pSegment->Strands.GetAdjustableStrandType();
+
+   StrandIndexType nh = GetHarpedStrandCount();
 
    if (adjType == pgsTypes::asHarped)
    {
@@ -2646,6 +2669,7 @@ void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
    else
    {
       GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder:"));
+      m_AllowHpAdjustment = false;
       ShowHpOffsetControls(FALSE);
    }
 
@@ -2653,6 +2677,27 @@ void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
    m_AllowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(pParent->m_strGirderName.c_str(), adjType);
 
    ShowEndOffsetControls(m_AllowEndAdjustment ? TRUE : FALSE);
-   DisableEndOffsetControls(m_AllowEndAdjustment ? FALSE : TRUE);
-   OnSelchangeHpComboEnd(); // Update allowable range message
+
+   if (m_AllowEndAdjustment)
+   {
+      DisableEndOffsetControls(m_AllowEndAdjustment && nh>0 ? FALSE : TRUE);
+      OnSelchangeHpComboEnd(); // Update allowable range message
+   }
+
+   ShowOffsetControlGroup(m_AllowEndAdjustment || m_AllowHpAdjustment);
+}
+
+void CGirderDescPrestressPage::ShowOffsetControlGroup(BOOL show)
+{
+   CWnd* pWnd;
+
+   int sShow = show ? SW_SHOW : SW_HIDE;
+
+   pWnd = GetDlgItem( IDC_VERT_GROUP );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( sShow );
+
+   pWnd = GetDlgItem( IDC_VERT_STATIC );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( sShow );
 }

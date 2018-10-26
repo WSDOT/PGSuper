@@ -216,6 +216,7 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
          offset = back_offset;
       }
 
+#pragma Reminder("WORKING HERE - if the pier model is physical, use the actual pier dimensions for pier line geometry")
       CComPtr<IPierLine> pierline;
       pBridgeGeometry->CreatePierLine(pierID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),width,offset,&pierline);
 

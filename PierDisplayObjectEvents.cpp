@@ -228,26 +228,26 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       if ( pPier->IsBoundaryPier() )
       {
          // get all valid connection types for the pier represented by this display object
-         std::vector<pgsTypes::PierConnectionType> validConnectionTypes( pBridgeDesc->GetPierConnectionTypes(pThis->m_PierIdx) );
+         std::vector<pgsTypes::BoundaryConditionType> validConnectionTypes( pBridgeDesc->GetBoundaryConditionTypes(pThis->m_PierIdx) );
 
          // Mapping between connection type and menu id
-         std::map<pgsTypes::PierConnectionType,UINT> menuIDs;
-         menuIDs.insert(std::make_pair(pgsTypes::Hinge,IDM_HINGE));
-         menuIDs.insert(std::make_pair(pgsTypes::Roller,IDM_ROLLER));
-         menuIDs.insert(std::make_pair(pgsTypes::ContinuousAfterDeck,IDM_CONTINUOUS_AFTERDECK));
-         menuIDs.insert(std::make_pair(pgsTypes::ContinuousBeforeDeck,IDM_CONTINUOUS_BEFOREDECK));
-         menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeck,IDM_INTEGRAL_AFTERDECK));
-         menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeck,IDM_INTEGRAL_BEFOREDECK));
-         menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeBack,IDM_INTEGRAL_AFTERDECK_HINGEBACK));
-         menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeckHingeBack,IDM_INTEGRAL_BEFOREDECK_HINGEBACK));
-         menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeAhead,IDM_INTEGRAL_AFTERDECK_HINGEAHEAD));
-         menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeckHingeAhead,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD));
+         std::map<pgsTypes::BoundaryConditionType,UINT> menuIDs;
+         menuIDs.insert(std::make_pair(pgsTypes::bctHinge,IDM_HINGE));
+         menuIDs.insert(std::make_pair(pgsTypes::bctRoller,IDM_ROLLER));
+         menuIDs.insert(std::make_pair(pgsTypes::bctContinuousAfterDeck,IDM_CONTINUOUS_AFTERDECK));
+         menuIDs.insert(std::make_pair(pgsTypes::bctContinuousBeforeDeck,IDM_CONTINUOUS_BEFOREDECK));
+         menuIDs.insert(std::make_pair(pgsTypes::bctIntegralAfterDeck,IDM_INTEGRAL_AFTERDECK));
+         menuIDs.insert(std::make_pair(pgsTypes::bctIntegralBeforeDeck,IDM_INTEGRAL_BEFOREDECK));
+         menuIDs.insert(std::make_pair(pgsTypes::bctIntegralAfterDeckHingeBack,IDM_INTEGRAL_AFTERDECK_HINGEBACK));
+         menuIDs.insert(std::make_pair(pgsTypes::bctIntegralBeforeDeckHingeBack,IDM_INTEGRAL_BEFOREDECK_HINGEBACK));
+         menuIDs.insert(std::make_pair(pgsTypes::bctIntegralAfterDeckHingeAhead,IDM_INTEGRAL_AFTERDECK_HINGEAHEAD));
+         menuIDs.insert(std::make_pair(pgsTypes::bctIntegralBeforeDeckHingeAhead,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD));
 
          pMenu->AppendSeparator();
 
          // Populate the menu
-         std::vector<pgsTypes::PierConnectionType>::iterator iter(validConnectionTypes.begin());
-         std::vector<pgsTypes::PierConnectionType>::iterator iterEnd(validConnectionTypes.end());
+         std::vector<pgsTypes::BoundaryConditionType>::iterator iter(validConnectionTypes.begin());
+         std::vector<pgsTypes::BoundaryConditionType>::iterator iterEnd(validConnectionTypes.end());
          for ( ; iter != iterEnd; iter++ )
          {
             UINT nID = menuIDs[*iter]; // look up the ID for each valid connection type

@@ -1159,8 +1159,25 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    pParent->m_strGirderName = newName;
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
+
    // reset prestress data
    pParent->m_pSegment->Strands.ResetPrestressData();
+
+   // Must change adjustable strand type if it is incompatible with library
+   pgsTypes::AdjustableStrandType libAdjType = pGdrEntry->GetAdjustableStrandType();
+   pgsTypes::AdjustableStrandType adjType = pParent->m_pSegment->Strands.GetAdjustableStrandType();
+   if (adjType == pgsTypes::asHarped && libAdjType == pgsTypes::asStraight)
+   {
+      pParent->m_pSegment->Strands.SetAdjustableStrandType(pgsTypes::asStraight);
+   }
+   else if (adjType == pgsTypes::asStraight && libAdjType == pgsTypes::asHarped)
+   {
+      pParent->m_pSegment->Strands.SetAdjustableStrandType(pgsTypes::asHarped);
+   }
 
    // reset stirrups to library
    pParent->m_Shear.m_CurGrdName = newName;
@@ -1169,13 +1186,8 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    pParent->m_LongRebar.m_CurGrdName = newName;
    pParent->m_LongRebar.RestoreToLibraryDefaults();
 
-
    // add/remove property pages if needed
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, ILibrary, pLib );
    GET_IFACE2( pBroker, ISpecification, pSpec);
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    bool bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();

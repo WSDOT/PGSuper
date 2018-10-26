@@ -617,7 +617,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
    {
       GET_IFACE(IIntervals,pIntervals);
 
-      pgsTypes::PierConnectionType connectionType = pPier->GetPierConnectionType();
+      pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
       PierIndexType pierIdx = pPier->GetIndex();
 
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
@@ -632,18 +632,18 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
 
       if ( intervalIdx == erectFirstSegmentIntervalIdx )
       {
-         connectionType = pgsTypes::Hinge;
+         boundaryConditionType = pgsTypes::bctHinge;
       }
 
-      if ( connectionType == pgsTypes::Roller )
+      if ( boundaryConditionType == pgsTypes::bctRoller )
       {
          DrawRoller(p,pDC);
       }
-      else if ( connectionType == pgsTypes::Hinge )
+      else if ( boundaryConditionType == pgsTypes::bctHinge )
       {
          DrawHinge(p,pDC);
       }
-      else if ( connectionType == pgsTypes::ContinuousBeforeDeck )
+      else if ( boundaryConditionType == pgsTypes::bctContinuousBeforeDeck )
       {
          if ( leftContinuityIntervalIdx <= intervalIdx )
          {
@@ -654,7 +654,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
             DrawHinge(p,pDC);
          }
       }
-      else if ( connectionType == pgsTypes::ContinuousAfterDeck )
+      else if ( boundaryConditionType == pgsTypes::bctContinuousAfterDeck )
       {
          if ( castDeckIntervalIdx < intervalIdx )
          {
@@ -665,7 +665,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
             DrawHinge(p,pDC);
          }
       }
-      else if ( connectionType == pgsTypes::IntegralBeforeDeck )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralBeforeDeck )
       {
          if ( leftContinuityIntervalIdx <= intervalIdx )
          {
@@ -676,7 +676,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
             DrawHinge(p,pDC);
          }
       }
-      else if ( connectionType == pgsTypes::IntegralAfterDeck )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeck )
       {
          if ( castDeckIntervalIdx < intervalIdx )
          {
@@ -687,7 +687,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
             DrawHinge(p,pDC);
          }
       }
-      else if ( connectionType == pgsTypes::IntegralBeforeDeckHingeBack )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack )
       {
          if ( rightContinuityIntervalIdx <= intervalIdx )
          {
@@ -698,7 +698,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
             DrawHinge(p,pDC);
          }
       }
-      else if ( connectionType == pgsTypes::IntegralAfterDeckHingeBack )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack )
       {
          if ( castDeckIntervalIdx < intervalIdx)
          {
@@ -709,7 +709,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
             DrawHinge(p,pDC);
          }
       }
-      else if ( connectionType == pgsTypes::IntegralBeforeDeckHingeAhead )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead )
       {
          if ( leftContinuityIntervalIdx <= intervalIdx )
          {
@@ -720,7 +720,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
             DrawHinge(p,pDC);
          }
       }
-      else if ( connectionType == pgsTypes::IntegralAfterDeckHingeAhead )
+      else if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead )
       {
          if ( castDeckIntervalIdx < intervalIdx )
          {
@@ -741,15 +741,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
       pgsTypes::PierSegmentConnectionType segmentConnectionType = pPier->GetSegmentConnectionType();
       if ( segmentConnectionType == pgsTypes::psctContinuousSegment )
       {
-         if ( pPier->GetPierConnectionType() == pgsTypes::Hinge )
-         {
-            DrawHinge(p,pDC);
-         }
-         else
-         {
-            ATLASSERT(pPier->GetPierConnectionType() == pgsTypes::Roller);
-            DrawRoller(p,pDC);
-         }
+         DrawRoller(p,pDC);
       }
       else if ( segmentConnectionType == pgsTypes::psctIntegralSegment )
       {
@@ -769,13 +761,13 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
          {
             if ( castClosureJointIntervalIdx < intervalIdx )
             {
-               if ( pPier->GetPierConnectionType() == pgsTypes::Hinge )
+               if ( pPier->GetBoundaryConditionType() == pgsTypes::bctHinge )
                {
                   DrawHinge(p,pDC);
                }
                else
                {
-                  ATLASSERT(pPier->GetPierConnectionType() == pgsTypes::Roller);
+                  ATLASSERT(pPier->GetBoundaryConditionType() == pgsTypes::bctRoller);
                   DrawRoller(p,pDC);
                }
             }
@@ -821,7 +813,7 @@ void CDrawBeamTool::DrawTemporarySupport(IntervalIndexType intervalIdx,const CTe
 
    IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(m_GirderKey);
 
-   if ( pTS->GetConnectionType() == pgsTypes::sctContinuousSegment && intervalIdx < erectFirstSegmentIntervalIdx )
+   if ( pTS->GetConnectionType() == pgsTypes::tsctContinuousSegment && intervalIdx < erectFirstSegmentIntervalIdx )
    {
       // nothing to draw if interval is before the segments are erected and this temporary support isn't
       // at the end of a segment

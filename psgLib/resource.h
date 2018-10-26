@@ -130,6 +130,7 @@
 #define IDC_D4                          1007
 #define IDC_MILD_STEEL_SELECTOR         1007
 #define IDC_X3                          1007
+#define IDC_EMBEDMENT                   1007
 #define IDC_ACTIVEUNITCTRL5             1008
 #define IDC_AGG_SIZE                    1008
 #define IDC_W4                          1008
@@ -275,6 +276,8 @@
 #define IDC_END_DISTANCE_T              1030
 #define IDC_X4_T                        1030
 #define IDC_X5_T                        1031
+#define IDC_END_DISTANCE_T2             1031
+#define IDC_EMBEDMENT_T                 1031
 #define IDC_STRAND_GRID                 1032
 #define IDC_X1_T                        1032
 #define IDC_HARP_STRAND_GRID            1033

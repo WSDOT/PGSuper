@@ -70,7 +70,7 @@ struct InitialDesignParameters
 
 typedef IndexType DebondLevelType; 
 
-inline static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
+static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
 {
    std::_tostringstream os;
    for (std::vector<DebondLevelType>::const_iterator it=rvec.begin(); it!=rvec.end(); it++)
@@ -146,6 +146,7 @@ public:
    void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci);
+   void InitFinalStrength(Float64 fc);
 
    void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
 
@@ -323,6 +324,7 @@ public:
    Float64 GetConcreteStrength() const;
    Float64 GetReleaseStrength() const;
    Float64 GetReleaseStrength(ConcStrengthResultType* pStrengthResult) const;
+   bool DoesReleaseRequireAdditionalRebar() const;
 
    Float64 GetMinimumReleaseStrength() const;
    Float64 GetMaximumReleaseStrength() const;
@@ -438,11 +440,11 @@ private:
    // Tool for dealing with raised straight strand design - only used if this is the design type
    boost::shared_ptr<pgsRaisedStraightStrandDesignTool> m_pRaisedStraightStrandDesignTool;
 
-   // Classes to store information on what controlled release strength
+   // Classes to store information on what controlled concrete strength or number of strands
    // and to control when to set values. 
    struct DesignState
    {
-      Float64                  m_Strength;
+      Float64                  m_Strength;   // concrete strength (release or final), or number of strands
       IntervalIndexType        m_IntervalIdx;   // controlling interval
       pgsTypes::StressType     m_StressType; // stress type (tension or compression) 
       pgsTypes::LimitState     m_LimitState; // 

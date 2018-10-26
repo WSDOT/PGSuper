@@ -31,7 +31,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
-#include <PgsExt\PhysicalConverter.h>
+#include <UnitMgt\UnitValueNumericalFormatTools.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>

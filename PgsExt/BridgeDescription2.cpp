@@ -1118,14 +1118,14 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    if ( pierFace == pgsTypes::Back )
    {
       // insert new pier before the reference pier
-      //pNewPier->SetConnectionType(pgsTypes::ContinuousAfterDeck);
+      //pNewPier->SetConnectionType(pgsTypes::bctContinuousAfterDeck);
       movePierIter = m_Piers.insert(m_Piers.begin() + refPierIdx, pNewPier );
       movePierIter++; //increment to get to the ref pier... move the ref pier and all the follow
    }
    else
    {
       // insert new pier after the reference pier
-      //m_Piers[refPierIdx]->SetConnectionType(pgsTypes::ContinuousAfterDeck);
+      //m_Piers[refPierIdx]->SetConnectionType(pgsTypes::bctContinuousAfterDeck);
       movePierIter = m_Piers.insert(m_Piers.begin() + refPierIdx + 1, pNewPier);
       // the new pier, and all that follow get moved
    }
@@ -1943,7 +1943,7 @@ SupportIndexType CBridgeDescription2::AddTemporarySupport(CTemporarySupportData*
 
    m_TimelineManager.SetTempSupportEvents(pTempSupport->GetID(),erectionEventIdx,removalEventIdx);
 
-   if ( pTempSupport->GetConnectionType() == pgsTypes::sctClosureJoint )
+   if ( pTempSupport->GetConnectionType() == pgsTypes::tsctClosureJoint )
    {
       CGirderGroupData* pGroup = GetGirderGroup(pTempSupport->GetSpan());
       GirderIndexType nGirders = pGroup->GetGirderCount();
@@ -2076,7 +2076,7 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         if ( tsData.GetConnectionType() == pgsTypes::sctContinuousSegment )
+         if ( tsData.GetConnectionType() == pgsTypes::tsctContinuousSegment )
          {
             // segment is becoming continuous over this temporary support. need to join segments into one
             pGirder->JoinSegmentsAtTemporarySupport( tsIdx );
@@ -2089,7 +2089,7 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
          }
       }
 
-      if ( tsData.GetConnectionType() == pgsTypes::sctClosureJoint )
+      if ( tsData.GetConnectionType() == pgsTypes::tsctClosureJoint )
       {
          pTS->GetSegmentSpacing()->SetGirderCount(nGirders);
       }
@@ -2129,7 +2129,7 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
    ATLASSERT(pTS->GetIndex() == tsIdx);
 
    // Remove the temporary support from the spliced girders before it is actually gone
-   if ( pTS->GetConnectionType() == pgsTypes::sctClosureJoint )
+   if ( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint )
    {
       const CSpanData2* pSpan = pTS->GetSpan();
       CGirderGroupData* pGroup = GetGirderGroup(pSpan);
@@ -2968,47 +2968,39 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
    ASSERT_VALID;
 }
 
-std::vector<pgsTypes::PierConnectionType> CBridgeDescription2::GetPierConnectionTypes(PierIndexType pierIdx) const
+std::vector<pgsTypes::BoundaryConditionType> CBridgeDescription2::GetBoundaryConditionTypes(PierIndexType pierIdx) const
 {
-   std::vector<pgsTypes::PierConnectionType> connectionTypes;
+   std::vector<pgsTypes::BoundaryConditionType> connectionTypes;
 
    const CPierData2* pPier = GetPier(pierIdx);
 
-   if ( pPier->IsInteriorPier() )
+   ATLASSERT(pPier->IsBoundaryPier());
+
+   if ( pPier->HasCantilever() )
    {
-      connectionTypes.push_back(pgsTypes::Hinge);
-      connectionTypes.push_back(pgsTypes::Roller);
+      connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
+      connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
+      connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
    }
    else
    {
-      ATLASSERT(pPier->IsBoundaryPier());
+      // This pier is on a group boundary (two groups frame into this pier).
+      // All connection types are valid
+      connectionTypes.push_back(pgsTypes::bctHinge);
+      connectionTypes.push_back(pgsTypes::bctRoller);
+      connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
+      connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
 
-      if ( pPier->HasCantilever() )
+      if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
       {
-         connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
-         connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
-         connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
-      }
-      else
-      {
-         // This pier is on a group boundary (two groups frame into this pier).
-         // All connection types are valid
-         connectionTypes.push_back(pgsTypes::Hinge);
-         connectionTypes.push_back(pgsTypes::Roller);
-         connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
-         connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
-
-         if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
-         {
-            // all these connection types require that there is a span on 
-            // both sides of this pier
-            connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
-            connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
-            connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
-            connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
-            connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
-            connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
-         }
+         // all these connection types require that there is a span on 
+         // both sides of this pier
+         connectionTypes.push_back(pgsTypes::bctContinuousAfterDeck);
+         connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
+         connectionTypes.push_back(pgsTypes::bctIntegralAfterDeckHingeBack);
+         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeBack);
+         connectionTypes.push_back(pgsTypes::bctIntegralAfterDeckHingeAhead);
+         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeAhead);
       }
    }
 

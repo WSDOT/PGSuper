@@ -251,25 +251,25 @@ void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF o
    CBrush brush(fill_color);
    CBrush* pOldBrush = pDC->SelectObject(&brush);
 
-   pgsTypes::PierConnectionType connectionType = m_pPier->GetPierConnectionType();
-   if ( connectionType == pgsTypes::Roller )
+   pgsTypes::BoundaryConditionType connectionType = m_pPier->GetBoundaryConditionType();
+   if ( connectionType == pgsTypes::bctRoller )
    {
       DrawRollerSupport(pDC,topx,topy,wid,hgt);
    }
-   else if ( connectionType == pgsTypes::Hinge || connectionType == pgsTypes::ContinuousAfterDeck || connectionType == pgsTypes::ContinuousBeforeDeck )
+   else if ( connectionType == pgsTypes::bctHinge || connectionType == pgsTypes::bctContinuousAfterDeck || connectionType == pgsTypes::bctContinuousBeforeDeck )
    {
       DrawPinnedSupport(pDC,topx,topy,wid,hgt);
    }
-   else if ( connectionType == pgsTypes::IntegralAfterDeck  || connectionType == pgsTypes::IntegralBeforeDeck )
+   else if ( connectionType == pgsTypes::bctIntegralAfterDeck  || connectionType == pgsTypes::bctIntegralBeforeDeck )
    {
       DrawFixedSupport(pDC,topx,topy,wid,hgt);
    }
-   else if ( connectionType == pgsTypes::IntegralAfterDeckHingeBack || connectionType == pgsTypes::IntegralBeforeDeckHingeBack )
+   else if ( connectionType == pgsTypes::bctIntegralAfterDeckHingeBack || connectionType == pgsTypes::bctIntegralBeforeDeckHingeBack )
    {
       DrawPinnedSupport(pDC,topx-wid/2,topy,wid,hgt);
       DrawFixedSupport(pDC,topx+wid/2,topy,wid,hgt);
    }
-   else if ( connectionType == pgsTypes::IntegralAfterDeckHingeAhead || connectionType == pgsTypes::IntegralBeforeDeckHingeAhead )
+   else if ( connectionType == pgsTypes::bctIntegralAfterDeckHingeAhead || connectionType == pgsTypes::bctIntegralBeforeDeckHingeAhead )
    {
       DrawFixedSupport(pDC,topx+wid/2,topy,wid,hgt);
       DrawPinnedSupport(pDC,topx-wid/2,topy,wid,hgt);

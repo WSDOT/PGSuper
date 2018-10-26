@@ -347,7 +347,6 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
    }
 }
 
-
 void CBridgeDescDeckDetailsPage::ExchangeConcreteData(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;

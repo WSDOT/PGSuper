@@ -206,7 +206,7 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
    pParent->m_pTS->SetSupportType(type);
 
-   if ( type == pgsTypes::StrongBack && pParent->m_pTS->GetConnectionType() == pgsTypes::sctContinuousSegment )
+   if ( type == pgsTypes::StrongBack && pParent->m_pTS->GetConnectionType() == pgsTypes::tsctContinuousSegment )
    {
       CSelectItemDlg dlg;
       dlg.m_strLabel = _T("Precast segments must be spliced with a closure joint at strong back supports. Select the event when the closure joints are cast.");
@@ -253,7 +253,7 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
          }
       }
 
-      pParent->m_pTS->SetConnectionType(pgsTypes::sctClosureJoint,castClosureEventIndex);
+      pParent->m_pTS->SetConnectionType(pgsTypes::tsctClosureJoint,castClosureEventIndex);
    }
 }
 

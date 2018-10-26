@@ -652,6 +652,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\AbutmentConnectionsPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ACIConcretePage.cpp"
 				>
 			</File>
@@ -1440,6 +1444,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PierLocationPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\PluginManagerDlg.cpp"
 				>
 			</File>
@@ -1719,6 +1727,10 @@
 			</File>
 			<File
 				RelativePath=".\AboutDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\AbutmentConnectionsPage.h"
 				>
 			</File>
 			<File
@@ -2330,11 +2342,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PGSuperComponentInfo.h"
+				RelativePath=".\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
@@ -2419,6 +2431,10 @@
 			</File>
 			<File
 				RelativePath="..\PierLayoutPage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PierLocationPage.h"
 				>
 			</File>
 			<File
@@ -3625,6 +3641,10 @@
 		</File>
 		<File
 			RelativePath="..\PGSuper.tip"
+			>
+		</File>
+		<File
+			RelativePath=".\res\PierLayout.emf"
 			>
 		</File>
 		<File

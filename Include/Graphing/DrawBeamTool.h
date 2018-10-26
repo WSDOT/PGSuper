@@ -25,7 +25,7 @@
 #include <Graphing\GraphingExp.h>
 #include <GraphicsLib\PointMapper.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PhysicalConverter.h>
+#include <UnitMgt\UnitValueNumericalFormatTools.h>
 
 // This is a utility class draws the beam on graphs
 class GRAPHINGCLASS CDrawBeamTool

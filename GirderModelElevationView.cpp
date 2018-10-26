@@ -732,19 +732,19 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       }
       else if ( pPier->IsBoundaryPier() )
       {
-         pgsTypes::PierConnectionType connectionType = pPier->GetPierConnectionType();
-         if ( connectionType != pgsTypes::ContinuousAfterDeck && 
-              connectionType != pgsTypes::ContinuousBeforeDeck &&
-              connectionType != pgsTypes::IntegralAfterDeck &&
-              connectionType != pgsTypes::IntegralBeforeDeck 
+         pgsTypes::BoundaryConditionType connectionType = pPier->GetBoundaryConditionType();
+         if ( connectionType != pgsTypes::bctContinuousAfterDeck && 
+              connectionType != pgsTypes::bctContinuousBeforeDeck &&
+              connectionType != pgsTypes::bctIntegralAfterDeck &&
+              connectionType != pgsTypes::bctIntegralBeforeDeck 
             )
          {
             if ( endType == pgsTypes::metStart )
             {
-               if ( connectionType == pgsTypes::Hinge ||
-                    connectionType == pgsTypes::Roller ||
-                    connectionType == pgsTypes::IntegralAfterDeckHingeAhead ||
-                    connectionType == pgsTypes::IntegralBeforeDeckHingeAhead)
+               if ( connectionType == pgsTypes::bctHinge ||
+                    connectionType == pgsTypes::bctRoller ||
+                    connectionType == pgsTypes::bctIntegralAfterDeckHingeAhead ||
+                    connectionType == pgsTypes::bctIntegralBeforeDeckHingeAhead)
                {
                   Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
                   pierLocation += brgOffset;
@@ -752,10 +752,10 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
             }
             else
             {
-               if (connectionType == pgsTypes::Hinge ||
-                   connectionType == pgsTypes::Roller ||
-                   connectionType == pgsTypes::IntegralAfterDeckHingeBack ||
-                   connectionType == pgsTypes::IntegralBeforeDeckHingeBack)
+               if (connectionType == pgsTypes::bctHinge ||
+                   connectionType == pgsTypes::bctRoller ||
+                   connectionType == pgsTypes::bctIntegralAfterDeckHingeBack ||
+                   connectionType == pgsTypes::bctIntegralBeforeDeckHingeBack)
                {
                   Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(segmentKey);
                   pierLocation -= brgOffset;

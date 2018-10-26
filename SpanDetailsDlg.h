@@ -52,7 +52,7 @@ public:
    // IEditSpanData
    virtual SpanIndexType GetSpanCount() { return m_BridgeDesc.GetSpanCount(); }
    virtual SpanIndexType GetSpan() { return m_pSpanData->GetIndex(); }
-   virtual pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
+   virtual pgsTypes::BoundaryConditionType GetConnectionType(pgsTypes::MemberEndType end);
    virtual GirderIndexType GetGirderCount();
 
 // Attributes
@@ -98,7 +98,7 @@ protected:
    CPierData2* m_pNextPier;
    CGirderGroupData* m_pGirderGroup;
 
-   pgsTypes::PierConnectionType m_PierConnectionType[2];
+   pgsTypes::BoundaryConditionType m_BoundaryConditionType[2];
    pgsTypes::PierSegmentConnectionType m_SegmentConnectionType[2];
 
    void FillRefGirderOffsetTypeComboBox(pgsTypes::MemberEndType end);

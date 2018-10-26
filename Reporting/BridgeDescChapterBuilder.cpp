@@ -1440,7 +1440,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       }
       else
       {
-         (*pLayoutTable)(row1,4) << CPierData2::AsString(pPier->GetPierConnectionType());
+         (*pLayoutTable)(row1,4) << CPierData2::AsString(pPier->GetBoundaryConditionType());
       }
 
       row1++;
@@ -1687,7 +1687,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       (*pConnectionsTable)(row2,0) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
       (*pConnectionsTable)(row2,1) << CTemporarySupportData::AsString(pTS->GetConnectionType());
 
-      if ( pTS->GetConnectionType() == pgsTypes::sctClosureJoint )
+      if ( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint )
       {
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;

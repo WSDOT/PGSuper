@@ -497,7 +497,7 @@ interface IBridge : IUnknown
    virtual void GetContinuityEventIndex(PierIndexType pierIdx,EventIndexType* pBack,EventIndexType* pAhead) = 0;
 
    // Returns the connection boundary condition at a pier (only valid if IsBoundaryPier returns true)
-   virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx) = 0;
+   virtual pgsTypes::BoundaryConditionType GetBoundaryConditionType(PierIndexType pierIdx) = 0;
 
    // Returns the segment connection type at a pier (only valid if IsInteriorPier returns true)
    virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx) = 0;
@@ -520,6 +520,16 @@ interface IBridge : IUnknown
    // returns false if there is an error in the strOrientation string
    virtual bool GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew) = 0;
 
+   // returns the type of model used to define a pier
+   virtual pgsTypes::PierModelType GetPierModelType(PierIndexType pierIdx) = 0;
+
+   // returns the number of columns at a pier.
+   virtual ColumnIndexType GetColumnCount(PierIndexType pierIdx) = 0;
+
+   // returns the basic properties for a single column at a pier... all columns at a pier are assumed
+   // to be the same.
+   virtual void GetColumnProperties(PierIndexType pierIdx,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE) = 0;
+
    // negative moment calculations and results need not be processed if a simple span analysis is
    // used or if there isn't any continuity.
    // this method returns true when negative moments should be processed for a given span.
@@ -539,7 +549,7 @@ interface IBridge : IUnknown
    virtual pgsTypes::TemporarySupportType GetTemporarySupportType(SupportIndexType tsIdx) = 0;
 
    // returns the segment connection type at the temporary support
-   virtual pgsTypes::SegmentConnectionType GetSegmentConnectionTypeAtTemporarySupport(SupportIndexType tsIdx) = 0;
+   virtual pgsTypes::TempSupportSegmentConnectionType GetSegmentConnectionTypeAtTemporarySupport(SupportIndexType tsIdx) = 0;
 
    // gets the segment keys for the segments framing into the left and right side of a temporary support
    virtual void GetSegmentsAtTemporarySupport(GirderIndexType gdrIdx,SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) = 0;
@@ -741,8 +751,6 @@ DEFINE_GUID(IID_ILongRebarGeometry,
 0xc2ee02c6, 0x1785, 0x11d3, 0xad, 0x6c, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
 interface ILongRebarGeometry : IUnknown
 {
-   typedef enum DeckRebarType {Primary,Supplemental,All} DeckRebarType;
-
    virtual void GetRebars(const pgsPointOfInterest& poi,IRebarSection** rebarSection) = 0;
    virtual Float64 GetAsBottomHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetAsTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
@@ -756,25 +764,28 @@ interface ILongRebarGeometry : IUnknown
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
 
-   // returns the cover to the center of the top mat of deck rebar, measured from
+   // returns the nominal cover to the top mat of deck rebar, measured from
    // the top of the deck (including sacrificial depth)
    virtual Float64 GetCoverTopMat() = 0;
 
    // returns the location of the top mat of deck rebar, measured from the bottom of the deck
-   virtual Float64 GetTopMatLocation(const pgsPointOfInterest& poi,DeckRebarType drt) = 0;
+   virtual Float64 GetTopMatLocation(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory) = 0;
 
-   // returns the area of top mat deck rebar based
-   virtual Float64 GetAsTopMat(const pgsPointOfInterest& poi,DeckRebarType drt) = 0;
+   // returns the area of top mat deck rebar
+   virtual Float64 GetAsTopMat(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory) = 0;
 
-   // returns the cover to the center of the bottom mat of deck rebar, measured from
+   // returns the nominal cover to the bottom mat of deck rebar, measured from
    // the bottom of the deck slab
    virtual Float64 GetCoverBottomMat() = 0;
 
    // returns the location of the bottom mat of deck rebar, measured from the bottom of the deck
-   virtual Float64 GetBottomMatLocation(const pgsPointOfInterest& poi,DeckRebarType drt) = 0;
+   virtual Float64 GetBottomMatLocation(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory) = 0;
 
    // returns the area of bottom mat deck rebar based
-   virtual Float64 GetAsBottomMat(const pgsPointOfInterest& poi,DeckRebarType drt) = 0;
+   virtual Float64 GetAsBottomMat(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory) = 0;
+
+   virtual void GetDeckReinforcing(const pgsPointOfInterest& poi,pgsTypes::DeckRebarMatType matType,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bAdjForDevLength,Float64* pAs,Float64* pYb) = 0;
+
 
    virtual void GetRebarLayout(const CSegmentKey& segmentKey, IRebarLayout** rebarLayout) = 0;
 

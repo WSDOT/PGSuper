@@ -70,22 +70,17 @@ int CBridgeDescDeckRebarGrid::GetColWidth(ROWCOL nCol)
 {
 	CRect rect = GetGridRect( );
 
-   switch (nCol)
+   if ( nCol == 0 )
    {
-   case 0:
-      return rect.Width()/16;
-
-   case 1:
-   case 2:
-   case 3:
-   case 4:
-   case 5:
-   case 6:
-   case 7:
-      return 15*rect.Width()/112;
-
-   default:
-      return CGXGridWnd::GetColWidth(nCol);
+      return rect.Width()/18;
+   }
+   else if ( nCol == 4 )
+   {
+      return 3*rect.Width()/18;
+   }
+   else
+   {
+      return rect.Width()/9;
    }
 }
 
@@ -171,7 +166,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 	GetParam( )->EnableUndo(FALSE);
 
    const int num_rows = 0;
-   const int num_cols = 7;
+   const int num_cols = 8;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -205,17 +200,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 			.SetValue(_T("Mat"))
 		);
 
-   CString cv;
-   cv.Format(_T("As\n%s"), pDisplayUnits->GetAvOverSUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,3), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(cv)
-		);
-
-	SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -223,8 +208,9 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 			.SetValue(_T("Bar"))
 		);
 
+   CString cv;
    cv.Format(_T("Spacing\n%s"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
-	SetStyleRange(CGXRange(0,5), CGXStyle()
+	SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -232,7 +218,15 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Left Cutoff\n%s"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
+	SetStyleRange(CGXRange(0,5), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(_T(""))
+		);
+
+   cv.Format(_T("As\n%s"), pDisplayUnits->GetAvOverSUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,6), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -241,8 +235,17 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Right Cutoff\n%s"), pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Left Cutoff\n%s"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,7), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(cv)
+		);
+
+   cv.Format(_T("Right Cutoff\n%s"), pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
+	SetStyleRange(CGXRange(0,8), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -323,19 +326,25 @@ void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-   this->SetStyleRange(CGXRange(nRow,3), CGXStyle()
-         .SetHorizontalAlignment(DT_RIGHT)
-         );
-
-	this->SetStyleRange(CGXRange(nRow,4), CGXStyle()
+	this->SetStyleRange(CGXRange(nRow,3), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
 			.SetChoiceList(_T("None\n#4\n#5\n#6\n#7\n#8\n#9"))
 			.SetValue(_T("None"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-   this->SetStyleRange(CGXRange(nRow,5), CGXStyle()
+
+   this->SetStyleRange(CGXRange(nRow,4), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
+         );
+
+   this->SetStyleRange(CGXRange(nRow,5), CGXStyle()
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetEnabled(FALSE)
+         .SetReadOnly(TRUE)
+         .SetInterior(::GetSysColor(COLOR_BTNFACE))
+         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+         .SetValue(_T("PLUS"))
          );
 
    this->SetStyleRange(CGXRange(nRow,6), CGXStyle()
@@ -343,6 +352,10 @@ void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
          );
 
    this->SetStyleRange(CGXRange(nRow,7), CGXStyle()
+         .SetHorizontalAlignment(DT_RIGHT)
+         );
+
+   this->SetStyleRange(CGXRange(nRow,8), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
@@ -381,31 +394,31 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    CString strMat = GetCellValue(nRow,2);
    pRebarData->Mat = (strMat == _T("Top") ? CDeckRebarData::TopMat : CDeckRebarData::BottomMat);
 
-   // lump sum area
-   CString strAs = GetCellValue(nRow,3);
-   Float64 As = _tstof(strAs);
-   As = ::ConvertToSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
-   pRebarData->LumpSum = As;
-
    // bar size
    pRebarData->RebarGrade = pParent->m_RebarData.TopRebarGrade;
    pRebarData->RebarType  = pParent->m_RebarData.TopRebarType;
-   pRebarData->RebarSize  = GetBarSize(nRow,4);
+   pRebarData->RebarSize  = GetBarSize(nRow);
    
    // spacing
-   CString strSpacing = GetCellValue(nRow,5);
+   CString strSpacing = GetCellValue(nRow,4);
    Float64 spacing = _tstof(strSpacing);
    spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pRebarData->Spacing = spacing;
 
+   // lump sum area
+   CString strAs = GetCellValue(nRow,6);
+   Float64 As = _tstof(strAs);
+   As = ::ConvertToSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
+   pRebarData->LumpSum = As;
+
    // left offset
-   CString strCutoff = GetCellValue(nRow,6);
+   CString strCutoff = GetCellValue(nRow,7);
    Float64 cutoff = _tstof(strCutoff);
    cutoff = ::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    pRebarData->LeftCutoff = cutoff;
 
    // right offset
-   strCutoff = GetCellValue(nRow,7);
+   strCutoff = GetCellValue(nRow,8);
    cutoff = _tstof(strCutoff);
    cutoff = ::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    pRebarData->RightCutoff = cutoff;
@@ -413,9 +426,9 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    return true;
 }
 
-matRebar::Size CBridgeDescDeckRebarGrid::GetBarSize(ROWCOL row,ROWCOL col)
+matRebar::Size CBridgeDescDeckRebarGrid::GetBarSize(ROWCOL row)
 {
-   CString s = GetCellValue(row, col);
+   CString s = GetCellValue(row, 3);
    s.TrimLeft();
    int l = s.GetLength();
    CString s2 = s.Right(l-1);
@@ -494,32 +507,32 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    // Mat
    SetValueRange(CGXRange(nRow,2),rebarData.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
 
-   // lump sum area
-   Float64 As = rebarData.LumpSum;
-   As = ::ConvertFromSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
-   SetValueRange(CGXRange(nRow,3),As);
-
    // bar size
    CString tmp;
    tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(rebarData.RebarSize).c_str());
-   VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
+   VERIFY(SetValueRange(CGXRange(nRow, 3), tmp));
 
    // spacing
    Float64 spacing = rebarData.Spacing;
    spacing = ::ConvertFromSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-   SetValueRange(CGXRange(nRow,5),spacing);
+   SetValueRange(CGXRange(nRow,4),spacing);
+
+   // lump sum area
+   Float64 As = rebarData.LumpSum;
+   As = ::ConvertFromSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
+   SetValueRange(CGXRange(nRow,6),As);
 
    // Cutoffs - don't input cut-offs for non-continuous side of pier
 
    // left cutoff
    Float64 cutoff = rebarData.LeftCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   SetValueRange(CGXRange(nRow,6),cutoff);
+   SetValueRange(CGXRange(nRow,7),cutoff);
 
    // right cutoff
    cutoff = rebarData.RightCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   SetValueRange(CGXRange(nRow,7),cutoff);
+   SetValueRange(CGXRange(nRow,8),cutoff);
 
    UpdateCutoff(nRow,pPier);
 
@@ -532,29 +545,29 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
    bool bHasLeftCutoff = true;
    bool bHasRightCutoff = true;
 
-   pgsTypes::PierConnectionType pierConnectionType = pPier->GetPierConnectionType();
    if ( pPier->IsBoundaryPier() && !pPier->HasCantilever() )
    {
-      if ( pierConnectionType == pgsTypes::Hinge || pierConnectionType == pgsTypes::Roller )
+      pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
+      if ( boundaryConditionType == pgsTypes::bctHinge || boundaryConditionType == pgsTypes::bctRoller )
       {
          bHasLeftCutoff = false;
          bHasRightCutoff = false;
       }
       else
       {
-         if ( pierConnectionType == pgsTypes::IntegralAfterDeckHingeBack || 
-              pierConnectionType == pgsTypes::IntegralBeforeDeckHingeBack ||
-              (pierConnectionType == pgsTypes::IntegralAfterDeck && pPier->GetPrevSpan() == NULL) ||
-              (pierConnectionType == pgsTypes::IntegralBeforeDeck && pPier->GetPrevSpan() == NULL) 
+         if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack || 
+              boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack ||
+              (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetPrevSpan() == NULL) ||
+              (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetPrevSpan() == NULL) 
             )
          {
             bHasLeftCutoff = false;
          }
 
-         if ( pierConnectionType == pgsTypes::IntegralAfterDeckHingeAhead || 
-              pierConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead ||
-             (pierConnectionType == pgsTypes::IntegralAfterDeck && pPier->GetNextSpan() == NULL) ||
-             (pierConnectionType == pgsTypes::IntegralBeforeDeck && pPier->GetNextSpan() == NULL) 
+         if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead || 
+              boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead ||
+             (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetNextSpan() == NULL) ||
+             (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetNextSpan() == NULL) 
             ) 
          {
             bHasRightCutoff = false;
@@ -564,7 +577,7 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
 
    if ( bHasLeftCutoff )
    {
-      SetStyleRange(CGXRange(nRow,6), CGXStyle()
+      SetStyleRange(CGXRange(nRow,7), CGXStyle()
          .SetEnabled(TRUE)
          .SetFormat(GX_FMT_GEN)
          .SetReadOnly(FALSE)
@@ -573,7 +586,7 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
    }
    else
    {
-      SetStyleRange(CGXRange(nRow,6), CGXStyle()
+      SetStyleRange(CGXRange(nRow,7), CGXStyle()
          .SetEnabled(FALSE)
          .SetFormat(GX_FMT_HIDDEN)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
@@ -582,7 +595,7 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
 
    if ( bHasRightCutoff )
    {
-      SetStyleRange(CGXRange(nRow,7), CGXStyle()
+      SetStyleRange(CGXRange(nRow,8), CGXStyle()
          .SetEnabled(TRUE)
          .SetFormat(GX_FMT_GEN)
          .SetReadOnly(FALSE)
@@ -591,7 +604,7 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
    }
    else
    {
-      SetStyleRange(CGXRange(nRow,7), CGXStyle()
+      SetStyleRange(CGXRange(nRow,8), CGXStyle()
          .SetEnabled(FALSE)
          .SetFormat(GX_FMT_HIDDEN)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
@@ -693,7 +706,7 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          // can't have reinforcement running over a boundary pier if there is a hinge or roller connection.
          // Boundary piers are between groups and hinge/roller connection means there is a hinge point in
          // the superstructure. If bars go over the pier, there wouldn't be a hinge
-         if ( pPier->GetPierConnectionType() == pgsTypes::Hinge || pPier->GetPierConnectionType() == pgsTypes::Roller )
+         if ( pPier->GetBoundaryConditionType() == pgsTypes::bctHinge || pPier->GetBoundaryConditionType() == pgsTypes::bctRoller )
          {
             CString strMsg;
             strMsg.Format(_T("Pier %d has a hinge/roller type connection. It cannot have supplimental reinforcement. Remove this row from the Supplemental Reinforcement Grid"),LABEL_PIER(pierIdx));
@@ -703,18 +716,7 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       }
    }
 
-   if ( nCol == 3 )
-   {
-      CString strAs = GetCellValue(nRow,3);
-      Float64 As = _tstof(strAs);
-      if ( As < 0 )
-      {
-         SetWarningText(_T("As must be greater than zero"));
-         return FALSE;
-      }
-   }
-
-   if ( nCol == 5 )
+   if ( nCol == 4 )
    {
       CString strSize = GetCellValue(nRow,nCol-1);
       CString strSpacing = GetCellValue(nRow,nCol);
@@ -726,12 +728,23 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       }
    }
 
-   if ( nCol == 6 || nCol == 7 )
+   if ( nCol == 6 )
    {
-      CString strCutoff = GetCellValue(nRow,6);
+      CString strAs = GetCellValue(nRow,6);
+      Float64 As = _tstof(strAs);
+      if ( As < 0 )
+      {
+         SetWarningText(_T("As must be greater than zero"));
+         return FALSE;
+      }
+   }
+
+   if ( nCol == 7 || nCol == 8 )
+   {
+      CString strCutoff = GetCellValue(nRow,7);
       Float64 leftCutoff = _tstof(strCutoff);
 
-      strCutoff = GetCellValue(nRow,7);
+      strCutoff = GetCellValue(nRow,8);
       Float64 rightCutoff = _tstof(strCutoff);
 
       if ( IsLE(leftCutoff+rightCutoff,0.0) )

@@ -126,9 +126,9 @@ protected:
    void DisableHpOffsetControls(BOOL disable);
    void ShowHpOffsetControls(BOOL show);
    void ShowHideNumStrandControls(CStrandData::StrandDefinitionType numPermStrandsType);
-
    void UpdateStrandControls();
    void UpdateAdjustableStrandControls();
+   void ShowOffsetControlGroup(BOOL show);
 
    StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
    StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );

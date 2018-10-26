@@ -517,7 +517,7 @@ bool CGirderSegmentSpacingPage::IsContinuousSegment()
    else
    {
       CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
-      return pParent->m_pTS->GetConnectionType() == pgsTypes::sctContinuousSegment ? true : false;
+      return pParent->m_pTS->GetConnectionType() == pgsTypes::tsctContinuousSegment ? true : false;
    }
 }
 

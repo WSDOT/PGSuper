@@ -42,6 +42,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma Reminder("WORKING HERE - need to model Brg Height, Recess, and Grout Pad Height")
+// maybe not here, but somewhere... these parameters are needed so compute the column
+// height if it is input by bottom elevation
+
 /****************************************************************************
 CLASS
    CPierData2
@@ -64,10 +68,28 @@ CPierData2::CPierData2()
    m_bHasCantilever = false;
    m_CantileverLength = 0.0;
 
-   m_PierConnectionType = pgsTypes::Hinge;
+   m_BoundaryConditionType = pgsTypes::bctHinge;
    m_SegmentConnectionType = pgsTypes::psctContinuousSegment;
 
    m_strOrientation = _T("Normal");
+
+   m_PierModelType = pgsTypes::pmtIdealized;
+   m_Ec = ::ConvertToSysUnits(3834,unitMeasure::KSI);
+   m_RefColumnIdx = 0;
+   m_TransverseOffset = 0;
+   m_TransverseOffsetMeasurement = pgsTypes::omtAlignment;
+   m_XBeamHeight[pgsTypes::pstLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamHeight[pgsTypes::pstRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamTaperHeight[pgsTypes::pstLeft]  = 0;
+   m_XBeamTaperHeight[pgsTypes::pstRight] = 0;
+   m_XBeamTaperLength[pgsTypes::pstLeft]  = 0;
+   m_XBeamTaperLength[pgsTypes::pstRight] = 0;
+   m_XBeamOverhang[pgsTypes::pstLeft]  = ::ConvertToSysUnits(10,unitMeasure::Feet);
+   m_XBeamOverhang[pgsTypes::pstRight] = ::ConvertToSysUnits(10,unitMeasure::Feet);
+   m_XBeamWidth = ::ConvertToSysUnits(5,unitMeasure::Feet);
+
+   CColumnData defaultColumn(this);
+   m_Columns.push_back(defaultColumn);
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -166,7 +188,7 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       return false;
    }
 
-   if ( m_PierConnectionType != rOther.m_PierConnectionType )
+   if ( m_BoundaryConditionType != rOther.m_BoundaryConditionType )
    {
       return false;
    }
@@ -192,8 +214,76 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       }
    }
 
+   if ( m_PierModelType != rOther.m_PierModelType )
+   {
+      return false;
+   }
+   
+   if ( m_PierModelType == pgsTypes::pmtPhysical )
+   {
+      if ( m_RefColumnIdx != rOther.m_RefColumnIdx )
+      {
+         return false;
+      }
+
+      if ( !IsEqual(m_TransverseOffset,rOther.m_TransverseOffset) )
+      {
+         return false;
+      }
+
+      if ( m_TransverseOffsetMeasurement != rOther.m_TransverseOffsetMeasurement )
+      {
+         return false;
+      }
+
+      if ( m_ColumnSpacing != rOther.m_ColumnSpacing )
+      {
+         return false;
+      }
+
+      if ( m_Columns != rOther.m_Columns )
+      {
+         return false;
+      }
+   }
+
    for ( int i = 0; i < 2; i++ )
    {
+      if ( m_PierModelType == pgsTypes::pmtPhysical )
+      {
+         pgsTypes::PierSideType side = (pgsTypes::PierSideType)i;
+
+         if ( !IsEqual(m_XBeamHeight[side],rOther.m_XBeamHeight[side]) )
+         {
+            return false;
+         }
+
+         if ( !IsEqual(m_XBeamTaperHeight[side],rOther.m_XBeamTaperHeight[side]) )
+         {
+            return false;
+         }
+
+         if ( !IsEqual(m_XBeamTaperLength[side],rOther.m_XBeamTaperLength[side]) )
+         {
+            return false;
+         }
+
+         if ( !IsEqual(m_XBeamOverhang[side],rOther.m_XBeamOverhang[side]) )
+         {
+            return false;
+         }
+      }
+
+      if ( !IsEqual(m_Ec,rOther.m_Ec) )
+      {
+         return false;
+      }
+
+      if ( !IsEqual(m_XBeamWidth,rOther.m_XBeamWidth) )
+      {
+         return false;
+      }
+
       pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
 
       if ( !m_bHasCantilever )
@@ -292,38 +382,38 @@ bool CPierData2::operator!=(const CPierData2& rOther) const
    return !operator==(rOther);
 }
 
-LPCTSTR CPierData2::AsString(pgsTypes::PierConnectionType type)
+LPCTSTR CPierData2::AsString(pgsTypes::BoundaryConditionType type)
 {
    switch(type)
    { 
-   case pgsTypes::Hinge:
+   case pgsTypes::bctHinge:
       return _T("Hinge");
 
-   case pgsTypes::Roller:
+   case pgsTypes::bctRoller:
       return _T("Roller");
 
-   case pgsTypes::ContinuousAfterDeck:
+   case pgsTypes::bctContinuousAfterDeck:
       return _T("Continuous after deck placement");
 
-   case pgsTypes::ContinuousBeforeDeck:
+   case pgsTypes::bctContinuousBeforeDeck:
       return _T("Continuous before deck placement");
 
-   case pgsTypes::IntegralAfterDeck:
+   case pgsTypes::bctIntegralAfterDeck:
       return _T("Integral after deck placement");
 
-   case pgsTypes::IntegralBeforeDeck:
+   case pgsTypes::bctIntegralBeforeDeck:
       return _T("Integral before deck placement");
 
-   case pgsTypes::IntegralAfterDeckHingeBack:
+   case pgsTypes::bctIntegralAfterDeckHingeBack:
       return _T("Hinged on back side; Integral on ahead side after deck placement");
 
-   case pgsTypes::IntegralBeforeDeckHingeBack:
+   case pgsTypes::bctIntegralBeforeDeckHingeBack:
       return _T("Hinged on back side; Integral on ahead side before deck placement");
 
-   case pgsTypes::IntegralAfterDeckHingeAhead:
+   case pgsTypes::bctIntegralAfterDeckHingeAhead:
       return _T("Integral on back side after deck placement; Hinged on ahead side");
 
-   case pgsTypes::IntegralBeforeDeckHingeAhead:
+   case pgsTypes::bctIntegralBeforeDeckHingeAhead:
       return _T("Integral on back side before deck placement; Hinged on ahead side");
    
    default:
@@ -356,6 +446,171 @@ LPCTSTR CPierData2::AsString(pgsTypes::PierSegmentConnectionType type)
    };
 
    return _T("");
+}
+
+HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+{
+   HRESULT hr = S_OK;
+
+   pStrSave->BeginUnit(_T("PierDataDetails"),14.0);
+   
+   pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
+
+   pStrSave->put_Property(_T("Station"),         CComVariant(m_Station) );
+   pStrSave->put_Property(_T("Orientation"),     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
+   pStrSave->put_Property(_T("IsBoundaryPier"),  CComVariant( IsBoundaryPier() ? VARIANT_TRUE : VARIANT_FALSE) ); // added in version 11
+
+   pStrSave->put_Property(_T("PierConnectionType"),  CComVariant( m_BoundaryConditionType ) ); // changed from left and right to a single value in version 7
+   if ( IsInteriorPier() )
+   {
+      pStrSave->put_Property(_T("SegmentConnectionType"),  CComVariant( m_SegmentConnectionType ) );
+   }
+
+   // added in version 13
+   if ( m_bHasCantilever )
+   {
+      pStrSave->put_Property(_T("CantileverLength"),CComVariant(m_CantileverLength));
+   }
+
+   pStrSave->put_Property(_T("PierModelType"),CComVariant(m_PierModelType));
+   if ( m_PierModelType == pgsTypes::pmtPhysical )
+   {
+      pStrSave->put_Property(_T("Ec"),CComVariant(m_Ec));
+      pStrSave->put_Property(_T("RefColumnIndex"),CComVariant(m_RefColumnIdx));
+      pStrSave->put_Property(_T("TransverseOffset"),CComVariant(m_TransverseOffset));
+      pStrSave->put_Property(_T("TransverseOffsetMeasurement"),CComVariant(m_TransverseOffsetMeasurement));
+      pStrSave->put_Property(_T("XBeamHeight_Left"),CComVariant(m_XBeamHeight[pgsTypes::pstLeft]));
+      pStrSave->put_Property(_T("XBeamHeight_Right"),CComVariant(m_XBeamHeight[pgsTypes::pstRight]));
+      pStrSave->put_Property(_T("XBeamTaperHeight_Left"),CComVariant(m_XBeamTaperHeight[pgsTypes::pstLeft]));
+      pStrSave->put_Property(_T("XBeamTaperHeight_Right"),CComVariant(m_XBeamTaperHeight[pgsTypes::pstRight]));
+      pStrSave->put_Property(_T("XBeamTaperLength_Left"),CComVariant(m_XBeamTaperLength[pgsTypes::pstLeft]));
+      pStrSave->put_Property(_T("XBeamTaperLength_Right"),CComVariant(m_XBeamTaperLength[pgsTypes::pstRight]));
+      pStrSave->put_Property(_T("XBeamOverhang_Left"),CComVariant(m_XBeamOverhang[pgsTypes::pstLeft]));
+      pStrSave->put_Property(_T("XBeamOverhang_Right"),CComVariant(m_XBeamOverhang[pgsTypes::pstRight]));
+      pStrSave->put_Property(_T("XBeamWidth"),CComVariant(m_XBeamWidth));
+
+      pStrSave->put_Property(_T("ColumnCount"),CComVariant(m_Columns.size()));
+      std::vector<Float64>::iterator spacingIter = m_ColumnSpacing.begin();
+      std::vector<CColumnData>::iterator columnIterBegin = m_Columns.begin();
+      std::vector<CColumnData>::iterator columnIter = columnIterBegin;
+      std::vector<CColumnData>::iterator columnIterEnd = m_Columns.end();
+      for ( ; columnIter != columnIterEnd; columnIter++ )
+      {
+         if ( columnIter != columnIterBegin )
+         {
+            Float64 spacing = *spacingIter;
+            pStrSave->put_Property(_T("Spacing"),CComVariant(spacing));
+            spacingIter++;
+         }
+         CColumnData& columnData = *columnIter;
+         columnData.Save(pStrSave,pProgress);
+      }
+   }
+
+   pStrSave->BeginUnit(_T("Back"),2.0);
+   pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Back] ) );
+   pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Back]).c_str()) );
+   pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Back]));
+   pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Back]).c_str()) );
+   pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Back]));
+
+   // added IsBoundaryPier() requirement in version 2
+   if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   {
+      m_GirderSpacing[pgsTypes::Back].Save(pStrSave,pProgress);
+   }
+
+   {
+      pStrSave->BeginUnit(_T("Diaphragm"),1.0);
+      pStrSave->put_Property(_T("DiaphragmWidth"),  CComVariant(m_DiaphragmWidth[pgsTypes::Back]));
+      pStrSave->put_Property(_T("DiaphragmHeight"), CComVariant(m_DiaphragmHeight[pgsTypes::Back]));
+
+      if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtBearingCenterline)
+      {
+         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtBearingCenterline")));
+      }
+      else if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
+      {
+         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtSpecifiedLocation")));
+         pStrSave->put_Property(_T("DiaphragmLoadLocation"),CComVariant(m_DiaphragmLoadLocation[pgsTypes::Back]));
+      }
+      else if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::DontApply)
+      {
+         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
+      }
+      else
+      {
+         ATLASSERT(false); // is there a new load type?
+      }
+      pStrSave->EndUnit(); // Diaphragm
+   }
+   pStrSave->EndUnit(); // Back
+
+   pStrSave->BeginUnit(_T("Ahead"),2.0);
+   pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Ahead] ) );
+   pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Ahead]).c_str()) );
+   pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Ahead]));
+   pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Ahead]).c_str()) );
+   pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Ahead]));
+
+   // added IsBoundaryPier() requirement in version 2
+   if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   {
+      m_GirderSpacing[pgsTypes::Ahead].Save(pStrSave,pProgress);
+   }
+
+   {
+      pStrSave->BeginUnit(_T("Diaphragm"),1.0);
+      pStrSave->put_Property(_T("DiaphragmWidth"),  CComVariant(m_DiaphragmWidth[pgsTypes::Ahead]));
+      pStrSave->put_Property(_T("DiaphragmHeight"), CComVariant(m_DiaphragmHeight[pgsTypes::Ahead]));
+
+      if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtBearingCenterline)
+      {
+         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtBearingCenterline")));
+      }
+      else if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
+      {
+         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtSpecifiedLocation")));
+         pStrSave->put_Property(_T("DiaphragmLoadLocation"),CComVariant(m_DiaphragmLoadLocation[pgsTypes::Ahead]));
+      }
+      else if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::DontApply)
+      {
+         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
+      }
+      else
+      {
+         ATLASSERT(false); // is there a new load type?
+      }
+      pStrSave->EndUnit(); // Diaphragm
+   }
+   pStrSave->EndUnit(); // Ahead
+
+   // added in version 5
+   if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
+   {
+      pStrSave->BeginUnit(_T("LLDF"),3.0); // Version 3 went from interior/exterior to girder by girder
+
+      GirderIndexType ngs = GetLldfGirderCount();
+      pStrSave->put_Property(_T("nLLDFGirders"),CComVariant(ngs));
+
+      for (GirderIndexType igs=0; igs<ngs; igs++)
+      {
+         pStrSave->BeginUnit(_T("LLDF_Girder"),1.0);
+         LLDF& lldf = GetLLDF(igs);
+
+         pStrSave->put_Property(_T("gM_Strength"), CComVariant(lldf.gM[0]));
+         pStrSave->put_Property(_T("gR_Strength"), CComVariant(lldf.gR[0]));
+         pStrSave->put_Property(_T("gM_Fatigue"),  CComVariant(lldf.gM[1]));
+         pStrSave->put_Property(_T("gR_Fatigue"),  CComVariant(lldf.gR[1]));
+         pStrSave->EndUnit(); // LLDF_Girder
+      }
+
+      pStrSave->EndUnit(); // LLDF
+   }
+
+   pStrSave->EndUnit();
+
+   return hr;
 }
 
 HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
@@ -412,7 +667,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("PierConnectionType"),&var);
-         m_PierConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+         m_BoundaryConditionType = (pgsTypes::BoundaryConditionType)var.lVal;
 
          if ( vbIsBoundaryPier == VARIANT_FALSE )
          {
@@ -427,7 +682,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             var.vt = VT_I4;
             hr = pStrLoad->get_Property(_T("PierConnectionType"),&var);
-            m_PierConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+            m_BoundaryConditionType = (pgsTypes::BoundaryConditionType)var.lVal;
          }
          else
          {
@@ -440,7 +695,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("PierConnectionType"),&var);
-         m_PierConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+         m_BoundaryConditionType = (pgsTypes::BoundaryConditionType)var.lVal;
 
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("SegmentConnectionType"),&var);
@@ -455,6 +710,81 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             m_bHasCantilever = true;
             m_CantileverLength = var.dblVal;
+         }
+      }
+
+      if ( 13 < version )
+      {
+         // added in version 14
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("PierModelType"),&var);
+         m_PierModelType = (pgsTypes::PierModelType)var.lVal;
+
+         if ( m_PierModelType == pgsTypes::pmtPhysical )
+         {
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("Ec"),&var);
+            m_Ec = var.dblVal;
+
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("RefColumnIndex"),&var);
+            m_RefColumnIdx = VARIANT2INDEX(var);
+
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("TransverseOffset"),&var);
+            m_TransverseOffset = var.dblVal;
+
+            var.vt = VT_I4;
+            hr = pStrLoad->get_Property(_T("TransverseOffsetMeasurement"),&var);
+            m_TransverseOffsetMeasurement = (pgsTypes::OffsetMeasurementType)var.lVal;
+
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("XBeamHeight_Left"),&var);
+            m_XBeamHeight[pgsTypes::pstLeft] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("XBeamHeight_Right"),&var);
+            m_XBeamHeight[pgsTypes::pstRight] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("XBeamTaperHeight_Left"),&var);
+            m_XBeamTaperHeight[pgsTypes::pstLeft] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("XBeamTaperHeight_Right"),&var);
+            m_XBeamTaperHeight[pgsTypes::pstRight] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("XBeamTaperLength_Left"),&var);
+            m_XBeamTaperLength[pgsTypes::pstLeft] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("XBeamTaperLength_Right"),&var);
+            m_XBeamTaperLength[pgsTypes::pstRight] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("XBeamOverhang_Left"),&var);
+            m_XBeamOverhang[pgsTypes::pstLeft] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("XBeamOverhang_Right"),&var);
+            m_XBeamOverhang[pgsTypes::pstRight] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("XBeamWidth"),&var);
+            m_XBeamWidth = var.dblVal;
+
+
+            m_Columns.clear();
+            m_ColumnSpacing.clear();
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("ColumnCount"),&var);
+            ColumnIndexType nColumns = VARIANT2INDEX(var);
+            for ( ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++ )
+            {
+               if ( 0 < colIdx )
+               {
+                  var.vt = VT_R8;
+                  hr = pStrLoad->get_Property(_T("Spacing"),&var);
+                  Float64 spacing = var.dblVal;
+                  m_ColumnSpacing.push_back(spacing);
+               }
+               CColumnData columnData(this);
+               columnData.Load(pStrLoad,pProgress);
+               m_Columns.push_back(columnData);
+            }
          }
       }
       
@@ -816,136 +1146,6 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    return S_OK;
 }
 
-HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
-{
-   HRESULT hr = S_OK;
-
-   pStrSave->BeginUnit(_T("PierDataDetails"),13.0);
-   
-   pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
-
-   pStrSave->put_Property(_T("Station"),         CComVariant(m_Station) );
-   pStrSave->put_Property(_T("Orientation"),     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
-   pStrSave->put_Property(_T("IsBoundaryPier"),  CComVariant( IsBoundaryPier() ? VARIANT_TRUE : VARIANT_FALSE) ); // added in version 11
-
-   pStrSave->put_Property(_T("PierConnectionType"),  CComVariant( m_PierConnectionType ) ); // changed from left and right to a single value in version 7
-   if ( IsInteriorPier() )
-   {
-      pStrSave->put_Property(_T("SegmentConnectionType"),  CComVariant( m_SegmentConnectionType ) );
-   }
-
-   // added in version 13
-   if ( m_bHasCantilever )
-   {
-      pStrSave->put_Property(_T("CantileverLength"),CComVariant(m_CantileverLength));
-   }
-
-   pStrSave->BeginUnit(_T("Back"),2.0);
-   pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Back] ) );
-   pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Back]).c_str()) );
-   pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Back]));
-   pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Back]).c_str()) );
-   pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Back]));
-
-   // added IsBoundaryPier() requirement in version 2
-   if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
-   {
-      m_GirderSpacing[pgsTypes::Back].Save(pStrSave,pProgress);
-   }
-
-   {
-      pStrSave->BeginUnit(_T("Diaphragm"),1.0);
-      pStrSave->put_Property(_T("DiaphragmWidth"),  CComVariant(m_DiaphragmWidth[pgsTypes::Back]));
-      pStrSave->put_Property(_T("DiaphragmHeight"), CComVariant(m_DiaphragmHeight[pgsTypes::Back]));
-
-      if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtBearingCenterline)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtBearingCenterline")));
-      }
-      else if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtSpecifiedLocation")));
-         pStrSave->put_Property(_T("DiaphragmLoadLocation"),CComVariant(m_DiaphragmLoadLocation[pgsTypes::Back]));
-      }
-      else if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::DontApply)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
-      }
-      else
-      {
-         ATLASSERT(false); // is there a new load type?
-      }
-      pStrSave->EndUnit(); // Diaphragm
-   }
-   pStrSave->EndUnit(); // Back
-
-   pStrSave->BeginUnit(_T("Ahead"),2.0);
-   pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Ahead] ) );
-   pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Ahead]).c_str()) );
-   pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Ahead]));
-   pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Ahead]).c_str()) );
-   pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Ahead]));
-
-   // added IsBoundaryPier() requirement in version 2
-   if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
-   {
-      m_GirderSpacing[pgsTypes::Ahead].Save(pStrSave,pProgress);
-   }
-
-   {
-      pStrSave->BeginUnit(_T("Diaphragm"),1.0);
-      pStrSave->put_Property(_T("DiaphragmWidth"),  CComVariant(m_DiaphragmWidth[pgsTypes::Ahead]));
-      pStrSave->put_Property(_T("DiaphragmHeight"), CComVariant(m_DiaphragmHeight[pgsTypes::Ahead]));
-
-      if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtBearingCenterline)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtBearingCenterline")));
-      }
-      else if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtSpecifiedLocation")));
-         pStrSave->put_Property(_T("DiaphragmLoadLocation"),CComVariant(m_DiaphragmLoadLocation[pgsTypes::Ahead]));
-      }
-      else if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::DontApply)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
-      }
-      else
-      {
-         ATLASSERT(false); // is there a new load type?
-      }
-      pStrSave->EndUnit(); // Diaphragm
-   }
-   pStrSave->EndUnit(); // Ahead
-
-   // added in version 5
-   if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      pStrSave->BeginUnit(_T("LLDF"),3.0); // Version 3 went from interior/exterior to girder by girder
-
-      GirderIndexType ngs = GetLldfGirderCount();
-      pStrSave->put_Property(_T("nLLDFGirders"),CComVariant(ngs));
-
-      for (GirderIndexType igs=0; igs<ngs; igs++)
-      {
-         pStrSave->BeginUnit(_T("LLDF_Girder"),1.0);
-         LLDF& lldf = GetLLDF(igs);
-
-         pStrSave->put_Property(_T("gM_Strength"), CComVariant(lldf.gM[0]));
-         pStrSave->put_Property(_T("gR_Strength"), CComVariant(lldf.gR[0]));
-         pStrSave->put_Property(_T("gM_Fatigue"),  CComVariant(lldf.gM[1]));
-         pStrSave->put_Property(_T("gR_Fatigue"),  CComVariant(lldf.gR[1]));
-         pStrSave->EndUnit(); // LLDF_Girder
-      }
-
-      pStrSave->EndUnit(); // LLDF
-   }
-
-   pStrSave->EndUnit();
-
-   return hr;
-}
-
 void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
 {
    if ( !bCopyDataOnly )
@@ -962,8 +1162,24 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    m_bHasCantilever = rOther.m_bHasCantilever;
    m_CantileverLength = rOther.m_CantileverLength;
 
+   m_PierModelType = rOther.m_PierModelType;
+   m_RefColumnIdx = rOther.m_RefColumnIdx;
+   m_TransverseOffset = rOther.m_TransverseOffset;
+   m_TransverseOffsetMeasurement = rOther.m_TransverseOffsetMeasurement;
+
+   m_ColumnSpacing = rOther.m_ColumnSpacing;
+   m_Columns = rOther.m_Columns;
+
+   m_Ec = rOther.m_Ec;
+   m_XBeamWidth = rOther.m_XBeamWidth;
+
    for ( int i = 0; i < 2; i++ )
    {
+      m_XBeamHeight[i] = rOther.m_XBeamHeight[i];
+      m_XBeamTaperHeight[i] = rOther.m_XBeamTaperHeight[i];
+      m_XBeamTaperLength[i] = rOther.m_XBeamTaperLength[i];
+      m_XBeamOverhang[i]    = rOther.m_XBeamOverhang[i];
+
       m_GirderEndDistance[i]            = rOther.m_GirderEndDistance[i];
       m_EndDistanceMeasurementType[i]   = rOther.m_EndDistanceMeasurementType[i];
       m_GirderBearingOffset[i]          = rOther.m_GirderBearingOffset[i];
@@ -988,7 +1204,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
       // girder segments are split/joined as necessary for the new connection types
       if ( IsBoundaryPier() )
       {
-         SetPierConnectionType(rOther.m_PierConnectionType);
+         SetBoundaryConditionType(rOther.m_BoundaryConditionType);
       }
       else
       {
@@ -1000,7 +1216,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    else
    {
       // If this pier is not part of a bridge, just capture the data
-      m_PierConnectionType    = rOther.m_PierConnectionType;
+      m_BoundaryConditionType    = rOther.m_BoundaryConditionType;
       m_SegmentConnectionType = rOther.m_SegmentConnectionType;
    }
 
@@ -1058,7 +1274,7 @@ void CPierData2::SetSpan(pgsTypes::PierFaceType face,CSpanData2* pSpan)
       m_pNextSpan = pSpan;
    }
 
-   ValidatePierConnectionType();
+   ValidateBoundaryConditionType();
 }
 
 void CPierData2::SetSpans(CSpanData2* pPrevSpan,CSpanData2* pNextSpan)
@@ -1150,7 +1366,7 @@ void CPierData2::SetOrientation(LPCTSTR strOrientation)
 void CPierData2::HasCantilever(bool bHasCantilever)
 {
    m_bHasCantilever = bHasCantilever;
-   ValidatePierConnectionType();
+   ValidateBoundaryConditionType();
 }
 
 bool CPierData2::HasCantilever() const
@@ -1168,24 +1384,20 @@ Float64 CPierData2::GetCantileverLength() const
    return m_CantileverLength;
 }
 
-pgsTypes::PierConnectionType CPierData2::GetPierConnectionType() const
+pgsTypes::BoundaryConditionType CPierData2::GetBoundaryConditionType() const
 {
-#if defined _DEBUG
-   if ( IsInteriorPier() )
-   {
-      ATLASSERT(m_PierConnectionType == pgsTypes::Hinge || m_PierConnectionType == pgsTypes::Roller);
-   }
-#endif
-   return m_PierConnectionType;
+   ATLASSERT(IsBoundaryPier()); // only applicable to boundary piers
+   return m_BoundaryConditionType;
 }
 
-void CPierData2::SetPierConnectionType(pgsTypes::PierConnectionType type)
+void CPierData2::SetBoundaryConditionType(pgsTypes::BoundaryConditionType type)
 {
-   m_PierConnectionType = type;
+   m_BoundaryConditionType = type;
 }
 
 pgsTypes::PierSegmentConnectionType CPierData2::GetSegmentConnectionType() const
 {
+   ATLASSERT(IsInteriorPier()); //  only applicable to interior piers
    return m_SegmentConnectionType;
 }
 
@@ -1397,6 +1609,153 @@ const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) con
    return NULL;
 }
 
+pgsTypes::PierModelType CPierData2::GetPierModelType() const
+{
+   return m_PierModelType;
+}
+
+void CPierData2::SetPierModelType(pgsTypes::PierModelType modelType)
+{
+   m_PierModelType = modelType;
+}
+
+void CPierData2::SetModE(Float64 Ec)
+{
+   m_Ec = Ec;
+}
+
+Float64 CPierData2::GetModE() const
+{
+   return m_Ec;
+}
+
+void CPierData2::SetTransverseOffset(ColumnIndexType refColumnIdx,Float64 offset,pgsTypes::OffsetMeasurementType offsetType)
+{
+   m_RefColumnIdx = refColumnIdx;
+   m_TransverseOffset = offset;
+   m_TransverseOffsetMeasurement = offsetType;
+}
+
+void CPierData2::GetTransverseOffset(ColumnIndexType* pRefColumnIdx,Float64* pOffset,pgsTypes::OffsetMeasurementType* pOffsetType)
+{
+   *pRefColumnIdx = m_RefColumnIdx;
+   *pOffset = m_TransverseOffset;
+   *pOffsetType = m_TransverseOffsetMeasurement;
+}
+
+void CPierData2::SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,Float64 taperHeight,Float64 taperLength)
+{
+   m_XBeamHeight[side]      = height;
+   m_XBeamTaperHeight[side] = taperHeight;
+   m_XBeamTaperLength[side] = taperLength;
+}
+
+void CPierData2::GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength) const
+{
+   *pHeight      = m_XBeamHeight[side];
+   *pTaperHeight = m_XBeamTaperHeight[side];
+   *pTaperLength = m_XBeamTaperLength[side];
+}
+
+void CPierData2::SetXBeamWidth(Float64 width)
+{
+   m_XBeamWidth;
+}
+
+Float64 CPierData2::GetXBeamWidth() const
+{
+   return m_XBeamWidth;
+}
+
+void CPierData2::SetXBeamOverhang(pgsTypes::PierSideType side,Float64 overhang)
+{
+   m_XBeamOverhang[side] = overhang;
+}
+
+void CPierData2::SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang)
+{
+   m_XBeamOverhang[pgsTypes::pstLeft]  = leftOverhang;
+   m_XBeamOverhang[pgsTypes::pstRight] = rightOverhang;
+}
+
+Float64 CPierData2::GetXBeamOverhang(pgsTypes::PierSideType side) const
+{
+   return m_XBeamOverhang[side];
+}
+
+void CPierData2::GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const
+{
+   *pLeftOverhang  = m_XBeamOverhang[pgsTypes::pstLeft];
+   *pRightOverhang = m_XBeamOverhang[pgsTypes::pstRight];
+}
+
+void CPierData2::RemoveColumns()
+{
+   // erase all but the first column... must always have one column
+   m_Columns.erase(m_Columns.begin()+1,m_Columns.end());
+   m_ColumnSpacing.clear();
+   ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
+}
+
+void CPierData2::AddColumn(Float64 spacing,const CColumnData& columnData)
+{
+   m_ColumnSpacing.push_back(spacing);
+   m_Columns.push_back(columnData);
+   m_Columns.back().SetPier(this);
+   ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
+}
+
+void CPierData2::SetColumnSpacing(SpacingIndexType spaceIdx,Float64 spacing)
+{
+   ATLASSERT(spaceIdx < m_ColumnSpacing.size());
+   m_ColumnSpacing[spaceIdx] = spacing;
+}
+
+void CPierData2::SetColumnData(ColumnIndexType colIdx,const CColumnData& columnData)
+{
+   ATLASSERT(colIdx < m_Columns.size());
+   m_Columns[colIdx] = columnData;
+   m_Columns[colIdx].SetPier(this);
+}
+
+void CPierData2::SetColumnCount(ColumnIndexType nColumns)
+{
+   if ( nColumns < m_Columns.size() )
+   {
+      // the number of columns is being reduced ... remove columns on the right side of the pier
+      m_Columns.erase(m_Columns.begin()+nColumns,m_Columns.end());
+      m_ColumnSpacing.erase(m_ColumnSpacing.begin()+nColumns-1,m_ColumnSpacing.end());
+   }
+   else if ( m_Columns.size() < nColumns )
+   {
+      // the number of columns is being increased... add columns on the right side of the pier
+      ColumnIndexType nColumnsToAdd = nColumns - m_Columns.size();
+      CColumnData column = m_Columns.back(); // right-most column
+      Float64 spacing = (m_ColumnSpacing.size() == 0 ? ::ConvertToSysUnits(10.0,unitMeasure::Feet) : m_ColumnSpacing.back()); // right-most spacing
+      m_Columns.insert(m_Columns.end(),nColumnsToAdd,column);
+      m_ColumnSpacing.insert(m_ColumnSpacing.end(),nColumnsToAdd,spacing);
+   }
+   ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
+}
+
+ColumnIndexType CPierData2::GetColumnCount() const
+{
+   ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
+   return m_Columns.size();
+}
+
+Float64 CPierData2::GetColumnSpacing(SpacingIndexType spaceIdx) const
+{
+   ATLASSERT(spaceIdx < m_ColumnSpacing.size());
+   return m_ColumnSpacing[spaceIdx];
+}
+
+const CColumnData& CPierData2::GetColumnData(ColumnIndexType colIdx) const
+{
+   ATLASSERT(colIdx < m_Columns.size());
+   return m_Columns[colIdx];
+}
+
 void CPierData2::SetDiaphragmHeight(pgsTypes::PierFaceType pierFace,Float64 d)
 {
    m_DiaphragmHeight[pierFace] = d;
@@ -1509,10 +1868,10 @@ bool CPierData2::IsContinuousConnection() const
    else
    {
       ATLASSERT(IsBoundaryPier());
-      if ( m_PierConnectionType == pgsTypes::ContinuousAfterDeck ||
-           m_PierConnectionType == pgsTypes::ContinuousBeforeDeck ||
-           m_PierConnectionType == pgsTypes::IntegralAfterDeck ||
-           m_PierConnectionType == pgsTypes::IntegralBeforeDeck )
+      if ( m_BoundaryConditionType == pgsTypes::bctContinuousAfterDeck ||
+           m_BoundaryConditionType == pgsTypes::bctContinuousBeforeDeck ||
+           m_BoundaryConditionType == pgsTypes::bctIntegralAfterDeck ||
+           m_BoundaryConditionType == pgsTypes::bctIntegralBeforeDeck )
       {
          return true;
       }
@@ -1531,7 +1890,14 @@ bool CPierData2::IsContinuous() const
    }
    else
    {
-      return (m_PierConnectionType == pgsTypes::ContinuousBeforeDeck || m_PierConnectionType == pgsTypes::ContinuousAfterDeck);
+      if ( HasCantilever() )
+      {
+         return true;
+      }
+      else
+      {
+         return (m_BoundaryConditionType == pgsTypes::bctContinuousBeforeDeck || m_BoundaryConditionType == pgsTypes::bctContinuousAfterDeck);
+      }
    }
 }
 
@@ -1552,15 +1918,15 @@ void CPierData2::IsIntegral(bool* pbLeft,bool* pbRight) const
    }
    else
    {
-      if (m_PierConnectionType == pgsTypes::IntegralBeforeDeck || m_PierConnectionType == pgsTypes::IntegralAfterDeck)
+      if (m_BoundaryConditionType == pgsTypes::bctIntegralBeforeDeck || m_BoundaryConditionType == pgsTypes::bctIntegralAfterDeck)
       {
          *pbLeft  = true;
          *pbRight = true;
       }
       else
       {
-         *pbLeft  = m_PierConnectionType == pgsTypes::IntegralAfterDeckHingeAhead || m_PierConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead;
-         *pbRight = m_PierConnectionType == pgsTypes::IntegralAfterDeckHingeBack  || m_PierConnectionType == pgsTypes::IntegralBeforeDeckHingeBack;
+         *pbLeft  = m_BoundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead || m_BoundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead;
+         *pbRight = m_BoundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack  || m_BoundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack;
       }
    }
 }
@@ -1738,7 +2104,7 @@ void CPierData2::SetPierData(CPierData* pPier)
 
    SetOrientation(pPier->m_strOrientation.c_str());
    SetStation(pPier->m_Station);
-   SetPierConnectionType(pPier->m_ConnectionType);
+   SetBoundaryConditionType(pPier->m_ConnectionType);
    //SetSegmentConnectionType(pPier->m_SegmentConnectionType);
 
    SetGirderEndDistance(pgsTypes::Back, pPier->m_GirderEndDistance[pgsTypes::Back], pPier->m_EndDistanceMeasurementType[pgsTypes::Back]);
@@ -1778,15 +2144,15 @@ void CPierData2::SetPierData(CPierData* pPier)
    m_bDistributionFactorsFromOlderVersion = true;
 }
 
-void CPierData2::ValidatePierConnectionType()
+void CPierData2::ValidateBoundaryConditionType()
 {
    // make sure the connection type is valid
-   std::vector<pgsTypes::PierConnectionType> vConnectionTypes = m_pBridgeDesc->GetPierConnectionTypes(m_PierIdx);
-   std::vector<pgsTypes::PierConnectionType>::iterator found = std::find(vConnectionTypes.begin(),vConnectionTypes.end(),m_PierConnectionType);
+   std::vector<pgsTypes::BoundaryConditionType> vConnectionTypes = m_pBridgeDesc->GetBoundaryConditionTypes(m_PierIdx);
+   std::vector<pgsTypes::BoundaryConditionType>::iterator found = std::find(vConnectionTypes.begin(),vConnectionTypes.end(),m_BoundaryConditionType);
    if ( found == vConnectionTypes.end() )
    {
       // the current connection type isn't valid... updated it
-      m_PierConnectionType = vConnectionTypes.front();
+      m_BoundaryConditionType = vConnectionTypes.front();
    }
 }
 

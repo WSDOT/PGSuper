@@ -44,7 +44,7 @@ IMPLEMENT_DYNAMIC(CBoundaryConditionDlg, CDialog)
 CBoundaryConditionDlg::CBoundaryConditionDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CBoundaryConditionDlg::IDD, pParent)
 {
-   m_BoundaryCondition = pgsTypes::ContinuousAfterDeck;
+   m_BoundaryCondition = pgsTypes::bctContinuousAfterDeck;
 }
 
 CBoundaryConditionDlg::~CBoundaryConditionDlg()
@@ -75,7 +75,7 @@ BOOL CBoundaryConditionDlg::OnInitDialog()
 
    ATLASSERT(pIBridgeDesc->GetPier(m_PierIdx)->IsBoundaryPier());
 
-   std::vector<pgsTypes::PierConnectionType> connections = pIBridgeDesc->GetPierConnectionTypes(m_PierIdx);
+   std::vector<pgsTypes::BoundaryConditionType> connections = pIBridgeDesc->GetBoundaryConditionTypes(m_PierIdx);
 
    m_cbBoundaryCondition.SetPierType(PIERTYPE_INTERMEDIATE);
    m_cbBoundaryCondition.Initialize(true,connections);

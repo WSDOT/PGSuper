@@ -185,8 +185,12 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
             *pPara << _T("Deck Bottom Mat Rebar: Es = ");
          }
 
-         *pPara << _T("As = ") << area.SetValue(tsDetails.DeckRebar[matType].As) << _T(" ")
-                << _T("Ys = ") << ecc.SetValue(tsDetails.DeckRebar[matType].Ys) << rptNewLine;
+         for ( int j = 0; j < 2; j++ )
+         {
+            pgsTypes::DeckRebarBarType barType = (pgsTypes::DeckRebarBarType)j;
+            *pPara << _T("As = ") << area.SetValue(tsDetails.DeckRebar[matType][barType].As) << _T(" ")
+                   << _T("Ys = ") << ecc.SetValue(tsDetails.DeckRebar[matType][barType].Ys) << rptNewLine;
+         }
       }
 
       *pPara << rptNewLine;
@@ -268,7 +272,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       (*pLayoutTable)(rowIdx,colIdx++) << _T("Deck");
       colIdx++;//(*pLayoutTable)(rowIdx,colIdx++) << SKIP
       (*pLayoutTable)(rowIdx,colIdx++) << _T("Top Deck Rebar");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("Top Deck Rebar");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("Bottom Deck Rebar");
       rowIdx++;
 
       colIdx = 0;
@@ -334,7 +338,11 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          for ( int i = 0; i < 2; i++ )
          {
             pgsTypes::DeckRebarMatType matType = (pgsTypes::DeckRebarMatType)i;
-            (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.DeckRebar[matType].dPi[pfType]);
+            for ( int j = 0; j < 2; j++ )
+            {
+               pgsTypes::DeckRebarBarType barType = (pgsTypes::DeckRebarBarType)j;
+               (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.DeckRebar[matType][barType].dPi[pfType]);
+            }
          }
 
 
@@ -371,7 +379,11 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       for ( int i = 0; i < 2; i++ )
       {
          pgsTypes::DeckRebarMatType matType = (pgsTypes::DeckRebarMatType)i;
-         (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.DeckRebar[matType].dP);
+         for ( int j = 0; j < 2; j++ )
+         {
+            pgsTypes::DeckRebarBarType barType = (pgsTypes::DeckRebarBarType)j;
+           (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.DeckRebar[matType][barType].dP);
+         }
       }
 
       rowIdx++;
@@ -413,7 +425,11 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       for ( int i = 0; i < 2; i++ )
       {
          pgsTypes::DeckRebarMatType matType = (pgsTypes::DeckRebarMatType)i;
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Eg*An) = (") << force.SetValue(tsDetails.DeckRebar[matType].dP) << _T(")/[(") << modE.SetValue(tsDetails.DeckRebar[matType].E) << _T(")(") << area.SetValue(tsDetails.DeckRebar[matType].As) << _T(")] = ") << tsDetails.DeckRebar[matType].e;
+         for ( int j = 0; j < 2; j++ )
+         {
+            pgsTypes::DeckRebarBarType barType = (pgsTypes::DeckRebarBarType)j;
+            (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Eg*An) = (") << force.SetValue(tsDetails.DeckRebar[matType][barType].dP) << _T(")/[(") << modE.SetValue(tsDetails.DeckRebar[matType][barType].E) << _T(")(") << area.SetValue(tsDetails.DeckRebar[matType][barType].As) << _T(")] = ") << tsDetails.DeckRebar[matType][barType].e;
+         }
       }
 
       rowIdx++;

@@ -57,7 +57,7 @@ CPierData::CPierData()
    Orientation = Normal;
    Angle       = 0.0;
 
-   m_ConnectionType                    = pgsTypes::Hinge;
+   m_ConnectionType                    = pgsTypes::bctHinge;
    m_strOrientation = _T("Normal");
 
    for ( int i = 0; i < 2; i++ )
@@ -156,38 +156,38 @@ bool CPierData::operator!=(const CPierData& rOther) const
    return !operator==(rOther);
 }
 
-LPCTSTR CPierData::AsString(pgsTypes::PierConnectionType type)
+LPCTSTR CPierData::AsString(pgsTypes::BoundaryConditionType type)
 {
    switch(type)
    { 
-   case pgsTypes::Hinge:
+   case pgsTypes::bctHinge:
       return _T("Hinged");
 
-   case pgsTypes::Roller:
+   case pgsTypes::bctRoller:
       return _T("Roller");
 
-   case pgsTypes::ContinuousAfterDeck:
+   case pgsTypes::bctContinuousAfterDeck:
       return _T("Continuous after deck placement");
 
-   case pgsTypes::ContinuousBeforeDeck:
+   case pgsTypes::bctContinuousBeforeDeck:
       return _T("Continuous before deck placement");
 
-   case pgsTypes::IntegralAfterDeck:
+   case pgsTypes::bctIntegralAfterDeck:
       return _T("Integral after deck placement");
 
-   case pgsTypes::IntegralBeforeDeck:
+   case pgsTypes::bctIntegralBeforeDeck:
       return _T("Integral before deck placement");
 
-   case pgsTypes::IntegralAfterDeckHingeBack:
+   case pgsTypes::bctIntegralAfterDeckHingeBack:
       return _T("Hinged on back side; Integral on ahead side after deck placement");
 
-   case pgsTypes::IntegralBeforeDeckHingeBack:
+   case pgsTypes::bctIntegralBeforeDeckHingeBack:
       return _T("Hinged on back side; Integral on ahead side before deck placement");
 
-   case pgsTypes::IntegralAfterDeckHingeAhead:
+   case pgsTypes::bctIntegralAfterDeckHingeAhead:
       return _T("Integral on back side after deck placement; Hinged on ahead side");
 
-   case pgsTypes::IntegralBeforeDeckHingeAhead:
+   case pgsTypes::bctIntegralBeforeDeckHingeAhead:
       return _T("Integral on back side before deck placement; Hinged on ahead side");
    
    default:
@@ -268,7 +268,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
          strConnection[pgsTypes::Back] = OLE2T(var.bstrVal);
 
       strConnection[pgsTypes::Ahead] = strConnection[pgsTypes::Back];
-      m_ConnectionType  = pgsTypes::Hinge;
+      m_ConnectionType  = pgsTypes::bctHinge;
 
       // Convert old input into a bearing string
       CComPtr<IDirectionDisplayUnitFormatter> dirFormatter;
@@ -378,7 +378,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
          // prior to version 7 we had left and right boundary conditions with an option to make both same
 
          bool use_same_both = false;
-         pgsTypes::PierConnectionType back_conn_type, ahead_conn_type;
+         pgsTypes::BoundaryConditionType back_conn_type, ahead_conn_type;
          if ( 5.0 <= version && version < 7.0 )
          {
             var.vt = VT_BOOL;
@@ -405,7 +405,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
             if ( FAILED(pStrLoad->get_Property(_T("LeftConnectionType"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
-               back_conn_type = (pgsTypes::PierConnectionType)var.lVal;
+               back_conn_type = (pgsTypes::BoundaryConditionType)var.lVal;
          }
 
          if ( version < 9 )
@@ -435,7 +435,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
             if ( FAILED(pStrLoad->get_Property(_T("ConnectionType"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
-               m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+               m_ConnectionType = (pgsTypes::BoundaryConditionType)var.lVal;
          }
          else
          {
@@ -444,7 +444,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
             if ( FAILED(pStrLoad->get_Property(_T("RightConnectionType"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
-               ahead_conn_type = (pgsTypes::PierConnectionType)var.lVal;
+               ahead_conn_type = (pgsTypes::BoundaryConditionType)var.lVal;
 
             // Pre-version 7.0, we must resolve separate bc's for ahead and back
             // Tricky: this can be ambiguous
@@ -463,40 +463,40 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
                   // there isn't an ahead side to this pier
                   m_ConnectionType = back_conn_type;
                }
-               else if (back_conn_type == pgsTypes::ContinuousAfterDeck || ahead_conn_type == pgsTypes::ContinuousAfterDeck)
+               else if (back_conn_type == pgsTypes::bctContinuousAfterDeck || ahead_conn_type == pgsTypes::bctContinuousAfterDeck)
                {
-                  m_ConnectionType = pgsTypes::ContinuousAfterDeck;
+                  m_ConnectionType = pgsTypes::bctContinuousAfterDeck;
                }
-               else if (back_conn_type == pgsTypes::ContinuousBeforeDeck || ahead_conn_type == pgsTypes::ContinuousBeforeDeck)
+               else if (back_conn_type == pgsTypes::bctContinuousBeforeDeck || ahead_conn_type == pgsTypes::bctContinuousBeforeDeck)
                {
-                  m_ConnectionType = pgsTypes::ContinuousBeforeDeck;
+                  m_ConnectionType = pgsTypes::bctContinuousBeforeDeck;
                }
-               else if (back_conn_type == pgsTypes::IntegralAfterDeck)
+               else if (back_conn_type == pgsTypes::bctIntegralAfterDeck)
                {
-                  if (ahead_conn_type == pgsTypes::Hinge || ahead_conn_type == pgsTypes::Roller)
+                  if (ahead_conn_type == pgsTypes::bctHinge || ahead_conn_type == pgsTypes::bctRoller)
                   {
-                     m_ConnectionType = pgsTypes::IntegralAfterDeckHingeAhead;
+                     m_ConnectionType = pgsTypes::bctIntegralAfterDeckHingeAhead;
                   }
                }
-               else if (back_conn_type == pgsTypes::IntegralBeforeDeck)
+               else if (back_conn_type == pgsTypes::bctIntegralBeforeDeck)
                {
-                  if (ahead_conn_type == pgsTypes::Hinge || ahead_conn_type == pgsTypes::Roller)
+                  if (ahead_conn_type == pgsTypes::bctHinge || ahead_conn_type == pgsTypes::bctRoller)
                   {
-                     m_ConnectionType = pgsTypes::IntegralBeforeDeckHingeAhead;
+                     m_ConnectionType = pgsTypes::bctIntegralBeforeDeckHingeAhead;
                   }
                }
-               else if (ahead_conn_type == pgsTypes::IntegralAfterDeck)
+               else if (ahead_conn_type == pgsTypes::bctIntegralAfterDeck)
                {
-                  if (back_conn_type == pgsTypes::Hinge || back_conn_type == pgsTypes::Roller)
+                  if (back_conn_type == pgsTypes::bctHinge || back_conn_type == pgsTypes::bctRoller)
                   {
-                     m_ConnectionType = pgsTypes::IntegralAfterDeckHingeBack;
+                     m_ConnectionType = pgsTypes::bctIntegralAfterDeckHingeBack;
                   }
                }
-               else if (ahead_conn_type == pgsTypes::IntegralBeforeDeck)
+               else if (ahead_conn_type == pgsTypes::bctIntegralBeforeDeck)
                {
-                  if (back_conn_type == pgsTypes::Hinge || back_conn_type == pgsTypes::Roller)
+                  if (back_conn_type == pgsTypes::bctHinge || back_conn_type == pgsTypes::bctRoller)
                   {
-                     m_ConnectionType = pgsTypes::IntegralBeforeDeckHingeBack;
+                     m_ConnectionType = pgsTypes::bctIntegralBeforeDeckHingeBack;
                   }
                }
             }
@@ -521,7 +521,7 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
             if ( FAILED(pStrLoad->get_Property(_T("ConnectionType"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
-               m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+               m_ConnectionType = (pgsTypes::BoundaryConditionType)var.lVal;
          }
       }
 
@@ -1103,14 +1103,14 @@ void CPierData::SetOrientation(LPCTSTR strOrientation)
    m_strOrientation = strOrientation;
 }
 
-pgsTypes::PierConnectionType CPierData::GetConnectionType() const
+pgsTypes::BoundaryConditionType CPierData::GetConnectionType() const
 {
    return m_ConnectionType;
 }
 
-void CPierData::SetConnectionType(pgsTypes::PierConnectionType type)
+void CPierData::SetConnectionType(pgsTypes::BoundaryConditionType type)
 {
-   pgsTypes::PierConnectionType oldType = m_ConnectionType;
+   pgsTypes::BoundaryConditionType oldType = m_ConnectionType;
    m_ConnectionType = type;
 }
 
@@ -1253,21 +1253,21 @@ void CPierData::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::Limit
 
 bool CPierData::IsContinuous() const
 {
-   return m_ConnectionType == pgsTypes::ContinuousBeforeDeck || m_ConnectionType == pgsTypes::ContinuousAfterDeck;
+   return m_ConnectionType == pgsTypes::bctContinuousBeforeDeck || m_ConnectionType == pgsTypes::bctContinuousAfterDeck;
 }
 
 void CPierData::IsIntegral(bool* pbLeft,bool* pbRight) const
 {
-   if (m_ConnectionType == pgsTypes::IntegralBeforeDeck || m_ConnectionType == pgsTypes::IntegralAfterDeck)
+   if (m_ConnectionType == pgsTypes::bctIntegralBeforeDeck || m_ConnectionType == pgsTypes::bctIntegralAfterDeck)
    {
       *pbLeft  = true;
       *pbRight = true;
    }
    else
    {
-      *pbLeft  = m_ConnectionType == pgsTypes::IntegralAfterDeckHingeAhead || m_ConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead;
+      *pbLeft  = m_ConnectionType == pgsTypes::bctIntegralAfterDeckHingeAhead || m_ConnectionType == pgsTypes::bctIntegralBeforeDeckHingeAhead;
 
-      *pbRight = m_ConnectionType == pgsTypes::IntegralAfterDeckHingeBack  || m_ConnectionType == pgsTypes::IntegralBeforeDeckHingeBack;
+      *pbRight = m_ConnectionType == pgsTypes::bctIntegralAfterDeckHingeBack  || m_ConnectionType == pgsTypes::bctIntegralBeforeDeckHingeBack;
    }
 }
 

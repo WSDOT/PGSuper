@@ -43,6 +43,7 @@ interface IEAFDisplayUnits;
 #define LABEL_DUCT(_d_) (DuctIndexType)(_d_ + 1)
 #define LABEL_INTERVAL(_i_) (IntervalIndexType)(_i_ + 1)
 #define LABEL_ROW(_r_) (RowIndexType)(_r_ + 1)
+#define LABEL_COLUMN(_c_) (ColumnIndexType)(_c_ + 1)
 
 // Return string describing type of harped strands
 inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adjustable Straight") : _T("Harped"); }

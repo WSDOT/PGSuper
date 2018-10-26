@@ -54,7 +54,7 @@ protected:
 
    Float64 m_Radius; // radius of the strand
 
-   CComPtr<IShape> m_Shape[2]; // segment shape at start and end of segment (use pgsTupes::MemberEndType to access array)
+   CComPtr<IShape> m_Shape[2]; // segment shape at start and end of segment (use pgsTypes::MemberEndType to access array)
    CComPtr<IShape> m_Profile; // profile of segment
    CComPtr<IPoint2dCollection> m_BottomFlange; // top of bottom flange line
 

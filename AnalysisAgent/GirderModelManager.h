@@ -311,7 +311,8 @@ private:
    void BuildModel(GirderIndexType gdrLineIdx);
    void BuildLBAM(GirderIndexType gdr,bool bContinuousModel,IContraflexureResponse* pContraflexureResponse,IContraflexureResponse* pDeflContraflexureResponse,ILBAMModel* pModel);
    void CreateLBAMStages(GirderIndexType gdrLineIdx,ILBAMModel* pModel);
-   void CreateLBAMSpans(GirderIndexType gdrLineIdx,bool bContinuousModel,lrfdLoadModifier& loadModifier,ILBAMModel* pModel);
+   void CreateLBAMSpans(GirderIndexType gdrLineIdx,bool bContinuousModel,const lrfdLoadModifier& loadModifier,ILBAMModel* pModel);
+   void CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bContinuousModel,const lrfdLoadModifier& loadModifier,const CPierData2* pPier,ISupport** ppSupport);
    void CreateLBAMSuperstructureMembers(GirderIndexType gdrLineIdx,bool bContinuousModel,lrfdLoadModifier& loadModifier,ILBAMModel* pModel);
    void CreateLBAMSuperstructureMember(Float64 length,const std::vector<SuperstructureMemberData>& vData,ISuperstructureMember** ppMbr);
    BoundaryConditionType GetLBAMBoundaryConditions(bool bContinuous,const CPierData2* pPier);

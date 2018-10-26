@@ -29,8 +29,10 @@
 // PierDetailsDlg.h : header file
 //
 
+#include "PierLocationPage.h"
 #include "PierLayoutPage.h"
 #include "PierConnectionsPage.h"
+#include "AbutmentConnectionsPage.h"
 #include "PierGirderSpacingPage.h"
 #include "PGSuperAppPlugin\ClosureJointGeometryPage.h"
 #include "PGSuperAppPlugin\GirderSegmentSpacingPage.h"
@@ -56,7 +58,7 @@ public:
 // interface IEditPierData
    virtual PierIndexType GetPierCount() { return m_BridgeDesc.GetPierCount(); }
    virtual PierIndexType GetPier() { return m_pPier->GetIndex(); }
-   virtual pgsTypes::PierConnectionType GetConnectionType();
+   virtual pgsTypes::BoundaryConditionType GetConnectionType();
    virtual GirderIndexType GetGirderCount(pgsTypes::PierFaceType face);
 
 // Attributes
@@ -100,21 +102,23 @@ protected:
    CPierData2* m_pPier;
 
 private:
-   friend CPierLayoutPage;
+   friend CPierLocationPage;
    friend CPierGirderSpacingPage;
    friend CGirderSegmentSpacingPage;
    friend CClosureJointGeometryPage;
 
    // General layout page
-   CPierLayoutPage            m_PierLayoutPage;
+   CPierLocationPage          m_PierLocationPage;
 
-   // These two pages are used when the pier is at a boundary between girder groups
-   CPierConnectionsPage       m_PierConnectionsPage;
-   CPierGirderSpacingPage     m_PierGirderSpacingPage;
+   // These pages are used when the pier is at a boundary between girder groups
+   CAbutmentConnectionsPage   m_AbutmentConnectionsPage; // used at abutments (boundary condition and connection geometry)
+   CPierLayoutPage            m_PierLayoutPage;          // used at piers (boundary condition and bent geometry)
+   CPierConnectionsPage       m_PierConnectionsPage;     // used at piers (boundary condition and connection geometry)
+   CPierGirderSpacingPage     m_PierGirderSpacingPage;   // used at piers and abutments (girder spacing)
 
    // These two pages are used when the pier is interior to a girder group
-   CClosureJointGeometryPage  m_ClosureJointGeometryPage;
-   CGirderSegmentSpacingPage  m_GirderSegmentSpacingPage;
+   CClosureJointGeometryPage  m_ClosureJointGeometryPage; // Boundary condition and bent geometry
+   CGirderSegmentSpacingPage  m_GirderSegmentSpacingPage; // girder spacing
 
    txnMacroTxn m_Macro;
    std::vector<std::pair<IEditPierCallback*,CPropertyPage*>> m_ExtensionPages;

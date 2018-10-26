@@ -133,6 +133,8 @@ public:
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
+   std::vector<CDeckRebarData::NegMomentRebarData> GetSupplementalReinforcement(PierIndexType pierIdx) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

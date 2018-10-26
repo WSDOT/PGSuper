@@ -24,33 +24,26 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     1    1)         60   1/2  270 25.95 25.95   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  6.000  6.000    3.576   -3.653   10499 0.630  0.814  0.31 -0.16  0.00 -0.01 -0.17 157.20 450.19   1.00   1.00   1.00
+ 44.00   6  8.00  2     1    1)         60   1/2  270 24.15 24.15   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  5.900  5.900    3.576   -3.653   10499 0.630  0.814  0.27 -0.16  0.00 -0.01 -0.17 149.78 432.57   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-
-
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     2    1)         66   1/2  270 25.41 25.41   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  5.900  6.200    3.701   -3.792   10815 0.630  0.814  0.36 -0.18  0.00 -0.01 -0.20 191.36 534.69   1.00   1.00   1.00
-
-
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     4    1)         66   1/2  270 25.41 25.41   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  5.900  6.200    3.701   -3.792   10815 0.630  0.814  0.36 -0.18  0.00 -0.01 -0.20 191.36 534.69   1.00   1.00   1.00
+ 44.00   6  8.00  2     2    1)         66   1/2  270 22.26 22.26   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  6.000  6.200    3.701   -3.792   10815 0.630  0.814  0.27 -0.18  0.00 -0.01 -0.20 173.01 497.30   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  2     4    1)         66   1/2  270 22.26 22.26   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  6.000  6.200    3.701   -3.792   10815 0.630  0.814  0.27 -0.18  0.00 -0.01 -0.20 173.01 497.30   1.00   1.00   1.00
+
+
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -95,24 +88,22 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  4     2    1)         82   1/2  270 22.54 21.70  12  2.50  12   4  0  0  0  0  0  2  2  0  0  0  6.000  7.500    4.338   -4.403   12388 0.616  0.814  0.40 -0.26  0.00 -0.02 -0.27 261.80 726.25   1.00   1.00   1.00
+ 44.00   6  8.00  4     2    1)         82   1/2  270 21.61 20.61  12  2.50  12   4  0  0  0  0  0  2  2  0  0  0  6.000  7.500    4.338   -4.403   12388 0.616  0.814  0.37 -0.26  0.00 -0.02 -0.27 254.98 711.93   1.00   1.00   1.00
                                                                        4.50  12   4  0  0  2  2  0  0  0  0  0  0 
                                                                        6.50  12   4  2  2  0  0  0  0  0  0  0  0 
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  4     4    1)         82   1/2  270 22.54 21.70  12  2.50  12   4  0  0  0  0  0  2  2  0  0  0  6.000  7.500    4.338   -4.403   12388 0.616  0.814  0.40 -0.26  0.00 -0.02 -0.27 261.80 726.25   1.00   1.00   1.00
+ 44.00   6  8.00  4     4    1)         82   1/2  270 21.61 20.61  12  2.50  12   4  0  0  0  0  0  2  2  0  0  0  6.000  7.500    4.338   -4.403   12388 0.616  0.814  0.37 -0.26  0.00 -0.02 -0.27 254.98 711.93   1.00   1.00   1.00
                                                                        4.50  12   4  0  0  2  2  0  0  0  0  0  0 
                                                                        6.50  12   4  2  2  0  0  0  0  0  0  0  0 
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul

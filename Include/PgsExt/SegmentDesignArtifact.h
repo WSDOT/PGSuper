@@ -26,7 +26,7 @@
 #include <map>
 #include <PsgLib\ShearZoneData.h>
 #include <PgsExt\Keys.h>
-#include <PgsExt\GirderData.h>
+#include <PgsExt\PrecastSegmentData.h>
 
 #include <Material\ConcreteEx.h>
 #include <PGSuperTypes.h>
@@ -264,7 +264,9 @@ public:
 
    pgsTypes::TTSUsage GetTemporaryStrandUsage() const;
 
+   // Functions to create primary segment data structures
    GDRCONFIG GetSegmentConfiguration() const;
+   CPrecastSegmentData GetSegmentData() const;
 
    // design states for concrete strengths
    const ConcreteStrengthDesignState& GetReleaseDesignState() const;
@@ -345,4 +347,7 @@ private:
    CLongitudinalRebarData m_LongitudinalRebarData;
 
    void Init();
+
+   void ModSegmentDataForFlexureDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const;
+   void ModSegmentDataForShearDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const;
 };

@@ -345,31 +345,31 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 #pragma Reminder("UPDATE: need to account for development length")
          if ( stressLoc == slAllTens )
          {
-            AsProvd += m_pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
-            AsProvd += m_pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
+            AsProvd += m_pRebarGeom->GetAsTopMat(poi,pgsTypes::drbAll,pgsTypes::drcAll);
+            AsProvd += m_pRebarGeom->GetAsBottomMat(poi,pgsTypes::drbAll,pgsTypes::drcAll);
          }
          else if ( stressLoc == slTopTens )
          {
-            if ( Yna <= m_pRebarGeom->GetTopMatLocation(poi,ILongRebarGeometry::All) )
+            if ( Yna <= m_pRebarGeom->GetTopMatLocation(poi,pgsTypes::drbAll,pgsTypes::drcAll) )
             {
-               AsProvd += m_pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
+               AsProvd += m_pRebarGeom->GetAsTopMat(poi,pgsTypes::drbAll,pgsTypes::drcAll);
             }
 
-            if ( Yna <= m_pRebarGeom->GetBottomMatLocation(poi,ILongRebarGeometry::All) )
+            if ( Yna <= m_pRebarGeom->GetBottomMatLocation(poi,pgsTypes::drbAll,pgsTypes::drcAll) )
             {
-               AsProvd += m_pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
+               AsProvd += m_pRebarGeom->GetAsBottomMat(poi,pgsTypes::drbAll,pgsTypes::drcAll);
             }
          }
          else if ( stressLoc == slBotTens )
          {
-            if ( m_pRebarGeom->GetTopMatLocation(poi,ILongRebarGeometry::All) <= Yna )
+            if ( m_pRebarGeom->GetTopMatLocation(poi,pgsTypes::drbAll,pgsTypes::drcAll) <= Yna )
             {
-               AsProvd += m_pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
+               AsProvd += m_pRebarGeom->GetAsTopMat(poi,pgsTypes::drbAll,pgsTypes::drcAll);
             }
 
-            if ( m_pRebarGeom->GetBottomMatLocation(poi,ILongRebarGeometry::All) <= Yna )
+            if ( m_pRebarGeom->GetBottomMatLocation(poi,pgsTypes::drbAll,pgsTypes::drcAll) <= Yna )
             {
-               AsProvd += m_pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
+               AsProvd += m_pRebarGeom->GetAsBottomMat(poi,pgsTypes::drbAll,pgsTypes::drcAll);
             }
          }
       }

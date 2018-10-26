@@ -20,23 +20,20 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_PIERLAYOUTPAGE_H__B69BAC4A_7AB6_484E_87DA_4007107E740B__INCLUDED_)
-#define AFX_PIERLAYOUTPAGE_H__B69BAC4A_7AB6_484E_87DA_4007107E740B__INCLUDED_
+#if !defined(AFX_PIERLAYOUTPAGE_H__AA2956CC_2682_44A6_B7FF_6362E40C44DF__INCLUDED_)
+#define AFX_PIERLAYOUTPAGE_H__AA2956CC_2682_44A6_B7FF_6362E40C44DF__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 // PierLayoutPage.h : header file
 //
-#include "PGSuperAppPlugin\resource.h"
-#include "SameSlabOffsetHyperLink.h"
-#include <MFCTools\CacheEdit.h>
 
-class CPierData2;
+#include "PGSuperAppPlugin\resource.h"
+#include <PgsExt\PierData2.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierLayoutPage dialog
-
 class CPierLayoutPage : public CPropertyPage
 {
 	DECLARE_DYNCREATE(CPierLayoutPage)
@@ -48,20 +45,16 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(CPierLayoutPage)
-	enum { IDD = IDD_PIERLAYOUT };
+	enum { IDD = IDD_PIER_LAYOUT };
 		// NOTE - ClassWizard will add data members here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
-   Float64 m_Station;
-   pgsTypes::MovePierOption m_MovePierOption;
-   std::_tstring m_strOrientation;
-
-   void Init(const CPierData2* pPier);
-
+   void Init(CPierData2* pPier);
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPierLayoutPage)
+	public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -71,49 +64,50 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CPierLayoutPage)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnChangeStation();
-	afx_msg void OnKillfocusStation();
-	afx_msg void OnSetfocusMovePier();
    afx_msg void OnHelp();
-   afx_msg void OnErectionStageChanged();
-   afx_msg void OnErectionStageChanging();
-   afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
+   afx_msg void OnPierModelTypeChanged();
+   afx_msg void OnColumnShapeChanged();
+   afx_msg void OnColumnCountChanged(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
-   afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
-   CComPtr<IStation> m_objStation;
-   Float64 m_FromStation;
-   Float64 m_NextPierStation;
-   Float64 m_PrevPierStation;
-   PierIndexType   m_PierIdx;
-   SpanIndexType   m_nSpans;
+   CMetaFileStatic m_LayoutPicture;
+   CCacheEdit m_SpacingControl;
 
-   void UpdateMoveOptionList();
+   void FillPierModelTypeComboBox();
+   void FillRefColumnComboBox();
+   void FillHeightMeasureComboBox();
+   void FillColumnShapeComboBox();
+   void FillTransverseLocationComboBox();
 
-   void DisableAll();
-   void UpdateChildWindowState();
-   void FillEventList();
-   EventIndexType CreateEvent();
-   BOOL IsValidStation(Float64* pStation);
+   void UpdateColumnSpacingControls();
 
-   int m_PrevEventIdx;
+   CPierData2* m_pPier;
+   PierIndexType m_PierIdx;
 
+   pgsTypes::PierModelType m_PierModelType;
+   Float64 m_Ec;
 
-   int m_PierFaceCount;
+   ColumnIndexType m_nColumns;
+   ColumnIndexType m_RefColumnIdx;
+   Float64 m_TransverseOffset;
+   pgsTypes::OffsetMeasurementType m_TransverseOffsetMeasurement;
+   Float64 m_XBeamWidth;
+   Float64 m_XBeamHeight[2];
+   Float64 m_XBeamTaperHeight[2];
+   Float64 m_XBeamTaperLength[2];
+   Float64 m_XBeamOverhang[2];
 
-   Float64 m_SlabOffset[2]; // access with pgsTypes::PierFaceType
+   CColumnData::ColumnHeightMeasurementType m_ColumnHeightMeasurementType;
+   Float64 m_ColumnHeight;
+   Float64 m_ColumnSpacing;
 
-   CCacheEdit m_ctrlBackSlabOffset;
-   CCacheEdit m_ctrlAheadSlabOffset;
-
-   CSameSlabOffsetHyperLink      m_SlabOffsetHyperLink;
-   pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
-   void UpdateSlabOffsetHyperLinkText();
-   void UpdateSlabOffsetWindowState();
+   CColumnData::ColumnShapeType m_ColumnShape;
+   Float64 m_B;
+   Float64 m_D;
 };
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_PIERLAYOUTPAGE_H__B69BAC4A_7AB6_484E_87DA_4007107E740B__INCLUDED_)
+#endif // !defined(AFX_PIERLAYOUTPAGE_H__AA2956CC_2682_44A6_B7FF_6362E40C44DF__INCLUDED_)

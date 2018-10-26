@@ -80,7 +80,7 @@ protected:
    void FillEndDistanceComboBox();
    void FillDiaphragmLoadComboBox();
    void FillBoundaryConditionComboBox();
-   CString GetImageName(pgsTypes::PierConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+   CString GetImageName(pgsTypes::BoundaryConditionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
    CPierData2* m_pPier;
 
@@ -98,7 +98,7 @@ protected:
 
    CBrush m_WhiteBrush;
 
-   pgsTypes::PierConnectionType m_PierConnectionType;
+   pgsTypes::BoundaryConditionType m_BoundaryConditionType;
 
    Float64 m_DiaphragmHeight[2];
    Float64 m_DiaphragmWidth[2];

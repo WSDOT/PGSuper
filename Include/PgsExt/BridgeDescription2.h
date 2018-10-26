@@ -335,7 +335,7 @@ public:
                     // it down to the spans and girders (only for this parameters set to true)
 
    // Returns a vector of the valid connection types for a pier. 
-   std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx) const;
+   std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) const;
    std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx) const;
 
    // Returns the number of closure joints on a girder line. The number of closures

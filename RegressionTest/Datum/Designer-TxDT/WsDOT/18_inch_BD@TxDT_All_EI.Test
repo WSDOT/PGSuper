@@ -1,46 +1,35 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.58   8  0.00  1     1   Slab_       20  0.60  270  6.73  6.75   0  2.00  18   0  0  0  0  0  0  0  0  0  0  0  4.000  6.700    2.617   -2.854    1288 0.305  0.751  0.27 -0.03 -0.00 -0.01 -0.05  66.51 176.60   3.00   1.50   1.50
+ 30.58   8  0.00  1     1   Slab_       20  0.60  270  6.73  6.70   4  2.00  18   4  2  2  0  0  0  0  0  0  0  0  5.600  8.300    2.573   -2.846    1366 0.304  0.749  0.20 -0.03 -0.00 -0.01 -0.05  58.24 140.50   3.00   1.50   1.50
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Temporary Strand Removal Stage.
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Slab Offset ("A" Dimension) check failed
+Debond arrangement checks failed.
 Lifting checks failed
 Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.58   8  0.00  1     2   Slab_       20  0.60  270  6.65  6.68   0  2.00  18   0  0  0  0  0  0  0  0  0  0  0  4.000  6.900    2.659   -2.845    1289 0.299  0.635  0.27 -0.04 -0.00 -0.01 -0.05  66.71 177.44   3.00   1.50   1.50
+ 30.58   8  0.00  1     2   Slab_       20  0.60  270  6.65  6.63   4  2.00  18   4  2  2  0  0  0  0  0  0  0  0  5.700  8.600    2.615   -2.837    1370 0.299  0.424  0.20 -0.03 -0.00 -0.01 -0.05  58.01 139.48   3.00   1.50   1.50
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Temporary Strand Removal Stage.
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Slab Offset ("A" Dimension) check failed
+Debond arrangement checks failed.
 Lifting checks failed
 Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.58   8  0.00  1     5   Slab_       18  0.60  270  6.85  6.88   0  2.00  18   0  0  0  0  0  0  0  0  0  0  0  4.000  6.000    2.520   -2.656    1197 0.300  0.635  0.23 -0.04 -0.01  0.00 -0.04  54.25 153.00   3.00   1.50   1.50
+ 30.58   8  0.00  1     5   Slab_       18  0.60  270  6.85  6.88   4  2.00  18   4  2  2  0  0  0  0  0  0  0  0  4.700  7.300    2.489   -2.665    1243 0.299  0.634  0.20 -0.04 -0.00  0.00 -0.04  50.93 136.52   3.00   1.50   1.50
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Temporary Strand Removal Stage.
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Slab Offset ("A" Dimension) check failed
+Debond arrangement checks failed.
 Lifting checks failed
 Hauling checks failed
 

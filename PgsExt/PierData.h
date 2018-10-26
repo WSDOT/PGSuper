@@ -97,7 +97,7 @@ public:
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
-   static LPCTSTR AsString(pgsTypes::PierConnectionType type);
+   static LPCTSTR AsString(pgsTypes::BoundaryConditionType type);
 
    void SetPierIndex(PierIndexType pierIdx);
    PierIndexType GetPierIndex() const;
@@ -121,8 +121,8 @@ public:
    LPCTSTR GetOrientation() const;
    void SetOrientation(LPCTSTR strOrientation);
 
-   pgsTypes::PierConnectionType GetConnectionType() const;
-   void SetConnectionType(pgsTypes::PierConnectionType type);
+   pgsTypes::BoundaryConditionType GetConnectionType() const;
+   void SetConnectionType(pgsTypes::BoundaryConditionType type);
 
    void SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure);
    void GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const;
@@ -188,7 +188,7 @@ private:
    PierIndexType m_PierIdx;
    Float64 m_Station;
    std::_tstring m_strOrientation;
-   pgsTypes::PierConnectionType m_ConnectionType;
+   pgsTypes::BoundaryConditionType m_ConnectionType;
 
    Float64 m_GirderEndDistance[2];
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType[2];

@@ -726,6 +726,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ColumnData.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ConcreteMaterial.cpp"
 				>
 			</File>
@@ -3179,6 +3183,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\ColumnData.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\ConcreteMaterial.h"
 				>
 			</File>
@@ -3356,10 +3364,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\PgsExtLib.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\PgsExt\PhysicalConverter.h"
 				>
 			</File>
 			<File

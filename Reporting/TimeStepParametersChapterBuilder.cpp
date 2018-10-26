@@ -730,11 +730,15 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << tsDetails.Deck.esi;
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.PrShrinkage);
 
-         (*pTable2)(row2,col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].As);
-         (*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].Ys);
+         //(*pTable2)(row2,col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].As);
+         //(*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].Ys);
+         (*pTable2)(row2,col2++) << _T("?");
+         (*pTable2)(row2,col2++) << _T("?");
 
-         (*pTable2)(row2,col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].As);
-         (*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].Ys);
+         //(*pTable2)(row2,col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].As);
+         //(*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].Ys);
+         (*pTable2)(row2,col2++) << _T("?");
+         (*pTable2)(row2,col2++) << _T("?");
 
          std::vector<TIME_STEP_REBAR>::const_iterator iter(tsDetails.GirderRebar.begin());
          std::vector<TIME_STEP_REBAR>::const_iterator end(tsDetails.GirderRebar.end());
@@ -830,8 +834,10 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             dPdeck += tsDetails.Deck.dPi[i];
             dMdeck += tsDetails.Deck.dMi[i];
 
-            dPtopMat += tsDetails.DeckRebar[pgsTypes::drmTop].dPi[i];
-            dPbotMat += tsDetails.DeckRebar[pgsTypes::drmBottom].dPi[i];
+            dPtopMat += tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].dPi[i];
+            dPbotMat += tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dPi[i];
+            dPtopMat += tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].dPi[i];
+            dPbotMat += tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].dPi[i];
          }
 
          (*pTable2)(row2,col2++) << force.SetValue( dPgirder );
@@ -895,8 +901,10 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Girder.M);
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.P);
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Deck.M);
-         (*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].P);
-         (*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].P);
+         //(*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].P);
+         //(*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].P);
+         (*pTable2)(row2,col2++) << _T("?");
+         (*pTable2)(row2,col2++) << _T("?");
 
          iter = tsDetails.GirderRebar.begin();
          for ( ; iter != end; iter++ )
