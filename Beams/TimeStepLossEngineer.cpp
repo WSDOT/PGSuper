@@ -1244,13 +1244,12 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          if ( intervalIdx == stressTendonIntervalIdx )
          {
             // The jacking force that is transfered to the girder is Pjack - Apt*(Friction Loss + Anchor Set Loss)
-            //Float64 dfpF = details.FrictionLossDetails[ductIdx].dfpF; // friction loss at this POI
-            //Float64 dfpA = details.FrictionLossDetails[ductIdx].dfpA; // anchor set loss at this POI
+#if defined USE_AVERAGE_TENDON_FORCE
             Float64 dfpF, dfpA; // equiv. PT loads are based on average loss so use the same thing here
 
-            // look up directly, don't call this method... calling this method here will
-            // mess up the m_Losses data structure
-            //GetAverageFrictionAndAnchorSetLoss(girderKey,ductIdx,&dfpF,&dfpA);
+             look up directly, don't call this method... calling this method here will
+             mess up the m_Losses data structure
+            GetAverageFrictionAndAnchorSetLoss(girderKey,ductIdx,&dfpF,&dfpA);
 
             CTendonKey tendonKey(girderKey,ductIdx);
             std::map<CTendonKey,std::pair<Float64,Float64>>::iterator found = m_AvgFrictionAndAnchorSetLoss.find(tendonKey);
@@ -1258,6 +1257,10 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
             dfpF = found->second.first;
             dfpA = found->second.second;
+#else
+            Float64 dfpF = details.FrictionLossDetails[ductIdx].dfpF; // friction loss at this POI
+            Float64 dfpA = details.FrictionLossDetails[ductIdx].dfpA; // anchor set loss at this POI
+#endif // USE_AVERAGE_TENDON_FORCE
 
             tsTendon.Pj  = m_pTendonGeom->GetPjack(girderKey,ductIdx) - tsTendon.As*(dfpF + dfpA);
          }
@@ -1266,7 +1269,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             tsTendon.Pj = 0;
          }
          tsTendon.fpj = IsZero(tsTendon.As) ? 0 : tsTendon.Pj/tsTendon.As;
-         tsTendon.Pi[pftPrimaryPostTensioning]  = tsTendon.Pj;
+         tsTendon.Pi[pftPostTensioning]  = tsTendon.Pj;
 
          // time from tendon stressing to end of this interval
          if ( intervalIdx < stressTendonIntervalIdx )
@@ -1283,22 +1286,18 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             // the effective stress at the end of the previous interval.
             // Negative sign because the force resisted by the girder section is equal and opposite
             // the force in the strand
-            tsDetails.dPi[pftPrimaryPostTensioning] -= tsTendon.Pj;
-            tsDetails.dMi[pftPrimaryPostTensioning] -= tsTendon.Pj*(tsDetails.Ytr - tsTendon.Ys);
+            tsDetails.dPi[pftPostTensioning] -= tsTendon.Pj;
+            tsDetails.dMi[pftPostTensioning] -= tsTendon.Pj*(tsDetails.Ytr - tsTendon.Ys);
 
-            tsDetails.Pi[pftPrimaryPostTensioning] += prevTimeStepDetails.Pi[pftPrimaryPostTensioning] + tsDetails.dPi[pftPrimaryPostTensioning];
-            tsDetails.Mi[pftPrimaryPostTensioning] += prevTimeStepDetails.Mi[pftPrimaryPostTensioning] + tsDetails.dMi[pftPrimaryPostTensioning];
+            tsDetails.Pi[pftPostTensioning] += prevTimeStepDetails.Pi[pftPostTensioning] + tsDetails.dPi[pftPostTensioning];
+            tsDetails.Mi[pftPostTensioning] += prevTimeStepDetails.Mi[pftPostTensioning] + tsDetails.dMi[pftPostTensioning];
 
             // Secondary effects
-            // Total PT = Primary PT + Secondary
-            // Secondary = Total PT - Primary PT
-            Float64 dM = m_pProductForces->GetMoment(intervalIdx,pftEquivPostTensioning,poi,m_Bat, rtIncremental);
-            dM -= tsDetails.dMi[pftPrimaryPostTensioning];
+            Float64 dM = m_pProductForces->GetMoment(intervalIdx,pftSecondaryEffects,poi,m_Bat, rtIncremental);
             tsDetails.dMi[pftSecondaryEffects] += dM;
             tsDetails.Mi[pftSecondaryEffects] += prevTimeStepDetails.Mi[pftSecondaryEffects] + tsDetails.dMi[pftSecondaryEffects];
 
-            //Float64 dP = m_pProductForces->GetAxial(intervalIdx,pftEquivPostTensioning,poi,m_Bat, rtIncremental);
-            //dP -= tsDetails.dPi[pftPrimaryPostTensioning];
+            //Float64 dP = m_pProductForces->GetAxial(intervalIdx,pftSecondaryEffects,poi,m_Bat, rtIncremental);
             Float64 dP = 0;
             tsDetails.dPi[pftSecondaryEffects] += dP;
             tsDetails.Pi[pftSecondaryEffects] += prevTimeStepDetails.Pi[pftSecondaryEffects] + tsDetails.dPi[pftSecondaryEffects];
@@ -1974,7 +1973,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             dP = 0;
             dM = 0;
          }
-         else if ( pfType == pftPretension || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+         else if ( pfType == pftPretension || pfType == pftPostTensioning || pfType == pftSecondaryEffects )
          {
             // Don't get change in force for pre or post tensioning... these are taken care of in InitializeTimeStepAnalysis
             // and if you try to get them, it will cause recursion
@@ -2678,8 +2677,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
 
       // total due to primary pt at the end of this interval
-      tsDetails.Pi[pftPrimaryPostTensioning] = prevTimeStepDetails.Pi[pftPrimaryPostTensioning] + tsDetails.dPi[pftPrimaryPostTensioning];
-      tsDetails.Mi[pftPrimaryPostTensioning] = prevTimeStepDetails.Mi[pftPrimaryPostTensioning] + tsDetails.dMi[pftPrimaryPostTensioning];
+      tsDetails.Pi[pftPostTensioning] = prevTimeStepDetails.Pi[pftPostTensioning] + tsDetails.dPi[pftPostTensioning];
+      tsDetails.Mi[pftPostTensioning] = prevTimeStepDetails.Mi[pftPostTensioning] + tsDetails.dMi[pftPostTensioning];
 
       // total due to secondary pt at the end of this interval
       tsDetails.Pi[pftSecondaryEffects] = prevTimeStepDetails.Pi[pftSecondaryEffects] + tsDetails.dPi[pftSecondaryEffects];
@@ -3707,7 +3706,7 @@ std::vector<ProductForceType> CTimeStepLossEngineer::GetApplicableProductLoads(I
       {
          if ( !bExternalForcesOnly )
          {
-            vProductForces.push_back(pftPrimaryPostTensioning);
+            vProductForces.push_back(pftPostTensioning);
             vProductForces.push_back(pftSecondaryEffects);
          }
       }
@@ -3769,6 +3768,6 @@ int CTimeStepLossEngineer::GetProductForceCount()
    // returns the number of product forces that we need to consider from the ProductForceType enum.
    // all off the product forces count except for the two special cases at the end of the enum.
    int n = (int)pftProductForceTypeCount;
-   n -= 3; // remove pftEquivPostTensioning, pftTotalPostTensioning and pftOverlayRating from the count as they are special cases and don't apply here
+   n -= 2; // remove pftTotalPostTensioning and pftOverlayRating from the count as they are special cases and don't apply here
    return n;
 }

@@ -170,3 +170,17 @@ void CBeamFamilyManager::Reset()
 {
    m_Families.clear();
 }
+
+void CBeamFamilyManager::UpdateFactories()
+{
+   std::vector<CString> vNames = CBeamFamilyManager::GetBeamFamilyNames();
+   std::vector<CString>::iterator iter(vNames.begin());
+   std::vector<CString>::iterator end(vNames.end());
+   for ( ; iter != end; iter++ )
+   {
+      CString& strName(*iter);
+      CComPtr<IBeamFamily> family;
+      GetBeamFamily(strName,&family);
+      family->RefreshFactoryList();
+   }
+}

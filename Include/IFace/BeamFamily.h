@@ -59,6 +59,10 @@ interface IBeamFamily : IUnknown
    virtual CString GetName() = 0;
 
    //---------------------------------------------------------------------------------
+   // Causes the list of factory names to be read from the registry
+   virtual void RefreshFactoryList() = 0;
+
+   //---------------------------------------------------------------------------------
    // Returns a vector of beam factory names
    virtual const std::vector<CString>& GetFactoryNames() = 0;
 

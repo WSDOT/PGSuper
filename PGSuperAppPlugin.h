@@ -93,7 +93,7 @@ public:
    void OnProgramSettings();
 
 protected:
-   void ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdInfo);
+   virtual CPGSuperBaseCommandLineInfo* CreateCommandLineInfo() const;
 
 #if defined _BETA_VERSION
    virtual LPCTSTR GetCatalogServerKey();

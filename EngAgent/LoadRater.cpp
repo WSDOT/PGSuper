@@ -587,7 +587,6 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
          continue; // next POI
       }
 
-      std::vector<pgsStressRatingArtifact> vArtifacts;
       BOOST_FOREACH(const pgsTypes::StressLocation& stressLocation,vStressLocations)
       {
          Float64 fDummy, fDC, fDW, fCR, fSH, fRE, fPS, fLLIM, fPL;
@@ -681,26 +680,8 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
          stressArtifact.SetLiveLoadFactor(gLL);
          stressArtifact.SetLiveLoadStress(fLLIM+fPL);
 
-         vArtifacts.push_back(stressArtifact);
+         ratingArtifact.AddArtifact(poi,stressArtifact);
       }
-
-      std::vector<pgsStressRatingArtifact>::iterator artifactIter(vArtifacts.begin());
-      std::vector<pgsStressRatingArtifact>::iterator artifactIterEnd(vArtifacts.end());
-      pgsStressRatingArtifact controllingArtifact = *artifactIter;
-      Float64 controllingRF = controllingArtifact.GetRatingFactor();
-      artifactIter++;
-      for ( ; artifactIter != artifactIterEnd; artifactIter++ )
-      {
-         pgsStressRatingArtifact& artifact = (*artifactIter);
-         Float64 RF = artifact.GetRatingFactor();
-         if ( RF < controllingRF )
-         {
-            controllingArtifact = artifact;
-            controllingRF = RF;
-         }
-      }
-   
-      ratingArtifact.AddArtifact(poi,controllingArtifact);
    } // next poi
 }
 

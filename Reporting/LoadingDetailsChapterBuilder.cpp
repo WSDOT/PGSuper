@@ -275,6 +275,10 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          CSpanKey spanKey(spanIdx,gdrIdx);
 
+         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter << pPara;
+         *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+
          ReportCastInPlaceDiaphragmLoad(pChapter,pBridge,pProdLoads,pDisplayUnits,spanKey);
 
          // User Defined Loads
@@ -294,7 +298,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
-   ReportEquivPostTensionLoads(pChapter,pDisplayUnits,girderKey);
 
    bool bPermit;
    ReportLiveLoad(pChapter,bDesign,bRating,pRatingSpec,bPermit);
@@ -1103,168 +1106,6 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
 
       row++;
    }
-}
-
-void CLoadingDetailsChapterBuilder::ReportEquivPostTensionLoads(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,ITendonGeometry,pTendons);
-   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there are tendons in the model
-
-   std::vector<EquivPostTensionPointLoad> ptLoads;
-   std::vector<EquivPostTensionDistributedLoad> distLoads;
-   std::vector<EquivPostTensionMomentLoad> momentLoads;
-
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,         ecc,    pDisplayUnits->GetComponentDimUnit(),     false );
-
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pPara;
-   *pPara<< _T("Equivalent Loading for Post-tensioning")<<rptNewLine;
-
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = firstGroupIdx;
-   if ( girderKey.groupIndex == ALL_GROUPS )
-   {
-      GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
-      lastGroupIdx = pBridgeDesc->GetGirderGroupCount()-1;
-   }
-
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
-   {
-      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-
-      if ( girderKey.groupIndex == ALL_GROUPS )
-      {
-         pPara = new rptParagraph;
-         *pChapter << pPara;
-         *pPara<< _T("Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
-      }
-
-
-      DuctIndexType nDucts = pTendons->GetDuctCount(thisGirderKey);
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-      {
-         rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter << pPara;
-
-         (*pPara) << _T("Duct ") << LABEL_DUCT(ductIdx) << rptNewLine;
-
-         pProductLoads->GetEquivPostTensionLoads(thisGirderKey,ductIdx,ptLoads,distLoads,momentLoads);
-
-         ColumnIndexType nLayoutColumns = 0;
-         nLayoutColumns += (0 < ptLoads.size()     ? 1 : 0);
-         nLayoutColumns += (0 < distLoads.size()   ? 1 : 0);
-         nLayoutColumns += (0 < momentLoads.size() ? 1 : 0);
-
-         rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nLayoutColumns);
-         *pPara << pLayoutTable << rptNewLine;
-
-         ColumnIndexType layoutCol = 0;
-
-         rptRcTable* p_table = 0;
-         RowIndexType row = 0;
-
-         // Point Loads
-         if ( 0 < ptLoads.size() )
-         {
-            rptParagraph* p = &(*pLayoutTable)(0,layoutCol++);
-
-            p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Point"));
-            *p << p_table;
-
-            (*p_table)(0,0) << _T("Span");
-            (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-            (*p_table)(0,2) << COLHDR(_T("P"),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
-
-            row = p_table->GetNumberOfHeaderRows();
-            std::vector<EquivPostTensionPointLoad>::const_iterator ptIter(ptLoads.begin());
-            std::vector<EquivPostTensionPointLoad>::const_iterator ptIterEnd(ptLoads.end());
-            for ( ; ptIter != ptIterEnd; ptIter++ )
-            {
-               const EquivPostTensionPointLoad& ptLoad = *ptIter;
-               (*p_table)(row,0) << LABEL_SPAN(ptLoad.spanIdx);
-               (*p_table)(row,1) << loc.SetValue(ptLoad.X);
-               (*p_table)(row,2) << force.SetValue(ptLoad.P);
-               row++;
-            }
-         }
-
-
-         // Distributed Loads
-         if ( 0 < distLoads.size() )
-         {
-            rptParagraph* p = &(*pLayoutTable)(0,layoutCol++);
-
-            ColumnIndexType nCol = 10;
-
-            p_table = pgsReportStyleHolder::CreateDefaultTable(nCol,_T("Linear"));
-            *p << p_table;
-
-            (*p_table)(0,0) << _T("Span");
-            (*p_table)(0,1) << COLHDR(Sub2(_T("X"),_T("start")),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-            (*p_table)(0,2) << COLHDR(Sub2(_T("X"),_T("end")),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-            (*p_table)(0,3) << COLHDR(Sub2(_T("W"),_T("start")),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
-            (*p_table)(0,4) << COLHDR(Sub2(_T("W"),_T("end")),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
-            (*p_table)(0,5) << COLHDR(Sub2(_T("e"),_T("start")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-            (*p_table)(0,6) << COLHDR(Sub2(_T("e"),_T("end")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-            (*p_table)(0,7) << COLHDR(_T("e'"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-            (*p_table)(0,8) << COLHDR(_T("X"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-            (*p_table)(0,9) << COLHDR(Sub2(_T("P"),_T("e")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
-
-            row = p_table->GetNumberOfHeaderRows();
-            std::vector<EquivPostTensionDistributedLoad>::const_iterator distIter(distLoads.begin());
-            std::vector<EquivPostTensionDistributedLoad>::const_iterator distIterEnd(distLoads.end());
-            for ( ; distIter != distIterEnd; distIter++ )
-            {
-               const EquivPostTensionDistributedLoad& distLoad = *distIter;
-               (*p_table)(row,0) << LABEL_SPAN(distLoad.spanIdx);
-               (*p_table)(row,1) << loc.SetValue(distLoad.Xstart);
-               (*p_table)(row,2) << loc.SetValue(distLoad.Xend);
-               (*p_table)(row,3) << fpl.SetValue(distLoad.Wstart);
-               (*p_table)(row,4) << fpl.SetValue(distLoad.Wend);
-               (*p_table)(row,5) << ecc.SetValue(distLoad.eStart);
-               (*p_table)(row,6) << ecc.SetValue(distLoad.eEnd);
-               (*p_table)(row,7) << ecc.SetValue(distLoad.e_prime);
-               (*p_table)(row,8) << loc.SetValue(distLoad.x);
-               (*p_table)(row,9) << force.SetValue(distLoad.P);
-
-               row++;
-            }
-         }
-
-
-         // Moment Loads
-         if ( 0 < momentLoads.size() )
-         {
-            rptParagraph* p = &(*pLayoutTable)(0,layoutCol++);
-
-            p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Moment"));
-            *p << p_table;
-
-            (*p_table)(0,0) << _T("Span");
-            (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-            (*p_table)(0,2) << COLHDR(_T("M"),rptMomentUnitTag,pDisplayUnits->GetMomentUnit());
-
-            row = p_table->GetNumberOfHeaderRows();
-            std::vector<EquivPostTensionMomentLoad>::const_iterator momIter(momentLoads.begin());
-            std::vector<EquivPostTensionMomentLoad>::const_iterator momIterEnd(momentLoads.end());
-            for ( ; momIter != momIterEnd; momIter++ )
-            {
-               const EquivPostTensionMomentLoad& momLoad = *momIter;
-               (*p_table)(row,0) << LABEL_SPAN(momLoad.spanIdx);
-               (*p_table)(row,1) << loc.SetValue(momLoad.X);
-               (*p_table)(row,2) << moment.SetValue(momLoad.M);
-               row++;
-            }
-         }
-      } // ductIdx
-   } // groupIndex
 }
 
 void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDesign,bool bRating,IRatingSpecification* pRatingSpec,bool& bPermit) const

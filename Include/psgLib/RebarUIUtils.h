@@ -31,6 +31,8 @@
 
 inline void FillRebarMaterialComboBox(CComboBox* pCB,bool bFilterBySpec = true)
 {
+   pCB->ResetContent();
+
    pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,  matRebar::Grade40).c_str()  );
    pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,  matRebar::Grade60).c_str()  );
    pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,  matRebar::Grade75).c_str()  );

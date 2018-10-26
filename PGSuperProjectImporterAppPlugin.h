@@ -76,6 +76,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN)
 
    void ConfigureProjectImporters();
 
+   virtual CPGSuperBaseCommandLineInfo* CreateCommandLineInfo() const;
+
 // IEAFAppPlugin
 public:
    virtual BOOL Init(CEAFApp* pParent);

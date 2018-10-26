@@ -23,17 +23,19 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include "PGSuperBaseCommandLineInfo.h"
+#include <EAF\EAFCommandLineInfo.h>
+#include "PGSuperCatalogServer.h"
 
 /*****************************************************************************
 CLASS 
-   CPGSuperCommandLineInfo
+   CPGSuperBaseCommandLineInfo
 
-   Custom command line parser for PGSuper
+   Custom command line parser for PGSuper and PGSplice
 
 
 DESCRIPTION
-   Custorm command line parser for special pgsuper command line options
+   Custom command line parser for PGSuper and PGSplice. Handles all common
+   command line options for both applications
 
 
 COPYRIGHT
@@ -44,12 +46,43 @@ COPYRIGHT
 LOG
    rdp : 09.24.1999 : Created file
 *****************************************************************************/
-class  CPGSuperCommandLineInfo : public CPGSuperBaseCommandLineInfo
+// constants if All option is at command line
+#define TXALLSPANS   -5 
+#define TXALLGIRDERS -5
+// Below is to take a sample exterior and interior girder (A and mid-most)
+#define TXEIGIRDERS  -6 
+
+class  CPGSuperBaseCommandLineInfo : public CEAFCommandLineInfo
 {
 public:
-   CPGSuperCommandLineInfo();
+   //// Different types of Analysis/Design and level of detail (Ext==exteneded) for TxDOT CAD reports
+   //enum TxRunType {txrDesign, txrAnalysis, TxrDistributionFactors};
+   //enum TxFType {txfNormal, txfExtended, txfTest};
+
+
+   CPGSuperBaseCommandLineInfo();
+   virtual ~CPGSuperBaseCommandLineInfo();
+
+   // derive new version to parse new commands
+   virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
+
+   virtual CString GetUsageMessage();
+   virtual CString GetErrorMessage();
+
+   bool   m_bDo1250Test;
+   long   m_SubdomainId;
+
+   bool m_bSetUpdateLibrary;
+   CString m_CatalogServerName;
+   CString m_PublisherName;
+
+   Uint32 m_Count; // parameter number
 
 private:
-   virtual LPCTSTR GetAppName() const;
+   // Prevent accidental copying and assignment
+   CPGSuperBaseCommandLineInfo(const CPGSuperBaseCommandLineInfo&);
+   CPGSuperBaseCommandLineInfo& operator=(const CPGSuperBaseCommandLineInfo&);
+
+   virtual LPCTSTR GetAppName() const = 0;
 };
 

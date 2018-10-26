@@ -158,7 +158,6 @@ public:
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
 
    virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
-   virtual void GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads);
 
 // IProductForces
 public:

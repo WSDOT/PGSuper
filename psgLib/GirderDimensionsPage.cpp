@@ -169,10 +169,9 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    {
       // the girder type isn't in the list (probably because it isn't registered with the component category)
       // set the name string in the combobox and disable the box
-      pComboBox->AddString(pFactory->GetName().c_str());
-      pComboBox->SetCurSel(0);
+      int idx = pComboBox->AddString(pFactory->GetName().c_str());
+      pComboBox->SetCurSel(idx);
       pComboBox->EnableWindow(FALSE); // disable it the combo box
-      pDad->m_Entry.EnableCopying(false); // can't copy
    }
 
    // Disable the beam family combo box if the

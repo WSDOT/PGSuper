@@ -132,6 +132,8 @@ interface IPosttensionForce : IUnknown
    // is based on the actual values and not the values computed using the average friction and anchor set loss
    virtual Float64 GetInitialTendonForce(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) = 0;
    virtual Float64 GetInitialTendonStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) = 0;
+   virtual Float64 GetAverageInitialTendonForce(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+   virtual Float64 GetAverageInitialTendonStress(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 
    // returns the force in a tendon in a particular interval. (use ALL_DUCTS for all tendons)
    // if bIncludeMinLiveLoad is true, the force related to the elastic stress due to the minimum Service III live load is included in the tendon force.

@@ -1701,20 +1701,10 @@ void CPGSuperDocBase::Dump(CDumpContext& dc) const
 
 BOOL CPGSuperDocBase::Init()
 {
-   // set the profile name so we read data from the registry correctly
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pMyApp = AfxGetApp();
-
-   m_strAppProfileName = pMyApp->m_pszProfileName;
-   free((void*)pMyApp->m_pszProfileName);
-   free((void*)pMyApp->m_pszAppName);
-
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
-   pMyApp->m_pszProfileName = _tcsdup(pPGSuper->GetAppName());
-   pMyApp->m_pszAppName = _tcsdup(pPGSuper->GetAppName());
 
    if ( !CEAFBrokerDocument::Init() )
    {
@@ -4076,18 +4066,6 @@ void CPGSuperDocBase::ShowProjectPropertiesOnNewProject(bool bShow)
 
 void CPGSuperDocBase::DeleteContents()
 {
-   if ( m_strAppProfileName != _T("") )
-   {
-      // this method is called from OnNewDocument... don't want to mess with the profile name
-      // if it hasn't been changed
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-      CWinApp* pMyApp = AfxGetApp();
-
-      free((void*)pMyApp->m_pszProfileName);
-      pMyApp->m_pszProfileName = _tcsdup(m_strAppProfileName);
-   }
-
    __super::DeleteContents();
 }
 

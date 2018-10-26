@@ -452,7 +452,7 @@ void pgsWsdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegment
          }
          else
          {
-            strMsg.Format(_T("Group %d Girder %s Segment %d: Bunk point location at the trailing end of teh girder is less than the minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_bunk_point_start,pDisplayUnits->GetSpanLengthUnit()));
+            strMsg.Format(_T("Group %d Girder %s Segment %d: Bunk point location at the trailing end of the girder is less than the minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_bunk_point_start,pDisplayUnits->GetSpanLengthUnit()));
          }
          pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,pgsTypes::metStart,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
          pStatusCenter->Add(pStatusItem);

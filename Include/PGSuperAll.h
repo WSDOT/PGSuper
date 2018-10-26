@@ -61,6 +61,10 @@
 
 using namespace ATL;
 
+// If this is defined, average tendon forces, after friction and anchor set
+// are used for the stress analysis
+//#define USE_AVERAGE_TENDON_FORCE
+
 #include <WBFLAll.h>
 #include <WBFLAtlExt.h>
 #include <PGSuperTypes.h>

@@ -286,8 +286,6 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPressureSectionValue,   stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
-
    rptCapacityToDemand cap_demand;
 
    bool bIncludePrestress = (bGirderStresses ? true : false);
@@ -546,6 +544,8 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);
    SegmentIndexType lastSegIdx  = (segIdx == ALL_SEGMENTS ? nSegments-1 : firstSegIdx);
+
+   location.IncludeSpanAndGirder(nSegments == 1 ? false : true);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();

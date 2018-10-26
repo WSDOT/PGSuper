@@ -30,6 +30,8 @@
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
 
+#include "PGSuperCommandLineInfo.h"
+
 #include "PluginManagerDlg.h"
 
 #include <EAF\EAFMainFrame.h>
@@ -359,39 +361,9 @@ void CPGSuperAppPlugin::OnProgramSettings()
    UpdateProgramSettings(FALSE);
 }
 
-void CPGSuperAppPlugin::ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdInfo)
+CPGSuperBaseCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const
 {
-   ASSERT(rCmdInfo.m_bSetUpdateLibrary);
-
-   // Set library to parsed names and attempt an update
-   SharedResourceType        original_type = m_SharedResourceType;
-   CacheUpdateFrequency      original_freq = m_CacheUpdateFrequency;
-   CString                 original_server = m_CurrentCatalogServer;
-   CString              original_publisher = m_Publisher;
-
-   // find our server
-   const CPGSuperCatalogServer* pserver = GetCatalogServers()->GetServer(rCmdInfo.m_CatalogServerName);
-   if (pserver != NULL)
-   {
-      m_SharedResourceType   = pserver->GetServerType();
-
-      m_CurrentCatalogServer = rCmdInfo.m_CatalogServerName;
-      m_Publisher            = rCmdInfo.m_PublisherName ;
-
-      if (!this->DoCacheUpdate())
-      {
-         // DoCacheUpdate will restore the cache, we need also to restore local data
-         m_SharedResourceType   = original_type;
-         m_CurrentCatalogServer = original_server;
-         m_Publisher            = original_publisher;
-      }
-   }
-   else
-   {
-      CString msg;
-      msg.Format(_T("Error - The configuration server \"%s\" was not found. Could not update configuration."), rCmdInfo.m_CatalogServerName);
-      AfxMessageBox(msg);
-   }
+   return new CPGSuperCommandLineInfo();
 }
 
 #if defined _BETA_VERSION

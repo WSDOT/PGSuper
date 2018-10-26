@@ -478,7 +478,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,ProductForceTy
 
 Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,ProductForceType pfType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   if ( pfType == pftPretension || pfType == pftPrimaryPostTensioning )
+   if ( pfType == pftPretension || pfType == pftPostTensioning )
    {
       // Prestress and primary post-tensioning don't cause reactions
       // they only cause direction axial compression and bending
@@ -488,14 +488,6 @@ Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,ProductFo
    // Start by checking if the model exists
    CGirderModelData* pModelData = 0;
    pModelData = GetGirderModel(GetGirderLineIndex(girderKey));
-
-   if ( pfType == pftSecondaryEffects || pfType == pftTotalPostTensioning )
-   {
-      // secondary effects are Total PT - Primary PT... since Primary PT is zero
-      // secondary = Total PT... the LBAM model only models Total PT so use its load type
-      // to get results
-      pfType = pftEquivPostTensioning;
-   }
 
    CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
@@ -1210,7 +1202,7 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
 // IProductForces2
 std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   ATLASSERT(pfType != pftPrimaryPostTensioning && pfType != pftSecondaryEffects);
+   ATLASSERT(pfType != pftPostTensioning);
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
@@ -1309,7 +1301,7 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
 
 std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   ATLASSERT(pfType != pftPrimaryPostTensioning && pfType != pftSecondaryEffects);
+   ATLASSERT(pfType != pftPostTensioning);
 
    std::vector<sysSectionValue> results;
    results.reserve(vPoi.size());
@@ -1399,7 +1391,7 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
 
 std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   ATLASSERT(pfType != pftPrimaryPostTensioning && pfType != pftSecondaryEffects);
+   ATLASSERT(pfType != pftPostTensioning);
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
@@ -1564,6 +1556,14 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
       results.reserve(vPoi.size());
 
+      if ( pfType == pftTotalPostTensioning )
+      {
+         // Total post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
+         // curvatures to the model as the secondary effects product load type, the total post-tension deflection
+         // is the deflections computed by the secondary effects load case
+         pfType = pftSecondaryEffects;
+      }
+
       CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
       CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
@@ -1624,6 +1624,14 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
       {
          // Get the effective prestress resets m_LBAMPoi... update here
          pModelData = UpdateLBAMPois(vPoi);
+      }
+
+      if ( pfType == pftTotalPostTensioning )
+      {
+         // Total post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
+         // curvatures to the model as the secondary effects product load type, the total post-tension deflection
+         // is the deflections computed by the secondary effects load case
+         pfType = pftSecondaryEffects;
       }
 
       pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
@@ -1692,7 +1700,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,ProductForceTy
 {
    VERIFY_NOT_TIME_STEP_ANALYSIS;
 
-   ATLASSERT(/*pfType != pftPretension &&*/ pfType != pftPrimaryPostTensioning && pfType != pftSecondaryEffects);
+   ATLASSERT(/*pfType != pftPretension &&*/ pfType != pftPostTensioning && pfType != pftSecondaryEffects);
 
    if ( pfType == pftPretension )
    {
@@ -3615,32 +3623,6 @@ void CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::Li
       FyMin += fyMin;
    }
 
-   // Load factors for prestress effects
-   Float64 gPSMin, gPSMax;
-   if ( ::IsRatingLimitState(limitState) )
-   {
-      GET_IFACE(IRatingSpecification,pRatingSpec);
-      gPSMin = pRatingSpec->GetSecondaryEffectsFactor(limitState);
-      gPSMax = gPSMin;
-   }
-   else
-   {
-      GET_IFACE(ILoadFactors,pILoadFactors);
-      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-      gPSMin = pLoadFactors->PSmin[limitState];
-      gPSMax = pLoadFactors->PSmax[limitState];
-   }
-
-   // LBAM doesn't model secondary effects... get them here
-   Float64 Rps = 0;
-   for ( IntervalIndexType i = erectionIntervalIdx; i <= intervalIdx; i++ )
-   {
-      Rps += GetReaction(i,pftSecondaryEffects,pierIdx,girderKey,bat,rtIncremental);
-   }
-
-   FyMin += gPSMin*Rps;
-   FyMax += gPSMax*Rps;
-
    *pMin = FyMin;
    *pMax = FyMax;
 }
@@ -4580,7 +4562,7 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
-   if ( intervalIdx < firstSegmentErectionIntervalIdx || (pfType == pftPretension || pfType == pftPrimaryPostTensioning) )
+   if ( intervalIdx < firstSegmentErectionIntervalIdx || (pfType == pftPretension || pfType == pftPostTensioning) )
    {
       // nothing is erected onto the supports yet
       //
@@ -4595,12 +4577,13 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
 
    std::vector<Float64> reactions;
 
-   if ( pfType == pftSecondaryEffects || pfType == pftTotalPostTensioning )
+
+   if ( pfType == pftTotalPostTensioning )
    {
-      // secondary effects are Total PT - Primary PT... since Primary PT is zero
-      // secondary = Total PT... the LBAM model only models Total PT so use its load type
-      // to get results
-      pfType = pftEquivPostTensioning;
+      // Total post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
+      // curvatures to the model as the secondary effects product load type, the total post-tension reactions
+      // are the reactions computed by the secondary effects load case
+      pfType = pftSecondaryEffects;
    }
 
    CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
@@ -4781,33 +4764,6 @@ void CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vec
       pRmin->push_back(FyMin);
       pRmax->push_back(FyMax);
    }
-
-
-   // LBAM doesn't model secondary effects... get them here
-
-   Float64 gPSMin, gPSMax;
-   if ( ::IsRatingLimitState(limitState) )
-   {
-      GET_IFACE(IRatingSpecification,pRatingSpec);
-      gPSMin = pRatingSpec->GetSecondaryEffectsFactor(limitState);
-      gPSMax = gPSMin;
-   }
-   else
-   {
-      GET_IFACE(ILoadFactors,pILoadFactors);
-      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-      gPSMin = pLoadFactors->PSmin[limitState];
-      gPSMax = pLoadFactors->PSmax[limitState];
-   }
-
-   std::vector<Float64> Rps = GetReaction(girderKey,vSupports,intervalIdx,pftSecondaryEffects,bat,rtCumulative);
-   std::vector<Float64> RpsMin, RpsMax;
-   RpsMin.reserve(Rps.size());
-   RpsMax.reserve(Rps.size());
-   std::transform(Rps.begin(),Rps.end(),std::back_inserter(RpsMin),FactorElements<Float64>(gPSMin));
-   std::transform(Rps.begin(),Rps.end(),std::back_inserter(RpsMax),FactorElements<Float64>(gPSMax));
-   std::transform(pRmin->begin(),pRmin->end(),RpsMin.begin(),pRmin->begin(),std::plus<Float64>());
-   std::transform(pRmax->begin(),pRmax->end(),RpsMax.begin(),pRmax->begin(),std::plus<Float64>());
 }
 
 void CGirderModelManager::GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
@@ -5195,17 +5151,6 @@ void CGirderModelManager::GetContraflexurePoints(const CSpanKey& spanKey,Float64
 void CGirderModelManager::GetBearingProductReaction(IntervalIndexType intervalIdx,ProductForceType pfType,const CGirderKey& girderKey,
                                pgsTypes::BridgeAnalysisType bat, ResultsType resultsType, Float64* pLftEnd,Float64* pRgtEnd)
 {
-   if ( pfType == pftSecondaryEffects )
-   {
-      Float64 RLeftTotal, RRightTotal;
-      Float64 RLeftPrimary, RRightPrimary;
-      GetBearingProductReaction(intervalIdx,pftEquivPostTensioning,girderKey,bat,resultsType,&RLeftTotal,&RRightTotal);
-      GetBearingProductReaction(intervalIdx,pftPrimaryPostTensioning,girderKey,bat,resultsType,&RLeftPrimary,&RRightPrimary);
-      *pLftEnd = RLeftTotal - RLeftPrimary;
-      *pRgtEnd = RRightTotal - RRightPrimary;
-      return;
-   }
-
    // Get Pois at supports
    GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -6057,7 +6002,7 @@ void CGirderModelManager::BuildLBAM(GirderIndexType gdrLineIdx,bool bContinuousM
       ApplyLiveLoadModel(                 pModel, gdrLineIdx );
       ApplyUserDefinedLoads(              pModel, gdrLineIdx );
       //ApplyEquivalentPretensionForce(     pModel, gdrLineIdx ); // causes recursion... do this later
-      ApplyEquivalentPostTensionForce(    pModel, gdrLineIdx );
+      ApplyPostTensionDeformation(    pModel, gdrLineIdx );
 
 
       // Setup the product load groups and load combinations
@@ -8863,14 +8808,11 @@ void CGirderModelManager::ApplyEquivalentPretensionForce(ILBAMModel* pModel,Gird
    }
 }
 
-void CGirderModelManager::ApplyEquivalentPostTensionForce(ILBAMModel* pModel,GirderIndexType gdrLineIdx)
+void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderIndexType gdrLineIdx)
 {
-   // Applies equivalent PT forces that are used to get the total effect of PT
-   // on the structure (before losses). The axial force and bending moment that
-   // are computed from this load case are used to determine the concrete stress
-   // due to PT. The location of the resultant pressure line is determined by
-   // dividing the moment by the prestress force. The eccentricity of the pressure line
-   // is used to determine stressed due to the PT.
+   // Models the post-tensioning load as curvatures. Curvature is M/EI, or in this case Pe/EI.
+   // The results of the structural analysis are the secondary forces and the
+   // post-tensioning deformations
 
    GET_IFACE_NOCHECK(IIntervals,pIntervals); // only used if there are tendons
 
@@ -8880,10 +8822,13 @@ void CGirderModelManager::ApplyEquivalentPostTensionForce(ILBAMModel* pModel,Gir
    CComPtr<IDistributedLoads> distributedLoads;
    pModel->get_DistributedLoads(&distributedLoads);
 
+   CComPtr<IStrainLoads> strainLoads;
+   pModel->get_StrainLoads(&strainLoads);
+
    CComPtr<ISuperstructureMembers> ssmbrs;
    pModel->get_SuperstructureMembers(&ssmbrs);
 
-   CComBSTR bstrLoadGroup(GetLoadGroupName(pftEquivPostTensioning));
+   CComBSTR bstrLoadGroup(GetLoadGroupName(pftSecondaryEffects));
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -8902,46 +8847,19 @@ void CGirderModelManager::ApplyEquivalentPostTensionForce(ILBAMModel* pModel,Gir
          IntervalIndexType stressTendonInterval = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
          CComBSTR bstrStage(GetLBAMStageName(stressTendonInterval));
 
-         std::vector<EquivPostTensionPointLoad> ptLoads;
-         std::vector<EquivPostTensionDistributedLoad> distLoads;
-         std::vector<EquivPostTensionMomentLoad> momentLoads;
-         GetEquivPostTensionLoads(girderKey,ductIdx,ptLoads,distLoads,momentLoads);
+         std::vector<PostTensionStrainLoad> strLoads;
+         GetPostTensionDeformationLoads(girderKey,ductIdx,strLoads);
 
-         std::vector<EquivPostTensionPointLoad>::iterator ptLoadIter(ptLoads.begin());
-         std::vector<EquivPostTensionPointLoad>::iterator ptLoadIterEnd(ptLoads.end());
-         for ( ; ptLoadIter != ptLoadIterEnd; ptLoadIter++ )
+         std::vector<PostTensionStrainLoad>::iterator curvatureLoadIter(strLoads.begin());
+         std::vector<PostTensionStrainLoad>::iterator curvatureLoadIterEnd(strLoads.end());
+         for ( ; curvatureLoadIter != curvatureLoadIterEnd; curvatureLoadIter++ )
          {
-            EquivPostTensionPointLoad& load = *ptLoadIter;
-
-            MemberIDType ssmbrID;
-            Float64 ssmbrLoc;
-            pModel->ConvertSpanToSuperstructureLocation(load.spanIdx,load.X,&ssmbrID,&ssmbrLoc);
-            
-            CComPtr<IPointLoad> ptLoad;
-            ptLoad.CoCreateInstance(CLSID_PointLoad);
-            ptLoad->put_MemberType(mtSuperstructureMember);
-            ptLoad->put_MemberID(ssmbrID);
-            ptLoad->put_Location(ssmbrLoc);
-            ptLoad->put_Fy(load.P);
-            ptLoad->put_Mz(0.0);
-
-            CComPtr<IPointLoadItem> ptLoadItem;
-            pointLoads->Add(bstrStage,bstrLoadGroup,ptLoad,&ptLoadItem);
-         }
-
-
-         std::vector<EquivPostTensionDistributedLoad>::iterator distLoadIter(distLoads.begin());
-         std::vector<EquivPostTensionDistributedLoad>::iterator distLoadIterEnd(distLoads.end());
-         for ( ; distLoadIter != distLoadIterEnd; distLoadIter++ )
-         {
-            EquivPostTensionDistributedLoad& load = *distLoadIter;
+            PostTensionStrainLoad& load = *curvatureLoadIter;
 
             MemberIDType startSSMbrID, endSSMbrID;
             Float64 startSSMbrLoc, endSSMbrLoc;
-            pModel->ConvertSpanToSuperstructureLocation(load.spanIdx,load.Xstart,&startSSMbrID,&startSSMbrLoc);
-            pModel->ConvertSpanToSuperstructureLocation(load.spanIdx,load.Xend,  &endSSMbrID,  &endSSMbrLoc);
-
-            ATLASSERT(IsEqual(load.Wstart,load.Wend));
+            pModel->ConvertSpanToSuperstructureLocation(load.startSpanIdx,load.Xstart,&startSSMbrID,&startSSMbrLoc);
+            pModel->ConvertSpanToSuperstructureLocation(load.endSpanIdx,  load.Xend,  &endSSMbrID,  &endSSMbrLoc);
 
             if ( startSSMbrID == endSSMbrID )
             {
@@ -8951,18 +8869,22 @@ void CGirderModelManager::ApplyEquivalentPostTensionForce(ILBAMModel* pModel,Gir
                Float64 ssmbrLength;
                ssmbr->get_Length(&ssmbrLength);
 
-               CComPtr<IDistributedLoad> startDistLoad;
-               startDistLoad.CoCreateInstance(CLSID_DistributedLoad);
-               startDistLoad->put_MemberType(mtSuperstructureMember);
-               startDistLoad->put_MemberID(startSSMbrID);
-               startDistLoad->put_StartLocation(startSSMbrLoc);
-               startDistLoad->put_EndLocation(endSSMbrLoc);
-               startDistLoad->put_WStart(load.Wstart);
-               startDistLoad->put_WEnd(load.Wend);
-               startDistLoad->put_Direction(ldFy);
+               CComPtr<IStrainLoad> strainLoad;
+               strainLoad.CoCreateInstance(CLSID_StrainLoad);
+               strainLoad->put_MemberType(mtSuperstructureMember);
+               strainLoad->put_MemberID(startSSMbrID);
+               strainLoad->put_StartLocation(startSSMbrLoc);
+               strainLoad->put_EndLocation(endSSMbrLoc);
+               strainLoad->put_AxialStrain(0);
+
+               // right now, the LBAM model only supports a constant curvature... just use the average value
+               // the POI are closely spaced so this is a good approximate. The same thing is done
+               // in the Time-Step stress analysis when analyzing initial strains
+               Float64 r = 0.5*(load.rStart + load.rEnd);
+               strainLoad->put_CurvatureStrain(r);
                
-               CComPtr<IDistributedLoadItem> distLoadItem;
-               distributedLoads->Add(bstrStage,bstrLoadGroup,startDistLoad,&distLoadItem);
+               CComPtr<IStrainLoadItem> strainLoadItem;
+               strainLoads->Add(bstrStage,bstrLoadGroup,strainLoad,&strainLoadItem);
             }
             else
             {
@@ -8974,18 +8896,20 @@ void CGirderModelManager::ApplyEquivalentPostTensionForce(ILBAMModel* pModel,Gir
                Float64 ssmbrLength;
                ssmbr->get_Length(&ssmbrLength);
 
-               CComPtr<IDistributedLoad> startDistLoad;
-               startDistLoad.CoCreateInstance(CLSID_DistributedLoad);
-               startDistLoad->put_MemberType(mtSuperstructureMember);
-               startDistLoad->put_MemberID(startSSMbrID);
-               startDistLoad->put_StartLocation(startSSMbrLoc);
-               startDistLoad->put_EndLocation(ssmbrLength);
-               startDistLoad->put_WStart(load.Wstart);
-               startDistLoad->put_WEnd(load.Wend);
-               startDistLoad->put_Direction(ldFy);
+               CComPtr<IStrainLoad> startStrainLoad;
+               startStrainLoad.CoCreateInstance(CLSID_StrainLoad);
+               startStrainLoad->put_MemberType(mtSuperstructureMember);
+               startStrainLoad->put_MemberID(startSSMbrID);
+               startStrainLoad->put_StartLocation(startSSMbrLoc);
+               startStrainLoad->put_EndLocation(ssmbrLength);
+               startStrainLoad->put_AxialStrain(0.0);
+
+               // right now, our loading only supports a constant curvature... just use the average value
+               Float64 r = 0.5*(load.rStart + load.rEnd);
+               startStrainLoad->put_CurvatureStrain(r);
                
-               CComPtr<IDistributedLoadItem> distLoadItem;
-               distributedLoads->Add(bstrStage,bstrLoadGroup,startDistLoad,&distLoadItem);
+               CComPtr<IStrainLoadItem> strainLoadItem;
+               strainLoads->Add(bstrStage,bstrLoadGroup,startStrainLoad,&strainLoadItem);
 
                // intermediate ssmbrs
                for ( MemberIDType ssmbrID = startSSMbrID+1; ssmbrID < endSSMbrID; ssmbrID++ )
@@ -8994,60 +8918,41 @@ void CGirderModelManager::ApplyEquivalentPostTensionForce(ILBAMModel* pModel,Gir
                   ssmbrs->get_Item(ssmbrID,&ssmbr);
                   ssmbr->get_Length(&ssmbrLength);
 
-                  CComPtr<IDistributedLoad> distLoad;
-                  distLoad.CoCreateInstance(CLSID_DistributedLoad);
-                  distLoad->put_MemberType(mtSuperstructureMember);
-                  distLoad->put_MemberID(ssmbrID);
-                  distLoad->put_StartLocation(0.0);
-                  distLoad->put_EndLocation(ssmbrLength);
-                  distLoad->put_WStart(load.Wstart);
-                  distLoad->put_WEnd(load.Wend);
-                  distLoad->put_Direction(ldFy);
+                  CComPtr<IStrainLoad> strainLoad;
+                  strainLoad.CoCreateInstance(CLSID_StrainLoad);
+                  strainLoad->put_MemberType(mtSuperstructureMember);
+                  strainLoad->put_MemberID(ssmbrID);
+                  strainLoad->put_StartLocation(0.0);
+                  strainLoad->put_EndLocation(ssmbrLength);
+                  strainLoad->put_AxialStrain(0.0);
+
+                  // right now, our loading only supports a constant curvature... just use the average value
+                  r = 0.5*(load.rStart + load.rEnd);
+                  strainLoad->put_CurvatureStrain(r);
                
-                  distLoadItem.Release();
-                  distributedLoads->Add(bstrStage,bstrLoadGroup,distLoad,&distLoadItem);
-               }
+                  strainLoadItem.Release();
+                  strainLoads->Add(bstrStage,bstrLoadGroup,strainLoad,&strainLoadItem);
+               } // next ssmbrID
 
                // Last SSMBR
-               CComPtr<IDistributedLoad> endDistLoad;
-               endDistLoad.CoCreateInstance(CLSID_DistributedLoad);
-               endDistLoad->put_MemberType(mtSuperstructureMember);
-               endDistLoad->put_MemberID(endSSMbrID);
-               endDistLoad->put_StartLocation(0.0);
-               endDistLoad->put_EndLocation(endSSMbrLoc);
-               endDistLoad->put_WStart(load.Wstart);
-               endDistLoad->put_WEnd(load.Wend);
-               endDistLoad->put_Direction(ldFy);
+               CComPtr<IStrainLoad> endStrainLoad;
+               endStrainLoad.CoCreateInstance(CLSID_StrainLoad);
+               endStrainLoad->put_MemberType(mtSuperstructureMember);
+               endStrainLoad->put_MemberID(endSSMbrID);
+               endStrainLoad->put_StartLocation(0.0);
+               endStrainLoad->put_EndLocation(endSSMbrLoc);
+               endStrainLoad->put_AxialStrain(0.0);
 
-               distLoadItem.Release();
-               distributedLoads->Add(bstrStage,bstrLoadGroup,endDistLoad,&distLoadItem);
-            }
-         }
+               // right now, our loading only supports a constant curvature... just use the average value
+               r = 0.5*(load.rStart + load.rEnd);
+               endStrainLoad->put_CurvatureStrain(r);
 
-
-         std::vector<EquivPostTensionMomentLoad>::iterator momLoadIter(momentLoads.begin());
-         std::vector<EquivPostTensionMomentLoad>::iterator momLoadIterEnd(momentLoads.end());
-         for ( ; momLoadIter != momLoadIterEnd; momLoadIter++ )
-         {
-            EquivPostTensionMomentLoad& load = *momLoadIter;
-
-            MemberIDType ssmbrID;
-            Float64 ssmbrLoc;
-            pModel->ConvertSpanToSuperstructureLocation(load.spanIdx,load.X,&ssmbrID,&ssmbrLoc);
-            
-            CComPtr<IPointLoad> ptLoad;
-            ptLoad.CoCreateInstance(CLSID_PointLoad);
-            ptLoad->put_MemberType(mtSuperstructureMember);
-            ptLoad->put_MemberID(ssmbrID);
-            ptLoad->put_Location(ssmbrLoc);
-            ptLoad->put_Mz(load.M);
-            ptLoad->put_Fy(0.0);
-
-            CComPtr<IPointLoadItem> ptLoadItem;
-            pointLoads->Add(bstrStage,bstrLoadGroup,ptLoad,&ptLoadItem);
-         }
-      }
-   }
+               strainLoadItem.Release();
+               strainLoads->Add(bstrStage,bstrLoadGroup,endStrainLoad,&strainLoadItem);
+            } // end of if-else if for ssmbr ID
+         } // next curvature load
+      } // next duct
+   } // next group
 }
 
 Float64 CGirderModelManager::GetPedestrianLiveLoad(const CSpanKey& spanKey)
@@ -9835,7 +9740,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    AddLoadGroup(loadGroups, GetLoadGroupName(pftSidewalk),       CComBSTR("Sidewalk self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftTrafficBarrier), CComBSTR("Traffic Barrier self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftShearKey),       CComBSTR("Shear Key Weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftEquivPostTensioning),CComBSTR("Equiv Post-Tensioning"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftSecondaryEffects),CComBSTR("Secondary Effects"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftOverlay),        CComBSTR("Overlay self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftOverlayRating),  CComBSTR("Overlay self weight (rating)"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftUserDC),         CComBSTR("User applied loads in DC"));
@@ -10225,15 +10130,13 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
    } // next group
 }
 
-void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads)
+void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<PostTensionStrainLoad>& strainLoads)
 {
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(ITendonGeometry,pTendonGeometry);
    GET_IFACE(ILosses,pLosses);
 
-   ptLoads.clear();
-   distLoads.clear();
-   momentLoads.clear();
+   strainLoads.clear();
 
    GET_IFACE(IGirder,pIGirder);
    WebIndexType nWebs = pIGirder->GetWebCount(girderKey);
@@ -10247,180 +10150,21 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
    IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
    Float64 Apt = pTendonGeometry->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
    Float64 Pj = pTendonGeometry->GetPjack(girderKey,ductIdx);
+
+#if defined USE_AVERAGE_TENDON_FORCE
    Float64 dfpF = pLosses->GetAverageFrictionLoss(girderKey,ductIdx);
    Float64 dfpA = pLosses->GetAverageAnchorSetLoss(girderKey,ductIdx);
-   Float64 P = Pj - Apt*(dfpF + dfpA);
-
-
-   if ( pDuctData->DuctGeometryType == CDuctGeometry::Linear )
-   {
-      GetEquivPostTensionLoads(girderKey,ductIdx,pDuctData->LinearDuctGeometry,P,ptLoads,distLoads,momentLoads);
-   }
-   else if ( pDuctData->DuctGeometryType == CDuctGeometry::Parabolic )
-   {
-      GetEquivPostTensionLoads(girderKey,ductIdx,pDuctData->ParabolicDuctGeometry,P,ptLoads,distLoads,momentLoads);
-   }
-   else
-   {
-      ATLASSERT(pDuctData->DuctGeometryType == CDuctGeometry::Offset);
-#pragma Reminder("IMPLEMENT - equiv load for offset duct")
-      ATLASSERT(false); // need to implement
-   }
-}
-
-void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,const CLinearDuctGeometry& ductGeometry,Float64 P,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads)
-{
-   GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(ITendonGeometry,pTendonGeometry);
-
-   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+   Float64 P1 = Pj - Apt*(dfpF + dfpA);
+   Float64 P2 = P1;
+#endif
 
    GET_IFACE(IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(girderKey);
-   IndexType nPoints = ductGeometry.GetPointCount();
-
-   CLinearDuctGeometry::MeasurementType measurementType = ductGeometry.GetMeasurementType();
-   
-   Float64 XgStart;
-   Float64 location, offset;
-   CLinearDuctGeometry::OffsetType offsetType;
-   ductGeometry.GetPoint(0,&location,&offset,&offsetType);
-   if ( measurementType == CLinearDuctGeometry::AlongGirder )
-   {
-      XgStart = (location < 0 ? -location*Lg : location);
-   }
-   else
-   {
-      XgStart = location;
-   }
-
-   pgsPointOfInterest startPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgStart);
-   CSpanKey startSpanKey;
-   Float64 XspanStart;
-   pPoi->ConvertPoiToSpanPoint(startPoi,&startSpanKey,&XspanStart);
-
-   // P*e at start of tendon
-   Float64 epts = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,startPoi,ductIdx);
-   Float64 Ms = P*epts;
-   EquivPostTensionMomentLoad start_moment;
-   start_moment.M = Ms;
-   start_moment.spanIdx = startSpanKey.spanIndex;
-   start_moment.X = XspanStart;
-   momentLoads.push_back(start_moment);
-
-   // working down the tendon starting at index 2 and using the two trailing points
-   // to compute the equivalent force at the previous point
-   CComPtr<IPoint2d> prevPoint;
-   pTendonGeometry->GetDuctPoint(startPoi,ductIdx,&prevPoint);
-   Float64 Xp, Yp;
-   prevPoint->Location(&Xp,&Yp);
-   
-   Float64 Xg;
-   ductGeometry.GetPoint(1,&location,&offset,&offsetType);
-   if ( measurementType == CLinearDuctGeometry::AlongGirder )
-   {
-      Xg = (location < 0 ? -location*Lg : location);
-   }
-   else
-   {
-      Xg = location;
-   }
-   pgsPointOfInterest poi = pPoi->ConvertGirderCoordinateToPoi(girderKey,Xg);
-   CComPtr<IPoint2d> thisPoint;
-   pTendonGeometry->GetDuctPoint(poi,ductIdx,&thisPoint);
-   Float64 X,Y;
-   thisPoint->Location(&X,&Y);
-
-   for ( IndexType ptIdx = 2; ptIdx < nPoints; ptIdx++ )
-   {
-      Float64 XgNext;
-      ductGeometry.GetPoint(ptIdx,&location,&offset,&offsetType);
-      if ( measurementType == CLinearDuctGeometry::AlongGirder )
-      {
-         XgNext = (location < 0 ? -location*Lg : location);
-      }
-      else
-      {
-         XgNext = location;
-      }
-      pgsPointOfInterest nextPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgNext);
-      CComPtr<IPoint2d> nextPoint;
-      pTendonGeometry->GetDuctPoint(nextPoi,ductIdx,&nextPoint);
-      Float64 Xn,Yn;
-      nextPoint->Location(&Xn,&Yn);
-
-      Float64 dX1 = Xg-XgStart;
-      Float64 dY1 = Y-Yp;
-      Float64 dX2 = XgNext-Xg;
-      Float64 dY2 = Yn-Y;
-
-      Float64 Vp = P*(dY2/sqrt(dX2*dX2 + dY2*dY2) - dY1/sqrt(dX1*dX1 + dY1*dY1));
-
-      Float64 Xspan;
-      CSpanKey spanKey;
-      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
-
-      EquivPostTensionPointLoad ptLoad;
-      ptLoad.P = Vp;
-      ptLoad.spanIdx = spanKey.spanIndex;
-      ptLoad.X = Xspan;
-      ptLoads.push_back(ptLoad);
-
-      // prevPoint = thisPoint
-      // thisPoint = nextPoint
-      poi = nextPoi;
-      XgStart = Xg;
-      Yp = Y;
-      Xg = XgNext;
-      Y  = Yn;
-   }
-
-   Float64 XgEnd;
-   ductGeometry.GetPoint(nPoints-1,&location,&offset,&offsetType);
-   if ( measurementType == CLinearDuctGeometry::AlongGirder )
-   {
-      XgEnd = (location < 0 ? -location*Lg : location);
-   }
-   else
-   {
-      XgEnd = location;
-   }
-
-   if ( Lg < XgEnd )
-   {
-      XgEnd = Lg;
-   }
-
-   pgsPointOfInterest endPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgEnd);
-   CSpanKey endSpanKey;
-   Float64 XspanEnd;
-   pPoi->ConvertPoiToSpanPoint(endPoi,&endSpanKey,&XspanEnd);
-
-   // P*e at end of tendon
-   Float64 epte = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,endPoi,ductIdx);
-   Float64 Me = P*epte;
-   EquivPostTensionMomentLoad end_moment;
-   end_moment.M = -Me;
-   end_moment.spanIdx = endSpanKey.spanIndex;
-   end_moment.X = XspanEnd;
-   momentLoads.push_back(end_moment);
-}
-
-void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,const CParabolicDuctGeometry& ductGeometry,Float64 P,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads)
-{
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE(ITendonGeometry,pTendonGeometry);
-
-   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
 
    // Use the raw duct input data to get the location along the girder of the low and high points
    // since POIs aren't specifically stored at this locations. Use the ITendonGeometry methods
    // to get the vertical position of the tendon with respect to the CG of the section. The
    // methods on the ITendonGeometry interface account for the offset of the tendon within the duct.
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup      = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(girderKey.girderIndex);
@@ -10502,322 +10246,71 @@ void CGirderModelManager::GetEquivPostTensionLoads(const CGirderKey& girderKey,D
       }
    }
 
-   /////// NOTE ////////
-   // In this function, the span coordinate system that is being refered to is the LBAM
-   // Span Coordinates. Don't confusion this with the PGSuper/PGSplice Span Coordinates.
-   // LBAM Span Coordinates are measured from the start support in a span element in the
-   // model.
+   GET_IFACE(IMaterials,pMaterials);
+   GET_IFACE(ISectionProperties,pSectProps);
 
-   // Compute the end moment due to the tendon eccentricity
-   SpanIndexType nSpans = ductGeometry.GetSpanCount();
-   Float64 startPoint, startOffset;
-   CDuctGeometry::OffsetType startOffsetType;
-   ductGeometry.GetStartPoint(&startPoint,&startOffset,&startOffsetType);
-
-   // Location of start of tendon in Girder Coordinates
-   // Start of tendon is a special case... it is input in girder coordinates
-   // if startPoint < 0 then it is a fractional measure... make it an absolute measure
-   Float64 XgStart = (startPoint < 0 ? -startPoint*L : startPoint);
-   pgsPointOfInterest startPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgStart);
-
-   // Get start of tendon, and thus the equivalent load, in span coordinates
-   CSpanKey spanKey;
-   Float64 XspanStart;
-   pPoi->ConvertPoiToSpanPoint(startPoi,&spanKey,&XspanStart);
-
-   // P*e at start of tendon
-   Float64 epts = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,startPoi,ductIdx);
-   Float64 Ms = P*epts;
-   EquivPostTensionMomentLoad start_moment;
-   start_moment.M = Ms;
-   start_moment.spanIdx = startSpanIdx;
-   start_moment.X = XspanStart;
-   momentLoads.push_back(start_moment);
-
-
-   //// Instead of using the eccentricity at the start/end of the tendon segment, we are using
-   //// the distance down from the top of the non-composite girder. Eccentricity is based on
-   //// the material properties and we end up with non-symmetrical equivalent loads for
-   //// symmetrical tendons when the modulus of the segments are different. Using the geometry
-   //// of the tendon instead of eccentricities, we get equivalent loadings that make sense.
-   //Float64 Ystart = pTendonGeometry->GetDuctOffset(stressTendonIntervalIdx,startPoi,ductIdx);
-
-   // Start of duct to first low point
-   Float64 lowPoint, lowOffset;
-   CDuctGeometry::OffsetType lowOffsetType;
-   ductGeometry.GetLowPoint(startSpanIdx,&lowPoint,&lowOffset,&lowOffsetType);
-   Float64 XgLow = (lowPoint < 0 ? -lowPoint*L  : lowPoint); // low point measured from left end of girder
-   pgsPointOfInterest lowPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgLow);
-   Float64 eptl = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,lowPoi,ductIdx);
-
-   Float64 XspanLow;
-   pPoi->ConvertPoiToSpanPoint(lowPoi,&spanKey,&XspanLow);
-
-   // we want e_prime to be positive if the parabola is a smile shape
-   EquivPostTensionDistributedLoad load;
-
-   Float64 e_prime = eptl - epts;
-   Float64 x = XgLow - XgStart;
-   Float64 w = 2*P*e_prime/(x*x);
-
-   if ( !IsZero(w) )
+   std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS));
+   std::vector<pgsPointOfInterest>::iterator iter1(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator iter2(iter1 + 1);
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; iter2 != end; iter1++, iter2++ )
    {
-      load.spanIdx = startSpanIdx;
-      load.Xstart  = XspanStart;
-      load.Xend    = XspanLow;
-      load.Wstart  = w;
-      load.Wend    = w;
-      load.eStart = epts;
-      load.eEnd   = eptl;
-      load.e_prime = e_prime;
-      load.x      = x;
-      load.P      = P;
+      pgsPointOfInterest& poi1 = *iter1;
+      pgsPointOfInterest& poi2 = *iter2;
 
-      ATLASSERT(IsEqual(x,load.Xend-load.Xstart));
+#if !defined USE_AVERAGE_TENDON_FORCE
+      Float64 dfpF1 = pLosses->GetFrictionLoss(poi1,ductIdx);
+      Float64 dfpA1 = pLosses->GetAnchorSetLoss(poi1,ductIdx);
+      Float64 P1 = Pj - Apt*(dfpF1 + dfpA1);
 
-      distLoads.push_back(load);
-   }
+      Float64 dfpF2 = pLosses->GetFrictionLoss(poi2,ductIdx);
+      Float64 dfpA2 = pLosses->GetAnchorSetLoss(poi2,ductIdx);
+      Float64 P2 = Pj - Apt*(dfpF2 + dfpA2);
+#endif // !USE_AVERAGE_TENDON_FORCE
 
-   for ( PierIndexType pierIdx = startSpanIdx+1; pierIdx < nSpans; pierIdx++ )
-   {
-      // tendon going over pier
-      // Low Point - Inflection Point - High Point (over pier) - Inflection Point - Low Point
+      const CSegmentKey& segmentKey1(poi1.GetSegmentKey());
+      const CSegmentKey& segmentKey2(poi2.GetSegmentKey());
 
-      // get the raw data
-      Float64 leftIP, highOffset, rightIP;
-      CDuctGeometry::OffsetType highOffsetType;
-      ductGeometry.GetHighPoint(pierIdx,&leftIP,&highOffset,&highOffsetType,&rightIP);
-      pgsPointOfInterest highPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
-      Float64 XgHigh = pPoi->ConvertPoiToGirderCoordinate(highPoi);
-      Float64 epth = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,highPoi,ductIdx);
+      CSpanKey spanKey1;
+      Float64 Xspan1;
+      pPoi->ConvertPoiToSpanPoint(poi1,&spanKey1,&Xspan1);
 
-      // Low point in span - IP
-      // find the location of the inflection point on the left side of the pier (previous span)
-      SpanIndexType prevSpanIdx = SpanIndexType(pierIdx-1);
-      Float64 L = pBridge->GetSpanLength(prevSpanIdx,girderKey.girderIndex);
-      Float64 XspanHigh = L;
+      CSpanKey spanKey2;
+      Float64 Xspan2;
+      pPoi->ConvertPoiToSpanPoint(poi2,&spanKey2,&Xspan2);
 
+      Float64 e1 = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,poi1,ductIdx);
+      Float64 M1 = -P1*e1;
 
-      // if leftIP is neg, then it is a fraction of the distance from the high point to the
-      // previous low point, measured from the high point.... convert it to an actual measure
-      leftIP = (leftIP < 0 ? -leftIP*(XspanHigh - XspanLow) : leftIP);
-      Float64 XspanLIP = XspanHigh - leftIP;
-      Float64 XgLIP = XgHigh - leftIP;
+      Float64 e2 = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,poi2,ductIdx);
+      Float64 M2 = -P2*e2;
 
-      pgsPointOfInterest lipPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgLIP);
-      Float64 elip = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,lipPoi,ductIdx);
-
-      // low point to inflection point
-      e_prime = eptl - elip;
-      x = XgLIP - XgLow;
-      w = 2*P*e_prime/(x*x);
-      if ( !IsZero(w) )
-      {
-         load.spanIdx = prevSpanIdx;
-         load.Xstart  = XspanLow;
-         load.Xend    = XspanLIP;
-         load.Wstart  = w;
-         load.Wend    = w;
-         load.eStart = eptl;
-         load.eEnd   = elip;
-         load.e_prime = e_prime;
-         load.x      = x;
-         load.P      = P;
-
-         ATLASSERT(IsEqual(x,load.Xend-load.Xstart));
-
-         distLoads.push_back(load);
-      }
-
-      // Inflection point to high point
-      e_prime = epth - elip;
-      x = XgHigh - XgLIP;
-      w = 2*P*e_prime/(x*x);
-      if ( !IsZero(w) )
-      {
-         load.spanIdx = prevSpanIdx;
-         load.Xstart  = XspanLIP;
-         load.Xend    = XspanHigh;
-         load.Wstart  = w;
-         load.Wend    = w;
-         load.eStart = elip;
-         load.eEnd   = epth;
-         load.e_prime = e_prime;
-         load.x      = x;
-         load.P      = P;
-
-         ATLASSERT(IsEqual(x,load.Xend-load.Xstart));
-
-         distLoads.push_back(load);
-      }
-
-      // next span - High Point to Right Inflection Point
-      SpanIndexType nextSpanIdx = prevSpanIdx+1;
-      XspanHigh = 0;
-
-      // get raw data
-      ductGeometry.GetLowPoint(nextSpanIdx,&lowPoint,&lowOffset,&lowOffsetType);
-
-      // find low point in span to the right of the pier
-      L = pBridge->GetSpanLength(nextSpanIdx,girderKey.girderIndex);
-      if ( nextSpanIdx == endSpanIdx )
-      {
-         Float64 end_dist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-         L += end_dist;
-      }
-      XspanLow = (lowPoint < 0 ? -lowPoint*L : lowPoint);
-      if ( nextSpanIdx == endSpanIdx )
-      {
-         // if the next span is the last span, XspanLoad is measured from the right end of the span
-         // change it to be measured from the left end of the span
-         XspanLow = L - XspanLow;
-      }
-      XgLow = XgHigh + XspanLow;
+      CClosureKey closureKey1;
+      bool bIsInClosure1 = pPoi->IsInClosureJoint(poi1,&closureKey1);
       
-      lowPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgLow);
-      eptl = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,lowPoi,ductIdx);
+      CClosureKey closureKey2;
+      bool bIsInClosure2 = pPoi->IsInClosureJoint(poi2,&closureKey2);
 
-      // find inflection point to the right of the pier
-      // if rightIP is less than zero, rightIP is a fraction measure from the high point to the next low point
-      // convert to an actual measure
-      Float64 XspanRIP  = (rightIP  < 0 ? -rightIP*(XspanLow - XspanHigh) : rightIP);
-      Float64 XgRIP = XgHigh + XspanRIP;
+      Float64 E1 = (bIsInClosure1 ? pMaterials->GetClosureJointAgeAdjustedEc(closureKey1,stressTendonIntervalIdx) : pMaterials->GetSegmentAgeAdjustedEc(segmentKey1,stressTendonIntervalIdx));
+      Float64 E2 = (bIsInClosure2 ? pMaterials->GetClosureJointAgeAdjustedEc(closureKey2,stressTendonIntervalIdx) : pMaterials->GetSegmentAgeAdjustedEc(segmentKey2,stressTendonIntervalIdx));
 
-      pgsPointOfInterest ripPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgRIP);
-      Float64 erip = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,ripPoi,ductIdx);
+      Float64 I1 = pSectProps->GetIx(stressTendonIntervalIdx,poi1);
+      Float64 I2 = pSectProps->GetIx(stressTendonIntervalIdx,poi2);
 
-      // high point to inflection point
-      e_prime = epth - erip;
-      x = XgRIP - XgHigh;
-      w = 2*P*e_prime/(x*x);
+      Float64 r1 = M1/(E1*I1);
+      Float64 r2 = M2/(E2*I2);
 
-      if ( !IsZero(w) )
-      {
-         load.spanIdx = nextSpanIdx;
-         load.Xstart  = XspanHigh;
-         load.Xend    = XspanRIP;
-         load.Wstart  = w;
-         load.Wend    = w;
-         load.eStart = epth;
-         load.eEnd   = erip;
-         load.e_prime = e_prime;
-         load.x      = x;
-         load.P      = P;
+      PostTensionStrainLoad strainLoad;
+      strainLoad.startSpanIdx = spanKey1.spanIndex;
+      strainLoad.endSpanIdx   = spanKey2.spanIndex;
+      strainLoad.Xstart = Xspan1;
+      strainLoad.Xend   = Xspan2;
+      strainLoad.rStart = r1;
+      strainLoad.rEnd   = r2;
 
-         ATLASSERT(IsEqual(x,load.Xend-load.Xstart));
-
-         distLoads.push_back(load);
-      }
-
-      // IP to low point
-      e_prime = eptl - erip;
-      x = XgLow - XgRIP;
-      w = 2*P*e_prime/(x*x);
-
-      // inflection point to low point
-      if ( !IsZero(w) )
-      {
-         load.spanIdx = nextSpanIdx;
-         load.Xstart  = XspanRIP;
-         load.Xend    = XspanLow;
-         load.Wstart  = w;
-         load.Wend    = w;
-         load.eStart = erip;
-         load.eEnd   = eptl;
-         load.e_prime = e_prime;
-         load.x      = x;
-         load.P      = P;
-
-         ATLASSERT(IsEqual(x,load.Xend-load.Xstart));
-
-         distLoads.push_back(load);
-      }
+      strainLoads.push_back(strainLoad);
    }
 
-   // low point in last span to end of duct (high point)
-   Float64 endPoint, endOffset;
-   CDuctGeometry::OffsetType endOffsetType;
-   ductGeometry.GetEndPoint(&endPoint,&endOffset,&endOffsetType);
-
-   load.spanIdx = startSpanIdx + nSpans-1;
-
-   // end point is a special case. Low point is measured from the right end of the girder
-   if ( startSpanIdx != endSpanIdx )
-   {
-      L = pBridge->GetSpanLength(load.spanIdx,girderKey.girderIndex);
-      if ( pGroup->GetNextGirderGroup() == NULL )
-      {
-         // For the last group, span length is measured from the CL Bearing at the end abutment.
-         // Add the end distance at the end of the last segment so that "L" is measured from the
-         // end face of the girder
-         //
-         //  \---------------------------------------------+
-         //  /                                             |
-         //  \---------------------------------------------+
-         //          ^                                  ^  |
-         //          |<-------------------------------->|  |
-         //          |  L from GetSpanLength            |  |
-         //          |                                     |
-         //          |<----------------------------------->|
-         //                       We want this L
-         Float64 endDist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-         L += endDist;
-      }
-      else
-      {
-         //  \---------------------------------------------+.....+-------/
-         //  /                                             |     |       \
-         //  \---------------------------------------------+.....+-------/
-         //            ^                                      ^
-         //            |  L measured from CL Pier             |
-         //            |<------------------------------------>|
-         //            |<--------------------------------->| we want this L
-         Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-         Float64 endDist   = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-         Float64 offset = brgOffset - endDist;
-         L -= offset;
-      }
-   }
-
-   endPoint = (endPoint < 0 ? -endPoint*L : endPoint);
-
-
-   Float64 Lg = pBridge->GetGirderLength(girderKey);
-   Float64 XgEnd = Lg - endPoint; // end of tendon in girder coordinates
-
-   pgsPointOfInterest endPoi = pPoi->ConvertGirderCoordinateToPoi(girderKey,XgEnd);
-   Float64 XspanEnd;
-   pPoi->ConvertPoiToSpanPoint(endPoi,&spanKey,&XspanEnd);
-   Float64 epte = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,endPoi,ductIdx);
-
-   e_prime = eptl - epte;
-   x = XgEnd - XgLow; 
-   w = 2*P*e_prime/(x*x);
-
-   if ( !IsZero(w) )
-   {
-      load.Xstart = XspanLow;
-      load.Xend   = XspanEnd;
-      load.Wstart = w;
-      load.Wend   = w;
-      load.eStart = eptl;
-      load.eEnd   = epte;
-      load.e_prime = e_prime;
-      load.x      = x;
-      load.P      = P;
-
-      ATLASSERT(IsEqual(x,load.Xend-load.Xstart));
-
-      distLoads.push_back(load);
-   }
-
-   // P*e at end of tendon
-   Float64 Me = P*epte;
-   EquivPostTensionMomentLoad end_moment;
-   end_moment.M = -Me;
-   end_moment.spanIdx = endSpanIdx;
-   end_moment.X = XspanEnd;
-   momentLoads.push_back(end_moment);
 }
 
 PoiIDType CGirderModelManager::AddPointOfInterest(CGirderModelData* pModelData,const pgsPointOfInterest& poi)
@@ -13134,7 +12627,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
       {
          // load starts on SSMBR at start of segment
          Float64 end_loc   = (load.EndLoc < start_offset ? load.EndLoc : start_offset);
-         Float64 end_load  = (load.EndLoc < start_offset ? load.wEnd : ::LinInterp(start_offset,load.wStart,load.wEnd,end[0]-start[0]));
+         Float64 end_load  = (load.EndLoc < start_offset ? load.wEnd : ::LinInterp(start_offset,load.wStart,load.wEnd,load.EndLoc-load.StartLoc));
          Float64 start_loc = (load.StartLoc < 0 ? 0 : load.StartLoc);
 
          // Put a load on the cantilever if...
@@ -13301,6 +12794,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType interv
    MemberIDType mbrIDInc = GetSuperstructureMemberCount(segmentKey);
    return ssmbrID + mbrIDInc;
 }
+
 void CGirderModelManager::GetSlabLoad(const CSegmentKey& segmentKey, std::vector<LinearLoad>& vSlabLoads, std::vector<LinearLoad>& vHaunchLoads, std::vector<LinearLoad>& vPanelLoads)
 {
    // Create equivalent LinearLoad vectors from the SlabLoad information

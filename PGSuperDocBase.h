@@ -41,7 +41,7 @@
 #include <WBFLUnitServer.h>
 
 #include "Hints.h"
-#include "PGSuperCommandLineInfo.h"
+#include "PGSuperBaseCommandLineInfo.h"
 #include "PGSuperPluginMgr.h"
 
 #include "CopyGirderPropertiesCallbacks.h"
@@ -243,8 +243,6 @@ public:
    long GetReportViewKey();
 
 protected:
-   CString m_strAppProfileName;
-
    HICON m_hMainFrameBigIcon;
    HICON m_hMainFrameSmallIcon;
 

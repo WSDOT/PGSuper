@@ -40,6 +40,17 @@ CPGSuperCatalogServers::~CPGSuperCatalogServers()
    m_Servers.clear();
 }
 
+void CPGSuperCatalogServers::SetAppName(LPCTSTR strAppName)
+{
+   m_AppName = strAppName;
+}
+
+LPCTSTR CPGSuperCatalogServers::GetAppName() const
+{
+   ATLASSERT(!m_AppName.IsEmpty()); // did you forget to call SetAppName
+   return m_AppName;
+}
+
 void CPGSuperCatalogServers::SetTemplateFileExtenstion(LPCTSTR strExt)
 {
    m_strExt = strExt;
@@ -66,7 +77,7 @@ const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(CollectionIndexTy
 
 const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(LPCTSTR strName) const
 {
-   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CFtpPGSuperCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find( target );
 
    if(found == m_Servers.end())
@@ -91,7 +102,7 @@ void CPGSuperCatalogServers::RemoveServer(CollectionIndexType index)
 
 void CPGSuperCatalogServers::RemoveServer(LPCTSTR strName)
 {
-   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CFtpPGSuperCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::iterator found = m_Servers.find(target);
    if (found != m_Servers.end())
    {
@@ -101,7 +112,7 @@ void CPGSuperCatalogServers::RemoveServer(LPCTSTR strName)
 
 bool CPGSuperCatalogServers::IsServerDefined(LPCTSTR strName) const
 {
-   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CFtpPGSuperCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find(target);
    return ( found == m_Servers.end() ? false : true );
 }
@@ -123,7 +134,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
             CString key(TCHAR(i+_T('A')));
             CString strValue = theApp->GetProfileString(_T("Servers"),key);
 
-            CPGSuperCatalogServer* pserver = CreateCatalogServer(strValue,m_strExt);
+            CPGSuperCatalogServer* pserver = CreateCatalogServer(m_AppName,strValue,m_strExt);
 
             if (pserver!=NULL) // this is not good, but an assert should fire in CreateCatalogServer to help debugging
             {
@@ -153,7 +164,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
          DWORD type;
          while ( ::RegEnumValue(hSecKey,dwIndex++,&serverName[0],&serverNameSize,NULL,&type,(LPBYTE)&serverString[0],&serverStringSize) != ERROR_NO_MORE_ITEMS )
          {
-            CPGSuperCatalogServer* pServer = CreateCatalogServer(serverName,serverString,m_strExt );
+            CPGSuperCatalogServer* pServer = CreateCatalogServer(m_AppName,serverName,serverString,m_strExt );
             if ( pServer )
             {
                m_Servers.insert( ServerPtr(pServer) );
@@ -171,10 +182,10 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
 
    // Always have a WSDOT and TxDOT server
    if (!IsServerDefined(_T("WSDOT")))
-      m_Servers.insert( ServerPtr(new CFtpPGSuperCatalogServer(m_strExt)) ); // wsdot
+      m_Servers.insert( ServerPtr(new CFtpPGSuperCatalogServer(m_AppName,m_strExt)) ); // wsdot
 
    if (!IsServerDefined(_T("TxDOT")))
-      m_Servers.insert( ServerPtr( new CFtpPGSuperCatalogServer(CString("TxDOT"),CString("ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/pgsuper/"),m_strExt) ) );
+      m_Servers.insert( ServerPtr( new CFtpPGSuperCatalogServer(m_AppName,CString("TxDOT"),CString("ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/pgsuper/"),m_strExt) ) );
 }
 
 void CPGSuperCatalogServers::SaveToRegistry(CWinApp* theApp) const

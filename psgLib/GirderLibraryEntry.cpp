@@ -2198,40 +2198,6 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       return false; // not a GirderLibraryEntry
    }
 
-   //
-   // if my factory type isn't registered with the system, I can't be copied
-   //
-
-   // get family name
-   std::_tstring strFamilyName = m_pBeamFactory->GetGirderFamilyName();
-
-   // get family object
-   CComPtr<IBeamFamily> beamFamily;
-   CBeamFamilyManager::GetBeamFamily(strFamilyName.c_str(),&beamFamily);
-
-   if ( beamFamily )
-   {
-      // get registered names
-      CComPtr<IBeamFactory> beam_factory;
-      std::vector<CString> factoryNames = beamFamily->GetFactoryNames();
-      std::sort(factoryNames.begin(),factoryNames.end());
-
-      // get my name
-      std::_tstring strFactoryName = m_pBeamFactory->GetName();
-
-      // search for my name
-      std::vector<CString>::iterator found = std::find(factoryNames.begin(),factoryNames.end(),strFactoryName.c_str());
-      if ( found == factoryNames.end() )
-      {
-         // my name isn't registered... don't allow copying
-         EnableCopying(false);
-      }
-   }
-   else
-   {
-      EnableCopying(false);
-   }
-
    return true;
 }
 

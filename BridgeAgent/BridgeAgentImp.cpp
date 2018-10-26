@@ -2296,6 +2296,10 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
+            Float64 Lseg;
+            segment->get_Length(&Lseg);
+
+
             Float64 startHaunch = 0;
             Float64 endHaunch   = 0;
             if ( deckType != pgsTypes::sdtNone )
@@ -2372,18 +2376,22 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             girder->put_UseMinHarpPointDistance( pGirderEntry->IsMinHarpingPointLocationUsed() ? VARIANT_TRUE : VARIANT_FALSE);
             girder->put_MinHarpPointDistance( pGirderEntry->GetMinHarpingPointLocation() );
 
-            girder->SetHarpingPoints(hpLoc,hpLoc);
             girder->put_HarpingPointReference( HarpPointReference(hpref) );
             girder->put_HarpingPointMeasure( HarpPointMeasure(hpmeasure) );
+            girder->SetHarpingPoints(hpLoc,hpLoc);
+            
+            // For this strand definition type, the end harp points are always located at the end faces of the girder
+            girder->put_EndHarpingPointReference( hprEndOfGirder );
+            girder->put_EndHarpingPointMeasure( hpmFractionOfGirderLength );
+            girder->SetEndHarpingPoints(0.0,0.0);
 
             // Get height of girder section... going to needed this for
             // filling up strand patterns...
             //
             // the calls to get_Section below need locations in Segment Coordinates (coordinates
             // measured from CL Pier/TS at start of segment)
-            Float64 XsStart = 0; // start face of segment
-            Float64 XsEnd; // end face of segment
-            segment->get_Length(&XsEnd);
+            Float64 XsStart = 0;    // start face of segment
+            Float64 XsEnd   = Lseg; // end face of segment
 
 #pragma Reminder("REVIEW: verify that harp point locations are in Segment Coordinates")
             // ie. measured from the start face of the girder segment... if not, adjust them
@@ -2506,6 +2514,8 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
                         girder->SetHarpingPoints(Z[LOCATION_LEFT_HP],segmentLength - Z[LOCATION_RIGHT_HP]);
                         girder->put_HarpingPointMeasure(hpmAbsoluteDistance);
                         girder->put_HarpingPointReference(hprEndOfGirder);
+                        girder->put_EndHarpingPointMeasure(hpmAbsoluteDistance);
+                        girder->put_EndHarpingPointReference(hprEndOfGirder);
 
                         harpGrdEnd[etStart]->AddGridPoint(pntStart);
                         harpGrdEnd[etEnd]->AddGridPoint(pntEnd);
@@ -14147,7 +14157,7 @@ void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName, pgsTypes
       *UpwardOffset   = IsZero(*UpwardOffset)   ? 0.0 : *UpwardOffset;
 
       // if these fire, strands cannot be adjusted within section bounds. this should be caught at library entry time.
-      ATLASSERT(*DownwardOffset < -1.0e-06);
+      ATLASSERT(*DownwardOffset < 1.0e-06);
       ATLASSERT(*UpwardOffset > -1.0e-06);
    }
 }

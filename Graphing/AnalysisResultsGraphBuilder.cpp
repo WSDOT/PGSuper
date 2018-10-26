@@ -366,7 +366,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPrimaryPostTensioning), pftPrimaryPostTensioning, vAllIntervals, ACTIONS_FORCE_STRESS) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPostTensioning), pftPostTensioning, vAllIntervals, ACTIONS_FORCE_STRESS) );
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftSecondaryEffects),      pftSecondaryEffects,      vAllIntervals, ACTIONS_FORCE_STRESS) );
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftTotalPostTensioning),   pftTotalPostTensioning,   vAllIntervals, ACTIONS_ALL) );
    }

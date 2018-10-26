@@ -61,6 +61,8 @@ HRESULT IBeamFamilyImpl::Init()
 
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
+   m_Names.clear();
+
    CLSID clsid[1];
    while ( pIEnumCLSID->Next(1,clsid,NULL) != S_FALSE )
    {
@@ -84,6 +86,12 @@ CString IBeamFamilyImpl::GetName()
 
    CString strName(pszUserType);
    return strName;
+}
+
+void IBeamFamilyImpl::RefreshFactoryList()
+{
+   m_Factories.clear();
+   Init();
 }
 
 const std::vector<CString>& IBeamFamilyImpl::GetFactoryNames()

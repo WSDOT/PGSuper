@@ -101,10 +101,6 @@ public:
    VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType);
    Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
 
-   void GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads);
-   void GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,const CLinearDuctGeometry& ductGeometry,Float64 P,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads);
-   void GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,const CParabolicDuctGeometry& ductGeometry,Float64 P,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads);
-
 
    // IProductForces
    Float64 GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
@@ -333,11 +329,20 @@ private:
    void ApplyUserDefinedLoads(ILBAMModel* pModel,GirderIndexType gdrLineIdx);
    void ApplyEquivalentPretensionForce(CGirderModelData* pModelData);
    void ApplyEquivalentPretensionForce(ILBAMModel* pModel,GirderIndexType gdrLineIdx);
-   void ApplyEquivalentPostTensionForce(ILBAMModel* pModel,GirderIndexType gdrLineIdx);
+   void ApplyPostTensionDeformation(ILBAMModel* pModel,GirderIndexType gdrLineIdx);
    void ApplyLiveLoadDistributionFactors(GirderIndexType gdrLineIdx,bool bContinuous,IContraflexureResponse* pContraflexureResponse,ILBAMModel* pModel);
    void ConfigureLoadCombinations(ILBAMModel* pModel);
    void ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx);
    void ApplyIntermediateDiaphragmLoads(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx);
+
+
+   typedef struct PostTensionStrainLoad
+   {
+      SpanIndexType startSpanIdx, endSpanIdx;
+      Float64 Xstart, Xend;
+      Float64 rStart, rEnd;
+   } PostTensionStrainLoad;
+   void GetPostTensionDeformationLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<PostTensionStrainLoad>& strainLoads);
 
 
    Float64 GetPedestrianLiveLoad(const CSpanKey& spanKey);

@@ -20,28 +20,36 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-/****************************************************************************
-CLASS
-   CPGSuperCommandLineInfo
-****************************************************************************/
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperCommandLineInfo.h"
+#pragma once
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PgsExt\PgsExtExp.h>
+#include "PGSuperBaseCommandLineInfo.h"
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
+/*****************************************************************************
+CLASS 
+   CPGSpliceCommandLineInfo
 
-//======================== LIFECYCLE  =======================================
-CPGSuperCommandLineInfo::CPGSuperCommandLineInfo() : 
-CPGSuperBaseCommandLineInfo()
+   Custom command line parser for PGSuper
+
+
+DESCRIPTION
+   Custorm command line parser for special pgsuper command line options
+
+
+COPYRIGHT
+   Copyright © 1997-1998
+   Washington State Department Of Transportation
+   All Rights Reserved
+
+LOG
+   rdp : 09.24.1999 : Created file
+*****************************************************************************/
+class  CPGSpliceCommandLineInfo : public CPGSuperBaseCommandLineInfo
 {
-}
+public:
+   CPGSpliceCommandLineInfo();
 
-LPCTSTR CPGSuperCommandLineInfo::GetAppName() const
-{
-   return _T("PGSuper");
-}
+private:
+   virtual LPCTSTR GetAppName() const;
+};
+

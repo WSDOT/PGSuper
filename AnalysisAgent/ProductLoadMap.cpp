@@ -47,9 +47,8 @@ CProductLoadMap::CProductLoadMap()
    AddLoadItem(pftUserLLIM,                _T("UserLLIM"),        m_LoadCaseID++);
    AddLoadItem(pftShearKey,                _T("Shear Key"),       m_LoadCaseID++);
    //AddLoadItem(pftPretension,              _T("Pretensioning"),   m_LoadCaseID++); // not modeled in the LBAM
-   AddLoadItem(pftEquivPostTensioning,     _T("Equiv Post Tensioning"), m_LoadCaseID++);
-   //AddLoadItem(pftPrimaryPostTensioning, _T("Primary Post Tensioning"), m_LoadCaseID++); // not modeled in the LBAM
-   //AddLoadItem(pftSecondaryEffects,      _T("Secondary Effects"), m_LoadCaseID++); // not modeled in the LBAM
+   //AddLoadItem(pftPostTensioning, _T("Post Tensioning"), m_LoadCaseID++); // not modeled in the LBAM
+   AddLoadItem(pftSecondaryEffects,       _T("Secondary Effects"), m_LoadCaseID++); // not modeled in the LBAM
    AddLoadItem(pftCreep,                   _T("Creep"),         m_LoadCaseID++);
    AddLoadItem(pftShrinkage,               _T("Shrinkage"),     m_LoadCaseID++);
    AddLoadItem(pftRelaxation,              _T("Relaxation"),    m_LoadCaseID++);

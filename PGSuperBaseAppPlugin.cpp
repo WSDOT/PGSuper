@@ -47,16 +47,42 @@ CPGSuperBaseAppPlugin::~CPGSuperBaseAppPlugin()
 
 HRESULT CPGSuperBaseAppPlugin::OnFinalConstruct()
 {
+   m_CatalogServers.SetAppName(GetAppName());
+
    if ( !CreateAppUnitSystem(&m_AppUnitSystem) )
    {
       return E_FAIL;
    }
+
+   // set the profile name so we read data from the registry correctly
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pMyApp = AfxGetApp();
+
+   m_strAppProfileName = pMyApp->m_pszProfileName;
+   free((void*)pMyApp->m_pszProfileName);
+   free((void*)pMyApp->m_pszAppName);
+
+   pMyApp->m_pszProfileName = _tcsdup(GetAppName());
+   pMyApp->m_pszAppName = _tcsdup(GetAppName());
+
 
    return S_OK;
 }
 
 void CPGSuperBaseAppPlugin::OnFinalRelease()
 {
+   if ( m_strAppProfileName != _T("") )
+   {
+      // this method is called from OnNewDocument... don't want to mess with the profile name
+      // if it hasn't been changed
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+      CWinApp* pMyApp = AfxGetApp();
+
+      free((void*)pMyApp->m_pszProfileName);
+      pMyApp->m_pszProfileName = _tcsdup(m_strAppProfileName);
+   }
+
    m_AppUnitSystem.Release();
 }
 
@@ -327,7 +353,7 @@ void CPGSuperBaseAppPlugin::RegistryConvert()
       pApp->WriteProfileString(_T("Options"),_T("Publisher"),    _T("Local Files"));
 
       // create that server
-      CFileSystemPGSuperCatalogServer server(_T("Local Files"),masterlib,tempfolder,GetTemplateFileExtension());
+      CFileSystemPGSuperCatalogServer server(GetAppName(),_T("Local Files"),masterlib,tempfolder,GetTemplateFileExtension());
       CString create_string = GetCreationString(&server);
 
       int count = pApp->GetProfileInt(_T("Servers"),_T("Count"),-1);
@@ -951,7 +977,6 @@ CString CPGSuperBaseAppPlugin::GetCacheFolder()
    CAutoRegistry autoReg(GetAppName());
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pMyApp     = AfxGetApp();
    CEAFApp* pParentApp = EAFGetApp();
 
    TCHAR buffer[MAX_PATH];
@@ -963,7 +988,7 @@ CString CPGSuperBaseAppPlugin::GetCacheFolder()
    }
    else
    {
-      return CString(buffer) + CString(_T("\\")) + CString(pMyApp->m_pszProfileName) + CString(_T("\\"));
+      return CString(buffer) + CString(_T("\\")) + GetAppName() + CString(_T("\\"));
    }
 }
 
@@ -998,14 +1023,23 @@ BOOL CPGSuperBaseAppPlugin::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmd
    // doesn't know about this plug-in at the time the command line parameters are parsed
    //
    // Re-parse the parameters with our own command line information object
-   CPGSuperCommandLineInfo pgsCmdInfo;
-   EAFGetApp()->ParseCommandLine(pgsCmdInfo);
-   cmdInfo = pgsCmdInfo;
+   std::auto_ptr<CPGSuperBaseCommandLineInfo> pgsCmdInfo(CreateCommandLineInfo());
+   EAFGetApp()->ParseCommandLine(*pgsCmdInfo);
+   cmdInfo = *pgsCmdInfo;
 
-   if (pgsCmdInfo.m_bDo1250Test)
+   if (pgsCmdInfo->m_bError)
    {
-      Process1250Testing(pgsCmdInfo);
+      return FALSE;
+   }
+   else if (pgsCmdInfo->m_bDo1250Test)
+   {
+      Process1250Testing(*pgsCmdInfo);
       return TRUE; // command line parameters handled
+   }
+   else if (pgsCmdInfo->m_bSetUpdateLibrary)
+   {
+      ProcessLibrarySetUp(*pgsCmdInfo);
+      return TRUE;
    }
 
    BOOL bHandled = FALSE;
@@ -1018,7 +1052,7 @@ BOOL CPGSuperBaseAppPlugin::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmd
 
    // If we get this far and there is one parameter and it isn't a file name and it isn't handled -OR-
    // if there is more than one parameter and it isn't handled there is something wrong
-   if ( ((1 == pgsCmdInfo.m_Count && pgsCmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen) || (1 <  pgsCmdInfo.m_Count)) && !bHandled )
+   if ( ((1 == pgsCmdInfo->m_Count && pgsCmdInfo->m_nShellCommand != CCommandLineInfo::FileOpen) || (1 <  pgsCmdInfo->m_Count)) && !bHandled )
    {
       cmdInfo.m_bError = TRUE;
       bHandled = TRUE;
@@ -1027,7 +1061,7 @@ BOOL CPGSuperBaseAppPlugin::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmd
    return bHandled;
 }
 
-void CPGSuperBaseAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo)
+void CPGSuperBaseAppPlugin::Process1250Testing(const CPGSuperBaseCommandLineInfo& rCmdInfo)
 {
    USES_CONVERSION;
    ASSERT(rCmdInfo.m_bDo1250Test);
@@ -1106,5 +1140,40 @@ void CPGSuperBaseAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rC
          os.open(errfile);
          os <<_T("Unknown Error running test for input file: ")<<rCmdInfo.m_strFileName;
       }
+   }
+}
+
+void CPGSuperBaseAppPlugin::ProcessLibrarySetUp(const CPGSuperBaseCommandLineInfo& rCmdInfo)
+{
+   ASSERT(rCmdInfo.m_bSetUpdateLibrary);
+
+   // Set library to parsed names and attempt an update
+   SharedResourceType        original_type = m_SharedResourceType;
+   CacheUpdateFrequency      original_freq = m_CacheUpdateFrequency;
+   CString                 original_server = m_CurrentCatalogServer;
+   CString              original_publisher = m_Publisher;
+
+   // find our server
+   const CPGSuperCatalogServer* pserver = GetCatalogServers()->GetServer(rCmdInfo.m_CatalogServerName);
+   if (pserver != NULL)
+   {
+      m_SharedResourceType   = pserver->GetServerType();
+
+      m_CurrentCatalogServer = rCmdInfo.m_CatalogServerName;
+      m_Publisher            = rCmdInfo.m_PublisherName ;
+
+      if (!this->DoCacheUpdate())
+      {
+         // DoCacheUpdate will restore the cache, we need also to restore local data
+         m_SharedResourceType   = original_type;
+         m_CurrentCatalogServer = original_server;
+         m_Publisher            = original_publisher;
+      }
+   }
+   else
+   {
+      CString msg;
+      msg.Format(_T("Error - The configuration server \"%s\" was not found. Could not update configuration."), rCmdInfo.m_CatalogServerName);
+      AfxMessageBox(msg);
    }
 }

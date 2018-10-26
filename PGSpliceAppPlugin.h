@@ -89,6 +89,9 @@ public:
    bool UpdatingTemplates();
    void OnProgramSettings();
 
+protected:
+   virtual CPGSuperBaseCommandLineInfo* CreateCommandLineInfo() const;
+
 // IEAFAppPlugin
 public:
    virtual BOOL Init(CEAFApp* pParent);

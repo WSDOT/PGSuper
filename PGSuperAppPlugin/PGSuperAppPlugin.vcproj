@@ -1324,6 +1324,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PGSpliceCommandLineInfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PGSpliceComponentInfo.cpp"
 				>
 			</File>
@@ -1349,6 +1353,10 @@
 			</File>
 			<File
 				RelativePath="..\PGSuperBaseAppPlugin.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSuperBaseCommandLineInfo.cpp"
 				>
 			</File>
 			<File
@@ -2286,6 +2294,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PGSpliceCommandLineInfo.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PGSpliceComponentInfo.h"
 				>
 			</File>
@@ -2311,6 +2323,10 @@
 			</File>
 			<File
 				RelativePath="..\PGSuperBaseAppPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSuperBaseCommandLineInfo.h"
 				>
 			</File>
 			<File
@@ -2696,11 +2712,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2876,11 +2892,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -3084,11 +3100,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3096,11 +3112,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>

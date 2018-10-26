@@ -240,6 +240,11 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
    m_Count++;
 }
 
+CString CTxDOTCommandLineInfo::GetUsageMessage()
+{
+   return CString(_T("/TxTOGA filename.toga outputfile"));
+}
+
 CString CTxDOTCommandLineInfo::GetUsageString()
 {
    return CString(_T("Valid parameters are\n/flag filename.pgs outputfile span girder\nwhere\nflag can be TxA, TxAx, TxAt, TxD, TxDx, or TxDT\nspan can be a span number or the keyword ALL\ngirder can be a girder letter (A-Z), the keyword ALL or the keyword EI\nOr /TxTOGA filename.toga outputfile"));

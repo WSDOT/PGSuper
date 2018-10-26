@@ -5,6 +5,7 @@
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
 #include "PGSuperProjectImporterMgr.h"
+#include "PGSuperCommandLineInfo.h"
 
 #include <EAF\EAFDocManager.h>
 
@@ -130,6 +131,11 @@ void CPGSuperProjectImporterAppPlugin::ConfigureProjectImporters()
       // the document manager
       ((CEAFDocManager*)pApp->m_pDocManager)->RemoveDocTemplate(template_position);
    }
+}
+
+CPGSuperBaseCommandLineInfo* CPGSuperProjectImporterAppPlugin::CreateCommandLineInfo() const
+{
+   return new CPGSuperCommandLineInfo;
 }
 
 BOOL CPGSuperProjectImporterAppPlugin::Init(CEAFApp* pParent)

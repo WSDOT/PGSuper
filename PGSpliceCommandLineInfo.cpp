@@ -22,10 +22,10 @@
 
 /****************************************************************************
 CLASS
-   CPGSuperCommandLineInfo
+   CPGSpliceCommandLineInfo
 ****************************************************************************/
 #include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperCommandLineInfo.h"
+#include "PGSpliceCommandLineInfo.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,12 +36,12 @@ static char THIS_FILE[] = __FILE__;
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CPGSuperCommandLineInfo::CPGSuperCommandLineInfo() : 
+CPGSpliceCommandLineInfo::CPGSpliceCommandLineInfo() : 
 CPGSuperBaseCommandLineInfo()
 {
 }
 
-LPCTSTR CPGSuperCommandLineInfo::GetAppName() const
+LPCTSTR CPGSpliceCommandLineInfo::GetAppName() const
 {
-   return _T("PGSuper");
+   return _T("PGSplice");
 }

@@ -60,8 +60,8 @@ typedef enum ProductForceType
    pftShearKey,
 
    // pseudo externally applied loads (really internal loads)
-   pftPretension,
-   pftPrimaryPostTensioning,
+   pftPretension,       // P*e for pretension
+   pftPostTensioning,   // P*e for post-tension
    pftSecondaryEffects,
 
    // time-depending effects
@@ -70,8 +70,7 @@ typedef enum ProductForceType
    pftRelaxation,
 
    // special cases
-   pftEquivPostTensioning, // load case for equivalent PT forces
-   pftTotalPostTensioning, // Primary PT + Secondary Effects
+   pftTotalPostTensioning, // PT + Secondary Effects
    pftOverlayRating,
 
    pftProductForceTypeCount
@@ -147,31 +146,6 @@ typedef struct ShearKeyLoad
    Float64 EndJW;          // Curb to curb width
    Float64 EndJointLoad;
 } ShearKeyLoad;
-
-typedef struct EquivPostTensionDistributedLoad
-{
-   SpanIndexType spanIdx;
-   Float64 Xstart, Xend;
-   Float64 Wstart, Wend;
-   Float64 eStart, eEnd; // eccentricty of tendon
-   Float64 e_prime; // eEnd - eStart
-   Float64 P;
-   Float64 x; // Xstart - Xend
-} EquivPostTensionDistributedLoad;
-
-typedef struct EquivPostTensionPointLoad
-{
-   SpanIndexType spanIdx;
-   Float64 X; // location from start of span
-   Float64 P; // magnitude of equivalent load
-} EquivPostTensionPointLoad;
-
-typedef struct EquivPostTensionMomentLoad
-{
-   SpanIndexType spanIdx;
-   Float64 X; // location from start of span
-   Float64 M; // magnitude of equivalent load
-} EquivPostTensionMomentLoad;
 
 typedef struct EquivPretensionLoad
 {
@@ -253,9 +227,6 @@ interface IProductLoads : IUnknown
 
    // Equivalent loads for pretensioning
    virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
-
-   // Equivalent loads for post-tensioning
-   virtual void GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads) = 0;
 };
 
 

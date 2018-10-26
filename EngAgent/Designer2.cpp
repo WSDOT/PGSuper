@@ -730,6 +730,29 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
             Float64 startEndDist      = pBridge->GetSegmentStartEndDistance(segmentKey);
             bool bStartCantilever, bEndCantilever;
             pBridge->ModelCantilevers(segmentKey,&bStartCantilever,&bEndCantilever);
+
+            if ( segIdx < nSegments-1 && pIntervals->GetCompositeClosureJointInterval(segmentKey) <= intervalIdx )
+            {
+               // this is a multi-segment girder and the closure joints have become composite forming
+               // a continuous girder 
+               if ( segIdx == 0 )
+               {
+                  // if this is the first segment, always model the cantilever at the end
+                  bEndCantilever = true;
+               }
+               else if ( segIdx == nSegments-1 )
+               {
+                  // if this is the last segment, always model the cantilever at the start
+                  bStartCantilever = true;
+               }
+               else
+               {
+                  // this is an intermediate segment... model cantilevers at both ends
+                  bStartCantilever = true;
+                  bEndCantilever   = true;
+               }
+            }
+
             Float64 start = (bStartCantilever ? 0 : startEndDist);
             Float64 end   = (bEndCantilever ? pBridge->GetSegmentLength(segmentKey) : startEndDist + segmentSpanLength);
             std::remove_copy_if(erectedPois.begin(), erectedPois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(start,end));

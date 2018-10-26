@@ -26,7 +26,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFCustomReport.h>
 
-#include "PGSuperCommandLineInfo.h"
+#include "PGSuperBaseCommandLineInfo.h"
 
 // Base class for all PGSuper Document-type application plugins
 // Performs common initialization expected by the CPGSuperDocBase class
@@ -79,6 +79,9 @@ public:
    void SetCustomReports(const CEAFCustomReports& reports);
 
 protected:
+   CString m_strAppProfileName; // this is the original app profile name before we mess with it
+   // need to hang on to it so we can put it back the way it was
+
    SharedResourceType   m_SharedResourceType;     // method for using shared resources (Master lib and Workgroup templates)
    CacheUpdateFrequency m_CacheUpdateFrequency;
 
@@ -135,8 +138,11 @@ protected:
 
    const CPGSuperCatalogServers* GetCatalogServers() const;
 
-   BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
-   void Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo);
+   virtual CPGSuperBaseCommandLineInfo* CreateCommandLineInfo() const = 0;
+   virtual BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
+   virtual void Process1250Testing(const CPGSuperBaseCommandLineInfo& rCmdInfo);
+   virtual void ProcessLibrarySetUp(const CPGSuperBaseCommandLineInfo& rCmdInfo);
+
 
 private:
    CPGSuperCatalogServers m_CatalogServers;

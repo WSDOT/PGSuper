@@ -932,13 +932,12 @@ LPCTSTR CAnalysisAgentImp::GetProductLoadName(ProductForceType pfType)
       _T("User DW"),
       _T("User LLIM"),
       _T("Shear Key"),
-      _T("Pretensioning"),
-      _T("Primary Post-tensioning"),
+      _T("Pre-tensioning"),
+      _T("Post-tensioning"),
       _T("Secondary Effects"),
       _T("Creep"),
       _T("Shrinkage"),
       _T("Relaxation"),
-      _T("Equiv Post-tensioning"),
       _T("Total Post-tensioning"),
       _T("Overlay (rating)")
    };
@@ -1003,11 +1002,11 @@ LPCTSTR CAnalysisAgentImp::GetProductLoadName(ProductForceType pfType)
       break;
 
    case pftPretension:
-      strName = _T("Pretensioning");
+      strName = _T("Pre-tensioning");
       break;
 
-   case pftPrimaryPostTensioning:
-      strName = _T("Primary Post-tensioning");
+   case pftPostTensioning:
+      strName = _T("Post-tensioning");
       break;
 
    case pftSecondaryEffects:
@@ -1024,10 +1023,6 @@ LPCTSTR CAnalysisAgentImp::GetProductLoadName(ProductForceType pfType)
 
    case pftRelaxation:
       strName = _T("Relaxation");
-      break;
-
-   case pftEquivPostTensioning:
-      strName = _T("Equiv Post-tensioning");
       break;
 
    case pftTotalPostTensioning:
@@ -1731,7 +1726,7 @@ void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,F
 
 std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   ATLASSERT(pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects);
+   ATLASSERT(pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPostTensioning || pfType == pftSecondaryEffects);
    ATLASSERT(bat == pgsTypes::ContinuousSpan);
 
    std::vector<Float64> P;
@@ -1740,7 +1735,7 @@ std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressAxial(IntervalIndexT
    if ( pfType == pftTotalPostTensioning )
    {
       // the deflections due to total post-tensioning is the sum of the primary and secondary effects
-      std::vector<Float64> primary(  GetTimeStepPrestressAxial(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,resultsType));
+      std::vector<Float64> primary(  GetTimeStepPrestressAxial(intervalIdx,pftPostTensioning,vPoi,bat,resultsType));
       std::vector<Float64> secondary(GetTimeStepPrestressAxial(intervalIdx,pftSecondaryEffects,     vPoi,bat,resultsType));
 
       std::transform(primary.begin(),primary.end(),secondary.begin(),std::back_inserter(P),std::plus<Float64>());
@@ -1776,7 +1771,7 @@ std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressAxial(IntervalIndexT
 
 std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   ATLASSERT(pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects);
+   ATLASSERT(pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPostTensioning || pfType == pftSecondaryEffects);
    ATLASSERT(bat == pgsTypes::ContinuousSpan);
 
    std::vector<Float64> M;
@@ -1785,7 +1780,7 @@ std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressMoment(IntervalIndex
    if ( pfType == pftTotalPostTensioning )
    {
       // the deflections due to total post-tensioning is the sum of the primary and secondary effects
-      std::vector<Float64> primary(  GetTimeStepPrestressMoment(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,resultsType));
+      std::vector<Float64> primary(  GetTimeStepPrestressMoment(intervalIdx,pftPostTensioning,vPoi,bat,resultsType));
       std::vector<Float64> secondary(GetTimeStepPrestressMoment(intervalIdx,pftSecondaryEffects,     vPoi,bat,resultsType));
 
       std::transform(primary.begin(),primary.end(),secondary.begin(),std::back_inserter(M),std::plus<Float64>());
@@ -1892,11 +1887,6 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
    return m_pSegmentModelManager->GetEquivPretensionLoads(segmentKey,strandType);
 }
 
-void CAnalysisAgentImp::GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads)
-{
-   m_pGirderModelManager->GetEquivPostTensionLoads(girderKey,ductIdx,ptLoads,distLoads,momentLoads);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // IProductForces2
 //
@@ -1906,7 +1896,7 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,P
 
    std::vector<Float64> results;
 
-   if ( pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+   if ( pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPostTensioning )
    {
       GET_IFACE( ILossParameters, pLossParams);
       if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -1934,7 +1924,7 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,P
 
          // Post-tensioning is not modeled for linear elastic analysis, so the
          // results are zero
-         if ( pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+         if ( pfType == pftPostTensioning || pfType == pftSecondaryEffects )
          {
             results.resize(vPoi.size(),0.0);
             return results;
@@ -1986,24 +1976,13 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
 
    std::vector<sysSectionValue> results;
 
-   if ( pfType == pftPretension || pfType == pftPrimaryPostTensioning )
+   if ( pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPostTensioning )
    {
       // pre and post-tensioning don't cause external shear forces.
       // There is a vertical component of prestress, Vp, that is used
       // in shear analysis, but that isn't this...
       results.resize(vPoi.size(),sysSectionValue(0,0));
       return results;
-   }
-
-   // Secondary effects aren't computed in the LBAM model
-   // Secondary = Total - Primary. Since the primary PT only
-   // creates moment, not shear, its contribution is zero.
-   // This leaves Secondary = Total. Total PT isn't in the
-   // LBAM either, but results of Equiv post tensioning is
-   // it is the same as total.
-   if ( pfType == pftTotalPostTensioning || pfType == pftSecondaryEffects )
-   {
-      pfType = pftEquivPostTensioning;
    }
 
    if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
@@ -2051,7 +2030,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
 
    std::vector<Float64> results;
 
-   if ( pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+   if ( pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPostTensioning )
    {
       GET_IFACE( ILossParameters, pLossParams);
       if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -2079,7 +2058,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
 
          // Post-tensioning is not modeled for linear elastic analysis, so the
          // results are zero
-         if ( pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+         if ( pfType == pftPostTensioning || pfType == pftSecondaryEffects )
          {
             results.resize(vPoi.size(),0.0);
             return results;
@@ -2141,12 +2120,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
    std::vector<Float64> deflections;
    deflections.reserve(vPoi.size());
 
-   if ( pfType == pftTotalPostTensioning )
-   {
-      pfType = pftEquivPostTensioning;
-   }
-
-   if ( pfType == pftSecondaryEffects || pfType == pftPrimaryPostTensioning )
+   if ( pfType == pftSecondaryEffects || pfType == pftPostTensioning )
    {
       deflections.resize(vPoi.size(),0.0);
    }
@@ -2222,12 +2196,7 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
    std::vector<Float64> rotations;
    rotations.reserve(vPoi.size());
 
-   if ( pfType == pftTotalPostTensioning )
-   {
-      pfType = pftEquivPostTensioning;
-   }
-
-   if ( pfType == pftSecondaryEffects || pfType == pftPrimaryPostTensioning )
+   if ( pfType == pftSecondaryEffects || pfType == pftPostTensioning )
    {
       rotations.resize(vPoi.size(),0.0);
    }
@@ -2910,36 +2879,6 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
       Invalidate(false);
       throw;
    }
-
-
-   // LBAM analysis doesn't include secondary effects... add them here
-
-   // Load factors for secondary effects
-   Float64 gPSMin, gPSMax;
-   if ( ::IsRatingLimitState(limitState) )
-   {
-      GET_IFACE(IRatingSpecification,pRatingSpec);
-      gPSMin = pRatingSpec->GetSecondaryEffectsFactor(limitState);
-      gPSMax = gPSMin;
-   }
-   else
-   {
-      GET_IFACE(ILoadFactors,pILoadFactors);
-      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-      gPSMin = pLoadFactors->PSmin[limitState];
-      gPSMax = pLoadFactors->PSmax[limitState];
-   }
-
-   std::vector<sysSectionValue> Vps = GetShear(intervalIdx,pftSecondaryEffects,vPoi,bat,rtCumulative);
-   std::vector<sysSectionValue>::iterator VpsIter(Vps.begin());
-   std::vector<sysSectionValue>::iterator VpsIterEnd(Vps.end());
-   std::vector<sysSectionValue>::iterator minIter(pMin->begin());
-   std::vector<sysSectionValue>::iterator maxIter(pMax->begin());
-   for ( ; VpsIter != VpsIterEnd; VpsIter++, minIter++, maxIter++ )
-   {
-      (*minIter) += gPSMin*(*VpsIter);
-      (*maxIter) += gPSMax*(*VpsIter);
-   }
 }
 
 void CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
@@ -2973,35 +2912,6 @@ void CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitS
       Invalidate(false);
       throw;
    }
-
-   // LBAM analysis doesn't include secondary effects... add them here
-
-   // Load factors for secondary effects
-   Float64 gPSMin, gPSMax;
-   if ( ::IsRatingLimitState(limitState) )
-   {
-      GET_IFACE(IRatingSpecification,pRatingSpec);
-      gPSMin = pRatingSpec->GetSecondaryEffectsFactor(limitState);
-      gPSMax = gPSMin;
-   }
-   else
-   {
-      GET_IFACE(ILoadFactors,pILoadFactors);
-      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-      gPSMin = pLoadFactors->PSmin[limitState];
-      gPSMax = pLoadFactors->PSmax[limitState];
-   }
-
-   std::vector<Float64> Mps = GetMoment(intervalIdx,pftSecondaryEffects,vPoi,bat,rtCumulative);
-   std::vector<Float64>::iterator MpsIter(Mps.begin());
-   std::vector<Float64>::iterator MpsIterEnd(Mps.end());
-   std::vector<Float64>::iterator MminIter(pMin->begin());
-   std::vector<Float64>::iterator MmaxIter(pMax->begin());
-   for ( ; MpsIter != MpsIterEnd; MpsIter++, MminIter++, MmaxIter++ )
-   {
-      (*MminIter) += gPSMin*(*MpsIter);
-      (*MmaxIter) += gPSMax*(*MpsIter);
-   }
 }
 
 std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat)
@@ -3019,26 +2929,6 @@ std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState
       // reset all of our data.
       Invalidate(false);
       throw;
-   }
-
-   // LBAM analysis doesn't include secondary effects... add them here
-
-   // Load factors for secondary effects
-   Float64 gPSMin;
-   GET_IFACE(ILoadFactors,pILoadFactors);
-   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-   gPSMin = pLoadFactors->PSmin[limitState];
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
-
-   std::vector<Float64> Mps = GetMoment(lastIntervalIdx,pftSecondaryEffects,vPoi,bat,rtCumulative);
-   std::vector<Float64>::iterator MpsIter(Mps.begin());
-   std::vector<Float64>::iterator MpsIterEnd(Mps.end());
-   std::vector<Float64>::iterator MsdIter(Msd.begin());
-   for ( ; MpsIter != MpsIterEnd; MpsIter++, MsdIter++ )
-   {
-      (*MsdIter) += gPSMin*(*MpsIter);
    }
 
    return Msd;
@@ -4913,7 +4803,7 @@ Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsType
    }
    else
    {
-      P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI,config);
+      P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,limitState,config);
    }
 
    // NOTE: since we are doing design, the main bridge model may not have temporary strand removal
@@ -6748,21 +6638,12 @@ bool CAnalysisAgentImp::AreBearingReactionsAvailable(IntervalIndexType intervalI
 void CAnalysisAgentImp::GetBearingProductReaction(IntervalIndexType intervalIdx,ProductForceType pfType,const CGirderKey& girderKey,
                                                   pgsTypes::BridgeAnalysisType bat,ResultsType resultsType, Float64* pLftEnd,Float64* pRgtEnd)
 {
-   if ( pfType == pftPretension || pfType == pftPrimaryPostTensioning )
+   if ( pfType == pftPretension || pfType == pftPostTensioning )
    {
       // Pretension and primary post-tension are internal self equilibriating forces
       // they don't cause external reactions
       *pLftEnd = 0;
       *pRgtEnd = 0;
-   }
-   else if ( pfType == pftSecondaryEffects )
-   {
-      Float64 RLeftTotal, RRightTotal;
-      Float64 RLeftPrimary, RRightPrimary;
-      GetBearingProductReaction(intervalIdx,pftEquivPostTensioning,  girderKey,bat,resultsType,&RLeftTotal,&RRightTotal);
-      GetBearingProductReaction(intervalIdx,pftPrimaryPostTensioning,girderKey,bat,resultsType,&RLeftPrimary,&RRightPrimary);
-      *pLftEnd = RLeftTotal - RLeftPrimary;
-      *pRgtEnd = RRightTotal - RRightPrimary;
    }
    else
    {
@@ -7141,10 +7022,10 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,ProductF
       if ( pfType == pftTotalPostTensioning )
       {
          // total post-tensioning is primary (P*e) + secondary
-         fTop = pTopConcreteElement->f[topFace][pftPrimaryPostTensioning][resultsType]
+         fTop = pTopConcreteElement->f[topFace][pftPostTensioning][resultsType]
               + pTopConcreteElement->f[topFace][pftSecondaryEffects     ][resultsType];
 
-         fBot = pBotConcreteElement->f[botFace][pftPrimaryPostTensioning][resultsType]
+         fBot = pBotConcreteElement->f[botFace][pftPostTensioning][resultsType]
               + pBotConcreteElement->f[botFace][pftSecondaryEffects     ][resultsType];
       }
       else
@@ -7368,7 +7249,7 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes
       if ( bIncludePrestress )
       {
          fPR = pConcreteElement->f[face][pftPretension           ][rtCumulative];
-         fPT = pConcreteElement->f[face][pftPrimaryPostTensioning][rtCumulative];
+         fPT = pConcreteElement->f[face][pftPostTensioning][rtCumulative];
       }
 
       fLLMin = pConcreteElement->fLLMin[face];

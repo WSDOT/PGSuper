@@ -209,9 +209,10 @@ void CPierDetailsDlg::CreateExtensionPages()
    {
       IEditPierCallback* pEditPierCallback = callbackIter->second;
       CPropertyPage* pPage = pEditPierCallback->CreatePropertyPage(this);
+      ATLASSERT(pPage != NULL);
+      m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
          AddPage(pPage);
       }
    }
@@ -250,9 +251,10 @@ void CPierDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& 
          }
       }
 
+      m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
+
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
          AddPage(pPage);
       }
    }
@@ -265,7 +267,10 @@ void CPierDetailsDlg::DestroyExtensionPages()
    for ( ; pageIter != pageIterEnd; pageIter++ )
    {
       CPropertyPage* pPage = pageIter->second;
-      delete pPage;
+      if ( pPage )
+      {
+         delete pPage;
+      }
    }
    m_ExtensionPages.clear();
 }
@@ -273,9 +278,13 @@ void CPierDetailsDlg::DestroyExtensionPages()
 txnTransaction* CPierDetailsDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
+   {
       return m_Macro.CreateClone();
+   }
    else
+   {
       return NULL;
+   }
 }
 
 void CPierDetailsDlg::NotifyExtensionPages()

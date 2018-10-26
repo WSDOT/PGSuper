@@ -53,6 +53,8 @@ public:
    // derive new version to parse new commands
    virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
 
+   virtual CString GetUsageMessage();
+
    // txDOT CAD report from command line
    bool  m_DoTxCadReport;
    TxRunType m_TxRunType;

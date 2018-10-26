@@ -255,7 +255,7 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
             {
                Float64 fpbt = pPTForce->GetInitialTendonStress(poi,ductIdx,false/*exclude anchor set*/);
                Float64 fpat = pPTForce->GetInitialTendonStress(poi,ductIdx,true/*include anchor set*/);
-               Float64 fpe  = pPTForce->GetTendonStress(poi,stressTendonIntervalIdx,pgsTypes::End,  ductIdx);
+               Float64 fpe  = pPTForce->GetAverageInitialTendonStress(poi.GetSegmentKey(),ductIdx);
 
                AddGraphPoint(dataSeries1,X,fpbt);
                AddGraphPoint(dataSeries2,X,fpat);
@@ -265,7 +265,7 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
             {
                Float64 Fpbt = pPTForce->GetInitialTendonForce(poi,ductIdx,false/*exclude anchor set*/);
                Float64 Fpat = pPTForce->GetInitialTendonForce(poi,ductIdx,true/*include anchor set*/);
-               Float64 Fpe  = pPTForce->GetTendonForce(poi,stressTendonIntervalIdx,pgsTypes::End,  ductIdx);
+               Float64 Fpe  = pPTForce->GetAverageInitialTendonForce(poi.GetSegmentKey(),ductIdx);
 
                AddGraphPoint(dataSeries1,X,Fpbt);
                AddGraphPoint(dataSeries2,X,Fpat);

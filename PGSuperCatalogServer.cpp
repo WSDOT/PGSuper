@@ -34,7 +34,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // Functions to save and create our servers to/from a string
-CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CString& strExt)
+CPGSuperCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& createString,const CString& strExt)
 {
    int p = createString.Find(_T('|'));
    if ( p != -1 )
@@ -49,12 +49,12 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
 
          if (strType==_T("FTP"))
          {
-            CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strName, strAddress, strExt);
+            CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strAppName, strName, strAddress, strExt);
             return psvr;
          }
          else if (strType==_T("HTTP"))
          {
-            CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strName, strAddress, strExt);
+            CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strAppName, strName, strAddress, strExt);
             return psvr;
          }
          else
@@ -65,7 +65,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
             {
                CString strLibraryFileName = strAddress.Left(p);
                CString strTemplateFolder = strAddress.Mid(p+1);
-               CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strName, strLibraryFileName, strTemplateFolder, strExt);
+               CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strAppName, strName, strLibraryFileName, strTemplateFolder, strExt);
                return psvr;
             }
             else
@@ -90,7 +90,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
       {
          CString strName = createString.Left(p);
          CString strAddress = createString.Mid(p+1);
-         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strName, strAddress, strExt);
+         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strAppName, strName, strAddress, strExt);
          return psvr;
       }
       else
@@ -101,7 +101,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
    }
 }
 
-CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CString& createString,const CString& strExt)
+CPGSuperCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& strServerName,const CString& createString,const CString& strExt)
 {
    int p = createString.Find(_T('|'));
    if ( p != -1 )
@@ -110,12 +110,12 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
       CString strAddress(createString.Mid(p+1));
       if (strType==_T("FTP"))
       {
-         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress, strExt);
+         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strAppName, strServerName, strAddress, strExt);
          return psvr;
       }
       else if (strType==_T("HTTP"))
       {
-         CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strServerName, strAddress, strExt);
+         CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strAppName, strServerName, strAddress, strExt);
          return psvr;
       }
       else
@@ -126,7 +126,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
          {
             CString strLibraryFileName = strAddress.Left(p);
             CString strTemplateFolder = strAddress.Mid(p+1);
-            CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strServerName, strLibraryFileName, strTemplateFolder, strExt);
+            CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strAppName,strServerName, strLibraryFileName, strTemplateFolder, strExt);
             return psvr;
          }
          else
@@ -144,7 +144,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
       if ( p != -1 )
       {
          CString strAddress = createString.Left(p);
-         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress, strExt);
+         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strAppName,strServerName, strAddress, strExt);
          return psvr;
       }
       else
@@ -233,12 +233,10 @@ static CString GetTempPgzMD5Filename()
    return cbuf;
 }
 
-static CString GetCatalogFileName()
+CString GetCatalogFileName(LPCTSTR strAppName)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
    CString strCatalogFile;
-   strCatalogFile.Format(_T("%sPackages.ini"),pApp->m_pszProfileName);
+   strCatalogFile.Format(_T("%sPackages.ini"),strAppName);
    return strCatalogFile;
 }
 
@@ -348,7 +346,8 @@ BOOL PeekAndPump()
 
 /////    CPGSuperCatalogServer  ///////////
 
-CPGSuperCatalogServer::CPGSuperCatalogServer(const CString& name,SharedResourceType type,const CString& strExt):
+CPGSuperCatalogServer::CPGSuperCatalogServer(LPCTSTR strAppName,LPCTSTR name,SharedResourceType type,const CString& strExt):
+m_AppName(strAppName),
 m_Name(name),
 m_ServerType(type),
 m_TemplateFileExt(strExt)
@@ -436,8 +435,8 @@ bool CPGSuperCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMaste
 
 /// CFtpPGSuperCatalogServer ///
 // default ftp to wsdot
-CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer(const CString& strExt):
-CPGSuperCatalogServer(_T("WSDOT"),srtInternetFtp,strExt)
+CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer(LPCTSTR strAppName,const CString& strExt):
+CPGSuperCatalogServer(strAppName,_T("WSDOT"),srtInternetFtp,strExt)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
@@ -445,8 +444,8 @@ CPGSuperCatalogServer(_T("WSDOT"),srtInternetFtp,strExt)
    Init();
 }
 
-CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer(const CString& name, const CString& address,const CString& strExt):
-CPGSuperCatalogServer(name,srtInternetFtp,strExt)
+CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer(LPCTSTR strAppName,LPCTSTR name, const CString& address,const CString& strExt):
+CPGSuperCatalogServer(strAppName,name,srtInternetFtp,strExt)
 {
    SetAddress(address);
    Init();
@@ -482,7 +481,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
       ::GetTempPath(256,buffer);
 
       m_strLocalCatalog = buffer;
-      m_strLocalCatalog += GetCatalogFileName();
+      m_strLocalCatalog += GetCatalogFileName(m_AppName);
 
       if (toTempfolder)
       {
@@ -492,7 +491,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
 
       // pull the catalog down from the one and only catalog server
       // (we will support general catalog servers later)
-      CString catURL = m_ServerAddress+GetCatalogFileName();
+      CString catURL = m_ServerAddress+GetCatalogFileName(m_AppName);
       try
       {
          DWORD dwServiceType;
@@ -535,6 +534,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
       }
 
       // We have the catalog, initialize the catalog parser
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
       CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
       CString strVersion = pApp->GetVersion(true);
 
@@ -1132,7 +1132,7 @@ bool CFtpPGSuperCatalogServer::TestServer(CString& errorMessage) const
    CString strServer, strObject;
    INTERNET_PORT nPort;
 
-   CString catalog_file = m_ServerAddress+GetCatalogFileName();
+   CString catalog_file = m_ServerAddress+GetCatalogFileName(m_AppName);
 
    BOOL bSuccess = AfxParseURL(catalog_file,dwServiceType,strServer,strObject,nPort);
    if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP )
@@ -1157,8 +1157,8 @@ bool CFtpPGSuperCatalogServer::TestServer(CString& errorMessage) const
 
 /// CHttpPGSuperCatalogServer ///
 
-CHttpPGSuperCatalogServer::CHttpPGSuperCatalogServer(const CString& name, const CString& address,const CString& strExt):
-CPGSuperCatalogServer(name,srtInternetHttp,strExt)
+CHttpPGSuperCatalogServer::CHttpPGSuperCatalogServer(LPCTSTR strAppName,LPCTSTR name, const CString& address,const CString& strExt):
+CPGSuperCatalogServer(strAppName,name,srtInternetHttp,strExt)
 {
    SetAddress(address);
    Init();
@@ -1195,14 +1195,15 @@ void CHttpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
       ::GetTempPath(256,buffer);
 
       m_strLocalCatalog = buffer;
-      m_strLocalCatalog += GetCatalogFileName();
+      m_strLocalCatalog += GetCatalogFileName(m_AppName);
 
-      CString catalogURL = m_ServerAddress+GetCatalogFileName();
+      CString catalogURL = m_ServerAddress+GetCatalogFileName(m_AppName);
 
       gwResult gwres = GetWebFile(catalogURL, m_strLocalCatalog);
       if ( gwres==gwOk )
       {
          // we have the catalog, initialize the catalog parser
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
          CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
          CString strVersion = pApp->GetVersion(true);
 
@@ -1429,9 +1430,9 @@ bool CHttpPGSuperCatalogServer::TestServer(CString& errorMessage) const
    TCHAR buffer[256];
    ::GetTempPath(256,buffer);
    CString cbuf;
-   cbuf.Format(_T("%sPGSuper.tmp"),buffer);
+   cbuf.Format(_T("%s%s.tmp"),buffer,m_AppName);
 
-   CString catalog_fileurl = m_ServerAddress+GetCatalogFileName();
+   CString catalog_fileurl = m_ServerAddress+GetCatalogFileName(m_AppName);
 
    gwResult res = GetWebFile(catalog_fileurl, cbuf);
    if ( res==gwInvalidUrl )
@@ -1461,7 +1462,8 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
 	  client making the request. If this NULL the frame work will
 	  call  the global function AfxGetAppName which returns the application
 	  name.*/
-	LPCTSTR pstrAgent = _T("Pgsuper");
+	//LPCTSTR pstrAgent = _T("Pgsuper");
+	LPCTSTR pstrAgent = m_AppName;
 
 	//the verb we will be using for this connection
 	//if NULL then GET is assumed
@@ -1524,7 +1526,9 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
 			1, &pstrAcceptTypes, pstrVersion, dwHttpRequestFlags);
 
 		pFile->AddRequestHeaders(szHeaders);
-		pFile->AddRequestHeaders(_T("User-Agent: PGSuper/3.3\r\n"), HTTP_ADDREQ_FLAG_ADD_IF_NEW);
+      CString strHeader;
+      strHeader.Format(_T("User-Agent: %s/3.3/r/n"),m_AppName);
+		pFile->AddRequestHeaders(strHeader, HTTP_ADDREQ_FLAG_ADD_IF_NEW);
 		pFile->SendRequest();
 
 		pFile->QueryInfoStatusCode(dwRet);//Check wininet.h for info
@@ -1646,8 +1650,8 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
 
 
 /// CFileSystemPGSuperCatalogServer ///
-CFileSystemPGSuperCatalogServer::CFileSystemPGSuperCatalogServer(const CString& name, const CString& libraryFileName, const CString& templateFilePath,const CString& strExt):
-CPGSuperCatalogServer(name,srtLocal,strExt),
+CFileSystemPGSuperCatalogServer::CFileSystemPGSuperCatalogServer(LPCTSTR strAppName,LPCTSTR name, const CString& libraryFileName, const CString& templateFilePath,const CString& strExt):
+CPGSuperCatalogServer(strAppName,name,srtLocal,strExt),
 m_LibraryFileName(libraryFileName),
 m_TemplateFilePath(templateFilePath),
 m_bFakeError(false)

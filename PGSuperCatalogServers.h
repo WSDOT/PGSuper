@@ -32,6 +32,8 @@ class CPGSuperCatalogServers
 public:
    CPGSuperCatalogServers();
    ~CPGSuperCatalogServers();
+   void SetAppName(LPCTSTR strAppName);
+   LPCTSTR GetAppName() const;
    void SetTemplateFileExtenstion(LPCTSTR strExt);
    void AddServer(CPGSuperCatalogServer* pserver);
    CollectionIndexType GetServerCount() const;
@@ -59,6 +61,7 @@ private:
    typedef std::set<ServerPtr ,CatalogServerCompareByName> Servers;
    Servers m_Servers;
    CString m_strExt;
+   CString m_AppName;
 };
 
 #endif // INCLUDED_PGSUPERCATALOGSERVERS_H_

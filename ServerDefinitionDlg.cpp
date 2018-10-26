@@ -239,19 +239,19 @@ CPGSuperCatalogServer* CServerDefinitionDlg::CreateServer()
    // Factory up our server
    if (m_ServerType==srtInternetFtp)
    {
-      CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(m_ServerName, m_ServerAddress, m_TemplateFileExt);
+      CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(m_Servers.GetAppName(),m_ServerName, m_ServerAddress, m_TemplateFileExt);
       ATLASSERT(psvr);
       return psvr;
    }
    else if (m_ServerType==srtInternetHttp)
    {
-      CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(m_ServerName, m_ServerAddress, m_TemplateFileExt);
+      CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(m_Servers.GetAppName(),m_ServerName, m_ServerAddress, m_TemplateFileExt);
       ATLASSERT(psvr);
       return psvr;
    }
    else if (m_ServerType==srtLocal)
    {
-      CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(m_ServerName, m_LocalMasterLibraryFile, m_LocalWorkgroupTemplateFolder, m_TemplateFileExt);
+      CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(m_Servers.GetAppName(),m_ServerName, m_LocalMasterLibraryFile, m_LocalWorkgroupTemplateFolder, m_TemplateFileExt);
       ATLASSERT(psvr);
       return psvr;
    }

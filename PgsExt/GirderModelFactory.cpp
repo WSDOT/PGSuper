@@ -105,6 +105,15 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
    std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE);
    pPOI->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT,POI_ERECTED_SEGMENT | POI_CANTILEVER);
 
+   // sometimes we loose the released segment POI at 0L and 1.0L in the call to RemovePointsOfInterest above
+   // these are key POI so include them here so we are guarenteed to have them.
+   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   ATLASSERT(vPoi.size() == 1);
+   xsPOI.push_back(vPoi.front());
+   vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   ATLASSERT(vPoi.size() == 1);
+   xsPOI.push_back(vPoi.front());
+
 
    // add support locations if there aren't already POIs at those locations
    bool bLeftSupportLoc  = true;

@@ -31,6 +31,8 @@
 #include "BridgePlanView.h"
 #include <PsgLib\BeamFamilyManager.h>
 
+#include "PGSpliceCommandLineInfo.h"
+
 #include "PluginManagerDlg.h"
 
 #include <EAF\EAFMainFrame.h>
@@ -175,7 +177,7 @@ CString CPGSpliceAppPlugin::GetName()
 
 CString CPGSpliceAppPlugin::GetUsageMessage()
 {
-   CPGSuperCommandLineInfo pgsCmdInfo;
+   CPGSpliceCommandLineInfo pgsCmdInfo;
    return pgsCmdInfo.GetUsageMessage();
 }
 
@@ -335,4 +337,9 @@ bool CPGSpliceAppPlugin::UpdatingTemplates()
 void CPGSpliceAppPlugin::OnProgramSettings()
 {
    UpdateProgramSettings(FALSE);
+}
+
+CPGSuperBaseCommandLineInfo* CPGSpliceAppPlugin::CreateCommandLineInfo() const
+{
+   return new CPGSpliceCommandLineInfo();
 }

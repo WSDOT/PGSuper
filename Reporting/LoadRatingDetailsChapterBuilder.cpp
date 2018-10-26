@@ -289,12 +289,13 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !ReportAtThisPoi(poi,controllingPoi) )
+      pgsMomentRatingArtifact& artifact = iter->second;
+      Float64 RF = artifact.GetRatingFactor();
+      if ( 0 < RF && !ReportAtThisPoi(poi,controllingPoi) )
       {
          continue;
       }
 
-      pgsMomentRatingArtifact& artifact = iter->second;
 
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
@@ -326,7 +327,6 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       (*table)(row,col++) << scalar.SetValue(bPositiveMoment ? pM : nM);
       (*table)(row,col++) << moment.SetValue(artifact.GetLiveLoadMoment());
 
-      Float64 RF = artifact.GetRatingFactor();
       if ( RF < 1 )
       {
          (*table)(row,col++) << RF_FAIL(rating_factor,RF);
@@ -425,12 +425,13 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !ReportAtThisPoi(poi,controllingPoi) )
+      pgsShearRatingArtifact& artifact = iter->second;
+      Float64 RF = artifact.GetRatingFactor();
+      if ( !poi.HasAttribute(POI_CRITSECTSHEAR1) && !poi.HasAttribute(POI_CRITSECTSHEAR2) && 0 < RF && !ReportAtThisPoi(poi,controllingPoi) )
       {
          continue;
       }
 
-      pgsShearRatingArtifact& artifact = iter->second;
 
       Float64 gpM, gnM, gV;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
@@ -461,7 +462,6 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
       (*table)(row,col++) << scalar.SetValue(gV);
       (*table)(row,col++) << shear.SetValue(artifact.GetLiveLoadShear());
 
-      Float64 RF = artifact.GetRatingFactor();
       if ( RF < 1 )
       {
          (*table)(row,col++) << RF_FAIL(rating_factor,RF);
@@ -570,12 +570,13 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !ReportAtThisPoi(poi,controllingPoi) )
+      pgsStressRatingArtifact& artifact = iter->second;
+      Float64 RF = artifact.GetRatingFactor();
+
+      if ( 0 < RF && !ReportAtThisPoi(poi,controllingPoi) )
       {
          continue;
       }
-
-      pgsStressRatingArtifact& artifact = iter->second;
 
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
@@ -610,7 +611,6 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       (*table)(row,col++) << scalar.SetValue(pM);
       (*table)(row,col++) << stress.SetValue(artifact.GetLiveLoadStress());
 
-      Float64 RF = artifact.GetRatingFactor();
       if ( RF < 1 )
       {
          (*table)(row,col++) << RF_FAIL(rating_factor,RF);
@@ -740,11 +740,6 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !ReportAtThisPoi(poi,controllingPoi) )
-      {
-         continue;
-      }
-
       pgsYieldStressRatioArtifact& artifact = iter->second;
 
       Float64 rebarSR = artifact.GetRebarStressRatio();
@@ -752,6 +747,12 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       Float64 tendonSR = artifact.GetTendonStressRatio();
 
       Float64 SR = Min(rebarSR,strandSR,tendonSR);
+
+      if ( 1 <= SR && !ReportAtThisPoi(poi,controllingPoi) )
+      {
+         continue;
+      }
+
       IndexType srIdx = MinIndex(rebarSR,strandSR,tendonSR);
 
       Float64 d;

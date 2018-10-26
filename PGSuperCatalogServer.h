@@ -59,8 +59,8 @@ class CPGSuperCatalogServer;
 class CPGSuperApp;
 
 // Factory functions for creating and saving servers
-CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CString& strExt);
-CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CString& createString,const CString& strExt);
+CPGSuperCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& createString,const CString& strExt);
+CPGSuperCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& strServerName,const CString& createString,const CString& strExt);
 CString GetCreationString(const CPGSuperCatalogServer* pServer);
 
 // Exception class for catalog server errors
@@ -110,7 +110,7 @@ private:
 class CPGSuperCatalogServer
 {
 public:
-   CPGSuperCatalogServer(const CString& name,SharedResourceType type,const CString& strExt); 
+   CPGSuperCatalogServer(LPCTSTR strAppName,LPCTSTR strServerName,SharedResourceType type,const CString& strExt); 
    virtual ~CPGSuperCatalogServer();
 
    CString GetServerName() const;
@@ -150,8 +150,11 @@ protected:
    bool CheckForUpdatesUsingMD5(const CString& strLocalMasterLibMD5,const CString& strLocalWorkgroupTemplateMD5,
                                 const CString& cachedMasterLibFile, const CString& cachedTemplateFolder) const;
 
+   CString m_AppName;
+
 private:
    CPGSuperCatalogServer(); 
+
 
    CString m_Name;
    SharedResourceType m_ServerType;
@@ -164,9 +167,9 @@ class CFtpPGSuperCatalogServer : public CPGSuperCatalogServer
 {
 public:
    // Default constructor tries to hit wsdot server
-   CFtpPGSuperCatalogServer(const CString& strExt);
+   CFtpPGSuperCatalogServer(LPCTSTR strAppName,const CString& strExt);
    // constructor for anonymous server
-   CFtpPGSuperCatalogServer(const CString& name, const CString& address,const CString& strExt);
+   CFtpPGSuperCatalogServer(LPCTSTR strAppName,LPCTSTR strServerName, const CString& address,const CString& strExt);
    CString GetAddress() const;
 
    // virtual's
@@ -209,7 +212,7 @@ class CHttpPGSuperCatalogServer : public CPGSuperCatalogServer
 {
 public:
    // constructor for anonymous server
-   CHttpPGSuperCatalogServer(const CString& name, const CString& address,const CString& strExt);
+   CHttpPGSuperCatalogServer(LPCTSTR strAppName,LPCTSTR strServerName, const CString& address,const CString& strExt);
 
    CString GetAddress() const;
 
@@ -256,7 +259,7 @@ private:
 class CFileSystemPGSuperCatalogServer : public CPGSuperCatalogServer
 {
 public:
-   CFileSystemPGSuperCatalogServer(const CString& name, const CString& libraryFileName, const CString& templateFilePath,const CString& strExt);
+   CFileSystemPGSuperCatalogServer(LPCTSTR strAppName,LPCTSTR strServerName, const CString& libraryFileName, const CString& templateFilePath,const CString& strExt);
 
    CString GetLibraryFileName() const;
 

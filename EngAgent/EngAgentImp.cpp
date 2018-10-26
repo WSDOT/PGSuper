@@ -1896,6 +1896,39 @@ Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndex
    return Fpe;
 }
 
+Float64 CEngAgentImp::GetAverageInitialTendonForce(const CGirderKey& girderKey,DuctIndexType ductIdx)
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   ATLASSERT(ductIdx != ALL_DUCTS);
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   Float64 Apt = pTendonGeom->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
+
+   Float64 fpe = GetAverageInitialTendonForce(girderKey,ductIdx);
+
+   Float64 Fpe = Apt*fpe;
+   return Fpe;
+}
+
+Float64 CEngAgentImp::GetAverageInitialTendonStress(const CGirderKey& girderKey,DuctIndexType ductIdx)
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   ATLASSERT(ductIdx != ALL_DUCTS);
+
+   GET_IFACE(ILosses,pLosses);
+   Float64 dfpF = pLosses->GetAverageFrictionLoss(girderKey,ductIdx);
+   Float64 dfpA = pLosses->GetAverageAnchorSetLoss(girderKey,ductIdx);
+
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   Float64 fpj = pTendonGeom->GetFpj(girderKey,ductIdx);
+
+   Float64 fpe = fpj - dfpF - dfpA;
+   return fpe;
+}
+
 Float64 CEngAgentImp::GetInitialTendonStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet)
 {
    GET_IFACE(IPointOfInterest,pPoi);

@@ -438,7 +438,7 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
    BOOST_FOREACH(ProductForceType pfType,pfTypes)
    {
       Float64 Rl, Rr;
-      if ( pfType == pftSecondaryEffects || pfType == pftPrimaryPostTensioning || pfType == pftTotalPostTensioning )
+      if ( pfType == pftSecondaryEffects || pfType == pftPostTensioning || pfType == pftTotalPostTensioning )
       {
          Rl = 0;
          Rr = 0;
@@ -659,7 +659,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
          }
       }
    }
-   else if ( pfType == pftSecondaryEffects || pfType == pftPrimaryPostTensioning || pfType == pftTotalPostTensioning )
+   else if ( pfType == pftSecondaryEffects || pfType == pftPostTensioning || pfType == pftTotalPostTensioning )
    {
       // post-tensioning hasn't been applied yet so the response is zero
       vDy.resize(vPoi.size(),0.0);
@@ -683,7 +683,7 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
    {
       GetPrestressSectionResults(intervalIdx, vPoi, resultsType, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz );
    }
-   else if ( pfType == pftSecondaryEffects || pfType == pftPrimaryPostTensioning || pfType == pftTotalPostTensioning )
+   else if ( pfType == pftSecondaryEffects || pfType == pftPostTensioning || pfType == pftTotalPostTensioning )
    {
       // post-tensioning hasn't been applied yet so the response is zero
       vRz.resize(vPoi.size(),0.0);
@@ -2069,7 +2069,7 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    AddLoading(model_data,pftSidewalk);
    AddLoading(model_data,pftTrafficBarrier);
    AddLoading(model_data,pftShearKey);
-   AddLoading(model_data,pftEquivPostTensioning);
+   AddLoading(model_data,pftSecondaryEffects);
    AddLoading(model_data,pftOverlay);
    AddLoading(model_data,pftOverlayRating);
    AddLoading(model_data,pftUserDC);

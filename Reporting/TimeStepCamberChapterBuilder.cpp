@@ -245,7 +245,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
    }
    //vProductForces.push_back(pftShearKey);
    //vProductForces.push_back(pftSecondaryEffects);
-   //vProductForces.push_back(pftPrimaryPostTensioning);
+   //vProductForces.push_back(pftPostTensioning);
    vProductForces.push_back(pftPretension);
 
    if ( storageIntervalIdx < intervalIdx )
@@ -364,7 +364,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    if ( firstTendonStressingIntervalIdx < castDeckIntervalIdx )
    {
       vProductForces.push_back(pftSecondaryEffects);
-      vProductForces.push_back(pftPrimaryPostTensioning);
+      vProductForces.push_back(pftPostTensioning);
    }
 
    vProductForces.push_back(pftPretension);
@@ -518,7 +518,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
    {
       vProductForces.push_back(pftSecondaryEffects);
-      vProductForces.push_back(pftPrimaryPostTensioning);
+      vProductForces.push_back(pftPostTensioning);
    }
 
    vProductForces.push_back(pftPretension);
@@ -736,7 +736,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
    {
       vProductForces.push_back(pftSecondaryEffects);
-      vProductForces.push_back(pftPrimaryPostTensioning);
+      vProductForces.push_back(pftPostTensioning);
    }
 
    vProductForces.push_back(pftPretension);
