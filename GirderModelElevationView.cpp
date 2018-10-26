@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -998,7 +998,9 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, IB
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
    Float64 groupOffset;
-   VERIFY( pBridge->GetPierLocation(CGirderKey(startGroupIdx,girderKey.girderIndex),startPierIdx,&groupOffset) );
+   GroupIndexType nGirdersThisGroup = pBridge->GetGirderCount(startGroupIdx);
+   GirderIndexType thisGirderIdx = Min(girderKey.girderIndex,nGirdersThisGroup-1);
+   VERIFY( pBridge->GetPierLocation(CGirderKey(startGroupIdx,thisGirderIdx),startPierIdx,&groupOffset) );
 
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
@@ -1123,6 +1125,8 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
+      COLORREF segmentFillColor(gdrIdx == girderKey.girderIndex ? SEGMENT_FILL_COLOR : SEGMENT_FILL_GHOST_COLOR);
+
       Float64 running_segment_length = 0;
 
       const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
@@ -1163,7 +1167,7 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
             // configure the strategy
             strategy->SetShape(shape);
             strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
-            strategy->SetSolidFillColor(SEGMENT_FILL_COLOR);
+            strategy->SetSolidFillColor(segmentFillColor);
             strategy->SetVoidLineColor(VOID_BORDER_COLOR);
             strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
             strategy->DoFill(true);

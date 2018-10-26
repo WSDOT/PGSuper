@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -373,12 +373,7 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
    pHaunchDetails->Haunch.clear();
 
    std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(spanKey,POI_SPAN | POI_TENTH_POINTS) );
-   ATLASSERT(vPoi.size() > 0);
-
-#if defined _DEBUG
-   std::vector<CSegmentKey> vSegmentKeys = pPoi->GetSegmentKeys(vPoi);
-   ATLASSERT(vSegmentKeys.size() == 1); // POIs should be all for the same segment
-#endif
+   ATLASSERT(11 == vPoi.size());
 
    //
    // Profile Effects and Girder Orientation Effects
@@ -417,6 +412,12 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
    for ( ; iter != iterEnd; iter++ )
    {
       pgsPointOfInterest& poi = *iter;
+
+#if defined _DEBUG
+      // assumes girder_orientation is constant for the entire girder... also assumes all segmetns have the same number of mating surfaces
+      ATLASSERT(IsEqual(girder_orientation,pGdr->GetOrientation(poi.GetSegmentKey())));
+      ATLASSERT(nMatingSurfaces == pGdr->GetNumberOfMatingSurfaces(poi.GetSegmentKey()));
+#endif
 
       Float64 slab_offset = (bUseConfig ? pBridge->GetSlabOffset(poi,config) : pBridge->GetSlabOffset(poi));
 
@@ -1060,6 +1061,20 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    // this is undesirable.
    // to get around this, set the LLDF ROA action to ignore the ROA.. then reset it to the
    // current value when design is done.
+
+   // But first, test the ROA and don't even try to design if there is a problem. A CXUnwind will get thrown through here if a problem
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+#pragma Reminder("Assuming precast girder here")
+      SpanIndexType spanIdx = (SpanIndexType)grpIdx; // there is a one-to-one relationship between spans and groups for PGSuper projects
+      GirderIndexType nGirdersThisGroup = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirdersThisGroup-1);
+      CSpanKey spanKey(spanIdx,gdrIdx);
+      pLLDF->TestRangeOfApplicability(spanKey);
+   }
+
    // 
    // we don't want events to fire so we'll hold events and then cancel any pending events
    // when design is done
@@ -6453,7 +6468,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG(_T("Current A dimension (End)   = ") << ::ConvertFromSysUnits(m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd),  unitMeasure::Inch) << _T(" in"));
    LOG(_T(""));
    LOG(_T("M girder      = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(erectSegmentIntervalIdx,pgsTypes::pftGirder,poi,bat, rtCumulative),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M diaphragm   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M diaphragm   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(erectSegmentIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M shear key   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftShearKey,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M construction= ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftConstruction,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M slab        = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlab,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
@@ -6469,6 +6484,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG(_T("M user dw (2) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(compositeDeckIntervalIdx,pgsTypes::pftUserDW,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M overlay     = ") << (overlayIntervalIdx==INVALID_INDEX ? 0.0 : ::ConvertFromSysUnits(pProductForces->GetMoment(overlayIntervalIdx,pgsTypes::pftOverlay,poi,bat, rtIncremental),unitMeasure::KipFeet)) << _T(" k-ft"));
 
+#if defined ENABLE_LOGGING
    Float64 Mllmax, Mllmin;
    pProductForces->GetLiveLoadMoment(lastIntervalIdx,pgsTypes::lltDesign,poi,bat,true,false,&Mllmin,&Mllmax);
    LOG(_T("M ll+im min   = ") << ::ConvertFromSysUnits(Mllmin,unitMeasure::KipFeet) << _T(" k-ft"));
@@ -6485,6 +6501,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    pLLDF->GetDistributionFactors(poi,pgsTypes::StrengthI,fc_lldf,&gpM,&gnM,&gV);
    LOG(_T("LLDF = ") << gpM);
    LOG(_T(""));
+#endif
 
    // Initial potential controlling design cases
    GET_IFACE(IAllowableConcreteStress,pAllowStress);

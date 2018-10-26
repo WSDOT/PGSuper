@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,12 +37,6 @@ DESCRIPTION
    1) Prior to seating
    2) Immediately after anchor set
    3) Service Limit State after losses
-
-
-COPYRIGHT
-   Copyright © 1997-2011
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 12.22.2011 : Created file

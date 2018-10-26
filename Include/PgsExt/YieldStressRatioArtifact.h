@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,12 +34,6 @@ CLASS
 
 DESCRIPTION
    Artifact for permit rating yield stress ratio evaluation. See LRFR 6A.5.4.2.2b
-
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 01.07.2010 : Created file

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2275,11 +2275,6 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       }
       else
       {
-#if defined _DEBUG
-         GET_IFACE(IPointOfInterest,pPoi);
-         std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
-         ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
-#endif
          // This is not time-step analysis.
          // The pretension effects are handled in the segment and girder models for
          // elastic analysis... we want to use the code further down in this method.
@@ -5226,12 +5221,16 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
 
    Float64 ft,fb;
 
-   // Erect Segment (also covers temporary strand removal)
+   // Erect Segment (also covers temporary strand removal and diaphragm placement)
    if ( erectSegmentIntervalIdx <= intervalIdx )
    {
       GetStress(erectSegmentIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop1 = dc*ft;   
       fbot1 = dc*fb;
+
+      GetStress(erectSegmentIntervalIdx,pgsTypes::pftDiaphragm,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
+      ftop1 += dc*ft;   
+      fbot1 += dc*fb;
    }
 
    // Casting Deck (non-composite girder carrying deck dead load)
@@ -5258,10 +5257,6 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       fbot1 += dc*fb;
 
       GetDesignSlabPadStressAdjustment(config,poi,&ft,&fb);
-      ftop1 += dc*ft;   
-      fbot1 += dc*fb;
-
-      GetStress(castDeckIntervalIdx,pgsTypes::pftDiaphragm,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop1 += dc*ft;   
       fbot1 += dc*fb;
 
@@ -5307,8 +5302,8 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       // slab shrinkage stresses
       Float64 ft_ss, fb_ss;
       GetDeckShrinkageStresses(poi,config.Fc,&ft_ss,&fb_ss);
-      ftop2 += ft_ss;
-      fbot2 += fb_ss;
+      ftop2 += dc*ft_ss;
+      fbot2 += dc*fb_ss;
    }
 
    // Open to traffic, carrying live load
@@ -5317,6 +5312,8 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       ftop3Min = ftop3Max = 0.0;   
       fbot3Min = fbot3Max = 0.0;   
 
+      // When we get the LL stress below, it is per girder (includes LLDF). However, the LLDF is based on the original bridge model, not the design.
+      // We have to adjust the stresses by removing the original LLDF and applying the LLDF based on current design values
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pGirderMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
 
@@ -5326,6 +5323,12 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
          fc_lldf = lrfdConcreteUtil::FcFromEc( pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
       }
 
+      GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+      Float64 gV1, gpM1, gnM1;
+      Float64 gV2, gpM2, gnM2;
+      pLLDF->GetDistributionFactors(poi,limitState,fc_lldf,&gpM1,&gnM1,&gV1);
+      pLLDF->GetDistributionFactors(poi,limitState,&gpM2,&gnM2,&gV2);
+      Float64 lldf_adj = gpM1/gpM2; // multiply by design LLDF and divide out the original LLDF
 
       Float64 ftMin,ftMax,fbMin,fbMax;
       if ( limitState == pgsTypes::FatigueI )
@@ -5337,11 +5340,11 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
          GetLiveLoadStress(liveLoadIntervalIdx,pgsTypes::lltDesign,  poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
       }
 
-      ftop3Min += ll*k_top*ftMin;   
-      fbot3Min += ll*k_bot*fbMin;
+      ftop3Min += ll*lldf_adj*k_top*ftMin;   
+      fbot3Min += ll*lldf_adj*k_bot*fbMin;
 
-      ftop3Max += ll*k_top*ftMax;   
-      fbot3Max += ll*k_bot*fbMax;
+      ftop3Max += ll*lldf_adj*k_top*ftMax;   
+      fbot3Max += ll*lldf_adj*k_bot*fbMax;
 
       GetLiveLoadStress(liveLoadIntervalIdx,pgsTypes::lltPedestrian,  poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
 

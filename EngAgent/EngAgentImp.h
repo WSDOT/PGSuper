@@ -283,6 +283,7 @@ public:
                        Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
                        Float64* gR,  Float64* gR1,  Float64* gR2 ); // reaction
    virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey);
+   virtual void TestRangeOfApplicability(const CSpanKey& spanKey);
 
 // IMomentCapacity
 public:

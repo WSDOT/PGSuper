@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,6 +49,23 @@ static char THIS_FILE[] = __FILE__;
 #else
 #define ASSERT_VALID
 #endif
+
+inline CGirderKey GetSafeGirderKey(const CGirderKey& oldKey)
+{
+   // called if there is an unequal number of girders per group, and this one has less. use the right-most girder
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   GirderIndexType gdrIdx = pBridge->GetGirderCount(oldKey.groupIndex)-1;
+   ATLASSERT(gdrIdx < oldKey.girderIndex); // our assumption is wrong
+   return CGirderKey(oldKey.groupIndex, gdrIdx);
+}
+
+inline CSegmentKey GetSafeSegmentKey(const CSegmentKey& key)
+{
+   return CSegmentKey(GetSafeGirderKey(key), key.segmentIndex);
+}
 
 CIntervalManager::CIntervalManager()
 {
@@ -250,8 +267,18 @@ IntervalIndexType CIntervalManager::GetFirstStressStrandInterval(const CGirderKe
    else
    {
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
-      ATLASSERT(found != m_StrandStressingSequenceIntervalLimits.end());
+      if( found != m_StrandStressingSequenceIntervalLimits.end() )
+      {
       return found->second.first;
+   }
+      else
+      {
+         // probably an unequal number of girders per group, and this one has less.
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
+
+         found = m_StrandStressingSequenceIntervalLimits.find(newKey);
+         return found->second.second; // this will crash if not found, so no bother with assert
+      }
    }
 }
 
@@ -281,8 +308,18 @@ IntervalIndexType CIntervalManager::GetLastStressStrandInterval(const CGirderKey
    else
    {
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
-      ATLASSERT(found != m_StrandStressingSequenceIntervalLimits.end());
+      if(found != m_StrandStressingSequenceIntervalLimits.end())
+      {
       return found->second.second;
+   }
+      else
+      {
+         // probably an unequal number of girders per group, and this one has less.
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
+
+         found = m_StrandStressingSequenceIntervalLimits.find(newKey);
+         return found->second.second; // this will crash if not found, so no bother with assert
+      }
    }
 }
 
@@ -290,8 +327,18 @@ IntervalIndexType CIntervalManager::GetStressStrandInterval(const CSegmentKey& s
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
    std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_StressStrandIntervals.find(segmentKey));
-   ATLASSERT( found != m_StressStrandIntervals.end());
+   if( found != m_StressStrandIntervals.end() )
+   {
    return found->second;
+}
+   else
+   {
+      // there is an unequal number of girders per group, and this one has less. use the right-most girder
+      CSegmentKey newkey(GetSafeSegmentKey(segmentKey));
+
+      found = m_StressStrandIntervals.find(newkey);
+      return found->second; // this will crash if not found, so no bother with assert
+   }
 }
 
 IntervalIndexType CIntervalManager::GetFirstPrestressReleaseInterval(const CGirderKey& girderKey) const
@@ -316,8 +363,18 @@ IntervalIndexType CIntervalManager::GetFirstPrestressReleaseInterval(const CGird
    else
    {
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_ReleaseSequenceIntervalLimits.find(girderKey));
-      ATLASSERT(found != m_ReleaseSequenceIntervalLimits.end());
+      if(found != m_ReleaseSequenceIntervalLimits.end())
+      {
       return found->second.first;
+   }
+      else
+      {
+         // probably an unequal number of girders per group, and this one has less.
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
+
+         found = m_ReleaseSequenceIntervalLimits.find(newKey);
+         return found->second.second; // this will crash if not found, so no bother with assert
+      }
    }
 }
 
@@ -347,8 +404,18 @@ IntervalIndexType CIntervalManager::GetLastPrestressReleaseInterval(const CGirde
    else
    {
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_ReleaseSequenceIntervalLimits.find(girderKey));
-      ATLASSERT(found != m_ReleaseSequenceIntervalLimits.end());
+      if(found != m_ReleaseSequenceIntervalLimits.end())
+      {
       return found->second.second;
+   }
+      else
+      {
+         // probably an unequal number of girders per group, and this one has less.
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
+
+         found = m_ReleaseSequenceIntervalLimits.find(newKey);
+         return found->second.second; // this will crash if not found, so no bother with assert
+      }
    }
 }
 
@@ -356,8 +423,19 @@ IntervalIndexType CIntervalManager::GetPrestressReleaseInterval(const CSegmentKe
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
    std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_ReleaseIntervals.find(segmentKey));
-   ATLASSERT( found != m_ReleaseIntervals.end());
+   if( found != m_ReleaseIntervals.end())
+   {
    return found->second;
+}
+   else
+   {
+      // probably an unequal number of girders per group, and this one has less.
+      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
+
+      found = m_ReleaseIntervals.find(newKey);
+      return found->second; // this will crash if not found, so no bother with assert
+   }
+
 }
 
 IntervalIndexType CIntervalManager::GetLiftingInterval(const CSegmentKey& segmentKey) const
@@ -394,16 +472,36 @@ IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmen
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
    std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_SegmentHaulingIntervals.find(segmentKey));
-   ATLASSERT( found != m_SegmentHaulingIntervals.end());
+   if( found != m_SegmentHaulingIntervals.end())
+   {
    return found->second;
+}
+   else
+   {
+      // probably an unequal number of girders per group, and this one has less.
+      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
+
+      found = m_SegmentHaulingIntervals.find(newKey);
+      return found->second; // this will crash if not found, so no bother with assert
+   }
 }
 
 IntervalIndexType CIntervalManager::GetErectSegmentInterval(const CSegmentKey& segmentKey) const
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
    std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_SegmentErectionIntervals.find(segmentKey));
-   ATLASSERT( found != m_SegmentErectionIntervals.end());
+   if(found != m_SegmentErectionIntervals.end())
+   {
    return found->second;
+}
+   else
+   {
+      // probably an unequal number of girders per group, and this one has less.
+      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
+
+      found = m_SegmentErectionIntervals.find(newKey);
+      return found->second; // this will crash if not found, so no bother with assert
+   }
 }
 
 bool CIntervalManager::IsSegmentErectionInterval(IntervalIndexType intervalIdx) const
@@ -463,8 +561,18 @@ IntervalIndexType CIntervalManager::GetCastClosureInterval(const CClosureKey& cl
 {
    ASSERT_CLOSURE_KEY(clousreKey); // must be a specific segment key
    std::map<CClosureKey,IntervalIndexType>::const_iterator found(m_CastClosureIntervals.find(clousreKey));
-   ATLASSERT( found != m_CastClosureIntervals.end());
+   if(found != m_CastClosureIntervals.end())
+   {
    return found->second;
+}
+   else
+   {
+      // probably an unequal number of girders per group, and this one has less.
+      CClosureKey newKey = GetSafeSegmentKey(clousreKey);
+
+      found = m_CastClosureIntervals.find(newKey);
+      return found->second; // this will crash if not found, so no bother with assert
+   }
 }
 
 IntervalIndexType CIntervalManager::GetFirstCastClosureJointInterval(const CGirderKey& girderKey) const
@@ -530,10 +638,19 @@ IntervalIndexType CIntervalManager::GetFirstSegmentErectionInterval(const CGirde
    else
    {
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
-      ATLASSERT(found != m_SegmentErectionSequenceIntervalLimits.end());
+      if(found != m_SegmentErectionSequenceIntervalLimits.end())
+      {
       return found->second.first;
    }
+      else
+      {
+         // probably an unequal number of girders per group, and this one has less.
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
 
+         found = m_SegmentErectionSequenceIntervalLimits.find(newKey);
+         return found->second.second; // this will crash if not found, so no bother with assert
+      }
+   }
 }
 
 IntervalIndexType CIntervalManager::GetLastSegmentErectionInterval(const CGirderKey& girderKey) const
@@ -562,8 +679,18 @@ IntervalIndexType CIntervalManager::GetLastSegmentErectionInterval(const CGirder
    else
    {
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
-      ATLASSERT(found != m_SegmentErectionSequenceIntervalLimits.end());
+      if(found != m_SegmentErectionSequenceIntervalLimits.end())
+      {
       return found->second.second;
+      }
+      else
+      {
+         // probably an unequal number of girders per group, and this one has less.
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
+
+         found = m_SegmentErectionSequenceIntervalLimits.find(newKey);
+         return found->second.second; // this will crash if not found, so no bother with assert
+      }
    }
 }
 

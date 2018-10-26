@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,11 +60,6 @@ DESCRIPTION
    Utility class for longitudinal rebar. This class encapsulates 
    the input data a row of rebar and implements the IStructuredLoad 
    and IStructuredSave persistence interfaces.
-
-COPYRIGHT
-   Copyright © 1997-2007
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 02.08.2007 : Created file

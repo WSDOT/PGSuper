@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -462,7 +462,7 @@ CCatalogServer(strAppName,_T("WSDOT"),srtInternetFtp,strExt)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    CWinApp* pApp = AfxGetApp();
-   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/bridge/software"),pApp->m_pszProfileName);
+   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/Bridge/Software"),pApp->m_pszProfileName);
    Init();
 }
 
@@ -523,6 +523,11 @@ void CFtpCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool toTempfol
          BOOL bSuccess = AfxParseURL(catURL,dwServiceType,strServer,strObject,nPort);
          ATLASSERT( bSuccess );
 
+	      //Username we will use if a secure site comes into play
+	      LPCTSTR pstrUserName = NULL; 
+	      //The password we will use
+	      LPCTSTR pstrPassword = NULL;
+
          // the URL is bogus or it isn't for an FTP service
          if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP )
          {
@@ -534,10 +539,11 @@ void CFtpCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool toTempfol
          {
             // download the catalog file
             CInternetSession inetSession;
-            std::auto_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer) );
+            std::auto_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE) );
 
             CFtpFileFind ftpFind(pFTP.get());
-            if ( !ftpFind.FindFile(strObject) || !pFTP->GetFile(strObject,m_strLocalCatalog,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
+            BOOL bFound = ftpFind.FindFile(strObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT);
+            if ( !bFound || !pFTP->GetFile(strObject,m_strLocalCatalog,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
             {
                // could not find or get the file (it may not be on the server)
                CString msg;
@@ -685,12 +691,17 @@ bool CFtpCatalogServer::CheckForUpdatesOriginal(const CString& publisher, IProgr
    CInternetSession inetSession;
    CFtpConnection* pFTP = NULL;
 
+   //Username we will use if a secure site comes into play
+   LPCTSTR pstrUserName = NULL; 
+   //The password we will use
+   LPCTSTR pstrPassword = NULL;
+
    CString strLocalFile;
    CString strLocalFolder;
    try
    {
       // Master library
-      pFTP = inetSession.GetFtpConnection(strMasterLibraryServer);
+      pFTP = inetSession.GetFtpConnection(strMasterLibraryServer,pstrUserName,pstrPassword,nPort,TRUE);
       CFtpFileFind master_library_file_find(pFTP);
 
       CString strMasterLibMD5 = strMasterLibraryObject + CString(_T(".md5"));
@@ -698,7 +709,7 @@ bool CFtpCatalogServer::CheckForUpdatesOriginal(const CString& publisher, IProgr
       
 //      LOG(_T("Getting ") << strMasterLibMD5 << _T(" from ") << strMasterLibraryServer);
 
-      if ( !master_library_file_find.FindFile(strMasterLibMD5) || !pFTP->GetFile(strMasterLibMD5,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
+      if ( !master_library_file_find.FindFile(strMasterLibMD5,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT) || !pFTP->GetFile(strMasterLibMD5,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
       {
          pFTP->Close();
          delete pFTP;
@@ -713,7 +724,7 @@ bool CFtpCatalogServer::CheckForUpdatesOriginal(const CString& publisher, IProgr
       delete pFTP;
 
       // Workgroup Template
-      pFTP = inetSession.GetFtpConnection(strWorkgroupTemplatesServer);
+      pFTP = inetSession.GetFtpConnection(strWorkgroupTemplatesServer,pstrUserName,pstrPassword,nPort,TRUE);
       CFtpFileFind workgroup_template_file_find(pFTP);
 
       CString strWorkgroupTemplateMD5 = strWorkgroupTemplatesObject + CString(_T("WorkgroupTemplates.md5"));
@@ -721,7 +732,7 @@ bool CFtpCatalogServer::CheckForUpdatesOriginal(const CString& publisher, IProgr
 
 //      LOG(_T("Getting ") << strWorkgroupTemplateMD5 << _T(" from ") << strWorkgroupTemplatesServer);
 
-      if ( !workgroup_template_file_find.FindFile(strWorkgroupTemplateMD5) || !pFTP->GetFile(strWorkgroupTemplateMD5,strLocalFolder,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
+      if ( !workgroup_template_file_find.FindFile(strWorkgroupTemplateMD5,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT) || !pFTP->GetFile(strWorkgroupTemplateMD5,strLocalFolder,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
       {
          pFTP->Close();
          delete pFTP;
@@ -784,18 +795,23 @@ bool CFtpCatalogServer::CheckForUpdatesPgz(const CString& publisher, IProgressMo
    // name of md5p copied to temp folder
    CString strTempMd5File = GetTempPgzMD5Filename(m_AppName);
 
+   //Username we will use if a secure site comes into play
+   LPCTSTR pstrUserName = NULL; 
+   //The password we will use
+   LPCTSTR pstrPassword = NULL;
+
    // connect to the internet and get the md5 file
    CInternetSession inetSession;
    CFtpConnection* pFTP = NULL;
 
    try
    {
-      pFTP = inetSession.GetFtpConnection(strPgzServer);
+      pFTP = inetSession.GetFtpConnection(strPgzServer,pstrUserName,pstrPassword,nPort,TRUE);
       CFtpFileFind pgz_file_find(pFTP);
       
 //      LOG(_T("Getting ") << strPgzObject << _T(" from ") << strPgzServer);
 
-      if ( !pgz_file_find.FindFile(strPgzObject) || !pFTP->GetFile(strPgzObject,strTempMd5File,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
+      if ( !pgz_file_find.FindFile(strPgzObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT) || !pFTP->GetFile(strPgzObject,strTempMd5File,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
       {
          pFTP->Close();
          delete pFTP;
@@ -889,12 +905,17 @@ bool CFtpCatalogServer::PopulateLibraryFile(IProgressMonitor* pProgress,const CS
    BOOL bSuccess = AfxParseURL(strMasterLibraryFile,dwServiceType,strServer,strObject,nPort);
    ATLASSERT( bSuccess && dwServiceType == AFX_INET_SERVICE_FTP);
 
+   //Username we will use if a secure site comes into play
+   LPCTSTR pstrUserName = NULL; 
+   //The password we will use
+   LPCTSTR pstrPassword = NULL;
+
    CInternetSession inetSession;
    CFtpConnection* pFTP = 0;
 
    try
    {
-      pFTP = inetSession.GetFtpConnection(strServer);
+      pFTP = inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE);
       CFtpFileFind file_find(pFTP);
 
       if(pProgress!=NULL)
@@ -902,7 +923,7 @@ bool CFtpCatalogServer::PopulateLibraryFile(IProgressMonitor* pProgress,const CS
          pProgress->put_Message(0,CComBSTR("Downloading the Master Library"));
       }
 
-      if ( file_find.FindFile(strObject) && pFTP->GetFile(strObject,cachedMasterLibFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
+      if ( file_find.FindFile(strObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT) && pFTP->GetFile(strObject,cachedMasterLibFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
       {
          if(pProgress!=NULL)
          {
@@ -962,6 +983,11 @@ bool CFtpCatalogServer::PopulateTemplateFolder(IProgressMonitor* pProgress,const
    BOOL bSuccess = AfxParseURL(strWorkgroupTemplateFolder,dwServiceType,strServer,strObject,nPort);
    ATLASSERT( bSuccess && dwServiceType == AFX_INET_SERVICE_FTP); // this should be tested elsewhere
 
+   //Username we will use if a secure site comes into play
+   LPCTSTR pstrUserName = NULL; 
+   //The password we will use
+   LPCTSTR pstrPassword = NULL;
+
    CInternetSession inetSession;
 
    ::CreateDirectory(cachedTemplateFolder,NULL);
@@ -970,7 +996,7 @@ bool CFtpCatalogServer::PopulateTemplateFolder(IProgressMonitor* pProgress,const
 
    try
    {
-      pFTP = inetSession.GetFtpConnection(strServer);
+      pFTP = inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE);
 
       CFTPTemplateManager templateMgr(GetTemplateFileExtension(),pFTP);
       templateMgr.GetTemplates(strObject,cachedTemplateFolder,pProgress);
@@ -1016,12 +1042,17 @@ bool CFtpCatalogServer::PopulatePgz(const CString& publisher, IProgressMonitor* 
    BOOL bSuccess = AfxParseURL(strPgzFile,dwServiceType,strServer,strObject,nPort);
    ATLASSERT( bSuccess && dwServiceType == AFX_INET_SERVICE_FTP);
 
+   //Username we will use if a secure site comes into play
+   LPCTSTR pstrUserName = NULL; 
+   //The password we will use
+   LPCTSTR pstrPassword = NULL;
+
    CInternetSession inetSession;
    CFtpConnection* pFTP = 0;
 
    try
    {
-      pFTP = inetSession.GetFtpConnection(strServer);
+      pFTP = inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE);
       CFtpFileFind file_find(pFTP);
 
       if(pProgress!=NULL)
@@ -1029,7 +1060,7 @@ bool CFtpCatalogServer::PopulatePgz(const CString& publisher, IProgressMonitor* 
          pProgress->put_Message(0,CComBSTR("Downloading Configuration"));
       }
 
-      if ( file_find.FindFile(strObject) && pFTP->GetFile(strObject,pgzCachedFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_BINARY | INTERNET_FLAG_RELOAD) )
+      if ( file_find.FindFile(strObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT) && pFTP->GetFile(strObject,pgzCachedFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_BINARY | INTERNET_FLAG_RELOAD) )
       {
          if(pProgress!=NULL)
          {
@@ -1168,12 +1199,17 @@ bool CFtpCatalogServer::TestServer(CString& errorMessage) const
       return false;
    }
 
+   //Username we will use if a secure site comes into play
+   LPCTSTR pstrUserName = NULL; 
+   //The password we will use
+   LPCTSTR pstrPassword = NULL;
+
    // See if we find the catalog file
    CInternetSession inetSession;
-   std::auto_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer) );
+   std::auto_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer,pstrUserName,pstrPassword,nPort,TRUE) );
 
    CFtpFileFind ftpFind(pFTP.get());
-   if ( !ftpFind.FindFile(strObject))
+   if ( !ftpFind.FindFile(strObject,INTERNET_FLAG_RELOAD | INTERNET_FLAG_EXISTING_CONNECT))
    {
       errorMessage.Format(_T("Error - Unable to find catalog file: %s on the server."),strObject);
       return false;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -743,6 +743,8 @@ void CBridgeDescFramingGrid::FillGrid(const CBridgeDescription2& bridgeDesc)
    FillSpanColumn();
 
    HideCols(6,6,nTS == 0 ? TRUE : FALSE);
+
+   ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),4));
 
    GetParam()->SetLockReadOnly(TRUE);
 	GetParam()->EnableUndo(TRUE);

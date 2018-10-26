@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -374,6 +374,20 @@ CGirderKey CGirderLineReportSpecification::GetGirderKey() const
 
 HRESULT CGirderLineReportSpecification::Validate() const
 {
+   GET_IFACE(IBridge,pBridge);
+   GirderIndexType nGirders = 0;
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      nGirders = Max(nGirders,pBridge->GetGirderCount(grpIdx));
+   }
+
+   if ( nGirders <= m_GirderIdx )
+   {
+      return RPT_E_INVALID_GIRDER;
+   }
+
    return CBrokerReportSpecification::Validate();
 }
 

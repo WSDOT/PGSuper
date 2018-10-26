@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2008,8 +2008,11 @@ void CBridgePlanView::BuildPierDisplayObjects()
       left_offset  = ( IsZero(left_offset)  ? right_offset/2 : left_offset );
       right_offset = ( IsZero(right_offset) ? left_offset/2  : right_offset );
 
-      left_offset *= 1.05;
-      right_offset *= 1.05;
+      if ( pPier->GetPierModelType() == pgsTypes::pmtIdealized )
+      {
+         left_offset *= 1.05;
+         right_offset *= 1.05;
+      }
 
       strategy_pier->SetLeftOffset(left_offset);
       strategy_pier->SetRightOffset(right_offset);

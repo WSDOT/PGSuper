@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,11 +36,6 @@ CLASS
 
 DESCRIPTION
    Paragraph builder for moment capacity summary
-
-COPYRIGHT
-   Copyright © 1997-2006
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rdp : 06.13.2006 : Created file

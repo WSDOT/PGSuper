@@ -90,6 +90,7 @@ public:
       DebondDesignFailed,
       DesignCancelled,
       NoDesignRequested,
+      LldfRangeOfApplicabilityError,
       DesignNotSupported // design could not be performed because design is not supported for the current application settings (e.g. time-step losses)
    };
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,6 +48,12 @@ void CMultiGirderSelectDlg::DoDataExchange(CDataExchange* pDX)
    if (pDX->m_bSaveAndValidate)
    {
       m_GirderKeys = m_pGrid->GetData();
+
+      if (m_GirderKeys.empty())
+      {
+         ::AfxMessageBox(_T("At least one girder must be selected"),MB_ICONEXCLAMATION | MB_OK),
+         pDX->Fail();
+      }
    }
 }
 

@@ -138,11 +138,6 @@ CLASS
 
 DESCRIPTION
 
-COPYRIGHT
-   Copyright © 1997-2011
-   Washington State Department Of Transportation
-   All Rights Reserved
-
 LOG
 *****************************************************************************/
 

@@ -3312,6 +3312,12 @@ Float64 CEngAgentImp::GetDeflectionDistFactor(const CSpanKey& spanKey)
    return gD;
 }
 
+void CEngAgentImp::TestRangeOfApplicability(const CSpanKey& spanKey)
+{
+   // let computation check ROA and throw if necessary
+   GetMomentDistFactor(spanKey, pgsTypes::ServiceI);
+}
+
 Uint32 CEngAgentImp::GetNumberOfDesignLanes(SpanIndexType spanIdx)
 {
    Float64 dist_to_section, curb_to_curb;

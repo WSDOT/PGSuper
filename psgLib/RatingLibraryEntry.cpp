@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2227,6 +2227,10 @@ CString RatingLibraryEntry::GetLoadRatingType(pgsTypes::LoadRatingType ratingTyp
 
    case pgsTypes::lrPermit_Routine:
       lpszRatingType = _T("Permit - Routine");
+      break;
+
+   case pgsTypes::lrPermit_Special:
+      lpszRatingType = _T("Permit - Special");
       break;
 
    default:

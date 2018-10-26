@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -413,7 +413,16 @@ void CIntervalGirderGraphControllerBase::FillIntervalCtrl()
    curSel = pcbIntervals->SetCurSel(curSel);
    if ( curSel == CB_ERR )
    {
-      pcbIntervals->SetCurSel(0);
+      // don't let selected interval be out of range
+      IntervalIndexType cs = nIntervals-startIntervalIdx-1 < m_IntervalIdx ? nIntervals-startIntervalIdx-1 : 0;
+      curSel = pcbIntervals->SetCurSel((int)cs);
+      if(curSel==CB_ERR)
+      {
+         ATLASSERT(0); // logic to get cs f***ed?
+         curSel = pcbIntervals->SetCurSel(0);
+      }
+
+      m_IntervalIdx = pcbIntervals->GetItemData(curSel);
    }
 }
 

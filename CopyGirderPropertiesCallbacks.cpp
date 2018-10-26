@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <EAF\EAFUtilities.h>
 
 #include <IFace\Project.h>
+#include <IFace\Bridge.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderData.h>
 
@@ -45,9 +46,10 @@ bool txnCopyGirderType::Execute()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-   GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2(pBroker, ILibrary, pLib );
    GET_IFACE2(pBroker,IShear,pShear);
    GET_IFACE2(pBroker,ILongitudinalRebar,pRebar);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    std::_tstring strNewName = pBridgeDesc->GetGirderGroup(m_FromGirderKey.groupIndex)->GetGirderName(m_FromGirderKey.girderIndex);
@@ -74,31 +76,36 @@ bool txnCopyGirderType::Execute()
    for ( ; iter != end; iter++ )
    {
       CGirderKey& toGirderKey = *iter;
-      CSegmentKey toSegmentKey(*iter,0);
 
-      // If attempting to copy over itself we do not reset girder data. However, save data no matter what so undo works correctly later
-      // girder type
-      std::_tstring strOldName = pBridgeDesc->GetGirderGroup(toGirderKey.groupIndex)->GetGirderName(toGirderKey.girderIndex);
-      m_strOldNames.push_back(strOldName);
-
-      // prestress data
-      const CStrandData* pOldStrandData = pSegmentData->GetStrandData(toSegmentKey);
-      m_OldPrestressData.push_back(*pOldStrandData);
-
-      // Seed shear and long reinf data from library
-      const CShearData2* pOldShearData = pShear->GetSegmentShearData(toSegmentKey);
-      m_OldShearData.push_back(*pOldShearData);
-
-      const CLongitudinalRebarData* pOldRebarlData = pRebar->GetSegmentLongitudinalRebarData(toSegmentKey);
-      m_OldRebarData.push_back(*pOldRebarlData);
-
-      // Only actually set data if from!=to
-      if (toGirderKey != m_FromGirderKey)
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         pSegmentData->SetStrandData(toSegmentKey, CStrandData()); // use default constructor
-         pShear->SetSegmentShearData(toSegmentKey,sheardata);
-         pRebar->SetSegmentLongitudinalRebarData(toSegmentKey,rebardata);
-         pIBridgeDesc->SetGirderName(toGirderKey,strNewName.c_str() );
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         // If attempting to copy over itself we do not reset girder data. However, save data no matter what so undo works correctly later
+         // girder type
+         std::_tstring strOldName = pBridgeDesc->GetGirderGroup(toGirderKey.groupIndex)->GetGirderName(toGirderKey.girderIndex);
+         m_strOldNames.push_back(strOldName);
+
+         // prestress data
+         const CStrandData* pOldStrandData = pSegmentData->GetStrandData(toSegmentKey);
+         m_OldPrestressData.push_back(*pOldStrandData);
+
+         // Seed shear and long reinf data from library
+         const CShearData2* pOldShearData = pShear->GetSegmentShearData(toSegmentKey);
+         m_OldShearData.push_back(*pOldShearData);
+
+         const CLongitudinalRebarData* pOldRebarlData = pRebar->GetSegmentLongitudinalRebarData(toSegmentKey);
+         m_OldRebarData.push_back(*pOldRebarlData);
+
+         // Only actually set data if from!=to
+         if (toGirderKey != m_FromGirderKey)
+         {
+            pSegmentData->SetStrandData(toSegmentKey, CStrandData()); // use default constructor
+            pShear->SetSegmentShearData(toSegmentKey,sheardata);
+            pRebar->SetSegmentLongitudinalRebarData(toSegmentKey,rebardata);
+            pIBridgeDesc->SetGirderName(toGirderKey,strNewName.c_str() );
+         }
       }
    }
 
@@ -113,6 +120,7 @@ void txnCopyGirderType::Undo()
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IShear,pShear);
    GET_IFACE2(pBroker,ILongitudinalRebar,pRebar);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
@@ -120,22 +128,32 @@ void txnCopyGirderType::Undo()
    std::vector<CStrandData>::iterator prestressIter(m_OldPrestressData.begin());
    std::vector<CShearData2>::iterator shearIter(m_OldShearData.begin());
    std::vector<CLongitudinalRebarData>::iterator rebarIter(m_OldRebarData.begin());
-   for ( ; iter != end; iter++, nameIter++, prestressIter++, shearIter++, rebarIter++ )
+   for ( ; iter != end; iter++)
    {
       CGirderKey& toGirderKey = *iter;
-      CSegmentKey toSegmentKey(*iter,0);
 
-      std::_tstring strOldName = *nameIter;
-      pIBridgeDesc->SetGirderName(toGirderKey,strOldName.c_str() );
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
 
-      CStrandData& strandData = *prestressIter;
-      pSegmentData->SetStrandData(toSegmentKey,strandData);
+         std::_tstring strOldName = *nameIter;
+         pIBridgeDesc->SetGirderName(toGirderKey,strOldName.c_str() );
 
-      CShearData2& shearData = *shearIter;
-      pShear->SetSegmentShearData(toSegmentKey,shearData);
+         CStrandData& strandData = *prestressIter;
+         pSegmentData->SetStrandData(toSegmentKey,strandData);
 
-      CLongitudinalRebarData& rebarData = *rebarIter;
-      pRebar->SetSegmentLongitudinalRebarData(toSegmentKey,rebarData);
+         CShearData2& shearData = *shearIter;
+         pShear->SetSegmentShearData(toSegmentKey,shearData);
+
+         CLongitudinalRebarData& rebarData = *rebarIter;
+         pRebar->SetSegmentLongitudinalRebarData(toSegmentKey,rebarData);
+
+         nameIter++; 
+         prestressIter++; 
+         shearIter++; 
+         rebarIter++;
+      }
    }
 }
 
@@ -166,8 +184,8 @@ bool txnCopyGirderStirrups::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IShear,pShear);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
-#pragma Reminder("UPDATE: assuming precast girder")
    CSegmentKey fromSegmentKey(m_FromGirderKey,0);
    const CShearData2* pNewShearData = pShear->GetSegmentShearData(fromSegmentKey);
 
@@ -176,11 +194,17 @@ bool txnCopyGirderStirrups::Execute()
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      const CShearData2* pOldShearData = pShear->GetSegmentShearData(toSegmentKey);
-      m_OldShearData.push_back(*pOldShearData);
-      pShear->SetSegmentShearData(toSegmentKey,*pNewShearData);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         const CShearData2* pOldShearData = pShear->GetSegmentShearData(toSegmentKey);
+         m_OldShearData.push_back(*pOldShearData);
+         pShear->SetSegmentShearData(toSegmentKey,*pNewShearData);
+      }
    }
 
    return true;
@@ -191,16 +215,23 @@ void txnCopyGirderStirrups::Undo()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IShear,pShear);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    std::vector<CShearData2>::iterator shearIter(m_OldShearData.begin());
    for ( ; iter != end; iter++, shearIter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      CShearData2& shearData = *shearIter;
-      pShear->SetSegmentShearData(toSegmentKey,shearData);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         CShearData2& shearData = *shearIter;
+         pShear->SetSegmentShearData(toSegmentKey,shearData);
+      }
    }
 }
 
@@ -231,20 +262,35 @@ bool txnCopyGirderPrestressing::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
-   CSegmentKey fromSegmentKey(m_FromGirderKey,0);
-   const CStrandData* pNewStrandData = pSegmentData->GetStrandData(fromSegmentKey);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    m_OldPrestressData.clear();
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      const CStrandData* pOldStrandData = pSegmentData->GetStrandData(toSegmentKey);
-      m_OldPrestressData.push_back(*pOldStrandData);
-      pSegmentData->SetStrandData(toSegmentKey,*pNewStrandData);
+      // pretensioning
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      ATLASSERT(nSegments==pBridge->GetSegmentCount(m_FromGirderKey));
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey fromSegmentKey(m_FromGirderKey,segIdx);
+         const CStrandData* pNewStrandData = pSegmentData->GetStrandData(fromSegmentKey);
+
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         const CStrandData* pOldStrandData = pSegmentData->GetStrandData(toSegmentKey);
+         m_OldPrestressData.push_back(*pOldStrandData);
+         pSegmentData->SetStrandData(toSegmentKey,*pNewStrandData);
+      }
+
+      // post tensioning
+      const CPTData* pNewPTData = pIBridgeDesc->GetPostTensioning(m_FromGirderKey);
+      m_OldPTData.push_back(*pNewPTData);
+      pIBridgeDesc->SetPostTensioning(toGirderKey, *pNewPTData);
    }
 
    return true;
@@ -255,16 +301,32 @@ void txnCopyGirderPrestressing::Undo()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    std::vector<CStrandData>::iterator prestressIter(m_OldPrestressData.begin());
-   for ( ; iter != end; iter++, prestressIter++ )
+   std::vector<CPTData>::iterator ptIter(m_OldPTData.begin());
+   for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      CStrandData& strandData = *prestressIter;
-      pSegmentData->SetStrandData(toSegmentKey,strandData);
+      // pre tensioning
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         CStrandData& strandData = *prestressIter;
+         pSegmentData->SetStrandData(toSegmentKey,strandData);
+
+         prestressIter++;
+      }
+
+      // post tensioning
+      CPTData& ptData = *ptIter;
+      pIBridgeDesc->SetPostTensioning(toGirderKey, ptData);
    }
 }
 
@@ -295,21 +357,28 @@ bool txnCopyGirderHandling::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
-   CSegmentKey fromSegmentKey(m_FromGirderKey,0);
-
-   const CHandlingData* pNewHandlingData = pSegmentData->GetHandlingData(fromSegmentKey);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    m_OldHandlingData.clear();
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      const CHandlingData* pOldHandlingData = pSegmentData->GetHandlingData(toSegmentKey);
-      m_OldHandlingData.push_back(*pOldHandlingData);
-      pSegmentData->SetHandlingData(toSegmentKey,*pNewHandlingData);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      ATLASSERT(nSegments==pBridge->GetSegmentCount(m_FromGirderKey));
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey fromSegmentKey(m_FromGirderKey,segIdx);
+         const CHandlingData* pNewHandlingData = pSegmentData->GetHandlingData(fromSegmentKey);
+
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         const CHandlingData* pOldHandlingData = pSegmentData->GetHandlingData(toSegmentKey);
+         m_OldHandlingData.push_back(*pOldHandlingData);
+         pSegmentData->SetHandlingData(toSegmentKey,*pNewHandlingData);
+      }
    }
 
    return true;
@@ -320,15 +389,24 @@ void txnCopyGirderHandling::Undo()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    std::vector<CHandlingData>::iterator handlingIter(m_OldHandlingData.begin());
-   for ( ; iter != end; iter++, handlingIter++ )
+   for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
-      CHandlingData& handlingData = *handlingIter;
-      pSegmentData->SetHandlingData(toSegmentKey,handlingData);
+      CGirderKey& toGirderKey = *iter;
+
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         CHandlingData& handlingData = *handlingIter;
+         pSegmentData->SetHandlingData(toSegmentKey,handlingData);
+         handlingIter++;
+      }
    }
 }
 
@@ -359,21 +437,28 @@ bool txnCopyGirderMaterial::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
-   CSegmentKey fromSegmentKey(m_FromGirderKey,0);
-
-   const CGirderMaterial* pNewMaterialData = pSegmentData->GetSegmentMaterial(fromSegmentKey);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    m_OldMaterialData.clear();
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      const CGirderMaterial* pOldMaterialData = pSegmentData->GetSegmentMaterial(toSegmentKey);
-      m_OldMaterialData.push_back(*pOldMaterialData);
-      pSegmentData->SetSegmentMaterial(toSegmentKey,*pNewMaterialData);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      ATLASSERT(nSegments==pBridge->GetSegmentCount(m_FromGirderKey));
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey fromSegmentKey(m_FromGirderKey,segIdx);
+         const CGirderMaterial* pNewMaterialData = pSegmentData->GetSegmentMaterial(fromSegmentKey);
+
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         const CGirderMaterial* pOldMaterialData = pSegmentData->GetSegmentMaterial(toSegmentKey);
+         m_OldMaterialData.push_back(*pOldMaterialData);
+         pSegmentData->SetSegmentMaterial(toSegmentKey,*pNewMaterialData);
+      }
    }
 
    return true;
@@ -384,16 +469,24 @@ void txnCopyGirderMaterial::Undo()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    std::vector<CGirderMaterial>::iterator materialIter(m_OldMaterialData.begin());
-   for ( ; iter != end; iter++, materialIter++ )
+   for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      CGirderMaterial& materialData = *materialIter;
-      pSegmentData->SetSegmentMaterial(toSegmentKey,materialData);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         CGirderMaterial& materialData = *materialIter;
+         pSegmentData->SetSegmentMaterial(toSegmentKey,materialData);
+         materialIter++;
+      }
    }
 }
 
@@ -424,20 +517,28 @@ bool txnCopyGirderRebar::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILongitudinalRebar,pRebar);
-
-   CSegmentKey fromSegmentKey(m_FromGirderKey,0);
-   const CLongitudinalRebarData* pNewRebarData = pRebar->GetSegmentLongitudinalRebarData(fromSegmentKey);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    m_OldRebarData.clear();
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      const CLongitudinalRebarData* pOldRebarlData = pRebar->GetSegmentLongitudinalRebarData(toSegmentKey);
-      m_OldRebarData.push_back(*pOldRebarlData);
-      pRebar->SetSegmentLongitudinalRebarData(toSegmentKey,*pNewRebarData);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      ATLASSERT(nSegments==pBridge->GetSegmentCount(m_FromGirderKey));
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey fromSegmentKey(m_FromGirderKey,segIdx);
+         const CLongitudinalRebarData* pNewRebarData = pRebar->GetSegmentLongitudinalRebarData(fromSegmentKey);
+
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         const CLongitudinalRebarData* pOldRebarlData = pRebar->GetSegmentLongitudinalRebarData(toSegmentKey);
+         m_OldRebarData.push_back(*pOldRebarlData);
+         pRebar->SetSegmentLongitudinalRebarData(toSegmentKey,*pNewRebarData);
+      }
    }
 
    return true;
@@ -448,16 +549,24 @@ void txnCopyGirderRebar::Undo()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILongitudinalRebar,pRebar);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    std::vector<CLongitudinalRebarData>::iterator rebarIter(m_OldRebarData.begin());
-   for ( ; iter != end; iter++, rebarIter++ )
+   for ( ; iter != end; iter++ )
    {
-      CSegmentKey toSegmentKey(*iter,0);
+      CGirderKey& toGirderKey = *iter;
 
-      CLongitudinalRebarData& rebarData = *rebarIter;
-      pRebar->SetSegmentLongitudinalRebarData(toSegmentKey,rebarData);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+
+         CLongitudinalRebarData& rebarData = *rebarIter;
+         pRebar->SetSegmentLongitudinalRebarData(toSegmentKey,rebarData);
+         rebarIter++;
+      }
    }
 }
 
@@ -493,6 +602,7 @@ bool txnCopyGirderSlabOffset::Execute()
    PierIndexType startPierIdx = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
    PierIndexType endPierIdx   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
 
+   // get the slab offsets for the source group at each pier in the group
    std::vector<Float64> newSlabOffsets;
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
@@ -500,22 +610,38 @@ bool txnCopyGirderSlabOffset::Execute()
       newSlabOffsets.push_back(slabOffset);
    }
 
+   // clear the old cache
    m_OldSlabOffsetData.clear();
+
+   // apply slab offset to all other girders and groups
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
    for ( ; iter != end; iter++ )
    {
-      std::vector<Float64> oldSlabOffsets;
       CGirderKey toGirderKey(*iter);
-      for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+
+      const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(toGirderKey.groupIndex);
+      PierIndexType startPierIdxThisGroup = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
+      PierIndexType endPierIdxThisGroup   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
+
+      std::vector<Float64> oldSlabOffsets;
+      for ( PierIndexType pierIdx = startPierIdxThisGroup; pierIdx <= endPierIdxThisGroup; pierIdx++ )
       {
+         // cache current slab offset values for undo
          Float64 slabOffset = pIBridgeDesc->GetSlabOffset(toGirderKey.groupIndex,pierIdx,toGirderKey.girderIndex);
          oldSlabOffsets.push_back(slabOffset);
 
-         pIBridgeDesc->SetSlabOffset(toGirderKey.groupIndex,pierIdx,toGirderKey.girderIndex,newSlabOffsets[pierIdx-startPierIdx]);
+         // get the pier index from the source values of slab offset. If the current group has more piers
+         // than the source group, use the slab offset for the last pier in the source group for all remaining
+         // piers in this group
+         PierIndexType relativePierIdx = pierIdx - startPierIdxThisGroup; // pier index relative to the start of this group
+         PierIndexType pierIndexForSlabOffset = (relativePierIdx <= endPierIdx ? relativePierIdx - startPierIdx : endPierIdx);
+         pIBridgeDesc->SetSlabOffset(toGirderKey.groupIndex,pierIdx,toGirderKey.girderIndex,newSlabOffsets[pierIndexForSlabOffset]);
       }
       m_OldSlabOffsetData.push_back(oldSlabOffsets);
    }
+
+   ATLASSERT(m_OldSlabOffsetData.size() == m_ToGirderKeys.size());
 
    return true;
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,12 +54,6 @@ CLASS
 
 DESCRIPTION
    Artifact that holds Hauling stress check results at a location.
-
-
-COPYRIGHT
-   Copyright (c) 1999
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rdp : 06.26.2013 : Created file

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,12 +38,6 @@ CLASS
 
 DESCRIPTION
    Report content for Capacity/Demand ratios. A consistant format for C/D Reporting
-
-
-COPYRIGHT
-   Copyright © 1997-2009
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rdp : 12.18.2009 : Created file

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -663,43 +663,54 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       if (areAnyHarpedStrandsInTable)
       {
+         Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
+
          if (are_harped_straight)
          {
             (*p_table)(row++,col) << Bold(_T("Straight"));
 
             if (bFirst)
-               (*p_table)(row,0) << _T("NO. (# of Harped Strands)");
+               (*p_table)(row,0) << _T("NO. (# of Adj. Straight Strands)");
 
             (*p_table)(row++,col) << nh;
+
+            if (bFirst)
+               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Adj. Straight Strand(s)");
          }
          else
          {
             (*p_table)(row++,col) << Bold(_T("Depressed"));
 
             if (bFirst)
-               (*p_table)(row,0) << _T("NO. (# of Harped Strands)");
+               (*p_table)(row,0) << _T("NO. (# of Depressed Strands)");
 
             (*p_table)(row++,col) << nh;
+
+            if (bFirst)
+               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
+
+            Float64 TO;
+            pStrandGeometry->GetHighestHarpedStrandLocationEnds(segmentKey,&TO);
+
+            // value is measured down from top of girder... we want it measured up from the bottom
+            TO += Hg;
+
+            (*p_table)(row++,col) << ecc.SetValue(TO);
+
+            if (bFirst)
+               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ CL");
          }
 
-         if (bFirst)
-            (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
-
-         Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
-
-         Float64 TO;
-         pStrandGeometry->GetHighestHarpedStrandLocationEnds(segmentKey,&TO);
-
+         // Yb for both harped and adj str are reported. headings are from if blocks above
+         Float64 HSLCL;
+         pStrandGeometry->GetHighestHarpedStrandLocationHPs(segmentKey,&HSLCL);
          // value is measured down from top of girder... we want it measured up from the bottom
-         TO += Hg;
-
-         (*p_table)(row++,col) << ecc.SetValue(TO);
+         HSLCL += Hg;
+         (*p_table)(row++,col) << ecc.SetValue(HSLCL);
       }
 
       if ( areAnyDebondingInTable )
       {
-//         (*p_table)(row++,col) << Bold(_T("Debonded"));
-
          if (bFirst)
             (*p_table)(row,0) << _T("NO. (# of Debonded Strands)");
 

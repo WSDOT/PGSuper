@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,12 +39,6 @@ CLASS
 DESCRIPTION
    Utility class for temporary support data. This class encapsulates all
    the input data for a temporary support.
-
-
-COPYRIGHT
-   Copyright © 1997-2008
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 04.25.208 : Created file

@@ -68,13 +68,17 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      2     4     New     *     40  1/2  270  12.52   1.52  10.50  10.50                                              22  42.0 22.0  6.000 10.000   3.618    -4.189     4580   0.611  0.761   2.859 -1.492  0.000 -0.068 -1.560 113.02  260.48    3.75   15.50   15.50 
+ 40.00    6   7.25    K3 Template      2     4     New     *     60  1/2  270   4.36   4.36  12.75  12.75                                               0   0.0  0.0  4.000 10.000   3.720    -4.279     4637   0.611  0.761   1.161 -1.578  0.000 -0.068 -1.646 224.94  685.79    3.75    4.00    4.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Splitting zone check failed.
+Lifting checks failed
 Minimum fillet value exceeded for bridge check failed
 
 

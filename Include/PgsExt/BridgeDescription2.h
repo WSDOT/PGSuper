@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,12 +56,6 @@ DESCRIPTION
    data and leaves the ID and Index as default values. Assignment operators copy the
    entire object including ID and Index. All objects have a Copy<Object>Data method.
    These methods copy the object's data but does not alter the ID or Index.
-
-
-COPYRIGHT
-   Copyright © 1997-2008
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 04.29.2008 : Created file

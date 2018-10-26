@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 #include <PgsExt\StrandData.h>
 #include <PgsExt\HandlingData.h>
 #include <PgsExt\GirderMaterial.h>
+#include <PgsExt\PTData.h>
 
 class txnCopyGirderType :  public txnTransaction
 {
@@ -86,6 +87,7 @@ private:
    CGirderKey m_FromGirderKey;
    std::vector<CGirderKey> m_ToGirderKeys;
    std::vector<CStrandData> m_OldPrestressData;
+   std::vector<CPTData> m_OldPTData;
 };
 
 class txnCopyGirderHandling :  public txnTransaction

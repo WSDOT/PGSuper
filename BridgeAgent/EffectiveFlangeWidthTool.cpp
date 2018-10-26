@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,7 +60,7 @@ void CEffectiveFlangeWidthTool::Init(IBroker* pBroker,StatusGroupIDType statusGr
    m_scidInformationalWarning        = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
    m_scidBridgeDescriptionError      = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
    m_scidEffectiveFlangeWidthWarning = pStatusCenter->RegisterCallback(new pgsEffectiveFlangeWidthStatusCallback(m_pBroker,eafTypes::statusWarning));
-   m_scidEffectiveFlangeWidthInfo    = pStatusCenter->RegisterCallback(new pgsEffectiveFlangeWidthStatusCallback(m_pBroker,eafTypes::statusOK));
+   m_scidEffectiveFlangeWidthInfo    = pStatusCenter->RegisterCallback(new pgsEffectiveFlangeWidthStatusCallback(m_pBroker,eafTypes::statusInformation));
 }
 
 HRESULT CEffectiveFlangeWidthTool::FinalConstruct()
@@ -434,75 +434,83 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
       // get tributary width
       Float64 twLeft,twRight,wTrib;
       TributaryFlangeWidthBySegmentEx(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,&twLeft,&twRight,&wTrib);
+      Float64 Scut2 = (locationType == ltLeftExteriorGirder ? twRight : twLeft); // 1/2 of girder spacing at Xs
+
+      // store unmodified geometric deck overhang if we are exterior
+      Float64 deckOverhang;
+      if (locationType == ltLeftExteriorGirder)
+      {
+         deckOverhang = twLeft;
+      }
+      else if (locationType == ltRightExteriorGirder)
+      {
+         deckOverhang = twRight;
+      }
+      else
+      {
+         deckOverhang = 0.0;
+      }
 
       if ( 1 < nGirders )
       {
-         // get span length
-         Float64 L = pBridge->GetSpanLength(spanKey);
+         // Only need to check L/S once for a segment
+         if (m_LsChecks.end() == m_LsChecks.find(segmentKey))
+         {
+            // get span length
+            Float64 L = pBridge->GetSpanLength(spanKey);
 
-         CSegmentKey startSegmentKey = pBridge->GetSegmentAtPier(startPierIdx,segmentKey);
-         CSegmentKey endSegmentKey   = pBridge->GetSegmentAtPier(endPierIdx,  segmentKey);
+            pgsPointOfInterest poiStartPier = pPoi->GetPierPointOfInterest(segmentKey,startPierIdx);
+            pgsPointOfInterest poiEndPier   = pPoi->GetPierPointOfInterest(segmentKey,endPierIdx);
 
-         // Girder spacing normal to the CL girder is the tributary width
-         Float64 S1,S2;
-         TributaryFlangeWidthBySegment(bridge,gdrID,startSegmentKey.segmentIndex, 0.0,leftGdrID,rightGdrID,&S1);
-         TributaryFlangeWidthBySegment(bridge,gdrID,endSegmentKey.segmentIndex,   L,  leftGdrID,rightGdrID,&S2);
+            // Girder spacing normal to the CL girder is the tributary width
+            Float64 S1,S2;
+            TributaryFlangeWidthBySegment(bridge,gdrID,poiStartPier.GetSegmentKey().segmentIndex,poiStartPier.GetDistFromStart(),leftGdrID,rightGdrID,&S1);
+            TributaryFlangeWidthBySegment(bridge,gdrID,poiEndPier.GetSegmentKey().segmentIndex,  poiEndPier.GetDistFromStart(),  leftGdrID,rightGdrID,&S2);
 
-         Float64 S = Max(S1,S2);
+            Float64 Smax = Max(S1,S2);
 
-	      if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && L/S < 2.0 )
-	      {
-            //  ratio of span length to girder spacing is out of range
-            std::_tostringstream os;
-            os << "The ratio of span length to girder spacing (L/S) is less than 2. The effective flange width cannot be computed (LRFD 4.6.2.6.1)" << std::endl;
+	         if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && L/Smax < 2.0 )
+	         {
+               //  ratio of span length to girder spacing is out of range
+               std::_tostringstream os;
+               os << "The ratio of span length to girder spacing (L/S) is less than 2. The effective flange width cannot be computed (LRFD 4.6.2.6.1)" << std::endl;
 
-            pgsEffectiveFlangeWidthStatusItem* pStatusItem = 
-               new pgsEffectiveFlangeWidthStatusItem(m_StatusGroupID,m_scidEffectiveFlangeWidthWarning,os.str().c_str());
+               pgsEffectiveFlangeWidthStatusItem* pStatusItem = 
+                  new pgsEffectiveFlangeWidthStatusItem(m_StatusGroupID,m_scidEffectiveFlangeWidthWarning,os.str().c_str());
 
-            pStatusCenter->Add(pStatusItem);
+               pStatusCenter->Add(pStatusItem);
 
-            os << "See Status Center for Details";
-            THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
-	      }
-	
+               os << "See Status Center for Details";
+               THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+	         }
+
+            m_LsChecks.insert(segmentKey);
+         }
+
          // check overhang spacing if it is a CIP or SIP deck
 	      // overlay decks don't have overhangs
-	      if ( bIsExteriorGirder && pBridge->GetDeckType() != pgsTypes::sdtCompositeOverlay )
+	      if ( bIsExteriorGirder && pBridge->GetDeckType() != pgsTypes::sdtCompositeOverlay && 
+              !pIEffFW->IgnoreEffectiveFlangeWidthLimits())
 	      {
-            CSegmentKey leftSegmentKey(segmentKey);
-            CSegmentKey rightSegmentKey(segmentKey);
-            leftSegmentKey.girderIndex = 0;
-            rightSegmentKey.girderIndex = nGirders-1;
-
-            // get the corresponding POI in the girder to the left and right of this girder
-            // making sure that we don't go off the end of the segment
-            Float64 left_segment_length  = pBridge->GetSegmentLength(leftSegmentKey);
-            Float64 right_segment_length = pBridge->GetSegmentLength(rightSegmentKey);
-
-            pgsPointOfInterest leftPoi = pPoi->GetPointOfInterest(leftSegmentKey,Min(Xs,left_segment_length));
-            pgsPointOfInterest rightPoi= pPoi->GetPointOfInterest(rightSegmentKey,Min(Xs,right_segment_length));
-
+            // Overhang distance for our purposes if from CL exterior web to edge of deck
             GET_IFACE(IGirder,pGirder);
+	         Float64 trib_width_adjustment  = pGirder->GetCL2ExteriorWebDistance(poi);
+	         Float64 left_overhang  = twLeft  - trib_width_adjustment;
+	         Float64 right_overhang = twRight - trib_width_adjustment;
 
-	         Float64 left_trib_width_adjustment  = pGirder->GetCL2ExteriorWebDistance(leftPoi);
-	         Float64 right_trib_width_adjustment = pGirder->GetCL2ExteriorWebDistance(rightPoi);
-	         Float64 left_overhang  = twLeft - left_trib_width_adjustment;
-	         Float64 right_overhang = twRight - right_trib_width_adjustment;
-
-            if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && 
-                  (locationType == ltLeftExteriorGirder  && S/2 < left_overhang  && !IsEqual(S/2,left_overhang)) || 
-	               (locationType == ltRightExteriorGirder && S/2 < right_overhang && !IsEqual(S/2,right_overhang)) )
+            if (  (locationType == ltLeftExteriorGirder  && IsLT(Scut2,left_overhang)) || 
+	               (locationType == ltRightExteriorGirder && IsLT(Scut2,right_overhang)) )
 	         {
 	            bOverhangCheckFailed = true;
+
 	            // force tributary area to be S/2
-	            if ( locationType == ltLeftExteriorGirder && IsGE(S/2,left_overhang) )
+	            if ( locationType == ltLeftExteriorGirder ) 
                {
-	               twLeft = twRight;
+	               twLeft = Scut2 + trib_width_adjustment;
                }
-	
-	            if ( locationType == ltRightExteriorGirder && IsGE(S/2,right_overhang) )
+		         else if ( locationType == ltRightExteriorGirder )
                {
-	               twRight = twLeft;
+	               twRight = Scut2 + trib_width_adjustment;
                }
 	
 	            // overhang is too big
@@ -513,7 +521,6 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	            pStatusCenter->Add(pStatusItem);
 	
 	            wTrib = twLeft + twRight;
-	
 	         }
 	      }
 	
@@ -600,8 +607,6 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
       // is it an exterior girder?
       if ( bIsExteriorGirder )
       {
-         // yes!!!
-
          // left or right exterior girder... get the barrier
          CComPtr<ISidewalkBarrier> barrier;
          if ( locationType == ltLeftExteriorGirder)
@@ -614,11 +619,10 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             bridge->get_RightBarrier(&barrier);
          }
 
-         // is it structurally continuous
+         // is it structurally continuous, and don't add if overhang > S/2
          barrier->get_IsStructurallyContinuous(&bIsStructurallyContinuous);
          if ( bIsStructurallyContinuous == VARIANT_TRUE && !bOverhangCheckFailed )
          {
-            // yes!!
             CComPtr<IShape> shape;
             barrier->get_StructuralShape(&shape);
 
@@ -661,6 +665,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
       effFlangeWidth->bContinuousBarrier = (bIsStructurallyContinuous == VARIANT_TRUE);
       effFlangeWidth->tribWidth = wTrib;
       effFlangeWidth->twLeft    = twLeft;
+      effFlangeWidth->deckOverhang = deckOverhang;
       effFlangeWidth->twRight   = twRight;
       effFlangeWidth->effFlangeWidth = wTrib + wAdd;
 
@@ -1243,7 +1248,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
       Float64 Xs = poi.GetDistFromStart();
       EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,&efw);
 
-      ColumnIndexType nCol = 4;
+      ColumnIndexType nCol = 5;
 
       if ( efw.bContinuousBarrier )
       {
@@ -1257,8 +1262,25 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
       ColumnIndexType col = 0;
       (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*table)(0,col++) << COLHDR((bLeftGirder ? _T("Left Overhang") : _T("Left Spacing")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(0,col++) << COLHDR((bLeftGirder ? _T("Right Spacing") : _T("Right Overhang")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      if (bLeftGirder)
+      {
+         (*table)(0,col++) << COLHDR(_T("Left Overhang"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*table)(0,col++) << COLHDR(_T("Effective")<<rptNewLine<<_T("Left Overhang"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      }
+      else
+      {
+         (*table)(0,col++) << COLHDR(_T("Left Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      }
+
+      if (bLeftGirder)
+      {
+         (*table)(0,col++) << COLHDR(_T("Right Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      }
+      else
+      {
+         (*table)(0,col++) << COLHDR(_T("Right Overhang"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*table)(0,col++) << COLHDR(_T("Effective")<<rptNewLine<<_T("Right Overhang"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      }
 
       if ( efw.bContinuousBarrier )
       {
@@ -1266,7 +1288,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          (*table)(0,col++) << COLHDR(Sub2(_T("t"),_T("s")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit() );
       }
 
-      (*table)(0,col++) << COLHDR(_T("Effective Flange Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(_T("Effective")<<rptNewLine<<_T("Flange Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit() );
    }
    else
    {
@@ -1356,8 +1378,10 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          xdim2.ShowUnitTag(false);
          area.ShowUnitTag(false);
 
+
          if ( bLeftGirder )
          {
+           (*table)(row,col++) << xdim2.SetValue(efw.deckOverhang) << rptNewLine;
            (*table)(row,col++) << xdim2.SetValue(efw.twLeft) << rptNewLine;
          }
          else
@@ -1371,6 +1395,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          }
          else
          {
+           (*table)(row,col++) << xdim2.SetValue(efw.deckOverhang) << rptNewLine;
            (*table)(row,col++) << xdim2.SetValue(efw.twRight) << rptNewLine;
          }
 

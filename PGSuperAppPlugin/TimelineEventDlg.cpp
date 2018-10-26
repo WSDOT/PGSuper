@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -115,21 +115,7 @@ void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
 
       m_pTimelineEvent->SetDay(day);
 
-#pragma Reminder("UPDATE: event elapsed time validation")
-      // If this is a new event, then pTimelineEvent is NULL. We need a way to validate the duration of this event
-      //if ( pTimelineEvent )
-      //{
-      //   EventIndexType eventIdx = m_TimelineManager.GetEventIndex(pTimelineEvent->GetID());
-      //   Float64 duration = m_TimelineManager.GetDuration(eventIdx);
-      //   if ( duration < m_pTimelineEvent->GetMinElapsedTime() )
-      //   {
-      //      pDX->PrepareEditCtrl(IDC_DAY);
-      //      CString strMsg;
-      //      strMsg.Format(_T("The activities in this event take longer than the duration of the event. Reduce the amount of time for the activities in this event or make the next event start at a later time."));
-      //      AfxMessageBox(strMsg);
-      //      pDX->Fail();
-      //   }
-      //}
+      m_EventIndex = m_TimelineManager.GetEventIndex(m_pTimelineEvent->GetID());
    }
    else
    {

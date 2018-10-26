@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     1    WF66G    *     35  0.6  270  28.72  17.63  14.00  14.00                                               7  62.0  4.0  4.600  5.300   3.249    -3.652     8836   0.528  0.671   8.077 -3.200 -0.210 -0.446 -3.856 206.76  279.55    3.00    5.50    5.50 
+ 27.83    5   6.00                     1     1    WF66G    *     35  0.6  270  28.72  17.63  13.75  13.75                                               7  62.0  4.0  4.700  5.300   3.228    -3.632     8800   0.528  0.671   7.962 -3.152 -0.210 -0.446 -3.808 205.63  277.59    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -9,21 +9,19 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     2    WF66G    *     34  0.6  270  28.74  15.80  13.25  13.25                                               8  62.0  4.0  4.300  5.000   3.162    -3.577     8702   0.527  0.671   7.833 -3.083 -0.213 -0.452 -3.748 198.25  277.43    3.00    5.50    5.50 
+ 27.83    5   6.00                     1     2    WF66G    *     35  0.6  270  28.72  17.63  13.50  13.50                                               7  62.0  4.0  4.600  5.300   3.192    -3.599     8740   0.528  0.671   8.003 -3.067 -0.210 -0.446 -3.723 206.76  285.28    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     3    WF66G    *     34  0.6  270  28.74  15.80  13.25  13.25                                               8  62.0  4.0  4.300  5.000   3.162    -3.577     8702   0.527  0.671   7.833 -3.083 -0.213 -0.452 -3.748 198.25  277.43    3.00    5.50    5.50 
+ 27.83    5   6.00                     1     3    WF66G    *     35  0.6  270  28.72  17.63  13.50  13.50                                               7  62.0  4.0  4.600  5.300   3.192    -3.599     8740   0.528  0.671   8.003 -3.067 -0.210 -0.446 -3.723 206.76  285.28    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
 
 

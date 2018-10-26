@@ -10,21 +10,19 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.25    5   6.00                     1     2     W58G    *     28  0.6  270  24.53  17.39  11.25  11.25                                               4  54.0  3.0  6.600  7.600   4.335    -4.409     6109   0.553  0.671   4.169 -1.321 -0.115 -0.169 -1.605 115.25  199.08    1.75    5.00    5.00 
+ 27.25    5   6.00                     1     2     W58G    *     29  0.6  270  24.34  19.13  11.50  11.50                                               3  54.0  3.0  6.900  8.100   4.389    -4.437     6302   0.555  0.671   4.309 -1.292 -0.112 -0.166 -1.569 120.89  206.96    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.25    5   6.00                     1     3     W58G    *     28  0.6  270  24.53  17.39  11.25  11.25                                               4  54.0  3.0  6.600  7.600   4.335    -4.409     6109   0.553  0.671   4.169 -1.321 -0.115 -0.169 -1.605 115.25  199.08    1.75    5.00    5.00 
+ 27.25    5   6.00                     1     3     W58G    *     29  0.6  270  24.34  19.13  11.50  11.50                                               3  54.0  3.0  6.900  8.100   4.389    -4.437     6302   0.555  0.671   4.309 -1.292 -0.112 -0.166 -1.569 120.89  206.96    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Confinement zone check failed.
 
 

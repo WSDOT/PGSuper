@@ -55,18 +55,31 @@ A<sub>g</sub> = Gross cross sectional area <br>
 
 Some girder types, such as U-beams, may be defined with diaphragms that are cast with the girder. The dead load of these diaphragms are modeled as concentrated loads.
 
-### Intervals 3 - 5 ###
-Intervals 3 - 5 model the non-composite precast elements during Lifting, Storage, and Hauling. The loading conditions for this analysis intervals are the same as for Interval 2. However, the support location is that for lifting, storage, and hauling, respectively.
+### Intervals 3 - 6 ###
+Intervals 3 - 6 model the non-composite precast elements during Lifting, Storage, and Hauling. The loading conditions for this analysis intervals are the same as for Interval 2. However, the support location is that for lifting, storage, and hauling, respectively.
 
-### Interval 6: Erect Girders ###
+### Interval 7: Erect Girders ###
 The precast elements have been erected onto the supporting elements of the bridge. They are supported at their specified bearing locations. The loading condition is similar to that Interval 2; however if the length of the cantilever in the analysis model is less than 1.1 times the depth of the non-composite girder section at the centerline bearing (H<sub>g</sub>), the cantilever is assumed to be a deep beam. In this case, the dead load of the cantilever is applied directly over the centerline of bearing as a concentrated load.
 
 In the figure below, the cantilever on the left is greater than 1.1H<sub>g</sub> in length and it is treated as a flexural element. The cantilever on the right is less that 1.1H<sub>g</sub> and is treated as a deep beam where forces are transfered directly to the support through an internal compression strut.
 
 ![](ErectedGirderModel.png)
 
-### Interval 7: Cast Deck (Bridge Site 1) ###
-The self-weight of cast-in-place intermediate diaphragms as well as the cast deck, precast deck panels, and slab haunch are analyzed. The analysis model is the same as described for Interval 6.
+The self-weight of cast-in-place intermediate diaphragms are applied during this interval.
+  
+#### Intermediate Diaphragm Dead Load ####
+Diaphragm loads are modeled as concentrated forces. The force for exterior girders is P = HW<span style="font-family:Symbol">g</span><sub>c</sub>(w<sub>trib</sub> - t<sub>web</sub>) and for interior girders P = 0.5HW<span style="font-family:Symbol">g</span><sub>c</sub>(S - t<sub>web</sub>)
+
+where<br>
+H = Height of the diaphragm <br>
+W = Width of the diaphragm<br>
+<span style="font-family:Symbol">g</span><sub>c</sub> = Unit weight of deck concrete including reinforcement<br>
+w<sub>trib</sub> = tributary width of deck<br>
+t<sub>web</sub> = total width of all webs in the section<br>
+S = spacing between girders are the location of the diaphragm, measured along the centerline of the diaphragm<br>
+
+### Interval 9: Cast Deck (Bridge Site 1) ###
+The self-weight of cast-in-place deck, precast deck panels, and slab haunch are analyzed. The analysis model is the same as described for Interval 7.
 
 #### Cast Deck Dead Load ####
 The dead load of the deck is modeled as a series of linearly varying load segments. The magnitude of the load is taken to be w = A<sub>d</sub> <span style="font-family:Symbol">g</span><sub>c</sub>
@@ -123,17 +136,6 @@ The top of the girder is assumed to follow a parabolic curve defined by the slab
 >     The Loading Details chapter in the Details report tabulates the haunch depth along the girder.
 
 > NOTE: The shape of the slab haunch is governed, in part, by the girder camber which is a function of the concrete properties, prestressing, and loading conditions. At the onset of design, the girder camber is not known. As such, the slab haunch dead load must be estimated and refined manually. In other words, this software does not perform iterations to minimize varation between the slab haunch shape and the haunch dead load.
-  
-#### Intermediate Diaphragm Dead Load ####
-Diaphragm loads are modeled as concentrated forces. The force for exterior girders is P = HW<span style="font-family:Symbol">g</span><sub>c</sub>(w<sub>trib</sub> - t<sub>web</sub>) and for interior girders P = 0.5HW<span style="font-family:Symbol">g</span><sub>c</sub>(S - t<sub>web</sub>)
-
-where<br>
-H = Height of the diaphragm <br>
-W = Width of the diaphragm<br>
-<span style="font-family:Symbol">g</span><sub>c</sub> = Unit weight of deck concrete including reinforcement<br>
-w<sub>trib</sub> = tributary width of deck<br>
-t<sub>web</sub> = total width of all webs in the section<br>
-S = spacing between girders are the location of the diaphragm, measured along the centerline of the diaphragm<br>
 
 #### Shear Key Dead Load ####
 Shear key loads can be automatically generated **only for adjacently-spaced TxDOT Box girders**. To activate the load, specify the ShearKeyDepth variable in the Girder Library entry. 
@@ -146,7 +148,7 @@ Shear key loads can be automatically generated **only for adjacently-spaced TxDO
 * Results will only be displayed if a shear key is present
 
 
-### Interval 8: Install Railing System and Overlay (Bridge Site 2) ###
+### Interval 13: Install Railing System and Overlay (Bridge Site 2) ###
 At this analysis interval, the girders can be continuous over intermediate piers. For continuous or intergral connections, the centerline bearing supports locations are replaced with a single  support location at the centerline of the pier.
 
 ![](ContinuousModel.png)
@@ -201,6 +203,5 @@ However, if the loads are distributed over the 3 exterior webs or mating surface
 #### Overlay ####
 The self weight of the overlay can be distibuted uniformly to all girders as permitted by LRFD 4.6.2.2.1 or distributed to each girder based on its tributary area.
 
-
-
- 
+### Interval 14: Open to Traffic (Bridge Site 2) ###
+At this analysis interval the bridge is open to traffic and live load is applied.

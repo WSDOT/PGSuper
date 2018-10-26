@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -101,6 +101,9 @@ private:
    bool m_bMaxSkewAngleComputed;
    Float64 m_MaxSkewAngle;
 
+   // Computing L/S requirement is expensive. Do it only once
+   std::set<CSegmentKey> m_LsChecks;
+
    // container for tributary width
    struct TribWidth
    {
@@ -113,7 +116,7 @@ private:
    struct EffFlangeWidth
    {
       CComPtr<IEffectiveFlangeWidthDetails> m_Details;
-      Float64 twLeft, twRight, tribWidth;
+      Float64 twLeft, twRight, tribWidth, deckOverhang;
       bool bContinuousBarrier;
       Float64 Ab,ts;
       Float64 effFlangeWidth;

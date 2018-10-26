@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -240,13 +240,16 @@ void CGirderModelManager::GetConstructionLoad(const CSegmentKey& segmentKey,std:
    GetMainConstructionLoad(segmentKey,pConstructionLoads);
 }
 
-bool CGirderModelManager::HasShearKeyLoad(const CGirderKey& girderKey)
+bool CGirderModelManager::HasShearKeyLoad(const CGirderKey& girderKeyOrig)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    GET_IFACE(IGirder,pGirder);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
+
+   GirderIndexType gdrIdx = min( girderKeyOrig.girderIndex, pBridgeDesc->GetGirderGroup(girderKeyOrig.groupIndex)->GetGirderCount()-1 );
+   CGirderKey girderKey(girderKeyOrig.groupIndex, gdrIdx);
 
    // First check if this beam has a shear key
    if ( pGirder->HasShearKey(girderKey, spacingType))
@@ -348,10 +351,12 @@ bool CGirderModelManager::HasSidewalkLoad(const CGirderKey& girderKey)
    bool bHasSidewalkLoad = false;
 
    GET_IFACE(IBridge,pBridge);
+   GirderIndexType gdrIdx = min(girderKey.girderIndex, pBridge->GetGirderCount(girderKey.groupIndex)-1);
+
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      CSegmentKey segmentKey(girderKey,segIdx);
+      CSegmentKey segmentKey(girderKey.groupIndex, gdrIdx, segIdx);
 
       Float64 swLoad, fraLeft, fraRight;
       GetSidewalkLoadFraction(segmentKey,&swLoad,&fraLeft,&fraRight);
@@ -386,10 +391,12 @@ bool CGirderModelManager::HasPedestrianLoad(const CGirderKey& girderKey)
    {
       bHasPedLoad = false;
       GET_IFACE(IBridge,pBridge);
+      GirderIndexType gdrIdx = min(girderKey.girderIndex, pBridge->GetGirderCount(girderKey.groupIndex)-1);
+
       SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(girderKey,segIdx);
+         CSegmentKey segmentKey(girderKey.groupIndex,gdrIdx, segIdx);
 
          Float64 swLoad, fraLeft, fraRight;
          GetSidewalkLoadFraction(segmentKey, &swLoad, &fraLeft,&fraRight);
@@ -14409,7 +14416,6 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
          endSegmentKey.segmentIndex = nSegments-1;
          Float64 brg_offset = pBridge->GetSegmentEndBearingOffset(endSegmentKey);
          Float64 moment_arm = brg_offset - pBridge->GetPierDiaphragmLoadLocation(endSegmentKey,pgsTypes::metEnd);
-         ATLASSERT(moment_arm <= brg_offset); // diaphragm load should be on same side of pier as girder
          *pMback = *pPback * moment_arm;
       }
    }
@@ -14427,7 +14433,6 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
          startSegmentKey.segmentIndex = 0;
          Float64 brg_offset = pBridge->GetSegmentEndBearingOffset(startSegmentKey);
          Float64 moment_arm = brg_offset - pBridge->GetPierDiaphragmLoadLocation(startSegmentKey,pgsTypes::metStart);
-         ATLASSERT(moment_arm <= brg_offset); // diaphragm load should be on same side of pier as girder
          *pMahead = -1 * (*pPahead) * moment_arm;
       }
    }

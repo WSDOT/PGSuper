@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,11 +39,6 @@ CLASS
 DESCRIPTION
    Reports the details for computing the required amount of tension rebar
    so that the alternative tension stress limit can be used.
-
-COPYRIGHT
-   Copyright © 1997-2006
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 05.04.2006 : Created file

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,12 +57,6 @@ DESCRIPTION
    Utility class for deck reinforcment description data. This class encapsulates all
    the input data for deck reinforcment and implements the IStructuredLoad and 
    IStructuredSave persistence interfaces.
-
-
-COPYRIGHT
-   Copyright © 1997-2007
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 01.11.2007 : Created file

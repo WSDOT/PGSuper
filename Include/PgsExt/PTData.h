@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,11 +40,6 @@ CLASS
 
 DESCRIPTION
    Base class for the geometry of all duct types
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
 *****************************************************************************/
 class PGSEXTCLASS CDuctGeometry
 {
@@ -75,11 +70,6 @@ CLASS
 
 DESCRIPTION
    Defines a duct described by a series of linear segments.
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
 *****************************************************************************/
 class PGSEXTCLASS CLinearDuctGeometry : public CDuctGeometry
 {
@@ -180,11 +170,6 @@ CLASS
 
 DESCRIPTION
    Defines a parabolic duct
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
 *****************************************************************************/
 class PGSEXTCLASS CParabolicDuctGeometry : public CDuctGeometry
 {
@@ -323,11 +308,6 @@ CLASS
 DESCRIPTION
    Defines a parabolic that is offset from another duct and derives its 
    geometry from the duct is references.
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
 *****************************************************************************/
 class PGSEXTCLASS COffsetDuctGeometry : public CDuctGeometry
 {
@@ -470,11 +450,6 @@ CLASS
 
 DESCRIPTION
    Utility class that defines a duct
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
 *****************************************************************************/
 class PGSEXTCLASS CDuctData
 {
@@ -520,11 +495,6 @@ CLASS
 
 DESCRIPTION
    Utility class for post-tensioning description data.
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
 *****************************************************************************/
 class PGSEXTCLASS CPTData
 {

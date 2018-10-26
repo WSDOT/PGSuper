@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,14 +26,18 @@
 #include "PGSpliceReporterImp.h"
 #include <Reporting\PGSpliceTitlePageBuilder.h>
 
+#include <Reporting\BridgeAnalysisReportSpecificationBuilder.h>
+
 #include <Reporting\TendonGeometryChapterBuilder.h>
 #include <Reporting\ShrinkageStrainChapterBuilder.h>
 
 #include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
 #include <Reporting\EquilibriumCheckChapterBuilder.h>
 
-#include <Reporting\InitialStrainAnalysisReportSpecificationBuilder.h>
-#include <Reporting\InitialStrainAnalysisChapterBuilder.h>
+//#include <Reporting\InitialStrainAnalysisReportSpecificationBuilder.h>
+//#include <Reporting\InitialStrainAnalysisChapterBuilder.h>
+
+#include <Reporting\TemporarySupportReactionChapterBuilder.h>
 
 // Interfaces
 #include <IFace\Project.h>
@@ -92,6 +96,17 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    //pMyRptBuilder->SetReportSpecificationBuilder( pInitialStrainAnalysisSpecBuilder );
    //pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
    //pRptMgr->AddReportBuilder( pMyRptBuilder );
+
+   boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(new CGirderLineReportSpecificationBuilder(m_pBroker) );
+
+   CReportBuilder* pTSRptBuilder = new CReportBuilder(_T("Temporary Support Reactions Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pTSRptBuilder->IncludeTimingChapter();
+#endif
+   pTSRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pTSRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
+   pTSRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTemporarySupportReactionChapterBuilder(true)) );
+   pRptMgr->AddReportBuilder( pTSRptBuilder );
 
    return S_OK;
 }

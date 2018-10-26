@@ -1244,6 +1244,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TemporarySupportReactionChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TendonGeometryChapterBuilder.cpp"
 				>
 			</File>
@@ -1953,6 +1957,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\StressChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TemporarySupportReactionChapterBuilder.h"
 				>
 			</File>
 			<File

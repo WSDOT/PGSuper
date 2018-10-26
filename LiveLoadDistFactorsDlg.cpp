@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -376,6 +376,8 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
                pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
             }
 
+            pEvents->FirePendingEvents();
+
             // First store all factors locally, then set them if we don't throw
             std::vector<SpanLLDF> span_lldfs;
 
@@ -497,14 +499,15 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
          }
 
          // Restore original lldf computation method
+         pEvents->HoldEvents();
+
          pIBridgeDesc->SetLiveLoadDistributionFactorMethod(old_method);
          if (method==pgsTypes::Calculated)
          {
             pLiveLoads->SetLldfRangeOfApplicabilityAction(old_action);
          }
 
-         pEvents->CancelPendingEvents(); // we really didn't make any changes
-
+         pEvents->FirePendingEvents(); // we really didn't make any changes
       }
    }
 }

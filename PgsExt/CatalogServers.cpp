@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -184,7 +184,7 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
       m_Servers.insert( ServerPtr(new CFtpCatalogServer(m_AppName,m_strExt)) ); // wsdot
    }
 
-   if (!IsServerDefined(_T("TxDOT")))
+   if (!IsServerDefined(_T("TxDOT")) && m_AppName != _T("PGSplice")) // TxDOT does not have a PGSplice server
    {
       CString url = CString("ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/") + CString(m_AppName).MakeLower() + CString("/");
       m_Servers.insert( ServerPtr( new CFtpCatalogServer(m_AppName,CString("TxDOT"),url,m_strExt) ) );

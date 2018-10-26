@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -451,11 +451,19 @@ void CGirderSelectStrandsPage::OnPaint()
 
 
    pgsTypes::MemberEndType endType = pgsTypes::metStart;
-   Float64 absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_pGdrEntry->GetName().c_str(),endType,m_AdjustableStrandType, m_HgEnd[pgsTypes::metStart], m_HgHp[pgsTypes::metStart], m_HgHp[pgsTypes::metEnd], m_HgEnd[pgsTypes::metEnd],
-                                                                                  harped_fillvec, m_HsoEndMeasurement,m_HpOffsetAtEnd[endType]);
+   Float64 absol_end_offset = 0.0;
+   if (m_bAllowEndAdjustment)
+   {
+      absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_pGdrEntry->GetName().c_str(),endType,m_AdjustableStrandType, m_HgEnd[pgsTypes::metStart], m_HgHp[pgsTypes::metStart], m_HgHp[pgsTypes::metEnd], m_HgEnd[pgsTypes::metEnd],
+                                                                         harped_fillvec, m_HsoEndMeasurement,m_HpOffsetAtEnd[endType]);
+   }
 
-   Float64 absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_pGdrEntry->GetName().c_str(), endType,m_AdjustableStrandType,m_HgEnd[pgsTypes::metStart], m_HgHp[pgsTypes::metStart], m_HgHp[pgsTypes::metEnd], m_HgEnd[pgsTypes::metEnd],
-                                                        harped_fillvec, m_HsoHpMeasurement, m_HpOffsetAtHp[endType]);
+   Float64 absol_hp_offset = 0.0;
+   if (m_bAllowHpAdjustment)
+   {
+      absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_pGdrEntry->GetName().c_str(), endType,m_AdjustableStrandType,m_HgEnd[pgsTypes::metStart], m_HgHp[pgsTypes::metStart], m_HgHp[pgsTypes::metEnd], m_HgEnd[pgsTypes::metEnd],
+                                                                       harped_fillvec, m_HsoHpMeasurement, m_HpOffsetAtHp[endType]);
+   }
 
    // We need a strand mover to adjust harped strands
    Float64 end_incr = m_bAllowEndAdjustment ? 0.0 : -1.0;

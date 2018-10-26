@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,6 @@
 #define INCLUDED_IFACE_CONSTRUCTABILITY_H_
 
 /*****************************************************************************
-COPYRIGHT
-   Copyright © 1997-1998
-   Washington State Department Of Transportation
-   All Rights Reserved
-
    This group of interfaces provides access to constructability information.
    For this first version only the "A" Dimension will be supported.  Future
    versions will add interfaces to check the extensions of stirrups, girder

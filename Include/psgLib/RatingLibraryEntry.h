@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -166,12 +166,6 @@ CLASS
 DESCRIPTION
    This class may be used to describe observe Rating entries in a library.
 
-
-COPYRIGHT
-   Copyright © 1997-2009
-   Washington State Department Of Transportation
-   All Rights Reserved
-
 LOG
    rab : 12.07.2009 : Created file
 *****************************************************************************/
@@ -195,12 +189,6 @@ CLASS
 DESCRIPTION
    This class encapsulates all specification information required for
    prestressed girder load rating
-
-
-COPYRIGHT
-   Copyright © 1997-2009
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 12.07.2009 : Created file

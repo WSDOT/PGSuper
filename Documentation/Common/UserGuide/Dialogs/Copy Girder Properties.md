@@ -22,7 +22,7 @@ Check the box next to the properties to be copied.
 Property | Description
 ---------|---------------
 Copy Concrete Material Properties | When checked, the properties of the girder concrete will be copied.
-Copy Prestressing | When checked, the prestressing strand information (quantities, locations, jacking forces, debonding, etc.) will be copied. For bridges using several types of girders, prestressing information can only be copied between girders that are of the same type.
+Copy Prestressing | When checked, both pretensioned and postensioned (if present) prestressing strand information (quantities, locations, jacking forces, debonding, etc.) will be copied. For bridges using several types of girders, prestressing information can only be copied between girders that are of the same type.
 Copy Longitudinal Reinforcement | When checked, the longitudinal reinforcement will be copied. For bridges using several types of girders, longitudinal reinforcement can only be copied between girders that are of the same type.
 Copy Transverse Reinforcement | When checked, the transverse shear reinforcement will be copied.
 Copy Handling Locations | When check, the location of the lifting loops and the transportation support points will be copied.

@@ -2411,15 +2411,17 @@ BEGIN
     COMBOBOX        IDC_CB_SLABOFFSET,167,218,267,138,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_MULTI_GIRDER_SELECT DIALOGEX 0, 0, 316, 180
+IDD_MULTI_GIRDER_SELECT DIALOGEX 0, 0, 364, 239
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select Girder(s)"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Custom1",IDC_SELECT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,19,20,278,103
-    DEFPUSHBUTTON   "OK",IDOK,145,159,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,205,159,50,14
-    GROUPBOX        "Select Girders",IDC_STATIC,7,7,302,128
+    CONTROL         "Custom1",IDC_SELECT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,20,336,160
+    DEFPUSHBUTTON   "OK",IDOK,245,218,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,305,218,50,14
+    GROUPBOX        "Select Girders",IDC_STATIC,7,7,350,203
+    PUSHBUTTON      "Select All",IDC_SELECT_ALL,122,188,50,14
+    PUSHBUTTON      "Clear All",IDC_CLEAR_ALL,191,188,50,14
 END
 
 IDD_LLDF_FILL DIALOGEX 0, 0, 347, 294
@@ -3381,8 +3383,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,56
- PRODUCTVERSION 3,0,0,56
+ FILEVERSION 3,0,0,57
+ PRODUCTVERSION 3,0,0,57
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3399,12 +3401,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.56"
+            VALUE "FileVersion", "3.0.0.57"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2017, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.56"
+            VALUE "ProductVersion", "3.0.0.57"
         END
     END
     BLOCK "VarFileInfo"
@@ -3897,9 +3899,9 @@ BEGIN
     IDD_MULTI_GIRDER_SELECT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 309
+        RIGHTMARGIN, 357
         TOPMARGIN, 7
-        BOTTOMMARGIN, 173
+        BOTTOMMARGIN, 232
     END
 
     IDD_LLDF_FILL, DIALOG

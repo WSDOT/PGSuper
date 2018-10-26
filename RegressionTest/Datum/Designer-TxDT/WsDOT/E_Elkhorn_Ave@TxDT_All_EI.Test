@@ -1,0 +1,27 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.83    5   9.25   E Elkhorn Ave     1     1    WF66G    *     46  0.6  270  28.33  16.59  12.50  12.50                                              10  62.0  4.0  6.200  7.600   4.567    -4.881    11656   0.653  1.040   5.378 -2.311 -0.216 -0.313 -2.840 198.53  298.88    3.00    5.50    5.50 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.83    5   9.25   E Elkhorn Ave     1     2    WF66G    *     48  0.6  270  28.22  16.97  12.00  12.00                                              10  62.0  4.0  6.500  8.000   4.755    -5.110    12110   0.653  1.039   5.476 -2.613 -0.202 -0.293 -3.108 213.86  302.82    3.00    5.50    5.50 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.83    5   9.25   E Elkhorn Ave     1     3    WF66G    *     48  0.6  270  28.22  16.97  12.25  12.25                                              10  62.0  4.0  6.500  8.000   4.776    -5.129    12145   0.653  0.901   5.476 -2.641 -0.202 -0.293 -3.135 213.86  301.44    3.00    5.50    5.50 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2407,12 +2407,6 @@ int CTimelineManager::Validate() const
                   {
                      return TLM_STRESS_TENDON_ERROR;
                   }
-
-                  // closures must be cast befoe or with the deck
-                  if ( castDeckEventIdx < castClosureEventIdx )
-                  {
-                     return TLM_DECK_CASTING_ERROR;
-                  }
                }
             } // next i
          } // next segment
@@ -2736,9 +2730,6 @@ CString CTimelineManager::GetErrorMessage(int errorCode) const
    case TLM_STRESS_TENDON_ERROR:
       strMsg = _T("A tendon has been stressed before the segments and closure joints have been assembled.");
       break;
-
-   case TLM_DECK_CASTING_ERROR:
-      strMsg = _T("The deck is cast before all of the closure joints have been cast.");
 
    default:
       ATLASSERT(false);

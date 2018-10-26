@@ -8,20 +8,17 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 107.2   12   9.33 SR 5/205 NE 139t    1     2    FDiap    *     39  0.6  270  32.48  21.09  10.25  10.25                                               7  70.0  4.0  5.200  6.300   3.712    -3.785    11184   0.944  0.944   3.914 -1.157 -0.100 -0.079 -1.336 166.02  311.60    3.00    6.17    6.17 
+ 107.2   12   9.33 SR 5/205 NE 139t    1     2    FDiap    *     40  0.6  270  32.36  22.76  10.50  10.50                                               6  70.0  4.0  5.400  6.600   3.750    -3.804    11459   0.944  0.944   3.991 -1.143 -0.098 -0.078 -1.318 171.63  318.88    3.00    6.17    6.17 
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Stirrup detailing checks failed for the Strength I Limit State.
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 107.2   12   9.33 SR 5/205 NE 139t    1     7    FDiap    *     37  0.6  270  32.52  23.82  10.25  10.25                                               5  70.0  4.0  5.100  6.300   3.649    -3.608    10658   0.944  0.944   3.807 -1.166 -0.101  0.000 -1.267 150.12  297.78    3.00    6.17    6.17 
+ 107.2   12   9.33 SR 5/205 NE 139t    1     7    FDiap    *     38  0.6  270  32.50  22.39  10.25  10.25                                               6  70.0  4.0  5.100  6.300   3.649    -3.608    10856   0.944  0.944   3.894 -1.166 -0.101  0.000 -1.267 158.52  313.43    3.00    6.17    6.17 
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+The Specification Check was Successful
 
 

@@ -1,10 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.25    5   8.00                     1     1    U54G4          64  0.6  270  17.59  -2.03  10.75  10.75                                              6.300  9.900   7.548    -5.134    11461   0.540  0.763   4.175 -2.704 -0.198 -0.209 -3.111 281.94  460.36    1.75    5.00    5.00 
+ 38.25    5   8.00                     1     1    U54G4          64  0.6  270  17.59  -2.03  11.00  11.00                                              6.300 11.600   7.686    -5.181    11517   0.540  0.763   4.175 -2.514 -0.189 -0.199 -2.903 281.94  472.96    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Hauling checks failed
 
 

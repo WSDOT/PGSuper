@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -152,6 +152,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidAlignmentWarning;
    StatusCallbackIDType m_scidAlignmentError;
    StatusCallbackIDType m_scidGirderDescriptionWarning;
+   StatusCallbackIDType m_scidGirderDescriptionInform;
    StatusCallbackIDType m_scidGirderDescriptionError;
    StatusCallbackIDType m_scidPointLoadWarning;
    StatusCallbackIDType m_scidDistributedLoadWarning;
@@ -346,6 +347,9 @@ public:
    virtual Float64 GetCurbToCurbWidth(Float64 Xb);
    virtual Float64 GetLeftInteriorCurbOffset(Float64 Xb);
    virtual Float64 GetRightInteriorCurbOffset(Float64 Xb);
+   virtual Float64 GetLeftInteriorCurbOffset(PierIndexType pierIdx);
+   virtual Float64 GetRightInteriorCurbOffset(PierIndexType pierIdx);
+   virtual Float64 GetInteriorCurbToCurbWidth(Float64 Xb);
    virtual Float64 GetLeftOverlayToeOffset(Float64 Xb);
    virtual Float64 GetRightOverlayToeOffset(Float64 Xb);
    virtual Float64 GetLeftOverlayToeOffset(const pgsPointOfInterest& poi);
@@ -362,8 +366,8 @@ public:
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point);
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point);
    virtual Float64 GetPierStation(PierIndexType pierIdx);
-   virtual Float64 GetAheadBearingStation(PierIndexType pierIdx,const CGirderKey& girderKey);
-   virtual Float64 GetBackBearingStation(PierIndexType pierIdx,const CGirderKey& girderKey);
+   virtual Float64 GetBearingStation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace);
+   virtual void GetBearingPoint(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset);
    virtual void GetPierDirection(PierIndexType pierIdx,IDirection** ppDirection);
    virtual void GetPierSkew(PierIndexType pierIdx,IAngle** ppAngle);
    virtual void GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right);
@@ -657,8 +661,6 @@ public:
 
    virtual void GetHarpedStrandControlHeights(const CSegmentKey& segmentKey,Float64* pHgStart,Float64* pHgHp1,Float64* pHgHp2,Float64* pHgEnd);
 
-     // highest point on girder section based on strand coordinates (bottom at 0.0)
-   virtual Float64 GetGirderTopElevation(const CSegmentKey& segmentKey);
    // harped offsets are measured from original strand locations in strand grid
    virtual void GetHarpStrandOffsets(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,Float64* pOffsetEnd,Float64* pOffsetHp);
 
@@ -887,7 +889,7 @@ public:
 // IShapes
 public:
    virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape);
-   virtual void GetSlabShape(Float64 station,IDirection* pDirection,IShape** ppShape);
+   virtual void GetSlabShape(Float64 station,IDirection* pDirection,bool bIncludeHaunch,IShape** ppShape);
    virtual void GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape);
    virtual void GetRightTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape);
 

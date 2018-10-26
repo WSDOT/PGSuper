@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1031,6 +1031,10 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
          *pParagraph << _T("Unable to find an adequate debond design") << rptNewLine;
          break;
 
+      case pgsSegmentDesignArtifact::LldfRangeOfApplicabilityError:
+         *pParagraph << _T("The allowable range of applicability for computing live load distribution factors was exceeded during design. See the Status Center for more details.") << rptNewLine;
+         break;
+
       default:
          ATLASSERT(false); // Should never get here
    }
@@ -1182,8 +1186,8 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
       if (is_harped)
       {
          // We will have to convert any other measurements to this:
-         (*pTable)(row++,0) << _T("Distance from Bottom of girder to") << rptNewLine << _T("top of harped strand group at ends of girder");
-         (*pTable)(row++,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("bottom of harped strand group at harping point");
+         (*pTable)(row++,0) << _T("Distance from Bottom of girder to") << rptNewLine << _T("top of adjustable strand group at ends of girder");
+         (*pTable)(row++,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("bottom of adjustable strand group at harping point");
       }
 
       (*pTable)(row++,0) << RPT_FCI;
@@ -1292,40 +1296,24 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
          if (is_harped)
          {
-            if (adjType==pgsTypes::asHarped && pArtifact->GetNumHarpedStrands()>0)
+            if (pArtifact->GetNumHarpedStrands()>0)
             {
                const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(segmentKey);
                std::_tstring gdrName = pGirder->GetGirderName();
 
                const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
-               bool doAdjust = pStrandGeometry->GetHarpedEndOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
-               if (doAdjust)
-               {
-                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, pgsTypes::metStart,
-                                                                                      confvec_design, 
-                                                                                      hsoTOP2BOTTOM, 
-                                                                                      pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metStart));
-                  (*pTable)(row++,col) << length.SetValue(offset);
-               }
-               else
-               {
-                  (*pTable)(row++,col) << _T("-");
-               }
+               Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, pgsTypes::metStart,
+                                                                                   confvec_design, 
+                                                                                   hsoTOP2BOTTOM, 
+                                                                                   pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metStart));
+               (*pTable)(row++,col) << length.SetValue(offset);
 
-               doAdjust = pStrandGeometry->GetHarpedHpOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
-               if (doAdjust)
-               {
-                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,pgsTypes::metStart,
-                                                                              confvec_design, 
-                                                                              hsoBOTTOM2BOTTOM, 
-                                                                              pArtifact->GetHarpStrandOffsetHp(pgsTypes::metStart));
-                  (*pTable)(row++,col) << length.SetValue(offset);
-               }
-               else
-               {
-                  (*pTable)(row++,col) << _T("-");
-               }
+               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,pgsTypes::metStart,
+                                                                           confvec_design, 
+                                                                           hsoBOTTOM2BOTTOM, 
+                                                                           pArtifact->GetHarpStrandOffsetHp(pgsTypes::metStart));
+               (*pTable)(row++,col) << length.SetValue(offset);
             }
             else
             {

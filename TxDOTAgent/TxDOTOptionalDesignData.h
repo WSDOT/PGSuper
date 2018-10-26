@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -107,12 +107,6 @@ CLASS
 DESCRIPTION
    Utility class for TxDOT Optional Girder Analysis description data. This class encapsulates all
    the input data and implements the IStructuredLoad and IStructuredSave persistence interfaces.
-
-
-COPYRIGHT
-   Copyright © 1997-2010
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rdp : 02.19.2010 : Created file

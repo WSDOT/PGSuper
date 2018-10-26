@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,12 +63,6 @@ CLASS
 
 DESCRIPTION
    Artifact that holds design/check results for area of steel for shear cap.
-
-
-COPYRIGHT
-   Copyright (c) 1997
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 5.31.1999 : Created file
@@ -240,12 +234,6 @@ CLASS
 DESCRIPTION
    Artifact that holds vertical shear design/check results.
 
-
-COPYRIGHT
-   Copyright (c) 1997
-   Washington State Department Of Transportation
-   All Rights Reserved
-
 LOG
    rab : 12.29.1997 : Created file
 *****************************************************************************/
@@ -381,12 +369,6 @@ CLASS
 
 DESCRIPTION
    Artifact that holds shear design/check results.
-
-
-COPYRIGHT
-   Copyright (c) 1997
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 12.29.1997 : Created file
@@ -622,12 +604,6 @@ CLASS
 DESCRIPTION
    Artifact that holds shear design/check results.
 
-
-COPYRIGHT
-   Copyright (c) 1997
-   Washington State Department Of Transportation
-   All Rights Reserved
-
 LOG
    rab : 12.29.1997 : Created file
 *****************************************************************************/
@@ -767,12 +743,6 @@ CLASS
 
 DESCRIPTION
    Artifact that holds shear design/check results.
-
-
-COPYRIGHT
-   Copyright (c) 1997
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 12.29.1997 : Created file

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1877,6 +1877,12 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       Float64 EaDeck_An = EaDeck*tsDetails.Deck.An;
       Float64 EaDeck_In = EaDeck*tsDetails.Deck.In;
 
+      DuctIndexType nDucts = 0;
+      if ( bIsOnGirder )
+      {
+         nDucts = m_pTendonGeom->GetDuctCount(girderKey); // outside of if block because we need it in several places
+      }
+
 #if defined _BETA_VERSION
       // Verify transformed age-adjusted section properties
       Float64 EA  = 0;
@@ -1926,10 +1932,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
       }
 
-      DuctIndexType nDucts = 0; // outside of if block because we need it in several places
       if ( bIsOnGirder )
       {
-         nDucts = m_pTendonGeom->GetDuctCount(girderKey); // outside of if block because we need it in several places
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
             IntervalIndexType stressTendonIntervalIdx  = m_pIntervals->GetStressTendonInterval(girderKey,ductIdx);

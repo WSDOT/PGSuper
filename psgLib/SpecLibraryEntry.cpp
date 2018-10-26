@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -41,15 +41,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 56.0 
-// jumped to version 50 for PGSplice development... this leaves a gap
-// between version 44 (PGSuper head branch, version 2.9) and PGSplice 
-// when loading data that was added after version 44 it is ok for the load to fail for now.
-// once this is merged to the head branch, data added from the then CURRENT_VERSION and later can't fail
-// MAX_OVERLAP_VERSION is the maximum version number where there is overlap between 2.9 and 3.0 data
-// once PGSplice is release, replace CURRENT_VERSION with the active version number at release
-#define MAX_OVERLAP_VERSION 53.0
+// During the development of PGSplice, there was an overlap in version numbers between the
+// 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
+#define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
+#define CURRENT_VERSION 56.0 
 
 /****************************************************************************
 CLASS

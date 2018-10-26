@@ -80,7 +80,7 @@ var DatumFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\
 var ErrorsExist = "FALSE";
 
 var concurrencyCount = 1; // keeps track of number of concurrent processes
-var maxConcurrencyCount = 4; // maximum number of concurrent processes
+var maxConcurrencyCount = 6; // maximum number of concurrent processes
 
 // make sure pgsuper.exe exists
 if (!FSO.FileExists(Application))

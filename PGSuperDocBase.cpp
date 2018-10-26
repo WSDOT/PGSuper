@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -334,6 +334,10 @@ m_bAutoCalcEnabled(true)
    // and EAFDocumentPlugin objects (which are not currently supported in PGSuper)
    UINT nCommands = GetPluginCommandManager()->ReserveCommandIDRange(PGSUPER_PLUGIN_COMMAND_COUNT);
    ATLASSERT(nCommands == PGSUPER_PLUGIN_COMMAND_COUNT);
+
+   m_bSelectingGirder = false;
+   m_bSelectingSegment = false;
+   m_bClearingSelection = false;
 }
 
 CPGSDocBase::~CPGSDocBase()
@@ -2822,6 +2826,11 @@ void CPGSDocBase::SelectGirder(const CGirderKey& girderKey,BOOL bNotify)
       return;
    }
 
+   if ( m_bSelectingSegment || m_bClearingSelection )
+   {
+      return;
+   }
+
    m_Selection.Type       = CSelection::Girder;
    m_Selection.GroupIdx   = girderKey.groupIndex;
    m_Selection.GirderIdx  = girderKey.girderIndex;
@@ -2838,7 +2847,9 @@ void CPGSDocBase::SelectGirder(const CGirderKey& girderKey,BOOL bNotify)
 
       if ( bNotify )
       {
+         m_bSelectingGirder = true;
          UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+         m_bSelectingGirder = false;
       }
       bProcessingSelectionChanged = false;
    }
@@ -2847,6 +2858,11 @@ void CPGSDocBase::SelectGirder(const CGirderKey& girderKey,BOOL bNotify)
 void CPGSDocBase::SelectSegment(const CSegmentKey& segmentKey,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Segment && m_Selection.GroupIdx == segmentKey.groupIndex && m_Selection.GirderIdx == segmentKey.girderIndex && m_Selection.SegmentIdx == segmentKey.segmentIndex )
+   {
+      return;
+   }
+
+   if ( m_bSelectingGirder || m_bClearingSelection )
    {
       return;
    }
@@ -2866,7 +2882,9 @@ void CPGSDocBase::SelectSegment(const CSegmentKey& segmentKey,BOOL bNotify)
       CSelection selection = m_Selection;
       if ( bNotify )
       {
+         m_bSelectingSegment = true;
          UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+         m_bSelectingSegment = false;
       }
       bProcessingSelectionChanged = false;
    }
@@ -2993,7 +3011,9 @@ void CPGSDocBase::ClearSelection(BOOL bNotify)
       CSelection selection = m_Selection;
       if ( bNotify )
       {
+         m_bClearingSelection = true;
          UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+         m_bClearingSelection = false;
       }
       bProcessingSelectionChanged = false;
    }

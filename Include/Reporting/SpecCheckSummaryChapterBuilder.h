@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,11 +40,6 @@ CLASS
 DESCRIPTION
    Writes out a summary of the spec chec. The summary is either PASS or FAILED
    with a listing of everything that failed.
-
-COPYRIGHT
-   Copyright © 1997-1999
-   Washington State Department Of Transportation
-   All Rights Reserved
 
 LOG
    rab : 03.17.1999 : Created file

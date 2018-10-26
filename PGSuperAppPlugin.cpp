@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2017  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -388,17 +388,6 @@ CPGSBaseCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const
    return new CPGSuperCommandLineInfo();
 }
 
-#if defined _BETA_VERSION
-// Beta-testers are most likely going to have PGSuper Version 2.8/2.9 and Version 3.0
-// installed at the same time. If PGSuper is configured for Version 3.0 and they
-// attempt to use Version 2.8/2.9 errors will result when opening the library and 
-// template files. Version 2.8/2.9 can't load Version 3.0 files. To fix this,
-// users have to remember to reconfigure the software every time they switch versions.
-// This is very inconvienent. During beta testing, we'll keep a parallel set of
-// registy keys and configuration cache folders so that both V2.8/2.9 and V3.0 configurations
-// can co-exist.
-#include <MFCTools\AutoRegistry.h>
-
 LPCTSTR CPGSuperAppPlugin::GetCatalogServerKey()
 {
    return _T("CatalogServer2");
@@ -444,4 +433,3 @@ CString CPGSuperAppPlugin::GetCacheFolder()
       return CString(buffer) + CString(_T("\\PGSuperV3\\"));
    }
 }
-#endif //_BETA_VERSION

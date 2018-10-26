@@ -1187,6 +1187,8 @@
 #define IDC_STRENGTH_II_SH_MAX_LABEL    1901
 #define IDC_STRENGTH_I_PLUS2            1902
 #define IDC_STRENGTH_II_PLUS2           1903
+#define IDC_BUTTON1                     1904
+#define IDC_BUTTON2                     1905
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
 #define IDR_PGSUPER_STDTOOLBAR          12129
@@ -1332,7 +1334,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        373
 #define _APS_NEXT_COMMAND_VALUE         36997
-#define _APS_NEXT_CONTROL_VALUE         1904
+#define _APS_NEXT_CONTROL_VALUE         1906
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif
