@@ -2116,6 +2116,9 @@ CSelection CPGSuperDoc::GetSelection()
 
 void CPGSuperDoc::SelectPier(PierIndexType pierIdx)
 {
+   if ( m_Selection.Type == CSelection::Pier && m_Selection.PierIdx == pierIdx )
+      return; // the selection isn't changing
+
    m_Selection.Type      = CSelection::Pier;
    m_Selection.GirderIdx = INVALID_INDEX;
    m_Selection.SpanIdx   = INVALID_INDEX;
@@ -2127,6 +2130,9 @@ void CPGSuperDoc::SelectPier(PierIndexType pierIdx)
 
 void CPGSuperDoc::SelectSpan(SpanIndexType spanIdx)
 {
+   if ( m_Selection.Type == CSelection::Span && m_Selection.SpanIdx == spanIdx )
+      return; // the selection isn't changing
+
    m_Selection.Type      = CSelection::Span;
    m_Selection.GirderIdx = INVALID_INDEX;
    m_Selection.SpanIdx   = spanIdx;
@@ -2138,6 +2144,9 @@ void CPGSuperDoc::SelectSpan(SpanIndexType spanIdx)
 
 void CPGSuperDoc::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
+   if ( m_Selection.Type == CSelection::Girder && m_Selection.SpanIdx == spanIdx && m_Selection.GirderIdx == gdrIdx )
+      return; // the selection isn't changing
+
    m_Selection.Type      = CSelection::Girder;
    m_Selection.GirderIdx = gdrIdx;
    m_Selection.SpanIdx   = spanIdx;
@@ -2155,6 +2164,9 @@ void CPGSuperDoc::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 
 void CPGSuperDoc::SelectDeck()
 {
+   if ( m_Selection.Type == CSelection::Deck )
+      return;
+
    m_Selection.Type      = CSelection::Deck;
    m_Selection.GirderIdx = INVALID_INDEX;
    m_Selection.SpanIdx   = INVALID_INDEX;
@@ -2166,6 +2178,9 @@ void CPGSuperDoc::SelectDeck()
 
 void CPGSuperDoc::SelectAlignment()
 {
+   if ( m_Selection.Type == CSelection::Alignment )
+      return;
+
    m_Selection.Type      = CSelection::Alignment;
    m_Selection.GirderIdx = INVALID_INDEX;
    m_Selection.SpanIdx   = INVALID_INDEX;
@@ -2177,6 +2192,9 @@ void CPGSuperDoc::SelectAlignment()
 
 void CPGSuperDoc::ClearSelection()
 {
+   if ( m_Selection.Type == CSelection::None )
+      return;
+
    m_Selection.Type      = CSelection::None;
    m_Selection.GirderIdx = INVALID_INDEX;
    m_Selection.SpanIdx   = INVALID_INDEX;

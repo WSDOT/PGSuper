@@ -58,7 +58,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define QUITE(_x_) (IsZero(_x_) ? 0 : _x_)
+#define QUITE(_x_) (IsZero(_x_,0.00005) ? 0 : _x_)
 
 /////////////////////////////////////////////////////////////////////////////
 // CTestAgentImp

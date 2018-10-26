@@ -109,7 +109,7 @@ void CPGSuperReportView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
    if ( lHint == HINT_GIRDERLABELFORMATCHANGED )
    {
-      UpdateViewTitle();
+      RefreshReport();
    }
 
    if ( 0 < lHint && lHint <= MAX_DISPLAY_HINT )
