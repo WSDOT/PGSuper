@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -103,23 +103,23 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
       // girder spacing
-      DDX_Tag(pDX,IDC_SPACING_UNIT,pDispUnits->GetXSectionDimUnit());
+      DDX_Tag(pDX,IDC_SPACING_UNIT,pDisplayUnits->GetXSectionDimUnit());
       if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && (m_GirderSpacingType == pgsTypes::sbsUniform || m_GirderSpacingType == pgsTypes::sbsConstantAdjacent)) )
       {
-         DDX_UnitValueAndTag(pDX,IDC_SPACING,IDC_SPACING_UNIT,m_GirderSpacing,pDispUnits->GetXSectionDimUnit());
+         DDX_UnitValueAndTag(pDX,IDC_SPACING,IDC_SPACING_UNIT,m_GirderSpacing,pDisplayUnits->GetXSectionDimUnit());
       }
    }
    else
    {
       // joint spacing
-      DDX_Tag(pDX,IDC_SPACING_UNIT,pDispUnits->GetComponentDimUnit());
+      DDX_Tag(pDX,IDC_SPACING_UNIT,pDisplayUnits->GetComponentDimUnit());
       if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_GirderSpacingType == pgsTypes::sbsUniformAdjacent) )
-         DDX_UnitValueAndTag(pDX,IDC_SPACING,IDC_SPACING_UNIT,m_GirderSpacing,pDispUnits->GetComponentDimUnit());
+         DDX_UnitValueAndTag(pDX,IDC_SPACING,IDC_SPACING_UNIT,m_GirderSpacing,pDisplayUnits->GetComponentDimUnit());
    }
 
    if ( m_GirderSpacingType == pgsTypes::sbsUniform || m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
@@ -131,13 +131,13 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       if ( IsEqual(m_GirderSpacing,m_MaxGirderSpacing) )
          m_GirderSpacing = m_MaxGirderSpacing;
 
-      DDV_UnitValueLimitOrMore(pDX, m_GirderSpacing, m_MinGirderSpacing, pDispUnits->GetXSectionDimUnit() );
-      DDV_UnitValueLimitOrLess(pDX, m_GirderSpacing, m_MaxGirderSpacing, pDispUnits->GetXSectionDimUnit() );
+      DDV_UnitValueLimitOrMore(pDX, m_GirderSpacing, m_MinGirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
+      DDV_UnitValueLimitOrLess(pDX, m_GirderSpacing, m_MaxGirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
    }
    else if ( m_GirderSpacingType == pgsTypes::sbsUniformAdjacent )
    {
       // check joint spacing
-      DDV_UnitValueLimitOrLess(pDX, m_GirderSpacing, m_MaxGirderSpacing-m_MinGirderSpacing, pDispUnits->GetComponentDimUnit() );
+      DDV_UnitValueLimitOrLess(pDX, m_GirderSpacing, m_MaxGirderSpacing-m_MinGirderSpacing, pDisplayUnits->GetComponentDimUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate )
@@ -153,7 +153,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_CBItemData(pDX,IDC_REF_GIRDER,m_RefGirderIdx);
-   DDX_OffsetAndTag(pDX,IDC_REF_GIRDER_OFFSET,IDC_REF_GIRDER_OFFSET_UNIT,m_RefGirderOffset,pDispUnits->GetXSectionDimUnit() );
+   DDX_OffsetAndTag(pDX,IDC_REF_GIRDER_OFFSET,IDC_REF_GIRDER_OFFSET_UNIT,m_RefGirderOffset,pDisplayUnits->GetXSectionDimUnit() );
    DDX_CBItemData(pDX,IDC_REF_GIRDER_OFFSET_TYPE,m_RefGirderOffsetType);
 
    ////////////////////////////////////////////////
@@ -236,7 +236,7 @@ void CBridgeDescGeneralPage::Init()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IDisplayUnits, pDispUnits);
+   GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
 
    m_bSameNumberOfGirders = pParent->m_BridgeDesc.UseSameNumberOfGirdersInAllSpans();
    m_bSameGirderName      = pParent->m_BridgeDesc.UseSameGirderForEntireBridge();
@@ -287,18 +287,18 @@ void CBridgeDescGeneralPage::Init()
 
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
-      m_strCacheGirderSpacing.Format("%s",FormatDimension(m_GirderSpacing,pDispUnits->GetXSectionDimUnit(), false));
-      m_strCacheJointSpacing.Format( "%s",FormatDimension(0,              pDispUnits->GetComponentDimUnit(),false));
+      m_strCacheGirderSpacing.Format("%s",FormatDimension(m_GirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
+      m_strCacheJointSpacing.Format( "%s",FormatDimension(0,              pDisplayUnits->GetComponentDimUnit(),false));
    }
    else
    {
-      m_strCacheGirderSpacing.Format("%s",FormatDimension(m_MinGirderSpacing,pDispUnits->GetXSectionDimUnit(), false));
-      m_strCacheJointSpacing.Format( "%s",FormatDimension(m_GirderSpacing,   pDispUnits->GetComponentDimUnit(),false));
+      m_strCacheGirderSpacing.Format("%s",FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
+      m_strCacheJointSpacing.Format( "%s",FormatDimension(m_GirderSpacing,   pDisplayUnits->GetComponentDimUnit(),false));
    }
 
    int sign = ::Sign(m_RefGirderOffset);
    char* strOffset = (sign == 0 ? "" : sign < 0 ? "L" : "R");
-   m_strCacheRefGirderOffset.Format("%s %s",FormatDimension(fabs(m_RefGirderOffset),pDispUnits->GetXSectionDimUnit(),false),strOffset);
+   m_strCacheRefGirderOffset.Format("%s %s",FormatDimension(fabs(m_RefGirderOffset),pDisplayUnits->GetXSectionDimUnit(),false),strOffset);
 
    m_Deck = *pParent->m_BridgeDesc.GetDeckDescription();
    m_CacheDeckEdgePoints = m_Deck.DeckEdgePoints;
@@ -671,16 +671,16 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
    // update the unit tag that goes with the spacing input box
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    CDataExchange dx(this,FALSE);
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
-      DDX_Tag(&dx,IDC_SPACING_UNIT,pDispUnits->GetXSectionDimUnit());
+      DDX_Tag(&dx,IDC_SPACING_UNIT,pDisplayUnits->GetXSectionDimUnit());
    }
    else
    {
       ASSERT(IsJointSpacing(m_GirderSpacingType));
-      DDX_Tag(&dx,IDC_SPACING_UNIT,pDispUnits->GetComponentDimUnit());
+      DDX_Tag(&dx,IDC_SPACING_UNIT,pDisplayUnits->GetComponentDimUnit());
    }
 }
 
@@ -1067,16 +1067,16 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
    // update the the unit of measure
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IDisplayUnits, pDispUnits);
+   GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
 
    CWnd* pWnd = GetDlgItem(IDC_SPACING_UNIT);
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
-      pWnd->SetWindowText( pDispUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+      pWnd->SetWindowText( pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
    }
    else
    {
-      pWnd->SetWindowText( pDispUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+      pWnd->SetWindowText( pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
    }
 
    if ( !m_bSetActive && IsSpanSpacing(m_GirderSpacingType) )
@@ -1178,7 +1178,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge,       pBridge);
-   GET_IFACE2(pBroker, IDisplayUnits, pDispUnits);
+   GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
 
    // need a spacing range that works for every girder in every span
    m_MinGirderSpacing = -MAX_GIRDER_SPACING;
@@ -1267,20 +1267,20 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          if ( IsGirderSpacing(m_GirderSpacingType) )
          {
             label.Format("( %s to %s )", 
-               FormatDimension(m_MinGirderSpacing,pDispUnits->GetXSectionDimUnit()),
-               FormatDimension(m_MaxGirderSpacing,pDispUnits->GetXSectionDimUnit()));
+               FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit()),
+               FormatDimension(m_MaxGirderSpacing,pDisplayUnits->GetXSectionDimUnit()));
          }
          else
          {
             // this is actually joint spacing
             label.Format("( 0 to %s )", 
-               FormatDimension(m_MaxGirderSpacing - m_MinGirderSpacing,pDispUnits->GetComponentDimUnit()));
+               FormatDimension(m_MaxGirderSpacing - m_MinGirderSpacing,pDisplayUnits->GetComponentDimUnit()));
          }
       }
       else
       {
          label.Format("( %s or more )", 
-            FormatDimension(m_MinGirderSpacing,pDispUnits->GetXSectionDimUnit()));
+            FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit()));
       }
    }
 
@@ -1292,17 +1292,17 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
       m_GirderSpacing = m_MinGirderSpacing;
 
       CDataExchange dx(this,FALSE);
-      DDX_UnitValueAndTag( &dx, IDC_SPACING,  IDC_SPACING_UNIT, m_GirderSpacing, pDispUnits->GetXSectionDimUnit() );
+      DDX_UnitValueAndTag( &dx, IDC_SPACING,  IDC_SPACING_UNIT, m_GirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
 
       if ( IsGirderSpacing(m_GirderSpacingType) )
       {
-         m_strCacheGirderSpacing.Format("%s",FormatDimension(m_GirderSpacing,pDispUnits->GetXSectionDimUnit(), false));
-         m_strCacheJointSpacing.Format( "%s",FormatDimension(0,              pDispUnits->GetComponentDimUnit(),false));
+         m_strCacheGirderSpacing.Format("%s",FormatDimension(m_GirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
+         m_strCacheJointSpacing.Format( "%s",FormatDimension(0,              pDisplayUnits->GetComponentDimUnit(),false));
       }
       else
       {
-         m_strCacheGirderSpacing.Format("%s",FormatDimension(m_MinGirderSpacing,pDispUnits->GetXSectionDimUnit(), false));
-         m_strCacheJointSpacing.Format( "%s",FormatDimension(m_GirderSpacing,   pDispUnits->GetComponentDimUnit(),false));
+         m_strCacheGirderSpacing.Format("%s",FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
+         m_strCacheJointSpacing.Format( "%s",FormatDimension(m_GirderSpacing,   pDisplayUnits->GetComponentDimUnit(),false));
       }
    }
 

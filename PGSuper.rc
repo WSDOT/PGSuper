@@ -96,6 +96,7 @@ IDI_DISTRIBUTED_LOAD    ICON                    "res\\ico00005.ico"
 IDI_TXDOT               ICON                    "res\\txdot.ico"
 IDI_MOMENT_LOAD         ICON                    "res\\moment.ico"
 IDR_LIBRARTYPE          ICON                    "res\\LibraryEditorDoc.ico"
+IDI_EARTH               ICON                    "res\\ico00006.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -789,10 +790,10 @@ BEGIN
     CONTROL         "&Show Tips on StartUp",IDC_STARTUP,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,146,85,10
 END
 
-IDD_GIRDERDESC_PRESTRESS DIALOG  0, 0, 361, 243
+IDD_GIRDERDESC_PRESTRESS DIALOGEX 0, 0, 361, 243
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION
 CAPTION "Strands"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Strand Details",IDC_STATIC,7,7,347,107
     RTEXT           "Number of Straight Strands",IDC_SS_TITLE,15,41,95,8
@@ -823,8 +824,8 @@ BEGIN
     GROUPBOX        "Vertical Location of Harped Strands",IDC_STATIC,7,117,347,72
     COMBOBOX        IDC_HP_COMBO_END,65,133,218,108,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_HP_COMBO_HP,65,160,218,108,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "Static",IDC_HPOFFSET_END_NOTE,149,148,178,8
-    RTEXT           "Static",IDC_HPOFFSET_HP_NOTE,149,177,178,8
+    RTEXT           "",IDC_HPOFFSET_END_NOTE,149,148,178,8
+    RTEXT           "",IDC_HPOFFSET_HP_NOTE,149,177,178,8
     LTEXT           "Specify Number of Strands Using",IDC_STATIC,13,22,111,8
     COMBOBOX        IDC_STRAND_INPUT_TYPE,125,17,161,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "#Harped, #Straight",IDC_HARP_STRAIGHT,27,41,111,8
@@ -834,7 +835,7 @@ BEGIN
     CONTROL         "Low Relaxation",IDC_LOWRELAX,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,69,205,62,10
     CONTROL         "Stress Relieved",IDC_STRESSREL,"Button",BS_AUTORADIOBUTTON,69,217,64,10
     LTEXT           "Size",IDC_STATIC,145,205,21,8
-    COMBOBOX        IDC_STRAND_SIZE,145,216,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_STRAND_SIZE,145,216,104,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPECIFICATION DIALOG  0, 0, 278, 65
@@ -1241,37 +1242,6 @@ BEGIN
     PUSHBUTTON      "Add New Moment Load...",IDC_ADD_MOMENTLOAD,365,110,100,14
 END
 
-IDD_DEAL_WITH_LOADS_DLG DIALOG  0, 0, 251, 87
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
-CAPTION "Modify Load in Question"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "Delete Load",ID_DELETE_LOAD,38,66,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,162,66,50,14
-    LTEXT           "Change this message by changing m_Message",IDC_MESSAGE,13,23,224,30
-    DEFPUSHBUTTON   "Edit Load",ID_EDIT_LOAD,100,66,50,14
-    GROUPBOX        "Status Message:",IDC_STATIC,7,7,237,54
-END
-
-IDD_REFINEDANALYSIS DIALOG  0, 0, 282, 194
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Refined Analysis Options"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,169,173,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,225,173,50,14
-    LTEXT           "You can avoid a refined analysis and have PGSuper continue the analysis by selecting one of the following options:",IDC_STATIC,7,43,259,21
-    EDITTEXT        IDC_DESCRIPTION,7,7,268,25,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
-    CONTROL         "Directly input the live load distribution factors",IDC_RADIO_INPUT,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,68,155,10
-    CONTROL         "Use the LRFD equations regardless of the LRFD range of applicability limits",IDC_RADIO_IGNORE,
-                    "Button",BS_AUTORADIOBUTTON,12,84,251,10
-    CONTROL         "Use the Lever Rule only where outside of the LRFD range of applicability limits",IDC_RADIO_IGNORE_LEVER,
-                    "Button",BS_AUTORADIOBUTTON,12,100,261,10
-    CONTROL         "Use the lever rule for all LLDF calculations",IDC_RADIO_LEVER,
-                    "Button",BS_AUTORADIOBUTTON,12,116,149,10
-END
-
 IDD_DEBOND DIALOG  0, 0, 427, 276
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Debonding"
@@ -1463,46 +1433,38 @@ BEGIN
     PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS1,94,212,159,14
 END
 
-IDD_CONFIGUREPGSUPER DIALOG  0, 0, 468, 319
+IDD_CONFIGUREPGSUPER DIALOGEX 0, 0, 468, 305
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Configure PGSuper"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "This is the first time you've run PGSuper since it was installed. Before you can use PGSuper, it must by configured.",IDC_FIRST_RUN,7,7,454,16
-    GROUPBOX        "Libraries and Templates",IDC_STATIC,8,30,225,283
+    CONTROL         "Use generic libraries and templates installed with PGSuper",IDC_GENERIC,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,20,76,172,21
+    CONTROL         "Use libraries and templates published on the local file system, network, or the Internet",IDC_DOWNLOAD,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,20,98,172,20
+    COMBOBOX        IDC_SERVERS,32,138,148,95,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add/Edit",IDC_ADD,183,138,37,12
+    LISTBOX         IDC_PUBLISHERS,33,164,172,32,LBS_NOINTEGRALHEIGHT | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Update Library and Templates Now",IDC_UPDATENOW,47,267,132,14
+    COMBOBOX        IDC_UPDATE_FREQUENCY,33,238,172,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_ENGINEER_NAME,258,69,172,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_COMPANY_NAME,258,100,172,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "OK",IDOK,297,285,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,356,285,50,14
+    PUSHBUTTON      "Help",ID_HELP,411,285,50,14
+    LTEXT           "This is the first time you've run PGSuper since it was installed. Before you can use PGSuper, it must be configured.",IDC_FIRST_RUN,7,7,454,16
+    GROUPBOX        "Libraries and Templates",IDC_STATIC,8,24,225,275
     EDITTEXT        IDC_EDIT,20,42,172,33,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
-    CONTROL         "Use generic libraries and templates installed by PGSuper (these resources are not automatically kept up to date)",IDC_GENERIC,
-                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,20,78,172,27
-    CONTROL         "Download and synchronize with published libraries and templates (these resources are published by agencies like WSDOT and TxDOT)",IDC_DOWNLOAD,
-                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,20,108,172,25
-    CONTROL         "Use and synchronize with libraries and templates on your local network (ask your PGSuper Adminstrator for details)",IDC_LOCAL,
-                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,20,222,172,26
-    LTEXT           "Select a server that contains PGSuper libraries and templates\nUse the Add/Edit button to manage the servers",IDC_SERVERS_STATIC,33,134,194,16
-    COMBOBOX        IDC_SERVERS,32,151,148,95,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Add/Edit",IDC_ADD,183,151,37,12
-    LTEXT           "Select Publisher",IDC_SERVERS_STATIC2,32,166,172,8
-    LISTBOX         IDC_PUBLISHERS,33,177,172,41,LBS_NOINTEGRALHEIGHT | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Master Library File",IDC_LOCAL_STATIC,32,251,172,8
-    EDITTEXT        IDC_LIBRARY_FILE_LOCATION,32,261,172,14,ES_AUTOHSCROLL
-    LTEXT           "Workgroup Templates",IDC_LOCALS_STATIC2,32,280,172,8
-    EDITTEXT        IDC_WORKGROUP_TEMPLATE_LOCATION,32,291,172,14,ES_AUTOHSCROLL
-    GROUPBOX        "User Information",IDC_STATIC,246,30,215,153
-    LTEXT           "Enter your user information. This information will be used to title reports and other output.",IDC_STATIC,258,42,190,19
-    LTEXT           "Engineer",IDC_STATIC,258,64,65,8
-    EDITTEXT        IDC_ENGINEER_NAME,258,73,172,14,ES_AUTOHSCROLL
-    LTEXT           "Company",IDC_STATIC,258,94,69,8
-    EDITTEXT        IDC_COMPANY_NAME,258,104,172,14,ES_AUTOHSCROLL
-    LTEXT           "Select a location for your User Templates. ",IDC_STATIC,258,130,187,10
-    LTEXT           "User Templates",IDC_STATIC,258,143,50,8
-    EDITTEXT        IDC_USER_TEMPLATE_LOCATION,258,155,172,14,ES_AUTOHSCROLL
-    GROUPBOX        "Update Frequency",IDC_STATIC,245,188,215,44
-    LTEXT           "How often would you like PGSuper to check for updates?",IDC_STATIC,257,199,191,8
-    COMBOBOX        IDC_UPDATE_FREQUENCY,257,212,172,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "OK",IDOK,246,298,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,356,298,50,14
-    PUSHBUTTON      "Help",ID_HELP,411,298,50,14
-    DEFPUSHBUTTON   "Update Now",IDC_UPDATENOW,301,298,50,14
-    GROUPBOX        "",IDC_SERVER_STATIC3,36,176,172,38
+    LTEXT           "Select a server that contains PGSuper libraries and templates, or use the Add/Edit button to manage the servers",IDC_SERVERS_STATIC,33,121,194,16
+    LTEXT           "Select a PGSuper library and templates package:",IDC_SERVERS_STATIC2,32,153,172,8
+    GROUPBOX        "User Information",IDC_STATIC,246,26,215,105
+    LTEXT           "Enter your user information. This information will be used in report titles and other output.",IDC_STATIC,258,38,190,19
+    LTEXT           "Engineer",IDC_STATIC,258,60,65,8
+    LTEXT           "Company",IDC_STATIC,258,90,69,8
+    LTEXT           "Check for library and template updates:",IDC_UPDATES_STATIC,33,226,174,8
+    GROUPBOX        "",IDC_SERVER_STATIC3,36,170,172,38
+    LTEXT           "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,61,203,155,10
+    ICON            IDI_EARTH,IDC_STATIC_EARTH,36,197,20,20
 END
 
 IDD_BRIDGEDESC_DECKDETAILS DIALOGEX 0, 0, 415, 247
@@ -1609,17 +1571,24 @@ BEGIN
     PUSHBUTTON      "Delete",IDC_DELETE,208,73,50,14
 END
 
-IDD_SERVERDATA DIALOG  0, 0, 294, 105
+IDD_SERVERDATA DIALOGEX 0, 0, 294, 206
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PGSuper Catalog Server"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,181,84,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,237,84,50,14
+    EDITTEXT        IDC_NAME,7,20,170,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_SERVER_TYPE,7,57,233,59,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_LIBRARY_FILE_LOCATION,7,91,271,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_URL,7,97,280,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_WORKGROUP_TEMPLATE_LOCATION,7,128,271,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Test Server Connection",IDC_TEST_SERVER,19,157,85,15
+    DEFPUSHBUTTON   "OK",IDOK,117,185,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,185,50,14
+    PUSHBUTTON      "Help",ID_HELP,237,185,50,14
     LTEXT           "Name",IDC_STATIC,7,7,20,8
-    EDITTEXT        IDC_NAME,7,20,280,14,ES_AUTOHSCROLL
-    LTEXT           "Location",IDC_STATIC,7,43,28,8
-    EDITTEXT        IDC_URL,7,54,280,14,ES_AUTOHSCROLL
+    LTEXT           "Server Address (URL)",IDC_URL_STATIC,7,81,70,8
+    LTEXT           "Server Type",IDC_STATIC,9,45,40,8
+    LTEXT           "Path to Template Files",IDC_TEMPLATE_STATIC,7,116,71,8
 END
 
 IDD_SELECT_LIVE_LOAD DIALOGEX 0, 0, 489, 202
@@ -1673,33 +1642,34 @@ BEGIN
     COMBOBOX        IDC_RESIZEOPTIONS,7,25,237,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_CONCRETE_DETAILS DIALOGEX 0, 0, 234, 202
+IDD_CONCRETE_DETAILS DIALOGEX 0, 0, 234, 214
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Concrete Details"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,67,181,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,122,181,50,14
-    GROUPBOX        "Concrete Details",IDC_STATIC,7,7,220,168,0,WS_EX_TRANSPARENT
-    LTEXT           "Strength - f'c",IDC_STATIC,29,29,41,8
-    EDITTEXT        IDC_FC,104,23,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_FC_UNIT,174,29,35,8
-    CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,47,74,10
-    EDITTEXT        IDC_EC,104,44,65,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_EC_UNIT,174,47,19,8
-    LTEXT           "Density for Strength (to compute Ec)",IDC_DS_TITLE,29,61,68,20
-    EDITTEXT        IDC_DS,104,62,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DS_UNIT,174,68,35,8
-    LTEXT           "Density for Weight",IDC_STATIC,29,87,59,8
-    EDITTEXT        IDC_DW,104,82,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DW_UNIT,174,87,35,8
-    LTEXT           "Max. Aggregate Size",IDC_STATIC,29,106,66,8
-    EDITTEXT        IDC_AGG_SIZE,104,102,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_AGG_SIZE_UNIT,174,108,35,8
-    LTEXT           "K1 - Aggregrate correction factor\nLRFD 5.4.2.4",IDC_K1_LABEL,29,121,70,26
-    EDITTEXT        IDC_K1,104,121,65,14,ES_RIGHT | ES_AUTOHSCROLL
-    PUSHBUTTON      "Help",ID_HELP,177,181,50,14
-    PUSHBUTTON      "Copy from library...",IDC_COPY_MATERIAL,46,154,141,13
+    DEFPUSHBUTTON   "OK",IDOK,67,193,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,122,193,50,14
+    GROUPBOX        "Concrete Details",IDC_STATIC,7,4,220,177,0,WS_EX_TRANSPARENT
+    LTEXT           "Strength - f'c",IDC_STATIC,29,42,41,8
+    EDITTEXT        IDC_FC,104,36,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_FC_UNIT,174,42,35,8
+    CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,60,74,10
+    EDITTEXT        IDC_EC,104,57,65,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_EC_UNIT,174,60,19,8
+    LTEXT           "Density for Strength (to compute Ec)",IDC_DS_TITLE,29,74,68,20
+    EDITTEXT        IDC_DS,104,75,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_DS_UNIT,174,81,35,8
+    LTEXT           "Density for Weight",IDC_STATIC,29,100,59,8
+    EDITTEXT        IDC_DW,104,95,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_DW_UNIT,174,100,35,8
+    LTEXT           "Max. Aggregate Size",IDC_STATIC,29,119,66,8
+    EDITTEXT        IDC_AGG_SIZE,104,115,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_AGG_SIZE_UNIT,174,121,35,8
+    LTEXT           "K1 - Aggregrate correction factor\nLRFD 5.4.2.4",IDC_K1_LABEL,29,134,70,26
+    EDITTEXT        IDC_K1,104,134,65,14,ES_RIGHT | ES_AUTOHSCROLL
+    PUSHBUTTON      "Help",ID_HELP,177,193,50,14
+    PUSHBUTTON      "Copy from library...",IDC_COPY_MATERIAL,46,164,141,13
+    CTEXT           "Enter properties for Normal Weight Concrete",IDC_NWC_NOTE,7,16,220,8
 END
 
 IDD_STRUCTURAL_ANALYSIS_METHOD DIALOG  0, 0, 257, 188
@@ -2046,21 +2016,6 @@ BEGIN
     COMBOBOX        IDC_MEASUREMENT_DATUM,7,37,232,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_STATUS_DIALOG DIALOG  0, 0, 242, 174
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Status Message"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,22,153,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,83,153,50,14
-    PUSHBUTTON      "Help",IDHELP,177,153,50,14
-    ICON            IDI_WARNING2,IDC_STATIC,72,10,21,20
-    EDITTEXT        IDC_MESSAGE,18,51,205,86,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
-    ICON            IDI_WARNING2,IDC_STATIC,110,10,21,20
-    ICON            IDI_WARNING2,IDC_STATIC,148,10,21,20
-    GROUPBOX        "Error Message",IDC_GROUP,7,37,228,108
-END
-
 IDD_GIRDERLABELFORMAT DIALOGEX 0, 0, 316, 84
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Girder Label Format"
@@ -2082,8 +2037,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,2,4,0
- PRODUCTVERSION 2,2,4,0
+ FILEVERSION 2,3,0,1
+ PRODUCTVERSION 2,3,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2100,12 +2055,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.2.4.0"
+            VALUE "FileVersion", "2.3.0.1"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 2000-2009"
+            VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuper.EXE"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.2.4.0"
+            VALUE "ProductVersion", "2.3.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -2357,22 +2312,6 @@ BEGIN
         BOTTOMMARGIN, 124
     END
 
-    IDD_DEAL_WITH_LOADS_DLG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 244
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 80
-    END
-
-    IDD_REFINEDANALYSIS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 275
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 187
-    END
-
     IDD_DEBOND, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -2458,7 +2397,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 461
         TOPMARGIN, 7
-        BOTTOMMARGIN, 312
+        BOTTOMMARGIN, 299
     END
 
     IDD_BRIDGEDESC_DECKDETAILS, DIALOG
@@ -2490,7 +2429,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 287
         TOPMARGIN, 7
-        BOTTOMMARGIN, 98
+        BOTTOMMARGIN, 199
     END
 
     IDD_SELECT_LIVE_LOAD, DIALOG
@@ -2514,7 +2453,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 227
         TOPMARGIN, 7
-        BOTTOMMARGIN, 195
+        BOTTOMMARGIN, 207
     END
 
     IDD_STRUCTURAL_ANALYSIS_METHOD, DIALOG
@@ -2631,14 +2570,6 @@ BEGIN
         RIGHTMARGIN, 239
         TOPMARGIN, 7
         BOTTOMMARGIN, 92
-    END
-
-    IDD_STATUS_DIALOG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 235
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 167
     END
 
     IDD_GIRDERLABELFORMAT, DIALOG
@@ -3102,6 +3033,7 @@ BEGIN
     IDS_GIRDER_SHEAR        "Trans. Reinforcement"
     IDS_E_ONLINERESOURCES   "Sorry, but an error occured while attempting to connect to the Internet"
     ID_INDICATOR_MODIFIED   "Modified"
+    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Normal Weight."
 END
 
 STRINGTABLE 

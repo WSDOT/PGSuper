@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -33,20 +33,20 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CCreepAtHaulingTable::CCreepAtHaulingTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit) :
+CCreepAtHaulingTable::CCreepAtHaulingTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( offset,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDispUnit->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDispUnit->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDispUnit->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnit->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDispUnit->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDispUnit->GetMomentUnit(),          false );
-   DEFINE_UV_PROTOTYPE( stress,      pDispUnit->GetStressUnit(),          false );
-   DEFINE_UV_PROTOTYPE( time,        pDispUnit->GetLongTimeUnit(),        false );
+   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( offset,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
+   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
+   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetLongTimeUnit(),        false );
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
@@ -57,7 +57,7 @@ rptRcTable(NumColumns,0)
    strain.SetPrecision(3);
 }
 
-CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
@@ -73,7 +73,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    if ( bTemporaryStrands )
       numColumns += 3;
 
-   CCreepAtHaulingTable* table = new CCreepAtHaulingTable( numColumns, pDispUnit );
+   CCreepAtHaulingTable* table = new CCreepAtHaulingTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
    table->m_bTemporaryStrands = bTemporaryStrands;
@@ -104,8 +104,8 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    *pParagraph << table << rptNewLine;
 
    ColumnIndexType col = 0;
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
    if ( bTemporaryStrands )
    {
@@ -128,36 +128,36 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
       col = 2;
       if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
-         (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
-         (*table)(1,col++) << COLHDR(Sub2("f","cgp") << " + " << symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(Sub2("f","cgp") << " + " << symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
       (*table)(1,col++) << Sub2("K","ih");
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( bTemporaryStrands )
       {
-         (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(1,col++) << Sub2("K","ih");
-         (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
    }
    else
    {
       if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
-         (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
-         (*table)(0,col++) << COLHDR(Sub2("f","cgp") << " + " << symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(Sub2("f","cgp") << " + " << symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       (*table)(0,col++) << Sub2("K","ih");
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    return table;
 }
 
-void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
    int rowOffset = GetNumberOfHeaderRows()-1;

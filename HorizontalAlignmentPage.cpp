@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -97,15 +97,15 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
       for ( iter = m_AlignmentData.HorzCurves.begin(); iter != m_AlignmentData.HorzCurves.end(); iter++, curveID++ )
       {
          HorzCurveData& hc = *iter;
-         if ( hc.Radius <= 0 )
+         if ( hc.Radius < 0 )
          {
             CString strMsg;
-            strMsg.Format("Curve Radius must be greater than zero for curve # %d",curveID);
+            strMsg.Format("Curve Radius cannot be less than zero for curve # %d",curveID);
             AfxMessageBox(strMsg);
             pDX->Fail();
          }
 
-         if ( hc.EntrySpiral < 0 )
+         if ( hc.EntrySpiral < 0 || (IsZero(hc.Radius) && 0 < hc.EntrySpiral))
          {
             CString strMsg;
             strMsg.Format("Invalid Entry Spiral Length for curve # %d",curveID);
@@ -113,7 +113,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
             pDX->Fail();
          }
 
-         if ( hc.ExitSpiral < 0 )
+         if ( hc.ExitSpiral < 0 || (IsZero(hc.Radius) && 0 < hc.ExitSpiral) )
          {
             CString strMsg;
             strMsg.Format("Invalid Exit Spiral Length for curve # %d",curveID);
@@ -129,10 +129,10 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
       m_Grid.SetCurveData(m_AlignmentData.HorzCurves);
    }
 
-   GET_IFACE2(GetBroker(),IDisplayUnits,pDispUnits);
-   DDX_Station(pDX,  IDC_REFSTATION, m_AlignmentData.RefStation, pDispUnits->GetStationFormat() );
-   DDX_UnitValue(pDX,IDC_NORTHING,m_AlignmentData.yRefPoint,pDispUnits->GetAlignmentLengthUnit());
-   DDX_UnitValue(pDX,IDC_EASTING, m_AlignmentData.xRefPoint,pDispUnits->GetAlignmentLengthUnit());
+   GET_IFACE2(GetBroker(),IDisplayUnits,pDisplayUnits);
+   DDX_Station(pDX,  IDC_REFSTATION, m_AlignmentData.RefStation, pDisplayUnits->GetStationFormat() );
+   DDX_UnitValue(pDX,IDC_NORTHING,m_AlignmentData.yRefPoint,pDisplayUnits->GetAlignmentLengthUnit());
+   DDX_UnitValue(pDX,IDC_EASTING, m_AlignmentData.xRefPoint,pDisplayUnits->GetAlignmentLengthUnit());
 }
 
 BEGIN_MESSAGE_MAP(CHorizontalAlignmentPage, CPropertyPage)

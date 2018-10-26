@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -82,17 +82,17 @@ inline bool flexure_stress_failures(IBroker* pBroker,SpanIndexType span,GirderIn
 
       if ( stage == pgsTypes::BridgeSite3 && ls == pgsTypes::ServiceIII )
       {
-	      if ( !pFlexure->BottomPassed() )
+	      if ( !pFlexure->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) || !pFlexure->BottomPassed(pgsFlexuralStressArtifact::WithRebar))
             return true;
       }
       else if ( stage == pgsTypes::BridgeSite3 && (ls == pgsTypes::ServiceIA || ls == pgsTypes::ServiceI || ls == pgsTypes::FatigueI )  )
       {
-	      if ( !pFlexure->TopPassed() )
+	      if ( !pFlexure->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) || !pFlexure->TopPassed(pgsFlexuralStressArtifact::WithRebar) )
             return true;
       }
       else
       {
-	      if ( !pFlexure->Passed() )
+	      if ( !pFlexure->Passed(pgsFlexuralStressArtifact::WithoutRebar) || !pFlexure->Passed(pgsFlexuralStressArtifact::WithRebar))
             return true;
       }
    }

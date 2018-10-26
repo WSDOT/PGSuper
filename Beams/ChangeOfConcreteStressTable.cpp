@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -33,23 +33,23 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CChangeOfConcreteStressTable::CChangeOfConcreteStressTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit) :
+CChangeOfConcreteStressTable::CChangeOfConcreteStressTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnit->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( dim,         pDispUnit->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDispUnit->GetMomentUnit(),          false );
-   DEFINE_UV_PROTOTYPE( stress,      pDispUnit->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( dim,         pDisplayUnits->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level)
+CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 9;
 
-   CChangeOfConcreteStressTable* table = new CChangeOfConcreteStressTable( numColumns, pDispUnit );
+   CChangeOfConcreteStressTable* table = new CChangeOfConcreteStressTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
 
@@ -67,15 +67,15 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(Sub2("M","adl"),  rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*table)(0,2) << COLHDR(Sub2("M","sidl"), rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*table)(0,3) << COLHDR(Sub2("e","ps"),   rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR(Sub2("Y","bg"),   rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,5) << COLHDR(Sub2("Y","bc"),   rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,6) << COLHDR(Sub2("I","g"),    rptLength4UnitTag,pDispUnit->GetMomentOfInertiaUnit() );
-   (*table)(0,7) << COLHDR(Sub2("I","c"),    rptLength4UnitTag,pDispUnit->GetMomentOfInertiaUnit() );
-   (*table)(0,8) << COLHDR(symbol(DELTA) << Sub2("f","cdp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR(Sub2("M","adl"),  rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,2) << COLHDR(Sub2("M","sidl"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,3) << COLHDR(Sub2("e","ps"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4) << COLHDR(Sub2("Y","bg"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,5) << COLHDR(Sub2("Y","bc"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,6) << COLHDR(Sub2("I","g"),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,7) << COLHDR(Sub2("I","c"),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,8) << COLHDR(symbol(DELTA) << Sub2("f","cdp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;
@@ -85,7 +85,7 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    return table;
 }
 
-void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << moment.SetValue( details.pLosses->GetAddlGdrMoment() );
    (*this)(row,2) << moment.SetValue( details.pLosses->GetSidlMoment() );

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -27,6 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\FlexuralStressArtifact.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
@@ -77,22 +78,19 @@ CFlexuralStressCheckTable& CFlexuralStressCheckTable::operator= (const CFlexural
 
 //======================== OPERATIONS =======================================
 void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                           IDisplayUnits* pDispUnits,
+                                           IDisplayUnits* pDisplayUnits,
                                            pgsTypes::Stage stage,
                                            pgsTypes::LimitState limitState,
                                            pgsTypes::StressType stressType) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDispUnits->GetStressUnit(), false );
-   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDispUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDispUnits->GetTensionCoefficientUnit(), false);
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDispUnits->GetAreaUnit(), true);
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDisplayUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
+   INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(2);
+   rptCapacityToDemand cap_demand;
 
    if ( stage == pgsTypes::CastingYard )
       location.MakeGirderPoi();
@@ -403,50 +401,50 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
    p_table->SetRowSpan(0,col1,2);
    p_table->SetRowSpan(1,col2++,-1);
    if ( stage == pgsTypes::CastingYard )
-      (*p_table)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    else
-      (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) << COLHDR("Prestress" << rptNewLine << RPT_FBOT, rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col1++) << COLHDR("Prestress" << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << "Prestress";
-      (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) << COLHDR(strLimitState << rptNewLine << RPT_FBOT, rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col1++) << COLHDR(strLimitState << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << strLimitState;
-      (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) << COLHDR("Demand" << rptNewLine << RPT_FBOT, rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col1++) << COLHDR("Demand" << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << "Demand";
-      (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
@@ -575,7 +573,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
           (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
          )
       {
-         bool bPassed = (limitState == pgsTypes::ServiceIII ? pArtifact->BottomPassed() : pArtifact->Passed());
+         bool bPassed = (limitState == pgsTypes::ServiceIII ? pArtifact->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) : pArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar));
 	      if ( bPassed )
 		     (*p_table)(row,++col) << RPT_PASS;
 	      else
@@ -584,22 +582,15 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
          if ( !IsZero(allowable_tension) )
          {
             double f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
-            if ( IsZero(f) )
-            {
-               (*p_table)(row,col) << rptNewLine << "(" << symbol(INFINITY) << ")";
-            }
-            else
-            {
-               (*p_table)(row,col) << rptNewLine << "(" << scalar.SetValue(allowable_tension/f) << ")";
-            }
+           (*p_table)(row,col) << rptNewLine <<"("<< cap_demand.SetValue(allowable_tension,f,bPassed)<<")";
          }
       }
 
       // Tension w/ rebar
       if ( stage == pgsTypes::CastingYard )
       {
-         if ( (fTop <= allowable_tension_with_rebar) &&
-              (fBot <= allowable_tension_with_rebar) )
+         bool bPassed = ( fTop <= allowable_tension_with_rebar) && (fBot <= allowable_tension_with_rebar);
+         if (bPassed)
          {
            (*p_table)(row,++col) << RPT_PASS;
          }
@@ -611,15 +602,8 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
          if ( !IsZero(allowable_tension_with_rebar) )
          {
             double f = max(fTop,fBot);
-            if ( IsZero(f) )
-            {
-               (*p_table)(row,col) << rptNewLine << "(" << symbol(INFINITY) << ")";
-            }
-            else
-            {
-               (*p_table)(row,col) << rptNewLine << "(" << scalar.SetValue(allowable_tension_with_rebar/f) << ")";
-            }
-         }
+            (*p_table)(row,col) << rptNewLine <<"("<< cap_demand.SetValue(allowable_tension_with_rebar,f,bPassed)<<")";
+          }
       }
 
       // Compression
@@ -634,11 +618,11 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
          bool bPassed;
          if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
          {
-            bPassed = pArtifact->Passed();
+            bPassed = pArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar);
          }
          else
          {
-            bPassed = pOtherArtifact->Passed();
+            bPassed = pOtherArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar);
             pOtherArtifact->GetDemand( &fTop, &fBot );
          }
 
@@ -648,14 +632,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
 		      (*p_table)(row, ++col) << RPT_FAIL;
 
          double f = min(fTop,fBot);
-         if ( IsZero(f) )
-         {
-            (*p_table)(row,col) << rptNewLine << "(" << symbol(INFINITY) << ")";
-         }
-         else
-         {
-            (*p_table)(row,col) << rptNewLine << "(" << scalar.SetValue(allowable_compression/f) << ")";
-         }
+         (*p_table)(row,col) << rptNewLine <<"("<< cap_demand.SetValue(allowable_compression,f,bPassed)<<")";
       }
 
       row++;

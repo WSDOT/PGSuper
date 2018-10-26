@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,13 +71,13 @@ COptionalDeflectionCheck& COptionalDeflectionCheck::operator= (const COptionalDe
 
 //======================== OPERATIONS =======================================
 void COptionalDeflectionCheck::Build(rptChapter* pChapter, const pgsGirderArtifact* pArtifact,
-                              SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDispUnit) const
+                              SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDisplayUnits) const
 {
    const pgsDeflectionCheckArtifact* pDef = pArtifact->GetDeflectionCheckArtifact();
 
    if (pDef->IsApplicable())
    {
-      INIT_UV_PROTOTYPE( rptLengthUnitValue, defu,    pDispUnit->GetComponentDimUnit(), true );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue, defu,    pDisplayUnits->GetComponentDimUnit(), true );
 
       rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       pPara->SetName("Optional Live Load Deflection Check");

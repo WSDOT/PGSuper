@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -107,12 +107,14 @@ private:
 class TxDOTCadWriter : public TxDOTDebondTool
 {
 public:
+
    TxDOTCadWriter(SpanIndexType span, GirderIndexType gdr, Float64 girderLength, IStrandGeometry* pStrandGeometry):
    TxDOTDebondTool(span, gdr, girderLength, pStrandGeometry)
    {;}
 
    void WriteInitialData(CadWriterWorkerBee& workerBee);
    void WriteFinalData(FILE *fp, bool isExtended);
+
 private:
    void WriteRowData(CadWriterWorkerBee& workerBee, const RowData& row, Int16 strandsInRow) const;
 };

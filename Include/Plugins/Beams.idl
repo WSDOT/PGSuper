@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Factory
-// Copyright (C) 2008  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
 // and was developed as part of the Alternate Route Project
@@ -179,6 +179,15 @@ library PGSuperBeamFactory
 	{
 		[default] interface DummyBeamFactory;
 	};
+
+	[
+		uuid(09D3E8EA-B66F-4d99-8DDE-3F55BBC14D54)
+	]
+	coclass BoxBeamFactory2
+	{
+		[default] interface DummyBeamFactory;
+	};
+
 	[
 		uuid(59BAD0A2-91F0-4E8A-8A90-4241787E9B50),
 		helpstring("StrandMoverImpl Class")
@@ -195,4 +204,13 @@ library PGSuperBeamFactory
 	{
 		[default] interface DummyBeamFactory;
 	};
+
+	[
+		uuid(9C219793-A1F1-402a-B865-0AA6BD22B0A6)
+	]
+	coclass DeckedSlabBeamFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
 };

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -70,12 +70,13 @@ END_MESSAGE_MAP()
 
 void CCatalogServerDlg::OnAdd() 
 {
-	// TODO: Add your control notification handler code here
    CServerDefinitionDlg dlg(m_Servers);
    if ( dlg.DoModal() == IDOK )
    {
       m_Servers.RemoveServer(dlg.m_ServerName);
-      m_Servers.AddServer(dlg.m_ServerName,dlg.m_ServerAddress);
+
+      m_Servers.AddServer( dlg.CreateServer() );
+
       UpdateServerList();
    }
 
@@ -84,8 +85,6 @@ void CCatalogServerDlg::OnAdd()
 
 void CCatalogServerDlg::OnDelete() 
 {
-	// TODO: Add your control notification handler code here
-	
    CListBox* pLB = (CListBox*)GetDlgItem(IDC_SERVERS);
    int idx = pLB->GetCurSel();
    if ( idx == LB_ERR )
@@ -101,7 +100,6 @@ void CCatalogServerDlg::OnDelete()
 
 void CCatalogServerDlg::OnEdit() 
 {
-	// TODO: Add your control notification handler code here
    CListBox* pLB = (CListBox*)GetDlgItem(IDC_SERVERS);
    int idx = pLB->GetCurSel();
    if ( idx == LB_ERR )
@@ -109,16 +107,15 @@ void CCatalogServerDlg::OnEdit()
 
    CString strName;
    pLB->GetText(idx,strName);
-   CString strAddress = m_Servers.GetServerAddress(strName);
+   const CPGSuperCatalogServer* pserver = m_Servers.GetServer(strName);
 	
-   CServerDefinitionDlg dlg(m_Servers);
-   dlg.m_ServerName = strName;
-   dlg.m_ServerAddress  = strAddress;
+   CServerDefinitionDlg dlg(m_Servers,pserver);
 
    if ( dlg.DoModal() == IDOK )
    {
       m_Servers.RemoveServer(strName);
-      m_Servers.AddServer(dlg.m_ServerName,dlg.m_ServerAddress);
+      CPGSuperCatalogServer* psvr = dlg.CreateServer();
+      m_Servers.AddServer(psvr);
       UpdateServerList();
    }
 }
@@ -131,8 +128,6 @@ BOOL CCatalogServerDlg::OnInitDialog()
 
    UpdateButtonState();
    
-	// TODO: Add extra initialization here
-	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -147,9 +142,8 @@ void CCatalogServerDlg::UpdateServerList()
    long nServers = m_Servers.GetServerCount();
    for ( long i = 0; i < nServers; i++ )
    {
-      CString strName, strAddress;
-      m_Servers.GetServer(i,strName,strAddress);
-      pLB->AddString(strName);
+      const CPGSuperCatalogServer* server = m_Servers.GetServer(i);
+      pLB->AddString( server->GetServerName() );
    }
 
    if ( curSel != LB_ERR )

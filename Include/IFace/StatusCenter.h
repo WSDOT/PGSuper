@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2004  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -30,8 +30,9 @@ COPYRIGHT
    All Rights Reserved
 *****************************************************************************/
 
-#include <WbflTypes.h>
+#include <PGSuperTypes.h>
 #include <PgsExt\StatusItem.h>
+
 
 /*****************************************************************************
 INTERFACE
@@ -48,15 +49,16 @@ DEFINE_GUID(IID_IStatusCenter,
 0x77977e9b, 0xb074, 0x401f, 0x89, 0x94, 0x73, 0xa4, 0x18, 0xfc, 0x4f, 0xff);
 interface IStatusCenter : IUnknown
 {
-   virtual long GetAgentID() = 0;
-   virtual long Add(pgsStatusItem* pItem) = 0;
-   virtual bool RemoveByID(long id) = 0;
-   virtual bool RemoveByIndex(long index) = 0;
-   virtual bool RemoveByAgentID(long agentID) = 0;
-   virtual pgsStatusItem* GetByID(long id) = 0;
-   virtual pgsStatusItem* GetByIndex(long index) = 0;
-   virtual long GetSeverity(const pgsStatusItem* pItem) = 0;
-   virtual long Count() = 0;
+   virtual AgentIDType GetAgentID() = 0;
+   virtual StatusItemIDType Add(pgsStatusItem* pItem) = 0;
+   virtual bool RemoveByID(StatusItemIDType id) = 0;
+   virtual bool RemoveByIndex(CollectionIndexType index) = 0;
+   virtual bool RemoveByAgentID(AgentIDType agentID) = 0;
+   virtual pgsStatusItem* GetByID(StatusItemIDType id) = 0;
+   virtual pgsStatusItem* GetByIndex(CollectionIndexType index) = 0;
+   virtual pgsTypes::StatusSeverityType GetSeverity(const pgsStatusItem* pItem) = 0;
+   virtual CollectionIndexType Count() = 0;
+   virtual StatusCallbackIDType RegisterCallback(iStatusCallback* pCallback) = 0;
 };
 
 #endif // INCLUDED_IFACE_STATUSCENTER_H_

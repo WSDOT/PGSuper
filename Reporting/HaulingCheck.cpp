@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -78,7 +78,7 @@ CHaulingCheck& CHaulingCheck::operator= (const CHaulingCheck& rOther)
 //======================== OPERATIONS =======================================
 void CHaulingCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDispUnit) const
+                              IDisplayUnits* pDisplayUnits) const
 {
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -87,18 +87,18 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    *pTitle << "Hauling Stresses and Factor of Safety Against Cracking"<<rptNewLine;
 
    rptRcScalar scalar;
-   scalar.SetFormat( pDispUnit->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnit->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnit->GetScalarFormat().Precision );
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnit->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,      pDispUnit->GetSpanLengthUnit(), true  );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDispUnit->GetShearUnit(),        false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDispUnit->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDispUnit->GetStressUnit(),       false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress_u, pDispUnit->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDispUnit->GetTensionCoefficientUnit(), false);
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDispUnit->GetAreaUnit(), true);
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,      pDisplayUnits->GetSpanLengthUnit(), true  );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress_u, pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
+   INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
    location.MakeSpanPoi();
 
@@ -178,11 +178,11 @@ void CHaulingCheck::Build(rptChapter* pChapter,
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(10,"");
    *p << p_table << rptNewLine;
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("Min" << rptNewLine << "Stress" << Super("#"),rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(0,2) << COLHDR("Max" << rptNewLine << "Stress" << Super("#"),rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(0,3) << COLHDR("Min" << rptNewLine << "Stress" << Super("*"),rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(0,4) << COLHDR("Max" << rptNewLine << "Stress" << Super("*"),rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR("Min" << rptNewLine << "Stress" << Super("#"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,2) << COLHDR("Max" << rptNewLine << "Stress" << Super("#"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,3) << COLHDR("Min" << rptNewLine << "Stress" << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,4) << COLHDR("Max" << rptNewLine << "Stress" << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(0,5) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/o Rebar";
    (*p_table)(0,6) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/  Rebar";
    (*p_table)(0,7) << "Compression" << rptNewLine << "Status";

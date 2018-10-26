@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -61,10 +61,10 @@ public:
    TxDOTDebondTool(span, gdr, girderLength, pStrandGeometry)
    {;}
 
-   void WriteDebondData(rptParagraph* pPara,IDisplayUnits* pDispUnit);
+   void WriteDebondData(rptParagraph* pPara,IDisplayUnits* pDisplayUnits);
 };
 
-void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IDisplayUnits* pDispUnit)
+void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IDisplayUnits* pDisplayUnits)
 {
    *pPara<<rptNewLine; // make some space
 
@@ -103,8 +103,8 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IDisplayUnits* p
    else
    {
       // All is ok to write table
-      INIT_UV_PROTOTYPE( rptLengthUnitValue, uloc, pDispUnit->GetSpanLengthUnit(), true);
-      INIT_UV_PROTOTYPE( rptLengthUnitValue, ucomp,    pDispUnit->GetComponentDimUnit(), true );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue, uloc, pDisplayUnits->GetSpanLengthUnit(), true);
+      INIT_UV_PROTOTYPE( rptLengthUnitValue, ucomp,    pDisplayUnits->GetComponentDimUnit(), true );
 
       uloc.SetFormat(sysNumericFormatTool::Automatic);
 
@@ -245,11 +245,11 @@ CTexasIBNSParagraphBuilder::CTexasIBNSParagraphBuilder()
 
 /*--------------------------------------------------------------------*/
 rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	span,GirderIndexType girder, 
-                                                IDisplayUnits* pDispUnit, Uint16	level) const
+                                                IDisplayUnits* pDisplayUnits, Uint16	level) const
 {
    rptParagraph* p = new rptParagraph;
 
-   bool bUnitsSI = (pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bUnitsSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
 
 	/* For broker passed in, get interface information */
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -266,17 +266,19 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    bool bTempStrands = (0 < pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Temporary) ? true : false);
 
    CGirderData girderData = pGirderData->GetGirderData(span, girder);
-   if (girderData.NumPermStrandsType != NPS_TOTAL_NUMBER)
+   bool is_nonstandard = girderData.NumPermStrandsType != NPS_TOTAL_NUMBER;
+
+   if (is_nonstandard)
    {
       *p << color(Red) <<"Note: A Non-Standard Strand Fill Was Used For This Design" << color(Black) << rptNewLine;
    }
 
    const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,girder);
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, ecc,    pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dia,    pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDispUnit->GetMomentUnit(),       true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, ecc,    pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dia,    pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(),       true );
 
 
    // create pois at the start of girder and mid-span
@@ -435,12 +437,37 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
         << "Compressive Stress is positive. Tensile Stress is negative" << color(Black) << rptNewLine;
 
    // write debond table
-   WriteDebondTable(p, pBroker, span, girder, pDispUnit);
+   WriteDebondTable(p, pBroker, span, girder, pDisplayUnits);
+
+   if (is_nonstandard)
+   {
+      // Nonstandard strands table
+      StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, pmid[0]);
+
+      p_table = pgsReportStyleHolder::CreateDefaultTable(2,"Non-Standard Strand Pattern");
+      p_table->SetColumnWidth(0,1.3);
+      p_table->SetColumnWidth(1,1.3);
+      *p << p_table;
+
+      RowIndexType row = 0;
+      (*p_table)(row,0) << "Row"<<rptNewLine<<"(in)"; // TxDOT dosn't do metric and we need special formatting below
+      (*p_table)(row++,1) << "# of"<<rptNewLine<<"Strands";
+
+      for (StrandRowUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)
+      {
+         const StrandRowUtil::StrandRow& srow = *srit;
+         Float64 elev_in = RoundOff(::ConvertFromSysUnits( srow.Elevation, unitMeasure::Inch ),0.001);
+
+         (*p_table)(row,0) << elev_in; 
+         (*p_table)(row++,1) << srow.Count;
+      }
+   }
+
 
    return p;
 }
 
-void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDispUnit) const
+void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
@@ -457,7 +484,7 @@ void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* 
    // Need compute tool to decipher debond data
    TxDOTIBNSDebondWriter tx_writer(span, girder, girder_length, pStrandGeometry);
 
-   tx_writer.WriteDebondData(pPara,pDispUnit);
+   tx_writer.WriteDebondData(pPara,pDisplayUnits);
 
 
 }

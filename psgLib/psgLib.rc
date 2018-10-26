@@ -71,8 +71,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,2,4,0
- PRODUCTVERSION 2,2,4,0
+ FILEVERSION 2,3,0,1
+ PRODUCTVERSION 2,3,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -90,11 +90,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.2.4.0"
+            VALUE "FileVersion", "2.3.0.1"
             VALUE "InternalName", "psgLib"
+            VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.2.4.0"
+            VALUE "ProductVersion", "2.3.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -116,7 +117,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "Entry Name:",IDC_STATIC,7,14,38,8
     LTEXT           "Static",IDC_ENTRY_NAME,48,14,179,8
-    GROUPBOX        "Properties of Selected Entry",IDC_STATIC,7,38,220,145,0,WS_EX_TRANSPARENT
+    GROUPBOX        "Concrete Details",IDC_STATIC,7,28,220,155,0,WS_EX_TRANSPARENT
     LTEXT           "Strength - f'c",IDC_STATIC,29,60,41,8
     EDITTEXT        IDC_FC,104,55,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_FC_T,174,60,35,8
@@ -137,6 +138,7 @@ BEGIN
     PUSHBUTTON      "OK",IDOK,39,188,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,99,188,50,14
     PUSHBUTTON      "Help",ID_HELP,159,188,50,14
+    CTEXT           "Enter properties for Normal Weight Concrete",IDC_NWC_NOTE,7,42,220,8
 END
 
 IDD_CONNECTION_ENTRY DIALOGEX 0, 0, 402, 285
@@ -290,9 +292,9 @@ BEGIN
     LTEXT           "You must correct all errors before the girder data is accepted.",IDC_STATIC,7,20,192,8
 END
 
-IDD_SPEC_DESCR DIALOG  0, 0, 355, 214
+IDD_SPEC_DESCR DIALOGEX 0, 0, 355, 214
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Entry Name: ",IDC_STATIC,7,16,42,8
     LTEXT           "Static",IDC_NAME,89,16,259,8
@@ -300,8 +302,9 @@ BEGIN
     EDITTEXT        IDC_EDIT_DESCRIPTION,7,37,341,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN
     GROUPBOX        "Design Criteria Basis",IDC_STATIC,7,88,341,68
     GROUPBOX        "Use Constants and Equations from the Following Version of the Selected Specification:",IDC_STATIC,7,168,341,37
-    CONTROL         "SI Units Version",IDC_SPEC_UNITS_SI,"Button",BS_AUTORADIOBUTTON | WS_GROUP,13,180,66,10
-    CONTROL         "US Units Version",IDC_SPEC_UNITS_US,"Button",BS_AUTORADIOBUTTON,13,192,69,10
+    CONTROL         "SI Units Version (Note: SI not available after 2006)",IDC_SPEC_UNITS_SI,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,14,180,174,10
+    CONTROL         "US Units Version",IDC_SPEC_UNITS_US,"Button",BS_AUTORADIOBUTTON,14,192,69,10
     COMBOBOX        IDC_SPECIFICATION,17,129,237,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Use this design criteria along with provisions from the\nAASHTO LRFD Bridge Design Specifications",IDC_STATIC,21,105,177,21
 END
@@ -1696,6 +1699,7 @@ BEGIN
     IDS_SLOPE_O6_SI         "Max Strand Slope for 15.24d mm Strands"
     IDS_SLOPE_O7_SI         "Max Strand Slope for 17.78d mm Strands"
     IDS_SLOPE_O7_US         "Max Strand Slope for 0.7d inch Strands"
+    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Normal Weight."
     IDS_SPEC_STRAND         "Strand Stresses"
     IDS_SPEC_LOSS           "Losses"
     IDS_SPEC_ANALYSIS       "Structural Analysis"

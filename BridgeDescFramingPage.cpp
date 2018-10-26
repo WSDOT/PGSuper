@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -92,14 +92,14 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    if ( !pDX->m_bSaveAndValidate )
    {
       m_AlignmentOffset = pParent->m_BridgeDesc.GetAlignmentOffset();
    }
 
-   DDX_OffsetAndTag(pDX, IDC_ALIGNMENTOFFSET, IDC_ALIGNMENTOFFSET_UNIT, m_AlignmentOffset, pDispUnits->GetAlignmentLengthUnit() );
+   DDX_OffsetAndTag(pDX, IDC_ALIGNMENTOFFSET, IDC_ALIGNMENTOFFSET_UNIT, m_AlignmentOffset, pDisplayUnits->GetAlignmentLengthUnit() );
    
    if ( pDX->m_bSaveAndValidate )
    {
@@ -141,9 +141,9 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    
-   fmt.LoadString(( pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US ));
+   fmt.LoadString(( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US ));
    m_StationFormat.SetWindowText( fmt );
 
    fmt.LoadString( IDS_DLG_ORIENTATIONFMT );

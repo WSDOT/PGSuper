@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -79,7 +79,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::string spec_name = pSpec->GetSpecification();
@@ -94,10 +94,10 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
    const pgsSplittingZoneArtifact* pArtifact = gdrArtifact->GetSplittingZoneArtifact();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDispUnit->GetSpanLengthUnit(),   true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress, pDispUnit->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,   pDispUnit->GetAreaUnit(),         true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,     force,  pDispUnit->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(),   true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress, pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,   pDisplayUnits->GetAreaUnit(),         true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,     force,  pDisplayUnits->GetGeneralForceUnit(), true );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Automatic );

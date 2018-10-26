@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -68,26 +68,26 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptRcScalar scalar;
-   scalar.SetFormat( pDispUnit->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnit->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnit->GetScalarFormat().Precision );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDispUnit->GetSpanLengthUnit(),    false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,            pDispUnit->GetSpanLengthUnit(),    false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDispUnit->GetShearUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDispUnit->GetStressUnit(),        false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, mod_e,          pDispUnit->GetModEUnit(),          false );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,         pDispUnit->GetMomentUnit(),        false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue, angle,           pDispUnit->GetRadAngleUnit(),      false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, wt_len, pDispUnit->GetForcePerLengthUnit(),false );
-   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDispUnit->GetMomentPerAngleUnit(),false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,           pDispUnit->GetAreaUnit(),      false );
-   INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_I,  pDispUnit->GetMomentOfInertiaUnit(),         true );
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(),    false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,            pDisplayUnits->GetSpanLengthUnit(),    false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDisplayUnits->GetStressUnit(),        false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, mod_e,          pDisplayUnits->GetModEUnit(),          false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,         pDisplayUnits->GetMomentUnit(),        false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue, angle,           pDisplayUnits->GetRadAngleUnit(),      false );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, wt_len, pDisplayUnits->GetForcePerLengthUnit(),false );
+   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,           pDisplayUnits->GetAreaUnit(),      false );
+   INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_I,  pDisplayUnits->GetMomentOfInertiaUnit(),         true );
 
    location.MakeSpanPoi();
 
@@ -115,7 +115,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    Float64 leadingOH  = pHaul->GetLeadingOverhang();
    Float64 trailingOH = pHaul->GetTrailingOverhang();
 
-   FormatDimension(leadingOH,pDispUnit->GetSpanLengthUnit());
+   FormatDimension(leadingOH,pDisplayUnits->GetSpanLengthUnit());
    *p << "Leading Overhang = "<<loc.SetValue(leadingOH)<<" "<<loc.GetUnitTag()<<rptNewLine;
    *p << "Trailing Overhang = "<<loc.SetValue(trailingOH)<<" "<<loc.GetUnitTag()<<rptNewLine;
    *p << Sub2("l","l")<<" = Clear span length between supports = "<<loc.SetValue(pHaul->GetClearSpanBetweenSupportLocations())<<" "<<loc.GetUnitTag()<<rptNewLine;
@@ -153,12 +153,12 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,"Hauling Forces");
    *p << p_table<<rptNewLine;
 
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("Effective" << rptNewLine << "Prestress" << rptNewLine << "Force",rptForceUnitTag, pDispUnit->GetShearUnit() );
-   (*p_table)(0,2) << COLHDR("Eccentricity",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*p_table)(0,3) << COLHDR("Moment" << rptNewLine << "Impact Up",rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*p_table)(0,4) << COLHDR("Moment" << rptNewLine << "No Impact",rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*p_table)(0,5) << COLHDR("Moment" << rptNewLine << "Impact Down",rptMomentUnitTag, pDispUnit->GetMomentUnit() );
+   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR("Effective" << rptNewLine << "Prestress" << rptNewLine << "Force",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,2) << COLHDR("Eccentricity",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,3) << COLHDR("Moment" << rptNewLine << "Impact Up",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,4) << COLHDR("Moment" << rptNewLine << "No Impact",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,5) << COLHDR("Moment" << rptNewLine << "Impact Down",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    Float64 overhang = pHaul->GetTrailingOverhang();
 
@@ -192,7 +192,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    p_table->SetNumberOfHeaderRows(2);
    p_table->SetRowSpan(0,0,2);
    p_table->SetRowSpan(1,0,-1);
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
+   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    p_table->SetColumnSpan(0,1,4);
    (*p_table)(0,1) << "Top Stress, " << RPT_FTOP;
@@ -207,14 +207,14 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    p_table->SetColumnSpan(0,7,-1);
    p_table->SetColumnSpan(0,8,-1);
 
-   (*p_table)(1,1) << COLHDR("Prestress",rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(1,2) << COLHDR("Impact" << rptNewLine << "Up",rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(1,3) << COLHDR("No" << rptNewLine << "Impact",rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(1,4) << COLHDR("Impact" << rptNewLine << "Down",rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(1,5) << COLHDR("Prestress",rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(1,6) << COLHDR("Impact" << rptNewLine << "Up",rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(1,7) << COLHDR("No" << rptNewLine << "Impact",rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(1,8) << COLHDR("Impact" << rptNewLine << "Down",rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*p_table)(1,1) << COLHDR("Prestress",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,2) << COLHDR("Impact" << rptNewLine << "Up",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,3) << COLHDR("No" << rptNewLine << "Impact",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,4) << COLHDR("Impact" << rptNewLine << "Down",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,5) << COLHDR("Prestress",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,6) << COLHDR("Impact" << rptNewLine << "Up",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,7) << COLHDR("No" << rptNewLine << "Impact",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,8) << COLHDR("Impact" << rptNewLine << "Down",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    rptRcTable* p_table2 = pgsReportStyleHolder::CreateDefaultTable(7,"Hauling Stresses - Tilted Girder");
    *p << p_table2;
@@ -222,22 +222,22 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    *p << Sub2(symbol(sigma),"td") << " = top fiber stress, downhill side" << rptNewLine;
    *p << Sub2(symbol(sigma),"bu") << " = bottom fiber stress, uphill side" << rptNewLine;
    *p << Sub2(symbol(sigma),"bd") << " = bottom fiber stress, downhill side" << rptNewLine;
-   (*p_table2)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point", rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*p_table2)(0,1) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*p_table2)(0,2) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*p_table2)(0,3) << COLHDR(Sub2(symbol(sigma),"tu"),rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table2)(0,4) << COLHDR(Sub2(symbol(sigma),"td"),rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table2)(0,5) << COLHDR(Sub2(symbol(sigma),"bu"),rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table2)(0,6) << COLHDR(Sub2(symbol(sigma),"bd"),rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*p_table2)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table2)(0,1) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table2)(0,2) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table2)(0,3) << COLHDR(Sub2(symbol(sigma),"tu"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,4) << COLHDR(Sub2(symbol(sigma),"td"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,5) << COLHDR(Sub2(symbol(sigma),"bu"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,6) << COLHDR(Sub2(symbol(sigma),"bd"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
    rptRcTable* p_table3 = pgsReportStyleHolder::CreateDefaultTable(5,"Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]");
    *p << p_table3 << rptNewLine;
-   (*p_table3)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*p_table3)(0,1) << COLHDR(Sub2("Y","na"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*p_table3)(0,2) << COLHDR(Sub2("A","t"),rptAreaUnitTag, pDispUnit->GetAreaUnit() );
-   (*p_table3)(0,3) << COLHDR("T",rptForceUnitTag, pDispUnit->GetGeneralForceUnit() );
-   (*p_table3)(0,4) << COLHDR(Sub2("A","s"),rptAreaUnitTag, pDispUnit->GetAreaUnit() );
+   (*p_table3)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table3)(0,1) << COLHDR(Sub2("Y","na"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table3)(0,2) << COLHDR(Sub2("A","t"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*p_table3)(0,3) << COLHDR("T",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*p_table3)(0,4) << COLHDR(Sub2("A","s"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
 
    RowIndexType row1 = 2;
    RowIndexType row2 = 1;
@@ -329,12 +329,12 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    *p << p_table << rptNewLine;
    *p << Sub2("f","t") << " = governing tension stress"<<rptNewLine;
 
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR(Sub2("f","t"),rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR(Sub2("f","t"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(0,2) << "Governing" << rptNewLine << "Flange";
-   (*p_table)(0,3) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*p_table)(0,4) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*p_table)(0,5) << COLHDR(Sub2(symbol(theta),"max"),rptAngleUnitTag, pDispUnit->GetRadAngleUnit() );
+   (*p_table)(0,3) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,4) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,5) << COLHDR(Sub2(symbol(theta),"max"),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
    (*p_table)(0,6) << Sub2("FS","cr");
 
    row=1;

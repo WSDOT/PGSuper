@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2001  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -66,7 +66,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -84,9 +84,9 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    // Bridge Elevation Table
    //
 
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, webDim, pDispUnit->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDispUnit->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, cogoPoint, pDispUnit->GetAlignmentLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue, webDim, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), true );
 
    GET_IFACE2(pBroker, IBridge,pBridge);
    GET_IFACE2(pBroker, IRoadway, pAlignment);
@@ -164,10 +164,10 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
             (*pTable)(row,col++) << (web+1) << rptNewLine;
 
-            (*pTable)(row,col)   << Bold("Web Offset (") << Bold(pDispUnit->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
+            (*pTable)(row,col)   << Bold("Web Offset (") << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
             (*pTable)(row+1,col) << Bold("Station");
-            (*pTable)(row+2,col) << Bold("Offset (") << Bold(pDispUnit->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
-            (*pTable)(row+3,col) << Bold("Elev (") << Bold(pDispUnit->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
+            (*pTable)(row+2,col) << Bold("Offset (") << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
+            (*pTable)(row+3,col) << Bold("Elev (") << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
             
             col++;
 
@@ -189,7 +189,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
                Float64 elev = pAlignment->GetElevation(sta,total_offset);
 
                (*pTable)(row,col)   << RPT_OFFSET(webOffset,dist);
-               (*pTable)(row+1,col) << rptRcStation(sta, &pDispUnit->GetStationFormat() );
+               (*pTable)(row+1,col) << rptRcStation(sta, &pDisplayUnits->GetStationFormat() );
                (*pTable)(row+2,col) << RPT_OFFSET(total_offset,dist);
                (*pTable)(row+3,col) << dist.SetValue(elev);
 

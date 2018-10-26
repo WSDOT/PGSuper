@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -206,7 +206,7 @@ public:
    // function and structure for computing debond layout for stress demand
    struct StressDemand
    {
-      Float64 m_Location;
+      pgsPointOfInterest m_Poi;
       Float64 m_TopStress;
       Float64 m_BottomStress;
    };
@@ -221,10 +221,12 @@ public:
    void GetDebondSectionForLocation(Float64 location, SectionIndexType* pOutBoardSectionIdx, SectionIndexType* pInBoardSectionIdx, Float64* pOutToInDistance); 
 
    // Given an amount of stress demand, return the minimum debond level to relieve the stress
-   void GetDebondLevelForTopTension(Float64 strandForce, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
+   void GetDebondLevelForTopTension(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
+                                    Float64 Yb, Float64 Ag, Float64 St,
                                     DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel);
 
-   void GetDebondLevelForBottomCompression(Float64 strandForce, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
+   void GetDebondLevelForBottomCompression(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
+                                           Float64 Yb, Float64 Ag, Float64 Sb,
                                             DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel);
 
    // Debonding levels are integer values used to quantify the amount of strands debonded at
@@ -640,14 +642,15 @@ private:
       std::vector<StrandIndexType> StrandsDebonded;
       StrandIndexType MinTotalStrandsRequired;
 
-      Float64 TopStressFactor;
-      Float64 BottomStressFactor;
+      Float64 m_DebondedStrandsCg; // cg of debonded strands
 
       DebondLevel():
-      MinTotalStrandsRequired(0),TopStressFactor(0.0),BottomStressFactor(0.0)
+      MinTotalStrandsRequired(0),m_DebondedStrandsCg(-Float64_Max)
       {;}
 
-      void Init(Float64 Ag, Float64 St, Float64 Sb, Float64 Yb, IPoint2dCollection* strandLocations);
+      void Init(IPoint2dCollection* strandLocations);
+      // Stress relief from debonding at this level
+      Float64 ComputeReliefStress(Float64 psForcePerStrand,Float64 Yb, Float64 Ag, Float64 S) const;
    };
 
    typedef std::vector<DebondLevel>                DebondLevelCollection;

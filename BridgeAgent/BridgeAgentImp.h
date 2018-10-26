@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -112,6 +112,21 @@ END_COM_MAP()
 BEGIN_CONNECTION_POINT_MAP(CBridgeAgentImp)
 END_CONNECTION_POINT_MAP()
 
+   // callback IDs for the status callbacks we register
+   StatusCallbackIDType m_scidInformationalError;
+   StatusCallbackIDType m_scidInformationalWarning;
+   StatusCallbackIDType m_scidBridgeDescriptionError;
+   StatusCallbackIDType m_scidAlignmentWarning;
+   StatusCallbackIDType m_scidAlignmentError;
+   StatusCallbackIDType m_scidGirderDescriptionWarning;
+   StatusCallbackIDType m_scidConcreteStrengthWarning;
+   StatusCallbackIDType m_scidConcreteStrengthError;
+   StatusCallbackIDType m_scidPointLoadWarning;
+   StatusCallbackIDType m_scidPointLoadError;
+   StatusCallbackIDType m_scidDistributedLoadWarning;
+   StatusCallbackIDType m_scidDistributedLoadError;
+   StatusCallbackIDType m_scidMomentLoadWarning;
+   StatusCallbackIDType m_scidMomentLoadError;
 
 // IAgent
 public:
@@ -134,9 +149,9 @@ public:
    virtual void GetBearingNormal(Float64 station,IDirection** ppNormal);
    virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,IPoint2d** ppPoint);
    virtual void GetStationAndOffset(IPoint2d* point,Float64* pStation,Float64* pOffset);
-   virtual long GetCurveCount();
+   virtual CollectionIndexType GetCurveCount();
    virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve);
-   virtual long GetVertCurveCount();
+   virtual CollectionIndexType GetVertCurveCount();
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve);
 
 // IBridge
@@ -267,6 +282,7 @@ public:
    virtual Float64 GetFlexureFrSlab();
    virtual Float64 GetShearFrSlab();
    virtual Float64 GetK1Slab();
+   virtual Float64 GetNWCDensityLimit();
 
 // IStageMap
 public:
@@ -485,7 +501,7 @@ public:
    virtual Float64 GetTributaryDeckArea(const pgsPointOfInterest& poi);
    virtual Float64 GetGrossDeckArea(const pgsPointOfInterest& poi);
    virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi);
-   virtual void ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit);
+   virtual void ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi);
    virtual Float64 GetSurfaceArea(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetVolume(SpanIndexType span,GirderIndexType gdr);
@@ -550,6 +566,8 @@ public:
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi);
    virtual pgsTypes::SplittingDirection GetSplittingDirection(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual void GetProfileShape(SpanIndexType spanIdx,GirderIndexType gdrIdx,IShape** ppShape);
+   virtual bool HasShearKey(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::SupportedBeamSpacing spacingType);
+   virtual void GetShearKeyAreas(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint);
 
 // IGirderLiftingPointsOfInterest
 public:
@@ -588,13 +606,16 @@ private:
    DWORD m_dwBridgeDescCookie;
    DWORD m_dwSpecificationCookie;
 
-   long m_LoadAgentID; // ID used to identify user load-related status items created by this agent
+   AgentIDType m_LoadAgentID; // ID used to identify user load-related status items created by this agent
 
    Int32 m_AlignmentID;
 
    CComPtr<IGenericBridge> m_Bridge;
    CComPtr<IBridgeGeometryTool> m_BridgeGeometryTool;
    CComPtr<ICogoEngine> m_CogoEngine; // this is not the cogo model!!! just an engine to do computations with
+
+   std::map<CollectionIndexType,CogoElementKey> m_HorzCurveKeys;
+   std::map<CollectionIndexType,CogoElementKey> m_VertCurveKeys;
 
    std::map< SpanGirderHashType, boost::shared_ptr<matConcreteEx> > m_pGdrConc;
    std::map< SpanGirderHashType, boost::shared_ptr<matConcreteEx> > m_pGdrReleaseConc;

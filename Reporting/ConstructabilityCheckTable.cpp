@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -72,7 +72,7 @@ CConstructabilityCheckTable& CConstructabilityCheckTable::operator= (const CCons
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits) const
+rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
@@ -80,15 +80,15 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,S
    
    if (pArtifact->SlabOffsetStatus() != pgsConstructabilityArtifact::NA)
    {
-      INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnits->GetComponentDimUnit(), false );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
       rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,"Slab Offset (\"A\" Dimension)");
 
       pTable->SetColumnStyle(3,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetStripeRowColumnStyle(3,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      (*pTable)(0,0) << COLHDR("Minimum" << rptNewLine << "Provided", rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-      (*pTable)(0,1) << COLHDR("Required", rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
+      (*pTable)(0,0) << COLHDR("Minimum" << rptNewLine << "Provided", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0,1) << COLHDR("Required", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*pTable)(0,2) << "Status";
       (*pTable)(0,3) << "Notes";
 
@@ -131,7 +131,7 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,S
    }
 }
 
-void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits) const
+void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
@@ -152,17 +152,17 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GlobalGirderStability.gif");
 
    rptRcScalar slope;
-   slope.SetFormat(pDispUnits->GetScalarFormat().Format);
-   slope.SetWidth(pDispUnits->GetScalarFormat().Width);
-   slope.SetPrecision(pDispUnits->GetScalarFormat().Precision);
+   slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
+   slope.SetWidth(pDisplayUnits->GetScalarFormat().Width);
+   slope.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"");
-   std::string strSlopeTag = pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   std::string strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-   (*pTable)(0,0) << COLHDR(Sub2("W","b"), rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-   (*pTable)(0,1) << COLHDR(Sub2("Y","b"), rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
+   (*pTable)(0,0) << COLHDR(Sub2("W","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,1) << COLHDR(Sub2("Y","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,2) << "Incline from Vertical (" << Sub2(symbol(theta),"max") << ")" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
    (*pTable)(0,3) << "Max Incline" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
    (*pTable)(0,4) << "Status";

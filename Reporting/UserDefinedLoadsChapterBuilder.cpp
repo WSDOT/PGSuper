@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -62,7 +62,7 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
    SpanIndexType span = pSpec->GetSpan();
    GirderIndexType girder = pSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -73,15 +73,15 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
    *pParagraph <<"Locations are measured from left support."<<rptNewLine;
 
    // tables of details - point loads first
-   rptParagraph* ppar1 = CreatePointLoadTable(pBroker, span, girder, pDispUnit, level);
+   rptParagraph* ppar1 = CreatePointLoadTable(pBroker, span, girder, pDisplayUnits, level);
    *pChapter <<ppar1;
 
    // distributed loads
-   ppar1 = CreateDistributedLoadTable(pBroker, span, girder, pDispUnit, level);
+   ppar1 = CreateDistributedLoadTable(pBroker, span, girder, pDisplayUnits, level);
    *pChapter <<ppar1;
 
    // moments loads
-   ppar1 = CreateMomentLoadTable(pBroker, span, girder, pDispUnit, level);
+   ppar1 = CreateMomentLoadTable(pBroker, span, girder, pDisplayUnits, level);
    *pChapter <<ppar1;
 
    return pChapter;
@@ -114,13 +114,13 @@ CChapterBuilder* CUserDefinedLoadsChapterBuilder::Clone() const
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDispUnit,
+                           IDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDispUnit->GetSpanLengthUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,   shear,   pDispUnit->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDisplayUnits->GetSpanLengthUnit(),  false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,   shear,   pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(span,girder);
@@ -129,8 +129,8 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
 
    (*table)(0,0)  << "Stage";
    (*table)(0,1)  << "Load" << rptNewLine << "Case";
-   (*table)(0,2)  << COLHDR("Location",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,3)  << COLHDR("Magnitude",rptForceUnitTag, pDispUnit->GetShearUnit() );
+   (*table)(0,2)  << COLHDR("Location",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,3)  << COLHDR("Magnitude",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,4)  << "Description";
 
    GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );
@@ -205,13 +205,13 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDispUnit,
+                           IDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDispUnit->GetSpanLengthUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue,   fplu,   pDispUnit->GetForcePerLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDisplayUnits->GetSpanLengthUnit(),  false );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue,   fplu,   pDisplayUnits->GetForcePerLengthUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(span,girder);
@@ -220,10 +220,10 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
    (*table)(0,0)  << "Stage";
    (*table)(0,1)  << "Load" << rptNewLine << "Case";
-   (*table)(0,2)  << COLHDR("Start" << rptNewLine << "Location",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,3)  << COLHDR("End" << rptNewLine << "Location",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,4)  << COLHDR("Start" << rptNewLine << "Magnitude",rptForcePerLengthUnitTag, pDispUnit->GetForcePerLengthUnit() );
-   (*table)(0,5)  << COLHDR("End" << rptNewLine << "Magnitude",rptForcePerLengthUnitTag, pDispUnit->GetForcePerLengthUnit() );
+   (*table)(0,2)  << COLHDR("Start" << rptNewLine << "Location",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,3)  << COLHDR("End" << rptNewLine << "Location",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,4)  << COLHDR("Start" << rptNewLine << "Magnitude",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(0,5)  << COLHDR("End" << rptNewLine << "Magnitude",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    (*table)(0,6)  << "Description";
 
    GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );
@@ -300,13 +300,13 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDispUnit,
+                           IDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDispUnit->GetSpanLengthUnit(),  false );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,   pDispUnit->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDisplayUnits->GetSpanLengthUnit(),  false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,   pDisplayUnits->GetMomentUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(span,girder);
@@ -316,7 +316,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    (*table)(0,0)  << "Stage";
    (*table)(0,1)  << "Load" << rptNewLine << "Case";
    (*table)(0,2)  << "Location";
-   (*table)(0,3)  << COLHDR("Magnitude",rptMomentUnitTag, pDispUnit->GetMomentUnit() );
+   (*table)(0,3)  << COLHDR("Magnitude",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,4)  << "Description";
 
    GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );

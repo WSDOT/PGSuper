@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2001  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -65,12 +65,12 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pR
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->IsCompositeDeck() )
    {
       GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-      pSectProp2->ReportEffectiveFlangeWidth(span,girder,pChapter,pDispUnit);
+      pSectProp2->ReportEffectiveFlangeWidth(span,girder,pChapter,pDisplayUnits);
    }
    else
    {

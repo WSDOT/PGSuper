@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -48,7 +48,9 @@
 #include "VoidedSlabFactory.h"
 #include "VoidedSlabFactory2.h"
 #include "BoxBeamFactory.h"
+#include "BoxBeamFactory2.h"
 #include "TxDotDoubleTFactory.h"
+#include "DeckedSlabBeamFactory.h"
 
 #include <Plugins\Beams.h>
 #include <Plugins\Beams_i.c>
@@ -71,6 +73,7 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\DisplayUnits.h>
+#include <IFace\EditByUI.h>
 
 #include "StrandMoverImpl.h"
 
@@ -94,8 +97,10 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_VoidedSlabFactory, CVoidedSlabFactory)
    OBJECT_ENTRY(CLSID_VoidedSlab2Factory, CVoidedSlab2Factory)
    OBJECT_ENTRY(CLSID_BoxBeamFactory,    CBoxBeamFactory)
+   OBJECT_ENTRY(CLSID_BoxBeamFactory2,    CBoxBeamFactory2)
    OBJECT_ENTRY(CLSID_TxDotDoubleTFactory, CTxDotDoubleTFactory)
 	OBJECT_ENTRY(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
+	OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory,CDeckedSlabBeamFactory)
 
    OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
 
@@ -106,6 +111,7 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_DoubleTeeBeamFamily,   CDoubleTeeBeamFamily)
    OBJECT_ENTRY(CLSID_RibbedBeamFamily,      CRibbedBeamFamily)
    OBJECT_ENTRY(CLSID_SlabBeamFamily,        CSlabBeamFamily)
+   OBJECT_ENTRY(CLSID_DeckedSlabBeamFamily,  CDeckedSlabBeamFamily)
 END_OBJECT_MAP()
 
 class CBeamsApp : public CWinApp
@@ -180,6 +186,7 @@ void Register(bool bRegister)
       sysComCatMgr::CreateCategory(L"PGSuper Ribbed Beam Factories",        CATID_RibbedBeamFactory);
       sysComCatMgr::CreateCategory(L"PGSuper Slab Beam Factories",          CATID_SlabBeamFactory);
       sysComCatMgr::CreateCategory(L"PGSuper Box Beam Factories",           CATID_BoxBeamFactory);
+      sysComCatMgr::CreateCategory(L"PGSuper Decked Slab Beam Factories",   CATID_DeckedSlabBeamFactory);
    }
    else
    {
@@ -190,6 +197,7 @@ void Register(bool bRegister)
       sysComCatMgr::RemoveCategory(CATID_RibbedBeamFactory,true);
       sysComCatMgr::RemoveCategory(CATID_SlabBeamFactory,true);
       sysComCatMgr::RemoveCategory(CATID_BoxBeamFactory,true);
+      sysComCatMgr::RemoveCategory(CATID_DeckedSlabBeamFactory,true);
    }
 
    //////////////////////////////////////////////////////////////
@@ -202,6 +210,7 @@ void Register(bool bRegister)
    sysComCatMgr::RegWithCategory(CLSID_DoubleTeeBeamFamily,   CATID_BeamFamily, bRegister );
    sysComCatMgr::RegWithCategory(CLSID_RibbedBeamFamily,      CATID_BeamFamily, bRegister );
    sysComCatMgr::RegWithCategory(CLSID_SlabBeamFamily,        CATID_BeamFamily, bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_DeckedSlabBeamFamily,  CATID_BeamFamily, bRegister );
 
    //////////////////////////////////////////////////////////////
    // Register beam factories
@@ -232,7 +241,11 @@ void Register(bool bRegister)
    sysComCatMgr::RegWithCategory(CLSID_VoidedSlab2Factory,  CATID_SlabBeamFactory, bRegister);
 
    // box beam factories
-   sysComCatMgr::RegWithCategory(CLSID_BoxBeamFactory,      CATID_BoxBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_BoxBeamFactory,       CATID_BoxBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_BoxBeamFactory2,      CATID_BoxBeamFactory, bRegister);
+
+   // decked slab beam factories
+   sysComCatMgr::RegWithCategory(CLSID_DeckedSlabBeamFactory,      CATID_DeckedSlabBeamFactory, bRegister);
 }
 
 STDAPI DllRegisterServer(void)

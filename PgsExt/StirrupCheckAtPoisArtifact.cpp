@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -419,22 +419,22 @@ bool pgsVerticalShearArtifact::GetAreStirrupsProvided() const
    return m_AreStirrupsProvided;
 }
 
-void pgsVerticalShearArtifact::SetDemand(sysSectionValue demand)
+void pgsVerticalShearArtifact::SetDemand(Float64 demand)
 {
    m_Demand = demand;
 }
 
-sysSectionValue pgsVerticalShearArtifact::GetDemand() const
+Float64 pgsVerticalShearArtifact::GetDemand() const
 {
    return m_Demand;
 }
 
-void pgsVerticalShearArtifact::SetCapacity(sysSectionValue cap)
+void pgsVerticalShearArtifact::SetCapacity(Float64 cap)
 {
    m_Capacity = cap;
 }
 
-sysSectionValue pgsVerticalShearArtifact::GetCapacity() const
+Float64 pgsVerticalShearArtifact::GetCapacity() const
 {
    return m_Capacity;
 }
@@ -462,10 +462,7 @@ bool pgsVerticalShearArtifact::Passed() const
 
    if ( m_bIsApplicable )
    {
-      if (m_Demand.Right() > m_Capacity.Right())
-         return false;
-
-      if (m_Demand.Left() > m_Capacity.Left())
+      if (m_Demand > m_Capacity)
          return false;
    }
 
@@ -589,7 +586,7 @@ int pgsHorizontalShearArtifact::MinReinforcementPassed() const
 
 bool pgsHorizontalShearArtifact::StrengthPassed() const
 {
-   Float64 demand = max(abs(GetDemand().Left()), abs(GetDemand().Right()));
+   Float64 demand = abs(GetDemand());
    bool cap = demand <= GetCapacity();
    return cap;
 }
@@ -772,12 +769,12 @@ void pgsHorizontalShearArtifact::SetVsLimit(Float64 vs)
    m_VsLimit = vs;
 }
 
-sysSectionValue pgsHorizontalShearArtifact::GetVu() const
+Float64 pgsHorizontalShearArtifact::GetVu() const
 {
    return m_Vu;
 }
 
-void pgsHorizontalShearArtifact::SetVu(const sysSectionValue& vu)
+void pgsHorizontalShearArtifact::SetVu(const Float64& vu)
 {
    m_Vu = vu;
 }

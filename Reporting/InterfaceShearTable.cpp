@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -26,6 +26,7 @@
 
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\DisplayUnits.h>
@@ -61,7 +62,7 @@ CInterfaceShearTable::~CInterfaceShearTable()
 //======================== OPERATIONS =======================================
 void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
                                   SpanIndexType span,GirderIndexType girder,
-                                  IDisplayUnits* pDispUnit,
+                                  IDisplayUnits* pDisplayUnits,
                                   pgsTypes::Stage stage,
                                   pgsTypes::LimitState ls) const
 {
@@ -69,18 +70,15 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, shear,    pDispUnit->GetForcePerLengthUnit(),        false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,         fy,       pDispUnit->GetStressUnit(),       false );
-   INIT_UV_PROTOTYPE( rptAreaPerLengthValue,      AvS,      pDispUnit->GetAvOverSUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,      pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,           area,     pDispUnit->GetAreaUnit(),            false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,         dimu,      pDispUnit->GetComponentDimUnit(),  true);
+   INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, shear,    pDisplayUnits->GetForcePerLengthUnit(),        false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,         fy,       pDisplayUnits->GetStressUnit(),       false );
+   INIT_UV_PROTOTYPE( rptAreaPerLengthValue,      AvS,      pDisplayUnits->GetAvOverSUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,      pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,           area,     pDisplayUnits->GetAreaUnit(),            false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,         dimu,      pDisplayUnits->GetComponentDimUnit(),  true);
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDispUnit->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnit->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnit->GetScalarFormat().Precision );
+   rptCapacityToDemand cap_demand;
 
    rptParagraph* pPara;
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -103,26 +101,26 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    table->SetRowSpan(0,0,2);
    table->SetRowSpan(1,0,-1);
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table->SetColumnSpan(0,1,3);
    (*table)(0,1) << "5.8.4.2";
-   (*table)(1,1)  << COLHDR("s", rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
-   (*table)(1,2)  << COLHDR("s"<<Sub("max"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
+   (*table)(1,1)  << COLHDR("s", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*table)(1,2)  << COLHDR("s"<<Sub("max"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(1,3) << "Status";
 
    table->SetColumnSpan(0,2,3);
    (*table)(0,2) << "5.8.4.4";
-   (*table)(1,4)  << COLHDR("a"<<Sub("vf"), rptAreaPerLengthUnitTag, pDispUnit->GetAvOverSUnit() );
-   (*table)(1,5)  << COLHDR("a"<<Sub("vf min"), rptAreaPerLengthUnitTag, pDispUnit->GetAvOverSUnit() );
+   (*table)(1,4)  << COLHDR("a"<<Sub("vf"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(1,5)  << COLHDR("a"<<Sub("vf min"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    (*table)(1,6) << "Status";
 
    table->SetColumnSpan(0,3,3);
    (*table)(0,3) << "5.8.4.1";
-   (*table)(1,7)  << COLHDR("|v" << Sub("ui") << "|", rptForcePerLengthUnitTag, pDispUnit->GetForcePerLengthUnit() );
-   (*table)(1,8)  << COLHDR(symbol(phi) << "v" << Sub("ni"), rptForcePerLengthUnitTag, pDispUnit->GetForcePerLengthUnit() );
+   (*table)(1,7)  << COLHDR("|v" << Sub("ui") << "|", rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(1,8)  << COLHDR(symbol(phi) << "v" << Sub("ni"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    (*table)(1,9) << "Status" << rptNewLine << "(" << symbol(phi) << Sub2("v","ni") << "/" << "|" << Sub2("v","ui") << "|)";
 
    table->SetColumnSpan(0,4,-1);
@@ -184,7 +182,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          (*table)(row,col++) << RPT_NA;
       }
 
-      double vu = max(pArtifact->GetDemand().Left(),pArtifact->GetDemand().Right());
+      double vu = pArtifact->GetDemand();
       double vr = pArtifact->GetCapacity();
       (*table)(row,col++) << shear.SetValue( vu );
       (*table)(row,col++) << shear.SetValue( vr );
@@ -199,19 +197,13 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          }
       }
 
-      if ( pArtifact->Passed() )
+      bool bPassed = pArtifact->Passed();
+      if ( bPassed )
          (*table)(row,col) << RPT_PASS;
       else
          (*table)(row,col) << RPT_FAIL;
 
-      if ( IsZero(vu) )
-      {
-         (*table)(row,col++) << rptNewLine << "(" << symbol(INFINITY) << ")";
-      }
-      else
-      {
-         (*table)(row,col++) << rptNewLine << "(" << scalar.SetValue(vr/vu) << ")";
-      }
+      (*table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(vr,vu,bPassed) << ")";
 
       row++;
    }

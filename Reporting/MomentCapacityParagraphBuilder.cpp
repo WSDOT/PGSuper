@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -59,7 +59,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptParagraph* p = new rptParagraph;
 
@@ -75,7 +75,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    (*pTable)(0,1) << "Composite Girder";
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDispUnits->GetMomentUnit(), true );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), true );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Automatic );

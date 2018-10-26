@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -69,13 +69,13 @@ CUserRotationTable& CUserRotationTable::operator= (const CUserRotationTable& rOt
 
 //======================== OPERATIONS =======================================
 rptRcTable* CUserRotationTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                                      IDisplayUnits* pDispUnits) const
+                                      IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDispUnits->GetRadAngleUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>("Rotations - User Defined Loads",true,analysisType,pDispUnits,pDispUnits->GetRadAngleUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>("Rotations - User Defined Loads",true,analysisType,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IBridge,pBridge);

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,7 +73,7 @@ CLiveLoadDistributionFactorTable& CLiveLoadDistributionFactorTable::operator= (c
 //======================== OPERATIONS =======================================
 void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
                                              IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                             IDisplayUnits* pDispUnits) const
+                                             IDisplayUnits* pDisplayUnits) const
 {
    rptRcScalar df;
    df.SetFormat(sysNumericFormatTool::Fixed);
@@ -112,7 +112,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
-      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*pTable)(0,1) << "+M";
       (*pTable)(0,2) << "-M";
       (*pTable)(0,3) << "V";
@@ -122,7 +122,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    {
       pTable->SetNumberOfHeaderRows(3);
       pTable->SetRowSpan(0,0,3);
-      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       pTable->SetRowSpan(1,0,-1);
       pTable->SetRowSpan(2,0,-1);
 
@@ -164,7 +164,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder, POI_TABULAR);
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();

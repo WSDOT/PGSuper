@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -31,7 +31,7 @@
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PointOfInterest.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
@@ -80,15 +80,12 @@ CLongReinfShearCheck& CLongReinfShearCheck::operator= (const CLongReinfShearChec
 void CLongReinfShearCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                               pgsTypes::Stage stage,pgsTypes::LimitState ls,
-                              IDisplayUnits* pDispUnit) const
+                              IDisplayUnits* pDisplayUnits) const
 {
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, shear,  pDispUnit->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear,  pDisplayUnits->GetShearUnit(), false );
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDispUnit->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnit->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnit->GetScalarFormat().Precision );
+   rptCapacityToDemand cap_demand;
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -110,12 +107,12 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    *pBody << table;
 
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("Capacity",rptForceUnitTag, pDispUnit->GetShearUnit() );
-   (*table)(0,2)  << COLHDR("Demand",rptForceUnitTag, pDispUnit->GetShearUnit() );
+   (*table)(0,1)  << COLHDR("Capacity",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,2)  << COLHDR("Demand",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,3)  << "Equation";
    (*table)(0,4)  << "Status" << rptNewLine << "(C/D)";
 
@@ -160,7 +157,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
          (*table)(row,3) << "5.8.3.5-" << pArtifact->GetEquation();
 
-         if ( pArtifact->Passed() )
+         bool bPassed = pArtifact->Passed();
+         if ( bPassed )
             (*table)(row,4) << RPT_PASS;
          else
             (*table)(row,4) << RPT_FAIL;
@@ -172,14 +170,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             (*table)(row,4) << "*";
          }
 
-         if ( IsZero(D) )
-         {
-            (*table)(row,4) << rptNewLine << "(" << symbol(INFINITY) << ")";
-         }
-         else
-         {
-            (*table)(row,4) << rptNewLine << "(" << scalar.SetValue(ratio) << ")";
-         }
+         if (!IsEqual(C,0.0))
+            (*table)(row,4) << rptNewLine << "(" << cap_demand.SetValue(C,D,bPassed) << ")";
 
          row++;
       }

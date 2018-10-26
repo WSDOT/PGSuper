@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -80,9 +80,9 @@ void CPGSuperStatusBar::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
          CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pDoc;
 
          pgsStatusCenter& status_center = pPGSuperDoc->GetStatusCenter();
-         long severity = status_center.GetSeverity();
-         color = (severity == STATUS_OK      ? STATUS_OK_COLOR :
-                  severity == STATUS_WARNING ? STATUS_WARN_COLOR : STATUS_ERROR_COLOR);
+         pgsTypes::StatusSeverityType severity = status_center.GetSeverity();
+         color = (severity == pgsTypes::statusOK      ? STATUS_OK_COLOR :
+                  severity == pgsTypes::statusWarning ? STATUS_WARN_COLOR : STATUS_ERROR_COLOR);
 
          status_count = status_center.Count();
 

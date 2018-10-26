@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -67,10 +67,10 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   GET_IFACE2(GetBroker(),IDisplayUnits,pDispUnits);
+   GET_IFACE2(GetBroker(),IDisplayUnits,pDisplayUnits);
 
-   DDX_Station(pDX, IDC_STATION,  m_ProfileData.Station, pDispUnits->GetStationFormat() );
-   DDX_UnitValueAndTag( pDX, IDC_ELEVATION, IDC_ELEVATION_UNIT, m_ProfileData.Elevation, pDispUnits->GetAlignmentLengthUnit() );
+   DDX_Station(pDX, IDC_STATION,  m_ProfileData.Station, pDisplayUnits->GetStationFormat() );
+   DDX_UnitValueAndTag( pDX, IDC_ELEVATION, IDC_ELEVATION_UNIT, m_ProfileData.Elevation, pDisplayUnits->GetAlignmentLengthUnit() );
    if ( pDX->m_bSaveAndValidate )
    {
       DDX_Text(pDX, IDC_GRADE, m_ProfileData.Grade );
@@ -88,7 +88,7 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
       for ( iter = m_ProfileData.VertCurves.begin(); iter != m_ProfileData.VertCurves.end(); iter++, curveID++ )
       {
          VertCurveData& vc = *iter;
-         if ( vc.L1 <= 0 )
+         if ( vc.L1 < 0 )
          {
             CString strMsg;
             strMsg.Format("Curve Lengths must be greater than zero for curve # %d",curveID);

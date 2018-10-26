@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -286,7 +286,8 @@ bool pgsGirderArtifact::Passed() const
    for ( i2 = m_FlexuralStressArtifacts.begin(); i2 != m_FlexuralStressArtifacts.end(); i2++ )
    {
       const std::pair<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>& artifact = *i2;
-      bPassed &= artifact.second.Passed();
+      bPassed &= artifact.second.Passed(pgsFlexuralStressArtifact::WithRebar);
+      bPassed &= artifact.second.Passed(pgsFlexuralStressArtifact::WithoutRebar);
    }
 
    bPassed &= m_StirrupCheckArtifact.Passed();

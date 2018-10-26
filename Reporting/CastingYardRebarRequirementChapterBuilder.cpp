@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -69,15 +69,15 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    rptRcScalar scalar;
-   scalar.SetFormat( pDispUnit->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnit->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnit->GetScalarFormat().Precision );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDispUnit->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDispUnit->GetShearUnit(),         false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,        pDispUnit->GetAreaUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDispUnit->GetComponentDimUnit(),  false );
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,        pDisplayUnits->GetAreaUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
 
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -97,11 +97,11 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]");
    *p << pTable << rptNewLine;
-   (*pTable)(0,0) << COLHDR(RPT_GDR_END_LOCATION,  rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*pTable)(0,1) << COLHDR(Sub2("Y","na"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*pTable)(0,2) << COLHDR(Sub2("A","t"),rptAreaUnitTag, pDispUnit->GetAreaUnit() );
-   (*pTable)(0,3) << COLHDR("T",rptForceUnitTag, pDispUnit->GetGeneralForceUnit() );
-   (*pTable)(0,4) << COLHDR(Sub2("A","s"),rptAreaUnitTag, pDispUnit->GetAreaUnit() );
+   (*pTable)(0,0) << COLHDR(RPT_GDR_END_LOCATION,  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*pTable)(0,1) << COLHDR(Sub2("Y","na"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,2) << COLHDR(Sub2("A","t"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(0,3) << COLHDR("T",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*pTable)(0,4) << COLHDR(Sub2("A","s"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
 
    Int16 row=1;
    for (std::vector<pgsPointOfInterest>::iterator i = vPoi.begin(); i!= vPoi.end(); i++)

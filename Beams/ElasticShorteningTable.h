@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -37,11 +37,11 @@ class lrfdLosses;
 class CElasticShorteningTable : public rptRcTable
 {
 public:
-   static CElasticShorteningTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,IDisplayUnits* pDispUnit,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level);
+   static CElasticShorteningTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,IDisplayUnits* pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
-   CElasticShorteningTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit);
+   CElasticShorteningTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits);
 
    bool m_bTemporaryStrands;
    bool m_bIsPrismatic;

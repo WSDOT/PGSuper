@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -70,7 +70,7 @@ CStrandEccTable& CStrandEccTable::operator= (const CStrandEccTable& rOther)
 
 //======================== OPERATIONS =======================================
 rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                   IDisplayUnits* pDispUnits) const
+                                   IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    bool bTempStrands = (0 < pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) ? true : false);
@@ -84,10 +84,10 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
 
    // build first heading row
    p_table->SetRowSpan(0,col,2);
-   (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    p_table->SetRowSpan(0,col,2);
-   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    // straight/harped/temporary
    p_table->SetColumnSpan(0,col, (bTempStrands ? 5 : 3));
@@ -106,26 +106,26 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    p_table->SetRowSpan(1,col++,-1);
    p_table->SetRowSpan(1,col++,-1);
 
-   (*p_table)(1,col++) << COLHDR("Straight", rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-   (*p_table)(1,col++) << COLHDR("Harped",   rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
+   (*p_table)(1,col++) << COLHDR("Straight", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(1,col++) << COLHDR("Harped",   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    if ( bTempStrands )
    {
-      (*p_table)(1,col++) << COLHDR("Temporary", rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-      (*p_table)(1,col++) << COLHDR("All" << rptNewLine << "(w/ Temp)", rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-      (*p_table)(1,col++) << COLHDR("Permanent" << rptNewLine << "(w/o Temp)", rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR("Temporary", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR("All" << rptNewLine << "(w/ Temp)", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR("Permanent" << rptNewLine << "(w/o Temp)", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
    else
    {
-      (*p_table)(1,col++) << COLHDR("All" << rptNewLine << "Strands", rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR("All" << rptNewLine << "Strands", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
 
    (*p_table)(1,col++) << "Average" << rptNewLine << "(1:n)";
    (*p_table)(1,col++) << "Maximum" << rptNewLine << "(1:n)";
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, gdrloc, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, spanloc, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, ecc,    pDispUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, gdrloc, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, spanloc, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue, ecc,    pDisplayUnits->GetComponentDimUnit(),  false );
 
    gdrloc.MakeGirderPoi();
    spanloc.MakeSpanPoi();

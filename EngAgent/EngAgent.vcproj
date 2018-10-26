@@ -438,6 +438,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\StatusItems.cpp"
+				>
+			</File>
+			<File
 				RelativePath="StdAfx.cpp"
 				>
 				<FileConfiguration
@@ -546,6 +550,10 @@
 			</File>
 			<File
 				RelativePath="ShearCapacityEngineer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StatusItems.h"
 				>
 			</File>
 			<File

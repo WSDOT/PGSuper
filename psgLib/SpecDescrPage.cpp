@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -66,6 +66,7 @@ void CSpecDescrPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSpecDescrPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecDescrPage)
 	ON_WM_CANCELMODE()
+   ON_CBN_SELCHANGE(IDC_SPECIFICATION,OnSpecificationChanged)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 END_MESSAGE_MAP()
@@ -129,6 +130,9 @@ BOOL CSpecDescrPage::OnInitDialog()
 
 
    CPropertyPage::OnInitDialog();
+
+   // enable/disable si setting for before 2007
+   OnSpecificationChanged();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -144,4 +148,23 @@ lrfdVersionMgr::Version CSpecDescrPage::GetSpecVersion()
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx = pSpec->GetCurSel();
    return (lrfdVersionMgr::Version)(pSpec->GetItemData(idx));
+}
+
+void CSpecDescrPage::OnSpecificationChanged()
+{
+   CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
+   int idx = pSpec->GetCurSel();
+   DWORD id = pSpec->GetItemData(idx);
+
+   BOOL enable_si = TRUE;
+   if (id > (DWORD)lrfdVersionMgr::ThirdEditionWith2006Interims)
+   {
+      CButton* pUs = (CButton*)GetDlgItem(IDC_SPEC_UNITS_US);
+      pUs->SetCheck(BST_CHECKED);
+
+      enable_si = FALSE;
+   }
+
+   CButton* pSi = (CButton*)GetDlgItem(IDC_SPEC_UNITS_SI);
+   pSi->EnableWindow(enable_si);
 }

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -43,6 +43,7 @@
 #include "DesignCodes.h"
 
 #include "GirderHandlingChecker.h"
+#include "StatusItems.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,10 +60,14 @@ CLASS
 
 
 //======================== LIFECYCLE  =======================================
-pgsGirderHandlingChecker::pgsGirderHandlingChecker(IBroker* pBroker,long agentID)
+pgsGirderHandlingChecker::pgsGirderHandlingChecker(IBroker* pBroker,AgentIDType agentID)
 {
    m_pBroker = pBroker;
    m_AgentID = agentID;
+
+   GET_IFACE(IStatusCenter,pStatusCenter);
+   m_scidLiftingSupportLocation = pStatusCenter->RegisterCallback( new pgsLiftingSupportLocationStatusCallback(m_pBroker) );
+   m_scidTruckStiffness         = pStatusCenter->RegisterCallback( new pgsTruckStiffnessStatusCallback(m_pBroker) );
 
    m_Model.CoCreateInstance(CLSID_Fem2dModel);
 }
@@ -552,7 +557,7 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
       GET_IFACE(IStatusCenter,pStatusCenter);
 
       const char* msg = "Lifting support overhang cannot exceed one-half of the span length";
-      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_AgentID,107,msg);
+      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_AgentID,m_scidLiftingSupportLocation,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string str(msg);
@@ -997,7 +1002,7 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
       GET_IFACE(IStatusCenter,pStatusCenter);
 
       const char* msg = "Hauling support overhang cannot exceed one-half of the span length";
-      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_AgentID,107,msg);
+      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_AgentID,m_scidLiftingSupportLocation,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string str(msg);
@@ -1441,7 +1446,7 @@ void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,Girder
       GET_IFACE(IStatusCenter,pStatusCenter);
 
       const char* msg = "Truck spring stiffness is inadequate - girder/trailer is unstable";
-      pgsTruckStiffnessStatusItem* pStatusItem = new pgsTruckStiffnessStatusItem(m_AgentID,108,msg);
+      pgsTruckStiffnessStatusItem* pStatusItem = new pgsTruckStiffnessStatusItem(m_AgentID,m_scidTruckStiffness,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string str(msg);

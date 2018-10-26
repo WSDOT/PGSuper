@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -43,7 +43,6 @@
 #include "ReportView.h"
 #include "Hints.h"
 #include "MainFrm.h"
-#include "PGSuperCatalog.h"
 #include "PGSuperCatalogServers.h"
 #include "PGSuperPluginMgr.h"
 
@@ -69,12 +68,6 @@ enum CacheUpdateFrequency
    Monthly
 };
 
-enum SharedResourceType
-{
-   Default,   // use the defaults provided by PGSuper
-   Internet,  // use library file and workgroup templates published on the internet
-   Local      // use library file and workgroup templates published on a local network
-};
 
 HRESULT AfxGetBroker(IBroker** ppBroker);
 
@@ -148,7 +141,7 @@ public:
 
    CString GetMasterLibraryFile();
    CString GetCachedMasterLibraryFile();
-   void GetTemplateFolders(CString& strUserFolder,CString& strWorkgroupFolder);
+   void GetTemplateFolders(CString& strWorkgroupFolder);
 
    bool ShowProjectPropertiesOnNewProject();
    void ShowProjectPropertiesOnNewProject(bool bShow);
@@ -193,8 +186,6 @@ public:
     SharedResourceType GetSharedResourceType();
 
     CString GetMasterLibraryPublisher() const;
-
-    CPGSuperCatalog& GetCatalog();
 
    // set/get view mode for list box in doc template dialog
    // 0 = SmallIconMode
@@ -242,7 +233,6 @@ private:
    CString m_LastError;
 
    CPGSuperCatalogServers m_CatalogServers;
-   CPGSuperCatalog m_Catalog;
 
    UINT m_DocTemplateViewMode;
 
@@ -261,8 +251,9 @@ private:
    DocTemplatePtr m_pFactorOfSafetyViewTemplate;
    DocTemplatePtr m_pEditLoadsViewTemplate;
 
-   void RegistryInit(); // All registry initialization goes here
-   void RegistryExit(); // All registry cleanup goes here
+   void RegistryInit();    // All registry initialization goes here
+   void RegistryConvert(); // Convert any old registry settings for current program
+   void RegistryExit();    // All registry cleanup goes here
 
    void RegDocTemplates();
    void FinalDocumentInit(CPGSuperDoc* pDoc); // called when a document is opened to finalize the initialization process
@@ -275,12 +266,9 @@ private:
    SharedResourceType   m_SharedResourceType;     // method for using shared resources (Master lib and Workgroup templates)
    CacheUpdateFrequency m_CacheUpdateFrequency;
 
-   CString m_Publisher; // Name of publisher
+   CString m_CurrentCatalogServer; // name of current catalog server
+   CString m_Publisher;     // Name of publisher in m_CurrentServer
    CString m_MasterLibraryFileURL; // URL of a published Master library file
-   CString m_WorkgroupTemplateFolderURL; // URL of a published workgroup template folder
-
-   CString m_LocalMasterLibraryFile; // location of Master library file if on a local network
-   CString m_LocalWorkgroupTemplateFolder; // locaion of workgroup template folder if on a local network
 
    // Cache file/folder for Internet or Local Network resources
    CString m_MasterLibraryFileCache; 
@@ -295,26 +283,20 @@ private:
 
    bool IsTimeToUpdateCache();
    bool AreUpdatesPending();
-   bool CheckInternetForUpdates();
-   bool CheckLocalNetworkForUpdates();
-   bool CheckForUpdates(const CString& strLocalMasterLibMD5,const CString& strLocalWorkgroupTemplateMD5);
 
    void UpdateCache(); // only updates if needed
    bool DoCacheUpdate(); // always does the update
    CTime GetLastCacheUpdateTime();
    void SetLastCacheUpdateTime(const CTime& time);
-   bool UpdateMasterLibraryCache(IProgressMonitor* pProgress);
-   bool UpdateWorkgroupTemplateCache(IProgressMonitor* pProgress);
+   bool UpdateCatalogCache(IProgressMonitor* pProgress);
+   void RestoreLibraryAndTemplatesToDefault();
    void DeleteCache(LPCSTR pstrCache);
    void RecursiveDelete(LPCSTR pstr);
-   CString CleanFTPURL(const CString& strURL);
 
    CString GetDefaultMasterLibraryFile();
    CString GetDefaultWorkgroupTemplateFolder();
    CString GetCacheFolder();
    CString GetSaveCacheFolder();
-   CString GetLocalMasterLibraryMD5Filename();
-   CString GetLocalWorkgroupTemplateFolderMD5Filename();
 
    HKEY GetAppLocalMachineRegistryKey();
    HKEY GetUninstallRegistryKey();

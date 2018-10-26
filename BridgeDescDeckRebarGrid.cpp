@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -145,7 +145,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	GetParam( )->EnableUndo(FALSE);
 
@@ -185,7 +185,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 		);
 
    CString cv;
-   cv.Format("As\n%s", pDispUnits->GetAvOverSUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format("As\n%s", pDisplayUnits->GetAvOverSUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -202,7 +202,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 			.SetValue(_T("Bar"))
 		);
 
-   cv.Format("Spacing\n%s",pDispUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format("Spacing\n%s",pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -211,7 +211,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Left Cutoff\n%s",pDispUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format("Left Cutoff\n%s",pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,6), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -220,7 +220,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Right Cutoff\n%s", pDispUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format("Right Cutoff\n%s", pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,7), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -325,7 +325,7 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // pier index
    CString strPier = GetCellValue(nRow,1);
@@ -338,7 +338,7 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    // lump sum area
    CString strAs = GetCellValue(nRow,3);
    double As = atof(strAs);
-   As = ::ConvertToSysUnits(As,pDispUnits->GetAvOverSUnit().UnitOfMeasure);
+   As = ::ConvertToSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
    pRebarData->LumpSum = As;
 
    // bar size
@@ -351,19 +351,19 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    // spacing
    CString strSpacing = GetCellValue(nRow,5);
    double spacing = atof(strSpacing);
-   spacing = ::ConvertToSysUnits(spacing,pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+   spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pRebarData->Spacing = spacing;
 
    // left offset
    CString strCutoff = GetCellValue(nRow,6);
    double cutoff = atof(strCutoff);
-   cutoff = ::ConvertToSysUnits(cutoff,pDispUnits->GetSpanLengthUnit().UnitOfMeasure);
+   cutoff = ::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    pRebarData->LeftCutoff = cutoff;
 
    // right offset
    strCutoff = GetCellValue(nRow,7);
    cutoff = atof(strCutoff);
-   cutoff = ::ConvertToSysUnits(cutoff,pDispUnits->GetSpanLengthUnit().UnitOfMeasure);
+   cutoff = ::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    pRebarData->RightCutoff = cutoff;
 
    return true;
@@ -373,7 +373,7 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -386,7 +386,7 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
 
    // lump sum area
    double As = rebarData.LumpSum;
-   As = ::ConvertFromSysUnits(As,pDispUnits->GetAvOverSUnit().UnitOfMeasure);
+   As = ::ConvertFromSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,3),As);
 
    // bar size
@@ -403,17 +403,17 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
 
    // spacing
    double spacing = rebarData.Spacing;
-   spacing = ::ConvertFromSysUnits(spacing,pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+   spacing = ::ConvertFromSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,5),spacing);
 
    // left cutoff
    double cutoff = rebarData.LeftCutoff;
-   cutoff = ::ConvertFromSysUnits(cutoff,pDispUnits->GetSpanLengthUnit().UnitOfMeasure);
+   cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,6),cutoff);
 
    // right cutoff
    cutoff = rebarData.RightCutoff;
-   cutoff = ::ConvertFromSysUnits(cutoff,pDispUnits->GetSpanLengthUnit().UnitOfMeasure);
+   cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,7),cutoff);
 
    GetParam()->SetLockReadOnly(TRUE);

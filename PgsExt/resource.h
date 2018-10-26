@@ -1,41 +1,28 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by PgsExt.rc
 //
 #define IDD_SPANGIRDERREPORT            150
+#define IDD_STATUS_DIALOG               190
 #define IDC_LIST                        1012
 #define IDC_SPAN                        1049
 #define IDC_GIRDER                      1050
-#define IDS_E_NOCHAPTERS                1492
 #define IDC_GROUP                       1051
+#define IDS_E_NOCHAPTERS                1492
+#define IDI_WARNING2                    202
+#define IDC_MESSAGE                     1231
+#define IDD_REFINEDANALYSIS             216
+#define IDC_DESCRIPTION                 1336
+#define IDC_RADIO_INPUT                 1442
+#define IDC_RADIO_IGNORE                1443
+#define IDC_RADIO_IGNORE_LEVER          1010
+#define IDC_RADIO_LEVER                 1110
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        190
+#define _APS_NEXT_RESOURCE_VALUE        191
 #define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1361
 #define _APS_NEXT_SYMED_VALUE           101

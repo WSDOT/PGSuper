@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -85,7 +85,7 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -101,18 +101,18 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::CastingYard,pgsTypes::ServiceI);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite1,pgsTypes::ServiceI);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::CastingYard,pgsTypes::ServiceI);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,pgsTypes::ServiceI);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,pgsTypes::Compression);
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension);
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::FatigueI,pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::FatigueI,pgsTypes::Compression);
 
 
  

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -58,7 +58,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,long agentID)
+pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,AgentIDType agentID)
 {
    m_pBroker = pBroker;
    m_AgentID = agentID;
@@ -92,9 +92,12 @@ void pgsMomentCapacityEngineer::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-void pgsMomentCapacityEngineer::SetAgentID(long agentID)
+void pgsMomentCapacityEngineer::SetAgentID(AgentIDType agentID)
 {
    m_AgentID = agentID;
+
+   GET_IFACE(IStatusCenter,pStatusCenter);
+   m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
 }
 
 void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
@@ -106,9 +109,15 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    GET_IFACE(IBridgeMaterial,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
 
-   double fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
-   double Eps = pStrand->GetE();
-   double e_initial = fpe/Eps;
+   Float64 Eps = pStrand->GetE();
+   Float64 fpe = 0.0; // effective prestress after all losses
+   Float64 e_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
+   if ( bPositiveMoment )
+   {
+      // only for positive moment... strands are ignored for negative moment analysis
+      fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
+      e_initial = fpe/Eps;
+   }
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Ns = pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Straight);
@@ -131,9 +140,15 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    GET_IFACE(IBridgeMaterial,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
 
-   double fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,config,pgsTypes::AfterLosses);
-   double Eps = pStrand->GetE();
-   double e_initial = fpe/Eps;
+   Float64 Eps = pStrand->GetE();
+   Float64 fpe = 0.0; // effective prestress after all losses
+   Float64 e_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
+   if ( bPositiveMoment )
+   {
+      // only for positive moment... strands are ignored for negative moment analysis
+      fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,config,pgsTypes::AfterLosses);
+      e_initial = fpe/Eps;
+   }
 
    pgsBondTool bondTool(m_pBroker,poi,config);
 
@@ -257,7 +272,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
                         ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
                         unit.UnitOfMeasure.UnitTag().c_str(),
                         hr);
-            pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,112,__FILE__,__LINE__,msg);
+            pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,m_scidUnknown,__FILE__,__LINE__,msg);
             pStatusCenter->Add(pStatusItem);
             THROW_UNWIND(msg,-1);
          }
@@ -281,7 +296,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    solution->get_StrainPlane(&strains);
 
    ATLASSERT( IsZero(Fz,0.1) );
-   ATLASSERT( Mx != 0.0 ? IsZero(My/Mx,0.01) : true );  // when there is an odd number of harped strands, the strands aren't always symmetrical
+   ATLASSERT( Mx != 0.0 ? IsZero(My/Mx,0.05) : true );  // when there is an odd number of harped strands, the strands aren't always symmetrical
                                      // this will cause a small amount of off axis bending.
                                      // Only assert if the ratio of My/Mx is larger that the tolerance for zero
 
@@ -695,6 +710,7 @@ double pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage 
 
 double pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment)
 {
+   GET_IFACE(IProductLoads,pProductLoads);
    GET_IFACE(IProductForces,pProductForces);
 
    Float64 Mdnc = 0; // Dead load moment on non-composite girder
@@ -702,7 +718,7 @@ double pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage 
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
-   pgsTypes::Stage girderLoadStage = pProductForces->GetGirderDeadLoadStage(span,gdr);
+   pgsTypes::Stage girderLoadStage = pProductLoads->GetGirderDeadLoadStage(span,gdr);
 
    if ( bPositiveMoment )
    {
@@ -714,6 +730,9 @@ double pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage 
 
       // Diaphragm moment
       Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,poi, SimpleSpan);
+
+      // Shear Key moment
+      Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftShearKey,poi, SimpleSpan);
 
       // User DC and User DW
       Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftUserDC,poi, SimpleSpan);

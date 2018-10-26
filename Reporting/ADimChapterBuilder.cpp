@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -66,7 +66,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
    std::string spec_name = pSpec->GetSpecification();
@@ -82,9 +82,9 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       return pChapter;
    }
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnit->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, comp, pDispUnit->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, comp, pDisplayUnits->GetComponentDimUnit(), false );
 
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
    GET_IFACE2(pBroker,IGirder,pGdr);
@@ -102,26 +102,26 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(9,"Haunch Details - Part 2");
    *pPara << pTable2;
 
-   std::string strSlopeTag = pDispUnit->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   std::string strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-   (*pTable1)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+   (*pTable1)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable1)(0,1) << "Station";
-   (*pTable1)(0,2) << COLHDR("Offset", rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
-   (*pTable1)(0,3) << COLHDR("Top" << rptNewLine << "Slab" << rptNewLine << "Elevation", rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
-   (*pTable1)(0,4) << COLHDR("Girder" << rptNewLine << "Chord" << rptNewLine << "Elevation",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
-   (*pTable1)(0,5) << COLHDR("Slab" << rptNewLine << "Thickness", rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
-   (*pTable1)(0,6) << COLHDR("Fillet",rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
-   (*pTable1)(0,7) << COLHDR("Excess" << rptNewLine << "Camber",rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
+   (*pTable1)(0,2) << COLHDR("Offset", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,3) << COLHDR("Top" << rptNewLine << "Slab" << rptNewLine << "Elevation", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,4) << COLHDR("Girder" << rptNewLine << "Chord" << rptNewLine << "Elevation",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,5) << COLHDR("Slab" << rptNewLine << "Thickness", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable1)(0,6) << COLHDR("Fillet",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable1)(0,7) << COLHDR("Excess" << rptNewLine << "Camber",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
-   (*pTable2)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+   (*pTable2)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable2)(0,1) << "Crown" << rptNewLine << "Slope" << rptNewLine << "(" << Sub2("m","d") << ")" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
    (*pTable2)(0,2) << "Girder" << rptNewLine << "Orientation" << rptNewLine << "(" << Sub2("m","g") << ")" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable2)(0,3)<< COLHDR("Top" << rptNewLine << "Width",rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
-   (*pTable2)(0,4)<< COLHDR("Profile" << rptNewLine << "Effect",rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
-   (*pTable2)(0,5)<< COLHDR("Girder" << rptNewLine << "Orientation" << rptNewLine << "Effect",rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
-   (*pTable2)(0,6)<< COLHDR("Required" << rptNewLine << "Slab" << rptNewLine << "Offset" << ("*"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
-   (*pTable2)(0,7)<< COLHDR("Top" << rptNewLine << "Girder" << rptNewLine << "Elevation" << Super("**"),rptLengthUnitTag,pDispUnit->GetSpanLengthUnit());
-   (*pTable2)(0,8)<< COLHDR("Actual" << rptNewLine << "Depth" << Super("***"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
+   (*pTable2)(0,3)<< COLHDR("Top" << rptNewLine << "Width",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,4)<< COLHDR("Profile" << rptNewLine << "Effect",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,5)<< COLHDR("Girder" << rptNewLine << "Orientation" << rptNewLine << "Effect",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,6)<< COLHDR("Required" << rptNewLine << "Slab" << rptNewLine << "Offset" << ("*"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,7)<< COLHDR("Top" << rptNewLine << "Girder" << rptNewLine << "Elevation" << Super("**"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+   (*pTable2)(0,8)<< COLHDR("Actual" << rptNewLine << "Depth" << Super("***"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
@@ -133,7 +133,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       SECTIONHAUNCH& haunch = *iter;
 
       (*pTable1)(row1,0) << location.SetValue( haunch.PointOfInterest, end_size );
-      (*pTable1)(row1,1) << rptRcStation(haunch.Station, &pDispUnit->GetStationFormat() );
+      (*pTable1)(row1,1) << rptRcStation(haunch.Station, &pDisplayUnits->GetStationFormat() );
 
       (*pTable1)(row1,2) << dim.SetValue( fabs(haunch.Offset) );
       if ( haunch.Offset < 0 )

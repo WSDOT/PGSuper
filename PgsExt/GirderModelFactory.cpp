@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2009  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -147,7 +147,7 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
    }
 
    // apply loads
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CComPtr<IFem2dLoadingCollection> loadings;
    CComPtr<IFem2dLoading> loading;
    (*ppModel)->get_Loadings(&loadings);
@@ -155,7 +155,7 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
 
    std::vector<GirderLoad> gdrLoads;
    std::vector<DiaphragmLoad> diaphLoads;
-   pProductForces->GetGirderSelfWeightLoad(spanIdx,gdrIdx,&gdrLoads,&diaphLoads);
+   pProductLoads->GetGirderSelfWeightLoad(spanIdx,gdrIdx,&gdrLoads,&diaphLoads);
 
    // apply girder self weight load
 

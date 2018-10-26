@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -70,11 +70,11 @@ CProductRotationTable& CProductRotationTable::operator= (const CProductRotationT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                         bool bIncludeImpact, bool bIncludeLLDF,bool bIndicateControllingLoad,IDisplayUnits* pDispUnits) const
+                                         bool bIncludeImpact, bool bIncludeLLDF,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDispUnits->GetRadAngleUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
@@ -88,9 +88,10 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
-   bool bPedLoading = pForces->HasPedestrianLoad(startPier,gdr);
-   bool bSidewalk = pForces->HasSidewalkLoad(startPier,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   bool bPedLoading = pLoads->HasPedestrianLoad(startPier,gdr);
+   bool bSidewalk = pLoads->HasSidewalkLoad(startPier,gdr);
+   bool bShearKey = pLoads->HasShearKeyLoad(startPier,gdr);
 
    pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
    PierIndexType pier;
@@ -139,8 +140,20 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
       }
    }
 
+   if ( bShearKey )
+   {
+      if (analysisType == pgsTypes::Envelope )
+      {
+         nCols += 2;
+      }
+      else
+      {
+         nCols++;
+      }
+   }
+
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Rotations");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(p_table,true,bDeckPanels,bSidewalk,bPedLoading,bPermit,analysisType,continuity_stage,pDispUnits,pDispUnits->GetRadAngleUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(p_table,true,bDeckPanels,bSidewalk,bShearKey,bPedLoading,bPermit,analysisType,continuity_stage,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> vPoi;
@@ -158,11 +171,13 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    }
 
    // Fill up the table
+   GET_IFACE2(pBroker,IProductForces,pForces);
+
    for ( pier = startPier; pier < endPier; pier++ )
    {
       int col = 0;
 
-      pgsTypes::Stage girderLoadStage = pForces->GetGirderDeadLoadStage(gdr);
+      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(gdr);
 
       if ( pier == 0 || pier == nPiers-1 )
          (*p_table)(row,col++) << "Abutment " << (Int32)(pier+1);
@@ -173,6 +188,19 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
       pgsPointOfInterest& poi = vPoi[pier-startPier];
       (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation(girderLoadStage, pftGirder, poi, SimpleSpan) );
       (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation(pgsTypes::BridgeSite1, pftDiaphragm, poi, SimpleSpan) );
+
+      if ( bShearKey )
+      {
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftShearKey, poi, MaxSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftShearKey, poi, MinSimpleContinuousEnvelope ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftShearKey, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         }
+      }
 
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
       {

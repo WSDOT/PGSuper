@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -67,7 +67,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
    // longitudinal steel information from grid and store it
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -80,8 +80,8 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          if (m_Grid.GetRowData(i,&row))
          {
             // values are in display units - must convert to system
-            row.Cover      = ::ConvertToSysUnits(row.Cover,      pDispUnits->GetComponentDimUnit().UnitOfMeasure);
-            row.BarSpacing = ::ConvertToSysUnits(row.BarSpacing, pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+            row.Cover      = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+            row.BarSpacing = ::ConvertToSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
             rebarData.RebarRows.push_back(row);
          }
       }
@@ -94,8 +94,8 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       for ( iter = m_RebarData.RebarRows.begin(); iter != m_RebarData.RebarRows.end(); iter++ )
       {
          CLongitudinalRebarData::RebarRow row = *iter;
-         row.BarSpacing = ::ConvertFromSysUnits(row.BarSpacing, pDispUnits->GetComponentDimUnit().UnitOfMeasure);
-         row.Cover      = ::ConvertFromSysUnits(row.Cover,      pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+         row.BarSpacing = ::ConvertFromSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         row.Cover      = ::ConvertFromSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
          rebardata.RebarRows.push_back(row);
       }

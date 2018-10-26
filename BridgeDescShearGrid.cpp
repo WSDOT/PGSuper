@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -132,7 +132,7 @@ void CGirderDescShearGrid::InsertRow(bool bAppend)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	// if there are no cells selected,
 	// copy the current cell's coordinates
@@ -149,7 +149,7 @@ void CGirderDescShearGrid::InsertRow(bool bAppend)
    
    // put in some reasonable defaults
    Float64 zonlen = ::ConvertToSysUnits(3.0,unitMeasure::Feet);
-   zonlen = ::ConvertFromSysUnits(zonlen,pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
+   zonlen = ::ConvertFromSysUnits(zonlen,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    CString cval;
    cval.Format("%g",zonlen);
    SetStyleRange(CGXRange(nRow,1), CGXStyle().SetValue(_T(cval)));
@@ -218,7 +218,7 @@ void CGirderDescShearGrid::CustomInit()
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -254,7 +254,7 @@ void CGirderDescShearGrid::CustomInit()
 			.SetValue(_T("Zone\n#"))
 		);
 
-   CString cv = CString("Zone Length\n") + CString(pDispUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   CString cv = CString("Zone Length\n") + CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -263,7 +263,7 @@ void CGirderDescShearGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = CString("Spacing\n") + CString(pDispUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv = CString("Spacing\n") + CString(pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

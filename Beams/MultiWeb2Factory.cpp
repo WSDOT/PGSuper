@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -277,6 +277,9 @@ void CMultiWeb2Factory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,c
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
    pEngineer->SetBroker(pBroker,agentID);
+
+   pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btMultiWebTee);
+
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();
 }
@@ -897,4 +900,16 @@ Float64 CMultiWeb2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensio
    double Wmax = GetDimension(dimensions,"Wmax");
 
    return 2*(T1+T2+T3+Wmax) + W2;
+}
+
+
+bool CMultiWeb2Factory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+{
+   return false;
+}
+
+void CMultiWeb2Factory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+{
+   *uniformArea = 0.0;
+   *areaPerJoint = 0.0;
 }

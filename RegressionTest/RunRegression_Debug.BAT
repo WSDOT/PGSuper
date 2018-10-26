@@ -9,4 +9,4 @@ regsvr32 /s \ARP\PGSuper\RegFreeCOM\Debug\PGSuperTestAgent.dll
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Debug\WSDOTAgent.dll
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Debug\TxDOTAgent.dll
 
-cscript.exe runregression.js /VDEBUG
+cscript.exe runregression.js /VDEBUG %1 %2

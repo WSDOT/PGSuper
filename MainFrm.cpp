@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -191,7 +191,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    pToolBar->SetButtonStyle(idx,dwStyle);
 
 
-   UpdateToolbarStatusItems(STATUS_OK);
+   UpdateToolbarStatusItems(pgsTypes::statusOK);
 
    if (!m_wndStatusBar.Create(this) ||
       !m_wndStatusBar.SetIndicators(indicators,
@@ -205,10 +205,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    m_wndStatusBar.SetPaneStyle( 3, SBPS_DISABLED );
 
    LoadBarState( CString((LPCSTR)IDS_TOOLBAR_STATE) );
-
-   // CG: The following line was added by the Splash Screen component.
-   CSplashWnd::ShowSplashScreen(this);
-
 
    //CMDITabInfo tabInfo;
    //tabInfo.m_bAutoColor      = true;
@@ -461,7 +457,7 @@ void CMainFrame::CreateGirderEditorView(SpanIndexType spanIdx,GirderIndexType gd
 void CMainFrame::OnViewGirderEditor() 
 {
    CPGSuperDoc* pDoc = GetPGSuperDocument();
-   if ( pDoc->GetStatusCenter().GetSeverity() == STATUS_ERROR )
+   if ( pDoc->GetStatusCenter().GetSeverity() == pgsTypes::statusError )
    {
       AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
    }
@@ -479,7 +475,7 @@ void CMainFrame::OnViewLibraryEditor()
 void CMainFrame::OnViewAnalysisResults() 
 {
    CPGSuperDoc* pDoc = GetPGSuperDocument();
-   if ( pDoc->GetStatusCenter().GetSeverity() == STATUS_ERROR )
+   if ( pDoc->GetStatusCenter().GetSeverity() == pgsTypes::statusError )
    {
       AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
    }
@@ -535,7 +531,7 @@ void CMainFrame::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 void CMainFrame::CreateReport(CollectionIndexType rptIdx,bool bPromptForSpec)
 {
    CPGSuperDoc* pDoc = GetPGSuperDocument();
-   if ( pDoc->GetStatusCenter().GetSeverity() == STATUS_ERROR )
+   if ( pDoc->GetStatusCenter().GetSeverity() == pgsTypes::statusError )
    {
       AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
    }
@@ -548,7 +544,7 @@ void CMainFrame::CreateReport(CollectionIndexType rptIdx,bool bPromptForSpec)
 void CMainFrame::OnViewStability() 
 {
    CPGSuperDoc* pDoc = GetPGSuperDocument();
-   if ( pDoc->GetStatusCenter().GetSeverity() == STATUS_ERROR )
+   if ( pDoc->GetStatusCenter().GetSeverity() == pgsTypes::statusError )
    {
       AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
    }
@@ -583,7 +579,8 @@ void CMainFrame::EnableModifiedFlag(BOOL bEnable)
    else
       nStyle = SBPS_DISABLED;
 
-   m_wndStatusBar.SetPaneStyle( 3, nStyle );
+   if ( m_wndStatusBar.GetSafeHwnd() )
+      m_wndStatusBar.SetPaneStyle( 3, nStyle );
 }
 
 void CMainFrame::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType)
@@ -841,25 +838,25 @@ void CMainFrame::OnDropFiles(HDROP hDropInfo)
       CMDIFrameWnd::OnDropFiles(hDropInfo);
 }
 
-void CMainFrame::UpdateToolbarStatusItems(long severity)
+void CMainFrame::UpdateToolbarStatusItems(pgsTypes::StatusSeverityType severity)
 {
    CToolBar* pToolbar = m_ToolBars[GetToolBarIndex(IDR_STDTOOLBAR)].get();
 
    switch(severity)
    {
-   case STATUS_OK:
+   case pgsTypes::statusOK:
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER, FALSE);
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER2,TRUE);
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER3,TRUE);
       break;
 
-   case STATUS_WARNING:
+   case pgsTypes::statusWarning:
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER, TRUE);
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER2,FALSE);
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER3,TRUE);
       break;
 
-   case STATUS_ERROR:
+   case pgsTypes::statusError:
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER, TRUE);
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER2,TRUE);
       pToolbar->GetToolBarCtrl().HideButton(ID_VIEW_STATUSCENTER3,FALSE);

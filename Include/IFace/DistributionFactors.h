@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -85,7 +85,7 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double fcgdr,double* pM,double* nM,double* V) = 0;
    virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,double* dfPoints,Uint32* nPoints) = 0;
 
-   virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit) = 0;
+   virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits) = 0;
    virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile) = 0;
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType span) = 0;
    //---------------------------------------------------------------------

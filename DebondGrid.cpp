@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -83,7 +83,7 @@ void CGirderDescDebondGrid::InsertRow()
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDebondPage* pParent = (CGirderDescDebondPage*)GetParent();
    CGirderDescDlg* pDlg = (CGirderDescDlg*)(pParent->GetParent());
@@ -96,7 +96,7 @@ void CGirderDescDebondGrid::InsertRow()
    // Put in some reasonable default values
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 debond_length = pStrandGeom->GetDefaultDebondLength(pDlg->m_CurrentSpanIdx,pDlg->m_CurrentGirderIdx);
-   debond_length = ::ConvertFromSysUnits(debond_length,pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
+   debond_length = ::ConvertFromSysUnits(debond_length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    
    CString strDebondLength;
    strDebondLength.Format("%g",debond_length);
@@ -133,7 +133,7 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 // in OnInitialUpdate.
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	Initialize( );
 
@@ -168,7 +168,7 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 		);
 
    CString cv = CString("Debond\nLength\n") + 
-                CString(pDispUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str()) + 
+                CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str()) + 
                 CString("\nLeft End");
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
@@ -179,7 +179,7 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 		);
 
    cv = CString("Debond\nLength\n") + 
-        CString(pDispUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str()) + 
+        CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str()) + 
         CString("\nRight End");
 	SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
@@ -262,7 +262,7 @@ void CGirderDescDebondGrid::FillGrid(const std::vector<CDebondInfo>& debondInfo)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -292,7 +292,7 @@ void CGirderDescDebondGrid::FillGrid(const std::vector<CDebondInfo>& debondInfo)
 
       //////////////////////// Debond Length - Left /////////////////
       Float64 debond_length = debond_info.Length1;
-      debond_length = ::ConvertFromSysUnits(debond_length,pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
+      debond_length = ::ConvertFromSysUnits(debond_length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    
       CString strDebondLength;
       strDebondLength.Format("%g",debond_length);
@@ -300,7 +300,7 @@ void CGirderDescDebondGrid::FillGrid(const std::vector<CDebondInfo>& debondInfo)
 
       //////////////////////// Debond Length - Right /////////////////
       debond_length = debond_info.Length2;
-      debond_length = ::ConvertFromSysUnits(debond_length,pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
+      debond_length = ::ConvertFromSysUnits(debond_length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    
       strDebondLength.Format("%g",debond_length);
       SetStyleRange(CGXRange(row,3), CGXStyle().SetValue(_T(strDebondLength)));
@@ -375,14 +375,14 @@ Float64 CGirderDescDebondGrid::GetDebondLength(ROWCOL row,ROWCOL col)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    Float64 length;
    CString strDebondLength = GetCellValue(row,col);
    length = atof(strDebondLength);
 
    // this is in display units... convert to system units
-   length = ::ConvertToSysUnits(length,pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
+   length = ::ConvertToSysUnits(length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 
    return length;
 }
@@ -486,13 +486,13 @@ void CGirderDescDebondGrid::SymmetricDebond(bool bSymmetricDebond)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 
    m_bSymmetricDebond = bSymmetricDebond;
 
    CString strColHeading = CString("Debond\nLength\n") + 
-                           CString(pDispUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+                           CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 
    if ( m_bSymmetricDebond )
    {

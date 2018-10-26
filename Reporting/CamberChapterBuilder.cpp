@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -72,7 +72,7 @@ rptChapter* CCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType gdr = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
    bool bTempStrands = ( 0 < girderData.Nstrands[pgsTypes::Temporary] && girderData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping );
@@ -86,15 +86,15 @@ rptChapter* CCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
-      pChapter = (bTempStrands ? Build_CIP_TempStrands(pRptSpec,pBroker,span,gdr,pDispUnits,level) : Build_CIP(pRptSpec,pBroker,span,gdr,pDispUnits,level));
+      pChapter = (bTempStrands ? Build_CIP_TempStrands(pRptSpec,pBroker,span,gdr,pDisplayUnits,level) : Build_CIP(pRptSpec,pBroker,span,gdr,pDisplayUnits,level));
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      pChapter = (bTempStrands ? Build_SIP_TempStrands(pRptSpec,pBroker,span,gdr,pDispUnits,level) : Build_SIP(pRptSpec,pBroker,span,gdr,pDispUnits,level));
+      pChapter = (bTempStrands ? Build_SIP_TempStrands(pRptSpec,pBroker,span,gdr,pDisplayUnits,level) : Build_SIP(pRptSpec,pBroker,span,gdr,pDisplayUnits,level));
       break;
 
    case pgsTypes::sdtNone:
-      pChapter = (bTempStrands ? Build_NoDeck_TempStrands(pRptSpec,pBroker,span,gdr,pDispUnits,level) : Build_NoDeck(pRptSpec,pBroker,span,gdr,pDispUnits,level));
+      pChapter = (bTempStrands ? Build_NoDeck_TempStrands(pRptSpec,pBroker,span,gdr,pDisplayUnits,level) : Build_NoDeck(pRptSpec,pBroker,span,gdr,pDisplayUnits,level));
       break;
 
    default:
@@ -127,7 +127,7 @@ CChapterBuilder* CCamberChapterBuilder::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -136,11 +136,11 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bSidewalk = pProductForces->HasSidewalkLoad(span,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -166,7 +166,7 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_CIP_TempStrands(pBroker,span,gdr,pDispUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_CIP_TempStrands(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -205,7 +205,7 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -214,11 +214,11 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bSidewalk = pProductForces->HasSidewalkLoad(span,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -244,7 +244,7 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_CIP(pBroker,span,gdr,pDispUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_CIP(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -279,7 +279,7 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -288,11 +288,11 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bSidewalk = pProductForces->HasSidewalkLoad(span,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -319,7 +319,7 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_SIP_TempStrands(pBroker,span,gdr,pDispUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_SIP_TempStrands(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -358,7 +358,7 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -367,11 +367,11 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bSidewalk = pProductForces->HasSidewalkLoad(span,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -396,7 +396,7 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_SIP(pBroker,span,gdr,pDispUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_SIP(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -430,7 +430,7 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -439,11 +439,11 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bSidewalk = pProductForces->HasSidewalkLoad(span,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -472,7 +472,7 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_NoDeck_TempStrands(pBroker,span,gdr,pDispUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_NoDeck_TempStrands(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -520,7 +520,7 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -529,11 +529,11 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,I
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bSidewalk = pProductForces->HasSidewalkLoad(span,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -563,7 +563,7 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,I
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_NoDeck(pBroker,span,gdr,pDispUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_NoDeck(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());

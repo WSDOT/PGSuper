@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -30,6 +30,8 @@
 //
 
 #include "PGSuperCatalogServers.h"
+#include <MfcTools\ddxFolder.h>
+#include <MfcTools\ddxfile.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CServerDefinitionDlg dialog
@@ -38,34 +40,49 @@ class CServerDefinitionDlg : public CDialog
 {
 // Construction
 public:
-	CServerDefinitionDlg(const CPGSuperCatalogServers& servers,CWnd* pParent = NULL);   // standard constructor
+	CServerDefinitionDlg(const CPGSuperCatalogServers& servers,CWnd* pParent = NULL);
+	CServerDefinitionDlg(const CPGSuperCatalogServers& servers,const CPGSuperCatalogServer* pcurrentServer,CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CServerDefinitionDlg)
 	enum { IDD = IDD_SERVERDATA };
 	CString	m_ServerName;
-	CString	m_ServerAddress;
+	CString	m_ServerAddress;          // used for ftp and http
+   CString	m_LocalMasterLibraryFile; // used for file system
+   CString	m_LocalWorkgroupTemplateFolder;
 	//}}AFX_DATA
 
+
+   // return a server object based on the current settings
+   CPGSuperCatalogServer* CreateServer();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CServerDefinitionDlg)
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
    const CPGSuperCatalogServers& m_Servers;
 
 // Implementation
+   void ConfigureControls(SharedResourceType type);
+
 protected:
-   CString m_OriginalName;
+   SharedResourceType m_ServerType;
+   CString m_OriginalServerName;
+
+   CGetFilenameControl m_ctrlLibraryFile;
+   CGetFolderControl m_ctrlWorkgroupFolder;
 
 	// Generated message map functions
 	//{{AFX_MSG(CServerDefinitionDlg)
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+   afx_msg void OnBnClickedTestServer();
+   afx_msg void OnCbnSelchangeServerType();
 };
 
 //{{AFX_INSERT_LOCATION}}

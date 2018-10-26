@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -72,13 +72,13 @@ CUserDisplacementsTable& CUserDisplacementsTable::operator= (const CUserDisplace
 
 //======================== OPERATIONS =======================================
 rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                                              IDisplayUnits* pDispUnits) const
+                                              IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>("Displacements - User Defined Loads",false,analysisType,pDispUnits,pDispUnits->GetDisplacementUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>("Displacements - User Defined Loads",false,analysisType,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

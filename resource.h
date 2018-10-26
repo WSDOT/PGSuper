@@ -13,6 +13,7 @@
 #define IDS_E_ONLINERESOURCES           7
 #define IDS_DDXFILE_REQUIRE_VALID_FILE  8
 #define ID_INDICATOR_MODIFIED           8
+#define IDS_NWC_MESSAGE                 9
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
 #define IDB_SPLASH                      102
@@ -110,7 +111,6 @@
 #define IDI_EDIT_LOADS                  212
 #define IDR_LOADS_CTX                   214
 #define IDB_POINT_LOAD                  215
-#define IDD_REFINEDANALYSIS             216
 #define IDI_POINT_LOAD                  216
 #define IDI_DISTRIBUTED_LOAD            218
 #define IDB_DISTRIBUTED_LOAD            219
@@ -162,9 +162,10 @@
 #define IDB_HINGES                      289
 #define IDB_ROLLERS                     290
 #define IDB_CONTINUOUS                  291
-#define IDD_STATUS_DIALOG               292
 #define IDR_REPORTS                     293
 #define IDD_GIRDERLABELFORMAT           294
+#define IDI_ICON1                       296
+#define IDI_EARTH                       296
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDC_BRIDGE                      1000
 #define IDC_BULB                        1000
@@ -340,6 +341,7 @@
 #define IDC_ADD_PIER                    1101
 #define IDC_RESTORE_DEFAULTS1           1101
 #define IDC_BACK_COPY                   1101
+#define IDC_TEST_SERVER                 1101
 #define IDC_AHEAD_COPY                  1102
 #define IDC_UPDATE_STIRRUPS             1105
 #define IDC_OUTCOME                     1106
@@ -585,6 +587,7 @@
 #define IDC_PREV_SPAN_SPACING_MEASUREMENT 1267
 #define IDC_ROA_CB                      1267
 #define IDC_FROM_SPAN                   1267
+#define IDC_SERVER_TYPE                 1267
 #define IDC_COMBO2                      1268
 #define IDC_HP_COMBO_HP                 1268
 #define IDC_BOTTOM_MAT_BAR              1268
@@ -681,6 +684,7 @@
 #define IDC_GIRDER_CONNECTIVITY         1342
 #define IDC_URL                         1347
 #define IDC_UPDATENOW                   1348
+#define IDC_TEMPLATE                    1348
 #define IDC_DESIGN_LANE_IMPACT          1349
 #define IDC_BEAM_FAMILIES               1350
 #define IDC_FATIGUE_LANE_IMPACT         1350
@@ -950,6 +954,12 @@
 #define IDC_NUMGDR_LABEL                1530
 #define IDC_START_SLAB_OFFSET_LABEL     1531
 #define IDC_END_SLAB_OFFSET_LABEL       1532
+#define IDC_NWC_NOTE                    1532
+#define IDC_URL_STATIC                  1535
+#define IDC_TEMPLATE_STATIC             1536
+#define IDC_UPDATES_STATIC              1536
+#define IDC_PUBLISHER_HYPERLINK         1537
+#define IDC_STATIC_EARTH                1539
 #define ID_INDICATOR_ANALYSIS           1605
 #define ID_UPDATE_TEMPLATE              1625
 #define IDM_REPORT                      2222
@@ -1097,9 +1107,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        295
+#define _APS_NEXT_RESOURCE_VALUE        297
 #define _APS_NEXT_COMMAND_VALUE         12930
-#define _APS_NEXT_CONTROL_VALUE         1532
+#define _APS_NEXT_CONTROL_VALUE         1540
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -63,7 +63,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType gdr = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -92,11 +92,11 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    }
 
 
-   bool bUSUnits = (pDispUnits->GetUnitDisplayMode() == pgsTypes::umUS ? true : false);
+   bool bUSUnits = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umUS ? true : false);
 
-   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDispUnits->GetGeneralForceUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnits->GetAlignmentLengthUnit() , true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit() , true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit() , true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit() , true );
 
    GET_IFACE2(pBroker,IFabricationOptimization,pFabOp);
 

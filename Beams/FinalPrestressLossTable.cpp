@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -33,22 +33,22 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CFinalPrestressLossTable::CFinalPrestressLossTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit) :
+CFinalPrestressLossTable::CFinalPrestressLossTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( cg,          pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDispUnit->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDispUnit->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDispUnit->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnit->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDispUnit->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDispUnit->GetMomentUnit(),          false );
-   DEFINE_UV_PROTOTYPE( stress,      pDispUnit->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( cg,          pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
+   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
+   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level)
+CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::string strSpecName = pSpec->GetSpecification();
@@ -81,7 +81,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    if ( bIgnoreElasticGain )
       numColumns--;
 
-   CFinalPrestressLossTable* table = new CFinalPrestressLossTable( numColumns, pDispUnit );
+   CFinalPrestressLossTable* table = new CFinalPrestressLossTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -110,29 +110,29 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    *pParagraph << table << rptNewLine;
 
    ColumnIndexType col = 0;
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pR1"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pES"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pR1"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    if ( 0 < NtMax && girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pSR"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pCR"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pR2"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pSR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pCR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pR2"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if ( 0 < NtMax ) 
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("ptr"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if ( !bIgnoreElasticGain )
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pED"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pED"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pT"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << "f" << Sub("pT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    table->m_GirderData = girderData;
    table->m_NtMax = NtMax;
@@ -141,7 +141,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    return table;
 }
 
-void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    (*this)(row,col++) << stress.SetValue( details.RefinedLosses.PermanentStrand_RelaxationLossesAtXfer() );

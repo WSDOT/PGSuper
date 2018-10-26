@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -466,7 +466,7 @@ CPierData* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -482,11 +482,11 @@ CPierData* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    // update for the data in the grid
    // Station
    CString strStation = GetCellValue(nRow,1);
-   UnitModeType unitMode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
    m_objStation->FromString(CComBSTR(strStation),unitMode);
    double station;
    m_objStation->get_Value(&station);
-   pPier->SetStation( ::ConvertToSysUnits(station,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure) );
+   pPier->SetStation( ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure) );
 
    // Orientation
    CString strOrientation = GetCellValue(nRow,2);
@@ -562,8 +562,8 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData& pierData)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   CString strStation = FormatStation(pDispUnits->GetStationFormat(),pierData.GetStation());
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pierData.GetStation());
 
    CString strPierLabel;
    if ( pierData.GetPrevSpan() == NULL || pierData.GetNextSpan() == NULL )
@@ -597,11 +597,11 @@ void CBridgeDescFramingGrid::FillSpanRow(ROWCOL row,const CSpanData& spanData)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CString strSpanLength;
    double spanLength = spanData.GetSpanLength();
-   strSpanLength.Format("%s",FormatDimension(spanLength,pDispUnits->GetSpanLengthUnit()));
+   strSpanLength.Format("%s",FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
 
    SetStyleRange(CGXRange(row,1,row,2), CGXStyle()
       .SetMergeCell(GX_MERGE_HORIZONTAL)
@@ -674,9 +674,9 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
-      hr = objStation->FromString( CComBSTR(s), (UnitModeType)(pDispUnits->GetUnitDisplayMode()));
+      hr = objStation->FromString( CComBSTR(s), (UnitModeType)(pDisplayUnits->GetUnitDisplayMode()));
       if ( FAILED(hr) )
       {
 			SetWarningText (_T("Invalid Station Value"));

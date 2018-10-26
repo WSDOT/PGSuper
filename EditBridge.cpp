@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2008  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -81,6 +81,13 @@ void txnEditBridge::Execute(int i)
    pEnvironment->SetExposureCondition( m_ExposureCondition[i] );
    pEnvironment->SetRelHumidity( m_RelHumidity[i] );
    pLiveLoads->EnablePedestianLoad(pgsTypes::lltDesign,m_bEnablePedLL[i]);
+
+   // Reconcile edit before commiting - not on undo
+   if (i==1)
+   {
+      m_pBridgeDesc[1]->ReconcileEdits( pBroker, m_pBridgeDesc[0] );
+   }
+
    pBridgeDesc->SetBridgeDescription( *m_pBridgeDesc[i] );
 
    pEvents->FirePendingEvents();

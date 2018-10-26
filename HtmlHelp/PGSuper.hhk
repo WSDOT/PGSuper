@@ -5,6 +5,11 @@
 </object>
 <ul>
   <li><object type="text/sitemap">
+    <param name="Name" value="Capacity/Demand">
+    <param name="Name" value="CapacityToDemand Ratios">
+    <param name="Local" value="Theoretical Manual\CapacityToDemand_Ratios.htm">
+  </object>
+  <li><object type="text/sitemap">
     <param name="Name" value="A&quot;Dimension">
     <param name="Name" value="A Dimension Calculation">
     <param name="Local" value="Theoretical Manual\ADimension.htm">
@@ -19841,5 +19846,12 @@
       <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Harping_Points_Tab.htm">
     </object>
     </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Shear Key">
+    <param name="Name" value="Girder Dimensions Tab">
+    <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Dimensions_Tab.htm">
+    <param name="Name" value="Analytical Models">
+    <param name="Local" value="Theoretical Manual\AnalyticalModels.htm">
+  </object>
 </ul>
 </html>

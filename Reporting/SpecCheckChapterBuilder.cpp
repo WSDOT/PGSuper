@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -60,7 +60,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 void write_splitting_zone_check(IBroker* pBroker,
-                               IDisplayUnits* pDispUnit,
+                               IDisplayUnits* pDisplayUnits,
                                SpanIndexType span,
                                GirderIndexType gdr,
                                rptChapter* pChapter);
@@ -93,7 +93,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -116,7 +116,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
    rptParagraph* p = new rptParagraph;
-   *p << CStrandStressCheckTable().Build(pBroker,pArtifact->GetStrandStressArtifact(),pDispUnit) << rptNewLine;
+   *p << CStrandStressCheckTable().Build(pBroker,pArtifact->GetStrandStressArtifact(),pDisplayUnits) << rptNewLine;
 
    p->SetName("Strand Stresses");
    *pChapter << p;
@@ -129,12 +129,12 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    p = new rptParagraph;
    *pChapter << p;
    p->SetName("Girder Stresses");
-   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDispUnit->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
    double fci_reqd = pArtifact->GetRequiredReleaseStrength();
    double fc_reqd  = pArtifact->GetRequiredConcreteStrength();
    if ( 0 <= fci_reqd )
    {
-      double fci_rounded = (pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI ? CeilOff(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI)));
+      double fci_rounded = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI ? CeilOff(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI)));
       *p << "Required " << RPT_FCI << " = " << stress_u.SetValue(fci_reqd);
       *p << " " << symbol(RIGHT_DOUBLE_ARROW) << " " << stress_u.SetValue(fci_rounded) << rptNewLine;
 
@@ -149,7 +149,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( 0 <= fc_reqd )
    {
-      double fc_rounded = (pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI)));
+      double fc_rounded = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI)));
       *p << "Required " << RPT_FC  << " = " << stress_u.SetValue(fc_reqd);
       *p << " " << symbol(RIGHT_DOUBLE_ARROW) << " " << stress_u.SetValue(fc_rounded) << rptNewLine;
 
@@ -161,29 +161,29 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // report flexural stresses at various stages
-   CContinuityCheck().Build(pChapter,pBroker,span,girder,pDispUnit);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::CastingYard,pgsTypes::ServiceI);
+   CContinuityCheck().Build(pChapter,pBroker,span,girder,pDisplayUnits);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::CastingYard,pgsTypes::ServiceI);
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    StrandIndexType Nt    = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Temporary);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary);
 
-//   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::GirderPlacement,pgsTypes::ServiceI);
+//   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,pgsTypes::ServiceI);
 
    if ( 0 < NtMax && 0 < Nt )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI);
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite1,pgsTypes::ServiceI);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite2,pgsTypes::ServiceI,   pgsTypes::Compression);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::ServiceI,   pgsTypes::Compression);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,pgsTypes::ServiceI);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,pgsTypes::ServiceI,   pgsTypes::Compression);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceI,   pgsTypes::Compression);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,  pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,  pgsTypes::Compression);
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::ServiceIII, pgsTypes::Tension);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceIII, pgsTypes::Tension);
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::FatigueI,  pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::FatigueI,  pgsTypes::Compression);
 
    // Flexural Capacity
 
@@ -191,13 +191,13 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 // No longer designing/checking for ultimate moment in temporary construction state
 // per e-mail from Bijan Khaleghi, dated 4/28/1999.  See project log.
 //   p = new rptParagraph;
-//   *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite1,pgsTypes::StrengthI) << rptNewLine;
+//   *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,pgsTypes::StrengthI) << rptNewLine;
 //   *pChapter << p;
 
    p = new rptParagraph;
    bool bOverReinforced;
    p->SetName("Moment Capacities");
-   *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthI,true,&bOverReinforced) << rptNewLine;
+   *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,true,&bOverReinforced) << rptNewLine;
    if ( bOverReinforced )
    {
       *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
@@ -210,7 +210,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    if (bPermit)
    {
       p = new rptParagraph;
-      *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthII,true,&bOverReinforced) << rptNewLine;
+      *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,true,&bOverReinforced) << rptNewLine;
       if ( bOverReinforced )
       {
          *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
@@ -247,7 +247,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    if ( bComputeNegativeMomentCapacity )
    {
       p = new rptParagraph;
-      *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthI,false,&bOverReinforced) << rptNewLine;
+      *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,false,&bOverReinforced) << rptNewLine;
       if ( bOverReinforced )
       {
          *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
@@ -260,7 +260,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       if (bPermit)
       {
          p = new rptParagraph;
-         *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthII,false,&bOverReinforced) << rptNewLine;
+         *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,false,&bOverReinforced) << rptNewLine;
          if ( bOverReinforced )
          {
             *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
@@ -276,7 +276,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    p->SetName("Shear");
    bool bStrutAndTieRequired;
    *pChapter << p;
-   *p << CShearCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
+   *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
 
    if ( bStrutAndTieRequired )
    {
@@ -295,7 +295,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    {
       p = new rptParagraph;
       *pChapter << p;
-      *p << CShearCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired) << rptNewLine;
+      *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired) << rptNewLine;
 
       if ( bStrutAndTieRequired )
       {
@@ -314,30 +314,30 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Interface Shear check
    if ( pBridge->IsCompositeDeck() )
    {
-      CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthI);
+      CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI);
 
       if ( bPermit )
-         CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthII);
+         CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII);
    }
 
    // Optional live load deflection
-   COptionalDeflectionCheck().Build(pChapter,pArtifact,span,girder,pDispUnit);
+   COptionalDeflectionCheck().Build(pChapter,pArtifact,span,girder,pDisplayUnits);
 
    if (pSpecEntry->IsAnchorageCheckEnabled())
    {
       // Splitting Zone check
-      write_splitting_zone_check(pBroker,pDispUnit,span,girder,pChapter);
+      write_splitting_zone_check(pBroker,pDisplayUnits,span,girder,pChapter);
 
       // confinement check
       p = new rptParagraph;
-      *p << CConfinementCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3) << rptNewLine;
+      *p << CConfinementCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3) << rptNewLine;
       *pChapter << p;
    }
 
    // Longitudinal reinforcement for shear
-   CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthI,pDispUnit);
+   CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthI,pDisplayUnits);
    if ( bPermit )
-      CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthII,pDispUnit);
+      CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthII,pDisplayUnits);
 
    // Lifting
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
@@ -348,7 +348,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       p->SetName("Lifting");
       *pChapter << p;
 
-      CLiftingCheck().Build(pChapter,pBroker,span,girder,pDispUnit);
+      CLiftingCheck().Build(pChapter,pBroker,span,girder,pDisplayUnits);
    }
 
    // Hauling
@@ -359,7 +359,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       p->SetName("Hauling");
       *pChapter << p;
 
-      CHaulingCheck().Build(pChapter,pBroker,span,girder,pDispUnit);
+      CHaulingCheck().Build(pChapter,pBroker,span,girder,pDisplayUnits);
    }
 
    // Strand Slope
@@ -368,19 +368,19 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    *pChapter << p;
 
    // Girder Detailing
-   CGirderDetailingCheck().Build(pChapter,pBroker,span,girder,pDispUnit);
+   CGirderDetailingCheck().Build(pChapter,pBroker,span,girder,pDisplayUnits);
 
    // Debonding
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    if ( pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight) )
    {
-      CDebondCheckTable().Build(pChapter, pBroker,span,girder,pgsTypes::Straight, pDispUnit);
+      CDebondCheckTable().Build(pChapter, pBroker,span,girder,pgsTypes::Straight, pDisplayUnits);
    }
 
-   CStrandSlopeCheck().Build(pChapter,pBroker,span,girder,pDispUnit);
+   CStrandSlopeCheck().Build(pChapter,pBroker,span,girder,pDisplayUnits);
 
    // Hold Down Force
-   rptRcTable* hdtable = CHoldDownForceCheck().Build(pBroker,span,girder,pDispUnit);
+   rptRcTable* hdtable = CHoldDownForceCheck().Build(pBroker,span,girder,pDisplayUnits);
    if (hdtable!=NULL)
    {
       p = new rptParagraph;
@@ -389,7 +389,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // "A" Dimension check
-   rptRcTable* atable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,span,girder,pDispUnit);
+   rptRcTable* atable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,span,girder,pDisplayUnits);
    if (atable!=NULL)
    { 
       rptParagraph* p = new rptParagraph;
@@ -398,7 +398,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // Global Stability Check
-   CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,span,girder,pDispUnit);
+   CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,span,girder,pDisplayUnits);
  
    return pChapter;
 }
@@ -428,7 +428,7 @@ CChapterBuilder* CSpecCheckChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 void write_splitting_zone_check(IBroker* pBroker,
-                               IDisplayUnits* pDispUnit,
+                               IDisplayUnits* pDisplayUnits,
                                SpanIndexType span,
                                GirderIndexType gdr,
                                rptChapter* pChapter)
@@ -439,8 +439,8 @@ void write_splitting_zone_check(IBroker* pBroker,
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,gdr);
    const pgsSplittingZoneArtifact* pArtifact = gdrArtifact->GetSplittingZoneArtifact();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDispUnit->GetSpanLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,     force,  pDispUnit->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,     force,  pDisplayUnits->GetGeneralForceUnit(), true );
 
    std::string strName;
    if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )

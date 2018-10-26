@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -91,7 +91,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -100,19 +100,19 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    // concrete material
    ExchangeConcreteData(pDX);
 
-   DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, pParent->m_GirderData.Material.Fci, pDispUnits->GetStressUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, pParent->m_GirderData.Material.Fci, pDisplayUnits->GetStressUnit() );
    // Validation: 0 < f'ci <= f'c   
-   DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Material.Fci,  pParent->m_GirderData.Material.Fc, pDispUnits->GetStressUnit() );
+   DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Material.Fci,  pParent->m_GirderData.Material.Fc, pDisplayUnits->GetStressUnit() );
 
    // Slab Offset
-   DDX_Tag(pDX, IDC_ADIM_START_UNIT, pDispUnits->GetComponentDimUnit() );
-   DDX_Tag(pDX, IDC_ADIM_END_UNIT,   pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_ADIM_START_UNIT, pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_ADIM_END_UNIT,   pDisplayUnits->GetComponentDimUnit() );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
-      DDX_UnitValueAndTag( pDX, IDC_ADIM_START, IDC_ADIM_START_UNIT, m_SlabOffset[pgsTypes::metStart], pDispUnits->GetComponentDimUnit() );
-      DDX_UnitValueAndTag( pDX, IDC_ADIM_END,   IDC_ADIM_END_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_ADIM_START, IDC_ADIM_START_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_ADIM_END,   IDC_ADIM_END_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit() );
 
       // validate slab offset... (must be greater or equal gross deck thickess)
       if ( pDX->m_bSaveAndValidate )
@@ -130,7 +130,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          {
             pDX->PrepareEditCtrl(IDC_ADIM_START);
             CString msg;
-            msg.Format("The slab offset at the start of the girder must be at equal to the slab + fillet depth of %s",FormatDimension(grossDeckThicknessStart,pDispUnits->GetComponentDimUnit()));
+            msg.Format("The slab offset at the start of the girder must be at equal to the slab + fillet depth of %s",FormatDimension(grossDeckThicknessStart,pDisplayUnits->GetComponentDimUnit()));
             AfxMessageBox(msg,MB_ICONEXCLAMATION);
             pDX->Fail();
          }
@@ -139,7 +139,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          {
             pDX->PrepareEditCtrl(IDC_ADIM_END);
             CString msg;
-            msg.Format("The slab offset at the end of the girder must be at equal to the slab + fillet depth of %s",FormatDimension(grossDeckThicknessEnd,pDispUnits->GetComponentDimUnit()));
+            msg.Format("The slab offset at the end of the girder must be at equal to the slab + fillet depth of %s",FormatDimension(grossDeckThicknessEnd,pDisplayUnits->GetComponentDimUnit()));
             AfxMessageBox(msg,MB_ICONEXCLAMATION);
             pDX->Fail();
          }
@@ -151,20 +151,20 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pParent->m_GirderData.Material.Fc , pDispUnits->GetStressUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Fc, pDispUnits->GetStressUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pParent->m_GirderData.Material.Fc , pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Fc, pDisplayUnits->GetStressUnit() );
 
    DDX_Check_Bool(pDX, IDC_MOD_ECI, pParent->m_GirderData.Material.bUserEci);
-   DDX_UnitValueAndTag( pDX, IDC_ECI,  IDC_ECI_UNIT,   pParent->m_GirderData.Material.Eci , pDispUnits->GetModEUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Eci, pDispUnits->GetModEUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_ECI,  IDC_ECI_UNIT,   pParent->m_GirderData.Material.Eci , pDisplayUnits->GetModEUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Eci, pDisplayUnits->GetModEUnit() );
 
    DDX_Check_Bool(pDX, IDC_MOD_EC,  pParent->m_GirderData.Material.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_GirderData.Material.Ec , pDispUnits->GetModEUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Ec, pDispUnits->GetModEUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_GirderData.Material.Ec , pDisplayUnits->GetModEUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Ec, pDisplayUnits->GetModEUnit() );
 
    if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
    {
@@ -257,9 +257,9 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    m_SlabOffset[pgsTypes::metStart] = pGirderTypes->GetSlabOffset(pParent->m_CurrentGirderIdx,pgsTypes::metStart);
    m_SlabOffset[pgsTypes::metEnd]   = pGirderTypes->GetSlabOffset(pParent->m_CurrentGirderIdx,pgsTypes::metEnd);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   m_strSlabOffsetCache[pgsTypes::metStart].Format("%s",FormatDimension(m_SlabOffset[pgsTypes::metStart],pDispUnits->GetComponentDimUnit(),false));
-   m_strSlabOffsetCache[pgsTypes::metEnd].Format(  "%s",FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDispUnits->GetComponentDimUnit(),false));
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   m_strSlabOffsetCache[pgsTypes::metStart].Format("%s",FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
+   m_strSlabOffsetCache[pgsTypes::metEnd].Format(  "%s",FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit(),false));
 
    CPropertyPage::OnInitDialog();
 
@@ -362,11 +362,11 @@ void CGirderDescGeneralPage::UpdateEci()
 
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      strDensity.Format("%s",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDispUnits->GetDensityUnit(),false));
+      strDensity.Format("%s",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
       strK1.Format("%f",pParent->m_GirderData.Material.K1);
 
       CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1);
@@ -385,11 +385,11 @@ void CGirderDescGeneralPage::UpdateEc()
 
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      strDensity.Format("%s",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDispUnits->GetDensityUnit(),false));
+      strDensity.Format("%s",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
       strK1.Format("%f",pParent->m_GirderData.Material.K1);
 
       CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1);
@@ -604,12 +604,12 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
    {
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       Float64 slabOffset[2];
       CDataExchange dx(this,TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_ADIM_START,IDC_ADIM_START_UNIT, slabOffset[pgsTypes::metStart], pDispUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_ADIM_END,  IDC_ADIM_END_UNIT,   slabOffset[pgsTypes::metEnd],   pDispUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(&dx, IDC_ADIM_START,IDC_ADIM_START_UNIT, slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(&dx, IDC_ADIM_END,  IDC_ADIM_END_UNIT,   slabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit());
 
       Float64 slab_offset = slabOffset[pgsTypes::metStart];
 
@@ -624,8 +624,8 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
          
          CString strItems;
          strItems.Format("Start of Span (%s)\nEnd of Span (%s)",
-                         ::FormatDimension(slabOffset[pgsTypes::metStart],pDispUnits->GetComponentDimUnit()),
-                         ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDispUnits->GetComponentDimUnit()));
+                         ::FormatDimension(slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit()),
+                         ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit()));
 
          dlg.m_strItems = strItems;
          if ( dlg.DoModal() == IDOK )
@@ -644,8 +644,8 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
       GetDlgItem(IDC_ADIM_START)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
       GetDlgItem(IDC_ADIM_END)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
 
-      GetDlgItem(IDC_ADIM_START)->SetWindowText( ::FormatDimension(slab_offset,pDispUnits->GetComponentDimUnit(),false) );
-      GetDlgItem(IDC_ADIM_END)->SetWindowText( ::FormatDimension(slab_offset,pDispUnits->GetComponentDimUnit(),false) );
+      GetDlgItem(IDC_ADIM_START)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
+      GetDlgItem(IDC_ADIM_END)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
    }
 
    return 0;
@@ -705,6 +705,18 @@ void CGirderDescGeneralPage::UpdateSlabOffsetHyperLink()
 
 void CGirderDescGeneralPage::OnChangeGirderName()
 {
+   CString newName;
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
+   pCB->GetWindowTextA(newName);
+
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    pParent->m_GirderData.ResetPrestressData();
+
+   // reset stirrups to library
+   pParent->m_Shear.m_CurGrdName = newName;
+   pParent->m_Shear.RestoreToLibraryDefaults();
+
+   pParent->m_LongRebar.m_CurGrdName = newName;
+   pParent->m_LongRebar.RestoreToLibraryDefaults();
+
 }

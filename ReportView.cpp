@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -147,8 +147,8 @@ int CReportView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
 
    pgsStatusCenter& status_center = pDoc->GetStatusCenter();
-   if ( status_center.GetSeverity() == STATUS_ERROR )
-      return STATUS_ERROR;
+   if ( status_center.GetSeverity() == pgsTypes::statusError )
+      return pgsTypes::statusError;
 
    CRect rect(0,0,50,21);
    m_btnEdit.Create("Edit",WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON | BS_TEXT, rect, this, IDC_EDIT);

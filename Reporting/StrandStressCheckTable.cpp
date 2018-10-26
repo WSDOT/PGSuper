@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -25,6 +25,7 @@
 
 #include <PgsExt\StrandStressArtifact.h>
 #include <PgsExt\GirderData.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #include <IFace\DisplayUnits.h>
 #include <IFace\Project.h>
@@ -72,7 +73,7 @@ CStrandStressCheckTable& CStrandStressCheckTable::operator= (const CStrandStress
 
 //======================== OPERATIONS =======================================
 rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStressArtifact* pArtifact,
-                                           IDisplayUnits* pDispUnits) const
+                                           IDisplayUnits* pDisplayUnits) const
 {
    // Get strand types that are checked
    pgsPointOfInterest poi = pArtifact->GetPointOfInterest();
@@ -99,13 +100,10 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
    }
 
    // Build table
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
 
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(2);
+   rptCapacityToDemand cap_demand;
 
    int nColumns = 2 + 2*strandTypes.size();
 
@@ -122,7 +120,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
    p_table->SetRowSpan(1,col2++,-1);
 
    p_table->SetRowSpan(0,col1,2);
-   (*p_table)(0,col1++) << COLHDR("Allowable" << rptNewLine << "Stress", rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*p_table)(0,col1++) << COLHDR("Allowable" << rptNewLine << "Stress", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    p_table->SetRowSpan(1,col2++,-1);
 
    std::vector<pgsTypes::StrandType>::iterator iter;
@@ -149,7 +147,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
          break;
       }
 
-      (*p_table)(1,col2++) << COLHDR("Strand" << rptNewLine << "Stress", rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR("Strand" << rptNewLine << "Stress", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(1,col2++) << "Status" << rptNewLine << "(C/D)";
    }
 
@@ -185,14 +183,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      else
 		      (*p_table)(row,col) << RPT_FAIL;
 
-         if ( IsZero(demand) )
-         {
-            (*p_table)(row,col++) << rptNewLine << "(" << symbol(INFINITY) << ")";
-         }
-         else
-         {
-            (*p_table)(row,col++) << rptNewLine << "(" << scalar.SetValue(capacity/demand) << ")";
-         }
+         (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(capacity,demand,bPassed) << ")";
 
          row++;
       }
@@ -213,14 +204,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      else
 		      (*p_table)(row,col) << RPT_FAIL;
 
-         if ( IsZero(demand) )
-         {
-            (*p_table)(row,col++) << rptNewLine << "(" << symbol(INFINITY) << ")";
-         }
-         else
-         {
-            (*p_table)(row,col++) << rptNewLine << "(" << scalar.SetValue(capacity/demand) << ")";
-         }
+         (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(capacity,demand,bPassed) << ")";
 
          row++;
       }
@@ -241,14 +225,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      else
 		      (*p_table)(row,col) << RPT_FAIL;
 
-         if ( IsZero(demand) )
-         {
-            (*p_table)(row,col++) << rptNewLine << "(" << symbol(INFINITY) << ")";
-         }
-         else
-         {
-            (*p_table)(row,col++) << rptNewLine << "(" << scalar.SetValue(capacity/demand) << ")";
-         }
+         (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(capacity,demand,bPassed) << ")";
 
          row++;
       }
@@ -269,14 +246,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      else
 		      (*p_table)(row,col) << RPT_FAIL;
 
-         if ( IsZero(demand) )
-         {
-            (*p_table)(row,col++) << rptNewLine << "(" << symbol(INFINITY) << ")";
-         }
-         else
-         {
-            (*p_table)(row,col++) << rptNewLine << "(" << scalar.SetValue(capacity/demand) << ")";
-         }
+         (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(capacity,demand,bPassed) << ")";
 
          row++;
       }

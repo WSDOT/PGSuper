@@ -22,12 +22,13 @@ copy /Y images\*.png				%BINTARGET%\images\
 
 REM - Application files
 copy /Y RegFreeCOM\Release\PGSuper.exe	%BINTARGET%\App\
-copy /Y RegFreeCOM\md5deep.exe		%BINTARGET%\App\
+copy /Y RegFreeCOM\Release\md5deep.exe  %BINTARGET%\App\
+copy /Y RegFreeCOM\Release\MakePgz.exe  %BINTARGET%\App\
 copy /Y PGSuper.tip			%BINTARGET%\App\
 copy /Y License.txt			%BINTARGET%\App\
 copy /Y PGSuper.chm			%BINTARGET%\App\
 copy /Y Trucks.pgs			%BINTARGET%\App\
-copy /Y C:\ARP\PGSuper\HtmlHelp\!SSL!\Printed_Documentation\PGSuper_Documentation.pdf %BINTARGET%\App\
+copy /Y LibrariesAndTemplates.html	%BINTARGET%\App\
 
 REM - Template Files
 copy /Y WSDOT.lbr				%BINTARGET%\Templates\

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -50,9 +50,9 @@ CLASS
 ****************************************************************************/
 
 
-void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void concrete(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
+void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void concrete(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -78,7 +78,7 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
    SpanIndexType spanIdx = pSpec->GetSpan();
    GirderIndexType gdrIdx = pSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptParagraph* p;
    
@@ -86,9 +86,9 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
    *pChapter << p;
    *p << color(Red) << "NOTE: Several details have been omitted from this report" << color(Black) << rptNewLine;
 
-   girder_line_geometry( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   concrete( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   prestressing( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
+   girder_line_geometry( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   concrete( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   prestressing( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
 
    return pChapter;
 }
@@ -116,7 +116,7 @@ CChapterBuilder* CInputSummaryChapter::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -125,12 +125,12 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,   length,    pDispUnits->GetSpanLengthUnit(),    true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,   component, pDispUnits->GetComponentDimUnit(),  true );
-   INIT_UV_PROTOTYPE( rptPressureUnitValue, olay,      pDispUnits->GetOverlayWeightUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,   length,    pDisplayUnits->GetSpanLengthUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,   component, pDisplayUnits->GetComponentDimUnit(),  true );
+   INIT_UV_PROTOTYPE( rptPressureUnitValue, olay,      pDisplayUnits->GetOverlayWeightUnit(), true );
    
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength, IS_US_UNITS(pDispUnits), 4, pDispUnits->GetSpanLengthUnit(),   true, false );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( spacing, IS_US_UNITS(pDispUnits), 8, pDispUnits->GetComponentDimUnit(), true, false );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength, IS_US_UNITS(pDisplayUnits), 4, pDisplayUnits->GetSpanLengthUnit(),   true, false );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( spacing, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, false );
 
    // Get the interfaces we need
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -381,7 +381,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    }
 }
 
-void concrete(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void concrete(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -390,7 +390,7 @@ void concrete(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInd
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
    
    // Get the interfaces
    GET_IFACE2( pBroker, IBridgeMaterial, pMat );
@@ -406,7 +406,7 @@ void concrete(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInd
    (*pTable)(2,1) << stress.SetValue( pMat->GetFcSlab() );
 }
 
-void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -415,10 +415,10 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDispUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnits->GetSpanLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptLength2UnitValue, area, pDispUnits->GetAreaUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDispUnits->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLength2UnitValue, area, pDisplayUnits->GetAreaUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true );
    
    // Get the interfaces
    GET_IFACE2( pBroker, IBridgeMaterial, pMat );
@@ -558,15 +558,15 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
       row++;
    }
 
-   (*pTable)(row,0) << "C.G. of Harped Strands at end, Fo";
+   (*pTable)(row,0) << "C.G. of Harped Strands at end, " << Sub2("F","o");
    (*pTable)(row,1) << component.SetValue( Fo );
    row++;
 
-   (*pTable)(row,0) << "C.G. of Harped Strands at centerline, Fcl";
+   (*pTable)(row,0) << "C.G. of Harped Strands at centerline, " << Sub2("F","cl");
    (*pTable)(row,1) << component.SetValue( Fcl );
    row++;
 
-   (*pTable)(row,0) << "C.G. of Lower Harped Strand Bundle, Fb";
+   (*pTable)(row,0) << "C.G. of Lower Harped Strand Bundle, " << Sub2("F","b");
    (*pTable)(row,1) << component.SetValue( Fb );
    row++;
    

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -41,6 +41,7 @@ class ATL_NO_VTABLE CAnalysisAgentImp :
    public CComCoClass<CAnalysisAgentImp, &CLSID_AnalysisAgent>,
    public IConnectionPointContainerImpl<CAnalysisAgentImp>,
    public IAgentEx,
+   public IProductLoads,
    public IProductForces,
    public IProductForces2,
    public ICombinedForces,
@@ -69,6 +70,7 @@ DECLARE_NOT_AGGREGATABLE(CAnalysisAgentImp)
 BEGIN_COM_MAP(CAnalysisAgentImp)
    COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
+   COM_INTERFACE_ENTRY(IProductLoads)
    COM_INTERFACE_ENTRY(IProductForces)
    COM_INTERFACE_ENTRY(IProductForces2)
    COM_INTERFACE_ENTRY(ICombinedForces)
@@ -88,6 +90,10 @@ END_COM_MAP()
 BEGIN_CONNECTION_POINT_MAP(CAnalysisAgentImp)
 END_CONNECTION_POINT_MAP()
 
+   // callback IDs for the status callbacks we register
+   StatusCallbackIDType m_scidInformationalError;
+   StatusCallbackIDType m_scidVSRatio;
+
 
 // IAgentEx
 public:
@@ -99,17 +105,10 @@ public:
    STDMETHOD(Init2)();
    STDMETHOD(GetClassID)(CLSID* pCLSID);
 
-// IProductForces
+// IProductLoads
 public:
    virtual pgsTypes::Stage GetGirderDeadLoadStage(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual pgsTypes::Stage GetGirderDeadLoadStage(GirderIndexType gdrLineIdx);
-   virtual sysSectionValue GetShear(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
-   virtual Float64 GetMoment(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
-   virtual Float64 GetDisplacement(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
-   virtual Float64 GetRotation(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
-   virtual Float64 GetReaction(pgsTypes::Stage stage,ProductForceType type,PierIndexType pier,GirderIndexType gdr,BridgeAnalysisType bat);
-   virtual void GetStress(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat,Float64* pfTop,Float64* pfBot);
-
    virtual void GetGirderSelfWeightLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad);
    virtual Float64 GetTrafficBarrierLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSidewalkLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
@@ -120,11 +119,28 @@ public:
 
    virtual void GetOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<OverlayLoad>* pOverlayLoads);
 
-   virtual void GetMainSpanSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<SlabLoad>* pSlabLoads);
    virtual void GetCantileverSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
-   virtual void GetMainSpanOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<OverlayLoad>* pOverlayLoads);
    virtual void GetIntermediateDiaphragmLoads(pgsTypes::Stage stage, SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<DiaphragmLoad>* pLoads);
    virtual void GetEndDiaphragmLoads(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
+
+   virtual bool HasShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx); // checks for load in adjacent continuous beams as well as current beam
+   virtual void GetShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ShearKeyLoad>* pLoads);
+
+   virtual std::string GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
+
+private:
+   virtual void GetMainSpanSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<SlabLoad>* pSlabLoads);
+   virtual void GetMainSpanOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<OverlayLoad>* pOverlayLoads);
+   virtual void GetMainSpanShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ShearKeyLoad>* pLoads);
+
+// IProductForces
+public:
+   virtual sysSectionValue GetShear(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
+   virtual Float64 GetMoment(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
+   virtual Float64 GetDisplacement(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
+   virtual Float64 GetRotation(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
+   virtual Float64 GetReaction(pgsTypes::Stage stage,ProductForceType type,PierIndexType pier,GirderIndexType gdr,BridgeAnalysisType bat);
+   virtual void GetStress(pgsTypes::Stage stage,ProductForceType type,const pgsPointOfInterest& poi,BridgeAnalysisType bat,Float64* pfTop,Float64* pfBot);
 
    virtual Float64 GetGirderDeflectionForCamber(const pgsPointOfInterest& poi);
    virtual Float64 GetGirderDeflectionForCamber(const pgsPointOfInterest& poi,const GDRCONFIG& config);
@@ -158,7 +174,6 @@ public:
    virtual void GetDesignSlabPadStressAdjustment(double fcgdr,double startSlabOffset,double endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot);
 
    virtual void DumpAnalysisModels(GirderIndexType girderLineIdx);
-   virtual std::string GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
 
    // IProductForces2
 public:
@@ -220,6 +235,7 @@ public:
    virtual void GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage stage,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,BridgeAnalysisType bat,Float64* pMin,Float64* pMax);
    virtual void GetConcurrentShear(pgsTypes::LimitState ls,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax);
    virtual void GetViMmax(pgsTypes::LimitState ls,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,double* pVi,double* pMmax);
+   virtual Float64 GetSlabDesignMoment(pgsTypes::LimitState ls,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
 
 // ILimitStateForces2
 public:
@@ -227,6 +243,7 @@ public:
    virtual void GetMoment(pgsTypes::LimitState ls,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
    virtual void GetDisplacement(pgsTypes::LimitState ls,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
    virtual void GetStress(pgsTypes::LimitState ls,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludePrestress,BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
+   virtual std::vector<Float64> GetSlabDesignMoment(pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat);
 
 // IPrestressStresses
 public:
@@ -433,6 +450,7 @@ private:
    void ApplyDiaphragmLoad(ILBAMModel* pModel, GirderIndexType gdr);
    void ApplySlabLoad(ILBAMModel* pModel, GirderIndexType gdr );
    void ApplyOverlayLoad(ILBAMModel* pModel, GirderIndexType gdr);
+   void ApplyShearKeyLoad(ILBAMModel* pModel, GirderIndexType gdr);
    void GetRailingSystemLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight);
    void ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,GirderIndexType gdr);
    void ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gdr);

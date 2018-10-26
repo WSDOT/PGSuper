@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSplice - Precast Post-tensioned Spliced Girder Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -60,7 +60,7 @@ CDebondCheckTable::~CDebondCheckTable()
 //======================== OPERATORS  =======================================
 
 //======================== OPERATIONS =======================================
-void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDispUnit) const
+void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IDebondLimits,debond_limits);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -89,8 +89,8 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexTy
    *p << ndb <<", or "<< total_fra << "% of total strands are debonded. Debonded strands should not exceed " << limit_fra << "% of the total." << rptNewLine;
 
    // check debond lengths 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc, pDispUnit->GetSpanLengthUnit(),   true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc2, pDispUnit->GetSpanLengthUnit(),   true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc, pDisplayUnits->GetSpanLengthUnit(),   true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc2, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    Float64 dbl_limit;
    pgsTypes::DebondLengthControl control;
@@ -129,14 +129,14 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexTy
    // tables
    Float64 Lg = pBridge->GetGirderLength(span,girder);
 
-   *p << CDebondCheckTable().Build1(pDebondArtifact,span,girder,pgsTypes::Straight, pDispUnit);
+   *p << CDebondCheckTable().Build1(pDebondArtifact,span,girder,pgsTypes::Straight, pDisplayUnits);
    *p << Super("*") << "Exterior strands shall not be debonded" << rptNewLine << rptNewLine;
 
-   *p << CDebondCheckTable().Build2(pDebondArtifact,span,girder,Lg, pgsTypes::Straight, pDispUnit);
+   *p << CDebondCheckTable().Build2(pDebondArtifact,span,girder,Lg, pgsTypes::Straight, pDisplayUnits);
    *p << Super("*") << "Not more than " << debond_limits->GetMaxDebondedStrandsPerSection(span,girder)*100 << "% of the debonded strands, or " << debond_limits->GetMaxNumDebondedStrandsPerSection(span,girder) << " strands, whichever is greatest, shall have debonding terminated at any section" << rptNewLine;
 }
 
-rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDispUnit) const
+rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const
 {
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7," ");
    table->TableCaption().SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
@@ -187,17 +187,17 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,S
    return table;
 }
 
-rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,Float64 Lg, pgsTypes::StrandType strandType,IDisplayUnits* pDispUnit) const
+rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,Float64 Lg, pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const
 {
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(4," ");
 
-   (*table)(0,0) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
+   (*table)(0,0) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,1) << "Number" << rptNewLine << "Debonded" << rptNewLine << "Strands";
    (*table)(0,2) << "Maximum" << rptNewLine << "Debonded" << rptNewLine << "Strands" << Super("*");
    (*table)(0,3) << "Status";
 
    // Fill up the table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnit->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
 
    StrandIndexType nMaxStrands1;
    Float64 fraMaxStrands;

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -192,6 +192,21 @@ void CTxDotDoubleTFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIn
 
    CComPtr<IGirderSection> gdrsection;
    CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrsection);
+   CComQIPtr<IMultiWebSection2> section(gdrsection);
+
+   // if this is an exterior girder, remove the shear key block outs
+   CComPtr<IMultiWeb2> multiWeb2Shape;
+   section->get_Beam(&multiWeb2Shape);
+   if ( gdrIdx == 0 )
+   {
+      multiWeb2Shape->put_LeftBlockOut(VARIANT_FALSE);
+   }
+
+   if ( gdrIdx == pIBridgeDesc->GetSpan(spanIdx)->GetGirderCount()-1 )
+   {
+      multiWeb2Shape->put_RightBlockOut(VARIANT_FALSE);
+   }
+
    CComQIPtr<IShape> shape(gdrsection);
    segment->putref_Shape(shape);
 
@@ -245,6 +260,9 @@ void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentI
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
    pEngineer->SetBroker(pBroker,agentID);
+
+   pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btMultiWebTee);
+
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();
 }
@@ -859,4 +877,15 @@ Float64 CTxDotDoubleTFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimen
    double W2 = GetDimension(dimensions,"W2");
 
    return 2*(T1+T2+T3+W1) + W2;
+}
+
+bool CTxDotDoubleTFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+{
+   return false;
+}
+
+void CTxDotDoubleTFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+{
+   *uniformArea = 0.0;
+   *areaPerJoint = 0.0;
 }

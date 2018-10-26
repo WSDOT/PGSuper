@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -118,12 +118,10 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
             GirderIndexType firstGdrIdx,lastGdrIdx;
             std::string strGirderName;
             girderTypes.GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strGirderName);
-            for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
+
+            if ( girderTypes.GetGirderLibraryEntry(firstGdrIdx) == pSubject )
             {
-               if ( girderTypes.GetGirderLibraryEntry(gdrIdx) == pSubject )
-               {
-                  girderTypes.SetGirderName( gdrIdx, pSubject->GetName().c_str() );
-               }
+               girderTypes.SetGirderName( grpIdx, pSubject->GetName().c_str() );
             }
          }
 

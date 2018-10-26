@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -33,22 +33,22 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CPostTensionTimeDependentLossesAtShippingTable::CPostTensionTimeDependentLossesAtShippingTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit) :
+CPostTensionTimeDependentLossesAtShippingTable::CPostTensionTimeDependentLossesAtShippingTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( offset,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDispUnit->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDispUnit->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDispUnit->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnit->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDispUnit->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDispUnit->GetMomentUnit(),          false );
-   DEFINE_UV_PROTOTYPE( stress,      pDispUnit->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( offset,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
+   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
+   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level)
+CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -62,7 +62,7 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
       ) 
    {
       ColumnIndexType numColumns = 7;
-      table = new CPostTensionTimeDependentLossesAtShippingTable( numColumns, pDispUnit );
+      table = new CPostTensionTimeDependentLossesAtShippingTable( numColumns, pDisplayUnits );
       pgsReportStyleHolder::ConfigureTable(table);
 
       table->m_GirderData = girderData;
@@ -77,13 +77,13 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
 
       *pParagraph << table << rptNewLine;
 
-      (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
-      (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
-      (*table)(0,2) << COLHDR(symbol(DELTA) << Sub2("f","pF"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-      (*table)(0,3) << COLHDR(symbol(DELTA) << Sub2("f","pA"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-      (*table)(0,4) << COLHDR(symbol(DELTA) << Sub2("f","pt avg"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-      (*table)(0,5) << COLHDR(symbol(DELTA) << Sub2("f","pLTH"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-      (*table)(0,6) << COLHDR(symbol(DELTA) << Sub2("f","ptH"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,2) << COLHDR(symbol(DELTA) << Sub2("f","pF"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,3) << COLHDR(symbol(DELTA) << Sub2("f","pA"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,4) << COLHDR(symbol(DELTA) << Sub2("f","pt avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,5) << COLHDR(symbol(DELTA) << Sub2("f","pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,6) << COLHDR(symbol(DELTA) << Sub2("f","ptH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       *pParagraph << rptRcImage(strImagePath + "PTLossAtHauling.gif") << rptNewLine;
    }
@@ -91,7 +91,7 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
    return table;
 }
 
-void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,2) << stress.SetValue(details.pLosses->FrictionLoss());
    (*this)(row,3) << stress.SetValue(details.pLosses->AnchorSetLoss());

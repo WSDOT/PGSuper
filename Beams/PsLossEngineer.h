@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -42,48 +42,55 @@ public:
       m_bComputingLossesForDesign = false;
 	}
 
+   void Init(IBroker* pBroker,AgentIDType agentID);
+
 public:
    enum BeamType { IBeam, UBeam, SolidSlab, BoxBeam, SingleT };
 
-   virtual LOSSDETAILS ComputeLosses(IBroker* pBroker,long agentID,BeamType beamType,const pgsPointOfInterest& poi);
-   virtual LOSSDETAILS ComputeLossesForDesign(IBroker* pBroker,long agentID,BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config);
-   virtual void BuildReport(IBroker* pBroker,BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit);
+   virtual LOSSDETAILS ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi);
+   virtual LOSSDETAILS ComputeLossesForDesign(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual void BuildReport(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
 
 private:
-   LOSSDETAILS ComputeLosses(IBroker* pBroker,long agentID,BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   IBroker* m_pBroker;
+   AgentIDType m_AgentID;
+   StatusCallbackIDType m_scidUnknown;
+   StatusCallbackIDType m_scidGirderDescriptionError;
 
-   void LossesByRefinedEstimate(IBroker* pBroker,long agentID,BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,LossAgency lossAgency);
-   void LossesByRefinedEstimateBefore2005(IBroker* pBroker,long agentID,BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
-   void LossesByRefinedEstimate2005(IBroker* pBroker,long agentID,BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,LossAgency lossAgency);
-   void LossesByApproxLumpSum(IBroker* pBroker,long agentID,BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,bool isWsdot);
-   void LossesByGeneralLumpSum(IBroker* pBroker,long agentID,BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
+   LOSSDETAILS ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config);
 
-   void ReportRefinedMethod(IBroker* pBroker,BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,Uint16 level,LossAgency lossAgency);
-   void ReportApproxLumpSumMethod(IBroker* pBroker,BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,Uint16 level,bool isWsdot);
-   void ReportGeneralLumpSumMethod(IBroker* pBroker,BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,Uint16 level);
-   void ReportLumpSumMethod(rptChapter* pChapter,IBroker* pBroker,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level);
+   void LossesByRefinedEstimate(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,LossAgency lossAgency);
+   void LossesByRefinedEstimateBefore2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
+   void LossesByRefinedEstimate2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,LossAgency lossAgency);
+   void LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,bool isWsdot);
+   void LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
 
-   void ReportRefinedMethodBefore2005(rptChapter* pChapter,IBroker* pBroker,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level);
-   void ReportRefinedMethod2005(rptChapter* pChapter,IBroker* pBroker,BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level);
-   void ReportApproxMethod(rptChapter* pChapter,IBroker* pBroker,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level,bool isWsdot);
-   void ReportApproxMethod2005(rptChapter* pChapter,IBroker* pBroker,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level);
+   void ReportRefinedMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,Uint16 level,LossAgency lossAgency);
+   void ReportApproxLumpSumMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot);
+   void ReportGeneralLumpSumMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level);
+
+   void ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportRefinedMethod2005(rptChapter* pChapter,BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot);
+   void ReportApproxMethod2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level);
 
    typedef std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> > PoiSet;
    typedef std::vector<pgsPointOfInterest> PoiVector;
 
-   void ReportLocation(rptRcTable* pTable,int row,const pgsPointOfInterest& poi,pgsTypes::Stage stage,Float64 endsize,IDisplayUnits* pDispUnit);
-   void ReportLocation(rptRcTable* pTable,int row,const pgsPointOfInterest& poi,Float64 endsize,IDisplayUnits* pDispUnit);
+   void ReportLocation(rptRcTable* pTable,int row,const pgsPointOfInterest& poi,pgsTypes::Stage stage,Float64 endsize,IDisplayUnits* pDisplayUnits);
+   void ReportLocation(rptRcTable* pTable,int row,const pgsPointOfInterest& poi,Float64 endsize,IDisplayUnits* pDisplayUnits);
 
-   void ReportInitialRelaxation(rptChapter* pChapter,IBroker* pBroker,bool bTemporaryStrands,const lrfdLosses* pLosses,IDisplayUnits* pDispUnit,Uint16 level);
-   void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,IBroker* pBroker,const LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level);
-   void ReportLumpSumTimeDependentLosses(rptChapter* pChapter,IBroker* pBroker,const LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level);
+   void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const lrfdLosses* pLosses,IDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level);
 
-//   void ReportTimeDependentLossesAtShipping(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,PoiSet::iterator begin,PoiSet::iterator end,IDisplayUnits* pDispUnit,Uint16 level);
-//   void ReportEffectOfTemporaryStrandRemoval(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,PoiVector::iterator begin,PoiVector::iterator end,IDisplayUnits* pDispUnit,Uint16 level);
-//   void ReportElasticGainDueToDeckPlacement(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,PoiVector::iterator begin,PoiVector::iterator end,IDisplayUnits* pDispUnit,Uint16 level);
-   void ReportTotalPrestressLoss(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,PoiVector::iterator begin,PoiVector::iterator end,IDisplayUnits* pDispUnit,Uint16 level);
+//   void ReportTimeDependentLossesAtShipping(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,PoiSet::iterator begin,PoiSet::iterator end,IDisplayUnits* pDisplayUnits,Uint16 level);
+//   void ReportEffectOfTemporaryStrandRemoval(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,PoiVector::iterator begin,PoiVector::iterator end,IDisplayUnits* pDisplayUnits,Uint16 level);
+//   void ReportElasticGainDueToDeckPlacement(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,PoiVector::iterator begin,PoiVector::iterator end,IDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportTotalPrestressLoss(rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,PoiVector::iterator begin,PoiVector::iterator end,IDisplayUnits* pDisplayUnits,Uint16 level);
 
-   void GetLossParameters(IBroker* pBroker,const pgsPointOfInterest& poi,const GDRCONFIG& config,
+   void GetLossParameters(const pgsPointOfInterest& poi,const GDRCONFIG& config,
                            matPsStrand::Grade* pGrade,
                            matPsStrand::Type* pType,
                            Float64* pFpjPerm,

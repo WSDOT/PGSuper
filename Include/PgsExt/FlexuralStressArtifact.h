@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -68,6 +68,7 @@ class PGSEXTCLASS pgsFlexuralStressArtifact
 {
 public:
    // GROUP: LIFECYCLE
+   enum TensionReinforcement { WithRebar, WithoutRebar };
 
    //------------------------------------------------------------------------
    // Default constructor
@@ -108,9 +109,9 @@ public:
    void SetAlternativeTensileStressParameters(double Yna,double At,double T,double As,double fAllow);
    void GetAlternativeTensileStressParameters(double* Yna,double* At,double* T,double* As) const;
 
-   bool TopPassed() const;
-   bool BottomPassed() const;
-   bool Passed() const;
+   bool TopPassed(TensionReinforcement reinfType) const;
+   bool BottomPassed(TensionReinforcement reinfType) const;
+   bool Passed(TensionReinforcement reinfType) const;
 
    void SetKey(const pgsFlexuralStressArtifactKey& key){m_Key = key;}
 
@@ -162,7 +163,8 @@ private:
                     // No concrete strength work if < 0
    pgsFlexuralStressArtifactKey m_Key;
 
-   bool TensionPassed(double fTens) const;
+   bool TensionPassedWithRebar(double fTens) const;
+   bool TensionPassedWithoutRebar(double fTens) const;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

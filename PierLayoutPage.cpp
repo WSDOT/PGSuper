@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -69,11 +69,11 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   DDX_Station(pDX,IDC_STATION,m_Station,pDispUnits->GetStationFormat());
+   DDX_Station(pDX,IDC_STATION,m_Station,pDisplayUnits->GetStationFormat());
 
    DDX_CBItemData(pDX,IDC_MOVE_PIER,m_MovePierOption);
 
@@ -133,10 +133,10 @@ BOOL CPierLayoutPage::OnInitDialog()
 	
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    
    CString fmt;
-   fmt.LoadString(( pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US ));
+   fmt.LoadString(( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US ));
    GetDlgItem(IDC_STATION_FORMAT)->SetWindowText( fmt );
 
    fmt.LoadString( IDS_DLG_ORIENTATIONFMT );
@@ -184,13 +184,13 @@ void CPierLayoutPage::UpdateMoveOptionList()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // read the current value of the station edit
    double toStation;
    try
    {
-      DDX_Station(&dx,IDC_STATION,toStation,pDispUnits->GetStationFormat());
+      DDX_Station(&dx,IDC_STATION,toStation,pDisplayUnits->GetStationFormat());
    }
    catch(...)
    {
@@ -216,8 +216,8 @@ void CPierLayoutPage::UpdateMoveOptionList()
    strMove.Format("Move %s %d from %s to %s",
                   strName,
                   m_PierIdx+1,
-                  FormatStation(pDispUnits->GetStationFormat(),m_FromStation),
-                  FormatStation(pDispUnits->GetStationFormat(),toStation)
+                  FormatStation(pDisplayUnits->GetStationFormat(),m_FromStation),
+                  FormatStation(pDisplayUnits->GetStationFormat(),toStation)
                   );
    pMove->SetWindowText(strMove);
 

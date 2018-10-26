@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -53,6 +53,8 @@ void CBulbTeeDistFactorEngineer::Init(bool treatAsWsDotI)
       // Otherwise bulb tees are same as other multi-web sections
       CComObject<CMultiWebDistFactorEngineer>* pEngineer;
       CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
+
+      pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btDeckBulbTee);
 
       m_pImpl = pEngineer;
    }
@@ -108,9 +110,9 @@ double CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pier,GirderIndexT
    return m_pImpl->GetReactionDF(pier,gdr,ls,fcgdr);
 }
 
-void CBulbTeeDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit)
+void CBulbTeeDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
 {
-   m_pImpl->BuildReport(span,gdr,pChapter,pDispUnit);
+   m_pImpl->BuildReport(span,gdr,pChapter,pDisplayUnits);
 }
 
 bool CBulbTeeDistFactorEngineer::Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile)

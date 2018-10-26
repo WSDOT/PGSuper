@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -93,7 +93,7 @@ public:
    //------------------------------------------------------------------------
    void ComputeLosses(const pgsPointOfInterest& poi,LOSSDETAILS* pLosses);
    void ComputeLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
-   void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit);
+   void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
 
    Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands);
    Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,const matPsStrand& strand,StrandIndexType nStrands);

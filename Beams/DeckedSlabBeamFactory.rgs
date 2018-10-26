@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.DeckedSlabBeamFactory.1 = s 'Decked Slab Beam'
+	{
+		CLSID = s '{9C219793-A1F1-402a-B865-0AA6BD22B0A6}'
+	}
+	PGSuperBeamFactory.DeckedSlabBeamFactory = s 'Decked Slab Beam'
+	{
+		CLSID = s '{9C219793-A1F1-402a-B865-0AA6BD22B0A6}'
+		CurVer = s 'PGSuperBeamFactory.DeckedSlabBeamFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {9C219793-A1F1-402a-B865-0AA6BD22B0A6} = s 'Decked Slab Beam'
+		{
+			ProgID = s 'PGSuperBeamFactory.DeckedSlabBeamFactory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.DeckedSlabBeamFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

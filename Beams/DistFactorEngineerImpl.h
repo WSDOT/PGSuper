@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -66,7 +66,7 @@ template <class T>
 class CDistFactorEngineerImpl : public IDistFactorEngineer
 {
 public:
-   virtual void SetBroker(IBroker* pBroker,long agentID);
+   virtual void SetBroker(IBroker* pBroker,AgentIDType agentID);
    virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
    virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace);
    virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
@@ -86,7 +86,8 @@ public:
 
 protected:
    IBroker* m_pBroker;
-   long m_AgentID;
+   AgentIDType m_AgentID;
+   StatusCallbackIDType m_scidRefinedAnalysis;
 
    struct REACTIONDETAILS : T
    {
@@ -143,10 +144,13 @@ protected:
 
 
 template <class T>
-void CDistFactorEngineerImpl<T>::SetBroker(IBroker* pBroker,long agentID)
+void CDistFactorEngineerImpl<T>::SetBroker(IBroker* pBroker,AgentIDType agentID)
 {
 	m_pBroker = pBroker;
 	m_AgentID = agentID;
+
+   GET_IFACE(IStatusCenter,pStatusCenter);
+   m_scidRefinedAnalysis = pStatusCenter->RegisterCallback( new pgsRefinedAnalysisStatusCallback(m_pBroker) );
 }
 
 template <class T>

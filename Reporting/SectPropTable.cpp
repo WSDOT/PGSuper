@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -66,9 +66,8 @@ CSectionPropertiesTable& CSectionPropertiesTable::operator= (const CSectionPrope
 }
 
 //======================== OPERATIONS =======================================
-#pragma optimize( "", off )
 rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,bool bComposite,
-                                           IDisplayUnits* pDispUnit) const
+                                           IDisplayUnits* pDisplayUnits) const
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IGirder,pGirder);
@@ -109,43 +108,43 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
    // Write labels
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
-   (*xs_table)(row++,0) << "Area (" << rptAreaUnitTag( &pDispUnit->GetAreaUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "I"<< Sub("x") << " (" << rptLength4UnitTag( &pDispUnit->GetMomentOfInertiaUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "I"<< Sub("y") << " ("  << rptLength4UnitTag( &pDispUnit->GetMomentOfInertiaUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "d (girder depth)  (" << rptLengthUnitTag( &pDispUnit->GetComponentDimUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << RPT_YTOP  << Sub(" girder") << " (" << rptLengthUnitTag( &pDispUnit->GetComponentDimUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << "Area (" << rptAreaUnitTag( &pDisplayUnits->GetAreaUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << "I"<< Sub("x") << " (" << rptLength4UnitTag( &pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << "I"<< Sub("y") << " ("  << rptLength4UnitTag( &pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << "d (girder depth)  (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << RPT_YTOP  << Sub(" girder") << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
 
    if ( bComposite )
    {
-      (*xs_table)(row++,0) << RPT_YTOP  << Sub(" slab") << " (" << rptLengthUnitTag( &pDispUnit->GetComponentDimUnit().UnitOfMeasure ) <<")";
+      (*xs_table)(row++,0) << RPT_YTOP  << Sub(" slab") << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
    }
 
-   (*xs_table)(row++,0) << RPT_YBOT  << " (" << rptLengthUnitTag( &pDispUnit->GetComponentDimUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << RPT_YBOT  << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
    
-   (*xs_table)(row++,0) << Sub2("k","t")  << " (" << rptLengthUnitTag( &pDispUnit->GetComponentDimUnit().UnitOfMeasure ) <<") (Top kern point)";
-   (*xs_table)(row++,0) << Sub2("k","b")  << " (" << rptLengthUnitTag( &pDispUnit->GetComponentDimUnit().UnitOfMeasure ) <<") (Bottom kern point)";
+   (*xs_table)(row++,0) << Sub2("k","t")  << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<") (Top kern point)";
+   (*xs_table)(row++,0) << Sub2("k","b")  << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<") (Bottom kern point)";
 
-   (*xs_table)(row++,0) << RPT_STOP  << Sub(" girder") << " (" << rptLength3UnitTag( &pDispUnit->GetSectModulusUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << RPT_SBOT  << " (" << rptLength3UnitTag( &pDispUnit->GetSectModulusUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << RPT_STOP  << Sub(" girder") << " (" << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << RPT_SBOT  << " (" << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<")";
 
    if ( bComposite )
    {
-      (*xs_table)(row++,0) << RPT_STOP  << Sub(" slab") << " = n(" << Sub2("I","x") << "/" << Sub2("Y","t slab") << ")" << " (" << rptLength3UnitTag( &pDispUnit->GetSectModulusUnit().UnitOfMeasure ) <<")";
-      (*xs_table)(row++,0) << "Q" << Sub("slab") << " (" << rptLength3UnitTag( &pDispUnit->GetSectModulusUnit().UnitOfMeasure ) <<")";
-      (*xs_table)(row++,0) << "Effective Flange Width (" << rptLengthUnitTag( &pDispUnit->GetComponentDimUnit().UnitOfMeasure ) <<")";
+      (*xs_table)(row++,0) << RPT_STOP  << Sub(" slab") << " = n(" << Sub2("I","x") << "/" << Sub2("Y","t slab") << ")" << " (" << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<")";
+      (*xs_table)(row++,0) << "Q" << Sub("slab") << " (" << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<")";
+      (*xs_table)(row++,0) << "Effective Flange Width (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
    }
 
-   (*xs_table)(row++,0) << "Perimeter (" << rptLengthUnitTag( &pDispUnit->GetComponentDimUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << "Perimeter (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
    (*xs_table)(row++,0) << "Span/Depth Ratio";
-   (*xs_table)(row++,0) << "Weight (" << rptForcePerLengthUnitTag( &pDispUnit->GetForcePerLengthUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "Total Weight (" << rptForceUnitTag( &pDispUnit->GetGeneralForceUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << "Weight (" << rptForcePerLengthUnitTag( &pDisplayUnits->GetForcePerLengthUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << "Total Weight (" << rptForceUnitTag( &pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure ) <<")";
 
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDispUnit->GetAreaUnit(), false );
-   INIT_UV_PROTOTYPE( rptLength4UnitValue, l4, pDispUnit->GetMomentOfInertiaUnit(), false );
-   INIT_UV_PROTOTYPE( rptLength3UnitValue, l3, pDispUnit->GetSectModulusUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, l1, pDispUnit->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDispUnit->GetGeneralForceUnit(), false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, force_per_length, pDispUnit->GetForcePerLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDisplayUnits->GetAreaUnit(), false );
+   INIT_UV_PROTOTYPE( rptLength4UnitValue, l4, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   INIT_UV_PROTOTYPE( rptLength3UnitValue, l3, pDisplayUnits->GetSectModulusUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, l1, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, force_per_length, pDisplayUnits->GetForcePerLengthUnit(), false );
 
    // DUMMY POI, but the section is prismatic so it is as good as any other
    pgsPointOfInterest poi(span,girder,0.00);
@@ -223,7 +222,6 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    return xs_table;
 }
-#pragma optimize( "", on )
 
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================

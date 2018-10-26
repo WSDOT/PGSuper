@@ -31,8 +31,9 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Update Reg Free WBFL"
-				CommandLine="copy \ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL*.dll \ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\&#x0D;&#x0A;echo &quot;Update WBFL&quot; &gt; \ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\UpdateWBFL.dep&#x0D;&#x0A;"
-				Outputs="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\UpdateWBFL.dep"
+				CommandLine="xcopy /y/d \ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL*.dll \ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\&#x0D;&#x0A;"
+				AdditionalDependencies="\ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL*.dll"
+				Outputs="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\WBFL*.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -54,7 +55,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;x_BETA_VERSION;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_BETA_VERSION;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -135,8 +136,9 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Update Reg Free WBFL"
-				CommandLine="copy \ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL*.dll \ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\&#x0D;&#x0A;echo &quot;Update WBFL&quot; &gt; \ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\UpdateWBFL.dep&#x0D;&#x0A;"
-				Outputs="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\UpdateWBFL.dep"
+				CommandLine="xcopy /y/d \ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL*.dll \ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\&#x0D;&#x0A;"
+				AdditionalDependencies="\ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL*.dll"
+				Outputs="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)\WBFL*.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -157,7 +159,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;x_BETA_VERSION"
+				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_BETA_VERSION"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -1244,28 +1246,6 @@
 			</File>
 			<File
 				RelativePath="custsite.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="DealWithLoadDlg.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2795,26 +2775,12 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PGSuperCatalog.cpp"
+				RelativePath=".\PGSuperCatalog.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\PGSuperCatalogServer.cpp"
+				>
 			</File>
 			<File
 				RelativePath="PGSuperCatalogServers.cpp"
@@ -2969,6 +2935,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\PGSuperTemplateManager.cpp"
+				>
 			</File>
 			<File
 				RelativePath="PGSuperUnits.cpp"
@@ -3170,28 +3140,6 @@
 			</File>
 			<File
 				RelativePath="ProjectPropertiesDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="RefinedAnalysisOptionsDlg.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3735,28 +3683,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="StatusCallbacks.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="StatusCenterDlg.cpp"
 				>
 				<FileConfiguration
@@ -3780,28 +3706,6 @@
 			</File>
 			<File
 				RelativePath="StatusCenterImp.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="StatusMessageDialog.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3977,6 +3881,14 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\MakePgz\unzip.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MakePgz\UnzipPgz.cpp"
+				>
 			</File>
 		</Filter>
 		<Filter
@@ -4176,10 +4088,6 @@
 				>
 			</File>
 			<File
-				RelativePath="DealWithLoadDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="DebondDlg.h"
 				>
 			</File>
@@ -4229,6 +4137,10 @@
 			</File>
 			<File
 				RelativePath="EditBridge.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Include\IFace\EditByUI.h"
 				>
 			</File>
 			<File
@@ -4476,7 +4388,11 @@
 				>
 			</File>
 			<File
-				RelativePath="PGSuperCatalog.h"
+				RelativePath=".\PGSuperCatalog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperCatalogServer.h"
 				>
 			</File>
 			<File
@@ -4521,6 +4437,10 @@
 			</File>
 			<File
 				RelativePath="PGSuperStatusBar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperTemplateManager.h"
 				>
 			</File>
 			<File
@@ -4569,10 +4489,6 @@
 			</File>
 			<File
 				RelativePath="ProjectPropertiesDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="RefinedAnalysisOptionsDlg.h"
 				>
 			</File>
 			<File
@@ -4696,10 +4612,6 @@
 				>
 			</File>
 			<File
-				RelativePath="StatusCallbacks.h"
-				>
-			</File>
-			<File
 				RelativePath="Include\IFace\StatusCenter.h"
 				>
 			</File>
@@ -4709,10 +4621,6 @@
 			</File>
 			<File
 				RelativePath="StatusCenterImp.h"
-				>
-			</File>
-			<File
-				RelativePath="StatusMessageDialog.h"
 				>
 			</File>
 			<File
@@ -4749,6 +4657,14 @@
 			</File>
 			<File
 				RelativePath="UnitsDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MakePgz\unzip.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MakePgz\UnzipPgz.h"
 				>
 			</File>
 			<File
@@ -4833,11 +4749,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\concrete.ico"
+				RelativePath="psgLib\LibraryEditor\res\concrete.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\concrete.ico"
+				RelativePath="LibraryEditor\res\concrete.ico"
 				>
 			</File>
 			<File
@@ -4853,11 +4769,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\diaphrag.ico"
+				RelativePath="psgLib\LibraryEditor\res\diaphrag.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\diaphrag.ico"
+				RelativePath="LibraryEditor\res\diaphrag.ico"
 				>
 			</File>
 			<File
@@ -4897,19 +4813,15 @@
 				>
 			</File>
 			<File
+				RelativePath="res\ico00001.ico"
+				>
+			</File>
+			<File
 				RelativePath="LibraryEditor\res\ico00001.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00001.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\ico00001.ico"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -4921,11 +4833,19 @@
 				>
 			</File>
 			<File
+				RelativePath="LibraryEditor\res\ico00002.ico"
+				>
+			</File>
+			<File
 				RelativePath="LibraryEditor\res\ico00003.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00003.ico"
+				>
+			</File>
+			<File
+				RelativePath="res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -4937,14 +4857,6 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00004.ico"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\res\ico00005.ico"
-				>
-			</File>
-			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00005.ico"
 				>
 			</File>
@@ -4953,11 +4865,19 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00006.ico"
+				RelativePath="LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00006.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\ico00006.ico"
 				>
 			</File>
 			<File
@@ -5009,7 +4929,7 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\icon1.ico"
+				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File
@@ -5017,7 +4937,7 @@
 				>
 			</File>
 			<File
-				RelativePath="res\icon1.ico"
+				RelativePath="LibraryEditor\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -5033,11 +4953,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\library_.ico"
+				RelativePath="psgLib\LibraryEditor\res\library_.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\library_.ico"
+				RelativePath="LibraryEditor\res\library_.ico"
 				>
 			</File>
 			<File
@@ -5117,11 +5037,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\specific.ico"
+				RelativePath="psgLib\LibraryEditor\res\specific.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\specific.ico"
+				RelativePath="LibraryEditor\res\specific.ico"
 				>
 			</File>
 			<File

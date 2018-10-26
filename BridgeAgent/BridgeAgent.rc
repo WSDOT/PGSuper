@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,24 +27,24 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
 END
 
-4 TEXTINCLUDE DISCARDABLE 
+4 TEXTINCLUDE 
 BEGIN
     "1 TYPELIB ""BridgeAgent.tlb""\r\n"
     "\0"
@@ -53,15 +53,14 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,2,4,0
- PRODUCTVERSION 2,2,4,0
+ FILEVERSION 2,3,0,1
+ PRODUCTVERSION 2,3,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -76,19 +75,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "A member of the Alternate Route Project\0"
-            VALUE "CompanyName", "Washington State Department of Transportation\0"
-            VALUE "FileDescription", "BridgeAgent Module\0"
-            VALUE "FileVersion", "2.2.4.0\0"
-            VALUE "InternalName", "BRIDGEAGENT\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2009, Washington State Department of Transportation, All Rights Reserved\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OLESelfRegister", "\0"
-            VALUE "OriginalFilename", "BRIDGEAGENT.DLL\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "PGSuper\0"
-            VALUE "ProductVersion", "2.2.4.0\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "Comments", "A member of the Alternate Route Project"
+            VALUE "CompanyName", "Washington State Department of Transportation"
+            VALUE "FileDescription", "BridgeAgent Module"
+            VALUE "FileVersion", "2.3.0.1"
+            VALUE "InternalName", "BRIDGEAGENT"
+            VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "OriginalFilename", "BRIDGEAGENT.DLL"
+            VALUE "ProductName", "PGSuper"
+            VALUE "ProductVersion", "2.3.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -97,22 +92,57 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-IDR_BRIDGEAGENT         REGISTRY DISCARDABLE    "BridgeAgent.rgs"
+IDR_BRIDGEAGENT         REGISTRY                "BridgeAgent.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DEAL_WITH_LOADS_DLG DIALOG  0, 0, 251, 87
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Modify Load in Question"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Delete Load",ID_DELETE_LOAD,38,66,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,162,66,50,14
+    LTEXT           "Change this message by changing m_Message",IDC_MESSAGE,13,23,224,30
+    DEFPUSHBUTTON   "Edit Load",ID_EDIT_LOAD,100,66,50,14
+    GROUPBOX        "Status Message:",IDC_STATIC,7,7,237,54
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+   IDD_DEAL_WITH_LOADS_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 244
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 80
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "BridgeAgent"
 END

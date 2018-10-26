@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -386,15 +386,10 @@ HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, 
                girder->get_AllowOddNumberOfHarpedStrands(&allow);
                if (allow == VARIANT_TRUE)
                {
-                  CollectionIndexType nItems;
-                  m_TempArray->get_Count(&nItems);
-                  
-                  CollectionIndexType idx = nItems-1;
-
-                  m_TempArray->get_Item(idx,&val);
+                  m_TempArray->get_Item(0,&val);
                   if (val==2)
                   {
-                     m_TempArray->put_Item(idx,1);
+                     m_TempArray->put_Item(0,1);
                      return m_TempArray.CopyTo(strandFill);
                   }
                }

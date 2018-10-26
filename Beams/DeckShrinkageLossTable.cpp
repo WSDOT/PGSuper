@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -34,20 +34,20 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CDeckShrinkageLossTable::CDeckShrinkageLossTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit) :
+CDeckShrinkageLossTable::CDeckShrinkageLossTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( offset,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDispUnit->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDispUnit->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDispUnit->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnit->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDispUnit->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDispUnit->GetMomentUnit(),          false );
-   DEFINE_UV_PROTOTYPE( stress,      pDispUnit->GetStressUnit(),          false );
-   DEFINE_UV_PROTOTYPE( time,        pDispUnit->GetLongTimeUnit(),        false );
+   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( offset,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
+   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
+   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetLongTimeUnit(),        false );
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
@@ -58,7 +58,7 @@ rptRcTable(NumColumns,0)
    strain.SetPrecision(3);
 }
 
-CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::string strSpecName = pSpec->GetSpecification();
@@ -68,7 +68,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
 
    // Create and configure the table
    ColumnIndexType numColumns = 8;
-   CDeckShrinkageLossTable* table = new CDeckShrinkageLossTable( numColumns, pDispUnit );
+   CDeckShrinkageLossTable* table = new CDeckShrinkageLossTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -82,21 +82,21 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    *pChapter << pParagraph;
 
 #if defined IGNORE_2007_CHANGES
-   if ( pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI )
+   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
       *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_SI_2006.gif") << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_US_2006.gif") << rptNewLine;
 #else
    if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
    {
-      if ( pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
          *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_SI_2006.gif") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_US_2006.gif") << rptNewLine;
    }
    else
    {
-      if ( pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
          *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_SI_2007.gif") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_US_2007.gif") << rptNewLine;
@@ -105,7 +105,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
 //
    rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(7,"");
    *pParagraph << pParamTable << rptNewLine;
-   (*pParamTable)(0,0) << COLHDR("V/S" << rptNewLine << "deck",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+   (*pParamTable)(0,0) << COLHDR("V/S" << rptNewLine << "deck",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 #if defined IGNORE_2007_CHANGES
    (*pParamTable)(0,1) << Sub2("k","vs") << rptNewLine << "deck";
 #else
@@ -116,7 +116,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
 #endif // IGNORE_2007_CHANGES
 
    (*pParamTable)(0,2) << Sub2("k","hs");
-   (*pParamTable)(0,3) << COLHDR(RPT_FC << rptNewLine << "deck", rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*pParamTable)(0,3) << COLHDR(RPT_FC << rptNewLine << "deck", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,4) << Sub2("k","f");
    (*pParamTable)(0,5) << Sub2("k","td") << rptNewLine << "t = " << Sub2("t","f") << " - " << Sub2("t","d");
    (*pParamTable)(0,6) << Sub2(symbol(epsilon),"ddf") << "x 1000";
@@ -131,9 +131,9 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
 
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(4,"");
    *pParagraph << pParamTable << rptNewLine;
-   (*pParamTable)(0,0) << COLHDR( Sub2("E","p"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*pParamTable)(0,1) << COLHDR( Sub2("E","c"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*pParamTable)(0,2) << COLHDR( Sub2("E","cd"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*pParamTable)(0,0) << COLHDR( Sub2("E","p"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pParamTable)(0,1) << COLHDR( Sub2("E","c"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pParamTable)(0,2) << COLHDR( Sub2("E","cd"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,3) << Sub2(symbol(psi),"b") << "(" << Sub2("t","f") << "," << Sub2("t","d") << ")";
 
    (*pParamTable)(1,0) << table->mod_e.SetValue( details.RefinedLosses2005.GetEp() );
@@ -142,14 +142,14 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    (*pParamTable)(1,3) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeckToFinal().GetCreepCoefficient());
 
    *pParagraph << table << rptNewLine;
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR( Sub2("A","d"), rptAreaUnitTag, pDispUnit->GetAreaUnit() );
-   (*table)(0,2) << COLHDR( Sub2("e","pc"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,3) << COLHDR( Sub2("e","d"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR( Sub2("A","c"), rptAreaUnitTag, pDispUnit->GetAreaUnit() );
-   (*table)(0,5) << COLHDR( Sub2("I","c"), rptLength4UnitTag, pDispUnit->GetMomentOfInertiaUnit() );
-   (*table)(0,6) << COLHDR( symbol(DELTA) << Sub2("f","cdf"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*table)(0,7) << COLHDR( symbol(DELTA) << Sub2("f","pSS"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR( Sub2("A","d"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,2) << COLHDR( Sub2("e","pc"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,3) << COLHDR( Sub2("e","d"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4) << COLHDR( Sub2("A","c"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,5) << COLHDR( Sub2("I","c"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,6) << COLHDR( symbol(DELTA) << Sub2("f","cdf"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,7) << COLHDR( symbol(DELTA) << Sub2("f","pSS"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
 #if defined IGNORE_2007_CHANGES
    table->m_Sign = -1;
@@ -160,7 +160,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    return table;
 }
 
-void CDeckShrinkageLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+void CDeckShrinkageLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << area.SetValue( details.RefinedLosses2005.GetAd() );
    (*this)(row,2) << ecc.SetValue( details.RefinedLosses2005.GetEccpc() );

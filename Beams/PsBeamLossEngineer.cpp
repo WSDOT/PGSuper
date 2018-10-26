@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -39,23 +39,25 @@ HRESULT CPsBeamLossEngineer::FinalConstruct()
    return S_OK;
 }
 
-void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,long agentID)
+void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,AgentIDType agentID)
 {
    m_pBroker = pBroker;
    m_AgentID = agentID;
+
+   m_Engineer.Init(m_pBroker,m_AgentID);
 }
 
 LOSSDETAILS CPsBeamLossEngineer::ComputeLosses(const pgsPointOfInterest& poi)
 {
-   return m_Engineer.ComputeLosses(m_pBroker,m_AgentID,m_BeamType,poi);
+   return m_Engineer.ComputeLosses(m_BeamType,poi);
 }
 
 LOSSDETAILS CPsBeamLossEngineer::ComputeLossesForDesign(const pgsPointOfInterest& poi,const GDRCONFIG& config)
 {
-   return m_Engineer.ComputeLossesForDesign(m_pBroker,m_AgentID,m_BeamType,poi,config);
+   return m_Engineer.ComputeLossesForDesign(m_BeamType,poi,config);
 }
 
-void CPsBeamLossEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit)
+void CPsBeamLossEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
 {
-   m_Engineer.BuildReport(m_pBroker,m_BeamType,span,gdr,pChapter,pDispUnit);
+   m_Engineer.BuildReport(m_BeamType,span,gdr,pChapter,pDisplayUnits);
 }

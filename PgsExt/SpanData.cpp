@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2008  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -285,14 +285,15 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             {
                // there is bad data
 
-               // fixed the last girder index
+               // fixed the last girder index and remove extra groups
                m_GirderSpacing[endType].m_SpacingGroups[nGroups-1].second = m_nGirders-1;
+               if (m_GirderSpacing[endType].m_SpacingGroups[nGroups-1].first >= m_GirderSpacing[endType].m_SpacingGroups[nGroups-1].second )
+                  m_GirderSpacing[endType].m_SpacingGroups.pop_back();
 
                // remove extra girder spacing data
-               std::vector<Float64>::iterator begin, end;
-               begin = m_GirderSpacing[endType].m_GirderSpacing.begin() + (m_nGirders-1);
-               end   = m_GirderSpacing[endType].m_GirderSpacing.end();
-               m_GirderSpacing[endType].m_GirderSpacing.erase( begin, end );
+               std::vector<Float64>::iterator spacing_begin = m_GirderSpacing[endType].m_GirderSpacing.begin() + (m_nGirders-1);
+               std::vector<Float64>::iterator spacing_end   = m_GirderSpacing[endType].m_GirderSpacing.end();
+               m_GirderSpacing[endType].m_GirderSpacing.erase( spacing_begin, spacing_end );
             }
          }
 

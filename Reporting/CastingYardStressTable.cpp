@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,20 +71,20 @@ CCastingYardStressTable& CCastingYardStressTable::operator= (const CCastingYardS
 
 //======================== OPERATIONS =======================================
 rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IDisplayUnits* pDispUnits) const
+                                            IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    location.MakeGirderPoi();
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Casting Yard Stresses");
 
    // Set up table headings
-   (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION,                  rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR(RPT_FTOP << rptNewLine << "Girder",    rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*p_table)(0,2) << COLHDR(RPT_FBOT << rptNewLine << "Girder",    rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION,                  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR(RPT_FTOP << rptNewLine << "Girder",    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,2) << COLHDR(RPT_FBOT << rptNewLine << "Girder",    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

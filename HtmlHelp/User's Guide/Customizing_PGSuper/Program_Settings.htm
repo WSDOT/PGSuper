@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=2007>
-<meta name=layout-width content=1140>
+<meta name=layout-height content=1766>
+<meta name=layout-width content=1352>
 
 
 <!--(Links)=========================================================-->
@@ -62,10 +62,13 @@
 
 <h2>Libraries and Templates</h2>
 
-<p>You can customize the library and templates used by PGSuper.</p>
+<p>You can customize the location of library and templates used by PGSuper. 
+ At installation, PGSuper provides some &quot;generic&quot; defaults to 
+ get you started. You can also use files that are published on the Internet, 
+ or create your own libraries and templates.</p>
 
-<p>There are three options for the libraries and templates. Select the 
- one that best fits your situation.</p>
+<p>There are two options for the location of libraries and templates. Select 
+ the one that best fits your situation.</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
@@ -114,9 +117,9 @@
  use the libraries and templates that were installed with the program. 
  Note that these templates are based on WSDOT settings, but they are not 
  automatically kept up to date over the Internet.</p>
-<p>Also note that this gives the appearance that PGSuper only supports 
- WSDOT girders. This is not the case. PGSuper supports a wide variety of 
- parametric girder types.</td></tr>
+<p>Also note that this gives the appearance that PGSuper support a very 
+ limited number of girder types. This is not the case. PGSuper supports 
+ a wide variety of parametric girder types.</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -133,7 +136,8 @@
 			padding-right: 10px;
 			padding-left: 10px;"
 	width=50%>
-<p>Download and synchronize with published libraries and templates</td>
+<p>Use libraries and templates published on your local file system, local 
+ area network, or the Internet</td>
 <td style="width: 50%;
 			border-right-width: 1px;
 			border-right-color: #000000;
@@ -144,53 +148,27 @@
 			padding-right: 10px;
 			padding-left: 10px;"
 	width=50%>
-<p>This is the option you'll want to use if you are doing production work 
- for a bridge owner. DOTs like WSDOT and TxDOT publish libraries and templates 
- on the Internet that reflect their policies and practices. By selecting 
- this option, PGSuper's libraries and templates are automatically kept 
- up to date via the Internet.</p>
-<p>Contact WSDOT if you would like to publish your own libraries and templates.</td></tr>
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="width: 50%;
-			border-left-width: 1px;
-			border-left-color: #000000;
-			border-left-style: Solid;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>Use and synchronize with libraries and templates on your local network</td>
-<td style="width: 50%;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>This is the option you'll want to use if you want to share libraries 
- and templates that are not published on the Internet.</td></tr>
+<p>This is the typically the option you'll want to use if your organization 
+ is doing production work for a bridge owner. DOTs like WSDOT and TxDOT 
+ publish libraries and templates on the Internet that reflect their policies 
+ and practices. Also, you can configure PGSuper to share libraries and 
+ templates locally, or on a server in your office.</p>
+<p>By selecting this option, PGSuper's libraries and templates are automatically 
+ kept up to date at the frequency set in the dialog.</td></tr>
 </table>
 
-<h3><span style="font-weight: bold;">P</span>GSuper Catalog Server</h3>
+<h3><span style="font-weight: bold;">P</span>GSuper Servers</h3>
 
 <p>Agencies such as WSDOT and TxDOT can publish catalogs of libraries and 
- project templates on the Internet. Select the catalog server that you 
- would like to use. To manage your catalog servers, press the Add/Edit 
- button. From here you can add, edit, and delete server definitions.</p>
+ project templates on the Internet, on your local computer's file system, 
+ or on your local area network. You can set up your own server to provide 
+ libraries and templates. Select the server that you would like to use. 
+ To manage servers, press the Add/Edit button. From here you can add, edit, 
+ and delete server definitions.</p>
 
 <p>A catalog server is defined by a name and a location. The location must 
- be an FTP server with anonymous access. An example of a PGSuper Catalog 
- Server definition is:</p>
+ be an FTP, HTTP, or file server with anonymous access. An example of a 
+ PGSuper Catalog Server definition is:</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
@@ -285,24 +263,11 @@
 		height=708
 		border=0></p>
 
-<h3>User Templates Folder</h3>
-
-<p>The user templates folder provides a secondary location where you can 
- store PGSuper template files. This can be on your local system, or in 
- a shared location in your local network. Store them in a folder and set 
- the User Templates field to this folder. PGSuper will then offer the templates 
- stored in this folder, and in folders directly below it, when creating 
- new projects.</p>
-
-<p CLASS=Tip><span style="font-weight: bold;">Note</span>: See <a href="../Project_Templates/Chapter_9.htm">Chapter 
- 11 </a><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->of 
- the PGSuper User Guide for more information on Project Templates.</p>
-
 <h2>Update Frequency</h2>
 
-<p>PGSuper periodically queries the catalog server to see if there are 
- updated libraries or templates. This setting tells PGSuper how often to 
- check in with the catalog server.</p>
+<p>PGSuper periodically queries the catalog server to see if the library 
+ and template files have been changed since the last update. This setting 
+ tells PGSuper how often to check in with the catalog server.</p>
 
 <p CLASS=Tip><span style="font-weight: bold;">Note</span>: See <a href="../../Adminstrator%27s Guide/Chapter 2/Chapter_2.htm">Chapter 
  2</a> and <a href="../../Adminstrator%27s Guide/Chapter 3/Chapter_3.htm">Chapter 

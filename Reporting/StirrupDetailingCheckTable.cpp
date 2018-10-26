@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -61,7 +61,7 @@ CStirrupDetailingCheckTable::~CStirrupDetailingCheckTable()
 
 //======================== OPERATIONS =======================================
 rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                               IDisplayUnits* pDispUnit,
+                                               IDisplayUnits* pDisplayUnits,
                                                pgsTypes::Stage stage,
                                                pgsTypes::LimitState ls,
                                                bool* pWriteNote) const
@@ -72,21 +72,21 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
    table->TableLabel() << "Stirrup Detailing Check [5.8.2.5, 5.8.2.7, 5.10.3.1.2]";
   
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    (*table)(0,1)  << "Bar Size";
-   (*table)(0,2)  << COLHDR("S",            rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,3)  << COLHDR("S"<<Sub("max"),  rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,4)  << COLHDR("S"<<Sub("min"),  rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,5)  << COLHDR("A" << Sub("v")<<"/S" , rptAreaPerLengthUnitTag, pDispUnit->GetAvOverSUnit() );
-   (*table)(0,6)  << COLHDR("A" << Sub("v")<<"/S"<<Sub("min") , rptAreaPerLengthUnitTag, pDispUnit->GetAvOverSUnit() );
+   (*table)(0,2)  << COLHDR("S",            rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,3)  << COLHDR("S"<<Sub("max"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4)  << COLHDR("S"<<Sub("min"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,5)  << COLHDR("A" << Sub("v")<<"/S" , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,6)  << COLHDR("A" << Sub("v")<<"/S"<<Sub("min") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    (*table)(0,7)  << "Status";
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptAreaPerLengthValue,      AvS,      pDispUnit->GetAvOverSUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,      pDispUnit->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptAreaPerLengthValue,      AvS,      pDisplayUnits->GetAvOverSUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,      pDisplayUnits->GetComponentDimUnit(),  false );
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);

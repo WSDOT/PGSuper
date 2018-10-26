@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -76,7 +76,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             IDisplayUnits* pDispUnits) const;
+                             IDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -129,7 +129,7 @@ public:
 //
 
 template <class M,class T>
-rptRcTable* CreateUserLoadHeading(const char* strTitle,bool bPierTable,pgsTypes::AnalysisType analysisType,IDisplayUnits* pDispUnits,const T& unitT)
+rptRcTable* CreateUserLoadHeading(const char* strTitle,bool bPierTable,pgsTypes::AnalysisType analysisType,IDisplayUnits* pDisplayUnits,const T& unitT)
 {
    ColumnIndexType nCols = 6;
    if ( analysisType == pgsTypes::Envelope )
@@ -139,7 +139,7 @@ rptRcTable* CreateUserLoadHeading(const char* strTitle,bool bPierTable,pgsTypes:
 
    // Set up table headings
    if ( !bPierTable )
-      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    else
       (*pTable)(0,0) << "";
 

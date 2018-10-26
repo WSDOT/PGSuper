@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -76,11 +76,11 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   bool bUnitsSI = (pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bUnitsSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
 
 	/* For broker passed in, get interface information */
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -96,7 +96,7 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << color(Red) << "The Specification Check Was Not Successful" << color(Black) << rptNewLine;
+      *pPara << color(Red) << "The Specification Check Was Not Successful" << color(Black);
    }
 
 #if defined IGNORE_2007_CHANGES
@@ -115,7 +115,7 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // let the paragraph builder to all the work here...
    CTexasIBNSParagraphBuilder parabuilder;
-   rptParagraph* pcontent = parabuilder.Build(pBroker,span,girder,pDispUnit,level);
+   rptParagraph* pcontent = parabuilder.Build(pBroker,span,girder,pDisplayUnits,level);
 
    *pChapter << pcontent;
 

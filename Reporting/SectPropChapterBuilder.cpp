@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -69,7 +69,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    
 
    rptParagraph* pPara = new rptParagraph();
@@ -80,12 +80,12 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    GET_IFACE2(pBroker,IBarriers,pBarriers);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDispUnit->GetAreaUnit(), false );
-   INIT_UV_PROTOTYPE( rptLength4UnitValue, ui, pDispUnit->GetMomentOfInertiaUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceLength2UnitValue, uei, pDispUnit->GetStiffnessUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, modE, pDispUnit->GetModEUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,    pDispUnit->GetComponentDimUnit(),    true );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDispUnit->GetForcePerLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDisplayUnits->GetAreaUnit(), false );
+   INIT_UV_PROTOTYPE( rptLength4UnitValue, ui, pDisplayUnits->GetMomentOfInertiaUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceLength2UnitValue, uei, pDisplayUnits->GetStiffnessUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, modE, pDisplayUnits->GetModEUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,    pDisplayUnits->GetComponentDimUnit(),    true );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), true );
 
    GET_IFACE2( pBroker, IBridgeMaterial, pMaterial );
    (*pPara) << "Girder " << RPT_EC << " = " << modE.SetValue( pMaterial->GetEcGdr(span,girder) ) << rptNewLine;
@@ -145,29 +145,32 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    if ( bIsPrismatic_CastingYard && bIsPrismatic_Final )
    {
       // simple table
-      rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,span,girder,bComposite,pDispUnit);
+      rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,span,girder,bComposite,pDisplayUnits);
       *pPara << pTable << rptNewLine;
    }
    else if ( bIsPrismatic_CastingYard && !bIsPrismatic_Final )
    {
       // simple table for bare girder (don't report composite)
-      rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,span,girder,false,pDispUnit);
+      rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,span,girder,false,pDisplayUnits);
       *pPara << pTable << rptNewLine;
 
       if ( bComposite )
       {
          // there is a deck so we have composite, non-prismatic results
-         pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDispUnit);
+         pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDisplayUnits);
          *pPara << pTable << rptNewLine;
       }
    }
    else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
    {
-      rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::CastingYard,pDispUnit);
+      rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::CastingYard,pDisplayUnits);
       *pPara << pTable << rptNewLine;
 
-      pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDispUnit);
-      *pPara << pTable << rptNewLine;
+      if ( pBridge->GetDeckType() != pgsTypes::sdtNone ) // if there isn't a deck, no need to report duplicate properties
+      {
+         pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDisplayUnits);
+         *pPara << pTable << rptNewLine;
+      }
    }
    else if ( !bIsPrismatic_CastingYard && bIsPrismatic_Final )
    {

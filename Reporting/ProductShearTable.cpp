@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,11 +73,11 @@ CProductShearTable& CProductShearTable::operator= (const CProductShearTable& rOt
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                      bool bIndicateControllingLoad,IDisplayUnits* pDispUnits) const
+                                      bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDispUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
@@ -90,9 +90,10 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductForces,pForces);
-   bool bPedLoading = pForces->HasPedestrianLoad(startSpan,gdr);
-   bool bSidewalk = pForces->HasSidewalkLoad(startSpan,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
+   bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
+   bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
 
    pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
    SpanIndexType spanIdx;
@@ -146,8 +147,20 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       }
    }
 
+   if ( bShearKey )
+   {
+      if (analysisType == pgsTypes::Envelope )
+      {
+         nCols += 2;
+      }
+      else
+      {
+         nCols++;
+      }
+   }
+
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Shears");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,false,bDeckPanels,bSidewalk,bPedLoading,bPermit,analysisType,continuity_stage,pDispUnits,pDispUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bPedLoading,bPermit,analysisType,continuity_stage,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -160,7 +173,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
 
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      pgsTypes::Stage girderLoadStage = pForces->GetGirderDeadLoadStage(spanIdx,gdrIdx);
+      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(spanIdx,gdrIdx);
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
       std::vector<sysSectionValue> girder = pForces2->GetShear(girderLoadStage,pftGirder,vPoi,SimpleSpan);
@@ -195,6 +208,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       std::vector<sysSectionValue> minOverlay, maxOverlay;
       std::vector<sysSectionValue> minTrafficBarrier, maxTrafficBarrier;
       std::vector<sysSectionValue> minSidewalk, maxSidewalk;
+      std::vector<sysSectionValue> minShearKey, maxShearKey;
       std::vector<sysSectionValue> minPedestrian, maxPedestrian;
       std::vector<sysSectionValue> minDesignLL, maxDesignLL;
       std::vector<sysSectionValue> minFatigueLL, maxFatigueLL;
@@ -208,6 +222,12 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
          {
             maxSidewalk = pForces2->GetShear( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MaxSimpleContinuousEnvelope );
             minSidewalk = pForces2->GetShear( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MinSimpleContinuousEnvelope );
+         }
+
+         if ( bShearKey )
+         {
+            maxShearKey = pForces2->GetShear( pgsTypes::BridgeSite1, pftShearKey, vPoi, MaxSimpleContinuousEnvelope );
+            minShearKey = pForces2->GetShear( pgsTypes::BridgeSite1, pftShearKey, vPoi, MinSimpleContinuousEnvelope );
          }
 
          maxTrafficBarrier = pForces2->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope );
@@ -243,6 +263,11 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
             maxSidewalk = pForces2->GetShear( pgsTypes::BridgeSite2, pftSidewalk, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
          }
 
+         if ( bShearKey )
+         {
+            maxShearKey = pForces2->GetShear( pgsTypes::BridgeSite1, pftShearKey, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+         }
+
          maxTrafficBarrier = pForces2->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
          maxOverlay = pForces2->GetShear( overlay_stage, pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
 
@@ -276,6 +301,19 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
          (*p_table)(row,col++) << location.SetValue( poi, end_size );
          (*p_table)(row,col++) << shear.SetValue( girder[index] );
          (*p_table)(row,col++) << shear.SetValue( diaphragm[index] );
+
+         if ( bShearKey )
+         {
+            if ( analysisType == pgsTypes::Envelope )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxShearKey[index] );
+               (*p_table)(row,col++) << shear.SetValue( minShearKey[index] );
+            }
+            else
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxShearKey[index] );
+            }
+         }
 
          if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
          {

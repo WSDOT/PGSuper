@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -196,7 +196,7 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,SpanIndexType spanId
    }
 
    GET_IFACE(IBridge,pBridge);
-   GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+   GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx == ALL_SPANS ? 0 : spanIdx);
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       CString str;

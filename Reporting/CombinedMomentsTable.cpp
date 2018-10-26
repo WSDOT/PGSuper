@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,12 +73,12 @@ CCombinedMomentsTable& CCombinedMomentsTable::operator= (const CCombinedMomentsT
 //======================== OPERATIONS =======================================
 void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          SpanIndexType span,GirderIndexType girder,
-                                         IDisplayUnits* pDispUnits,
+                                         IDisplayUnits* pDisplayUnits,
                                          pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDispUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
    if ( stage == pgsTypes::CastingYard )
       location.MakeGirderPoi();
@@ -114,10 +114,10 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bPedLoading = pProductForces->HasPedestrianLoad(startSpan,girder);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
 
-   RowIndexType row = CreateCombinedLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,"Moment",false,bPermit,bPedLoading,stage,continuity_stage,analysisType,pDispUnits,pDispUnits->GetMomentUnit());
+   RowIndexType row = CreateCombinedLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,"Moment",false,bPermit,bPedLoading,stage,continuity_stage,analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    *p << p_table;
 
@@ -135,16 +135,16 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
       p = new rptParagraph;
       *pChapter << p;
 
-      ColumnIndexType nCols = 6;
+      ColumnIndexType nCols = 7;
 
       if ( bPermit )
-         nCols += 2;
+         nCols += 3;
 
       if ( analysisType == pgsTypes::Envelope )
          nCols += 3;
 
       p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
-      row2 = ConfigureLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table2,false,bPermit,analysisType,pDispUnits,pDispUnits->GetMomentUnit());
+      row2 = ConfigureLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table2,false,bPermit,true,analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
       *p << p_table2;
    }
 
@@ -421,6 +421,8 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          std::vector<Float64> minFatigueI,  maxFatigueI;
          std::vector<Float64> minStrengthI,  maxStrengthI;
          std::vector<Float64> minStrengthII, maxStrengthII;
+         std::vector<Float64> slabStrengthI, slabStrengthII;
+
          if ( analysisType == pgsTypes::Envelope )
          {
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
@@ -442,11 +444,13 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
             pLsForces2->GetMoment( pgsTypes::StrengthI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI );
             pLsForces2->GetMoment( pgsTypes::StrengthI, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI, &dummy );
+            slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,MinSimpleContinuousEnvelope);
 
             if ( bPermit )
             {
                pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII );
                pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII, &dummy );
+               slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,MinSimpleContinuousEnvelope);
             }
          }
          else
@@ -461,10 +465,12 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
             pLsForces2->GetMoment( pgsTypes::ServiceIII, stage, vPoi, bat, &minServiceIII, &maxServiceIII );
             pLsForces2->GetMoment( pgsTypes::StrengthI,  stage, vPoi, bat, &minStrengthI, &maxStrengthI );
+            slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,bat);
 
             if ( bPermit )
             {
                pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, bat, &minStrengthII, &maxStrengthII );
+               slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,bat);
             }
          }
 
@@ -504,11 +510,13 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
                (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
                (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI[index] );
 
                if ( bPermit )
                {
                   (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
                   (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII[index] );
                }
             }
             else
@@ -525,11 +533,13 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
                (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
                (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( slabStrengthI[index] );
 
                if ( bPermit )
                {
                   (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
                   (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
+                  (*p_table2)(row2,col++) << moment.SetValue( slabStrengthII[index] );
                }
             }
 

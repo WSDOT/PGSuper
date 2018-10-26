@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -154,7 +154,7 @@ void CBridgeDescDeckPointGrid::CustomInit()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	GetParam( )->EnableUndo(FALSE);
 
@@ -194,7 +194,7 @@ void CBridgeDescDeckPointGrid::CustomInit()
 		);
 
    CString cv;
-   cv.Format("Left Offset (%s)", pDispUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format("Left Offset (%s)", pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -203,7 +203,7 @@ void CBridgeDescDeckPointGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Right Offset (%s)", pDispUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format("Right Offset (%s)", pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -249,8 +249,8 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   CString strStation = FormatStation(pDispUnits->GetStationFormat(),point.Station);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),point.Station);
 
    SetStyleRange(CGXRange(row,1), CGXStyle()
       .SetControl(GX_IDS_CTRL_EDIT)
@@ -267,14 +267,14 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       .SetValue(point.MeasurementType == pgsTypes::omtBridge ? "Bridge Line" : "Alignment")
       );
 
-   double offset = ::ConvertFromSysUnits(point.LeftEdge,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double offset = ::ConvertFromSysUnits(point.LeftEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,3),CGXStyle()
       .SetControl(GX_IDS_CTRL_EDIT)
       .SetHorizontalAlignment(DT_RIGHT)
       .SetValue(offset)
       );
 
-   offset = ::ConvertFromSysUnits(point.RightEdge,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   offset = ::ConvertFromSysUnits(point.RightEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4),CGXStyle()
       .SetControl(GX_IDS_CTRL_EDIT)
       .SetHorizontalAlignment(DT_RIGHT)
@@ -288,16 +288,16 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // Station
    CString strStation = GetCellValue(row,1);
-   UnitModeType unitMode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
    m_objStation->FromString(CComBSTR(strStation),unitMode);
 
    double station;
    m_objStation->get_Value(&station);
-   pPoint->Station = ::ConvertToSysUnits(station,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPoint->Station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    // Datum
    CString strDatum = GetCellValue(row,2);
@@ -305,11 +305,11 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 
    // Left Edge
    double offset = atof(GetCellValue(row,3));
-   pPoint->LeftEdge = ::ConvertToSysUnits(offset,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPoint->LeftEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    // Right Edge
    offset = atof(GetCellValue(row,4));
-   pPoint->RightEdge = ::ConvertToSysUnits(offset,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPoint->RightEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 }
 
 void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint& point)

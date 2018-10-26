@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -25,6 +25,7 @@
 #include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\LibraryUsageParagraph.h>
+#include <Reporting\GirderSeedDataComparisonParagraph.h>
 
 #include <IFace\VersionInfo.h>
 #include <IFace\File.h>
@@ -37,10 +38,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,const char* strTitle,bool bIncludeReportNotes) :
+CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,const char* strTitle,bool bFullVersion) :
 m_pBroker(pBroker),
 m_Title(strTitle),
-m_bIncludeReportNotes(bIncludeReportNotes)
+m_bFullVersion(bFullVersion)
 {
 }
 
@@ -57,12 +58,11 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
    *pTitlePage << pPara;
 
-   *pPara << m_Title.c_str() << rptNewLine;
+   *pPara << m_Title.c_str();
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());
    *pTitlePage << pPara;
-   *pPara << rptNewLine;
 
    // Determine if the report spec has span/girder information
    boost::shared_ptr<CSpanReportSpecification> pSpanRptSpec = boost::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
@@ -101,7 +101,8 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    *pTitlePage << pPara;
    *pPara << rptRcDateTime() << rptNewLine;
 
-   *pPara << rptNewLine << rptNewLine;
+   if (m_bFullVersion)
+      *pPara << rptNewLine << rptNewLine;
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
@@ -127,9 +128,8 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       *pPara << rptRcImage(strImage) << rptNewLine;
    }
 
-
-   *pPara << rptNewLine << rptNewLine;
-
+   if (m_bFullVersion)
+      *pPara << rptNewLine << rptNewLine;
 
    GET_IFACE(IProjectProperties,pProps);
    GET_IFACE(IFile,pFile);
@@ -144,7 +144,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    pTbl->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT ) );
    pTbl->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT ) );
 
-   *pPara3 << rptNewLine << rptNewLine << rptNewLine;
+   if (m_bFullVersion)
+      *pPara3 << rptNewLine << rptNewLine << rptNewLine;
+
    *pPara3 << pTbl;
    (*pTbl)(0,0) << "Bridge Name";
    (*pTbl)(0,1) << pProps->GetBridgeName();
@@ -162,29 +164,61 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    (*pTbl)(6,1) << pFile->GetFilePath();
 
 
-   // Throw in a page break
    rptParagraph* p = new rptParagraph;
    *pTitlePage << p;
-   *p << rptNewPage;
 
-   if ( m_bIncludeReportNotes )
-   {
-      // report library usage information
-      rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-      *pTitlePage << p;
+   // Throw in a page break
+   if (m_bFullVersion)
+      *p << rptNewPage;
+
+   // report library usage information
+   p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pTitlePage << p;
+
+   if (m_bFullVersion)
       *p << rptNewLine << rptNewLine;
-      *p << "Library Usage" << rptNewLine;
-      p = CLibraryUsageParagraph().Build(m_pBroker);
-      *pTitlePage << p;
 
-      
+   *p << "Library Usage" << rptNewLine;
+   p = CLibraryUsageParagraph().Build(m_pBroker);
+   *pTitlePage << p;
+
+   // girder seed data comparison
+   if ( pSpanGirderRptSpec != NULL || pSpanRptSpec != NULL )
+   {
+      SpanIndexType spanIdx = -1;
+      GirderIndexType gdrIdx = -1; // means all girders in span
+
+      if (pSpanGirderRptSpec != NULL )
+      {
+         spanIdx = pSpanGirderRptSpec->GetSpan();
+         gdrIdx = pSpanGirderRptSpec->GetGirder();
+      }
+      else
+      {
+         spanIdx = pSpanRptSpec->GetSpan();
+      }
+
+      p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, spanIdx, gdrIdx);
+
+      if (p != NULL)
+      {
+         // only report if we have data
+         *pTitlePage << p;
+      }
+   }
+
+   rptRcTable* pTable;
+   int row = 0;
+
+   if (m_bFullVersion)
+   {      
       rptParagraph* pPara = new rptParagraph;
       pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
       *pTitlePage << pPara;
 
       *pPara << "Notes" << rptNewLine;
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,"");
+      pTable = pgsReportStyleHolder::CreateDefaultTable(2,"");
       pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -192,8 +226,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
 
       *pPara << pTable << rptNewLine;
 
-
-      int row = 0;
+      row = 0;
       (*pTable)(row,0) << "Symbol";
       (*pTable)(row++,1) << "Definition";
 
@@ -235,50 +268,48 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
 
       (*pTable)(row,0) << "Bunk Point";
       (*pTable)(row++,1) << "Point where girder is supported during transportation";
+   }
 
-      // Status Center Items
-      GET_IFACE(IStatusCenter,pStatusCenter);
-      long nItems = pStatusCenter->Count();
+   // Status Center Items
+   GET_IFACE(IStatusCenter,pStatusCenter);
+   long nItems = pStatusCenter->Count();
 
-      if ( nItems != 0 )
+   if ( nItems != 0 )
+   {
+      pPara = new rptParagraph;
+      pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
+      *pTitlePage << pPara;
+
+      *pPara << "Status Items" << rptNewLine;
+
+      pTable = pgsReportStyleHolder::CreateDefaultTable(2,"");
+      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      *pPara << pTable << rptNewLine;
+
+      (*pTable)(0,0) << "Level";
+      (*pTable)(0,1) << "Description";
+
+      row = 1;
+      CString strSeverityType[] = { "Info", "Warning", "Error" };
+      for ( long i = 0; i < nItems; i++ )
       {
-         pPara = new rptParagraph;
-         pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
-         *pTitlePage << pPara;
+         pgsStatusItem* pItem = pStatusCenter->GetByIndex(i);
 
-         *pPara << "Status Items" << rptNewLine;
+         long severity = pStatusCenter->GetSeverity(pItem);
 
-         pTable = pgsReportStyleHolder::CreateDefaultTable(2,"");
-         pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-
-         *pPara << pTable << rptNewLine;
-
-         (*pTable)(0,0) << "Level";
-         (*pTable)(0,1) << "Description";
-
-         row = 1;
-         CString strSeverityType[] = { "Info", "Warning", "Error" };
-         for ( long i = 0; i < nItems; i++ )
-         {
-            pgsStatusItem* pItem = pStatusCenter->GetByIndex(i);
-
-            long severity = pStatusCenter->GetSeverity(pItem);
-
-            (*pTable)(row,0) << strSeverityType[severity];
-            (*pTable)(row++,1) << pItem->GetDescription();
-         }
+         (*pTable)(row,0) << strSeverityType[severity];
+         (*pTable)(row++,1) << pItem->GetDescription();
       }
+   }
 
-
-      // Throw in a page break
-      p = new rptParagraph;
-      *pTitlePage << p;
-      *p << rptNewPage;
-
-   } // m_bIncludeReportNotesPage
+   // Throw in a page break
+   p = new rptParagraph;
+   *pTitlePage << p;
+   *p << rptNewPage;
 
    return pTitlePage;
 }

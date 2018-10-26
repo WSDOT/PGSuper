@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -42,6 +42,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
 #include <IFace\DisplayUnits.h>
+#include <IFace\EditByUI.h>
 
 #include <GraphicsLib\GraphTool.h>
 
@@ -463,7 +464,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
    pDoc->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
 
@@ -503,8 +504,8 @@ void CBridgeSectionView::UpdateGirderTooltips()
       CString strMsg2;
       strMsg2.Format("\r\n\r\nGirder: %s\r\nf'ci: %s\r\nf'c: %s",
                      pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx),
-                     FormatDimension(fci,pDispUnits->GetStressUnit()),
-                     FormatDimension(fc, pDispUnits->GetStressUnit())
+                     FormatDimension(fci,pDisplayUnits->GetStressUnit()),
+                     FormatDimension(fc, pDisplayUnits->GetStressUnit())
                     );
 
       const matPsStrand* pStrand = pBridgeMaterial->GetStrand(spanIdx,gdrIdx);
@@ -549,8 +550,8 @@ void CBridgeSectionView::UpdateGirderTooltips()
       endOffset   = pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metEnd);
       CString strMsg4;
       strMsg4.Format("\r\n\r\nSlab Offset\r\nStart: %s\r\nEnd: %s",
-         FormatDimension(startOffset,pDispUnits->GetComponentDimUnit()),
-         FormatDimension(endOffset,pDispUnits->GetComponentDimUnit()));
+         FormatDimension(startOffset,pDisplayUnits->GetComponentDimUnit()),
+         FormatDimension(endOffset,pDisplayUnits->GetComponentDimUnit()));
 
       CString strMsg = strMsg1 + strMsg2 + strMsg3 + strMsg4;
 
@@ -795,7 +796,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -854,17 +855,17 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
       {
          strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: %s\r\nf'c: %s",
                         m_pFrame->GetDeckTypeName(deckType),
-                        FormatDimension(pDeck->GrossDepth,pDispUnits->GetComponentDimUnit()),
-                        FormatDimension(pBridgeDesc->GetSlabOffset(),pDispUnits->GetComponentDimUnit()),
-                        FormatDimension(pBridgeMaterial->GetFcSlab(),pDispUnits->GetStressUnit())
+                        FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
+                        FormatDimension(pBridgeDesc->GetSlabOffset(),pDisplayUnits->GetComponentDimUnit()),
+                        FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
                         );
       }
       else
       {
          strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\nf'c: %s",
                         m_pFrame->GetDeckTypeName(deckType),
-                        FormatDimension(pDeck->GrossDepth,pDispUnits->GetComponentDimUnit()),
-                        FormatDimension(pBridgeMaterial->GetFcSlab(),pDispUnits->GetStressUnit())
+                        FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
+                        FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
                         );
       }
    }
@@ -875,7 +876,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    {
       strMsg3.Format("\r\n\r\n%s: %s",
          pBridge->IsFutureOverlay() ? "Future Overlay" : "Overlay",
-         FormatDimension(overlay_weight,pDispUnits->GetOverlayWeightUnit()));
+         FormatDimension(overlay_weight,pDisplayUnits->GetOverlayWeightUnit()));
    }
 
    CString strMsg = strMsg1 + strMsg2 + strMsg3;

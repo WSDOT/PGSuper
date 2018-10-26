@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -28,6 +28,7 @@
 #include <MathEx.h>
 #include <vector>
 
+// defines the method used for prestress loss computations
 #define LOSSES_AASHTO_REFINED       0
 #define LOSSES_AASHTO_LUMPSUM       1
 #define LOSSES_GENERAL_LUMPSUM      3
@@ -39,15 +40,18 @@
 #define LOSSES_WSDOT_REFINED        9
 #define LOSSES_TXDOT_REFINED_2004   10 // TxDOT's May, 09 decision is to use refined losses from AASHTO 2004
 
+// defines the mehod used for computing creep coefficients
 #define CREEP_LRFD              0
 #define CREEP_WSDOT             1
 
 #define CREEP_SPEC_PRE_2005     1 // creep based on pre 2005 provisions
 #define CREEP_SPEC_2005         2 // creep based on 2005 interim provisions
 
+// curing method (effects ti for loss and creep calcuations)
 #define CURING_NORMAL           0
 #define CURING_ACCELERATED      1
 
+// defines the creep time frame (ie. D40 and D120 for WSDOT)
 #define CREEP_MINTIME           0
 #define CREEP_MAXTIME           1
 
@@ -72,6 +76,10 @@
 
 // need to have a reasonable upper limit of skew angle... use 88 degrees
 #define MAX_SKEW_ANGLE ::ToRadians(88.0)
+
+typedef Int32 AgentIDType;
+typedef Int32 StatusCallbackIDType;
+typedef Int32 StatusItemIDType;
 
 struct pgsTypes
 {
@@ -295,6 +303,14 @@ struct pgsTypes
       sdVertical,
       sdHorizontal
    };
+
+   // Status Item Severity Type
+   enum StatusSeverityType
+   {
+      statusOK,
+      statusWarning,
+      statusError
+   };
 };
 
 
@@ -513,6 +529,19 @@ inline bool IsAdjacentSpacing(pgsTypes::SupportedBeamSpacing sbs)
 {
    // spacing type is for adjacent beams
    return !IsSpreadSpacing(sbs);
+}
+
+inline bool IsStrengthLimitState(pgsTypes::LimitState ls)
+{
+   if ( ls == pgsTypes::StrengthI || ls == pgsTypes::StrengthII )
+      return true;
+   else
+      return false;
+}
+
+inline bool IsServiceLimitState(pgsTypes::LimitState ls)
+{
+   return !IsStrengthLimitState(ls);
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

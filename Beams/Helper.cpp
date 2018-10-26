@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2005 Washington State Department of Transportation
-//                    Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -30,11 +30,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IDisplayUnits* pDispUnit)
+void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IDisplayUnits* pDisplayUnits)
 {
    if (lrd.Nb>1)
    {
-      INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDispUnit->GetSpanLengthUnit(),    true );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
 
       rptRcScalar scalar;
       scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -162,13 +162,13 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
       lbm.Nb = 1;
       lbm.m  = lrd.m;
 
-      ReportLanesBeamsMethod(pPara,lbm,pBroker,pDispUnit);
+      ReportLanesBeamsMethod(pPara,lbm,pBroker,pDisplayUnits);
    }
 }
 
-void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IDisplayUnits* pDispUnit)
+void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IDisplayUnits* pDisplayUnits)
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDispUnit->GetSpanLengthUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -202,7 +202,7 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
    (*pPara) << "mg" << Super("ME") << Sub(rd.e.size() > 1 ? "2+" : "1") << " = " << scalar.SetValue(rd.mg) << rptNewLine;
 }
 
-void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IDisplayUnits* pDispUnit)
+void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IDisplayUnits* pDisplayUnits)
 {
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );

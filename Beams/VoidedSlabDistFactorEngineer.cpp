@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -50,7 +50,7 @@ HRESULT CVoidedSlabDistFactorEngineer::FinalConstruct()
    return S_OK;
 }
 
-void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnits)
+void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
 {
    SPANDETAILS span_lldf;
    GetSpanDF(span,gdr,pgsTypes::StrengthI,-1,&span_lldf);
@@ -89,15 +89,15 @@ void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexTy
 
    rptParagraph* pPara;
 
-   bool bSIUnits = (pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSIUnits = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDispUnits->GetSpanLengthUnit(),      true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDispUnits->GetAreaUnit(),            true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDispUnits->GetSpanLengthUnit(),      true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDispUnits->GetComponentDimUnit(),    true );
-   INIT_UV_PROTOTYPE( rptLength4UnitValue,   inertia,  pDispUnits->GetMomentOfInertiaUnit(), true );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDispUnits->GetAngleUnit(),           true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),            true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLength4UnitValue,   inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), true );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),           true );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -132,7 +132,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexTy
    Float64 station,offset;
    pBridge->GetStationAndOffset(pgsPointOfInterest(span,gdr,span_lldf.ControllingLocation),&station, &offset);
    Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetGirderStartConnectionLength(span,gdr);
-   (*pPara) << "Measurement of Girder Spacing taken at " << location.SetValue(supp_dist)<< " from left support, measured along girder, or station = "<< rptRcStation(station, &pDispUnits->GetStationFormat() ) << rptNewLine;
+   (*pPara) << "Measurement of Girder Spacing taken at " << location.SetValue(supp_dist)<< " from left support, measured along girder, or station = "<< rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << rptNewLine;
    (*pPara) << "Span Length: L = " << xdim.SetValue(span_lldf.L) << rptNewLine;
    (*pPara) << "Deck Width: W = " << xdim.SetValue(span_lldf.W) << rptNewLine;
    (*pPara) << "Moment of Inertia: I = " << inertia.SetValue(span_lldf.I) << rptNewLine;
@@ -223,7 +223,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexTy
                    pier1_lldf.gM1,
                    pier1_lldf.gM2,
                    pier1_lldf.gM,
-                   bSIUnits,pDispUnits);
+                   bSIUnits,pDisplayUnits);
    }
 
    // Positive moment DF
@@ -244,7 +244,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexTy
                 span_lldf.gM1,
                 span_lldf.gM2,
                 span_lldf.gM,
-                bSIUnits,pDispUnits);
+                bSIUnits,pDisplayUnits);
 
    if ( bContinuousAtEnd || bIntegralAtEnd )
    {
@@ -263,7 +263,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexTy
                    pier2_lldf.gM1,
                    pier2_lldf.gM2,
                    pier2_lldf.gM,
-                   bSIUnits,pDispUnits);
+                   bSIUnits,pDisplayUnits);
    }
    
 
@@ -284,7 +284,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexTy
                span_lldf.gV1,
                span_lldf.gV2,
                span_lldf.gV,
-               bSIUnits,pDispUnits);
+               bSIUnits,pDisplayUnits);
 
    //////////////////////////////////////////////////////////////
    // Reactions
@@ -303,7 +303,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexTy
                reaction1_lldf.gR1,
                reaction1_lldf.gR2,
                reaction1_lldf.gR,
-               bSIUnits,pDispUnits);
+               bSIUnits,pDisplayUnits);
 
      ///////
 
@@ -321,7 +321,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexTy
                reaction2_lldf.gR1,
                reaction2_lldf.gR2,
                reaction2_lldf.gR,
-               bSIUnits,pDispUnits);
+               bSIUnits,pDisplayUnits);
 
    ////////////////////////////////////////////////////////////////////////////
    // Fatigue limit states
@@ -677,11 +677,11 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
    return pLLDF;
 }
 
-void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IDisplayUnits* pDispUnits)
+void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IDisplayUnits* pDisplayUnits)
 {
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDispUnits->GetSpanLengthUnit(),      true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -701,7 +701,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
       {
          (*pPara) << Bold("1 Loaded Lane") << rptNewLine;
          (*pPara) << Bold("Lever Rule") << rptNewLine;
-         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDispUnits);
+         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
       if (gM1.EqnData.bWasUsed)
@@ -750,7 +750,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
       {
          (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
          (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDispUnits);
+         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }
 
        
@@ -762,7 +762,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
             ATLASSERT(gM2.ControllingMethod & LEVER_RULE);
             (*pPara) << rptNewLine;
             (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
-            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDispUnits);
+            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if (gM2.EqnData.bWasUsed)
@@ -802,7 +802,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          {
             (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
             (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDispUnits);
+            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
       }
 
@@ -829,7 +829,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
       if ( gM1.LeverRuleData.bWasUsed )
       {
          (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
-         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDispUnits);
+         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
       if (gM1.EqnData.bWasUsed)
@@ -872,7 +872,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
       {
          (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
          (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDispUnits);
+         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }
 
       if ( 2 <= lldf.Nl )
@@ -882,7 +882,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
             (*pPara) << rptNewLine;
             (*pPara) << Bold("2+ Loaded Lanes") << rptNewLine;
             (*pPara) << Bold("Lever Rule") << rptNewLine;
-            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDispUnits);
+            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if (gM2.EqnData.bWasUsed)
@@ -923,7 +923,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          {
             (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
             (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDispUnits);
+            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
       }
 
@@ -946,11 +946,11 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
    }
 }
 
-void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IDisplayUnits* pDispUnits)
+void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IDisplayUnits* pDisplayUnits)
 {
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDispUnits->GetSpanLengthUnit(),      true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -1003,14 +1003,14 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
       if ( gV1.LeverRuleData.bWasUsed )
       {
          (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
-         ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDispUnits);
+         ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
       if ( gV1.LanesBeamsData.bWasUsed )
       {
          (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
          (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDispUnits);
+         ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }
 
       if ( 2 <= lldf.Nl )
@@ -1019,7 +1019,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
          if ( gV2.ControllingMethod & LEVER_RULE )
          {
             (*pPara) << Bold("2+ Loaded Lane: Lever Rule") << rptNewLine;
-            ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDispUnits);
+            ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gV1.EqnData.bWasUsed )
@@ -1054,7 +1054,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
          {
             (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
             (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDispUnits);
+            ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
 
          (*pPara) << rptNewLine;
@@ -1116,14 +1116,14 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
       if ( gV1.LeverRuleData.bWasUsed )
       {
          (*pPara) << Bold("Lever Rule") << rptNewLine;
-         ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDispUnits);
+         ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
       if ( gV1.LanesBeamsData.bWasUsed )
       {
          (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
          (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDispUnits);
+         ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }
 
       if ( 2 <= lldf.Nl )
@@ -1155,14 +1155,14 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
          if ( gV2.LeverRuleData.bWasUsed)
          {
             (*pPara) << Bold("2+ Loaded Lane: Lever Rule") << rptNewLine;
-            ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDispUnits);
+            ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gV2.LanesBeamsData.bWasUsed )
          {
             (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
             (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDispUnits);
+            ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
       }
 

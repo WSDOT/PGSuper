@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -374,23 +374,8 @@ LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std
    return result;
 }
 
-bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,double version,psgLibraryManager* pLibMgr)
+bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr)
 {
-   try
-   {
-      if (S_OK != pStrLoad->BeginUnit("PGSuper"))
-         return false;
-
-      double ver;
-      pStrLoad->get_Version(&ver);
-      if(ver!=version)
-         return false;
-   }
-   catch(...)
-   {
-      return false;
-   }
-
    // Load the library data into a temporary library. Then deal with entry
    // conflict resolution.
    psgLibraryManager temp_manager;

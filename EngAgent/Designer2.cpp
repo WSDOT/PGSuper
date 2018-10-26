@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -41,6 +41,9 @@
 #include "Designer2.h"
 #include "PsForceEng.h"
 #include "GirderHandlingChecker.h"
+
+#include "StatusItems.h"
+#include <PgsExt\StatusItem.h>
 
 
 #include "..\PGSuperException.h"
@@ -243,9 +246,13 @@ void pgsDesigner2::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-void pgsDesigner2::SetAgentID(long agentID)
+void pgsDesigner2::SetAgentID(AgentIDType agentID)
 {
    m_AgentID = agentID;
+
+   GET_IFACE(IStatusCenter,pStatusCenter);
+   m_scidLiveLoad = pStatusCenter->RegisterCallback( new pgsLiveLoadStatusCallback(m_pBroker) );
+   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,pgsTypes::statusError));
 }
 
 void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,HAUNCHDETAILS* pHaunchDetails)
@@ -480,7 +487,7 @@ pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
    if (!pLiveLoads->IsLiveLoadDefined(pgsTypes::lltDesign))
    {
       std::string strMsg("Live load are not defined.");
-      pgsLiveLoadStatusItem* pStatusItem = new pgsLiveLoadStatusItem(m_AgentID,122,strMsg.c_str());
+      pgsLiveLoadStatusItem* pStatusItem = new pgsLiveLoadStatusItem(m_AgentID,m_scidLiveLoad,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
@@ -1008,8 +1015,8 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
 
    GET_IFACE(IStageMap,pStageMap);
    GET_IFACE(IProgress, pProgress);
-   GET_IFACE(IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& length = pDispUnits->GetSpanLengthUnit();
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
    pgsAutoProgress ap(pProgress);
 
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++)
@@ -1198,10 +1205,17 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
             CComPtr<IShape> clipped_shape;
             shape->ClipWithLine(line,&clipped_shape);
 
-            CComPtr<IShapeProperties> props;
-            clipped_shape->get_ShapeProperties(&props);
+            if ( clipped_shape )
+            {
+               CComPtr<IShapeProperties> props;
+               clipped_shape->get_ShapeProperties(&props);
 
-            props->get_Area(&Area);
+               props->get_Area(&Area);
+            }
+            else
+            {
+               Area = 0;
+            }
 
             T = fAvg * Area;
 
@@ -1267,23 +1281,36 @@ pgsFlexuralCapacityArtifact pgsDesigner2::CreateFlexuralCapacityArtifact(const p
 
    pgsFlexuralCapacityArtifact artifact;
 
-   Float64 MuMin, MuMax;
-   if ( analysisType == pgsTypes::Envelope )
+   Float64 Mu;
+   if ( bPositiveMoment )
    {
-      double min,max;
-      pLimitStateForces->GetMoment(ls,stage,poi,MaxSimpleContinuousEnvelope,&min,&max);
-      MuMax = max;
+      Float64 MuMin, MuMax;
+      if ( analysisType == pgsTypes::Envelope )
+      {
+         double min,max;
+         pLimitStateForces->GetMoment(ls,stage,poi,MaxSimpleContinuousEnvelope,&min,&max);
+         MuMax = max;
 
-      pLimitStateForces->GetMoment(ls,stage,poi,MinSimpleContinuousEnvelope,&min,&max);
-      MuMin = min;
+         pLimitStateForces->GetMoment(ls,stage,poi,MinSimpleContinuousEnvelope,&min,&max);
+         MuMin = min;
+      }
+      else
+      {
+         pLimitStateForces->GetMoment(ls,stage,poi,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&MuMin,&MuMax);
+      }
+
+      Mu = MuMax;
    }
    else
    {
-      pLimitStateForces->GetMoment(ls,stage,poi,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&MuMin,&MuMax);
+      if ( analysisType == pgsTypes::Envelope )
+         Mu = pLimitStateForces->GetSlabDesignMoment(ls,poi,MinSimpleContinuousEnvelope);
+      else
+         Mu = pLimitStateForces->GetSlabDesignMoment(ls,poi,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
    }
 
    artifact.SetCapacity( mcd.Phi * mcd.Mn );
-   artifact.SetDemand( bPositiveMoment ? MuMax : MuMin );
+   artifact.SetDemand( Mu );
    artifact.SetMinCapacity( mmcd.MrMin );
 
    // When capacity is zero, there is no reinforcing ratio.
@@ -1305,7 +1332,7 @@ pgsFlexuralCapacityArtifact pgsDesigner2::CreateFlexuralCapacityArtifact(const p
    return artifact;
 }
 
-pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls, const sysSectionValue& vu,
+pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls, Float64 vu,
                                                                             Float64 fcSlab,Float64 fcGdr, Float64 fy)
 {
    CHECK(stage==pgsTypes::BridgeSite3);
@@ -1321,7 +1348,7 @@ pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(con
       std::ostringstream os;
       os << "Cannot perform shear check - Span-to-Depth ratio is less than "<< MIN_SPAN_DEPTH_RATIO <<" for Span "<< poi.GetSpan()+1 << " Girder "<< LABEL_GIRDER(poi.GetGirder());
 
-      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_AgentID,109,0,os.str().c_str());
+      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,0,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
       os << std::endl << "See Status Center for Details";
@@ -1395,7 +1422,7 @@ void pgsDesigner2::CheckStirrupRequirement( const pgsPointOfInterest& poi, const
    pArtifact->SetAreStirrupsProvided(scd.Av > 0.0);
 }
 
-void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, const sysSectionValue& vu, pgsVerticalShearArtifact* pArtifact )
+void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, pgsVerticalShearArtifact* pArtifact )
 {
    bool bCheck = true;
    if ( m_bSkipShearCheckBeforeLeftCS && poi.GetDistFromStart() < m_LeftCS )
@@ -1451,7 +1478,7 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
 }
 
 void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi, 
-                                       const sysSectionValue& vu, 
+                                       Float64 vu, 
                                        Float64 fcSlab,Float64 fcGdr, Float64 fy,
                                        pgsHorizontalShearArtifact* pArtifact )
 {
@@ -1467,7 +1494,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   sysSectionValue Vuh;
+   Float64 Vuh;
 
    if ( pSpecEntry->GetShearFlowMethod() == sfmClassical )
    {
@@ -1475,8 +1502,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
       ATLASSERT(Qslab!=0);
 
       Float64 Ic  = pSectProp2->GetIx(pgsTypes::BridgeSite3,poi);
-      Vuh.Left()  = vu.Left() *Qslab/Ic;
-      Vuh.Right() = vu.Right()*Qslab/Ic;
+      Vuh  = vu*Qslab/Ic;
 
       pArtifact->SetI( Ic );
       pArtifact->SetQ( Qslab );
@@ -1490,8 +1516,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
 
       Float64 dv = ecc + Yt + tSlab/2;
 
-      Vuh.Left()  = vu.Left() / dv;
-      Vuh.Right() = vu.Right()/ dv;
+      Vuh  = vu / dv;
 
       pArtifact->SetDv( dv );
    }
@@ -1684,7 +1709,7 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
 void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi, 
                                             const pgsVerticalShearArtifact& vertArtifact,
                                             const SHEARCAPACITYDETAILS& scd,
-                                            const sysSectionValue& vu,
+                                            const Float64 vu,
                                             Float64 fcGdr, Float64 fy,
                                             pgsStirrupDetailArtifact* pArtifact )
 {
@@ -1730,9 +1755,8 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    }
    pArtifact->SetAvsMin(avs_min);
 
-   Float64 vumax = max(fabs(vu.Left()),fabs(vu.Right()));
    // applied shear force
-   pArtifact->SetVu(vumax);
+   pArtifact->SetVu(vu);
 
    // max bar spacing
    Float64 s_max;
@@ -1748,7 +1772,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
 
    Float64 vu_limit = x * fcGdr * bv * dv; // 5.8.2.7
    pArtifact->SetVuLimit(vu_limit);
-   if (vumax < vu_limit)
+   if (vu < vu_limit)
    {
       s_max = min(0.8*dv, s_under);  // 5.8.2.7-1
    }
@@ -1810,22 +1834,44 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
       GET_IFACE(ILongRebarGeometry,pRebarGeometry);
 
       if ( scd.bTensionBottom )
-         as = pRebarGeometry->GetAsBottomHalf(poi,true);
+      {
+         as = pRebarGeometry->GetAsBottomHalf(poi,false); // not adjusted for lack of development
+         Float64 as2 = pRebarGeometry->GetAsBottomHalf(poi,true); // adjusted for lack of development
+         if ( !IsZero(as) )
+            fy *= (as2/as); // reduce effectiveness of bar for lack of development
+         else
+            fy = 0; // no strand, no development... reduce effectiveness to 0
+
+         pArtifact->SetFy(fy);
+      }
       else
-         as = pRebarGeometry->GetAsTopHalf(poi,true);
+      {
+         as = pRebarGeometry->GetAsTopHalf(poi,false); // not adjusted for lack of development
+         Float64 as2 = pRebarGeometry->GetAsTopHalf(poi,true); // adjusted for lack of development
+         if ( !IsZero(as) )
+            fy *= (as2/as); // reduce effectiveness of bar for lack of development
+         else
+            fy = 0; // no strand, no development... reduce effectiveness to 0
+
+         pArtifact->SetFy(fy);
+      }
    }
    pArtifact->SetAs(as);
 
    // prestress
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
-   // area of prestress on flexural tension side... adjusted for development length
-   Float64 aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,true) : pStrandGeom->GetApsTopHalf(poi,true));
+   // area of prestress on flexural tension side
+   // NOTE: fps (see below) from the moment capacity analysis already accounts for a reduction
+   //       in strand effectiveness based on lack of development. DO NOT ADJUST THE AREA OF PRESTRESS
+   //       HERE TO ACCOUNT FOR THE SAME TIME...
+   Float64 aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,false) : pStrandGeom->GetApsTopHalf(poi,false));
 
-   // get maximum available prestress
-   GET_IFACE(IPrestressForce,pPSForce);
-   STRANDDEVLENGTHDETAILS details = pPSForce->GetDevLengthDetails(poi,false); // not debonded
-   Float64 fps = details.fps;
+   // get prestress level at ultimate
+   GET_IFACE(IMomentCapacity,pMomentCap);
+   MOMENTCAPACITYDETAILS mcd;
+   pMomentCap->GetMomentCapacityDetails(stage,poi,scd.bTensionBottom,&mcd);
+   Float64 fps = mcd.fps;
    
    pArtifact->SetAps(aps);
    pArtifact->SetFps(fps);
@@ -2201,7 +2247,8 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::S
          pLimitStateForces->GetShear(ls,stage,poi,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&Vmin,&Vmax);
       }
 
-      sysSectionValue Vu = Max4(abs(Vmin.Left()),abs(Vmax.Left()),abs(Vmin.Right()),abs(Vmax.Right()));
+      // Take max absolute value for demand
+      Float64 Vu = Max4(abs(Vmin.Left()),abs(Vmax.Left()),abs(Vmin.Right()),abs(Vmax.Right()));
 
       pgsStirrupCheckAtPoisArtifact artifact = CreateStirrupCheckAtPoisArtifact(poi,stage,ls,Vu,fc_slab,fc_girder,fy);
 
@@ -3799,8 +3846,9 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    Float64 startSlabOffset = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
    Float64 endSlabOffset   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
 
+   GET_IFACE(IProductLoads,pProductLoads);
    GET_IFACE(IProductForces,pProductForces);
-   pgsTypes::Stage girderLoadStage = pProductForces->GetGirderDeadLoadStage(span,gdr);
+   pgsTypes::Stage girderLoadStage = pProductLoads->GetGirderDeadLoadStage(span,gdr);
  
    LOG("");
    LOG("Bridge A dimension  (Start) = " << ::ConvertFromSysUnits(pBridge->GetSlabOffset(span,gdr,pgsTypes::metStart),unitMeasure::Inch) << " in");
@@ -3810,6 +3858,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG("");
    LOG("M girder      = " << ::ConvertFromSysUnits(pProductForces->GetMoment(girderLoadStage,pftGirder,poi,bat),unitMeasure::KipFeet) << " k-ft");
    LOG("M diaphragm   = " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,poi,bat),unitMeasure::KipFeet) << " k-ft");
+   LOG("M shear key   = " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftShearKey,poi,bat),unitMeasure::KipFeet) << " k-ft");
    LOG("M slab        = " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,poi,bat),unitMeasure::KipFeet) << " k-ft");
    LOG("dM slab       = " << ::ConvertFromSysUnits(pProductForces->GetDesignSlabPadMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi),unitMeasure::KipFeet) << " k-ft");
    LOG("M panel       = " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,poi,bat),unitMeasure::KipFeet) << " k-ft");
@@ -4559,7 +4608,7 @@ std::vector<Int16> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgress* pProgr
       LOG("Applied Bottom stress = " << ::ConvertFromSysUnits(fBotAppl,unitMeasure::KSI) << " ksi. Prestress stress ="<< ::ConvertFromSysUnits(fBotPrestress,unitMeasure::KSI) << " ksi. Total stress = "<< ::ConvertFromSysUnits(fBot,unitMeasure::KSI) << " ksi");
 
       pgsStrandDesignTool::StressDemand demand;
-      demand.m_Location = poi.GetDistFromStart();
+      demand.m_Poi = poi;
       demand.m_TopStress = fTop;
       demand.m_BottomStress = fBot;
 
@@ -5325,7 +5374,7 @@ std::vector<Int16> pgsDesigner2::DesignDebondingForLifting(HANDLINGCONFIG& liftC
             LOG("Average force per strand = " << ::ConvertFromSysUnits(max_stresses.m_PrestressForce / nss,unitMeasure::Kip) << " kip");
 
             pgsStrandDesignTool::StressDemand demand;
-            demand.m_Location  = poi_loc;
+            demand.m_Poi  = max_stresses.m_LiftingPoi;
             demand.m_TopStress = fTop;
             demand.m_BottomStress = fBot;
 
@@ -5628,7 +5677,7 @@ std::vector<Int16> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pPro
             LOG("Average force per strand = " << ::ConvertFromSysUnits(max_stresses.m_PrestressForce / nss,unitMeasure::Kip) << " kip");
 
             pgsStrandDesignTool::StressDemand demand;
-            demand.m_Location  = poi_loc;
+            demand.m_Poi  = max_stresses.m_HaulingPoi;
             demand.m_TopStress = fTop;
             demand.m_BottomStress = fBot;
 
@@ -6738,7 +6787,7 @@ void pgsDesigner2::DesignForVerticalShear(SpanIndexType span,GirderIndexType gdr
       CHECK(fy!=0.0);
    }
 
-   // shear stress - LRFD C5.8.3.3-1
+   // web crushing - LRFD C5.8.3.3-2
    Float64 v;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       v = fabs(vu - phi*vp)/(phi*bv*dv); 
@@ -6822,7 +6871,6 @@ void pgsDesigner2::DesignForHorizontalShear(const pgsPointOfInterest& poi, Float
    Float64 Qslab = pSectProp2->GetQSlab(poi);
    PRECONDITION(Qslab!=0);
    Float64 Ic  = pSectProp2->GetIx(pgsTypes::BridgeSite3,poi);
-   sysSectionValue Vuh;
    Float64 vuh = vu*Qslab/Ic;
 
    // normal force on top of girder flange

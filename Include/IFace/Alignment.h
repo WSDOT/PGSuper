@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -31,9 +31,8 @@ COPYRIGHT
 
 // SYSTEM INCLUDES
 //
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
+#include <WBFLTypes.h>
+#include <WBFLCogo.h>
 
 
 // PROJECT INCLUDES
@@ -75,9 +74,9 @@ interface IRoadway : IUnknown
    virtual void GetBearingNormal(Float64 station,IDirection** ppNormal) = 0;
    virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,IPoint2d** ppPoint) = 0;
    virtual void GetStationAndOffset(IPoint2d* point,Float64* pStation,Float64* pOffset) = 0;
-   virtual long GetCurveCount() = 0;
+   virtual CollectionIndexType GetCurveCount() = 0;
    virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve) = 0;
-   virtual long GetVertCurveCount() = 0;
+   virtual CollectionIndexType GetVertCurveCount() = 0;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) = 0;
 };
 

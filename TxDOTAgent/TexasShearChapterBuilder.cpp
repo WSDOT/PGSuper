@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -79,7 +79,7 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    SpanIndexType span = pSpec->GetSpan();
    GirderIndexType girder = pSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -94,7 +94,7 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
    bool bStrutAndTieRequired;
-   *p << CShearCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
+   *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
    if ( bStrutAndTieRequired )
    {
       p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -112,7 +112,7 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    {
       p = new rptParagraph;
       *pChapter << p;
-      *p << CShearCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired) << rptNewLine;
+      *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired) << rptNewLine;
 
       if ( bStrutAndTieRequired )
       {
@@ -131,22 +131,22 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    // Interface Shear check
    if ( pBridge->IsCompositeDeck() )
    {
-      CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthI);
+      CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI);
 
       if ( bPermit )
-         CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthII);
+         CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII);
    }
 
    // Longitudinal reinforcement for shear
-   CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthI,pDispUnit);
+   CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthI,pDisplayUnits);
 
    if ( bPermit )
    {
-      CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthII,pDispUnit);
+      CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthII,pDisplayUnits);
    }
 
    // Girder Detailing
-   CGirderDetailingCheck(true).Build(pChapter,pBroker,span,girder,pDispUnit);
+   CGirderDetailingCheck(true).Build(pChapter,pBroker,span,girder,pDisplayUnits);
 
    return pChapter;
 }

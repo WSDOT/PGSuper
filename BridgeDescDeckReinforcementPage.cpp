@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -66,19 +66,19 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
-   DDX_UnitValueAndTag(pDX, IDC_TOP_COVER,    IDC_TOP_COVER_UNIT,    m_RebarData.TopCover,    pDispUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_BOTTOM_COVER, IDC_BOTTOM_COVER_UNIT, m_RebarData.BottomCover, pDispUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_TOP_COVER,    IDC_TOP_COVER_UNIT,    m_RebarData.TopCover,    pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_BOTTOM_COVER, IDC_BOTTOM_COVER_UNIT, m_RebarData.BottomCover, pDisplayUnits->GetComponentDimUnit() );
 
    DDX_CBItemData(pDX,IDC_TOP_MAT_BAR,    m_RebarData.TopRebarKey);
    DDX_CBItemData(pDX,IDC_BOTTOM_MAT_BAR, m_RebarData.BottomRebarKey);
 
-   DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_BAR_SPACING,    IDC_TOP_MAT_BAR_SPACING_UNIT,    m_RebarData.TopSpacing,    pDispUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_BAR_SPACING, IDC_BOTTOM_MAT_BAR_SPACING_UNIT, m_RebarData.BottomSpacing, pDispUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_BAR_SPACING,    IDC_TOP_MAT_BAR_SPACING_UNIT,    m_RebarData.TopSpacing,    pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_BAR_SPACING, IDC_BOTTOM_MAT_BAR_SPACING_UNIT, m_RebarData.BottomSpacing, pDisplayUnits->GetComponentDimUnit() );
 
-   DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_LUMP_SUM,    IDC_TOP_MAT_LUMP_SUM_UNIT,    m_RebarData.TopLumpSum,    pDispUnits->GetAvOverSUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_LUMP_SUM, IDC_BOTTOM_MAT_LUMP_SUM_UNIT, m_RebarData.BottomLumpSum, pDispUnits->GetAvOverSUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_LUMP_SUM,    IDC_TOP_MAT_LUMP_SUM_UNIT,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_LUMP_SUM, IDC_BOTTOM_MAT_LUMP_SUM_UNIT, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
 
    if ( pDX->m_bSaveAndValidate )
       m_Grid.GetRebarData(m_RebarData.NegMomentRebar);

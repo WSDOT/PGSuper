@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -100,6 +100,14 @@ BOOL CSplashWnd::PreTranslateAppMessage(MSG* pMsg)
 	return FALSE;	// message not handled
 }
 
+void CSplashWnd::CloseSplashScreen()
+{
+   if ( c_pSplashWnd )
+   {
+      c_pSplashWnd->HideSplashScreen();
+   }
+}
+
 BOOL CSplashWnd::Create(CWnd* pParentWnd /*= NULL*/)
 {
 	if (!m_bitmap.LoadBitmap(IDB_SPLASH))
@@ -117,7 +125,8 @@ void CSplashWnd::HideSplashScreen()
 {
 	// Destroy the window, and update the mainframe.
 	DestroyWindow();
-	AfxGetMainWnd()->UpdateWindow();
+   if ( AfxGetMainWnd() )
+      AfxGetMainWnd()->UpdateWindow();
 
    // Show the 'Tip of the Day'
    CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
@@ -138,8 +147,8 @@ int CSplashWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Center the window.
 	CenterWindow();
 
-	// Set a timer to destroy the splash screen.
-	SetTimer(1, 2000, NULL);
+	//// Set a timer to destroy the splash screen.
+	//SetTimer(1, 2000, NULL);
 
 	return 0;
 }

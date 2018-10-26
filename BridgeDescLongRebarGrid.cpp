@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -176,7 +176,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -233,7 +233,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue("# of Bars")
 		);
 
-   CString cv = CString("Cover\n") + CString(pDispUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   CString cv = CString("Cover\n") + CString(pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -242,7 +242,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = CString("Spacing\n") + CString(pDispUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv = CString("Spacing\n") + CString(pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

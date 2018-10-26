@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -78,7 +78,7 @@ CLiftingCheck& CLiftingCheck::operator= (const CLiftingCheck& rOther)
 //======================== OPERATIONS =======================================
 void CLiftingCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDispUnit) const
+                              IDisplayUnits* pDisplayUnits) const
 {
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -87,17 +87,17 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    *pTitle << "Lifting Stresses and Factor of Safety Against Cracking"<<rptNewLine;
 
    rptRcScalar scalar;
-   scalar.SetFormat( pDispUnit->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnit->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnit->GetScalarFormat().Precision );
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnit->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDispUnit->GetShearUnit(),        false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDispUnit->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDispUnit->GetStressUnit(),       false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress_u, pDispUnit->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDispUnit->GetTensionCoefficientUnit(), false);
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDispUnit->GetAreaUnit(), true);
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress_u, pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
+   INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
    location.MakeSpanPoi();
 
@@ -172,9 +172,9 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,"");
    *p << p_table;
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Pick Point",    rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("Min" << rptNewLine << "Stress",rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(0,2) << COLHDR("Max" << rptNewLine << "Stress",rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Pick Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR("Min" << rptNewLine << "Stress",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,2) << COLHDR("Max" << rptNewLine << "Stress",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(0,3) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/o Rebar";
    (*p_table)(0,4) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/  Rebar";
    (*p_table)(0,5) << "Compression" << rptNewLine << "Status";

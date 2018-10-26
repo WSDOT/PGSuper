@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -155,7 +155,7 @@ void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(double* Yn
    *As = m_As;
 }
 
-bool pgsFlexuralStressArtifact::TopPassed() const
+bool pgsFlexuralStressArtifact::TopPassed(pgsFlexuralStressArtifact::TensionReinforcement reinf) const
 {
    bool bPassed = true;
    Float64 fTop, fBot;
@@ -170,13 +170,13 @@ bool pgsFlexuralStressArtifact::TopPassed() const
    }
    else
    {
-      bPassed = TensionPassed(fTop);
+      bPassed = reinf == WithRebar ? TensionPassedWithRebar(fTop) : TensionPassedWithoutRebar(fTop);
    }
 
    return bPassed;
 }
 
-bool pgsFlexuralStressArtifact::BottomPassed() const
+bool pgsFlexuralStressArtifact::BottomPassed(pgsFlexuralStressArtifact::TensionReinforcement reinf) const
 {
    bool bPassed = true;
    Float64 fTop, fBot;
@@ -191,23 +191,17 @@ bool pgsFlexuralStressArtifact::BottomPassed() const
    }
    else
    {
-      bPassed = TensionPassed(fBot);
+      bPassed = reinf == WithRebar ? TensionPassedWithRebar(fBot) : TensionPassedWithoutRebar(fBot);
    }
 
    return bPassed;
 }
 
-bool pgsFlexuralStressArtifact::TensionPassed(double fTens) const
+bool pgsFlexuralStressArtifact::TensionPassedWithRebar(double fTens) const
 {
    bool bPassed = true;
-   if ( (m_fAllowableStress < fTens && !IsEqual(m_fAllowableStress,fTens,0.001) ) )
-   {
-      bPassed = false;
-   }
-
    if ( m_bIsAltTensileStressApplicable )
    {
-      bPassed = true;
       if ( (m_fAltAllowableStress < fTens && !IsEqual(m_fAltAllowableStress,fTens,0.001) ) )
       {
          bPassed = false;
@@ -217,7 +211,18 @@ bool pgsFlexuralStressArtifact::TensionPassed(double fTens) const
    return bPassed;
 }
 
-bool pgsFlexuralStressArtifact::Passed() const
+bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(double fTens) const
+{
+   bool bPassed = true;
+   if ( (m_fAllowableStress < fTens && !IsEqual(m_fAllowableStress,fTens,0.001) ) )
+   {
+      bPassed = false;
+   }
+
+   return bPassed;
+}
+
+bool pgsFlexuralStressArtifact::Passed(pgsFlexuralStressArtifact::TensionReinforcement reinf) const
 {
    // Casting Yard,               Tension,     top and bottom
    // Casting Yard,               Compression, top and bottom
@@ -238,7 +243,7 @@ bool pgsFlexuralStressArtifact::Passed() const
    case pgsTypes::TemporaryStrandRemoval:
    case pgsTypes::BridgeSite1:
    case pgsTypes::BridgeSite2:
-      bPassed = (TopPassed() && BottomPassed());
+      bPassed = (TopPassed(reinf) && BottomPassed(reinf));
       break;
 
    case pgsTypes::BridgeSite3:
@@ -247,11 +252,11 @@ bool pgsFlexuralStressArtifact::Passed() const
       case pgsTypes::ServiceI:
       case pgsTypes::ServiceIA:
       case pgsTypes::FatigueI:
-         bPassed = (TopPassed() && BottomPassed());
+         bPassed = (TopPassed(reinf) && BottomPassed(reinf));
          break;
 
       case pgsTypes::ServiceIII:
-      bPassed = BottomPassed();
+      bPassed = BottomPassed(reinf);
          break;
       }
       break;

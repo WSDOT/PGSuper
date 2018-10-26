@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -72,13 +72,13 @@ CUserStressTable& CUserStressTable::operator= (const CUserStressTable& rOther)
 
 //======================== OPERATIONS =======================================
 rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                                      IDisplayUnits* pDispUnits) const
+                                      IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,unitmgtStressData>("User Defined Loads",false,analysisType,pDispUnits,pDispUnits->GetStressUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,unitmgtStressData>("User Defined Loads",false,analysisType,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

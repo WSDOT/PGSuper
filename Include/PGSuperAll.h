@@ -24,6 +24,10 @@
 #define INCLUDED_PGSUPERALL_H_
 #pragma once
 
+#ifndef _PGSUPER_VERSION
+#define _PGSUPER_VERSION 230 // version 2.3.x
+#endif
+
 // This header file must be included in the precompiled header
 // for all PGSuper packages
 

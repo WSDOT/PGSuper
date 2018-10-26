@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,7 +73,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptParagraph* p = 0;
 
@@ -88,57 +88,57 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    p = new rptParagraph;
    *pChapter << p;
-   *p << CCastingYardStressTable().Build(pBroker,span,girder,pDispUnit) << rptNewLine;
+   *p << CCastingYardStressTable().Build(pBroker,span,girder,pDisplayUnits) << rptNewLine;
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductStressTable().Build(pBroker,span,girder,analysisType,pDispUnit) << rptNewLine;
+   *p << CProductStressTable().Build(pBroker,span,girder,analysisType,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_LANE << rptNewLine;
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool are_user_loads = pUDL->DoUserLoadsExist(span,girder);
    if (are_user_loads)
    {
-      *p << CUserStressTable().Build(pBroker,span,girder,analysisType,pDispUnit) << rptNewLine;
+      *p << CUserStressTable().Build(pBroker,span,girder,analysisType,pDisplayUnits) << rptNewLine;
    }
 
    // Load Combinations (DC, DW, etc) & Limit States
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    p->SetName("Combined Stresses - Casting Yard Stage");
-   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::CastingYard, analysisType);
+   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard, analysisType);
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    p->SetName("Combined Stresses - Girder Placement");
-   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::GirderPlacement, analysisType);
+   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, analysisType);
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
-   pgsTypes::Stage girderLoadStage = pForces->GetGirderDeadLoadStage(span,girder);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(span,girder);
    if ( girderLoadStage == pgsTypes::TemporaryStrandRemoval )
    {
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       p->SetName("Combined Stresses - Temporary Strand Removal Stage");
-      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::TemporaryStrandRemoval, analysisType);
+      CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
    }
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    p->SetName("Combined Stresses - Deck and Diaphragm Placement (Bridge Site 1)");
-   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite1, analysisType);
+   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType);
    
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    p->SetName("Combined Stresses - Superimposed Dead Loads (Bridge Site 2)");
-   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite2, analysisType);
+   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType);
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    p->SetName("Combined Stresses - Final with Live Load (Bridge Site 3)");
-   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3, analysisType);
+   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType);
 
    p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << p;
@@ -148,7 +148,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    *pChapter << p;
    *p << "Stresses due to Prestress" << rptNewLine;
    p->SetName("Prestress");
-   *p << CPrestressStressTable().Build(pBroker,span,girder,pDispUnit) << rptNewLine;
+   *p << CPrestressStressTable().Build(pBroker,span,girder,pDisplayUnits) << rptNewLine;
 
    return pChapter;
 }

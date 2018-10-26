@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2009  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,7 +71,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -88,12 +88,12 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Reactions
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,pDispUnit) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
    *p << rptNewLine;
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   std::vector<std::string> strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltDesign,girder);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
    std::vector<std::string>::iterator iter;
    long j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
@@ -103,7 +103,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if ( bPermit )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -113,7 +113,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -123,17 +123,17 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (are_user_loads)
    {
-      *p << CUserReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),pDispUnit) << rptNewLine;
+      *p << CUserReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),pDisplayUnits) << rptNewLine;
    }
 
    // Product Rotations
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,pDispUnit) << rptNewLine;
+   *p << CProductRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
    *p << rptNewLine;
 
-   strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltDesign,girder);
+   strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
    j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
    {
@@ -142,7 +142,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if ( bPermit )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -152,7 +152,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -163,7 +163,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    if (are_user_loads)
    {
       *p << rptNewLine;
-      *p << CUserRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),pDispUnit) << rptNewLine;
+      *p << CUserRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),pDisplayUnits) << rptNewLine;
    }
 
    p = new rptParagraph;
@@ -225,12 +225,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    //////////////////////
    GET_IFACE2(pBroker,IProductForces,pForces);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDispUnits->GetShearUnit(), false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDispUnits->GetRadAngleUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
 
    p = new rptParagraph;
@@ -259,15 +258,15 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    pTable->SetColumnSpan(0,7,-1);
    pTable->SetColumnSpan(0,8,-1);
 
-   (*pTable)(1,1) << COLHDR(Sub2("R","Max"),rptForceUnitTag, pDispUnits->GetShearUnit());
-   (*pTable)(1,2) << COLHDR(symbol(theta),rptAngleUnitTag, pDispUnits->GetRadAngleUnit());
-   (*pTable)(1,3) << COLHDR(Sub2("R","Min"),rptForceUnitTag, pDispUnits->GetShearUnit());
-   (*pTable)(1,4) << COLHDR(symbol(theta),rptAngleUnitTag, pDispUnits->GetRadAngleUnit());
+   (*pTable)(1,1) << COLHDR(Sub2("R","Max"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1,2) << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+   (*pTable)(1,3) << COLHDR(Sub2("R","Min"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1,4) << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
 
-   (*pTable)(1,5) << COLHDR(Sub2(symbol(theta),"Max"),rptAngleUnitTag, pDispUnits->GetRadAngleUnit());
-   (*pTable)(1,6) << COLHDR("R",rptForceUnitTag, pDispUnits->GetShearUnit());
-   (*pTable)(1,7) << COLHDR(Sub2(symbol(theta),"Min"),rptAngleUnitTag, pDispUnits->GetRadAngleUnit());
-   (*pTable)(1,8) << COLHDR("R",rptForceUnitTag, pDispUnits->GetShearUnit());
+   (*pTable)(1,5) << COLHDR(Sub2(symbol(theta),"Max"),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+   (*pTable)(1,6) << COLHDR("R",rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1,7) << COLHDR(Sub2(symbol(theta),"Min"),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+   (*pTable)(1,8) << COLHDR("R",rptForceUnitTag, pDisplayUnits->GetShearUnit());
 
    row = pTable->GetNumberOfHeaderRows();
 
@@ -340,9 +339,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *p << "W and D are assumed typical values" << rptNewLine;
    *p << rptRcImage( pgsReportStyleHolder::GetImagePath() + "BearingRecessSlope.gif") << rptNewLine;
 
-   std::string strSlopeTag = pDispUnit->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   std::string strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( recess_dimension, IS_US_UNITS(pDispUnit), 8, pDispUnit->GetComponentDimUnit(), false, true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( recess_dimension, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), false, true );
 
    (*pTable)(0,0) << "";
    (*pTable)(0,1) << "Girder" << rptNewLine << "Slope" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";

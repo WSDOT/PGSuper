@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,11 +73,11 @@ CProductMomentsTable& CProductMomentsTable::operator= (const CProductMomentsTabl
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                      bool bIndicateControllingLoad,IDisplayUnits* pDispUnits) const
+                                      bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDispUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
@@ -87,9 +87,10 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
    SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
 
    GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductForces,pForces);
-   bool bPedLoading = pForces->HasPedestrianLoad(startSpan,gdr);
-   bool bSidewalk = pForces->HasSidewalkLoad(startSpan,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
+   bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
+   bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
 
    pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
    SpanIndexType spanIdx;
@@ -147,10 +148,22 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
       }
    }
 
+   if ( bShearKey )
+   {
+      if (analysisType == pgsTypes::Envelope )
+      {
+         nCols += 2;
+      }
+      else
+      {
+         nCols++;
+      }
+   }
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Moments");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table,false,bDeckPanels,bSidewalk,bPedLoading,bPermit,analysisType,continuity_stage,pDispUnits,pDispUnits->GetMomentUnit());
-
+   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bPedLoading,
+                                                                                           bPermit,analysisType,continuity_stage,
+                                                                                           pDisplayUnits,pDisplayUnits->GetMomentUnit());
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
@@ -162,7 +175,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       GirderIndexType gdrIdx = min(gdr,nGirders-1);
 
-      pgsTypes::Stage girderLoadStage = pForces->GetGirderDeadLoadStage(spanIdx,gdrIdx);
+      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(spanIdx,gdrIdx);
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
       std::vector<Float64> girder = pForces2->GetMoment(girderLoadStage,pftGirder,vPoi,SimpleSpan);
@@ -197,6 +210,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
       std::vector<Float64> minOverlay, maxOverlay;
       std::vector<Float64> minTrafficBarrier, maxTrafficBarrier;
       std::vector<Float64> minSidewalk, maxSidewalk;
+      std::vector<Float64> minShearKey, maxShearKey;
       std::vector<Float64> minPedestrian, maxPedestrian;
       std::vector<Float64> minDesignLL, maxDesignLL;
       std::vector<Float64> minFatigueLL, maxFatigueLL;
@@ -210,6 +224,12 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          {
             maxSidewalk = pForces2->GetMoment( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MaxSimpleContinuousEnvelope );
             minSidewalk = pForces2->GetMoment( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MinSimpleContinuousEnvelope );
+         }
+
+         if ( bShearKey )
+         {
+            maxShearKey = pForces2->GetMoment( pgsTypes::BridgeSite1, pftShearKey, vPoi, MaxSimpleContinuousEnvelope );
+            minShearKey = pForces2->GetMoment( pgsTypes::BridgeSite1, pftShearKey, vPoi, MinSimpleContinuousEnvelope );
          }
 
          maxTrafficBarrier = pForces2->GetMoment( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope );
@@ -243,6 +263,11 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          if ( bSidewalk )
          {
             maxSidewalk = pForces2->GetMoment( pgsTypes::BridgeSite2, pftSidewalk, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+         }
+
+         if ( bShearKey )
+         {
+            maxShearKey = pForces2->GetMoment( pgsTypes::BridgeSite1, pftShearKey, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
          }
 
          maxTrafficBarrier = pForces2->GetMoment( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
@@ -281,6 +306,19 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          (*p_table)(row,col++) << location.SetValue( poi, end_size );
          (*p_table)(row,col++) << moment.SetValue( girder[index] );
          (*p_table)(row,col++) << moment.SetValue( diaphragm[index] );
+
+         if ( bShearKey )
+         {
+            if ( analysisType == pgsTypes::Envelope )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
+               (*p_table)(row,col++) << moment.SetValue( minShearKey[index] );
+            }
+            else
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
+            }
+         }
 
          if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
          {

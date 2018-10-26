@@ -396,6 +396,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\DealWithLoadDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="DeckEdgeBuilder.cpp"
 				>
 				<FileConfiguration
@@ -438,6 +442,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\StatusItems.cpp"
+				>
 			</File>
 			<File
 				RelativePath="StdAfx.cpp"
@@ -497,6 +505,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DealWithLoadDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="DeckEdgeBuilder.h"
 				>
 			</File>
@@ -510,6 +522,10 @@
 			</File>
 			<File
 				RelativePath="Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StatusItems.h"
 				>
 			</File>
 			<File

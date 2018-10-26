@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -72,7 +72,7 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsMomentCapacityEngineer(IBroker* pBroker,long agentID);
+   pgsMomentCapacityEngineer(IBroker* pBroker,AgentIDType agentID);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -90,7 +90,7 @@ public:
    // GROUP: OPERATIONS
 
    void SetBroker(IBroker* pBroker);
-   void SetAgentID(long agentID);
+   void SetAgentID(AgentIDType agentID);
 
    //------------------------------------------------------------------------
    void ComputeMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd);
@@ -124,7 +124,8 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
-   long m_AgentID;
+   AgentIDType m_AgentID;
+   StatusCallbackIDType m_scidUnknown;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

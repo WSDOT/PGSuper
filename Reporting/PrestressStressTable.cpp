@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,12 +71,12 @@ CPrestressStressTable& CPrestressStressTable::operator= (const CPrestressStressT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IDisplayUnits* pDispUnits) const
+                                            IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, gdrpoi, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, spanpoi, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, gdrpoi, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, spanpoi, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    gdrpoi.MakeGirderPoi();
    spanpoi.MakeSpanPoi();
@@ -89,16 +89,16 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
 
    // Set up table headings
    int col = 0;
-   (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-   (*p_table)(0,col++) << COLHDR("Casting Yard",       rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR("Casting Yard",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    if ( 0 < NtMax )
-      (*p_table)(0,col++) << COLHDR("Temporary" << rptNewLine << "Strand" << rptNewLine << "Removal",      rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("Temporary" << rptNewLine << "Strand" << rptNewLine << "Removal",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   (*p_table)(0,col++) << COLHDR("Bridge Site 1",      rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*p_table)(0,col++) << COLHDR("Bridge Site 2",      rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*p_table)(0,col++) << COLHDR("Bridge Site 3",      rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*p_table)(0,col++) << COLHDR("Bridge Site 1",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,col++) << COLHDR("Bridge Site 2",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,col++) << COLHDR("Bridge Site 3",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
