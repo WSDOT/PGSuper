@@ -37,7 +37,7 @@
 #include <IFace\StatusCenter.h>
 #include <WBFLCogo.h>
 #include <LRFD\LldfTypeG.h>
-#include "helper.h"
+#include <Beams\Helper.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

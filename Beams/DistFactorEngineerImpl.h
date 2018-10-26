@@ -30,6 +30,7 @@
 #include "..\PGSuperException.h"
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription.h>
+#include <Beams\Interfaces.h>
 #include <map>
 
 // Side where overhang value was used if in equation
@@ -63,7 +64,7 @@ struct BASE_LLDFDETAILS
 };
 
 template <class T>
-class CDistFactorEngineerImpl : public IDistFactorEngineer
+class CDistFactorEngineerImpl : public IDistFactorEngineer, public IInitialize 
 {
 public:
    virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);

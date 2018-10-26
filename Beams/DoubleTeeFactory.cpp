@@ -23,7 +23,7 @@
 // DoubleTeeFactory.cpp : Implementation of CDoubleTeeFactory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "DoubleTeeFactory.h"
 #include "MultiWebDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
@@ -276,7 +276,7 @@ void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType 
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(CPsLossEngineer::IBeam);
+    pEngineer->Init(IBeam);
     pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();

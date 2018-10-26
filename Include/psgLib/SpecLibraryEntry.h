@@ -890,6 +890,9 @@ public:
    Float64 GetDeckShrinkageElasticGain() const;
    void SetDeckShrinkageElasticGain(Float64 f);
 
+   Float64 GetLiveLoadElasticGain() const;
+   void SetLiveLoadElasticGain(Float64 f);
+
    void SetRelaxationLossMethod(Int16 method);
    Int16 GetRelaxationLossMethod() const;
 
@@ -1215,6 +1218,7 @@ private:
    Float64 m_RailingSystemElasticGain;
    Float64 m_OverlayElasticGain;
    Float64 m_SlabShrinkageElasticGain;
+   Float64 m_LiveLoadElasticGain;
 
    // Live Load Distribution Factors
    int m_LldfMethod;

@@ -33,12 +33,6 @@ class txnCopyGirderData
 public:
    std::_tstring m_strGirderName;
    CGirderData m_GirderData;
-   CShearData m_ShearData;
-   CLongitudinalRebarData m_LongitudinalRebarData;
-   double m_LeftLiftPoint;
-   double m_RightLiftPoint;
-   double m_TrailingOverhang;
-   double m_LeadingOverhang;
    double m_SlabOffset[2];
 };
 

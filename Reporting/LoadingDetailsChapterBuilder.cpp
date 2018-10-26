@@ -206,23 +206,27 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             (*p_table)(row++,1) << fpl.SetValue(-gdrLoad[0].wStart);
          }
 
-         if ( pProdLoads->HasSidewalkLoad(spanIdx,gdrIdx) )
+         // Sum of railing system loads not shown in simplified version
+         if ( !m_bSimplifiedVersion )
          {
-            (*p_table)(row,0) << _T("Sidewalk");
-            (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(spanIdx,gdrIdx));
-         }
+            if ( pProdLoads->HasSidewalkLoad(spanIdx,gdrIdx))
+            {
+               (*p_table)(row,0) << _T("Sidewalk");
+               (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(spanIdx,gdrIdx));
+            }
 
-         Float64 tb_load = pProdLoads->GetTrafficBarrierLoad(spanIdx,gdrIdx);
-         if (tb_load!=0.0)
-         {
-            (*p_table)(row,0) << _T("Traffic Barrier");
-            (*p_table)(row++,1) << fpl.SetValue(-tb_load);
-         }
+            Float64 tb_load = pProdLoads->GetTrafficBarrierLoad(spanIdx,gdrIdx);
+            if (tb_load!=0.0)
+            {
+               (*p_table)(row,0) << _T("Traffic Barrier");
+               (*p_table)(row++,1) << fpl.SetValue(-tb_load);
+            }
 
-         if ( pProdLoads->HasPedestrianLoad(spanIdx,gdrIdx) )
-         {
-            (*p_table)(row,0) << _T("Pedestrian Live Load");
-            (*p_table)(row++,1) << fpl.SetValue(pProdLoads->GetPedestrianLoad(spanIdx,gdrIdx));
+            if ( pProdLoads->HasPedestrianLoad(spanIdx,gdrIdx) )
+            {
+               (*p_table)(row,0) << _T("Pedestrian Live Load");
+               (*p_table)(row++,1) << fpl.SetValue(pProdLoads->GetPedestrianLoad(spanIdx,gdrIdx));
+            }
          }
 
          if ( !bUniformGirderDeadLoad )

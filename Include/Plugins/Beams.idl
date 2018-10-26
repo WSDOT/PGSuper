@@ -212,5 +212,4 @@ library PGSuperBeamFactory
 	{
 		[default] interface DummyBeamFactory;
 	};
-
 };

@@ -1,6 +1,8 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include <EAF\EAFResources.h>
+#include "..\PGSuperCommandIDs.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -35,6 +37,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
+    "..\PGSuperCommandIDs.h\0"
     "<EAF\\EAFResources.h>\0"
     "\0"
 END
@@ -2210,8 +2213,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,0,4
- PRODUCTVERSION 2,7,0,4
+ FILEVERSION 2,7,0,5
+ PRODUCTVERSION 2,7,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2228,12 +2231,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.7.0.4"
+            VALUE "FileVersion", "2.7.0.5"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.0.4"
+            VALUE "ProductVersion", "2.7.0.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -3050,7 +3053,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_HELP_POST            "Posts a question to the Alternate Route Project mailing list"
     ID_HELP_INET_ARP        "Visit the Alternate Route Project Home Page"
     ID_VIEW_FACTOROFSAFETY  "View Factor of Safety graphs for Girder Stability\n\nGirder Stability"
     ID_VIEW_STABILITY       "View Factor of Safety graphs for Girder Stability\nGirder Stability View"

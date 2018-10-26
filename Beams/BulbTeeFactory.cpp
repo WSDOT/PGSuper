@@ -23,7 +23,7 @@
 // BulbTeeFactory.cpp : Implementation of CBulbTeeFactory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "BulbTeeFactory.h"
 #include "BulbTeeDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
@@ -387,7 +387,7 @@ void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType st
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(CPsLossEngineer::IBeam);
+    pEngineer->Init(IBeam);
     pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();

@@ -1498,6 +1498,14 @@ void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    log_msg_header.Format(_T("The following error occured while opening %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
+   if ( hr == STRLOAD_E_USERDEFINED )
+   {
+      // a user defined error occured. an error message should have been displayed
+      // at the point where the error occured. 
+      // Do nothing here! return because we are done
+      return;
+   }
+
    CString msg1;
    switch( hr )
    {
@@ -1524,10 +1532,6 @@ void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    case STRLOAD_E_BADVERSION:
       pLog->LogMessage( TEXT("This file came from a newer version of PGSuper, please upgrade") );
       AfxFormatString1( msg1, IDS_E_INVALIDVERSION, lpszPathName );
-      break;
-
-   case STRLOAD_E_USERDEFINED:
-      AfxFormatString1( msg1, IDS_E_USERDEFINED, lpszPathName );
       break;
 
    default:

@@ -51,9 +51,12 @@
 #include "BoxBeamFactory2.h"
 #include "TxDotDoubleTFactory.h"
 #include "DeckedSlabBeamFactory.h"
+#include "VoidedSlab2DistFactorEngineer.h"
+#include "PsBeamLossEngineer.h"
 
 #include <Plugins\Beams.h>
 #include <Plugins\Beams_i.c>
+#include <Beams\Interfaces.h>
 
 #include <WBFLCore_i.c>
 #include <WBFLGeometry_i.c>
@@ -102,8 +105,6 @@ BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
 	OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory,CDeckedSlabBeamFactory)
 
-   OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
-
    OBJECT_ENTRY(CLSID_WFBeamFamily,          CIBeamFamily)
    OBJECT_ENTRY(CLSID_UBeamFamily,           CUBeamFamily)
    OBJECT_ENTRY(CLSID_BoxBeamFamily,         CBoxBeamFamily)
@@ -112,6 +113,9 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_RibbedBeamFamily,      CRibbedBeamFamily)
    OBJECT_ENTRY(CLSID_SlabBeamFamily,        CSlabBeamFamily)
    OBJECT_ENTRY(CLSID_DeckedSlabBeamFamily,  CDeckedSlabBeamFamily)
+
+   OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
+   OBJECT_ENTRY(CLSID_PsBeamLossEngineer,CPsBeamLossEngineer)
 END_OBJECT_MAP()
 
 class CBeamsApp : public CWinApp

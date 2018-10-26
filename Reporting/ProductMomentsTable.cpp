@@ -250,10 +250,10 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,SpanIndexType sp
 
       if ( *pbPermit )
          nCols += 2; // for permit live loads
-
-      if ( *pbPedLoading )
-         nCols += 2;
    }
+
+   if ( *pbPedLoading )
+      nCols += 2;
 
    if ( *pbSidewalk )
    {
@@ -476,13 +476,14 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          maxOverlay = pForces2->GetMoment( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope );
          minOverlay = pForces2->GetMoment( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope );
 
+         if ( bPedLoading )
+         {
+            pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy, &maxPedestrian );
+            pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &minPedestrian, &dummy );
+         }
+
          if ( bDesign )
          {
-            if ( bPedLoading )
-            {
-               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy, &maxPedestrian );
-               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &minPedestrian, &dummy );
-            }
 
             pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
             pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
@@ -548,13 +549,13 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          maxTrafficBarrier = pForces2->GetMoment( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
          maxOverlay = pForces2->GetMoment( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
 
+         if ( bPedLoading )
+         {
+            pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &minPedestrian, &maxPedestrian );
+         }
+
          if ( bDesign )
          {
-            if ( bPedLoading )
-            {
-               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &minPedestrian, &maxPedestrian );
-            }
-
             pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
@@ -691,14 +692,14 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
             (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
          }
 
+         if ( bPedLoading )
+         {
+            (*p_table)(row,col++) << moment.SetValue( maxPedestrian[index] );
+            (*p_table)(row,col++) << moment.SetValue( minPedestrian[index] );
+         }
+
          if ( bDesign )
          {
-            if ( bPedLoading )
-            {
-               (*p_table)(row,col++) << moment.SetValue( maxPedestrian[index] );
-               (*p_table)(row,col++) << moment.SetValue( minPedestrian[index] );
-            }
-
             (*p_table)(row,col) << moment.SetValue( maxDesignLL[index] );
 
             if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )

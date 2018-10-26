@@ -2716,7 +2716,7 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       // in the deep beam case, just apply the reaction load and not the moment
       // otherwise apply the reaction and moment
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_SECTCHANGE,POIFIND_OR);
+      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
       ATLASSERT( 2 <= vPOI.size() );
       Float64 gdrHeightStart = pGdr->GetHeight( vPOI.front() );
       Float64 gdrHeightEnd   = pGdr->GetHeight( vPOI.back() );
@@ -4295,7 +4295,7 @@ PoiIDType CAnalysisAgentImp::AddPointOfInterest(ModelData* pModelData,const pgsP
    GET_IFACE(IBridge,pBridge);
    Float64 start_offset = pBridge->GetGirderStartConnectionLength(span,gdr);
    Float64 span_length = pBridge->GetSpanLength(span,gdr);
-   if ( poi.GetDistFromStart() < start_offset || (start_offset+span_length) < poi.GetDistFromStart() )
+   if ( ::IsGT(start_offset,poi.GetDistFromStart(),0.01) || ::IsLT((start_offset+span_length),poi.GetDistFromStart(),0.01) )
       return INVALID_ID;
 
    CComPtr<ISpans> spans;
@@ -4314,7 +4314,7 @@ PoiIDType CAnalysisAgentImp::AddPointOfInterest(ModelData* pModelData,const pgsP
    objPOI->put_MemberType(mtSpan);
    objPOI->put_MemberID(span);
    Float64 location = poi.GetDistFromStart() - start_offset;
-   if ( IsEqual(location,length) )
+   if ( IsEqual(location,length,0.01) )
       location = length;
 
    objPOI->put_Location(location); // distance from start bearing
@@ -4656,8 +4656,12 @@ bool CAnalysisAgentImp::HasPedestrianLoad()
    ILiveLoads::PedestrianLoadApplicationType PermitPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
    ILiveLoads::PedestrianLoadApplicationType FatiguePedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
 
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+   bool isRatingPed = pRatingSpec->IncludePedestrianLiveLoad();
+
    // if the Pedestrian on Sidewalk live load is not defined, then there can't be ped loading
-   if ( DesignPedLoad==ILiveLoads::PedDontApply && PermitPedLoad==ILiveLoads::PedDontApply && FatiguePedLoad==ILiveLoads::PedDontApply )
+   if ( DesignPedLoad==ILiveLoads::PedDontApply && PermitPedLoad==ILiveLoads::PedDontApply && 
+      FatiguePedLoad==ILiveLoads::PedDontApply && !isRatingPed)
       return false;
 
    // returns true if there is a sidewalk on the bridge that is wide enough support
@@ -10795,7 +10799,7 @@ Float64 CAnalysisAgentImp::GetStress(pgsTypes::Stage stage,const pgsPointOfInter
       break;
 
    case pgsTypes::BridgeSite3:
-      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
+      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad);
       bIncTempStrands = false;
       break;
 
@@ -10914,7 +10918,7 @@ Float64 CAnalysisAgentImp::GetDesignStress(pgsTypes::Stage stage,const pgsPointO
       break;
 
    case pgsTypes::BridgeSite3:
-      lossStage = pgsTypes::AfterLosses;
+      lossStage = pgsTypes::AfterLossesWithLiveLoad;
       break;
    }
 

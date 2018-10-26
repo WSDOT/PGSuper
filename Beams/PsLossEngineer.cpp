@@ -2202,6 +2202,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    Float64 K_userdc2 = pSpecEntry->GetUserDCElasticGain(pgsTypes::BridgeSite2);
    Float64 K_userdw2 = pSpecEntry->GetUserDWElasticGain(pgsTypes::BridgeSite2);
    Float64 K_overlay = pSpecEntry->GetOverlayElasticGain();
+   Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
    if ( poi.GetDistFromStart() < *pEndSize || *pEndSize + *pSpanLength < poi.GetDistFromStart() )
    {
       *pMsidl = 0;
@@ -2226,7 +2227,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
       Float64 gMaxI   = pILoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceI];
       Float64 gMaxIII = pILoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
-      *pMllim = _cpp_max(gMaxI,gMaxIII)*Mmax;
+      *pMllim = K_liveload*_cpp_max(gMaxI,gMaxIII)*Mmax;
    }
 
 

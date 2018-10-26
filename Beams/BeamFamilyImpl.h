@@ -24,8 +24,8 @@
 #pragma once
 
 #include <IFace\BeamFamily.h>
-#include "BeamFamilyCLSID.h"
-#include "BeamFactoryCATID.h"
+#include <Plugins\BeamFamilyCLSID.h>
+#include <Plugins\BeamFactoryCATID.h>
 #include "BeamFamilyImpl.h"
 #include "resource.h"
 

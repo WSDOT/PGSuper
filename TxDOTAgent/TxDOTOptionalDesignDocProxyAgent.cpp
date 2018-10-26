@@ -454,23 +454,11 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
                     (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
                     (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
                {
-                  // then that concrete strength wont really work afterall
-                  if ( stages[icase] == pgsTypes::CastingYard )
-                  {
-                     // unless we are in the casting yard, then we can add some additional rebar
-                     // and go to a higher limit
-                     double talt = pAllowable->GetCastingYardAllowableTensionStressCoefficientWithRebar();
-                     fc_reqd = pow(f/talt,2);
-                  }
-                  else
-                  {
-                     // too bad... this isn't going to work
-                     fc_reqd = -1;
-                  }
+                  // too bad... this isn't going to work
+                  fc_reqd = -1;
                }
                pFabrStressArtifact->SetRequiredConcreteStrength(fc_reqd);
             }
-
          }
       }
    

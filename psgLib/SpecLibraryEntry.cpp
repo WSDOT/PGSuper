@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 41.0
+#define CURRENT_VERSION 42.0
 
 
 /****************************************************************************
@@ -173,6 +173,7 @@ m_UserDWElasticGainBS2(1.0),
 m_RailingSystemElasticGain(1.0),
 m_OverlayElasticGain(1.0),
 m_SlabShrinkageElasticGain(1.0),
+m_LiveLoadElasticGain(0.0),
 m_LongReinfShearMethod(LRFD_METHOD),
 m_bDoEvaluateDeflection(true),
 m_DeflectionLimit(800.0),
@@ -595,6 +596,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("RailingSystemElasticGain"),m_RailingSystemElasticGain);
    pSave->Property(_T("OverlayElasticGain"),m_OverlayElasticGain);
    pSave->Property(_T("SlabShrinkageElasticGain"),m_SlabShrinkageElasticGain);
+   pSave->Property(_T("LiveLoadElasticGain"),m_LiveLoadElasticGain); // added in version 42
 
    // Added in 1.7
    pSave->Property(_T("CheckLiveLoadDeflection"),m_bDoEvaluateDeflection);
@@ -1819,6 +1821,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          if ( !pLoad->Property(_T("SlabShrinkageElasticGain"),&m_SlabShrinkageElasticGain) )
             THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( 41 < version )
+         {
+            // added version 42
+            if ( !pLoad->Property(_T("LiveLoadElasticGain"),&m_LiveLoadElasticGain) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       // added in version 1.7
@@ -2346,6 +2355,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_RailingSystemElasticGain , rOther.m_RailingSystemElasticGain);
    TESTD(m_OverlayElasticGain       , rOther.m_OverlayElasticGain);
    TESTD(m_SlabShrinkageElasticGain , rOther.m_SlabShrinkageElasticGain);
+   TESTD(m_LiveLoadElasticGain      , rOther.m_LiveLoadElasticGain);
 
    TEST (m_LldfMethod                 , rOther.m_LldfMethod                 );
    TEST (m_LongReinfShearMethod       , rOther.m_LongReinfShearMethod       );
@@ -3580,6 +3590,16 @@ void SpecLibraryEntry::SetDeckShrinkageElasticGain(Float64 f)
    m_SlabShrinkageElasticGain = f;
 }
 
+Float64 SpecLibraryEntry::GetLiveLoadElasticGain() const
+{
+   return m_LiveLoadElasticGain;
+}
+
+void SpecLibraryEntry::SetLiveLoadElasticGain(Float64 f)
+{
+   m_LiveLoadElasticGain = f;
+}
+
 void SpecLibraryEntry::SetRelaxationLossMethod(Int16 method)
 {
    m_RelaxationLossMethod = method;
@@ -4119,6 +4139,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_RailingSystemElasticGain = rOther.m_RailingSystemElasticGain;
    m_OverlayElasticGain       = rOther.m_OverlayElasticGain;
    m_SlabShrinkageElasticGain = rOther.m_SlabShrinkageElasticGain;
+   m_LiveLoadElasticGain      = rOther.m_LiveLoadElasticGain;
 
    m_LldfMethod                 = rOther.m_LldfMethod;
    m_LongReinfShearMethod       = rOther.m_LongReinfShearMethod;

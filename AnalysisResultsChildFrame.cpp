@@ -1123,10 +1123,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
    }
 
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Moment Capacity"),      pgsTypes::StrengthI, graphCapacity, false, false, false, false, false, true,  ACTIONS_MOMENT_ONLY,  CHOCOLATE) );
-   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Min Moment Capacity (Design)"),  pgsTypes::StrengthI, graphMinCapacity, false, false, false, false, false, true,  ACTIONS_MOMENT_ONLY,  SADDLEBROWN) );
-
-   if ( bPermit )
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Min Moment Capacity (Permit)"),  pgsTypes::StrengthII, graphMinCapacity, false, false, false, false, false, true,  ACTIONS_MOMENT_ONLY,  SADDLEBROWN) );
+   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Min Moment Capacity"),  pgsTypes::StrengthI, graphMinCapacity, false, false, false, false, false, true,  ACTIONS_MOMENT_ONLY,  SADDLEBROWN) );
 
    // Demand and Allowable
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Demand (Design)"),     pgsTypes::ServiceI,  graphDemand,    true,  false,  true,  true,  true,  true, RGB(139, 26, 26)) );

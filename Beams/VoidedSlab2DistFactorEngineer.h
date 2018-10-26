@@ -27,6 +27,7 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
+#include <Plugins\CLSID.h>
 
 struct VOIDEDSLAB_J_SOLID
 {
@@ -60,10 +61,6 @@ struct VOIDEDSLAB_LLDFDETAILS : public BASE_LLDFDETAILS
    IndexType nVoids;
 };
 
-// {DA437468-B32C-4012-8B8E-51BAE278C170}
-DEFINE_GUID(CLSID_VoidedSlab2DistFactorEngineer, 
-0xda437468, 0xb32c, 0x4012, 0x8b, 0x8e, 0x51, 0xba, 0xe2, 0x78, 0xc1, 0x70);
-
 /////////////////////////////////////////////////////////////////////////////
 // CVoidedSlab2DistFactorEngineer
 class ATL_NO_VTABLE CVoidedSlab2DistFactorEngineer : 
@@ -79,9 +76,16 @@ public:
 
    HRESULT FinalConstruct();
 
+DECLARE_REGISTRY_RESOURCEID(IDR_VOIDEDSLAB2DISTFACTORENGINEER)
+
 BEGIN_COM_MAP(CVoidedSlab2DistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)
+   COM_INTERFACE_ENTRY(IInitialize)
 END_COM_MAP()
+
+// IInitialize
+public:
+//   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
 
 public:
    // IDistFactorEngineer

@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.VoidedSlab2DistFactorEngineer.1 = s 'Voided Slab 2 Distribution Factor Engineer'
+	{
+		CLSID = s '{DA437468-B32C-4012-8B8E-51BAE278C170}'
+   }
+	PGSuperBeamFactory.VoidedSlab2DistFactorEngineer = s 'Voided Slab 2 Distribution Factor Engineer'
+	{
+		CLSID = s '{DA437468-B32C-4012-8B8E-51BAE278C170}'
+		CurVer = s 'PGSuperBeamFactory.VoidedSlab2DistFactorEngineer.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {DA437468-B32C-4012-8B8E-51BAE278C170} = s 'Voided Slab 2 Distribution Factor Engineer'
+		{
+			ProgID = s 'PGSuperBeamFactory.VoidedSlab2DistFactorEngineer.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.VoidedSlab2DistFactorEngineer'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

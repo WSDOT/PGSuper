@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "helper.h"
+#include <Beams\Helper.h>
 #include <Reporting\ReportStyleHolder.h>
 
 #ifdef _DEBUG

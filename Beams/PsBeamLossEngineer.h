@@ -27,18 +27,17 @@
 
 #include "resource.h"       // main symbols
 #include "IFace\PsLossEngineer.h"
+#include "Beams\Interfaces.h"
 #include "PsLossEngineer.h"
-
-// {959A33E0-E1FA-4932-AD3F-5FE259DB3E9A}
-DEFINE_GUID(CLSID_PsBeamLossEngineer, 
-0x959a33e0, 0xe1fa, 0x4932, 0xad, 0x3f, 0x5f, 0xe2, 0x59, 0xdb, 0x3e, 0x9a);
+#include <Plugins\CLSID.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsBeamLossEngineer
 class ATL_NO_VTABLE CPsBeamLossEngineer : 
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CPsBeamLossEngineer, &CLSID_PsBeamLossEngineer>,
-   public IPsLossEngineer
+   public IPsBeamLossEngineer,
+   public IInitialize
 {
 public:
 	CPsBeamLossEngineer()
@@ -46,14 +45,25 @@ public:
 	}
 
    HRESULT FinalConstruct();
-   void Init(CPsLossEngineer::BeamType beamType) { m_BeamType = beamType; }
+
+DECLARE_REGISTRY_RESOURCEID(IDR_PSBEAMLOSSENGINEER)
 
 BEGIN_COM_MAP(CPsBeamLossEngineer)
+   COM_INTERFACE_ENTRY(IPsBeamLossEngineer)
    COM_INTERFACE_ENTRY(IPsLossEngineer)
+   COM_INTERFACE_ENTRY(IInitialize)
 END_COM_MAP()
 
+// IInitialize
 public:
    virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
+
+// IPsBeamLossEngineer
+public:
+   virtual void Init(BeamTypes beamType) { m_BeamType = beamType; }
+
+// IPsLossEngineer
+public:
    virtual LOSSDETAILS ComputeLosses(const pgsPointOfInterest& poi);
    virtual LOSSDETAILS ComputeLossesForDesign(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
@@ -62,7 +72,7 @@ public:
 private:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
-   CPsLossEngineer::BeamType m_BeamType;
+   BeamTypes m_BeamType;
    CPsLossEngineer m_Engineer;
 };
 

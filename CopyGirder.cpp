@@ -99,7 +99,7 @@ bool txnCopyGirder::Execute()
          pIBridgeDesc->SetGirderName( to_span,to_gdr, m_SourceGirderData.m_strGirderName.c_str());
       }
 
-      // Girder data-related stuff
+      // Set up our source
       CGirderData gd = copyData.m_GirderData;
 
       bool did_gdr_type_change = m_SourceGirderData.m_strGirderName != copyData.m_strGirderName;
@@ -120,7 +120,7 @@ bool txnCopyGirder::Execute()
             strWarningMsg = strWarningMsg + msg;
          }
 
-         gd.CopyShearDataFrom(m_SourceGirderData.m_GirderData);
+         gd.CopyLongitudinalRebarFrom(m_SourceGirderData.m_GirderData);
       }
 
       if (m_bPrestress || did_gdr_type_change)
@@ -258,14 +258,6 @@ void txnCopyGirder::GetGirderData(SpanIndexType spanIdx,GirderIndexType gdrIdx,t
    ptxnGirderData->m_strGirderName = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx);
    
    ptxnGirderData->m_GirderData            = *(pGirderData->GetGirderData(spanIdx,gdrIdx));
-   ptxnGirderData->m_LongitudinalRebarData = pLongRebar->GetLongitudinalRebarData(spanIdx,gdrIdx);
-   ptxnGirderData->m_ShearData             = pShear->GetShearData(spanIdx,gdrIdx);
-
-   ptxnGirderData->m_LeftLiftPoint  = pGirderLifting->GetLeftLiftingLoopLocation(spanIdx,gdrIdx);
-   ptxnGirderData->m_RightLiftPoint = pGirderLifting->GetRightLiftingLoopLocation(spanIdx,gdrIdx);
-
-   ptxnGirderData->m_LeadingOverhang  = pGirderHauling->GetLeadingOverhang(spanIdx,gdrIdx);
-   ptxnGirderData->m_TrailingOverhang = pGirderHauling->GetTrailingOverhang(spanIdx,gdrIdx);
 
    ptxnGirderData->m_SlabOffset[pgsTypes::metStart] = pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metStart);
    ptxnGirderData->m_SlabOffset[pgsTypes::metEnd]   = pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metEnd);

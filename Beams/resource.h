@@ -46,6 +46,8 @@
 #define IDR_DECKEDSLABBEAMFACTORY       227
 #define IDR_DECKEDSLABBEAMFAMILY        228
 #define IDR_BOXBEAMFACTORY2             229
+#define IDR_VOIDEDSLAB2DISTFACTORENGINEER 230
+#define IDR_PSBEAMLOSSENGINEER          231
 
 // Next default values for new objects
 // 

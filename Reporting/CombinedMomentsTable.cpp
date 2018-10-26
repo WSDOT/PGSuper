@@ -392,7 +392,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
                            stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    *p << p_table;
 

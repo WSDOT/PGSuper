@@ -1712,9 +1712,20 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    Uint16 min_num_legs = lrfdConcreteUtil::MinLegsForBv(bv);
    pArtifact->SetNumLegsReqd(min_num_legs);
 
-   // Determine average shear strength
-   Float64 Vnmin = min(Vn1, min(Vn2, Vn3));
-   Float64 Vsavg = Vnmin/Acv;
+   // Determine average shear stress.
+   // Average shear stress. Note: This value is vni prior to 2007 and vui afterwards 
+   Float64 Vsavg;
+   if ( lrfdVersionMgr::FourthEdition2007 <= lrfdVersionMgr::GetVersion() )
+   {
+      Float64 vui = Vuh/Acv;
+      Vsavg = vui;
+   }
+   else
+   {
+      Float64 Vnmin = min(Vn1, min(Vn2, Vn3));
+      Vsavg = Vnmin/Acv;
+   }
+
    pArtifact->SetVsAvg(Vsavg);
 
    // Shear strength so that equation 5.8.4.1-4 is not applicable

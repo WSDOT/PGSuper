@@ -654,6 +654,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
    DDX_Percentage(pDX,IDC_EG_RAILING,m_Entry.m_RailingSystemElasticGain);
    DDX_Percentage(pDX,IDC_EG_OVERLAY,m_Entry.m_OverlayElasticGain);
    DDX_Percentage(pDX,IDC_EG_SHRINKAGE,m_Entry.m_SlabShrinkageElasticGain);
+   DDX_Percentage(pDX,IDC_EG_LIVELOAD,m_Entry.m_LiveLoadElasticGain);
 
    DDX_CBEnum(pDX,IDC_RELAXATION_LOSS_METHOD,m_Entry.m_RelaxationLossMethod);
 

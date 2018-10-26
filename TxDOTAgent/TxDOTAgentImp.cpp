@@ -120,8 +120,8 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
-   // Texas Summary report
-   pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report"));
+   // Texas Summary report - short
+   pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report (Short Form)"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
@@ -129,8 +129,20 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(true,true,false,true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
+
+   // Texas Summary report - long form
+   pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report (Long Form)"));
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasGirderSummaryChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(true,true,false,true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(true,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasStressChecksChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasShearChapterBuilder) );

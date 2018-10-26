@@ -834,12 +834,12 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
 
 template <class M,class T>
 RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,
-                                                   bool bPedLoading,bool bRating,bool is4Stress, pgsTypes::Stage stage,
+                                                   bool bPedLoading,bool bRating,bool is4Stress, bool includeImpact, pgsTypes::Stage stage,
                                                    pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,
                                                    IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    ATLASSERT ( stage == pgsTypes::BridgeSite3 );
-   ATLASSERT( !(bPedLoading && bRating) ); // These are different tables - must create separately
+   ATLASSERT( !(bDesign && bRating) ); // These are different tables - must create separately
 
    rptRcTable* pTable;
 
@@ -928,7 +928,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
 
          pTable->SetColumnSpan(0,col1,nVhls*2);
-         (*pTable)(0,col1++) << _T("Vehicles (LL+IM)");
+         (*pTable)(0,col1++) << (includeImpact ? _T("Vehicles (LL+IM)") : _T("Vehicles (LL)"));
          pTable->SetColumnSpan(1,col2,2);
          (*pTable)(1,col2++) << _T("* Design");
          (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
@@ -953,7 +953,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          // Total Live Load
          int lcnt=1;
          pTable->SetColumnSpan(0,col1,nVhls*2);
-         (*pTable)(0,col1++) << _T("Total Live Load (PL and LL+IM)");
+         (*pTable)(0,col1++) << (includeImpact ? _T("Total Live Load (PL and LL+IM)") : _T("Total Live Load (PL and LL)"));
          pTable->SetColumnSpan(1,col2,2);
          (*pTable)(1,col2++) << _T("* Design")<<Super(lcnt++);
          (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
@@ -980,14 +980,14 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          pTable->SetColumnSpan(0,col1,nVhls*2);
          (*pTable)(0,col1++) << _T("Total Live Load");
          pTable->SetColumnSpan(1,col2,2);
-         (*pTable)(1,col2++) << _T("* LL+IM Design");
+         (*pTable)(1,col2++) << (includeImpact ? _T("* LL+IM Design") : _T("* LL Design"));
          (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
             pTable->SetColumnSpan(1,col2,2);
-            (*pTable)(1,col2++) << _T("* LL+IM Fatigue");
+            (*pTable)(1,col2++) << (includeImpact ? _T("* LL+IM Fatigue") : _T("* LL Fatigue"));
             (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
             (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
          }
@@ -995,7 +995,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          if ( bPermit  && !is4Stress)
          {
             pTable->SetColumnSpan(1,col2,2);
-            (*pTable)(1,col2++) << _T("* LL+IM Permit");
+            (*pTable)(1,col2++) << (includeImpact ? _T("* LL+IM Permit") : _T("* LL Permit"));
             (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
             (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
          }
@@ -1029,7 +1029,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
       {
          pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << _T("* LL+IM Design");
+         (*pTable)(0,col1++) << (includeImpact ? _T("* LL+IM Design") : _T("* LL Design"));
          (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
       }
@@ -1037,7 +1037,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
          pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << _T("* LL+IM Legal Routine");
+         (*pTable)(0,col1++) << (includeImpact ? _T("* LL+IM Legal Routine") : _T("* LL Legal Routine"));
          (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
       }
@@ -1045,7 +1045,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
          pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << _T("* LL+IM Legal Special");
+         (*pTable)(0,col1++) << (includeImpact ? _T("* LL+IM Legal Special") :  _T("* LL Legal Special"));
          (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
       }
@@ -1053,7 +1053,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && !is4Stress )
       {
          pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << _T("* LL+IM Permit Routine");
+         (*pTable)(0,col1++) << (includeImpact ? _T("* LL+IM Permit Routine") : _T("* LL Permit Routine"));
          (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
       }
@@ -1061,7 +1061,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && !is4Stress )
       {
          pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << _T("* LL+IM Permit Special");
+         (*pTable)(0,col1++) << (includeImpact ? _T("* LL+IM Permit Special") : _T("* LL Permit Special"));
          (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
       }

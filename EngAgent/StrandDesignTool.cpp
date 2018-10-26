@@ -759,11 +759,11 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    LOSSDETAILS losses;
    ATLASSERT(m_Span == poi.GetSpan() && m_Girder == poi.GetGirder());
    psfeng.ComputeLosses(poi,guess,&losses);
-   Float64 loss = losses.pLosses->PermanentStrand_Final();
+   Float64 loss = losses.pLosses->PermanentStrand_FinalWithLiveLoad();
 
 #if defined _DEBUG
    GET_IFACE(ILosses,pILosses);
-   Float64 check_loss = pILosses->GetFinal(poi,pgsTypes::Permanent,guess);
+   Float64 check_loss = pILosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent,guess);
    ATLASSERT(IsEqual(loss,check_loss));
 #endif // _DEBUG
 

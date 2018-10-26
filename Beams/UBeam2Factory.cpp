@@ -23,7 +23,7 @@
 // UBeam2Factory.cpp : Implementation of CUBeam2Factory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "UBeam2Factory.h"
 #include "UBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
@@ -325,7 +325,7 @@ void CUBeam2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType sta
 {
    CComObject<CPsBeamLossEngineer>* pEngineer;
    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-   pEngineer->Init(CPsLossEngineer::UBeam);
+   pEngineer->Init(UBeam);
    pEngineer->SetBroker(pBroker,statusGroupID);
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();

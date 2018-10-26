@@ -26,18 +26,15 @@
 #include "stdafx.h"
 #include "PGSuper.h"
 
-// cause the resource control values to be defined
-#define APSTUDIO_INVOKED
-#undef APSTUDIO_READONLY_SYMBOLS
-
 #include "resource.h"       // main symbols 
+#include "PGSuperCommandIDs.h"
 
 // This is the range of command IDs for all plug-in commands... all means all commands added
 // to the menus of the main executable, the appplugin document and view menus, and plugin supplied menus,
 // toolbars, and accelerator tables
 #define FIRST_BRIDGELINK_PLUGIN_COMMAND 0x8200
-#define LAST_BRIDGELINK_PLUGIN_COMMAND  0x9000
-#define BRIDGELINK_PLUGIN_COMMAND_COUNT 256
+#define LAST_BRIDGELINK_PLUGIN_COMMAND  0x8FFF
+#define BRIDGELINK_PLUGIN_COMMAND_COUNT 256 // 256 commands can be added to the main BridgeLink application
 
 #include "MainFrm.h"
 #include "PGSuperDocManager.h"
@@ -529,4 +526,9 @@ void CPGSuperApp::OnAppAbout()
 {
    CAboutDlg dlg;
    dlg.DoModal();
+}
+
+BOOL CPGSuperApp::OnCmdMsg(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+   return __super::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }

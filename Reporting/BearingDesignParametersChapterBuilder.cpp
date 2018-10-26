@@ -29,6 +29,7 @@
 #include <Reporting\UserRotationTable.h>
 #include <Reporting\VehicularLoadResultsTable.h>
 #include <Reporting\VehicularLoadReactionTable.h>
+#include <Reporting\CombinedReactionTable.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -95,16 +96,23 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       return pChapter;
    }
 
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedestrian = pProductLoads->HasPedestrianLoad();
+
    GET_IFACE2(pBroker,ISpecification,pSpec);
 
    // Product Reactions
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
    *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),CProductReactionTable::BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
+
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
+
+   if (bPedestrian)
+      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
    *p << rptNewLine;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
    std::vector<std::_tstring>::iterator iter;
    long j = 0;
@@ -138,11 +146,18 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       *p << CUserReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),CUserReactionTable::BearingReactionsTable,pDisplayUnits) << rptNewLine;
    }
 
+   // Combined reactions
+   CCombinedReactionTable().BuildForBearingDesign(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pSpec->GetAnalysisType());
+
    // Product Rotations
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,true,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
+
+   if (bPedestrian)
+      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
    *p << rptNewLine;
 
    strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);

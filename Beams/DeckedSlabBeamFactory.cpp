@@ -23,7 +23,7 @@
 // DeckedSlabBeamFactory.cpp : Implementation of CDeckedSlabBeamFactory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "DeckedSlabBeamFactory.h"
 #include "IBeamDistFactorEngineer.h"
 #include "MultiWebDistFactorEngineer.h"
@@ -300,7 +300,7 @@ void CDeckedSlabBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupID
    CComObject<CPsBeamLossEngineer>* pEngineer;
    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
     
-   pEngineer->Init(CPsLossEngineer::SingleT);
+   pEngineer->Init(SingleT);
 
    pEngineer->SetBroker(pBroker,statusGroupID);
    (*ppEng) = pEngineer;

@@ -383,7 +383,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
    if ( span == ALL_SPANS )

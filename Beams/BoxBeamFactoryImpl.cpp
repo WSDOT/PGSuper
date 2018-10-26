@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include <Plugins\Beams.h>
 
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 
 #include "BoxBeamFactoryImpl.h"
 #include "BoxBeamDistFactorEngineer.h"
@@ -259,7 +259,7 @@ void CBoxBeamFactoryImpl::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTyp
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(CPsLossEngineer::BoxBeam);
+    pEngineer->Init(BoxBeam);
     pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();

@@ -1062,6 +1062,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PGSuperCommandIDs.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PGSuperDocManager.h"
 				>
 			</File>
@@ -1159,11 +1163,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\concrete.ico"
+				RelativePath="psgLib\LibraryEditor\res\concrete.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\concrete.ico"
+				RelativePath="LibraryEditor\res\concrete.ico"
 				>
 			</File>
 			<File
@@ -1179,11 +1183,11 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\diaphrag.ico"
+				RelativePath="LibraryEditor\res\diaphrag.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\diaphrag.ico"
+				RelativePath="psgLib\LibraryEditor\res\diaphrag.ico"
 				>
 			</File>
 			<File
@@ -1227,10 +1231,6 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00001.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00001.ico"
 				>
 			</File>
@@ -1239,15 +1239,19 @@
 				>
 			</File>
 			<File
+				RelativePath="LibraryEditor\res\ico00001.ico"
+				>
+			</File>
+			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
+				>
+			</File>
+			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -1259,10 +1263,6 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00004.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00004.ico"
 				>
 			</File>
@@ -1271,7 +1271,7 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00005.ico"
+				RelativePath="LibraryEditor\res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -1283,7 +1283,7 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
+				RelativePath="res\ico00005.ico"
 				>
 			</File>
 			<File
@@ -1299,11 +1299,15 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00007.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00007.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00007.ico"
 				>
 			</File>
 			<File
@@ -1323,11 +1327,11 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00010.ico"
+				RelativePath="LibraryEditor\res\ico00010.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00010.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00010.ico"
 				>
 			</File>
 			<File
@@ -1339,15 +1343,11 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00013.ico"
-				>
-			</File>
-			<File
 				RelativePath="LibraryEditor\res\ico00013.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00013.ico"
 				>
 			</File>
 			<File
@@ -1356,6 +1356,10 @@
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\icon1.ico"
+				>
+			</File>
+			<File
+				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1368,6 +1372,10 @@
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\idr_gird.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\KDOT.ico"
 				>
 			</File>
 			<File
@@ -1459,11 +1467,11 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\specific.ico"
+				RelativePath="LibraryEditor\res\specific.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\specific.ico"
+				RelativePath="psgLib\LibraryEditor\res\specific.ico"
 				>
 			</File>
 			<File

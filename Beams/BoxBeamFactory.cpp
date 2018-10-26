@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include <Plugins\Beams.h>
 
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 
 #include "BoxBeamFactory.h"
 #include "BoxBeamDistFactorEngineer.h"

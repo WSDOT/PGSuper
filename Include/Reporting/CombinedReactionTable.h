@@ -93,6 +93,13 @@ public:
                       pgsTypes::AnalysisType analysisType, TableType tableType,
                       bool includeImpact, bool bDesign=true,bool bRating=true) const;
 
+   //------------------------------------------------------------------------
+   // Builds tables for bearing design
+   virtual void BuildForBearingDesign(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder, 
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -108,7 +115,7 @@ protected:
                       bool bDesign=true,bool bRating=true) const;
 
    virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder, 
+                      SpanIndexType span,GirderIndexType girder, bool includeImpact,
                       IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::AnalysisType analysisType, TableType tableType,
                       bool bDesign=true,bool bRating=true) const;

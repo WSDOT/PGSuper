@@ -23,7 +23,7 @@
 // NUBeamFactory.cpp : Implementation of CNUBeamFactory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "NUBeamFactory.h"
 #include "IBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
@@ -264,7 +264,7 @@ void CNUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType sta
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(CPsLossEngineer::IBeam);
+    pEngineer->Init(IBeam);
     pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();

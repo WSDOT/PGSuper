@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,0,4
- PRODUCTVERSION 2,7,0,4
+ FILEVERSION 2,7,0,5
+ PRODUCTVERSION 2,7,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.7.0.4"
+            VALUE "FileVersion", "2.7.0.5"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.0.4"
+            VALUE "ProductVersion", "2.7.0.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -710,6 +710,8 @@ BEGIN
     GROUPBOX        "Loss Method",IDC_STATIC,7,7,266,194
     LTEXT           "Select method for computing losses",IDC_STATIC,18,22,112,8
     COMBOBOX        IDC_LOSS_METHOD,18,33,231,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Relaxation Loss Method",IDC_RELAXATION_LOSS_METHOD_LABEL,18,67,77,8
+    COMBOBOX        IDC_RELAXATION_LOSS_METHOD,18,77,185,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Static",IDC_SHIPPING_TIME_TAG,148,54,19,8
     LTEXT           "Shipping is assumed to occur 10 days after prestress transfer",IDC_APPROXIMATE_SHIPPING_TIME_NOTE,29,54,213,8
     LTEXT           "After Prestress Transfer",IDC_AFTER_XFER_LABEL,29,67,89,8
@@ -757,7 +759,7 @@ BEGIN
     LTEXT           "Compute the transfer length of prestressing strands using the following method:",IDC_STATIC,20,285,247,10
     COMBOBOX        IDC_COMBO_TRANSFER,18,296,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Static",IDC_AFTER_SIDL_TAG,183,165,18,8
-    GROUPBOX        "Elastic Gains",IDC_STATIC,279,7,208,194
+    GROUPBOX        "Elastic Gains",IDC_STATIC,279,7,208,211
     LTEXT           "Define the percentage of load used to compute elastic gains",IDC_EG_LABEL,288,22,189,8
     EDITTEXT        IDC_EG_SLAB,374,37,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_SLAB_UNIT,401,40,8,8
@@ -789,8 +791,9 @@ BEGIN
     EDITTEXT        IDC_EG_OVERLAY,374,134,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_OVERLAY_UNIT,401,137,8,8
     LTEXT           "Overlay",IDC_EG_OVERLAY_LABEL,290,137,25,8
-    COMBOBOX        IDC_RELAXATION_LOSS_METHOD,18,77,185,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Relaxation Loss Method",IDC_RELAXATION_LOSS_METHOD_LABEL,18,67,77,8
+    EDITTEXT        IDC_EG_LIVELOAD,374,199,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_LIVELOAD_UNIT,401,202,8,8
+    LTEXT           "Live Load",IDC_EG_LIVELOAD_LABEL,290,202,32,8
 END
 
 IDD_SPEC_LIFTING DIALOGEX 0, 0, 378, 337
@@ -2189,6 +2192,7 @@ LANGUAGE 9, 1
 #if !defined NOGRID
 #include "grid\gxres.rc"               // Objective Grid resources
 #endif
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -49,20 +49,20 @@ void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGro
 
 LOSSDETAILS CPsBeamLossEngineer::ComputeLosses(const pgsPointOfInterest& poi)
 {
-   return m_Engineer.ComputeLosses(m_BeamType,poi);
+   return m_Engineer.ComputeLosses((CPsLossEngineer::BeamType)m_BeamType,poi);
 }
 
 LOSSDETAILS CPsBeamLossEngineer::ComputeLossesForDesign(const pgsPointOfInterest& poi,const GDRCONFIG& config)
 {
-   return m_Engineer.ComputeLossesForDesign(m_BeamType,poi,config);
+   return m_Engineer.ComputeLossesForDesign((CPsLossEngineer::BeamType)m_BeamType,poi,config);
 }
 
 void CPsBeamLossEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   m_Engineer.BuildReport(m_BeamType,span,gdr,pChapter,pDisplayUnits);
+   m_Engineer.BuildReport((CPsLossEngineer::BeamType)m_BeamType,span,gdr,pChapter,pDisplayUnits);
 }
 
 void CPsBeamLossEngineer::ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   m_Engineer.ReportFinalLosses(m_BeamType,span,gdr,pChapter,pDisplayUnits);
+   m_Engineer.ReportFinalLosses((CPsLossEngineer::BeamType)m_BeamType,span,gdr,pChapter,pDisplayUnits);
 }

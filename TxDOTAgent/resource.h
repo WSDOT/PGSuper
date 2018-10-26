@@ -90,7 +90,6 @@
 #define IDC_OPT_BOX                     253
 #define IDC_OPT_STRAND_TYPE             254
 #define IDC_OPT_TO_VALID_RANGE          255
-#define IDC_BUTTON1                     255
 #define IDC_ORIG_STRAND_TYPE            255
 #define IDC_SELECT_ALL                  255
 #define IDC_TO_TAG                      256
@@ -147,35 +146,31 @@
 #define IDS_GDR_ERROR3                  1756
 #define IDC_GROUP                       3003
 #define IDS_E_NOGIRDERS                 3005
-#define ID_LEFTEND                      33174
-#define ID_RIGHTEND                     33175
-#define ID_LEFT_HP                      33176
-#define ID_CENTER                       33177
-#define ID_RIGHT_HP                     33178
-#define ID_USER_CUT                     33179
-#define ID_HELP_JOINARPLIST             33188
-#define ID_FILE_SAVEAS                  33300
-#define ID_FILE_EXPORTPGSUPERMODEL      33301
-#define ID_FILE_CLOSE33302              33302
-#define ID_BUTTON33303                  33303
-#define ID_GIRDERSECTION_EDITVIEWSETTINGS 33304
-#define ID_SECTION_VIEWSETTINGS         33305
-#define ID_VIEWSETTINGS                 33306
-#define ID_HELP_INFO                    33307
-#define ID_LICENSE_AGREEMENT            33308
-#define ID_HELP_ABOUTPGSUPER            33309
-#define ID_HELP_A                       33310
-#define ID_VIEW_SECTIONCUTLOCATION      33312
-#define ID_VIEW_GIRDERVIEWSETTINGS      33313
-#define ID_VIEW_STATUSCENTER            33314
-#define ID_STATUSCENTER_VIEW            33315
+
+#define ID_LEFTEND                      36864
+#define ID_RIGHTEND                     36865
+#define ID_LEFT_HP                      36866
+#define ID_CENTER                       36867
+#define ID_RIGHT_HP                     36869
+#define ID_USER_CUT                     36870
+#define ID_FILE_SAVEAS                  36871
+#define ID_FILE_EXPORTPGSUPERMODEL      36872
+#define ID_GIRDERSECTION_EDITVIEWSETTINGS 36873
+#define ID_SECTION_VIEWSETTINGS         36874
+#define ID_VIEWSETTINGS                 36875
+#define ID_LICENSE_AGREEMENT            36876
+#define ID_HELP_ABOUTPGSUPER            36877
+#define ID_HELP_A                       36878
+#define ID_VIEW_SECTIONCUTLOCATION      36879
+#define ID_VIEW_GIRDERVIEWSETTINGS      36880
+#define ID_STATUSCENTER_VIEW            36881
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        217
-#define _APS_NEXT_COMMAND_VALUE         33316
+#define _APS_NEXT_COMMAND_VALUE         36882
 #define _APS_NEXT_CONTROL_VALUE         268
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

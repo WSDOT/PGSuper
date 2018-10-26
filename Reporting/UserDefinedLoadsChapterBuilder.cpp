@@ -60,30 +60,52 @@ LPCTSTR CUserDefinedLoadsChapterBuilder::GetName() const
 
 rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    SpanIndexType span;
    GirderIndexType gdr;
 
+   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
    if ( pSGRptSpec )
    {
       pSGRptSpec->GetBroker(&pBroker);
-      //span = pSGRptSpec->GetSpan();
-      span = ALL_SPANS; // do all spans for this girder line so that
-                        // you get a complete picture of the loading
+      GET_IFACE2(pBroker,IBridge,pBridge);
+
+      // Don't report loads on adjacent spans unless continuous connection
+      span = pSGRptSpec->GetSpan();
+
+      PierIndexType prevPier = span;
+      bool bContinuousOnLeft, bContinuousOnRight;
+      pBridge->IsContinuousAtPier(prevPier,&bContinuousOnLeft,&bContinuousOnRight);
+      if(bContinuousOnRight)
+      {
+         span = ALL_SPANS;
+      }
+      else
+      {
+         PierIndexType nextPier = span+1;
+         pBridge->IsContinuousAtPier(nextPier,&bContinuousOnLeft,&bContinuousOnRight);
+         if(bContinuousOnLeft)
+         {
+            span = ALL_SPANS;
+         }
+      }
+
       gdr = pSGRptSpec->GetGirder();
-   }
-   else if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      span = ALL_SPANS;
-      gdr = pGdrRptSpec->GetGirder();
    }
    else
    {
-      span = ALL_SPANS;
-      gdr  = ALL_GIRDERS;
+      CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+      if(pGdrRptSpec)
+      {
+         pGdrRptSpec->GetBroker(&pBroker);
+         span = ALL_SPANS;
+         gdr = pGdrRptSpec->GetGirder();
+      }
+      else
+      {
+         ATLASSERT(0);
+         return NULL; // no hope going further
+      }
    }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);

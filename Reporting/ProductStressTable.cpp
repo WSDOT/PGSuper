@@ -232,14 +232,14 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       pForces2->GetStress( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxOverlay, &fBotMaxOverlay);
       pForces2->GetStress( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope, &fTopMinOverlay, &fBotMinOverlay);
 
+      if ( bPedLoading )
+      {
+         pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
+      }
+
       if ( bDesign )
       {
-         if ( bPedLoading )
-         {
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
-         }
-
          pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
          pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
 
@@ -300,13 +300,13 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
       pForces2->GetStress( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxOverlay, &fBotMaxOverlay);
 
+      if ( bPedLoading )
+      {
+         pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL);
+      }
+
       if ( bDesign )
       {
-         if ( bPedLoading )
-         {
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL);
-         }
-
          pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL);
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
@@ -522,20 +522,19 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
          col++;
       }
 
+      if ( bPedLoading )
+      {
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPedestrianLL[index]);
+         col++;
+
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPedestrianLL[index]);
+         col++;
+      }
 
       if ( bDesign )
       {
-         if ( bPedLoading )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPedestrianLL[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPedestrianLL[index]);
-            col++;
-         }
-
          (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
          (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxDesignLL[index]);
          col++;

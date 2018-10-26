@@ -23,7 +23,7 @@
 // TxDotDoubleTFactory.cpp : Implementation of CTxDotDoubleTFactory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "TxDotDoubleTFactory.h"
 #include "MultiWebDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
@@ -283,7 +283,7 @@ void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTy
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(CPsLossEngineer::SingleT);
+    pEngineer->Init(SingleT);
     pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();

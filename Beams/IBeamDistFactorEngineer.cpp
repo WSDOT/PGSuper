@@ -36,7 +36,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\StatusCenter.h>
-#include "Helper.h"
+#include <Beams\Helper.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

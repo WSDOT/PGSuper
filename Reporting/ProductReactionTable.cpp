@@ -199,17 +199,17 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          Float64 min, max;
          VehicleIndexType minConfig, maxConfig;
 
+         if ( bPedLoading )
+         {
+            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, true, &min, &max );
+            (*p_table)(row,col++) << reaction.SetValue( max );
+
+            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, true, &min, &max );
+            (*p_table)(row,col++) << reaction.SetValue( min );
+         }
+
          if ( bDesign )
          {
-            if ( bPedLoading )
-            {
-               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, true, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( max );
-
-               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, true, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( min );
-            }
-
             pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
             (*p_table)(row,col) << reaction.SetValue( max );
 
@@ -411,15 +411,16 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
 
          Float64 min, max;
          VehicleIndexType minConfig, maxConfig;
+
+         if ( bPedLoading )
+         {
+            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, true, &min, &max );
+            (*p_table)(row,col++) << reaction.SetValue( max );
+            (*p_table)(row,col++) << reaction.SetValue( min );
+         }
+
          if ( bDesign )
          {
-            if ( bPedLoading )
-            {
-               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, true, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( max );
-               (*p_table)(row,col++) << reaction.SetValue( min );
-            }
-
             pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
             (*p_table)(row,col) << reaction.SetValue( max );
             if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX)

@@ -23,7 +23,7 @@
 // VoidedSlab2Factory.cpp : Implementation of CVoidedSlab2Factory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "VoidedSlabFactory2.h"
 #include "IBeamDistFactorEngineer.h"
 #include "VoidedSlab2DistFactorEngineer.h"
@@ -332,9 +332,9 @@ void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTyp
    double nVoids = pGirderLib->GetDimension(_T("Number_of_Voids"));
 
    if ( nVoids == 0 )
-      pEngineer->Init(CPsLossEngineer::SolidSlab);
+      pEngineer->Init(SolidSlab);
    else
-      pEngineer->Init(CPsLossEngineer::SingleT);
+      pEngineer->Init(SingleT);
 
    pEngineer->SetBroker(pBroker,statusGroupID);
    (*ppEng) = pEngineer;

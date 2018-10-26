@@ -422,14 +422,14 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
             (*p_table)(row,col++) << shear.SetValue( maxOverlay[index] );
          }
 
+         if ( bPedLoading )
+         {
+            (*p_table)(row,col++) << shear.SetValue( maxPedestrian[index] );
+            (*p_table)(row,col++) << shear.SetValue( minPedestrian[index] );
+         }
+
          if ( bDesign )
          {
-            if ( bPedLoading )
-            {
-               (*p_table)(row,col++) << shear.SetValue( maxPedestrian[index] );
-               (*p_table)(row,col++) << shear.SetValue( minPedestrian[index] );
-            }
-
             (*p_table)(row,col) << shear.SetValue( maxDesignLL[index] );
             if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
                (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << _T(")");

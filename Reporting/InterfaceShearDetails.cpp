@@ -378,9 +378,18 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    {
       *pPara << _T("Girder/slab interfaces are intentionally roughened and all primary vertical shear reinforcement is extended across the interface. ")
              << _T("Hence, the minimum reinforcement requirement of ") 
-             << Sub2(_T("a"),_T("vf")) << _T(" may be waived if ") 
-             << Sub2(_T("v"),_T("ni")) << _T("/") << Sub2(_T("a"),_T("cv")) 
-             << _T(" is less than ") << stress_with_tag.SetValue(llss) << rptNewLine;
+             << Sub2(_T("a"),_T("vf")) << _T(" may be waived if ");
+
+      if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+      {
+         *pPara << Sub2(_T("v"),_T("ui"));
+      }
+      else
+      {
+         *pPara << Sub2(_T("v"),_T("ni")) << _T("/") << Sub2(_T("a"),_T("cv"));
+      }
+
+      *pPara << _T(" is less than ") << stress_with_tag.SetValue(llss) << rptNewLine;
    }
 
    table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
@@ -408,6 +417,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("AvfMin_SI.png")) << rptNewLine;
       else
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("AvfMin_US.png")) << rptNewLine;
+
+      (*table)(0,4)  << COLHDR(Sub2(_T("v"),_T("ui")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
@@ -415,9 +426,10 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          (*table)(0,3)<<COLHDR(Sub2(_T("a"),_T("vf min")) << _T(" = ") << Sub2(_T("0.35a"),_T("cv")) <<_T("/") << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
       else
          (*table)(0,3)<<COLHDR(Sub2(_T("a"),_T("vf min")) << _T(" = ") << Sub2(_T("0.05a"),_T("cv")) <<_T("/") << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+
+      (*table)(0,4)  << COLHDR(Sub2(_T("v"),_T("ni")) << _T("/") << Sub2(_T("a"),_T("cv")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,4)  << COLHDR(Sub2(_T("v"),_T("ni")) << _T("/") << Sub2(_T("a"),_T("cv")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,5)  << _T("Min Reinforcement") << rptNewLine << _T("Requirement Waived?");
 
    // Fill up the table

@@ -471,8 +471,8 @@ public:
    void SetNumLegs(Float64 legs);
    Float64 GetNumLegsReqd() const;
    void SetNumLegsReqd(Float64 legs);
-   Float64 GetVsAvg() const;   // average shear strength
-   void SetVsAvg(Float64 vsavg);
+   Float64 GetVsAvg() const;      // Average shear stress. Note: This value is vni prior to 2007 and
+   void SetVsAvg(Float64 vsavg);  // vui afterwards 
    Float64 GetVsLimit() const; // max shear strength at which 5.8.4.1-4 is not applicable
    void SetVsLimit(Float64 vs);
    bool DoAllPrimaryStirrupsEngageDeck() const;

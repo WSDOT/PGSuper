@@ -55,7 +55,7 @@
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
 				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
+				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;BUILDBEAMSLIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -159,7 +159,7 @@
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
 				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
+				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;BUILDBEAMSLIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -267,7 +267,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -376,7 +376,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -484,7 +484,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -594,7 +594,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -671,11 +671,15 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath="..\Include\Beams\AutoLib.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\IFace\BeamFactory.h"
 				>
 			</File>
 			<File
-				RelativePath=".\BeamFactoryCATID.h"
+				RelativePath="..\Include\Plugins\BeamFactoryCATID.h"
 				>
 			</File>
 			<File
@@ -683,11 +687,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\BeamFamilyCLSID.h"
+				RelativePath="..\Include\Plugins\BeamFamilyCLSID.h"
 				>
 			</File>
 			<File
 				RelativePath=".\BeamFamilyImpl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Beams\BeamsExp.h"
 				>
 			</File>
 			<File
@@ -716,6 +724,10 @@
 			</File>
 			<File
 				RelativePath="ChangeOfConcreteStressTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Plugins\CLSID.h"
 				>
 			</File>
 			<File
@@ -787,7 +799,7 @@
 				>
 			</File>
 			<File
-				RelativePath="Helper.h"
+				RelativePath="..\Include\Beams\Helper.h"
 				>
 			</File>
 			<File
@@ -800,6 +812,10 @@
 			</File>
 			<File
 				RelativePath="IBeamFactoryImp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Beams\Interfaces.h"
 				>
 			</File>
 			<File
@@ -831,11 +847,11 @@
 				>
 			</File>
 			<File
-				RelativePath="PsLossEngineer.h"
+				RelativePath="..\Include\Iface\PsLossEngineer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Iface\PsLossEngineer.h"
+				RelativePath="PsLossEngineer.h"
 				>
 			</File>
 			<File
@@ -1056,6 +1072,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PsBeamLossEngineer.rgs"
+				>
+			</File>
+			<File
 				RelativePath="StrandMoverImpl.rgs"
 				>
 			</File>
@@ -1117,6 +1137,10 @@
 			</File>
 			<File
 				RelativePath=".\Res\VoidedSlab2.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\VoidedSlab2DistFactorEngineer.rgs"
 				>
 			</File>
 			<File

@@ -377,7 +377,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptStressUnitTag,unitmgtStressData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptStressUnitTag,unitmgtStressData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,true,true,
                            stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
    *p << p_table;
 

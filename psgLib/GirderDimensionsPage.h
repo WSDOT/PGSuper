@@ -74,6 +74,7 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CGirderDimensionsPage)
+   afx_msg void OnBeamTypesChanging();
 	afx_msg void OnBeamTypeChanged();
    afx_msg void OnDestroy();
 	//}}AFX_MSG
@@ -87,6 +88,7 @@ protected:
 private:
    CMetaFileStatic m_GirderPicture;
    CBeamDimensionGrid m_Grid;
+   int m_LastBeamType;
 
    friend CGirderMainSheet;
 };

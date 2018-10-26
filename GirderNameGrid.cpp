@@ -316,7 +316,8 @@ void CGirderNameGrid::OnJoin()
    CRowColArray selLeftCols,selRightCols;
    GetSelectedCols(selLeftCols,selRightCols,FALSE,FALSE);
    ROWCOL nSelRanges = (ROWCOL)selLeftCols.GetSize();
-   ASSERT( 0 < nSelRanges ); // must be more that one selected column to join
+   if ( nSelRanges == 0 )
+      return;
 
    for (ROWCOL i = 0; i < nSelRanges; i++ )
    {

@@ -23,7 +23,7 @@
 // TaperedIBeamFactory.cpp : Implementation of CTaperedIBeamFactory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "TaperedIBeamFactory.h"
 #include "IBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
@@ -316,7 +316,7 @@ void CTaperedIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTy
 {
    CComObject<CPsBeamLossEngineer>* pEngineer;
    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-   pEngineer->Init(CPsLossEngineer::IBeam);
+   pEngineer->Init(IBeam);
    pEngineer->SetBroker(pBroker,statusGroupID);
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();

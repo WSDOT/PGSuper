@@ -48,6 +48,7 @@ CGirderDimensionsPage::CGirderDimensionsPage() : CPropertyPage(CGirderDimensions
 {
 	//{{AFX_DATA_INIT(CGirderDimensionsPage)
 	//}}AFX_DATA_INIT
+   m_LastBeamType = CB_ERR;
 }
 
 CGirderDimensionsPage::~CGirderDimensionsPage()
@@ -76,6 +77,7 @@ void CGirderDimensionsPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CGirderDimensionsPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderDimensionsPage)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+   ON_CBN_DROPDOWN(IDC_BEAMTYPES, OnBeamTypesChanging)
 	ON_CBN_SELCHANGE(IDC_BEAMTYPES, OnBeamTypeChanged)
    ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
@@ -151,6 +153,12 @@ BOOL CGirderDimensionsPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+void CGirderDimensionsPage::OnBeamTypesChanging()
+{
+   CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_BEAMTYPES);
+   m_LastBeamType = pComboBox->GetCurSel();
+}
+
 void CGirderDimensionsPage::OnBeamTypeChanged() 
 {
    // Change the factory object, empty the grid, and reload it with
@@ -159,7 +167,19 @@ void CGirderDimensionsPage::OnBeamTypeChanged()
    int selIdx = pComboBox->GetCurSel();
    CLSID* pCLSID = (CLSID*)pComboBox->GetItemDataPtr(selIdx);
    CComPtr<IBeamFactory> pFactory;
-   ::CoCreateInstance(*pCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
+   HRESULT hr = ::CoCreateInstance(*pCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
+   if ( FAILED(hr) )
+   {
+      CString strGirderName;
+      pComboBox->GetLBText(selIdx,strGirderName);
+      CString strMsg;
+      strMsg.Format(_T("Unable to create \"%s\"."),strGirderName);
+      AfxMessageBox(strMsg);
+      if ( m_LastBeamType != CB_ERR )
+         pComboBox->SetCurSel(m_LastBeamType);
+
+      return;
+   }
 
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    pDad->m_Entry.SetBeamFactory(pFactory);

@@ -109,26 +109,26 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_WIDTH,       IDC_LEFT_SIDEWALK_WIDTH_UNIT,       m_LeftRailingSystem.Width,      pDisplayUnits->GetXSectionDimUnit());
    DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_SIDEWALK_WIDTH, m_LeftRailingSystem.Width, pDisplayUnits->GetXSectionDimUnit() );
    DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_LEFT_DEPTH,  IDC_LEFT_SIDEWALK_LEFT_DEPTH_UNIT,  m_LeftRailingSystem.LeftDepth,  pDisplayUnits->GetComponentDimUnit());
-   DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_SIDEWALK_LEFT_DEPTH, m_LeftRailingSystem.LeftDepth, pDisplayUnits->GetXSectionDimUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_LEFT_SIDEWALK_LEFT_DEPTH, m_LeftRailingSystem.LeftDepth, pDisplayUnits->GetXSectionDimUnit() );
    DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_RIGHT_DEPTH, IDC_LEFT_SIDEWALK_RIGHT_DEPTH_UNIT, m_LeftRailingSystem.RightDepth, pDisplayUnits->GetComponentDimUnit());
-   DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_SIDEWALK_RIGHT_DEPTH, m_LeftRailingSystem.RightDepth, pDisplayUnits->GetXSectionDimUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_LEFT_SIDEWALK_RIGHT_DEPTH, m_LeftRailingSystem.RightDepth, pDisplayUnits->GetXSectionDimUnit() );
 
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_WIDTH,       IDC_RIGHT_SIDEWALK_WIDTH_UNIT,       m_RightRailingSystem.Width,      pDisplayUnits->GetXSectionDimUnit());
    DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_SIDEWALK_WIDTH, m_RightRailingSystem.Width, pDisplayUnits->GetXSectionDimUnit() );
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_RIGHT_DEPTH, IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_UNIT, m_RightRailingSystem.RightDepth, pDisplayUnits->GetComponentDimUnit());
-   DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_SIDEWALK_RIGHT_DEPTH, m_RightRailingSystem.RightDepth, pDisplayUnits->GetXSectionDimUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_RIGHT_SIDEWALK_RIGHT_DEPTH, m_RightRailingSystem.RightDepth, pDisplayUnits->GetXSectionDimUnit() );
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_LEFT_DEPTH,  IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT,  m_RightRailingSystem.LeftDepth,  pDisplayUnits->GetComponentDimUnit());
-   DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_SIDEWALK_LEFT_DEPTH, m_RightRailingSystem.LeftDepth, pDisplayUnits->GetXSectionDimUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_RIGHT_SIDEWALK_LEFT_DEPTH, m_RightRailingSystem.LeftDepth, pDisplayUnits->GetXSectionDimUnit() );
 
    DDX_UnitValueAndTag(pDX,IDC_LEFT_FC, IDC_LEFT_FC_UNIT, m_LeftRailingSystem.fc, pDisplayUnits->GetStressUnit() );
    DDX_Check_Bool(pDX,IDC_LEFT_MOD_E, m_LeftRailingSystem.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_LEFT_EC,  IDC_LEFT_EC_UNIT, m_LeftRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
    DDX_UnitValueAndTag( pDX, IDC_LEFT_DENSITY,  IDC_LEFT_DENSITY_UNIT, m_LeftRailingSystem.WeightDensity, pDisplayUnits->GetDensityUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_LEFT_EC,  IDC_LEFT_EC_UNIT, m_LeftRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
 
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_FC, IDC_RIGHT_FC_UNIT, m_RightRailingSystem.fc, pDisplayUnits->GetStressUnit() );
    DDX_Check_Bool(pDX,IDC_RIGHT_MOD_E, m_RightRailingSystem.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_RIGHT_EC,  IDC_RIGHT_EC_UNIT, m_RightRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
    DDX_UnitValueAndTag( pDX, IDC_RIGHT_DENSITY,  IDC_RIGHT_DENSITY_UNIT, m_RightRailingSystem.WeightDensity, pDisplayUnits->GetDensityUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_RIGHT_EC,  IDC_RIGHT_EC_UNIT, m_RightRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -696,38 +696,65 @@ HBRUSH CBridgeDescRailingSystemPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlCol
    {
       try
       {
-         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-         CDataExchange dx(this,TRUE);
-
-         Float64 value;
-         DDX_UnitValue(&dx, IDC_LEFT_DENSITY, value, pDisplayUnits->GetDensityUnit() );
-
-         if ( !IsDensityInRange(value,m_LeftRailingSystem.ConcreteType) )
+         // DDX functions will choke if the value in the control is not a number and we'll end up in an
+         // infinite loop, so first parse value to see if we have a chance of getting a number
+	      const int TEXT_BUFFER_SIZE = 400;
+	      TCHAR szBuffer[TEXT_BUFFER_SIZE];
+         ::GetWindowText(GetDlgItem(IDC_LEFT_DENSITY)->GetSafeHwnd(), szBuffer, _countof(szBuffer));
+		   Float64 d;
+   		if (_sntscanf_s(szBuffer, _countof(szBuffer), _T("%lf"), &d) != 1)
          {
             pDC->SetTextColor( RED );
+         }
+         else
+         {
+            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+            CDataExchange dx(this,TRUE);
+
+            Float64 value;
+            DDX_UnitValue(&dx, IDC_LEFT_DENSITY, value, pDisplayUnits->GetDensityUnit() );
+
+            if ( !IsDensityInRange(value,m_LeftRailingSystem.ConcreteType) )
+            {
+               pDC->SetTextColor( RED );
+            }
          }
       }
       catch(...)
       {
+         pDC->SetTextColor( RED );
       }
    }
    else if ( pWnd->GetDlgCtrlID() == IDC_RIGHT_DENSITY )
    {
       try
       {
-         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-         CDataExchange dx(this,TRUE);
-
-         Float64 value;
-         DDX_UnitValue(&dx, IDC_RIGHT_DENSITY, value, pDisplayUnits->GetDensityUnit() );
-
-         if ( !IsDensityInRange(value,m_RightRailingSystem.ConcreteType) )
+         // Again, prevent ddx from choking
+	      const int TEXT_BUFFER_SIZE = 400;
+	      TCHAR szBuffer[TEXT_BUFFER_SIZE];
+         ::GetWindowText(GetDlgItem(IDC_RIGHT_DENSITY)->GetSafeHwnd(), szBuffer, _countof(szBuffer));
+		   Float64 d;
+   		if (_sntscanf_s(szBuffer, _countof(szBuffer), _T("%lf"), &d) != 1)
          {
             pDC->SetTextColor( RED );
+         }
+         else
+         {
+            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+            CDataExchange dx(this,TRUE);
+
+            Float64 value;
+            DDX_UnitValue(&dx, IDC_RIGHT_DENSITY, value, pDisplayUnits->GetDensityUnit() );
+
+            if ( !IsDensityInRange(value,m_RightRailingSystem.ConcreteType) )
+            {
+               pDC->SetTextColor( RED );
+            }
          }
       }
       catch(...)
       {
+         pDC->SetTextColor( RED );
       }
    }
 
@@ -828,21 +855,25 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
 {
    BOOL bRetValue = CPropertyPage::OnKillActive(); // calls DoDataExchange
 
-   if ( !IsDensityInRange(m_LeftRailingSystem.StrengthDensity,m_LeftRailingSystem.ConcreteType) ||
-        !IsDensityInRange(m_LeftRailingSystem.WeightDensity,  m_LeftRailingSystem.ConcreteType) )
+   // Make sure data was successfully parsed before issuing a message
+   if(bRetValue!=0)
    {
-      if ( m_LeftRailingSystem.ConcreteType == pgsTypes::Normal )
-         AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-      else
-         AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-   }
-   else if ( !IsDensityInRange(m_RightRailingSystem.StrengthDensity,m_RightRailingSystem.ConcreteType) ||
-             !IsDensityInRange(m_RightRailingSystem.WeightDensity,  m_RightRailingSystem.ConcreteType) )
-   {
-      if ( m_RightRailingSystem.ConcreteType == pgsTypes::Normal )
-         AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-      else
-         AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+      if ( !IsDensityInRange(m_LeftRailingSystem.StrengthDensity,m_LeftRailingSystem.ConcreteType) ||
+           !IsDensityInRange(m_LeftRailingSystem.WeightDensity,  m_LeftRailingSystem.ConcreteType) )
+      {
+         if ( m_LeftRailingSystem.ConcreteType == pgsTypes::Normal )
+            AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         else
+            AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+      }
+      else if ( !IsDensityInRange(m_RightRailingSystem.StrengthDensity,m_RightRailingSystem.ConcreteType) ||
+                !IsDensityInRange(m_RightRailingSystem.WeightDensity,  m_RightRailingSystem.ConcreteType) )
+      {
+         if ( m_RightRailingSystem.ConcreteType == pgsTypes::Normal )
+            AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         else
+            AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+      }
    }
 
    return bRetValue;

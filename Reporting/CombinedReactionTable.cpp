@@ -119,11 +119,33 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
          BuildLiveLoad(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, tableType, true, false, true);
 
       if (bDesign)
-         BuildLimitStateTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, tableType, true, false);
+         BuildLimitStateTable(pBroker, pChapter, span, girder, true, pDisplayUnits, analysisType, tableType, true, false);
       if (bRating)
-         BuildLimitStateTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, tableType, false, true);
+         BuildLimitStateTable(pBroker, pChapter, span, girder, true, pDisplayUnits, analysisType, tableType, false, true);
    }
 }
+
+void CCombinedReactionTable::BuildForBearingDesign(IBroker* pBroker, rptChapter* pChapter,
+                                          SpanIndexType span,GirderIndexType girder, 
+                                          IEAFDisplayUnits* pDisplayUnits,
+                                          pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const
+{
+   TableType tableType = CCombinedReactionTable::BearingReactionsTable;
+
+   BuildCombinedDeadTable(pBroker, pChapter, span, girder, pDisplayUnits, stage, analysisType, tableType, true, false);
+
+   if (stage==pgsTypes::BridgeSite3)
+   {
+      // first no impact
+      BuildLiveLoad(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, tableType, false, true, false);
+      BuildLimitStateTable(pBroker, pChapter, span, girder, false, pDisplayUnits, analysisType, tableType, true, false);
+
+      // with impact
+      BuildLiveLoad(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, tableType, true, true, false);
+      BuildLimitStateTable(pBroker, pChapter, span, girder, true, pDisplayUnits, analysisType, tableType, true, false);
+   }
+}
+
 
 void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
                                          SpanIndexType span,GirderIndexType girder,
@@ -335,10 +357,11 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
    std::_tstring strLabel (tableType==PierReactionsTable ? _T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions"));
    strLabel += std::_tstring(bDesign ? _T(" - Design Vehicles") : _T(" - Rating Vehicles"));
+   strLabel += std::_tstring(includeImpact ? _T(" (Including Impact)") : _T(" (Without Impact)"));
 
    rptRcTable* p_table=0;
    RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table, strLabel.c_str(),
-                                 true,bDesign,bPermit,bPedLoading,bRating,false,stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+                                 true,bDesign,bPermit,bPedLoading,bRating,false,includeImpact,stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
    // Compute start column for pedestrian-combined columns if needed
@@ -632,7 +655,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
 
 void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
-                                         SpanIndexType span,GirderIndexType girder,
+                                         SpanIndexType span,GirderIndexType girder, bool includeImpact,
                                          IEAFDisplayUnits* pDisplayUnits,
                                          pgsTypes::AnalysisType analysisType, TableType tableType,
                                          bool bDesign,bool bRating) const
@@ -680,9 +703,11 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
+   std::_tstring strLabel (tableType==PierReactionsTable ? _T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions"));
+   strLabel += std::_tstring(includeImpact ? _T(" (Including Impact)") : _T(" (Without Impact)"));
+
    rptRcTable * p_table;
-   RowIndexType row = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,
-                             (tableType==PierReactionsTable ? _T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions")),
+   RowIndexType row = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table, strLabel.c_str(),
                              true,bDesign,bPermit,bRating,false,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
@@ -706,48 +731,48 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
       {
          if ( bDesign )
          {
-            pForces->GetReaction( pgsTypes::ServiceI, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+            pForces->GetReaction( pgsTypes::ServiceI, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
 
-            pForces->GetReaction( pgsTypes::ServiceI, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+            pForces->GetReaction( pgsTypes::ServiceI, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( min );
 
             if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
             {
-               pForces->GetReaction( pgsTypes::ServiceIA, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceIA, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::ServiceIA, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceIA, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
-            pForces->GetReaction( pgsTypes::ServiceIII, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+            pForces->GetReaction( pgsTypes::ServiceIII, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
 
-            pForces->GetReaction( pgsTypes::ServiceIII, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+            pForces->GetReaction( pgsTypes::ServiceIII, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( min );
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims  <= lrfdVersionMgr::GetVersion() )
             {
-               pForces->GetReaction( pgsTypes::FatigueI, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::FatigueI, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::FatigueI, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::FatigueI, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
-            pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+            pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
 
-            pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+            pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( min );
 
             if ( bPermit )
             {
-               pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
          }
@@ -756,67 +781,67 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
          {
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
             {
-               pForces->GetReaction( pgsTypes::StrengthI_Inventory, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_Inventory, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::StrengthI_Inventory, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_Inventory, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
             {
-               pForces->GetReaction( pgsTypes::StrengthI_Operating, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_Operating, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::StrengthI_Operating, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_Operating, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               pForces->GetReaction( pgsTypes::StrengthI_LegalRoutine, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_LegalRoutine, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::StrengthI_LegalRoutine, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_LegalRoutine, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               pForces->GetReaction( pgsTypes::StrengthI_LegalSpecial, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_LegalSpecial, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::StrengthI_LegalSpecial, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_LegalSpecial, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               pForces->GetReaction( pgsTypes::ServiceI_PermitRoutine, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceI_PermitRoutine, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::ServiceI_PermitRoutine, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceI_PermitRoutine, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
 
-               pForces->GetReaction( pgsTypes::StrengthII_PermitRoutine, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII_PermitRoutine, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::StrengthII_PermitRoutine, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII_PermitRoutine, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               pForces->GetReaction( pgsTypes::ServiceI_PermitSpecial, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceI_PermitSpecial, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::ServiceI_PermitSpecial, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceI_PermitSpecial, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
 
-               pForces->GetReaction( pgsTypes::StrengthII_PermitSpecial, stage, pier, girder, MaxSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII_PermitSpecial, stage, pier, girder, MaxSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetReaction( pgsTypes::StrengthII_PermitSpecial, stage, pier, girder, MinSimpleContinuousEnvelope, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII_PermitSpecial, stage, pier, girder, MinSimpleContinuousEnvelope, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
          }
@@ -827,31 +852,31 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
 
          if ( bDesign )
          {
-            pForces->GetReaction( pgsTypes::ServiceI, stage, pier, girder, bat, true, &min, &max );
+            pForces->GetReaction( pgsTypes::ServiceI, stage, pier, girder, bat, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
 
             if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
             {
-               pForces->GetReaction( pgsTypes::ServiceIA, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceIA, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
             }
 
-            pForces->GetReaction( pgsTypes::ServiceIII, stage, pier, girder, bat, true, &min, &max );
+            pForces->GetReaction( pgsTypes::ServiceIII, stage, pier, girder, bat, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               pForces->GetReaction( pgsTypes::FatigueI, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::FatigueI, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
             }
 
-            pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, bat, true, &min, &max );
+            pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, bat, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
             (*p_table)(row,col++) << reaction.SetValue( min );
 
             if ( bPermit )
             {
-               pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
@@ -861,50 +886,50 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
          {
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
             {
-               pForces->GetReaction( pgsTypes::StrengthI_Inventory, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_Inventory, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
             {
-               pForces->GetReaction( pgsTypes::StrengthI_Operating, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_Operating, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               pForces->GetReaction( pgsTypes::StrengthI_LegalRoutine, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_LegalRoutine, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               pForces->GetReaction( pgsTypes::StrengthI_LegalSpecial, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthI_LegalSpecial, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               pForces->GetReaction( pgsTypes::ServiceI_PermitRoutine, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceI_PermitRoutine, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
 
-               pForces->GetReaction( pgsTypes::StrengthII_PermitRoutine, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII_PermitRoutine, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               pForces->GetReaction( pgsTypes::ServiceI_PermitSpecial, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::ServiceI_PermitSpecial, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
 
-               pForces->GetReaction( pgsTypes::StrengthII_PermitSpecial, stage, pier, girder, bat, true, &min, &max );
+               pForces->GetReaction( pgsTypes::StrengthII_PermitSpecial, stage, pier, girder, bat, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }

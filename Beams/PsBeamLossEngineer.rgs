@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.PsBeamLossEngineer.1 = s 'PS Beam Loss Engineer'
+	{
+		CLSID = s '{959A33E0-E1FA-4932-AD3F-5FE259DB3E9A}'
+   }
+	PGSuperBeamFactory.PsBeamLossEngineer = s 'PS Beam Loss Engineer'
+	{
+		CLSID = s '{959A33E0-E1FA-4932-AD3F-5FE259DB3E9A}'
+		CurVer = s 'PGSuperBeamFactory.PsBeamLossEngineer.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {959A33E0-E1FA-4932-AD3F-5FE259DB3E9A} = s 'PS Beam Loss Engineer'
+		{
+			ProgID = s 'PGSuperBeamFactory.PsBeamLossEngineer.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.PsBeamLossEngineer'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

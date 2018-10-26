@@ -23,7 +23,7 @@
 // MultiWebFactory.cpp : Implementation of CMultiWebFactory
 #include "stdafx.h"
 #include <Plugins\Beams.h>
-#include "BeamFamilyCLSID.h"
+#include <Plugins\BeamFamilyCLSID.h>
 #include "MultiWebFactory.h"
 #include "MultiWebDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
@@ -279,7 +279,7 @@ void CMultiWebFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType s
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(CPsLossEngineer::IBeam);
+    pEngineer->Init(IBeam);
     pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();
