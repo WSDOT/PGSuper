@@ -166,33 +166,23 @@ BOOL CBridgeDescDeckReinforcementPage::OnInitDialog()
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
-   
+
+void CBridgeDescDeckReinforcementPage::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+{
+   return m_cbRebar.GetMaterial(pType,pGrade);
+}
+
 void CBridgeDescDeckReinforcementPage::FillRebarComboBox(CComboBox* pcbRebar)
 {
-   // Item data is the rebar key for the lrfdRebarPool object
    int idx = pcbRebar->AddString(_T("None"));
    pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
-
-#pragma Reminder("BUG: get the available bar sizes from the rebar pool")
-   // using hard coded list... use a rebar pool iter
-   // also, the name can come from the rebar pool as well
-   idx = pcbRebar->AddString(_T("#4"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs4);
-
-   idx = pcbRebar->AddString(_T("#5"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs5);
-
-   idx = pcbRebar->AddString(_T("#6"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs6);
-
-   idx = pcbRebar->AddString(_T("#7"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs7);
-
-   idx = pcbRebar->AddString(_T("#8"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs8);
-
-   idx = pcbRebar->AddString(_T("#9"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs9);
+   lrfdRebarIter rebarIter(m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
+   for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
+   {
+      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      idx = pcbRebar->AddString(pRebar->GetName().c_str());
+      pcbRebar->SetItemData(idx,(DWORD_PTR)pRebar->GetSize());
+   }
 }
 
 void CBridgeDescDeckReinforcementPage::EnableAddBtn(bool bEnable)

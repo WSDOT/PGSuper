@@ -211,7 +211,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
    poi.SetSegmentKey(segmentKey);
    FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
 
-   *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
+   *pPara << _T("* Bar areas are ajusted for development, and bars must lie within tension portion of section before they are considered.");
    *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the girder") << rptNewLine;
 }
 
@@ -227,7 +227,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
    FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
 
-   *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
+   *pPara << _T("* Bar areas are ajusted for development, and bars must lie within tension portion of section before they are considered.");
    *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the closure joint") << rptNewLine;
 }
 

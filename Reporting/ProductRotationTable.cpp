@@ -129,7 +129,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
    iter.First();
-   PierIndexType startPierIdx = iter.CurrentItem().PierIdx;
+   PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
    // Use iterator to walk locations
    for (iter.First(); !iter.IsDone(); iter.Next())

@@ -113,7 +113,7 @@ HRESULT CMomentLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit(_T("MomentLoad"),5.0); // changed for version 4 with PGSplice
+   pSave->BeginUnit(_T("MomentLoad"),6.0); // changed for version 4 with PGSplice
 
    hr = pSave->put_Property(_T("ID"),CComVariant(m_ID));
    if ( FAILED(hr) )
@@ -135,12 +135,6 @@ HRESULT CMomentLoadData::Save(IStructuredSave* pSave)
 
    SpanIndexType spanIdx = m_SpanKey.spanIndex;
    GirderIndexType gdrIdx = m_SpanKey.girderIndex;
-
-#pragma Reminder("REVIEW: consider updating the default value and converting the old value on input")
-   // In pre Jan, 2011 versions, all spans and all girders were hardcoded to 10000, then we changed to the ALL_SPANS/ALL_GIRDERS value
-   // Keep backward compatibility by saving the 10k value
-   spanIdx = (spanIdx == ALL_SPANS   ? 10000 : spanIdx);
-   gdrIdx  = (gdrIdx  == ALL_GIRDERS ? 10000 : gdrIdx);
 
    hr = pSave->put_Property(_T("Span"),CComVariant(spanIdx));
    if ( FAILED(hr) )
@@ -276,18 +270,18 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
    }
 
 
+   // NOTE: In pre Jan, 2011 versions, "all spans" and "all girders" were hardcoded to 10000, 
+   // then we changed to the ALL_SPANS/ALL_GIRDERS constants
+   // "all spans" and "all girders" were saved as 10000 up to version 6. In version 6
+   // the ALL_SPANS and ALL_GIRDERS constants were saved
    var.vt = VT_INDEX;
    hr = pLoad->get_Property(_T("Span"),&var);
    if ( FAILED(hr) )
    {
       return hr;
    }
-
-   SpanIndexType spanIdx;
-   GirderIndexType gdrIdx;
-
-   spanIdx = VARIANT2INDEX(var);
-   if ( 10000 == spanIdx )
+   SpanIndexType spanIdx = VARIANT2INDEX(var);
+   if ( version < 6 && 10000 == spanIdx )
    {
       spanIdx = ALL_SPANS;
    }
@@ -298,8 +292,8 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
       return hr;
    }
 
-   gdrIdx = VARIANT2INDEX(var);
-   if ( 10000 == gdrIdx )
+   GirderIndexType gdrIdx = VARIANT2INDEX(var);
+   if ( version < 6 && 10000 == gdrIdx )
    {
       gdrIdx = ALL_GIRDERS;
    }
@@ -333,14 +327,14 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
 
    m_Fractional = var.lVal != 0;
 
-  var.vt = VT_BSTR;
-  hr = pLoad->get_Property(_T("Description"),&var);
-  if ( FAILED(hr) )
-  {
-     return hr;
-  }
+   var.vt = VT_BSTR;
+   hr = pLoad->get_Property(_T("Description"),&var);
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
 
-  m_Description = OLE2T(var.bstrVal);
+   m_Description = OLE2T(var.bstrVal);
 
    hr = pLoad->EndUnit();
    return hr;

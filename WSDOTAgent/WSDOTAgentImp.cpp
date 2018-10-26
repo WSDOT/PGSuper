@@ -92,6 +92,9 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
 
       // WSDOT Girder Schedule
       CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Girder Schedule"));
+#if defined _DEBUG || defined _BETA_VERSION
+      pRptBuilder->IncludeTimingChapter();
+#endif
       pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
       pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
       pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
@@ -99,6 +102,9 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
 
       // WSDOT Summary Report
       pRptBuilder = new CReportBuilder(_T("WSDOT Summary Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+      pRptBuilder->IncludeTimingChapter();
+#endif
       pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
       pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
       pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) ); // may have to move this chapter to a common DLL
@@ -109,6 +115,9 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
 
    // WSDOT Load Rating Summary
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Load Rating Summary"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingSummaryChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );

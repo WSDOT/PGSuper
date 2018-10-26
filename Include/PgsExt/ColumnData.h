@@ -42,7 +42,7 @@ public:
 
    CColumnData(CPierData2* pPier = NULL);
    CColumnData(const CColumnData& rOther); 
-   ~CColumnData();
+   virtual ~CColumnData();
 
    CColumnData& operator = (const CColumnData& rOther);
 
@@ -68,6 +68,11 @@ public:
    void SetColumnDimensions(Float64 D1,Float64 D2);
    void GetColumnDimensions(Float64* pD1,Float64* pD2) const;
 
+   // Set/Get the transverse fixity at the base of the column
+   // This is used for transverse pier analysis only
+   void SetTransverseFixity(pgsTypes::ColumnFixityType columnFixity);
+   pgsTypes::ColumnFixityType GetTransverseFixity() const;
+
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
@@ -88,4 +93,6 @@ private:
    Float64 m_Height;
    ColumnShapeType m_ShapeType;
    Float64 m_D1, m_D2;
+
+   pgsTypes::ColumnFixityType m_TransverseFixity; // fixity used for pier analysis
 };

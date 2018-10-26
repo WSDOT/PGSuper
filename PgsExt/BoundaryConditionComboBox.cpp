@@ -88,8 +88,8 @@ void CBoundaryConditionComboBox::Initialize(bool bIsBoundaryPier,const std::vect
 
 void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-#pragma Reminder("UPDATE: draw in Vista/Win7 style")
-   // Need to change to owner draw code so the two-tone gray background is used
+   // NOTE: need to learn how to draw using the windows style engine
+   // so that the combo box matches the rest of the UI
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

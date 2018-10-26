@@ -49,7 +49,7 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
    pBridgeGeometry->putref_Alignment(m_AlignmentID,pAlignment);
 
    // Set the alignment offset
-   pBridgeGeometry->put_AlignmentOffset(-pBridgeDesc->GetAlignmentOffset());
+   pBridgeGeometry->put_AlignmentOffset(pBridgeDesc->GetAlignmentOffset());
 
    // Set the ID of the main bridge alignment (all other alignments are secondary)
    pBridgeGeometry->put_BridgeAlignmentID(m_AlignmentID);
@@ -79,18 +79,14 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
 
 bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
-   // use pier index as the pier ID
+   CComPtr<IAlignment> alignment;
+   pBridgeGeometry->get_BridgeAlignment(&alignment);
+
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
    PierIndexType pierIdx = 0;
    while ( pPier )
    {
       PierIDType pierID = ::GetPierLineID(pierIdx);
-
-      Float64 station = pPier->GetStation();
-      std::_tstring strOrientation = pPier->GetOrientation();
-
-      CComPtr<IAlignment> alignment;
-      pBridgeGeometry->get_BridgeAlignment(&alignment);
 
       CComPtr<IAngle> skew;
       CComPtr<IDirection> direction;
@@ -99,127 +95,73 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       Float64 skew_angle;
       skew->get_Value(&skew_angle);
 
-      Float64 cosine_skew_angle = cos(skew_angle);
+      Float64 pier_length;
+      Float64 left_end_offset; // offset from the alignment to the left hand-side of the pier, measured along the pier
 
-      // get maximum girder spacing width (back and ahead side of piers)
-      // width is to be measured along CL pier
-      // also get the offset from the alignment, measured along the CL pier, to the left-most girder
-      Float64 back_width  = 0;
-      Float64 ahead_width = 0;
-
-      Float64 back_offset  = 0;
-      Float64 ahead_offset = 0;
-
-      const CSpanData2* pPrevSpan = pPier->GetPrevSpan();
-      const CSpanData2* pNextSpan = pPier->GetNextSpan();
-
-      if ( pPrevSpan )
+      if ( pPier->GetPierModelType() == pgsTypes::pmtIdealized )
       {
-         const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
-         back_width = Max(back_width,pSpacing->GetSpacingWidth());
-   
-         GirderIndexType refGirderIdx = pSpacing->GetRefGirder();
-         Float64 refGirderOffset = pSpacing->GetRefGirderOffset();
-         pgsTypes::OffsetMeasurementType refGirderOffsetType = pSpacing->GetRefGirderOffsetType();
+         // get maximum girder spacing width (back and ahead side of piers)
+         // width is to be measured along CL pier
+         // also get the offset from the alignment, measured along the CL pier, to the left-most girder
+         Float64 back_width  = 0;
+         Float64 ahead_width = 0;
 
-         // convert ref girder offset into an offset to the left-most girder
-         if ( refGirderIdx == INVALID_INDEX )
+         Float64 back_offset  = 0;
+         Float64 ahead_offset = 0;
+
+         const CSpanData2* pPrevSpan = pPier->GetPrevSpan();
+         const CSpanData2* pNextSpan = pPier->GetNextSpan();
+
+         if ( pPrevSpan )
          {
-            // reference girder is the center of the spacing group
-            refGirderOffset -= back_width/2;
-            refGirderIdx = 0;
+            const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
+            GetPierLineProperties(pBridgeDesc,pSpacing,skew_angle,&back_width,&back_offset);
+         }
+
+         if ( pNextSpan )
+         {
+            const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Ahead);
+            GetPierLineProperties(pBridgeDesc,pSpacing,skew_angle,&ahead_width,&ahead_offset);
+         }
+
+         if ( back_width < ahead_width )
+         {
+            pier_length     = ahead_width;
+            left_end_offset = ahead_offset;
          }
          else
          {
-            // a specific girder is the reference girder
-            refGirderOffset -= pSpacing->GetSpacingWidthToGirder(refGirderIdx);
-            refGirderIdx = 0;
+            pier_length     = back_width;
+            left_end_offset = back_offset;
          }
-
-         // if the ref girder is measured from the bridge, convert it to being measured from the alignment
-         if ( refGirderOffsetType == pgsTypes::omtBridge )
-         {
-            Float64 alignment_offset = pBridgeDesc->GetAlignmentOffset();
-
-            if ( pSpacing->GetMeasurementType() == pgsTypes::AlongItem )
-            {
-               alignment_offset /= cosine_skew_angle;
-            }
-
-            refGirderOffset += alignment_offset;
-         }
-
-         if ( pSpacing->GetMeasurementType() == pgsTypes::NormalToItem )
-         {
-            // convert spacing to along pier
-            back_width      /= cosine_skew_angle;
-            refGirderOffset /= cosine_skew_angle;
-         }
-
-         back_offset = -refGirderOffset;
-      }
-
-      if ( pNextSpan )
-      {
-         const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Ahead);
-         ahead_width = Max(ahead_width,pSpacing->GetSpacingWidth());
-   
-         GirderIndexType refGirderIdx = pSpacing->GetRefGirder();
-         Float64 refGirderOffset = pSpacing->GetRefGirderOffset();
-         pgsTypes::OffsetMeasurementType refGirderOffsetType = pSpacing->GetRefGirderOffsetType();
-
-         // convert ref girder offset into an offset to the left-most girder
-         if ( refGirderIdx == INVALID_INDEX )
-         {
-            // reference girder is the center of the spacing group
-            refGirderOffset -= ahead_width/2;
-            refGirderIdx = 0;
-         }
-         else
-         {
-            // a specific girder is the reference girder
-            refGirderOffset -= pSpacing->GetSpacingWidthToGirder(refGirderIdx);
-            refGirderIdx = 0;
-         }
-
-         // if the ref girder is measured from the bridge, convert it to being measured from the alignment
-         if ( refGirderOffsetType == pgsTypes::omtBridge )
-         {
-            Float64 alignment_offset = pBridgeDesc->GetAlignmentOffset();
-
-            if ( pSpacing->GetMeasurementType() == pgsTypes::AlongItem )
-            {
-               alignment_offset /= cosine_skew_angle;
-            }
-
-            refGirderOffset += alignment_offset;
-         }
-
-         if ( pSpacing->GetMeasurementType() == pgsTypes::NormalToItem )
-         {
-            // convert spacing to along pier
-            ahead_width     /= cosine_skew_angle;
-            refGirderOffset /= cosine_skew_angle;
-         }
-
-         ahead_offset = -refGirderOffset;
-      }
-
-      Float64 width,offset;
-      if ( back_width < ahead_width )
-      {
-         width  = ahead_width;
-         offset = ahead_offset;
       }
       else
       {
-         width  = back_width;
-         offset = back_offset;
+         Float64 w = pPier->GetColumnSpacingWidth();
+         Float64 x5,x6;
+         pPier->GetXBeamOverhangs(&x5,&x6);
+         pier_length = w + x5 + x6;
+
+         // update offset, which is the offset to the left edge of the pier from the alignment
+         // measured along the CL Pier
+         ColumnIndexType refColIdx;
+         Float64 refColOffset;
+         pgsTypes::OffsetMeasurementType refColOffsetMeasure;
+         pPier->GetTransverseOffset(&refColIdx,&refColOffset,&refColOffsetMeasure);
+
+         if ( refColOffsetMeasure == pgsTypes::omtBridge )
+         {
+            Float64 blo = pBridgeDesc->GetAlignmentOffset();
+            refColOffset += blo;
+         }
+
+         left_end_offset = refColOffset - x5 - pPier->GetColumnSpacingWidthToColumn(refColIdx);
       }
 
-#pragma Reminder("WORKING HERE - if the pier model is physical, use the actual pier dimensions for pier line geometry")
+      Float64 station = pPier->GetStation();
+      std::_tstring strOrientation = pPier->GetOrientation();
       CComPtr<IPierLine> pierline;
-      pBridgeGeometry->CreatePierLine(pierID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),width,offset,&pierline);
+      pBridgeGeometry->CreatePierLine(pierID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_length,left_end_offset,&pierline);
 
       // Layout connection geometry on back side of pier
       if ( pPier->GetPrevSpan() )
@@ -310,26 +252,118 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
 
 bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
+   CComPtr<IAlignment> alignment;
+   pBridgeGeometry->get_BridgeAlignment(&alignment);
+
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
 #pragma Reminder("UPDATE: Find a way to use the same Temporary Support ID for the bridge and geometry models")
       SupportIDType tsID = ::GetTempSupportLineID(tsIdx); // this is the ID of the line that represents the temporary
-                                                          // support in the geometry model, no the ID of the temporary support
+                                                          // support in the geometry model, not the ID of the temporary support
                                                           // in the bridge data model
 
       const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
+
       Float64 station = pTS->GetStation();
+
+      Float64 pier_width;
+      Float64 left_end_offset;
+      if ( pTS->GetConnectionType() == pgsTypes::tsctContinuousSegment )
+      {
+         ATLASSERT(!pTS->HasSpacing());
+         // no spacing at the TS... need to base width on spacing at ends of segment
+         // also need to account for the fact that the ref girder can be different at each end
+         // once ref girder is based on girder index 0, the ref girder offset at this TS can be computed
+         CSegmentKey segmentKey, rightSegmentKey;
+         pBridgeDesc->GetSegmentsAtTemporarySupport(pTS->GetIndex(),&segmentKey,&rightSegmentKey);
+         ATLASSERT(segmentKey == rightSegmentKey);
+
+         const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
+
+         const CPierData2* pStartPier = pSegment->GetStartClosure()->GetPier();
+         const CTemporarySupportData* pStartTS = pSegment->GetStartClosure()->GetTemporarySupport();
+         const CGirderSpacing2* pStartSpacing;
+         Float64 start_station, start_skew_angle;
+         if ( pStartPier )
+         {
+            start_station = pStartPier->GetStation();
+
+            CComPtr<IAngle> skew;
+            CComPtr<IDirection> direction;
+            GetPierDirection(alignment,pStartPier,&skew,&direction);
+            skew->get_Value(&start_skew_angle);
+
+            pStartSpacing = pStartPier->GetGirderSpacing(pgsTypes::Ahead);
+         }
+         else
+         {
+            ATLASSERT(pStartTS);
+            start_station = pStartTS->GetStation();
+
+            CComPtr<IAngle> skew;
+            CComPtr<IDirection> direction;
+            GetTempSupportDirection(alignment,pStartTS,&skew,&direction);
+            skew->get_Value(&start_skew_angle);
+
+            pStartSpacing = pStartTS->GetSegmentSpacing();
+         }
+
+         const CPierData2* pEndPier = pSegment->GetEndClosure()->GetPier();
+         const CTemporarySupportData* pEndTS = pSegment->GetEndClosure()->GetTemporarySupport();
+         const CGirderSpacing2* pEndSpacing;
+         Float64 end_station, end_skew_angle;
+         if ( pEndPier )
+         {
+            end_station = pEndPier->GetStation();
+
+            CComPtr<IAngle> skew;
+            CComPtr<IDirection> direction;
+            GetPierDirection(alignment,pEndPier,&skew,&direction);
+            skew->get_Value(&end_skew_angle);
+
+            pEndSpacing = pEndPier->GetGirderSpacing(pgsTypes::Back);
+         }
+         else
+         {
+            ATLASSERT(pEndTS);
+            end_station = pEndTS->GetStation();
+
+            CComPtr<IAngle> skew;
+            CComPtr<IDirection> direction;
+            GetTempSupportDirection(alignment,pEndTS,&skew,&direction);
+            skew->get_Value(&end_skew_angle);
+
+            pEndSpacing = pEndTS->GetSegmentSpacing();
+         }
+
+         Float64 start_width, start_offset;
+         Float64 end_width, end_offset;
+         GetPierLineProperties(pBridgeDesc,pStartSpacing,start_skew_angle,&start_width,&start_offset);
+         GetPierLineProperties(pBridgeDesc,pEndSpacing,  end_skew_angle,  &end_width,  &end_offset);
+
+         pier_width      = ::LinInterp(station - start_station,start_width, end_width, end_station-start_station);
+         left_end_offset = ::LinInterp(station - start_station,start_offset,end_offset,end_station-start_station);
+      }
+      else
+      {
+         // spacing is measured at TS
+         ATLASSERT(pTS->HasSpacing());
+
+         CComPtr<IAngle> skew;
+         CComPtr<IDirection> direction;
+         GetTempSupportDirection(alignment,pTS,&skew,&direction);
+
+         Float64 skew_angle;
+         skew->get_Value(&skew_angle);
+
+         const CGirderSpacing2* pSpacing = pTS->GetSegmentSpacing();
+         GetPierLineProperties(pBridgeDesc,pSpacing,skew_angle,&pier_width,&left_end_offset);
+      }
+
       std::_tstring strOrientation = pTS->GetOrientation();
-
-      Float64 width = pTS->GetSegmentSpacing()->GetSpacingWidth();
-
-#pragma Reminder("UPDATE: need to get temporary support girder spacing offset")
-#pragma Reminder("UPDATE: need to adjust width and offset for ref girder and spacing measurement type")
-      Float64 offset = 0;
-
       CComPtr<IPierLine> tsLine;
-      pBridgeGeometry->CreatePierLine(tsID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),width,offset,&tsLine);
+      pBridgeGeometry->CreatePierLine(tsID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_width,left_end_offset,&tsLine);
 
       Float64 brgOffset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
@@ -745,7 +779,7 @@ void CBridgeGeometryModelBuilder::GetSkewAndDirection(IAlignment* pAlignment,Flo
 
 bool CBridgeGeometryModelBuilder::LayoutDiaphragmLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
-#pragma Reminder("TODO: Implement")
+#pragma Reminder("IMPLEMENT")
    // need to add diaphragms to the bridge geometry model
    // though there is no point in doing this unless the generic bridge model or
    // the bridge agent make use of the diaphragm geometry.
@@ -1009,4 +1043,52 @@ Float64 CBridgeGeometryModelBuilder::GetGirderWidth(const CSplicedGirderData* pG
 {
    const GirderLibraryEntry* pLibEntry = pGirder->GetGirderLibraryEntry();
    return pLibEntry->GetBeamWidth(pgsTypes::metStart);
+}
+
+void CBridgeGeometryModelBuilder::GetPierLineProperties(const CBridgeDescription2* pBridgeDesc,const CGirderSpacing2* pSpacing,Float64 skewAngle,Float64* pWidth,Float64* pOffset)
+{
+   Float64 width = pSpacing->GetSpacingWidth();
+
+   Float64 cosine_skew_angle = cos(skewAngle);
+
+   GirderIndexType refGirderIdx = pSpacing->GetRefGirder();
+   Float64 refGirderOffset = pSpacing->GetRefGirderOffset();
+   pgsTypes::OffsetMeasurementType refGirderOffsetType = pSpacing->GetRefGirderOffsetType();
+
+   // convert ref girder offset into an offset to the left-most girder
+   if ( refGirderIdx == INVALID_INDEX )
+   {
+      // reference girder is the center of the spacing group
+      refGirderOffset -= width/2;
+      refGirderIdx = 0;
+   }
+   else
+   {
+      // a specific girder is the reference girder
+      refGirderOffset -= pSpacing->GetSpacingWidthToGirder(refGirderIdx);
+      refGirderIdx = 0;
+   }
+
+   // if the ref girder is measured from the bridge, convert it to being measured from the alignment
+   if ( refGirderOffsetType == pgsTypes::omtBridge )
+   {
+      Float64 alignment_offset = pBridgeDesc->GetAlignmentOffset();
+
+      if ( pSpacing->GetMeasurementType() == pgsTypes::AlongItem )
+      {
+         alignment_offset /= cosine_skew_angle;
+      }
+
+      refGirderOffset += alignment_offset;
+   }
+
+   if ( pSpacing->GetMeasurementType() == pgsTypes::NormalToItem )
+   {
+      // convert spacing to along pier
+      width           /= cosine_skew_angle;
+      refGirderOffset /= cosine_skew_angle;
+   }
+
+   *pWidth = width;
+   *pOffset = refGirderOffset;
 }

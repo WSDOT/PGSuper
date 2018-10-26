@@ -215,8 +215,13 @@ public:
    /////////////////////////////////////////////////////////////////////
    // Cross Beam
    /////////////////////////////////////////////////////////////////////
-   void SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,Float64 taperHeight,Float64 taperLength);
-   void GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength) const;
+   // height = H1/H3
+   // taperHeight = H2/H4
+   // taperLength = X1/X3
+   // endSlopeOffset = X2/X4
+   // XBeamOverhangs = X5/X6
+   void SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,Float64 taperHeight,Float64 taperLength,Float64 endSlopeOffset);
+   void GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength,Float64* pEndSlopeOffset) const;
    void SetXBeamWidth(Float64 width);
    Float64 GetXBeamWidth() const;
    void SetXBeamOverhang(pgsTypes::PierSideType side,Float64 overhang);
@@ -227,6 +232,10 @@ public:
    /////////////////////////////////////////////////////////////////////
    // Columns
    /////////////////////////////////////////////////////////////////////
+
+   // Set/Get the column fixity for the longitudinal bridge analysis
+   void SetColumnFixity(pgsTypes::ColumnFixityType fixityType);
+   pgsTypes::ColumnFixityType GetColumnFixity() const;
 
    // removes all but one column from the pier model (there is minimum of one column per pier)
    void RemoveColumns();
@@ -249,6 +258,12 @@ public:
 
    // Returns the column spacing
    Float64 GetColumnSpacing(SpacingIndexType spaceIdx) const;
+
+   // Returns the width of the column group as the sum of spacing
+   Float64 GetColumnSpacingWidth() const;
+
+   // Returns the sum of the column spacing from the left most column to the specified column
+   Float64 GetColumnSpacingWidthToColumn(ColumnIndexType colIdx) const;
 
    // Returns the definition of a column
    const CColumnData& GetColumnData(ColumnIndexType colIdx) const;
@@ -327,10 +342,12 @@ private:
    Float64 m_XBeamHeight[2];
    Float64 m_XBeamTaperHeight[2];
    Float64 m_XBeamTaperLength[2];
+   Float64 m_XBeamEndSlopeOffset[2];
    Float64 m_XBeamOverhang[2];
    Float64 m_XBeamWidth;
 
    // Column Dimensions and Layout
+   pgsTypes::ColumnFixityType m_ColumnFixity;
    std::vector<Float64> m_ColumnSpacing;
    std::vector<CColumnData> m_Columns;
 

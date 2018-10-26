@@ -149,7 +149,7 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
       // Not using the configuration, or the configuration applies only for the overhang
 
       Eci = pMaterial->GetSegmentEc(segmentKey,liftSegmentIntervalIdx);
-      Fci = pMaterial->GetSegmentFc(segmentKey,liftSegmentIntervalIdx);
+      Fci = pMaterial->GetSegmentDesignFc(segmentKey,liftSegmentIntervalIdx);
       concType = pMaterial->GetSegmentConcreteType(segmentKey);
    }
    else

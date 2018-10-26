@@ -27,15 +27,21 @@
 #include "LegalRatingPage.h"
 #include "PermitRatingPage.h"
 
+#include <IFace\ExtendUI.h>
+
 // CRatingOptionsDlg
 
-class CRatingOptionsDlg : public CPropertySheet
+class CRatingOptionsDlg : public CPropertySheet, public IEditLoadRatingOptions
 {
 	DECLARE_DYNAMIC(CRatingOptionsDlg)
 
 public:
 	CRatingOptionsDlg(CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 	virtual ~CRatingOptionsDlg();
+
+   // IEditLoadRatingOptions
+public:
+   virtual void LRDummy() {}
 
    CGeneralRatingOptionsPage m_GeneralPage;
    CDesignRatingPage m_DesignPage;
@@ -47,10 +53,27 @@ public:
    void GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls);
    void GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType);
 
+// Implementation
+public:
+	virtual INT_PTR DoModal();
+
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
+
 protected:
 	DECLARE_MESSAGE_MAP()
 
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+
    void Init();
+   void CreateExtensionPages();
+   void DestroyExtensionPages();
+
+   txnMacroTxn m_Macro;
+   std::set<EditLoadRatingOptionsExtension> m_ExtensionPages;
+   void NotifyExtensionPages();
 };
 
 

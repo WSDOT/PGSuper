@@ -25,14 +25,15 @@
 
 #include <WBFLCore.h>
 
-#if !defined INCLUDED_PGSEXTEXP_H_
-#include <PgsExt\PgsExtExp.h>
-#endif
-
 #include "GirderTypes.h"
 
 class CSpanData;
 class CGirderSpacing2;
+
+///////////////////////////////////////////////////////
+// NOTE: 
+// This class only exists to load old PGSuper files.
+///////////////////////////////////////////////////////
 
 /*****************************************************************************
 CLASS 
@@ -52,7 +53,7 @@ COPYRIGHT
 LOG
    rab : 04.25.208 : Created file
 *****************************************************************************/
-class PGSEXTCLASS CGirderSpacingData
+class CGirderSpacingData
 {
 public:
    CGirderSpacingData();

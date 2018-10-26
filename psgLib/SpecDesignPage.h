@@ -70,6 +70,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    afx_msg void OnBnClickedCheckBottomFlangeClearance();
+   virtual BOOL OnSetActive();
 };
 
 //{{AFX_INSERT_LOCATION}}

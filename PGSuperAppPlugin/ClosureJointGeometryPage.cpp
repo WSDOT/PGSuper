@@ -129,11 +129,8 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
    if ( m_bIsPier )
    {
-      DDX_UnitValueAndTag(pDX, IDC_WIDTH, IDC_WIDTH_UNIT, m_DiaphragmWidth, pDisplayUnits->GetComponentDimUnit() );
-      DDV_UnitValueZeroOrMore(pDX, IDC_WIDTH, m_DiaphragmWidth, pDisplayUnits->GetComponentDimUnit() );
-
-      DDX_UnitValueAndTag(pDX, IDC_HEIGHT, IDC_HEIGHT_UNIT, m_DiaphragmHeight, pDisplayUnits->GetComponentDimUnit() );
-      DDV_UnitValueZeroOrMore(pDX, IDC_HEIGHT, m_DiaphragmHeight, pDisplayUnits->GetComponentDimUnit() );
+      DDX_KeywordUnitValueAndTag(pDX, IDC_WIDTH, IDC_WIDTH_UNIT, _T("Compute"), m_DiaphragmWidth, pDisplayUnits->GetComponentDimUnit() );
+      DDX_KeywordUnitValueAndTag(pDX, IDC_HEIGHT, IDC_HEIGHT_UNIT, _T("Compute"), m_DiaphragmHeight, pDisplayUnits->GetComponentDimUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate )
@@ -247,6 +244,7 @@ BOOL CClosureJointGeometryPage::OnInitDialog()
       GetDlgItem(IDC_WIDTH_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_WIDTH)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_WIDTH_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_DIAPHRAGM_NOTE)->ShowWindow(SW_HIDE);
    }
 
    OnConnectionTypeChanged();

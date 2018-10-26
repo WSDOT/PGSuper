@@ -940,25 +940,26 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
+   CString tagBeforeLosses = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
+   CString tagAfterLosses  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
 
    DDX_Text(pDX,IDC_RELEASE_COMPRESSION,m_Entry.m_ClosureCompStressAtStressing);
    DDV_GreaterThanZero(pDX, IDC_RELEASE_COMPRESSION,m_Entry.m_ClosureCompStressAtStressing);
 
    DDX_UnitValueAndTag(pDX, IDC_RELEASE_PTZ_TENSION, IDC_RELEASE_PTZ_TENSION_UNIT, m_Entry.m_ClosureTensStressPTZAtStressing, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_RELEASE_PTZ_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_RELEASE_PTZ_TENSION_UNIT,tagBeforeLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_PTZ_TENSION_UNIT,m_Entry.m_ClosureTensStressPTZAtStressing, pDisplayUnits->SqrtPressure);
 
    DDX_UnitValueAndTag(pDX, IDC_RELEASE_PTZ_TENSION_WITH_REBAR, IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressPTZWithRebarAtStressing, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,tag);
+   DDX_Text(pDX,IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,tagBeforeLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressPTZWithRebarAtStressing, pDisplayUnits->SqrtPressure);
 
    DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION, IDC_RELEASE_TENSION_UNIT, m_Entry.m_ClosureTensStressAtStressing, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_RELEASE_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_RELEASE_TENSION_UNIT,tagBeforeLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_UNIT,m_Entry.m_ClosureTensStressAtStressing, pDisplayUnits->SqrtPressure);
 
    DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_WITH_REBAR, IDC_RELEASE_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressWithRebarAtStressing, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,tag);
+   DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,tagBeforeLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressWithRebarAtStressing, pDisplayUnits->SqrtPressure);
 
    DDX_Text(pDX,IDC_SERVICE_COMPRESSION,m_Entry.m_ClosureCompStressAtService);
@@ -968,19 +969,19 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,m_Entry.m_ClosureCompStressWithLiveLoadAtService);
 
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_PTZ_TENSION, IDC_SERVICE_PTZ_TENSION_UNIT, m_Entry.m_ClosureTensStressPTZAtService, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_UNIT,tagAfterLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_UNIT,m_Entry.m_ClosureTensStressPTZAtService, pDisplayUnits->SqrtPressure);
 
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressPTZWithRebarAtService, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,tag);
+   DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,tagAfterLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressPTZWithRebarAtService, pDisplayUnits->SqrtPressure);
 
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_ClosureTensStressAtService, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SERVICE_III_TENSION_UNIT,tag);
+   DDX_Text(pDX,IDC_SERVICE_III_TENSION_UNIT,tagAfterLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_UNIT,m_Entry.m_ClosureTensStressAtService, pDisplayUnits->SqrtPressure);
 
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressWithRebarAtService, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,tag);
+   DDX_Text(pDX,IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,tagAfterLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressWithRebarAtService, pDisplayUnits->SqrtPressure);
 
    DDX_Text(pDX,IDC_FATIGUE_COMPRESSION,m_Entry.m_ClosureCompStressFatigue);
@@ -1069,6 +1070,13 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       m_Entry.m_DesignStrandFillType = (arDesignStrandFillType)value;
+   }
+
+   value = (int)m_Entry.m_LimitStateConcreteStrength;
+   DDX_Radio(pDX,IDC_FC1,value);
+   if ( pDX->m_bSaveAndValidate )
+   {
+      m_Entry.m_LimitStateConcreteStrength = (pgsTypes::LimitStateConcreteStrength)value;
    }
 }
 

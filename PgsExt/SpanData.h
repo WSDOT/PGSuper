@@ -30,6 +30,11 @@
 class CPierData;
 class CBridgeDescription;
 
+///////////////////////////////////////////////////////
+// NOTE: 
+// This class only exists to load old PGSuper files.
+///////////////////////////////////////////////////////
+
 /*****************************************************************************
 CLASS 
    CSpanData

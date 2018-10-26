@@ -31,11 +31,6 @@
 
 #include <IFace\Project.h>
 
-#pragma Reminder("UPDATE: remove all functions that are no longer used")
-// CBridgeDescription and all of its related classes exist only
-// read old files.. remove all functions that don't have anything to do with 
-// reading old files.
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

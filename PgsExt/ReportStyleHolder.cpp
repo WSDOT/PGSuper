@@ -382,6 +382,7 @@ rptRcTable* pgsReportStyleHolder::CreateLayoutTable(ColumnIndexType nColumns,LPC
    rptRcTable* pLayoutTable = CreateTableNoHeading(nColumns,lpszLabel);
    pLayoutTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
    pLayoutTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
+   pLayoutTable->EnableRowStriping(false);
    return pLayoutTable;
 }
 

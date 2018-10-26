@@ -4834,18 +4834,6 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       return E_FAIL;
    }
 
-#pragma Reminder("REVIEW: do we need to do this here?") // this also happes in SpecificationChanged which is called below
-   // If the version number for the top data block is less than 3 then
-   // that project file is older than PGSuper version 3.0.0 and there isn't
-   // any stage information in the file. Create the default PGSuper stage
-   // information here
-   Float64 top_version;
-   pStrLoad->get_TopVersion(&top_version);
-   if ( top_version < 3 )
-   {
-      CreatePrecastGirderBridgeTimelineEvents();
-   }
-
    // check to see if the bridge girder spacing type is correct
    // because of changes in the way girder spacing is modeled, the girder spacing
    // type can take on invalid values... this seems to be the only place to fix it
@@ -7459,8 +7447,6 @@ bool CProjectAgentImp::IsSlabOffsetDesignEnabled()
 std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey)
 {
    const CSplicedGirderData* pGirder = GetGirder(girderKey);
-#pragma Reminder("UPDATE: assuming segment 0 for precast girder") // this may be ok since this method is only for PGSuper
-   const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
 
    std::vector<arDesignOptions> options;
@@ -8508,6 +8494,8 @@ void CProjectAgentImp::FirePendingEvents()
 	
 	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_BRIDGE) )
 	   {
+         // eliminate duplicates
+         m_PendingBridgeChangedHints.erase(std::unique(m_PendingBridgeChangedHints.begin(),m_PendingBridgeChangedHints.end()),m_PendingBridgeChangedHints.end());
 	      std::vector<CBridgeChangedHint*>::iterator iter(m_PendingBridgeChangedHints.begin());
 	      std::vector<CBridgeChangedHint*>::iterator end(m_PendingBridgeChangedHints.end());
 	      for ( ; iter != end; iter++ )
@@ -9716,21 +9704,20 @@ Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,StrandIndexT
 
 HRESULT CProjectAgentImp::FireContinuityRelatedSpanChange(const CSpanKey& spanKey,Uint32 lHint)
 {
-#pragma Reminder("UPDATE: disabled during spliced girder development")
-   // IsContinityFullyEffective doesn't work for spliced girders
    // Some individual girder changes can affect an entire girderline
-   //GirderIndexType continuityGirderIdx = (spanKey.girderIndex == ALL_GIRDERS) ? 0 : spanKey.girderIndex; // test in girder 1 if all girders
-   //CGirderKey girderKey(grpIdx,continuityGirderIdx);
-   //
-   //GET_IFACE(IContinuity,pContinuity);
-   //if (pContinuity->IsContinuityFullyEffective(girderKey))
-   //{
-   //   grpIdx = ALL_GROUPS;
-   //}
+   const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(m_BridgeDescription.GetSpan(spanKey.spanIndex));
+   GroupIndexType grpIdx = pGroup->GetIndex();
 
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-   // this event doesn't make sense when the span has changed
-   CSegmentKey key(spanKey.spanIndex,spanKey.girderIndex, 0 );
+   GirderIndexType continuityGirderIdx = (spanKey.girderIndex == ALL_GIRDERS) ? 0 : spanKey.girderIndex;
+   CGirderKey girderKey(grpIdx,continuityGirderIdx);
+   
+   GET_IFACE(IContinuity,pContinuity);
+   if (pContinuity->IsContinuityFullyEffective(girderKey))
+   {
+      grpIdx = ALL_GROUPS; // assume the entire girder line is affected...specify change affects all groups
+   }
+
+   CGirderKey key(grpIdx,spanKey.girderIndex);
    return Fire_GirderChanged(key, lHint); 
 }
 

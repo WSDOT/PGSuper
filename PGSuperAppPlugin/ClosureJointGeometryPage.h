@@ -41,7 +41,7 @@ public:
    void Init(const CPierData2* pPierData);
 
 // Dialog Data
-	enum { IDD = IDD_CP_GEOMETRY };
+	enum { IDD = IDD_CLOSURE_CONNECTION };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

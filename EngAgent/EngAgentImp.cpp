@@ -4023,7 +4023,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    }
 
    GET_IFACE(IMaterials,pMaterial);
-   Float64 fcMax = pMaterial->GetSegmentFc(segmentKey,haulSegmentIntervalIdx);
+   Float64 fcMax = pMaterial->GetSegmentDesignFc(segmentKey,haulSegmentIntervalIdx);
 
    Float64 fcReqd = -1;
 

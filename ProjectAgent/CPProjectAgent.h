@@ -151,14 +151,14 @@ public:
 	{
 		T* pT = (T*)this;
 
-      pT->ValidateBridgeModel();
-
       if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_BRIDGE);
          pT->m_PendingBridgeChangedHints.push_back(pHint);
          return S_OK;
       }
+
+      pT->ValidateBridgeModel();
 
       pT->Lock();
 		HRESULT ret = S_OK;

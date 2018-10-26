@@ -47,6 +47,10 @@ interface IPointOfInterest : public IUnknown
    // Critical section POI will only be included if they were previously computed
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSegmentKey& segmentKey) = 0;
 
+   // Returns all points of interest along the specified line. It is assumed that the
+   // line is more or less transverse to the bridge.
+   virtual std::vector<pgsPointOfInterest> GetPointOfInterests(Float64 station,IDirection* pDirection) = 0;
+
    // Returns all points of interest for a segment that include the attrib attributes
    // The use of ALL_GROUPS, ALL_GIRDERS, and ALL_SEGMENTS is permitted
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode = POIFIND_OR) = 0;
@@ -62,6 +66,10 @@ interface IPointOfInterest : public IUnknown
    // (but not stored) and it will have an ID of INVALID_ID. NOTE: Xpoi is NOT in 
    // Segment Coordinates. Use ConvertSegmentCoordinateToPoi if the distance you have is in segment coordinates.
    virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) = 0;
+
+   // Gets the point of interest where a line defined by station and direction intersects a segment
+   // Returns true of the POI is found, or false if it is not.
+   virtual bool GetPointOfInterest(const CSegmentKey& segmentKey,Float64 station,IDirection* pDirection,pgsPointOfInterest* pPoi) = 0;
 
    // Returns the poi that is nearst to the specified location on a segment
    virtual pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) = 0;
@@ -95,6 +103,9 @@ interface IPointOfInterest : public IUnknown
    // returns a vector of all the different segment keys found in the vector of poi
    virtual std::vector<CSegmentKey> GetSegmentKeys(const std::vector<pgsPointOfInterest>& vPoi) = 0;
 
+   // returns a vector of all the different segment keys found in the vector of poi that belong to the specified girder
+   virtual std::vector<CSegmentKey> GetSegmentKeys(const std::vector<pgsPointOfInterest>& vPoi,const CGirderKey& girderKey) = 0;
+
    // returns a vector of all the different girders keys found in the vector of poi
    virtual std::vector<CGirderKey> GetGirderKeys(const std::vector<pgsPointOfInterest>& vPoi) = 0;
 
@@ -120,6 +131,10 @@ interface IPointOfInterest : public IUnknown
 
    // returns true if the poi is in an intermediate diaphragm at a boundary pier
    virtual bool IsInIntermediateDiaphragm(const pgsPointOfInterest& poi) = 0;
+
+   // returns true if the poi is in the zone between the nearest support
+   // and the critical section for shear
+   virtual bool IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState) = 0;
 
    //////////////////////////////
    // Conversion Methods

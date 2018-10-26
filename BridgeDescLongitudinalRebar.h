@@ -81,6 +81,8 @@ protected:
 public:
    void RestoreToLibraryDefaults();
 
+   void GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
+
 public:
    CGirderDescLongRebarGrid m_Grid;
    std::_tstring m_CurGrdName;

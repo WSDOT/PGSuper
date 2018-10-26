@@ -46,6 +46,7 @@ CSegmentKey GetSegmentKey(GirderIDType gdrID);
 
 // Returns the ID of a segment layout line in the Bridge Geometry model given a girder/segment index pair
 LineIDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx);
+LineIDType GetGirderSegmentLineID(const CSegmentKey& segmentKey);
 
 // Returns the ID of a girder layout line in the Bridge Geometry model given a span/girder index pair
 LineIDType GetGirderLineID(const CSpanKey& spanKey);

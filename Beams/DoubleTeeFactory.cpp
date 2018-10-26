@@ -134,7 +134,9 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
 
       // if this is a fixed width section, then set the spacing equal to the width
       if ( IsEqual(wmin,wmax) )
+      {
          spacing = wmax;
+      }
          
       w1 = (spacing - nWebs*t1 - (nWebs-1)*w)/2;
    }

@@ -209,17 +209,17 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
 
    // Init Pier grids
    PierIndexType npiers = m_BridgeDesc.GetPierCount();
-   for (PierIndexType ipier=0; ipier<npiers; ipier++)
+   for (PierIndexType pierIdx = 0; pierIdx < npiers; pierIdx++)
    {
       CLLDFPierGrid* pgrid = new CLLDFPierGrid();
 
 	   pgrid->Create(0, CRect(0,0,1,1), &m_PierTabWnd, m_PierTabWnd.GetNextID());
 
       CString pier_name;
-      pier_name.Format(_T("Pier %d"), LABEL_SPAN(ipier));
+      pier_name.Format(_T("Pier %d"), LABEL_SPAN(pierIdx));
    	m_PierTabWnd.AttachWnd(pgrid, pier_name);
 
-      pgrid->CustomInit(ipier);
+      pgrid->CustomInit(pierIdx);
 
       m_PierGrids.push_back( boost::shared_ptr<CLLDFPierGrid>(pgrid) );
    }

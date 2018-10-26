@@ -352,6 +352,9 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                //else
                {
                   std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+                  vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+                  std::sort(vIntervals.begin(),vIntervals.end());
+                  vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
                   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
                   BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
                   {
@@ -389,6 +392,9 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                //else
                {
                   std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+                  vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+                  std::sort(vIntervals.begin(),vIntervals.end());
+                  vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
                   BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
                   {
                      rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);

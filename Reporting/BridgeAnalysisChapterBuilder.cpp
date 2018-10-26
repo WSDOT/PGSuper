@@ -27,16 +27,19 @@
 #include <Reporting\BridgeAnalysisReportSpecification.h>
 
 #include <Reporting\CastingYardMomentsTable.h>
+#include <Reporting\ProductAxialTable.h>
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ProductShearTable.h>
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\ProductDisplacementsTable.h>
 #include <Reporting\ProductRotationTable.h>
 
+#include <Reporting\CombinedAxialTable.h>
 #include <Reporting\CombinedMomentsTable.h>
 #include <Reporting\CombinedShearTable.h>
 #include <Reporting\CombinedReactionTable.h>
 
+#include <Reporting\UserAxialTable.h>
 #include <Reporting\UserMomentsTable.h>
 #include <Reporting\UserShearTable.h>
 #include <Reporting\UserReactionTable.h>
@@ -130,14 +133,50 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
+   bool bReportAxial = pProductLoads->ReportAxialResults();
 
    bool bIndicateControllingLoad = true;
 
-   // Product Moments
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *p << _T("Load Responses - Bridge Site")<<rptNewLine;
    p->SetName(_T("Bridge Site Results"));
    *pChapter << p;
+
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   bool bAreThereUserLoads = pUDL->DoUserLoadsExist(girderKey);
+
+   // Product Axial
+   if ( bReportAxial )
+   {
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << CProductAxialTable().Build(pBroker,girderKey,m_AnalysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+      if ( bPedestrian )
+      {
+         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+      }
+    
+      *p << LIVELOAD_PER_LANE << rptNewLine;
+      LiveLoadTableFooter(pBroker,p,girderKey,bDesign,bRating);
+       
+
+      if (bAreThereUserLoads)
+      {
+         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+         for ( ; iter != end; iter++ )
+         {
+            IntervalIndexType intervalIdx = *iter;
+            if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+            {
+               *p << CUserAxialTable().Build(pBroker,girderKey,m_AnalysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+            }
+         }
+      }
+   }
+
+   // Product Moments
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductMomentsTable().Build(pBroker,girderKey,m_AnalysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
@@ -150,9 +189,6 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    *p << LIVELOAD_PER_LANE << rptNewLine;
    LiveLoadTableFooter(pBroker,p,girderKey,bDesign,bRating);
     
-
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-   bool bAreThereUserLoads = pUDL->DoUserLoadsExist(girderKey);
    if (bAreThereUserLoads)
    {
       std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
@@ -454,6 +490,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
       }
 
+      CCombinedAxialTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       CCombinedShearTable().Build(  pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       if ( castDeckIntervalIdx <= intervalIdx )

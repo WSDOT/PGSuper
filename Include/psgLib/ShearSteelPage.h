@@ -95,6 +95,8 @@ public:
 
    CShearData2 m_ShearData;
 
+   void GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
+
     virtual void DoRestoreDefaults(); // Allow children to implement
 protected:
     bool m_bAllowRestoreDefaults;

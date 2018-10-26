@@ -35,4 +35,11 @@ interface IViews : public IUnknown
    virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport) = 0;
    virtual void CreateGraphView(CollectionIndexType graphIdx) = 0;
    virtual void BuildGraphMenu(CEAFMenu* pMenu) = 0;
+
+   virtual long GetBridgeModelEditorViewKey() = 0;
+   virtual long GetGirderModelEditorViewKey() = 0;
+   virtual long GetLibraryEditorViewKey() = 0;
+   virtual long GetReportViewKey() = 0;
+   virtual long GetGraphingViewKey() = 0;
+   virtual long GetLoadsViewKey() = 0;
 };

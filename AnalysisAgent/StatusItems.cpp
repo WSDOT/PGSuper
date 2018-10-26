@@ -65,11 +65,11 @@ void pgsVSRatioStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    {
       ATLASSERT(pItem->m_SegmentKey.segmentIndex == 0);
 
-      strMsg.Format(_T("Span %d Girder %s: %s"),LABEL_SPAN(pItem->m_SegmentKey.groupIndex),LABEL_GIRDER(pItem->m_SegmentKey.girderIndex),pItem->GetDescription().c_str());
+      strMsg.Format(_T("Span %d Girder %s: %s"),LABEL_SPAN(pItem->m_SegmentKey.groupIndex),LABEL_GIRDER(pItem->m_SegmentKey.girderIndex),pItem->GetDescription());
    }
    else
    {
-      strMsg.Format(_T("Group %d Girder %s Segment %d: %s"),LABEL_SPAN(pItem->m_SegmentKey.groupIndex),LABEL_GIRDER(pItem->m_SegmentKey.girderIndex),LABEL_SEGMENT(pItem->m_SegmentKey.segmentIndex),pItem->GetDescription().c_str());
+      strMsg.Format(_T("Group %d Girder %s Segment %d: %s"),LABEL_SPAN(pItem->m_SegmentKey.groupIndex),LABEL_GIRDER(pItem->m_SegmentKey.girderIndex),LABEL_SEGMENT(pItem->m_SegmentKey.segmentIndex),pItem->GetDescription());
    }
    AfxMessageBox(strMsg);
 }

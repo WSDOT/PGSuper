@@ -40,6 +40,31 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+void DDX_ColumnGrid(CDataExchange* pDX,CColumnLayoutGrid& grid,CPierData2* pPier)
+{
+   if ( pDX->m_bSaveAndValidate )
+   {
+      grid.GetColumnData(*pPier);
+   }
+   else
+   {
+      grid.SetColumnData(*pPier);
+   }
+}
+
+void DDV_ColumnGrid(CDataExchange* pDX,CColumnLayoutGrid& grid)
+{
+   if ( pDX->m_bSaveAndValidate )
+   {
+      if ( grid.GetRowCount() == 0 )
+      {
+         AfxMessageBox(_T("The pier must have at least one column"),MB_OK | MB_ICONEXCLAMATION);
+         pDX->Fail();
+      }
+   }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CPierLayoutPage property page
 
@@ -72,13 +97,13 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EC,           m_ctrlEc);
 	DDX_Control(pDX, IDC_EC_LABEL,     m_ctrlEcCheck);
 	DDX_Control(pDX, IDC_FC,           m_ctrlFc);
+   DDX_Control(pDX, IDC_FIXITY,       m_cbColumnFixity);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_MetaFileStatic(pDX, IDC_PIER_LAYOUT, m_LayoutPicture,_T("PIERLAYOUT"), _T("Metafile") );
-   DDX_Control(pDX, IDC_S, m_SpacingControl);
 
    // Pier Model
    DDX_CBItemData(pDX,IDC_PIER_MODEL_TYPE,m_PierModelType);
@@ -91,28 +116,47 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_H1,IDC_H1_UNIT,m_XBeamHeight[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX,IDC_H2,IDC_H2_UNIT,m_XBeamTaperHeight[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX,IDC_X1,IDC_X1_UNIT,m_XBeamTaperLength[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_X2,IDC_X2_UNIT,m_XBeamEndSlopeOffset[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
 
    DDX_UnitValueAndTag(pDX,IDC_H3,IDC_H3_UNIT,m_XBeamHeight[pgsTypes::pstRight],pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX,IDC_H4,IDC_H4_UNIT,m_XBeamTaperHeight[pgsTypes::pstRight],pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_X2,IDC_X2_UNIT,m_XBeamTaperLength[pgsTypes::pstRight],pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_X3,IDC_X3_UNIT,m_XBeamTaperLength[pgsTypes::pstRight],pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_X4,IDC_X4_UNIT,m_XBeamEndSlopeOffset[pgsTypes::pstRight],pDisplayUnits->GetSpanLengthUnit() );
 
    DDX_UnitValueAndTag(pDX,IDC_W,IDC_W_UNIT,m_XBeamWidth,pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_Text(pDX,IDC_COLUMN_COUNT,m_nColumns);
    DDX_CBIndex(pDX,IDC_REFCOLUMN,m_RefColumnIdx);
-   DDX_OffsetAndTag(pDX,IDC_X5,IDC_X5_UNIT,m_TransverseOffset, pDisplayUnits->GetSpanLengthUnit() );
-   DDX_CBItemData(pDX,IDC_X5_MEASUREMENT,m_TransverseOffsetMeasurement);
+   DDX_OffsetAndTag(pDX,IDC_REFCOLUMN_OFFSET,IDC_REFCOLUMN_OFFSET_UNIT,m_TransverseOffset, pDisplayUnits->GetSpanLengthUnit() );
+   DDX_CBItemData(pDX,IDC_REFCOLUMN_MEASUREMENT,m_TransverseOffsetMeasurement);
 
-   DDX_UnitValueAndTag(pDX,IDC_X3,IDC_X3_UNIT,m_XBeamOverhang[pgsTypes::pstLeft], pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_X4,IDC_X4_UNIT,m_XBeamOverhang[pgsTypes::pstRight],pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_X5,IDC_X5_UNIT,m_XBeamOverhang[pgsTypes::pstLeft], pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_X6,IDC_X6_UNIT,m_XBeamOverhang[pgsTypes::pstRight],pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag(pDX,IDC_S,IDC_S_UNIT,m_ColumnSpacing,pDisplayUnits->GetSpanLengthUnit());
-   DDX_UnitValueAndTag(pDX,IDC_H,IDC_H_UNIT,m_ColumnHeight,pDisplayUnits->GetSpanLengthUnit());
-   DDX_CBItemData(pDX,IDC_HEIGHT_MEASURE,m_ColumnHeightMeasurementType);
+   DDX_CBItemData(pDX,IDC_FIXITY,m_ColumnFixity);
 
-   DDX_CBItemData(pDX,IDC_COLUMN_SHAPE,m_ColumnShape);
-   DDX_UnitValueAndTag(pDX,IDC_B,IDC_B_UNIT,m_B,pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_D,IDC_D_UNIT,m_D,pDisplayUnits->GetSpanLengthUnit() );
+   if ( m_PierModelType == pgsTypes::pmtPhysical )
+   {
+      DDV_ColumnGrid(pDX,m_ColumnLayoutGrid);
+      DDX_ColumnGrid(pDX,m_ColumnLayoutGrid,m_pPier);
+   }
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      CColumnData::ColumnHeightMeasurementType measure;
+      DDX_CBItemData(pDX,IDC_HEIGHT_MEASURE,measure);
+      ColumnIndexType nColumns = m_pPier->GetColumnCount();
+      for ( ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++ )
+      {
+         CColumnData column = m_pPier->GetColumnData(colIdx);
+         column.SetColumnHeightMeasurementType(measure);
+         m_pPier->SetColumnData(colIdx,column);
+      }
+   }
+   else
+   {
+      CColumnData::ColumnHeightMeasurementType measure = m_pPier->GetColumnData(0).GetColumnHeightMeasurementType();
+      DDX_CBItemData(pDX,IDC_HEIGHT_MEASURE,measure);
+   }
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -126,25 +170,12 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
          for ( int i = 0; i < 2; i++ )
          {
             pgsTypes::PierSideType side = (pgsTypes::PierSideType)i;
-            m_pPier->SetXBeamDimensions(side,m_XBeamHeight[side],m_XBeamTaperHeight[side],m_XBeamTaperLength[side]);
+            m_pPier->SetXBeamDimensions(side,m_XBeamHeight[side],m_XBeamTaperHeight[side],m_XBeamTaperLength[side],m_XBeamEndSlopeOffset[side]);
             m_pPier->SetXBeamOverhang(side,m_XBeamOverhang[side]);
          }
          m_pPier->SetXBeamWidth(m_XBeamWidth);
 
-         m_pPier->SetColumnCount(m_nColumns);
-         CColumnData columnData = m_pPier->GetColumnData(0);
-         columnData.SetColumnHeight(m_ColumnHeight,m_ColumnHeightMeasurementType);
-         columnData.SetColumnShape(m_ColumnShape);
-         columnData.SetColumnDimensions(m_B,m_D);
-         for ( ColumnIndexType colIdx = 0; colIdx < m_nColumns; colIdx++ )
-         {
-            m_pPier->SetColumnData(colIdx,columnData);
-            if ( 0 < colIdx )
-            {
-               SpacingIndexType spaceIdx = (SpacingIndexType)(colIdx-1);
-               m_pPier->SetColumnSpacing(spaceIdx,m_ColumnSpacing);
-            }
-         }
+         m_pPier->SetColumnFixity(m_ColumnFixity);
 
 #pragma Reminder("WOKRING HERE - need to validate overall pier geometry")
          // maybe do this on the parent property page...
@@ -160,9 +191,10 @@ BEGIN_MESSAGE_MAP(CPierLayoutPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_FC, OnChangeFc)
    ON_BN_CLICKED(IDC_MORE_PROPERTIES, OnMoreProperties)
    ON_CBN_SELCHANGE(IDC_PIER_MODEL_TYPE, OnPierModelTypeChanged)
-   ON_CBN_SELCHANGE(IDC_COLUMN_SHAPE, OnColumnShapeChanged)
-   ON_NOTIFY(UDN_DELTAPOS, IDC_COLUMN_COUNT_SPINNER, OnColumnCountChanged)
 	ON_COMMAND(ID_HELP, OnHelp)
+   ON_CBN_SELCHANGE(IDC_HEIGHT_MEASURE, OnHeightMeasureChanged)
+   ON_BN_CLICKED(IDC_ADD_COLUMN, &CPierLayoutPage::OnAddColumn)
+   ON_BN_CLICKED(IDC_REMOVE_COLUMN, &CPierLayoutPage::OnRemoveColumns)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -171,41 +203,27 @@ END_MESSAGE_MAP()
 
 BOOL CPierLayoutPage::OnInitDialog() 
 {
+   m_ColumnLayoutGrid.SubclassDlgItem(IDC_COLUMN_GRID, this);
+   m_ColumnLayoutGrid.CustomInit();
+
    m_PierModelType = m_pPier->GetPierModelType();
 
    m_pPier->GetTransverseOffset(&m_RefColumnIdx,&m_TransverseOffset,&m_TransverseOffsetMeasurement);
    m_XBeamWidth = m_pPier->GetXBeamWidth();
-   m_nColumns = m_pPier->GetColumnCount();
-
-   // all columns are the same
-   const CColumnData& columnData = m_pPier->GetColumnData(0); 
-   m_ColumnHeightMeasurementType = columnData.GetColumnHeightMeasurementType();
-   m_ColumnHeight = columnData.GetColumnHeight();
-   m_ColumnSpacing = ::ConvertToSysUnits(10,unitMeasure::Feet);
-
-   m_ColumnShape = columnData.GetColumnShape();
-   columnData.GetColumnDimensions(&m_B,&m_D);
-
-   if ( 1 < m_nColumns )
-   {
-      m_ColumnSpacing = m_pPier->GetColumnSpacing(0);
-   }
 
    for ( int i = 0; i < 2; i++ )
    {
       pgsTypes::PierSideType side = (pgsTypes::PierSideType)i;
-      m_pPier->GetXBeamDimensions(side,&m_XBeamHeight[side],&m_XBeamTaperHeight[side],&m_XBeamTaperLength[side]);
+      m_pPier->GetXBeamDimensions(side,&m_XBeamHeight[side],&m_XBeamTaperHeight[side],&m_XBeamTaperLength[side],&m_XBeamEndSlopeOffset[side]);
       m_XBeamOverhang[side] = m_pPier->GetXBeamOverhang(side);
    }
 
-   FillTransverseLocationComboBox();
-   FillRefColumnComboBox();
-   FillHeightMeasureComboBox();
-   FillColumnShapeComboBox();
-   FillPierModelTypeComboBox();
+   m_ColumnFixity = m_pPier->GetColumnFixity();
 
-   CSpinButtonCtrl* pSpinner = (CSpinButtonCtrl*)GetDlgItem(IDC_COLUMN_COUNT_SPINNER);
-   pSpinner->SetRange(1,UD_MAXVAL);
+   FillTransverseLocationComboBox();
+   FillRefColumnComboBox(m_pPier->GetColumnCount());
+   FillHeightMeasureComboBox();
+   FillPierModelTypeComboBox();
 
    CPropertyPage::OnInitDialog();
 
@@ -217,11 +235,9 @@ BOOL CPierLayoutPage::OnInitDialog()
    OnUserEc();
 
    OnPierModelTypeChanged();
-   OnColumnShapeChanged();
-   UpdateColumnSpacingControls();
    UpdateEcControls();
 
-
+   OnHeightMeasureChanged();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -254,7 +270,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
 
 void CPierLayoutPage::FillTransverseLocationComboBox()
 {
-   CComboBox* pcbMeasure = (CComboBox*)GetDlgItem(IDC_X5_MEASUREMENT);
+   CComboBox* pcbMeasure = (CComboBox*)GetDlgItem(IDC_REFCOLUMN_MEASUREMENT);
    pcbMeasure->ResetContent();
    int idx = pcbMeasure->AddString(_T("from the Alignment"));
    pcbMeasure->SetItemData(idx,(DWORD_PTR)pgsTypes::omtAlignment);
@@ -262,12 +278,17 @@ void CPierLayoutPage::FillTransverseLocationComboBox()
    pcbMeasure->SetItemData(idx,(DWORD_PTR)pgsTypes::omtBridge);
 }
 
-void CPierLayoutPage::FillRefColumnComboBox()
+void CPierLayoutPage::FillRefColumnComboBox(ColumnIndexType nColumns)
 {
    CComboBox* pcbRefColumn = (CComboBox*)GetDlgItem(IDC_REFCOLUMN);
    int curSel = pcbRefColumn->GetCurSel();
    pcbRefColumn->ResetContent();
-   for ( ColumnIndexType colIdx = 0; colIdx < m_nColumns; colIdx++ )
+   if (nColumns == INVALID_INDEX)
+   {
+      nColumns = (ColumnIndexType)m_ColumnLayoutGrid.GetRowCount();
+   }
+
+   for ( ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++ )
    {
       CString strLabel;
       strLabel.Format(_T("Column %d"),LABEL_COLUMN(colIdx));
@@ -290,14 +311,12 @@ void CPierLayoutPage::FillHeightMeasureComboBox()
    pcbHeightMeasure->SetItemData(idx,(DWORD_PTR)CColumnData::chtBottomElevation);
 }
 
-void CPierLayoutPage::FillColumnShapeComboBox()
+void CPierLayoutPage::OnHeightMeasureChanged()
 {
-   CComboBox* pcbColumnShape = (CComboBox*)GetDlgItem(IDC_COLUMN_SHAPE);
-   pcbColumnShape->ResetContent();
-   int idx = pcbColumnShape->AddString(_T("Circle"));
-   pcbColumnShape->SetItemData(idx,(DWORD_PTR)CColumnData::cstCircle);
-   idx = pcbColumnShape->AddString(_T("Rectangle"));
-   pcbColumnShape->SetItemData(idx,(DWORD_PTR)CColumnData::cstRectangle);
+   CComboBox* pcbHeightMeasure = (CComboBox*)GetDlgItem(IDC_HEIGHT_MEASURE);
+   int curSel = pcbHeightMeasure->GetCurSel();
+   CColumnData::ColumnHeightMeasurementType measure = (CColumnData::ColumnHeightMeasurementType)(pcbHeightMeasure->GetItemData(curSel));
+   m_ColumnLayoutGrid.SetHeightMeasurementType(measure);
 }
 
 void CPierLayoutPage::FillPierModelTypeComboBox()
@@ -437,11 +456,7 @@ void CPierLayoutPage::OnPierModelTypeChanged()
       int nID = pWnd->GetDlgCtrlID();
       if ( nID != IDC_PIER_MODEL_LABEL && nID != IDC_PIER_MODEL_TYPE )
       {
-         if ( nID == IDC_S )
-         {
-            m_SpacingControl.EnableWindow(bEnable);
-         }
-         else if ( nID == IDC_EC_LABEL )
+         if ( nID == IDC_EC_LABEL )
          {
             m_ctrlEcCheck.EnableWindow(bEnable);
          }
@@ -453,52 +468,7 @@ void CPierLayoutPage::OnPierModelTypeChanged()
       pWnd = pWnd->GetNextWindow(GW_HWNDNEXT);
    }
 
-   UpdateColumnSpacingControls(); // the blanket enable/disable messes up the column spacing controls... fix it 
    UpdateEcControls(); // the blanket enable/disable messes up the modulus of elasticity controls... fix it
-}
-
-void CPierLayoutPage::OnColumnShapeChanged()
-{
-   CComboBox* pcbColumnShape = (CComboBox*)GetDlgItem(IDC_COLUMN_SHAPE);
-   int curSel = pcbColumnShape->GetCurSel();
-   CColumnData::ColumnShapeType shapeType = (CColumnData::ColumnShapeType)pcbColumnShape->GetItemData(curSel);
-   if ( shapeType == CColumnData::cstCircle )
-   {
-      GetDlgItem(IDC_B_LABEL)->SetWindowText(_T("D"));
-      GetDlgItem(IDC_D_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_D)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_D_UNIT)->ShowWindow(SW_HIDE);
-   }
-   else
-   {
-      GetDlgItem(IDC_B_LABEL)->SetWindowText(_T("B"));
-      GetDlgItem(IDC_D_LABEL)->ShowWindow(SW_SHOW);
-      GetDlgItem(IDC_D)->ShowWindow(SW_SHOW);
-      GetDlgItem(IDC_D_UNIT)->ShowWindow(SW_SHOW);
-   }
-}
-
-void CPierLayoutPage::OnColumnCountChanged(NMHDR* pNMHDR, LRESULT* pResult) 
-{
-	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
-
-   // this is what the count will be
-   int new_count = pNMUpDown->iPos + pNMUpDown->iDelta;
-
-   m_nColumns = new_count;
-
-   *pResult = 0;
-
-   FillRefColumnComboBox();
-   UpdateColumnSpacingControls();
-}
-
-void CPierLayoutPage::UpdateColumnSpacingControls()
-{
-   BOOL bEnable = (m_PierModelType == pgsTypes::pmtPhysical && 1 < m_nColumns ? TRUE : FALSE);
-   GetDlgItem(IDC_S_LABEL)->EnableWindow(bEnable);
-   m_SpacingControl.EnableWindow(bEnable);
-   GetDlgItem(IDC_S_UNIT)->EnableWindow(bEnable);
 }
 
 void CPierLayoutPage::UpdateEcControls()
@@ -506,4 +476,16 @@ void CPierLayoutPage::UpdateEcControls()
    BOOL bEnable = (m_PierModelType == pgsTypes::pmtPhysical && IsDlgButtonChecked(IDC_EC_LABEL)) == BST_CHECKED ? TRUE : FALSE;
    GetDlgItem(IDC_EC)->EnableWindow(bEnable);
    GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
+}
+
+void CPierLayoutPage::OnAddColumn()
+{
+   m_ColumnLayoutGrid.AddColumn();
+   FillRefColumnComboBox();
+}
+
+void CPierLayoutPage::OnRemoveColumns()
+{
+   m_ColumnLayoutGrid.RemoveSelectedColumns();
+   FillRefColumnComboBox();
 }

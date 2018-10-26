@@ -351,10 +351,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker, IMaterials, pMaterial);
    (*pTable)(++row,0) << RPT_FC << _T(" (at 28 days)");
-   (*pTable)(row  ,1) << stress.SetValue(pMaterial->GetSegmentFc(segmentKey,finalIntervalIdx));
+   (*pTable)(row  ,1) << stress.SetValue(pMaterial->GetSegmentDesignFc(segmentKey,finalIntervalIdx));
 
    (*pTable)(++row,0) << RPT_FCI << _T(" (at Release)");
-   (*pTable)(row  ,1) << stress.SetValue(pMaterial->GetSegmentFc(segmentKey,releaseIntervalIdx));
+   (*pTable)(row  ,1) << stress.SetValue(pMaterial->GetSegmentDesignFc(segmentKey,releaseIntervalIdx));
 
    
    StrandIndexType Ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);

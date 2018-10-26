@@ -834,7 +834,6 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
                                                    pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,
                                                    IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
-   //ATLASSERT ( stage == pgsTypes::BridgeSite3 );
    ATLASSERT( !(bDesign && bRating) ); // These are different tables - must create separately
 
    rptRcTable* pTable;

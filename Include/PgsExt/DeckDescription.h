@@ -23,33 +23,19 @@
 #ifndef INCLUDED_PGSEXT_DECKDESCRIPTION_H_
 #define INCLUDED_PGSEXT_DECKDESCRIPTION_H_
 
-// SYSTEM INCLUDES
-//
 #include <WBFLCore.h>
-
-#if !defined INCLUDED_MATHEX_H_
 #include <MathEx.h>
-#endif
-
-// PROJECT INCLUDES
-//
-#include <PgsExt\PgsExtExp.h>
 #include <PGSuperTypes.h>
 #include <PgsExt\DeckPoint.h>
 #include <PgsExt\DeckRebarData.h>
 
-//#include <StrData.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
-
 class CBridgeDescription;
+
+
+///////////////////////////////////////////////////////
+// NOTE: 
+// This class only exists to load old PGSuper files.
+///////////////////////////////////////////////////////
 
 /*****************************************************************************
 CLASS 

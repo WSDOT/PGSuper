@@ -227,7 +227,7 @@ interface IBridge : IUnknown
    virtual Float64 GetSegmentStartEndDistance(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetSegmentEndEndDistance(const CSegmentKey& segmentKey) = 0;
    
-   // Distance from C.L. pier to end of girder - along girder
+   // Distance from C.L. pier to C.L. brg - along girder
    virtual Float64 GetSegmentStartBearingOffset(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetSegmentEndBearingOffset(const CSegmentKey& segmentKey) = 0;
 
@@ -362,15 +362,12 @@ interface IBridge : IUnknown
    // Diaphragms
    ///////////////////////////////////////////////////
 
-   virtual void GetBackSideEndDiaphragmSize(PierIndexType pierIdx,Float64* pW,Float64* pH) = 0;
-   virtual void GetAheadSideEndDiaphragmSize(PierIndexType pierIdx,Float64* pW,Float64* pH) = 0;
+   virtual void GetPierDiaphragmSize(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,Float64* pW,Float64* pH) = 0;
    // return true if weight of diaphragm is carried by girder
-   virtual bool DoesLeftSideEndDiaphragmLoadGirder(PierIndexType pierIdx) = 0;
-   virtual bool DoesRightSideEndDiaphragmLoadGirder(PierIndexType pierIdx) = 0;
+   virtual bool DoesPierDiaphragmLoadGirder(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) = 0;
    // Get location of end diaphragm load (c.g.) measured from c.l. pier. along girder
-   // Only applicable if DoesEndDiaphragmLoadGirder returns true
-   virtual Float64 GetEndDiaphragmLoadLocationAtStart(const CSegmentKey& segmentKey)=0;
-   virtual Float64 GetEndDiaphragmLoadLocationAtEnd(const CSegmentKey& segmentKey)=0;
+   // Only applicable if DoesPierDiaphragmLoadGirder returns true
+   virtual Float64 GetPierDiaphragmLoadLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType)=0;
    
    // Returns a vector of intermediate diaphragm loads for diaphragms that are precast with the
    // girder.
@@ -527,7 +524,7 @@ interface IBridge : IUnknown
    // returns the basic properties for a single column at a pier... all columns at a pier are assumed
    // to be the same. if bSkewAdjust is true, the column properties are adjusted for skew and the
    // moment of inertia about an axis normal to the alignment is returned
-   virtual void GetColumnProperties(PierIndexType pierIdx,bool bSkewAdjust,Float64* pHeight,Float64* pA,Float64* pI,Float64* pE) = 0;
+   virtual void GetColumnProperties(PierIndexType pierIdx,ColumnIndexType colIdx,bool bSkewAdjust,Float64* pHeight,Float64* pA,Float64* pI) = 0;
 
    // negative moment calculations and results need not be processed if a simple span analysis is
    // used or if there isn't any continuity.
@@ -603,6 +600,13 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetDeckFc(IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
+
+   // Returns the design concrete strength at the middle of an interval
+   // This differs from the concrete strength methods above in that it takes into account
+   // the LimitStateConcreteStrength setting from the project criteria.
+   virtual Float64 GetSegmentDesignFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetClosureJointDesignFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckDesignFc(IntervalIndexType intervalIdx) = 0;
 
    // Returns the secant modulus at the middle of an interval
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;

@@ -354,7 +354,6 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
       else
          m_Station = var.dblVal;
 
-#pragma Reminder("UPDATE: Need to validate string... make sure it is a valid pier orientation")
       var.Clear();
       var.vt = VT_BSTR;
       if (FAILED(pStrLoad->get_Property(_T("Orientation"), &var )) )

@@ -796,7 +796,8 @@ void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
    pSpacingType->SetItemData(idx,item_data);
    m_CacheGirderSpacingMeasureIdx = (item_data == current_value ? idx : m_CacheGirderSpacingMeasureIdx );
 
-   // Cannot measure along bearing if any bearings are measured along girder
+   // Cannot measure along CL Bearing if any bearing offsets are measured along girder
+   // If the girders are not parallel, then there is not a single unique bearing line.
    if (!AreAnyBearingsMeasuredAlongGirder())
    {
       idx = pSpacingType->AddString(_T("Measured at and along the CL bearing"));

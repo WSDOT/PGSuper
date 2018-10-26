@@ -362,17 +362,17 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
       CClosureKey closureKey;
       if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
-         fc = pMaterials->GetClosureJointFc(closureKey,ratingIntervalIdx);
+         fc = pMaterials->GetClosureJointDesignFc(closureKey,ratingIntervalIdx);
       }
       else
       {
-         fc = pMaterials->GetSegmentFc(segmentKey,ratingIntervalIdx);
+         fc = pMaterials->GetSegmentDesignFc(segmentKey,ratingIntervalIdx);
       }
    }
    else
    {
       ATLASSERT(IsDeckStressLocation(stressLocation));
-      fc = pMaterials->GetDeckFc(ratingIntervalIdx);
+      fc = pMaterials->GetDeckDesignFc(ratingIntervalIdx);
    }
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
@@ -434,7 +434,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInte
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
+   Float64 fc = pMaterials->GetSegmentDesignFc(segmentKey,intervalIdx);
 
    Float64 fAllow = GetSegmentAllowableCompressionStress(poi,intervalIdx,ls,fc);
    return fAllow;
@@ -448,7 +448,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointO
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetClosureJointFc(segmentKey,intervalIdx);
+   Float64 fc = pMaterials->GetClosureJointDesignFc(segmentKey,intervalIdx);
 
    Float64 fAllow = GetClosureJointAllowableCompressionStress(poi,intervalIdx,ls,fc);
    return fAllow;
@@ -462,7 +462,7 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInteres
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetDeckFc(intervalIdx);
+   Float64 fc = pMaterials->GetDeckDesignFc(intervalIdx);
 
    Float64 fAllow = GetDeckAllowableCompressionStress(poi,intervalIdx,ls,fc);
    return fAllow;
@@ -488,7 +488,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
+   Float64 fc = pMaterials->GetSegmentDesignFc(segmentKey,intervalIdx);
 
    Float64 fAllow = GetSegmentAllowableTensionStress(poi,intervalIdx,ls,fc,bWithBondedReinforcement);
    return fAllow;
@@ -514,7 +514,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetClosureJointFc(segmentKey,intervalIdx);
+   Float64 fc = pMaterials->GetClosureJointDesignFc(segmentKey,intervalIdx);
 
    Float64 fAllow = GetClosureJointAllowableTensionStress(poi,intervalIdx,ls,fc,bWithBondedReinforcement,bInPrecompressedTensileZone);
    return fAllow;
@@ -540,7 +540,7 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetDeckFc(intervalIdx);
+   Float64 fc = pMaterials->GetDeckDesignFc(intervalIdx);
 
    Float64 fAllow = GetDeckAllowableTensionStress(poi,intervalIdx,ls,fc,bWithBondedReinforcement);
    return fAllow;
@@ -712,7 +712,7 @@ Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(const CSegmentKey&
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
-   Float64 fci = pMaterial->GetSegmentFc(segmentKey,liftSegmentIntervalIdx);
+   Float64 fci = pMaterial->GetSegmentDesignFc(segmentKey,liftSegmentIntervalIdx);
 
    Float64 x = GetLiftingWithMildRebarAllowableStressFactor();
 
@@ -732,7 +732,7 @@ Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStress(const CSegmentKey&
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
-   Float64 fc = pMaterial->GetSegmentFc(segmentKey,haulSegmentIntervalIdx);
+   Float64 fc = pMaterial->GetSegmentDesignFc(segmentKey,haulSegmentIntervalIdx);
 
    Float64 x = GetHaulingWithMildRebarAllowableStressFactor();
 
@@ -745,7 +745,7 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey)
    IntervalIndexType intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
+   Float64 fc = pMaterials->GetSegmentDesignFc(segmentKey,intervalIdx);
 
    GET_IFACE(IMaterials,pMaterial);
    pgsTypes::ConcreteType type = pMaterial->GetSegmentConcreteType(segmentKey);
@@ -1550,7 +1550,7 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(const CSegmentKe
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
-   Float64 fci = pMaterial->GetSegmentFc(segmentKey,liftSegmentIntervalIdx);
+   Float64 fci = pMaterial->GetSegmentDesignFc(segmentKey,liftSegmentIntervalIdx);
 
    Float64 f = factor * sqrt( fci );
 
@@ -1583,7 +1583,7 @@ Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStress(const CSegme
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
-   Float64 fci = pMaterial->GetSegmentFc(segmentKey,liftSegmentIntervalIdx);
+   Float64 fci = pMaterial->GetSegmentDesignFc(segmentKey,liftSegmentIntervalIdx);
 
    Float64 allowable = factor * fci;
 
@@ -1667,7 +1667,7 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey)
    IntervalIndexType intervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fci = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
+   Float64 fci = pMaterials->GetSegmentDesignFc(segmentKey,intervalIdx);
    pgsTypes::ConcreteType type = pMaterials->GetSegmentConcreteType(segmentKey);
 
    return GetLiftingModulusOfRupture(fci,type);
@@ -1774,7 +1774,7 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStress(const CSegmentKe
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
-   Float64 fc = pMaterial->GetSegmentFc(segmentKey,haulSegmentIntervalIdx);
+   Float64 fc = pMaterial->GetSegmentDesignFc(segmentKey,haulSegmentIntervalIdx);
 
    Float64 allow = factor * sqrt( fc );
 
@@ -1797,7 +1797,7 @@ Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStress(const CSegme
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
-   Float64 fc = pMaterial->GetSegmentFc(segmentKey,haulSegmentIntervalIdx);
+   Float64 fc = pMaterial->GetSegmentDesignFc(segmentKey,haulSegmentIntervalIdx);
 
    Float64 allowable = factor * fc;
    return allowable;
@@ -2158,36 +2158,44 @@ void CSpecAgentImp::GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand
 
 void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl)
 {
+   *pecl = lrfdRebar::GetCompressionControlledStrainLimit(rebarGrade);
+   *petl = lrfdRebar::GetTensionControlledStrainLimit(rebarGrade);
+
+#if defined _DEBUG
+   Float64 ecl, etl;
    switch (rebarGrade )
    {
    case matRebar::Grade40:
-      *pecl = 0.0014;
-      *petl = 0.005;
+      ecl = 0.0014;
+      etl = 0.005;
       break;
 
    case matRebar::Grade60:
-      *pecl = 0.002;
-      *petl = 0.005;
+      ecl = 0.002;
+      etl = 0.005;
       break;
 
    case matRebar::Grade75:
-      *pecl = 0.0028;
-      *petl = 0.0050;
+      ecl = 0.0028;
+      etl = 0.0050;
       break;
 
    case matRebar::Grade80:
-      *pecl = 0.0030;
-      *petl = 0.0056;
+      ecl = 0.0030;
+      etl = 0.0056;
       break;
 
    case matRebar::Grade100:
-      *pecl = 0.0040;
-      *petl = 0.0080;
+      ecl = 0.0040;
+      etl = 0.0080;
       break;
 
    default:
       ATLASSERT(false); // new rebar grade?
    }
+   ATLASSERT(IsEqual(*pecl,ecl,0.0001));
+   ATLASSERT(IsEqual(*petl,etl,0.0001));
+#endif
 }
 
 Float64 CSpecAgentImp::GetShearResistanceFactor(pgsTypes::ConcreteType type)

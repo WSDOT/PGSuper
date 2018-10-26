@@ -334,6 +334,10 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
       FillSelectListCtrl(true);
       UpdateGraph();
    }
+   else if ( lHint == HINT_ANALYSISTYPECHANGED )
+   {
+      UpdateAnalysisType();
+   }
 }
 
 void CAnalysisResultsGraphController::FillModeCtrl()
@@ -352,8 +356,18 @@ void CAnalysisResultsGraphController::FillActionTypeCtrl()
 
    pcbAction->ResetContent();
 
-   pcbAction->SetItemData(pcbAction->AddString(_T("Moment")),     actionMoment);
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bReportAxial = pProductLoads->ReportAxialResults();
+
+   if ( bReportAxial )
+   {
+      pcbAction->SetItemData(pcbAction->AddString(_T("Axial")),      actionAxial);
+   }
+
    pcbAction->SetItemData(pcbAction->AddString(_T("Shear")),      actionShear);
+   pcbAction->SetItemData(pcbAction->AddString(_T("Moment")),     actionMoment);
    pcbAction->SetItemData(pcbAction->AddString(_T("Deflection")), actionDeflection);
    pcbAction->SetItemData(pcbAction->AddString(_T("Rotation")),   actionRotation);
    pcbAction->SetItemData(pcbAction->AddString(_T("Stress")),     actionStress);
@@ -361,7 +375,7 @@ void CAnalysisResultsGraphController::FillActionTypeCtrl()
 
    if ( curSel == CB_ERR || pcbAction->GetCount() <= curSel)
    {
-      pcbAction->SetCurSel(0);
+      pcbAction->SetCurSel(2); // select moment by default
    }
    else
    {
@@ -676,6 +690,9 @@ void CAnalysisResultsGraphController::UpdateElevAdjustment()
 
 void CAnalysisResultsGraphController::UpdateAnalysisType()
 {
+   GET_IFACE(ISpecification,pSpec);
+   m_AnalysisType = pSpec->GetAnalysisType();
+
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
@@ -683,13 +700,10 @@ void CAnalysisResultsGraphController::UpdateAnalysisType()
       GetDlgItem(IDC_SIMPLE)->ShowWindow(SW_HIDE);  // Simple Span
       GetDlgItem(IDC_SIMPLE2)->ShowWindow(SW_HIDE); // Simple Spans made Continuous
       GetDlgItem(IDC_SIMPLE3)->ShowWindow(SW_HIDE); // Envelope
-      m_AnalysisType = pgsTypes::Continuous;
+      ATLASSERT(m_AnalysisType == pgsTypes::Continuous);
    }
    else
    {
-      GET_IFACE(ISpecification,pSpec);
-      m_AnalysisType = pSpec->GetAnalysisType();
-
       int idx;
       switch( m_AnalysisType )
       {

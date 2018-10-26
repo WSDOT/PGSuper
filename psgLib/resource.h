@@ -55,9 +55,9 @@
 #define IDC_Y3_T                        153
 #define IDD_SPEC_LOSSES                 153
 #define IDD_SPEC_LIFTING                154
-#define IDD_GIRDER_TEMPORARY_STRANDS             155
+#define IDD_GIRDER_TEMPORARY_STRANDS    155
 #define IDB_CONNECTION                  158
-#define IDD_GIRDER_PERMANENT_STRANDS                 164
+#define IDD_GIRDER_PERMANENT_STRANDS    164
 #define IDB_IN_USE                      164
 #define IDB_IN_USE_AND_READ_ONLY        165
 #define IDB_READ_ONLY                   166
@@ -1084,6 +1084,7 @@
 #define IDC_RADIO1                      1559
 #define IDC_GROSS                       1559
 #define IDC_CHECK_PT_AT_JACKING         1559
+#define IDC_FC1                         1559
 #define IDC_SMAX                        1560
 #define IDC_TRANSFORMED                 1560
 #define IDC_SMAX_UNIT                   1561
@@ -1190,6 +1191,8 @@
 #define IDC_FC_LABEL                    1603
 #define IDC_TS_TENSION_WITH_REBAR_LABEL 1604
 #define IDC_PUSH_METHOD                 1606
+#define IDC_FC2                         1607
+#define IDC_FC_GROUP                    1608
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
 #define IDS_E_INVALIDFORMAT             1640
@@ -1199,6 +1202,7 @@
 #define IDS_E_WRITE                     1650
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
+#define IDC_DIAPHRAGM_NOTE              1858
 #define IDC_ALWC_FR                     2017
 #define IDR_LIBEDITORTOOLBAR            12132
 #define IDM_ADD_ENTRY                   36864
@@ -1226,7 +1230,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        311
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1607
+#define _APS_NEXT_CONTROL_VALUE         1609
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

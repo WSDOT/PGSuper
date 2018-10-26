@@ -21,7 +21,7 @@
 #define IDR_PGSUPERAPPPLUGINIMPL        103
 #define IDR_PGSPLICEAPPPLUGINIMPL       104
 #define IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN 105
-#define IDD_CP_GEOMETRY                 107
+#define IDD_CLOSURE_CONNECTION          107
 #define IDR_PGSPLICECOMPONENTINFO       110
 #define IDR_HTML_GIRDERSEGMENTSTRANDPAGE 112
 #define IDR_PGSUPER                     130
@@ -153,6 +153,9 @@
 #define IDD_BRIDGEDESC_FRAMING          279
 #define IDD_BRIDGE_EDITOR_PROFILE_PAGE  280
 #define IDD_RESOLVE_GIRDER_SPACING      281
+#define IDC_COLUMN_GRID                 287
+#define IDC_ADD_COLUMN                  288
+#define IDC_REMOVE_COLUMN               289
 #define IDR_REPORTS                     293
 #define IDD_GIRDERLABELFORMAT           294
 #define IDI_EARTH                       296
@@ -799,7 +802,7 @@
 #define IDC_DECK_EVENT                  1423
 #define IDC_HARP_END_CB                 1423
 #define IDC_DUCT_TYPE                   1423
-#define IDC_X5_MEASUREMENT              1423
+#define IDC_REFCOLUMN_MEASUREMENT       1423
 #define IDC_LOAD_RATING_EVENT           1423
 #define IDC_ERECTION_EVENT              1424
 #define IDC_HP_COMBO_HP                 1424
@@ -1422,8 +1425,11 @@
 #define IDC_RAILING_SYSTEM_NOTE         1753
 #define IDC_W                           1753
 #define IDC_OVERLAY_NOTE                1754
+#define IDC_X6                          1754
 #define IDC_LEFT_MORE                   1755
 #define IDC_LIVELOAD_NOTE               1755
+#define IDC_REFCOLUMN_OFFSET            1755
+#define IDC_REFCOLUMN_OFFSET_UNIT       1756
 #define IDC_TTS_USE                     1756
 #define IDC_END_BLOCK_TRANSITION_LABEL  1756
 #define IDC_END_BLOCK_WIDTH_LABEL       1757
@@ -1531,12 +1537,17 @@
 #define IDC_X2_LABEL                    1822
 #define IDC_X2_UNIT                     1823
 #define IDC_W_UNIT                      1824
+#define IDC_X1_LABEL2                   1825
+#define IDC_X5_LABEL                    1825
+#define IDC_X1_UNIT2                    1826
+#define IDC_X2_LABEL2                   1827
 #define IDC_X5_UNIT                     1828
 #define IDC_W_LABEL                     1829
 #define IDC_X3                          1830
 #define IDC_X3_UNIT                     1831
 #define IDC_X4                          1832
 #define IDC_X4_UNIT                     1833
+#define IDC_X2_UNIT2                    1834
 #define IDC_S_UNIT                      1835
 #define IDC_H                           1836
 #define IDC_H_UNIT                      1837
@@ -1556,6 +1567,9 @@
 #define IDC_LOAD_RATING_EVENT_LABEL     1851
 #define IDC_SPAN_RANGE_LABEL            1854
 #define IDC_SPAN_RANGE_TO               1855
+#define IDC_FIXITY_LABEL                1856
+#define IDC_FIXITY                      1857
+#define IDC_DIAPHRAGM_NOTE              1858
 #define IDC_SERVICE_I_CR                1859
 #define IDC_SERVICE_I_SH                1860
 #define IDC_SERVICE_I_PS                1861
@@ -1584,6 +1598,8 @@
 #define IDS_ALIGNMENTOFFSET_FMT         12874
 #define IDC_EXPAND                      12878
 #define IDC_JOIN                        12879
+#define IDC_X6_LABEL                    12880
+#define IDC_X6_UNIT                     12881
 #define IDS_INCOMPATIBLE_BEARING_MSG    13100
 #define IDS_INCOMPATIBLE_BEARING_MSG2   13101
 #define ID_HELP_JOINARPLIST             33024
@@ -1732,7 +1748,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        367
 #define _APS_NEXT_COMMAND_VALUE         36992
-#define _APS_NEXT_CONTROL_VALUE         1856
+#define _APS_NEXT_CONTROL_VALUE         1859
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

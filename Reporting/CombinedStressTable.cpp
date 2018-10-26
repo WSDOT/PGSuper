@@ -373,21 +373,27 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
 
    bool bPermit = false;// never for stress
 
-   std::_tstring strTitle;
+   std::_tstring strBasicTitle;
    if ( bGirderStresses )
    {
-      strTitle = (bDesign ? _T("Girder Stresses - Design Vehicles") : _T("Girder Stresses - Rating Vehicles"));
+      strBasicTitle = (bDesign ? _T("Girder Stresses - Design Vehicles") : _T("Girder Stresses - Rating Vehicles"));
    }
    else
    {
-      strTitle = (bDesign ? _T("Deck Stresses - Design Vehicles") : _T("Deck Stresses - Rating Vehicles"));
+      strBasicTitle = (bDesign ? _T("Deck Stresses - Design Vehicles") : _T("Deck Stresses - Rating Vehicles"));
    }
+
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetIntervalCount()-1; // Spec checks that include live load happen in the last interval. Since this information is used to verify spec checks, use the last interval
+   IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
+   CString strTitle;
+   strTitle.Format(_T("%s - Interval %d %s"),strBasicTitle.c_str(),LABEL_INTERVAL(bDesign ? liveLoadIntervalIdx : ratingIntervalIdx),pIntervals->GetDescription(bDesign ? liveLoadIntervalIdx : ratingIntervalIdx));
+
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptStressUnitTag,unitmgtStressData>(&p_table,strTitle.c_str(),false,bDesign,bPermit,bPedLoading,bRating,true,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptStressUnitTag,unitmgtStressData>(&p_table,strTitle,false,bDesign,bPermit,bPedLoading,bRating,true,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
    *p << p_table;
 
@@ -409,8 +415,6 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
@@ -445,8 +449,6 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
 
       if ( bRating )
       {
-         IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
-
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
          {
             pForces2->GetCombinedLiveLoadStress( ratingIntervalIdx, pgsTypes::lltDesign, vPoi, bat, topLocation, botLocation, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );

@@ -43,6 +43,8 @@ m_pPier(pPier)
    m_ShapeType = cstCircle;
    m_D1 = ::ConvertToSysUnits(4.0,unitMeasure::Feet);
    m_D2 = m_D1;
+
+   m_TransverseFixity = pgsTypes::cftFixed;
 }
 
 CColumnData::CColumnData(const CColumnData& rOther)
@@ -91,6 +93,11 @@ bool CColumnData::operator==(const CColumnData& rOther) const
       return false;
    }
 
+   if ( m_TransverseFixity != rOther.m_TransverseFixity )
+   {
+      return false;
+   }
+
    return true;
 }
 
@@ -103,13 +110,14 @@ HRESULT CColumnData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("Column"),1.0);
+   pStrSave->BeginUnit(_T("Column"),2.0);
 
    pStrSave->put_Property(_T("Height"),CComVariant(m_Height));
    pStrSave->put_Property(_T("HeightMeasurement"),CComVariant(m_HeightMeasurementType));
    pStrSave->put_Property(_T("Shape"),CComVariant(m_ShapeType));
    pStrSave->put_Property(_T("D1"),CComVariant(m_D1));
    pStrSave->put_Property(_T("D2"),CComVariant(m_D2));
+   pStrSave->put_Property(_T("TransverseFixity"),CComVariant(m_TransverseFixity)); // added in version 2
 
    pStrSave->EndUnit(); // Column
 
@@ -124,6 +132,9 @@ HRESULT CColumnData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       CComVariant var;
       hr = pStrLoad->BeginUnit(_T("Column"));
+
+      Float64 version;
+      pStrLoad->get_Version(&version);
 
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("Height"),&var);
@@ -142,6 +153,13 @@ HRESULT CColumnData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->get_Property(_T("D2"),&var);
       m_D2 = var.dblVal;
+
+      if ( 1 < version )
+      {
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("TransverseFixity"),&var);
+         m_TransverseFixity = (pgsTypes::ColumnFixityType)var.lVal;
+      }
 
       hr = pStrLoad->EndUnit(); // Column
    }
@@ -180,6 +198,8 @@ void CColumnData::MakeCopy(const CColumnData& rOther)
    m_ShapeType = rOther.m_ShapeType;
    m_D1 = rOther.m_D1;
    m_D2 = rOther.m_D2;
+
+   m_TransverseFixity = rOther.m_TransverseFixity;
 
    ASSERT_VALID;
 }
@@ -235,6 +255,16 @@ void CColumnData::GetColumnDimensions(Float64* pD1,Float64* pD2) const
 {
    *pD1 = m_D1;
    *pD2 = m_D2;
+}
+
+void CColumnData::SetTransverseFixity(pgsTypes::ColumnFixityType columnFixity)
+{
+   m_TransverseFixity = columnFixity;
+}
+
+pgsTypes::ColumnFixityType CColumnData::GetTransverseFixity() const
+{
+   return m_TransverseFixity;
 }
 
 #if defined _DEBUG

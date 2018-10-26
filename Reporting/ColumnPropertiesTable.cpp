@@ -64,38 +64,45 @@ rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDi
    INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDisplayUnits->GetAreaUnit(), false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, l4, pDisplayUnits->GetMomentOfInertiaUnit(), false );
 
-   rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Column Section Properties"));
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(1);
 
-   ColumnIndexType colIdx = 0;
-   (*xs_table)(0,colIdx++) << _T("Pier");
-   (*xs_table)(0,colIdx++) << COLHDR(_T("Height"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*xs_table)(0,colIdx++) << COLHDR(_T("A"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
-   (*xs_table)(0,colIdx++) << COLHDR(_T("I"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-
-   RowIndexType rowIdx = xs_table->GetNumberOfHeaderRows();
+   RowIndexType layoutTableRow = 0;
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
-   for ( PierIndexType pierIdx = 1; pierIdx < nPiers-1; pierIdx++, rowIdx++ )
+   for ( PierIndexType pierIdx = 1; pierIdx < nPiers-1; pierIdx++, layoutTableRow++ )
    {
-      colIdx = 0;
-      (*xs_table)(rowIdx,colIdx++) << LABEL_PIER(pierIdx);
-      if ( pBridge->GetPierModelType(pierIdx) == pgsTypes::pmtPhysical )
+      if ( pBridge->GetPierModelType(pierIdx) == pgsTypes::pmtIdealized )
       {
-         Float64 H, A, I, E;
-         pBridge->GetColumnProperties(pierIdx,false,&H,&A,&I,&E);
-         (*xs_table)(rowIdx,colIdx++) << l.SetValue(H);
-         (*xs_table)(rowIdx,colIdx++) << l2.SetValue(A);
-         (*xs_table)(rowIdx,colIdx++) << l4.SetValue(I);
+         continue;
       }
-      else
+
+      CString strLabel;
+      strLabel.Format(_T("Pier %d"),LABEL_PIER(pierIdx));
+
+      rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(4,strLabel);
+      (*pLayoutTable)(layoutTableRow++,0) << xs_table;
+
+      ColumnIndexType tableColIdx = 0;
+      (*xs_table)(0,tableColIdx++) << _T("Column");
+      (*xs_table)(0,tableColIdx++) << COLHDR(_T("Height"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*xs_table)(0,tableColIdx++) << COLHDR(_T("A"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
+      (*xs_table)(0,tableColIdx++) << COLHDR(_T("I"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+
+      RowIndexType rowIdx = xs_table->GetNumberOfHeaderRows();
+      ColumnIndexType nColumns = pBridge->GetColumnCount(pierIdx);
+      for ( ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++, rowIdx++ )
       {
-         (*xs_table)(rowIdx,colIdx++) << RPT_NA; // H
-         (*xs_table)(rowIdx,colIdx++) << RPT_NA; // A
-         (*xs_table)(rowIdx,colIdx++) << RPT_NA; // I
+         tableColIdx = 0;
+         Float64 H, A, I;
+         pBridge->GetColumnProperties(pierIdx,colIdx,false,&H,&A,&I);
+         (*xs_table)(rowIdx,tableColIdx++) << LABEL_COLUMN(colIdx);
+         (*xs_table)(rowIdx,tableColIdx++) << l.SetValue(H);
+         (*xs_table)(rowIdx,tableColIdx++) << l2.SetValue(A);
+         (*xs_table)(rowIdx,tableColIdx++) << l4.SetValue(I);
       }
    }
 
-   return xs_table;
+   return pLayoutTable;
 }
 
 void CColumnPropertiesTable::MakeCopy(const CColumnPropertiesTable& rOther)

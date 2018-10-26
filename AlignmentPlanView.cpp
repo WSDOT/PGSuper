@@ -172,6 +172,8 @@ void CAlignmentPlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
    UpdateDisplayObjects();
    UpdateDrawingScale();
+   Invalidate();
+   UpdateWindow();
 }
 
 void CAlignmentPlanView::OnSize(UINT nType, int cx, int cy) 

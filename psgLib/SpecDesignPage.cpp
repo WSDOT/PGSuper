@@ -204,3 +204,15 @@ void CSpecDesignPage::OnBnClickedCheckBottomFlangeClearance()
    GetDlgItem(IDC_CLEARANCE)->EnableWindow(bEnable);
    GetDlgItem(IDC_CLEARANCE_UNIT)->EnableWindow(bEnable);
 }
+
+BOOL CSpecDesignPage::OnSetActive()
+{
+   // TODO: Add your specialized code here and/or call the base class
+   CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
+   int show = ( pParent->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_FC_GROUP)->ShowWindow(show);
+   GetDlgItem(IDC_FC1)->ShowWindow(show);
+   GetDlgItem(IDC_FC2)->ShowWindow(show);
+
+   return CPropertyPage::OnSetActive();
+}

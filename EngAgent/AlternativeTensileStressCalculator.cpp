@@ -270,14 +270,14 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
             CClosureKey closureKey;
             if ( m_pPoi->IsInClosureJoint(poi,&closureKey) )
             {
-               fci       = m_pMaterials->GetClosureJointFc(closureKey,m_IntervalIdx);
+               fci       = m_pMaterials->GetClosureJointDesignFc(closureKey,m_IntervalIdx);
                conc_type = m_pMaterials->GetClosureJointConcreteType(closureKey);
                isfct     = m_pMaterials->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey);
                fct       = isfct ? m_pMaterials->GetClosureJointConcreteAggSplittingStrength(closureKey) : 0.0;
             }
             else
             {
-               fci       = m_pMaterials->GetSegmentFc(segmentKey,m_IntervalIdx);
+               fci       = m_pMaterials->GetSegmentDesignFc(segmentKey,m_IntervalIdx);
                conc_type = m_pMaterials->GetSegmentConcreteType(segmentKey);
                isfct     = m_pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
                fct       = isfct ? m_pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
@@ -302,37 +302,35 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
             Float64 as;
             rebar->get_NominalArea(&as);
 
+            // Adjust bar area for development
             Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(poi, item, conc_type, fci, isfct, fct);
 
-            if ( IsGE(1.0,dev_length_factor) ) // Bars must be fully developed before higher 
-                                               // allowable stress can be used.
-                                               // Apply a small tolerance.
+            as *= dev_length_factor;
+
+            if (stressLoc == slAllTens)
             {
-               if (stressLoc == slAllTens)
+               // all bars in tension - just add
+               AsProvd += as;
+            }
+            else
+            {
+               CComPtr<IPoint2d> location;
+               item->get_Location(&location);
+
+               Float64 x,y;
+               location->get_X(&x);
+               location->get_Y(&y); // measured from top of girder in Girder Section Coordinates
+               // need y to be measured from bottom of girder
+               y += H;
+
+               // Add bar if it's on right side of NA
+               if ( stressLoc == slTopTens && Yna < y)
                {
-                  // all bars in tension - just add
                   AsProvd += as;
                }
-               else
+               else if ( stressLoc == slBotTens && y < Yna)
                {
-                  CComPtr<IPoint2d> location;
-                  item->get_Location(&location);
-
-                  Float64 x,y;
-                  location->get_X(&x);
-                  location->get_Y(&y); // measured from top of girder in Girder Section Coordinates
-                  // need y to be measured from bottom of girder
-                  y += H;
-
-                  // Add bar if it's on right side of NA
-                  if ( stressLoc == slTopTens && Yna < y)
-                  {
-                     AsProvd += as;
-                  }
-                  else if ( stressLoc == slBotTens && y < Yna)
-                  {
-                     AsProvd += as;
-                  }
+                  AsProvd += as;
                }
             }
 

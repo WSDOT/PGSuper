@@ -36,7 +36,7 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
-    "#include ""grid/gxresrc.h""\r\n"
+    "#include ""grid/gxresrc.h""\r\0"
 END
 
 3 TEXTINCLUDE 
@@ -53,7 +53,7 @@ BEGIN
     "#endif\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
-    "#include ""grid/gxres.rc""               // Objective Grid resources\r\n"
+    "#include ""grid/gxres.rc""               // Objective Grid resources\r\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -65,8 +65,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,37
- PRODUCTVERSION 3,0,0,37
+ FILEVERSION 3,0,0,38
+ PRODUCTVERSION 3,0,0,38
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -84,12 +84,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "3.0.0.37"
+            VALUE "FileVersion", "3.0.0.38"
             VALUE "InternalName", "PgsExt"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.37"
+            VALUE "ProductVersion", "3.0.0.38"
         END
     END
     BLOCK "VarFileInfo"
@@ -113,21 +113,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,259,159,50,14
     LTEXT           "The boundary conditions at all intermediate piers for post-tensioned bridges must provide continuity.\n\nSelect a boundary condition for all intermediate piers or Cancel and change each pier individually.",IDC_STATIC,7,7,302,43
     COMBOBOX        IDC_BOUNDARY_CONDITION,49,66,229,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
-END
-
-IDD_STATUS_DIALOG DIALOG  0, 0, 242, 174
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Status Message"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,22,153,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,83,153,50,14
-    PUSHBUTTON      "Help",IDHELP,177,153,50,14
-    ICON            202,IDC_STATIC,72,10,21,20
-    EDITTEXT        IDC_MESSAGE,18,51,205,86,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
-    ICON            202,IDC_STATIC,110,10,21,20
-    ICON            202,IDC_STATIC,148,10,21,20
-    GROUPBOX        "Error Message",IDC_GROUP,7,37,228,108
 END
 
 IDD_REFINEDANALYSIS DIALOG  0, 0, 282, 194
@@ -283,7 +268,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,98,92,50,14
     COMBOBOX        IDC_CONC_ENTRIES,7,33,232,153,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Select Concrete Library Entry To Be Copied",IDC_LABEL,7,18,138,8
-    ICON            IDI_WARNING2,IDC_WARNING,22,57,20,20,SS_NOTIFY
+    ICON            363,IDC_WARNING,22,57,20,20,SS_NOTIFY
     LTEXT           "Note that the concrete strength at release, f'c, is not specified by the library entry. You must specify it manually after you close this dialog.",IDC_WARNOTE,50,55,184,29
     PUSHBUTTON      "Help",IDHELP,162,92,50,14
 END
@@ -297,20 +282,9 @@ END
 IDB_HINGES              BITMAP                  "res\\Hinges.bmp"
 IDB_ROLLERS             BITMAP                  "res\\Rollers.bmp"
 IDB_CONTINUOUS          BITMAP                  "res\\Continuous.bmp"
-IDB_IP_HINGES              BITMAP                  "res\\InteriorPierHinges.bmp"
-IDB_IP_ROLLERS             BITMAP                  "res\\InteriorPierRollers.bmp"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE 
-BEGIN
-    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nThe concrete will be treated as Normal Weight."
-    IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nThe concrete will be treated as Lightweight."
-END
+IDB_IP_HINGES           BITMAP                  "res\\InteriorPierHinges.bmp"
+IDB_IP_ROLLERS          BITMAP                  "res\\InteriorPierRollers.bmp"
+IDB_COLUMN_FIXITY       BITMAP                  "res\\ColumnFixity.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -320,14 +294,6 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_STATUS_DIALOG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 235
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 167
-    END
-
     IDD_REFINEDANALYSIS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -360,20 +326,20 @@ BEGIN
         BOTTOMMARGIN, 114
     END
 
-    IDD_ACI_PARAMETERS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 176
-    END
-
     IDD_CEBFIP_CONCRETE, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 222
         TOPMARGIN, 7
         BOTTOMMARGIN, 104
+    END
+
+    IDD_ACI_PARAMETERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
     END
 
     IDD_CEBFIP_PARAMETERS, DIALOG
@@ -384,7 +350,6 @@ BEGIN
         BOTTOMMARGIN, 176
     END
 
-
     IDD_COPY_CONC_ENTRY, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -392,8 +357,6 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 106
     END
-
-
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -402,6 +365,12 @@ END
 //
 // String Table
 //
+
+STRINGTABLE 
+BEGIN
+    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nThe concrete will be treated as Normal Weight."
+    IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nThe concrete will be treated as Lightweight."
+END
 
 STRINGTABLE 
 BEGIN
@@ -431,6 +400,7 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid/gxres.rc"               // Objective Grid resources
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

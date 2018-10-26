@@ -750,6 +750,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ColumnFixityComboBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ConcreteDetailsDlg.cpp"
 				>
 			</File>
@@ -2840,10 +2844,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\StatusMessageDialog.cpp"
-				>
-			</File>
-			<File
 				RelativePath="StirrupCheckArtifact.cpp"
 				>
 				<FileConfiguration
@@ -3239,6 +3239,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\ColumnFixityComboBox.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\ConcreteDetailsDlg.h"
 				>
 			</File>
@@ -3559,10 +3563,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\StatusMessageDialog.h"
-				>
-			</File>
-			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
@@ -3627,6 +3627,30 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\res\ColumnFixity.bmp"
+			>
+		</File>
+		<File
+			RelativePath=".\res\Continuous.bmp"
+			>
+		</File>
+		<File
+			RelativePath=".\res\Hinges.bmp"
+			>
+		</File>
+		<File
+			RelativePath=".\res\InteriorPierHinges.bmp"
+			>
+		</File>
+		<File
+			RelativePath=".\res\InteriorPierRollers.bmp"
+			>
+		</File>
+		<File
+			RelativePath=".\res\Rollers.bmp"
+			>
+		</File>
 	</Files>
 	<Globals>
 		<Global

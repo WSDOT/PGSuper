@@ -109,17 +109,18 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    if(pLimitStateForces->IsStrengthIIApplicable(girderKey))
    {
-	   rptParagraph* p = new rptParagraph;
-	   bool write_note;
-	   *p << CStirrupDetailingCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,pgsTypes::StrengthII,&write_note) << rptNewLine;
-	   *pChapter << p;
-	
-	   if (write_note)
-	   {
-	      *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
-	      *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
-	   }
+      rptParagraph* p = new rptParagraph;
+      bool write_note;
+      *p << CStirrupDetailingCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,pgsTypes::StrengthII,&write_note) << rptNewLine;
+      *pChapter << p;
+
+      if (write_note)
+      {
+         *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
+         *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
+      }
    }
+
 
    // Stirrup Layout Check
    if ( !m_BasicVersion )

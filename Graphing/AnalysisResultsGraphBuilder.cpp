@@ -353,7 +353,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       m_pGraphDefinitions->AddGraphDefinition(shearKeyGraphDef);
    }
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPretension),    pgsTypes::pftPretension,   vAllIntervals,   ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPretension),    pgsTypes::pftPretension,   vAllIntervals,  ACTIONS_ALL) );
 
    // Deck shrinkage is different animal
    GET_IFACE(ILosses, pLosses);
@@ -833,6 +833,15 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       m_Graph.SetYAxisTitle(strYAxisTitle);
       break;
       }
+   case actionAxial:
+      {
+      const unitmgtForceData& axialUnit = pDisplayUnits->GetGeneralForceUnit();
+      m_pYFormat = new ForceTool(axialUnit);
+      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      std::_tstring strYAxisTitle = _T("Axial (") + ((ForceTool*)m_pYFormat)->UnitTag() + _T(")");
+      m_Graph.SetYAxisTitle(strYAxisTitle);
+      break;
+      }
    case actionDeflection:
       {
       const unitmgtLengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
@@ -905,11 +914,14 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
    CString strAction;
    switch(actionType)
    {
-   case actionMoment:
-      strAction = _T("Moment");
+   case actionAxial:
+      strAction = _T("Axial");
       break;
    case actionShear:
       strAction = _T("Shear");
+      break;
+   case actionMoment:
+      strAction = _T("Moment");
       break;
    case actionDeflection:
       strAction = _T("Deflection");
@@ -1324,6 +1336,8 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
 
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
+   GET_IFACE(IProductForces,pProductForces);
+
    if (actionType == actionShear )
    {
       GET_IFACE(IIntervals,pIntervals);
@@ -1337,18 +1351,22 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
          pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, penStyle, penWeight, c);
          pDataSeriesID[1] = m_Graph.CreateDataSeries(_T(""),       penStyle, penWeight, c);
 
-         pBAT[0] = pgsTypes::MinSimpleContinuousEnvelope;
-         pBAT[1] = pgsTypes::MaxSimpleContinuousEnvelope;
+         pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
+         pBAT[1] = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+         ATLASSERT(pBAT[0] == pgsTypes::MinSimpleContinuousEnvelope);
+         ATLASSERT(pBAT[1] == pgsTypes::MaxSimpleContinuousEnvelope);
       }
       else
       {
          *pAnalysisTypeCount = 1;
          pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, penStyle, penWeight, c);
 
-         pBAT[0] = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+         pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+         ATLASSERT(pBAT[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
       }
    }
-   else if ( actionType == actionMoment ||
+   else if ( actionType == actionAxial || 
+             actionType == actionMoment ||
              actionType == actionDeflection ||
              actionType == actionRotation ||
              actionType == actionReaction)
@@ -1360,15 +1378,19 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
          pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
          pDataSeriesID[1] = m_Graph.CreateDataSeries(_T(""),       PS_SOLID, penWeight, c);
 
-         pBAT[0] = pgsTypes::MinSimpleContinuousEnvelope;
-         pBAT[1] = pgsTypes::MaxSimpleContinuousEnvelope;
+         pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
+         pBAT[1] = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+
+         ATLASSERT(pBAT[0] == pgsTypes::MinSimpleContinuousEnvelope);
+         ATLASSERT(pBAT[1] == pgsTypes::MaxSimpleContinuousEnvelope);
       }
       else
       {
          *pAnalysisTypeCount = 1;
          pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
 
-         pBAT[0] = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+         pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+         ATLASSERT(pBAT[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
       }
    }
    else if (actionType == actionStress)
@@ -1435,16 +1457,22 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
    {
       switch(actionType)
       {
-      case actionMoment:
+      case actionAxial:
          {
-            std::vector<Float64> moments( pForces->GetMoment( intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType) );
-            AddGraphPoints(data_series_id[analysisIdx], xVals, moments);
+            std::vector<Float64> forces( pForces->GetAxial( intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType) );
+            AddGraphPoints(data_series_id[analysisIdx], xVals, forces);
             break;
          }
       case actionShear:
          {
             std::vector<sysSectionValue> shears( pForces->GetShear( intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType) );
             AddGraphPoints(data_series_id[analysisIdx], xVals, shears);
+            break;
+         }
+      case actionMoment:
+         {
+            std::vector<Float64> moments( pForces->GetMoment( intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType) );
+            AddGraphPoints(data_series_id[analysisIdx], xVals, moments);
             break;
          }
       case actionDeflection:
@@ -1506,10 +1534,10 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
    {
       switch(actionType)
       {
-      case actionMoment:
+      case actionAxial:
          {
-            std::vector<Float64> moments = pForces->GetMoment( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType );
-            AddGraphPoints(data_series_id[analysisIdx], xVals, moments);
+            std::vector<Float64> forces = pForces->GetAxial( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType );
+            AddGraphPoints(data_series_id[analysisIdx], xVals, forces);
             break;
          }
 
@@ -1517,6 +1545,13 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
          {
             std::vector<sysSectionValue> shear = pForces->GetShear( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType );
             AddGraphPoints(data_series_id[analysisIdx], xVals, shear);
+            break;
+         }
+
+      case actionMoment:
+         {
+            std::vector<Float64> moments = pForces->GetMoment( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType );
+            AddGraphPoints(data_series_id[analysisIdx], xVals, moments);
             break;
          }
 
@@ -1627,6 +1662,65 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
 
    switch(actionType)
    {
+   case actionAxial:
+      {
+         GET_IFACE(ILimitStateForces2,pForces);
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            std::vector<Float64> mmax, mmin;
+            pForces->GetAxial( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, &mmin, &mmax );
+            AddGraphPoints(max_data_series, xVals, mmax);
+
+            pForces->GetAxial( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, &mmin, &mmax );
+            AddGraphPoints(min_data_series, xVals, mmin);
+         }
+         else
+         {
+            std::vector<Float64> mmax, mmin;
+            pForces->GetAxial( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &mmin, &mmax );
+            AddGraphPoints(max_data_series, xVals, mmax);
+            AddGraphPoints(min_data_series, xVals, mmin);
+         }
+      break;
+      }
+   case actionShear:
+      {
+         if ( graphType == graphCapacity )
+         {
+            GET_IFACE(IShearCapacity,pCapacity);
+            std::vector<Float64> pVn = pCapacity->GetShearCapacity(limitState, intervalIdx, vPoi);
+            AddGraphPoints(max_girder_capacity_series, xVals,  pVn);
+
+            std::vector<Float64>::iterator iter;
+            std::vector<Float64> nVn;
+            for ( iter = pVn.begin(); iter != pVn.end(); iter++ )
+            {
+               nVn.push_back(-1*(*iter));
+            }
+            AddGraphPoints(min_girder_capacity_series, xVals, nVn);
+         }
+         else
+         {
+            GET_IFACE(ILimitStateForces2,pForces);
+            if ( analysisType == pgsTypes::Envelope )
+            {
+               std::vector<sysSectionValue> shearMin, shearMax;
+               pForces->GetShear( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, &shearMin, &shearMax );
+               AddGraphPoints(min_data_series, xVals, shearMin);
+
+               pForces->GetShear( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, &shearMin, &shearMax );
+               AddGraphPoints(max_data_series, xVals, shearMax);
+            }
+            else
+            {
+               std::vector<sysSectionValue> shearMin, shearMax;
+               pForces->GetShear( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &shearMin, &shearMax );
+               AddGraphPoints(min_data_series, xVals, shearMin);
+               AddGraphPoints(max_data_series, xVals, shearMax);
+            }
+         }
+      break;
+      }
    case actionMoment:
       {
          if ( graphType == graphCapacity )
@@ -1685,44 +1779,6 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
                }
 
                AddGraphPoints(min_data_series, xVals, mmin);
-            }
-         }
-      break;
-      }
-   case actionShear:
-      {
-         if ( graphType == graphCapacity )
-         {
-            GET_IFACE(IShearCapacity,pCapacity);
-            std::vector<Float64> pVn = pCapacity->GetShearCapacity(limitState, intervalIdx, vPoi);
-            AddGraphPoints(max_girder_capacity_series, xVals,  pVn);
-
-            std::vector<Float64>::iterator iter;
-            std::vector<Float64> nVn;
-            for ( iter = pVn.begin(); iter != pVn.end(); iter++ )
-            {
-               nVn.push_back(-1*(*iter));
-            }
-            AddGraphPoints(min_girder_capacity_series, xVals, nVn);
-         }
-         else
-         {
-            GET_IFACE(ILimitStateForces2,pForces);
-            if ( analysisType == pgsTypes::Envelope )
-            {
-               std::vector<sysSectionValue> shearMin, shearMax;
-               pForces->GetShear( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, &shearMin, &shearMax );
-               AddGraphPoints(min_data_series, xVals, shearMin);
-
-               pForces->GetShear( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, &shearMin, &shearMax );
-               AddGraphPoints(max_data_series, xVals, shearMax);
-            }
-            else
-            {
-               std::vector<sysSectionValue> shearMin, shearMax;
-               pForces->GetShear( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &shearMin, &shearMax );
-               AddGraphPoints(min_data_series, xVals, shearMin);
-               AddGraphPoints(max_data_series, xVals, shearMax);
             }
          }
       break;
@@ -1939,22 +1995,22 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
 
    switch(actionType)
    {
-   case actionMoment:
+   case actionAxial:
       {
-         std::vector<Float64> Mmin, Mmax;
+         std::vector<Float64> Pmin, Pmax;
          if ( analysisType == pgsTypes::Envelope )
          {
-            pForces->GetCombinedLiveLoadMoment(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, &Mmin, &Mmax);
-            AddGraphPoints(min_data_series, xVals, Mmin);
+            pForces->GetCombinedLiveLoadAxial(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, &Pmin, &Pmax);
+            AddGraphPoints(min_data_series, xVals, Pmin);
 
-            pForces->GetCombinedLiveLoadMoment(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, &Mmin, &Mmax);
-            AddGraphPoints(max_data_series, xVals, Mmax);
+            pForces->GetCombinedLiveLoadAxial(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, &Pmin, &Pmax);
+            AddGraphPoints(max_data_series, xVals, Pmax);
          }
          else
          {
-            pForces->GetCombinedLiveLoadMoment(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &Mmin, &Mmax);
-            AddGraphPoints(min_data_series, xVals, Mmin);
-            AddGraphPoints(max_data_series, xVals, Mmax);
+            pForces->GetCombinedLiveLoadAxial(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &Pmin, &Pmax);
+            AddGraphPoints(min_data_series, xVals, Pmin);
+            AddGraphPoints(max_data_series, xVals, Pmax);
          }
       break;
       }
@@ -1975,6 +2031,26 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
             pForces->GetCombinedLiveLoadShear(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, &Vmin, &Vmax);
             AddGraphPoints(min_data_series, xVals, Vmin);
             AddGraphPoints(max_data_series, xVals, Vmax);
+         }
+      break;
+      }
+
+   case actionMoment:
+      {
+         std::vector<Float64> Mmin, Mmax;
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            pForces->GetCombinedLiveLoadMoment(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, &Mmin, &Mmax);
+            AddGraphPoints(min_data_series, xVals, Mmin);
+
+            pForces->GetCombinedLiveLoadMoment(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, &Mmin, &Mmax);
+            AddGraphPoints(max_data_series, xVals, Mmax);
+         }
+         else
+         {
+            pForces->GetCombinedLiveLoadMoment(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &Mmin, &Mmax);
+            AddGraphPoints(min_data_series, xVals, Mmin);
+            AddGraphPoints(max_data_series, xVals, Mmax);
          }
       break;
       }
@@ -2125,46 +2201,46 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
    switch(actionType)
    {
-   case actionMoment:
+   case actionAxial:
       {
-         std::vector<Float64> Mmin, Mmax;
+         std::vector<Float64> Pmin, Pmax;
          if ( analysisType == pgsTypes::Envelope )
          {
             if ( vehicleIndex != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Pmin, &Pmax);
             }
             else
             {
-               pForces->GetLiveLoadMoment(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+               pForces->GetLiveLoadAxial(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Pmin, &Pmax);
             }
 
-            AddGraphPoints(min_data_series, xVals, Mmin);
+            AddGraphPoints(min_data_series, xVals, Pmin);
 
             if ( vehicleIndex != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Pmin, &Pmax);
             }
             else
             {
-               pForces->GetLiveLoadMoment(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+               pForces->GetLiveLoadAxial(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Pmin, &Pmax);
             }
 
-            AddGraphPoints(max_data_series, xVals, Mmax);
+            AddGraphPoints(max_data_series, xVals, Pmax);
          }
          else
          {
             if ( vehicleIndex != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
+               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, NULL, NULL);
             }
             else
             {
-               pForces->GetLiveLoadMoment(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
+               pForces->GetLiveLoadAxial(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, NULL, NULL);
             }
 
-            AddGraphPoints(min_data_series, xVals, Mmin);
-            AddGraphPoints(max_data_series, xVals, Mmax);
+            AddGraphPoints(min_data_series, xVals, Pmin);
+            AddGraphPoints(max_data_series, xVals, Pmax);
          }
       break;
       }
@@ -2209,6 +2285,50 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
             AddGraphPoints(min_data_series, xVals, Vmin);
             AddGraphPoints(max_data_series, xVals, Vmax);
+         }
+      break;
+      }
+
+   case actionMoment:
+      {
+         std::vector<Float64> Mmin, Mmax;
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            if ( vehicleIndex != INVALID_INDEX )
+            {
+               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+            }
+            else
+            {
+               pForces->GetLiveLoadMoment(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+            }
+
+            AddGraphPoints(min_data_series, xVals, Mmin);
+
+            if ( vehicleIndex != INVALID_INDEX )
+            {
+               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+            }
+            else
+            {
+               pForces->GetLiveLoadMoment(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+            }
+
+            AddGraphPoints(max_data_series, xVals, Mmax);
+         }
+         else
+         {
+            if ( vehicleIndex != INVALID_INDEX )
+            {
+               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
+            }
+            else
+            {
+               pForces->GetLiveLoadMoment(intervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
+            }
+
+            AddGraphPoints(min_data_series, xVals, Mmin);
+            AddGraphPoints(max_data_series, xVals, Mmax);
          }
       break;
       }

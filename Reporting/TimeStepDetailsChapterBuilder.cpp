@@ -38,12 +38,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// When defined, the computation details for initial strains are reported
-// This is the summation part of Tadros 1977 Eqns 3 and 4.
-//#define REPORT_INITIAL_STRAIN_DETAILS
-
-//#define REPORT_PRODUCT_LOAD_DETAILS
-
 /****************************************************************************
 CLASS
    CTimeStepDetailsChapterBuilder
@@ -92,20 +86,9 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-//   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-//   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-//   GET_IFACE2(pBroker,IMaterials,pMaterials);
-//   GET_IFACE2(pBroker,ILongRebarGeometry,pRebarGeom);
-//
-//#if !defined LUMP_STRANDS
-//   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-//#endif
-//
-//
-//   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-//
+
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    height,        pDisplayUnits->GetComponentDimUnit(),    true);
@@ -116,9 +99,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    true);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     true);
    INIT_UV_PROTOTYPE(rptPerLengthUnitValue, curvature,  pDisplayUnits->GetCurvatureUnit(),       true);
-//   INIT_UV_PROTOTYPE(rptLengthUnitValue,    length,     pDisplayUnits->GetSpanLengthUnit(),      true);
-//   INIT_UV_PROTOTYPE(rptLengthUnitValue,    deflection, pDisplayUnits->GetDeflectionUnit(),      true);
-//
+
    location.IncludeSpanAndGirder(true);
    *pPara << _T("Point Of Interest: ID = ") << poi.GetID() << _T(" Location = ") << location.SetValue(POI_SPAN,poi) << rptNewLine;
    *pPara << rptNewLine;
@@ -260,6 +241,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       *pPara << _T("Externally applied forces") << rptNewLine;
       *pPara << _T("dP = ") << force.SetValue(tsDetails.dPext) << rptNewLine;
       *pPara << _T("dM = ") << moment.SetValue(tsDetails.dMext) << rptNewLine;
+      *pPara << rptNewLine;
 
       *pPara << _T("Incremental Strain and Curvature Due to Loads Applied During this Interval") << rptNewLine;
       ColumnIndexType nColumns = 0;
@@ -310,30 +292,30 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       (*pLayoutTable)(rowIdx,colIdx++) << _T("");
       (*pLayoutTable)(rowIdx,colIdx++) << _T("dP");
       (*pLayoutTable)(rowIdx,colIdx++) << _T("dM");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(Eg*An)/(Eg*Atr)");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dM*(Eg*In)/(Eg*Itr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(Eg*An)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("r=dM*(Eg*In)/(Eg*Itr)");
 
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(Eps*Aps)/(Eg*Atr)");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(Eps*Aps)/(Eg*Atr)");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(Eps*Aps)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(Eps*Aps)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(Eps*Aps)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(Eps*Aps)/(Eg*Atr)");
 
       BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
       {
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(Ept*Apt)/(Eg*Atr)");
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(Ept*Apt)/(Eg*Atr)");
       }
 
       BOOST_FOREACH(const TIME_STEP_REBAR& tsRebar,tsDetails.GirderRebar)
       {
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(E*A)/(Eg*Atr)");
       }
 
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(Ed*An)/(Eg*Atr)");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dM*(Ed*In)/(Eg*Itr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(Ed*An)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("r=dM*(Ed*In)/(Eg*Itr)");
 
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP*(E*A)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(E*A)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(E*A)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(E*A)/(Eg*Atr)");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP*(E*A)/(Eg*Atr)");
 
       rowIdx++;
 
@@ -424,11 +406,11 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       colIdx = 0;
       (*pLayoutTable)(rowIdx,colIdx++) << _T("");
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Eg*Atr) = (") << force.SetValue(dP) << _T(")/[(") << modE.SetValue(tsDetails.E) << _T(")(") << area.SetValue(tsDetails.Atr) << _T(")] = ") << (IsZero(tsDetails.E*tsDetails.Atr) ? 0 : dP/(tsDetails.E*tsDetails.Atr));
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dM/(Eg*Itr) = (") << moment.SetValue(dM) << _T(")/[(") << modE.SetValue(tsDetails.E) << _T(")(") << momI.SetValue(tsDetails.Itr) << _T(")] = ") << curvature.SetValue(IsZero(tsDetails.E*tsDetails.Itr) ? 0 : dM/(tsDetails.E*tsDetails.Itr));
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP/(Eg*Atr)=(") << force.SetValue(dP) << _T(")/[(") << modE.SetValue(tsDetails.E) << _T(")(") << area.SetValue(tsDetails.Atr) << _T(")] = ") << (IsZero(tsDetails.E*tsDetails.Atr) ? 0 : dP/(tsDetails.E*tsDetails.Atr));
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("r=dM/(Eg*Itr)=(") << moment.SetValue(dM) << _T(")/[(") << modE.SetValue(tsDetails.E) << _T(")(") << momI.SetValue(tsDetails.Itr) << _T(")] = ") << curvature.SetValue(IsZero(tsDetails.E*tsDetails.Itr) ? 0 : dM/(tsDetails.E*tsDetails.Itr));
 
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Eg*An) = (") << force.SetValue(tsDetails.Girder.dP) << _T(")/[(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(")] = ") << tsDetails.Girder.e;
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dM/(Eg*In) = (") << moment.SetValue(tsDetails.Girder.dM) << _T(")/[(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << momI.SetValue(tsDetails.Girder.In) << _T(")] = ") << curvature.SetValue(tsDetails.Girder.r);
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP/(Eg*An)=(") << force.SetValue(tsDetails.Girder.dP) << _T(")/[(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(")] = ") << tsDetails.Girder.e;
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("r=dM/(Eg*In)=(") << moment.SetValue(tsDetails.Girder.dM) << _T(")/[(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << momI.SetValue(tsDetails.Girder.In) << _T(")] = ") << curvature.SetValue(tsDetails.Girder.r);
       for ( int i = 0; i < 3; i++ )
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
@@ -437,7 +419,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          Float64 E  = tsDetails.Strands[strandType].E;
          Float64 As = tsDetails.Strands[strandType].As;
          Float64 e  = tsDetails.Strands[strandType].e;
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Eps*Aps) = (") << force.SetValue(dP) << _T(")/[(") << modE.SetValue(E) << _T(")(") << area.SetValue(As) << _T(")] = ") << e;
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP/(Eps*Aps)=(") << force.SetValue(dP) << _T(")/[(") << modE.SetValue(E) << _T(")(") << area.SetValue(As) << _T(")] = ") << e;
       }
 
       BOOST_FOREACH(const TIME_STEP_STRAND& tsTendon,tsDetails.Tendons)
@@ -446,23 +428,23 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          Float64 E  = tsTendon.E;
          Float64 As = tsTendon.As;
          Float64 e  = tsTendon.e;
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Ept*Aps) = (") << force.SetValue(dP) << _T(")/[(") << modE.SetValue(E) << _T(")(") << area.SetValue(As) << _T(")] = ") << e;
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP/(Ept*Aps)=(") << force.SetValue(dP) << _T(")/[(") << modE.SetValue(E) << _T(")(") << area.SetValue(As) << _T(")] = ") << e;
       }
 
       BOOST_FOREACH(const TIME_STEP_REBAR& tsRebar,tsDetails.GirderRebar)
       {
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Eg*An) = (") << force.SetValue(tsRebar.dP) << _T(")/[(") << modE.SetValue(tsRebar.E) << _T(")(") << area.SetValue(tsRebar.As) << _T(")] = ") << tsRebar.e;
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP/(Eg*An)=(") << force.SetValue(tsRebar.dP) << _T(")/[(") << modE.SetValue(tsRebar.E) << _T(")(") << area.SetValue(tsRebar.As) << _T(")] = ") << tsRebar.e;
       }
 
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Eg*An) = (") << force.SetValue(tsDetails.Deck.dP) << _T(")/[(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(")] = ") << tsDetails.Deck.e;
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("dM/(Eg*In) = (") << moment.SetValue(tsDetails.Deck.dM) << _T(")/[(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << momI.SetValue(tsDetails.Deck.In) << _T(")] = ") << curvature.SetValue(tsDetails.Deck.r);
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP/(Eg*An)=(") << force.SetValue(tsDetails.Deck.dP) << _T(")/[(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(")] = ") << tsDetails.Deck.e;
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("r=dM/(Eg*In)=(") << moment.SetValue(tsDetails.Deck.dM) << _T(")/[(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << momI.SetValue(tsDetails.Deck.In) << _T(")] = ") << curvature.SetValue(tsDetails.Deck.r);
       for ( int i = 0; i < 2; i++ )
       {
          pgsTypes::DeckRebarMatType matType = (pgsTypes::DeckRebarMatType)i;
          for ( int j = 0; j < 2; j++ )
          {
             pgsTypes::DeckRebarBarType barType = (pgsTypes::DeckRebarBarType)j;
-            (*pLayoutTable)(rowIdx,colIdx++) << _T("dP/(Eg*An) = (") << force.SetValue(tsDetails.DeckRebar[matType][barType].dP) << _T(")/[(") << modE.SetValue(tsDetails.DeckRebar[matType][barType].E) << _T(")(") << area.SetValue(tsDetails.DeckRebar[matType][barType].As) << _T(")] = ") << tsDetails.DeckRebar[matType][barType].e;
+            (*pLayoutTable)(rowIdx,colIdx++) << _T("e=dP/(Eg*An)=(") << force.SetValue(tsDetails.DeckRebar[matType][barType].dP) << _T(")/[(") << modE.SetValue(tsDetails.DeckRebar[matType][barType].E) << _T(")(") << area.SetValue(tsDetails.DeckRebar[matType][barType].As) << _T(")] = ") << tsDetails.DeckRebar[matType][barType].e;
          }
       }
 
@@ -512,26 +494,26 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          const TIME_STEP_CONCRETE::CREEP_CURVATURE& deck_creep_curvature(*deck_curvature_iter);
 
          (*pLayoutTable)(rowIdx,colIdx++) << LABEL_INTERVAL(j) << rptNewLine;
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("(") << force.SetValue(girder_creep_strain.P) << _T("/(") << area.SetValue(girder_creep_strain.A) << _T(" * ") << modE.SetValue(girder_creep_strain.E) << _T("))*(") << girder_creep_strain.Ce << _T(" - ") << girder_creep_strain.Cs << _T(")") << rptNewLine;
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("(") << moment.SetValue(girder_creep_curvature.M) << _T("/(") << momI.SetValue(girder_creep_curvature.I) << _T(" * ") << modE.SetValue(girder_creep_curvature.E) << _T("))*(") << girder_creep_curvature.Ce << _T(" - ") << girder_creep_curvature.Cs << _T(")") << rptNewLine;
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("(") << force.SetValue(deck_creep_strain.P) << _T("/(") << area.SetValue(deck_creep_strain.A) << _T(" * ") << modE.SetValue(deck_creep_strain.E) << _T("))*(") << deck_creep_strain.Ce << _T(" - ") << deck_creep_strain.Cs << _T(")") << rptNewLine;
-         (*pLayoutTable)(rowIdx,colIdx++) << _T("(") << moment.SetValue(deck_creep_curvature.M) << _T("/(") << momI.SetValue(deck_creep_curvature.I) << _T(" * ") << modE.SetValue(deck_creep_curvature.E) << _T("))*(") << deck_creep_curvature.Ce << _T(" - ") << deck_creep_curvature.Cs << _T(")") << rptNewLine;
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("(") << force.SetValue(girder_creep_strain.P) << _T("/(") << area.SetValue(girder_creep_strain.A) << _T(" * ") << modE.SetValue(girder_creep_strain.E) << _T("))*(") << girder_creep_strain.Ce << _T(" - ") << girder_creep_strain.Cs << _T(")=") << girder_creep_strain.e << rptNewLine;
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("(") << moment.SetValue(girder_creep_curvature.M) << _T("/(") << momI.SetValue(girder_creep_curvature.I) << _T(" * ") << modE.SetValue(girder_creep_curvature.E) << _T("))*(") << girder_creep_curvature.Ce << _T(" - ") << girder_creep_curvature.Cs << _T(")=") << curvature.SetValue(girder_creep_curvature.r) << rptNewLine;
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("(") << force.SetValue(deck_creep_strain.P) << _T("/(") << area.SetValue(deck_creep_strain.A) << _T(" * ") << modE.SetValue(deck_creep_strain.E) << _T("))*(") << deck_creep_strain.Ce << _T(" - ") << deck_creep_strain.Cs << _T(")=") << deck_creep_strain.e << rptNewLine;
+         (*pLayoutTable)(rowIdx,colIdx++) << _T("(") << moment.SetValue(deck_creep_curvature.M) << _T("/(") << momI.SetValue(deck_creep_curvature.I) << _T(" * ") << modE.SetValue(deck_creep_curvature.E) << _T("))*(") << deck_creep_curvature.Ce << _T(" - ") << deck_creep_curvature.Cs << _T(")=") << curvature.SetValue(deck_creep_curvature.r) << rptNewLine;
       }
 
       colIdx = 0;
       (*pLayoutTable)(rowIdx,colIdx++) << _T("Creep Strain");
       (*pLayoutTable)(rowIdx,colIdx++) << _T(" = ") << tsDetails.Girder.eci;
-      (*pLayoutTable)(rowIdx,colIdx++) << _T(" = ") << tsDetails.Girder.rci;
+      (*pLayoutTable)(rowIdx,colIdx++) << _T(" = ") << curvature.SetValue(tsDetails.Girder.rci);
       (*pLayoutTable)(rowIdx,colIdx++) << _T(" = ") << tsDetails.Deck.eci;
-      (*pLayoutTable)(rowIdx,colIdx++) << _T(" = ") << tsDetails.Deck.rci;
+      (*pLayoutTable)(rowIdx,colIdx++) << _T(" = ") << curvature.SetValue(tsDetails.Deck.rci);
       rowIdx++;
 
       colIdx = 0;
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("Creep");
-      (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.Girder.PrCreep);
-      (*pLayoutTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.Girder.MrCreep);
-      (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.Deck.PrCreep);
-      (*pLayoutTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.Deck.MrCreep);
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("Creep Restraint Force");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.eci << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(" * ") << modE.SetValue(tsDetails.Girder.E) << _T(")=") << force.SetValue(tsDetails.Girder.PrCreep);
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Girder.rci) << _T(")(") << momI.SetValue(tsDetails.Girder.In) << _T(" * ") << modE.SetValue(tsDetails.Girder.E) << _T(")=") << moment.SetValue(tsDetails.Girder.MrCreep);
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Deck.eci << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(" * ") << modE.SetValue(tsDetails.Deck.E) << _T(")=") << force.SetValue(tsDetails.Deck.PrCreep);
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Deck.rci) << _T(")(") << momI.SetValue(tsDetails.Deck.In) << _T(" * ") << modE.SetValue(tsDetails.Deck.E) << _T(")=") << moment.SetValue(tsDetails.Deck.MrCreep);
       rowIdx++;
 
       colIdx = 0;
@@ -543,7 +525,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       rowIdx++;
 
       colIdx = 0;
-      (*pLayoutTable)(rowIdx,colIdx++) << _T("Shrinkage");
+      (*pLayoutTable)(rowIdx,colIdx++) << _T("Shrinkage Restraint Force");
       (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.Girder.PrShrinkage);
       (*pLayoutTable)(rowIdx,colIdx++) << _T("");
       (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.Deck.PrShrinkage);
@@ -568,13 +550,23 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          }
 
          *pPara << _T("fr = ") << stress.SetValue(tsDetails.Strands[strandType].fr) << rptNewLine;
-         *pPara << _T("e = fr/Eps = ") << stress.SetValue(tsDetails.Strands[strandType].fr) << _T("/") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(" = ") << tsDetails.Strands[strandType].er << rptNewLine;
-         *pPara << _T("Pr = ") << force.SetValue(tsDetails.Strands[strandType].PrRelaxation) << rptNewLine;
+         *pPara << _T("er = fr/Eps = ") << stress.SetValue(tsDetails.Strands[strandType].fr) << _T("/") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(" = ") << tsDetails.Strands[strandType].er << rptNewLine;
+         *pPara << _T("Relaxation Restraint Force Pr = ") << force.SetValue(tsDetails.Strands[strandType].PrRelaxation) << rptNewLine;
+         *pPara << rptNewLine;
+      }
+
+      DuctIndexType nTendons = tsDetails.Tendons.size();
+      for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
+      {
+         *pPara << _T("Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine;
+         *pPara << _T("fr = ") << stress.SetValue(tsDetails.Tendons[tendonIdx].fr) << rptNewLine;
+         *pPara << _T("er = fr/Eps = ") << stress.SetValue(tsDetails.Tendons[tendonIdx].fr) << _T("/") << modE.SetValue(tsDetails.Tendons[tendonIdx].E) << _T(" = ") << tsDetails.Tendons[tendonIdx].er << rptNewLine;
+         *pPara << _T("Relaxation Restraint Force Pr = ") << force.SetValue(tsDetails.Tendons[tendonIdx].PrRelaxation) << rptNewLine;
          *pPara << rptNewLine;
       }
 
       // Restraining forces
-      *pPara << _T("Total Artificial Restraining Forces") << rptNewLine;
+      *pPara << _T("Total Restraining Forces") << rptNewLine;
       *pPara << _T("Creep: N = ") << force.SetValue(tsDetails.Pr[TIMESTEP_CR]) << _T(", M = ") << moment.SetValue(tsDetails.Mr[TIMESTEP_CR]) << rptNewLine;
       *pPara << _T("Shrinkage: N = ") << force.SetValue(tsDetails.Pr[TIMESTEP_SH]) << _T(", M = ") << moment.SetValue(tsDetails.Mr[TIMESTEP_SH]) << rptNewLine;
       *pPara << _T("Relaxation: N = ") << force.SetValue(tsDetails.Pr[TIMESTEP_RE]) << _T(", M = ") << moment.SetValue(tsDetails.Mr[TIMESTEP_RE]) << rptNewLine;
@@ -582,13 +574,26 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       *pPara << rptNewLine;
 
       // Stress in girder concrete
-      Float64 fTop = 0;
+      Float64 fTopGirder = 0;
+      Float64 fBotGirder = 0;
+      Float64 fTopDeck   = 0;
+      Float64 fBotDeck   = 0;
       for ( int i = 0; i < nLoads; i++ )
       {
-         fTop += tsDetails.Girder.f[pgsTypes::TopFace][i][rtCumulative];
-      }
-      *pPara << _T("f top Girder = ") << stress.SetValue(fTop) << rptNewLine;
+         fTopGirder += tsDetails.Girder.f[pgsTypes::TopFace][i][rtCumulative];
+         fBotGirder += tsDetails.Girder.f[pgsTypes::BottomFace][i][rtCumulative];
 
+         fTopDeck += tsDetails.Deck.f[pgsTypes::TopFace][i][rtCumulative];
+         fBotDeck += tsDetails.Deck.f[pgsTypes::BottomFace][i][rtCumulative];
+      }
+      *pPara << _T("Concrete Stress at end of interval") << rptNewLine;
+      *pPara << _T("Girder") << rptNewLine;
+      *pPara << RPT_FTOP << _T(" = ") << stress.SetValue(fTopGirder) << rptNewLine;
+      *pPara << RPT_FBOT << _T(" = ") << stress.SetValue(fBotGirder) << rptNewLine;
+      *pPara << rptNewLine;
+      *pPara << _T("Deck") << rptNewLine;
+      *pPara << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDeck) << rptNewLine;
+      *pPara << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDeck) << rptNewLine;
    } // next interval
 
 #if defined _BETA_VERSION

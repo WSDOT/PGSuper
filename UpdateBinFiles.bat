@@ -23,6 +23,10 @@ copy /Y TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplat
 copy /Y TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 copy /Y TxDOTAgent\TogaTemplates\*.ico		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 
+REM - KDOT
+copy /Y %REGFREECOM%\Win32\Release\KDOTExport.dll   %BINTARGET%\Extensions\KDOT\Win32\
+copy /Y %REGFREECOM%\x64\Release\KDOTExport.dll	    %BINTARGET%\Extensions\KDOT\x64\
+
 REM - Image files
 copy /Y images\*.gif				%BINTARGET%\images\
 copy /Y images\*.jpg				%BINTARGET%\images\

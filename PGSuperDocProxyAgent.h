@@ -140,7 +140,6 @@ END_CONNECTION_POINT_MAP()
 public:
    void SetDocument(CPGSuperDocBase* pDoc);
    void OnStatusChanged();
-   long GetReportViewKey();
 
    void OnResetHints();
 
@@ -283,6 +282,12 @@ public:
    virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport);
    virtual void CreateGraphView(CollectionIndexType graphIdx);
    virtual void BuildGraphMenu(CEAFMenu* pMenu);
+   virtual long GetBridgeModelEditorViewKey();
+   virtual long GetGirderModelEditorViewKey();
+   virtual long GetLibraryEditorViewKey();
+   virtual long GetReportViewKey();
+   virtual long GetGraphingViewKey();
+   virtual long GetLoadsViewKey();
 
 // IRegisterViewEvents
 public:
@@ -304,9 +309,11 @@ public:
    virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
    virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
    virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
+   virtual IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback);
    virtual bool UnregisterEditPierCallback(IDType ID);
    virtual bool UnregisterEditSpanCallback(IDType ID);
    virtual bool UnregisterEditBridgeCallback(IDType ID);
+   virtual bool UnregisterEditLoadRatingOptionsCallback(IDType ID);
 
 // IExtendPGSuperUI
 public:

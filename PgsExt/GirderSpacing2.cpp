@@ -698,7 +698,7 @@ const CTemporarySupportData* CGirderSpacing2::GetTemporarySupport() const
 pgsTypes::MeasurementType CGirderSpacing2::GetMeasurementType() const
 {
    const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
-   if ( pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
+   if ( m_pTempSupport == NULL && pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
    {
       return pBridgeDesc->GetMeasurementType();
    }
@@ -711,7 +711,7 @@ pgsTypes::MeasurementType CGirderSpacing2::GetMeasurementType() const
 pgsTypes::MeasurementLocation CGirderSpacing2::GetMeasurementLocation() const
 {
    const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
-   if ( pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
+   if ( m_pTempSupport == NULL && pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
    {
       return pBridgeDesc->GetMeasurementLocation();
    }
@@ -865,6 +865,11 @@ SpacingIndexType CGirderSpacing2::GetSpacingCount() const
             // this spacing is for the ahead side of this pier
             // get the girder group for the span on the ahead side of this pier
             pGroup = pBridgeDesc->GetGirderGroup(m_pPier->GetSpan(pgsTypes::Ahead));
+         }
+
+         if ( pGroup == NULL )
+         {
+            return CGirderSpacingData2::GetSpacingCount();
          }
 
          // get the number of girders in the group and compute the number of spaces

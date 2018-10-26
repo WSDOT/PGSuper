@@ -89,9 +89,9 @@ int CLLDFPierGrid::GetColWidth(ROWCOL nCol)
    }
 }
 
-void CLLDFPierGrid::CustomInit(PierIndexType iPier)
+void CLLDFPierGrid::CustomInit(PierIndexType pierIdx)
 {
-   m_PierIdx = iPier;
+   m_PierIdx = pierIdx;
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 

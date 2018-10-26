@@ -691,15 +691,16 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
    ROWCOL nRows = this->GetRowCount();
    for (ROWCOL nRow=1; nRow<=nRows; nRow++)
    {
-      CGXStyle style;
-      GetStyleRowCol(nRow, SELECT_CHECK_COL, style);
-      if ( style.GetValue() == _T("0") )
+      CGXStyle select_check_style;
+      GetStyleRowCol(nRow, SELECT_CHECK_COL, select_check_style);
+      if ( select_check_style.GetValue() == _T("0") )
       {
          continue; // strand are not selected... continue to the next row
       }
 
-      const CUserData& userData = dynamic_cast<const CUserData&>(style.GetUserAttribute(0));
+      const CUserData& userData = dynamic_cast<const CUserData&>(select_check_style.GetUserAttribute(0));
 
+      CGXStyle style;
       GetStyleRowCol(nRow, DEBOND_CHECK_COL, style);
       if ( style.GetValue() == _T("1") )
       {

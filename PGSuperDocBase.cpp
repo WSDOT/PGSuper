@@ -1356,6 +1356,31 @@ const std::map<IDType,IEditBridgeCallback*>& CPGSuperDocBase::GetEditBridgeCallb
    return m_EditBridgeCallbacks;
 }
 
+IDType CPGSuperDocBase::RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditLoadRatingOptionsCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditLoadRatingOptionsCallback(IDType ID)
+{
+   std::map<IDType,IEditLoadRatingOptionsCallback*>::iterator found = m_EditLoadRatingOptionsCallbacks.find(ID);
+   if ( found == m_EditLoadRatingOptionsCallbacks.end() )
+   {
+      return false;
+   }
+
+   m_EditLoadRatingOptionsCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IEditLoadRatingOptionsCallback*>& CPGSuperDocBase::GetEditLoadRatingOptionsCallbacks()
+{
+   return m_EditLoadRatingOptionsCallbacks;
+}
+
 BOOL CPGSuperDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 {
    if ( !CEAFDocument::OnNewDocumentFromTemplate(lpszPathName) )
@@ -2268,9 +2293,20 @@ void CPGSuperDocBase::OnRatingSpec()
       newData.m_Legal   = dlg.m_LegalPage.m_Data;
       newData.m_Permit  = dlg.m_PermitPage.m_Data;
 
-      if ( oldData != newData )
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+
+      if ( oldData != newData || pExtensionTxn )
       {
-         txnEditRatingCriteria* pTxn = new txnEditRatingCriteria(oldData,newData);
+         txnTransaction* pTxn = new txnEditRatingCriteria(oldData,newData);
+         if ( pExtensionTxn )
+         {
+            txnMacroTxn* pMacro = new pgsMacroTxn;
+            pMacro->Name(pTxn->Name());
+            pMacro->AddTransaction(pTxn);
+            pMacro->AddTransaction(pExtensionTxn);
+            pTxn = pMacro;
+         }
+
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
       }

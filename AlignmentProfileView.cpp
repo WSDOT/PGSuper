@@ -161,6 +161,8 @@ void CAlignmentProfileView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHin
 
    UpdateDisplayObjects();
    UpdateDrawingScale();
+   Invalidate();
+   UpdateWindow();
 }
 
 void CAlignmentProfileView::OnSize(UINT nType, int cx, int cy) 

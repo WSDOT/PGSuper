@@ -167,11 +167,6 @@ void CSplicedIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
 
 void CSplicedIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
-#pragma Reminder("OBSOLETE???") // this method may be obsolete... remove it if it is
-   ATLASSERT(false); // this assert is to get my attention... is this method really needed?
-   // The profile returned from this method is a rectangle... in generate the spliced IBeams
-   // have a variable depth cross section so this method doesn't make any sense
-
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetSegmentLength(segmentKey);
 

@@ -77,6 +77,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, axial, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, span_location, pDisplayUnits->GetSpanLengthUnit(), false );
 
@@ -90,11 +91,22 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
  
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bReportAxial = pProductLoads->ReportAxialResults();
+
    ColumnIndexType nCols = 7;
+   if ( bReportAxial )
+   {
+      nCols += 2;
+   }
 
    if ( bReportTruckConfig )
    {
       nCols += 7;
+      if ( bReportAxial )
+      {
+         nCols += 2;
+      }
    }
 
    std::_tstring title(_T("Live Load Results for ") + strLLName);
@@ -113,6 +125,23 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   }
+
+   if ( bReportAxial )
+   {
+      (*p_table)(0,col++) << COLHDR(_T("Axial") << rptNewLine << _T("Max"),   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+
+      if ( bReportTruckConfig )
+      {
+         (*p_table)(0,col++) << _T("Axial") << rptNewLine << _T("Max") << rptNewLine << _T("Config"); // for max axial
+      }
+
+      (*p_table)(0,col++) << COLHDR(_T("Axial") << rptNewLine << _T("Min"),   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+
+      if ( bReportTruckConfig )
+      {
+         (*p_table)(0,col++) << _T("Axial") << rptNewLine << _T("Min") << rptNewLine << _T("Config"); // for max moment
+      }
    }
 
    (*p_table)(0,col++) << COLHDR(_T("Moment") << rptNewLine << _T("Max"),   rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
@@ -173,16 +202,25 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
 
       std::vector<Float64> dummy;
+      std::vector<Float64> Pmin, Pmax;
       std::vector<Float64> Mmin, Mmax;
       std::vector<sysSectionValue> Vmin, Vmax, Vdummy;
       std::vector<Float64> Dmin, Dmax;
 
-      std::vector<AxleConfiguration> dummyConfig, MminConfig, MmaxConfig, 
+      std::vector<AxleConfiguration> dummyConfig, 
+         PminConfig, PmaxConfig, 
+         MminConfig, MmaxConfig, 
          VminLeftConfig, VmaxLeftConfig, VminRightConfig, VmaxRightConfig, 
          DminConfig, DmaxConfig;
 
       if ( analysisType == pgsTypes::Envelope )
       {
+         if ( bReportAxial )
+         {
+            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Pmax, bReportTruckConfig ? &dummyConfig  : NULL, bReportTruckConfig ? &PmaxConfig   : NULL );
+            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Pmin, &dummy, bReportTruckConfig ? &PminConfig   : NULL, bReportTruckConfig ? &dummyConfig  : NULL  );
+         }
+
          pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Mmax, bReportTruckConfig ? &dummyConfig  : NULL, bReportTruckConfig ? &MmaxConfig   : NULL );
          pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &dummy, bReportTruckConfig ? &MminConfig   : NULL, bReportTruckConfig ? &dummyConfig  : NULL  );
 
@@ -203,6 +241,11 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
       }
       else
       {
+         if ( bReportAxial )
+         {
+            pForces2->GetVehicularLiveLoadAxial( intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, bReportTruckConfig ? &PminConfig : NULL, bReportTruckConfig ? &PmaxConfig : NULL );
+         }
+
          pForces2->GetVehicularLiveLoadMoment( intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, bReportTruckConfig ? &MminConfig : NULL, bReportTruckConfig ? &MmaxConfig : NULL );
          pForces2->GetVehicularLiveLoadShear( intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Vmin, &Vmax, 
                                               bReportTruckConfig ? &VminLeftConfig  : NULL, 
@@ -228,6 +271,23 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
          {
             Float64 Xg = pIPoi->ConvertPoiToGirderCoordinate(poi);
             (*p_table)(row,col++) << span_location.SetValue(cumm_span_length + Xg);
+         }
+
+         if ( bReportAxial )
+         {
+            (*p_table)(row,col++) << axial.SetValue( Pmax[index] );
+
+            if ( bReportTruckConfig )
+            {
+               ReportTruckConfiguration(PmaxConfig[index],p_table,row,col++,pDisplayUnits);
+            }
+
+            (*p_table)(row,col++) << axial.SetValue( Pmin[index] );
+
+            if ( bReportTruckConfig )
+            {
+               ReportTruckConfiguration(PminConfig[index],p_table,row,col++,pDisplayUnits);
+            }
          }
 
          (*p_table)(row,col++) << moment.SetValue( Mmax[index] );

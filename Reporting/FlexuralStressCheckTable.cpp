@@ -941,7 +941,7 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
          *p << _T("Segment ") << LABEL_SEGMENT(sIdx) << rptNewLine;
       }
 
-      Float64 fc = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
+      Float64 fc = pMaterials->GetSegmentDesignFc(segmentKey,intervalIdx);
       if ( intervalIdx == releaseIntervalIdx )
       {
          *p << RPT_FCI << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
@@ -998,7 +998,7 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
 
          IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(segmentKey);
 
-         Float64 fc = pMaterials->GetClosureJointFc(segmentKey,intervalIdx);
+         Float64 fc = pMaterials->GetClosureJointDesignFc(segmentKey,intervalIdx);
          if ( intervalIdx == compositeClosureIntervalIdx )
          {
             *p << RPT_FCI << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
@@ -1034,7 +1034,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
 
-   Float64 fc = pMaterials->GetDeckFc(intervalIdx);
+   Float64 fc = pMaterials->GetDeckDesignFc(intervalIdx);
    *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
    // using a dummy location to get information... all location should be the same

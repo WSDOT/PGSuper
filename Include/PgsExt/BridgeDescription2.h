@@ -349,6 +349,9 @@ public:
    const CPrecastSegmentData* GetSegment(const CSegmentKey& segmentKey) const;
    CPrecastSegmentData* GetSegment(const CSegmentKey& segmentKey);
 
+   // Gets the segments on either side of a temporary support... left and right segment key will be the same if segment is continuous over TS
+   void GetSegmentsAtTemporarySupport(SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) const;
+
    bool IsStable() const;
    bool IsSegmentOverconstrained(const CSegmentKey& segmentKey) const;
 

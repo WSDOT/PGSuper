@@ -31,6 +31,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <EAF\EAFUtilities.h>
 #include <IFace\Intervals.h>
+#include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -658,29 +659,10 @@ bool pgsSegmentDesignArtifact::ConcreteStrengthDesignState::GetRequiredAdditiona
 
 LPCTSTR LimitStateString(pgsTypes::LimitState limitState)
 {
-#pragma Reminder("REVIEW: I think this is a duplicate of what's on the IStageMap interface")
-   // review the need for this method and eliminate if it is unnecessary
-   switch(limitState)
-   {
-   case pgsTypes::ServiceI:
-      return _T("Service I");
-      break;
-   case pgsTypes::ServiceIA:
-      return _T("Service IA");
-      break;
-   case pgsTypes::ServiceIII:
-      return _T("Service III");
-      break;
-   case pgsTypes::StrengthI:
-      return _T("Strength I");
-      break;
-   case pgsTypes::FatigueI:
-      return _T("Fatigue I");
-      break;
-   default:
-      ATLASSERT(false);
-      return _T("Error in limit state name");
-   }
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   return pProductLoads->GetLimitStateName(limitState);
 }
 
 LPCTSTR StressLocationString(pgsTypes::StressLocation loc)

@@ -417,6 +417,10 @@ void CShearSteelPage::OnClickedSymmetrical()
    m_pHorizGrid->SetSymmetry(is_sym);
 }
 
+void CShearSteelPage::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+{
+   m_cbRebar.GetMaterial(pType,pGrade);
+}
 
 BOOL CShearSteelPage::OnSetActive() 
 {
@@ -435,31 +439,17 @@ void CShearSteelPage::OnHelp()
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
 }
 
-void CShearSteelPage::FillBarComboBox(CComboBox* pCB)
+void CShearSteelPage::FillBarComboBox(CComboBox* pcbRebar)
 {
-   int idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bsNone).c_str());
-   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
-
-   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs3).c_str());
-   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs3);
-
-   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs4).c_str());
-   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs4);
-
-   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs5).c_str());
-   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs5);
-
-   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs6).c_str());
-   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs6);
-
-   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs7).c_str());
-   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs7);
-
-   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs8).c_str());
-   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs8);
-
-   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs9).c_str());
-   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs9);
+   int idx = pcbRebar->AddString(_T("None"));
+   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
+   lrfdRebarIter rebarIter(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade,true);
+   for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
+   {
+      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      idx = pcbRebar->AddString(pRebar->GetName().c_str());
+      pcbRebar->SetItemData(idx,(DWORD_PTR)pRebar->GetSize());
+   }
 }
 
 

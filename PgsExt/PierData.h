@@ -21,30 +21,21 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-// SYSTEM INCLUDES
-//
 #include <WBFLCore.h>
 
 #include <MathEx.h>
 
-// PROJECT INCLUDES
-//
-
 #include <StrData.h>
 #include <PsgLib\ConnectionLibraryEntry.h>
-
 #include <PgsExt\PierData2.h>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 class CSpanData;
 class CBridgeDescription;
 
-// MISCELLANEOUS
-//
+///////////////////////////////////////////////////////
+// NOTE: 
+// This class only exists to load old PGSuper files.
+///////////////////////////////////////////////////////
 
 /*****************************************************************************
 CLASS 

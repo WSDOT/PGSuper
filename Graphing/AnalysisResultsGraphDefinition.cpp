@@ -267,13 +267,17 @@ std::vector< std::pair<std::_tstring,IDType> > CAnalysisResultsGraphDefinitions:
       bool bApplicableAction = true;
       switch(action)
       {
-         case actionMoment:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_MOMENT_ONLY ? true : false;
+         case actionAxial:
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_AXIAL_ONLY ? true : false;
             break;
 
          case actionShear:
          case actionReaction:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_SHEAR_ONLY ? true : false;
+            break;
+
+         case actionMoment:
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_MOMENT_ONLY ? true : false;
             break;
 
          case actionDeflection:

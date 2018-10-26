@@ -1228,6 +1228,25 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    // TENDON PARAMETERS
    if ( bIsOnGirder )
    {
+      if ( m_pIntervals->IsTendonStressingInterval(girderKey,intervalIdx) )
+      {
+         // Secondary effects
+         // NOTE: Don't do secondary effects in the loop below (looping over each duct)
+         // The secondary effects are for all tendons stressed during this interval.
+         // We don't have secondary effects per tendon, but rather secondary effects
+         // for all tendons stressed during this interval.
+         TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
+
+         Float64 dM = m_pProductForces->GetMoment(intervalIdx,pgsTypes::pftSecondaryEffects,poi,m_Bat, rtIncremental);
+         tsDetails.dMi[pgsTypes::pftSecondaryEffects] += dM;
+         tsDetails.Mi[pgsTypes::pftSecondaryEffects] += prevTimeStepDetails.Mi[pgsTypes::pftSecondaryEffects] + tsDetails.dMi[pgsTypes::pftSecondaryEffects];
+
+         //Float64 dP = m_pProductForces->GetAxial(intervalIdx,pgsTypes::pftSecondaryEffects,poi,m_Bat, rtIncremental);
+         Float64 dP = 0;
+         tsDetails.dPi[pgsTypes::pftSecondaryEffects] += dP;
+         tsDetails.Pi[pgsTypes::pftSecondaryEffects] += prevTimeStepDetails.Pi[pgsTypes::pftSecondaryEffects] + tsDetails.dPi[pgsTypes::pftSecondaryEffects];
+      }
+
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
          IntervalIndexType stressTendonIntervalIdx  = m_pIntervals->GetStressTendonInterval(girderKey,ductIdx);
@@ -1291,16 +1310,6 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
             tsDetails.Pi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Pi[pgsTypes::pftPostTensioning] + tsDetails.dPi[pgsTypes::pftPostTensioning];
             tsDetails.Mi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Mi[pgsTypes::pftPostTensioning] + tsDetails.dMi[pgsTypes::pftPostTensioning];
-
-            // Secondary effects
-            Float64 dM = m_pProductForces->GetMoment(intervalIdx,pgsTypes::pftSecondaryEffects,poi,m_Bat, rtIncremental);
-            tsDetails.dMi[pgsTypes::pftSecondaryEffects] += dM;
-            tsDetails.Mi[pgsTypes::pftSecondaryEffects] += prevTimeStepDetails.Mi[pgsTypes::pftSecondaryEffects] + tsDetails.dMi[pgsTypes::pftSecondaryEffects];
-
-            //Float64 dP = m_pProductForces->GetAxial(intervalIdx,pgsTypes::pftSecondaryEffects,poi,m_Bat, rtIncremental);
-            Float64 dP = 0;
-            tsDetails.dPi[pgsTypes::pftSecondaryEffects] += dP;
-            tsDetails.Pi[pgsTypes::pftSecondaryEffects] += prevTimeStepDetails.Pi[pgsTypes::pftSecondaryEffects] + tsDetails.dPi[pgsTypes::pftSecondaryEffects];
 
             // relaxation during the stressing interval
             if ( bIgnoreRelaxationEffects )
@@ -1997,9 +2006,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
          else
          {
-            // for the product force types that get us here, none of them cause
-            // axial responses
-            dP = 0;//m_pProductForces->GetAxial(intervalIdx,pfType,poi,m_Bat, rtIncremental);
+            dP = m_pProductForces->GetAxial(intervalIdx,pfType,poi,m_Bat, rtIncremental);
             dM = m_pProductForces->GetMoment(intervalIdx,pfType,poi,m_Bat, rtIncremental);
 
             // change in force this interval
@@ -2525,7 +2532,19 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       // Compute stress in the parts of the cross section due to live load
       //
 
-      // Get Live Load Moment this interval
+      // Get Live Load this interval
+      Float64 PllMin, PllMax;
+      m_pCombinedForces->GetCombinedLiveLoadAxial(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&PllMin,&PllMax);
+      if ( bIsInClosure && intervalIdx < compositeClosureIntervalIdx )
+      {
+         PllMin = 0;
+         PllMax = 0;
+      }
+
+      // Eaxial strain due to live load moment
+      Float64 eLLMin = IsZero(EaGirder_Atr) ? 0 : PllMin/EaGirder_Atr;
+      Float64 eLLMax = IsZero(EaGirder_Atr) ? 0 : PllMax/EaGirder_Atr;
+
       Float64 MllMin, MllMax;
       m_pCombinedForces->GetCombinedLiveLoadMoment(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&MllMin,&MllMax);
       if ( bIsInClosure && intervalIdx < compositeClosureIntervalIdx )
@@ -2539,8 +2558,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       Float64 rLLMax = IsZero(EaGirder_Itr) ? 0 : MllMax/EaGirder_Itr;
 
       // Axial force and moment in girder
-      Float64 Pmin = EaGirder_An*rLLMin*(tsDetails.Ytr - tsDetails.Girder.Yn);
-      Float64 Pmax = EaGirder_An*rLLMax*(tsDetails.Ytr - tsDetails.Girder.Yn);
+      Float64 Pmin = EaGirder_An*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Girder.Yn));
+      Float64 Pmax = EaGirder_An*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Girder.Yn));
       Float64 Mmin = EaGirder_In*rLLMin;
       Float64 Mmax = EaGirder_In*rLLMax;
 
@@ -2563,8 +2582,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
       // Compute stresses in deck due to live load
       // Axial force and moment in deck
-      Pmin = EaDeck_An*rLLMin*(tsDetails.Ytr - tsDetails.Deck.Yn);
-      Pmax = EaDeck_An*rLLMax*(tsDetails.Ytr - tsDetails.Deck.Yn);
+      Pmin = EaDeck_An*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Deck.Yn));
+      Pmax = EaDeck_An*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Deck.Yn));
       Mmin = EaDeck_In*rLLMin;
       Mmax = EaDeck_In*rLLMax;
 
@@ -2609,8 +2628,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             }
             else
             {
-               tsDetails.Strands[strandType].dFllMin = rLLMin*EStrand[strandType]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys);
-               tsDetails.Strands[strandType].dFllMax = rLLMax*EStrand[strandType]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys);
+               tsDetails.Strands[strandType].dFllMin = EStrand[strandType]*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys));
+               tsDetails.Strands[strandType].dFllMax = EStrand[strandType]*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys));
             }
             tsDetails.Strands[strandType].fpeLLMin  = tsDetails.Strands[strandType].fpe  + tsDetails.Strands[strandType].dFllMin;
             tsDetails.Strands[strandType].lossLLMin = tsDetails.Strands[strandType].loss - tsDetails.Strands[strandType].dFllMin;
@@ -2633,8 +2652,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                else
                {
                   // live load is on the structure... add elastic effect
-                  strand.dFllMin = rLLMin*EStrand[strandType]*(tsDetails.Ytr - strand.Ys);
-                  strand.dFllMax = rLLMax*EStrand[strandType]*(tsDetails.Ytr - strand.Ys);
+                  strand.dFllMin = EStrand[strandType]*(eLLMin + rLLMin*(tsDetails.Ytr - strand.Ys));
+                  strand.dFllMax = EStrand[strandType]*(eLLMax + rLLMax*(tsDetails.Ytr - strand.Ys));
                }
                strand.fpeLLMin  = strand.fpe  + strand.dFllMin;  // increasing stress in strand...
                strand.lossLLMin = strand.loss - strand.dFllMin;  // ...is the same as decreasing its loss
@@ -2664,8 +2683,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             }
             else
             {
-               tendon.dFllMin = rLLMin*ETendon*(tsDetails.Ytr - tendon.Ys);
-               tendon.dFllMax = rLLMax*ETendon*(tsDetails.Ytr - tendon.Ys);
+               tendon.dFllMin = ETendon*(eLLMin + rLLMin*(tsDetails.Ytr - tendon.Ys));
+               tendon.dFllMax = ETendon*(eLLMax + rLLMax*(tsDetails.Ytr - tendon.Ys));
             }
             tendon.fpeLLMin  = tendon.fpe  + tendon.dFllMin;
             tendon.lossLLMin = tendon.loss - tendon.dFllMin;

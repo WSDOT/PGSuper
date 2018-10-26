@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 52.0 // jumped to version 50 for PGSplice development... this leaves a gap
+#define CURRENT_VERSION 53.0 // jumped to version 50 for PGSplice development... this leaves a gap
 // between version 44 (PGSuper head branch, version 2.9) and PGSplice 
 // when loading data that was added after version 44 it is ok for the load to fail for now.
 // once this is merged to the head branch, data added from the then CURRENT_VERSION and later can't fail
@@ -228,7 +228,8 @@ m_bCheckBottomFlangeClearance(false),
 m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet)),
 m_DuctAreaPushRatio(2),
 m_DuctAreaPullRatio(2.5),
-m_DuctDiameterRatio(0.4)
+m_DuctDiameterRatio(0.4),
+m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading)
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -556,6 +557,9 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("HeErectionCrackFs"), m_HeErectionCrackFs);
    pSave->Property(_T("HeErectionFailFs"), m_HeErectionFailFs);
    pSave->Property(_T("MaxGirderWgt"),m_MaxGirderWgt);
+
+   // Added at version 53
+   pSave->Property(_T("LimitStateConcreteStrength"),m_LimitStateConcreteStrength);
 
    // modified in version 37 (see below)
    //pSave->Property(_T("HaulingModulusOfRuptureCoefficient"),m_HaulingModulusOfRuptureCoefficient); // added for version 12.0
@@ -1555,6 +1559,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 1.3 <= version )
       {
          if (!pLoad->Property(_T("MaxGirderWgt"), &m_MaxGirderWgt))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if ( 52 < version )
+      {
+         // Added at version 53
+         if ( !pLoad->Property(_T("LimitStateConcreteStrength"),(long*)&m_LimitStateConcreteStrength) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
@@ -3865,6 +3878,8 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_EnableLiftingDesign        , rOther.m_EnableLiftingDesign        );
    TESTD(m_PickPointHeight            , rOther.m_PickPointHeight            );
    TESTD(m_MaxGirderWgt,                rOther.m_MaxGirderWgt               );
+   TEST(m_LimitStateConcreteStrength,  rOther.m_LimitStateConcreteStrength);
+
    TESTD(m_LiftingLoopTolerance       , rOther.m_LiftingLoopTolerance       );
    TESTD(m_MinCableInclination        , rOther.m_MinCableInclination        );
    TESTD(m_MaxGirderSweepLifting      , rOther.m_MaxGirderSweepLifting      );
@@ -5627,6 +5642,16 @@ Float64 SpecLibraryEntry::GetTruckSupportLocationAccuracy() const
    return m_HaulPointAccuracy;
 }
 
+void SpecLibraryEntry::SetLimitStateConcreteStrength(pgsTypes::LimitStateConcreteStrength lsFc)
+{
+   m_LimitStateConcreteStrength = lsFc;
+}
+
+pgsTypes::LimitStateConcreteStrength SpecLibraryEntry::GetLimitStateConcreteStrength() const
+{
+   return m_LimitStateConcreteStrength;
+}
+
 void SpecLibraryEntry::SetUseMinTruckSupportLocationFactor(bool factor)
 {
    m_UseMinTruckSupportLocationFactor = factor;
@@ -6077,6 +6102,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_HeErectionFailFs           = rOther.m_HeErectionFailFs;
    m_RoadwaySuperelevation      = rOther.m_RoadwaySuperelevation;
    m_MaxGirderWgt               = rOther.m_MaxGirderWgt;
+
+   m_LimitStateConcreteStrength = rOther.m_LimitStateConcreteStrength;
 
    m_TempStrandRemovalCompStress              = rOther.m_TempStrandRemovalCompStress;
    m_TempStrandRemovalTensStress              = rOther.m_TempStrandRemovalTensStress;

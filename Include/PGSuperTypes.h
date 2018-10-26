@@ -175,6 +175,12 @@ typedef struct pgsTypes
       stTemporary
    } SupportType;
 
+   typedef enum ColumnFixityType
+   {
+      cftFixed,
+      cftPinned
+   } ColumnFixityType;
+
    typedef enum TemporarySupportType
    {
       ErectionTower,
@@ -639,6 +645,13 @@ typedef struct pgsTypes
 
       pftProductForceTypeCount
    } ProductForceType;
+
+   typedef enum LimitStateConcreteStrength
+   {
+      lscStrengthAtTimeOfLoading, // use f'ci and f'c from the time-strength curve
+      lscSpecifiedStrength // use f'ci at release and f'c at day 28.
+   } LimitStateConcreteStrength;
+
 } pgsTypes;
 
 //-----------------------------------------------------------------------------
@@ -1359,6 +1372,38 @@ inline bool IsRatingLimitState(pgsTypes::LimitState ls)
         ls == pgsTypes::StrengthI_Operating    ||
         ls == pgsTypes::StrengthI_LegalRoutine ||
         ls == pgsTypes::StrengthI_LegalSpecial ||
+        ls == pgsTypes::StrengthII_PermitRoutine ||
+        ls == pgsTypes::StrengthII_PermitSpecial 
+      )
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
+
+inline bool IsStrengthILimitState(pgsTypes::LimitState ls)
+{
+   if ( ls == pgsTypes::StrengthI              || 
+        ls == pgsTypes::StrengthI_Inventory    ||
+        ls == pgsTypes::StrengthI_Operating    ||
+        ls == pgsTypes::StrengthI_LegalRoutine ||
+        ls == pgsTypes::StrengthI_LegalSpecial
+      )
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
+
+inline bool IsStrengthIILimitState(pgsTypes::LimitState ls)
+{
+   if ( ls == pgsTypes::StrengthII             ||
         ls == pgsTypes::StrengthII_PermitRoutine ||
         ls == pgsTypes::StrengthII_PermitSpecial 
       )

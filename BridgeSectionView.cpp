@@ -714,7 +714,7 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
    title->SetText(strTitle);
    title_list->AddDisplayObject(title);
 }
-
+/*
 void CBridgeSectionView::BuildGirderDisplayObjects()
 {
    CComPtr<IBroker> pBroker;
@@ -895,6 +895,179 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       unk->Release(); // removes the AddRef from new above // ref count = 2
       events.Release(); // ref count = 1 ... i.e dispObj holds the only reference
    }
+}
+*/
+
+void CBridgeSectionView::BuildGirderDisplayObjects()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IRoadway,pAlignment);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IShapes,pShapes);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   UINT settings = pDoc->GetBridgeEditorSettings();
+
+   GroupIndexType grpIdx = GetGroupIndex();
+
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
+
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CComPtr<iDisplayList> girder_list;
+   dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&girder_list);
+   girder_list->Clear();
+
+   CComPtr<iDisplayList> girder_label_list;
+   dispMgr->FindDisplayList(GIRDER_LABEL_DISPLAY_LIST,&girder_label_list);
+   girder_label_list->Clear();
+
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
+
+   CComPtr<IDirection> dirAlignmentNormal;
+   pAlignment->GetBearingNormal(cut_station,&dirAlignmentNormal);
+
+   m_GirderIDs.clear();
+   m_NextGirderID = 0;
+
+   std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointOfInterests(cut_station,dirAlignmentNormal);
+   if ( vPoi.size() < nGirders )
+   {
+      // the cut line doesn't intersect some of the girders. this can happen when the section cut is at or near
+      // a pier.
+      // find the missing girders and use the POI at the start face so there is something to draw
+
+      std::vector<GirderIndexType> vAllGirders;
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         vAllGirders.push_back(gdrIdx);
+      }
+
+      std::vector<GirderIndexType> vFoundGirders;
+      BOOST_FOREACH(pgsPointOfInterest& poi,vPoi)
+      {
+         vFoundGirders.push_back(poi.GetSegmentKey().girderIndex);
+      }
+      std::sort(vFoundGirders.begin(),vFoundGirders.end());
+
+      std::vector<GirderIndexType> vMissingGirders(vAllGirders.size());
+      std::vector<GirderIndexType>::iterator end = std::set_difference(vAllGirders.begin(),vAllGirders.end(),vFoundGirders.begin(),vFoundGirders.end(),vMissingGirders.begin());
+      vMissingGirders.resize(end-vMissingGirders.begin());
+
+      BOOST_FOREACH(GirderIndexType gdrIdx,vMissingGirders)
+      {
+         CSegmentKey segmentKey(grpIdx,gdrIdx,0);
+         std::vector<pgsPointOfInterest> vMyPois = pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND);
+         ATLASSERT(vMyPois.size() == 1);
+         vPoi.push_back(vMyPois.front());
+      }
+   }
+
+   BOOST_FOREACH(pgsPointOfInterest& poi,vPoi)
+   {
+      const CSegmentKey& thisSegmentKey(poi.GetSegmentKey());
+      COLORREF segment_fill_color;
+      COLORREF segment_border_color;
+      if ( thisSegmentKey.groupIndex == grpIdx )
+      {
+         // girder cut is on bridge, and in the same span
+         segment_fill_color   = SEGMENT_FILL_COLOR;
+         segment_border_color = SEGMENT_BORDER_COLOR;
+      }
+      else
+      {
+         // girder cut is on bridge, but not in the same span
+         segment_fill_color   = SEGMENT_FILL_COLOR_ADJACENT;
+         segment_border_color = SEGMENT_BORDER_COLOR_ADJACENT;
+      }
+
+      // Display object for the girder cross section
+      CComPtr<iPointDisplayObject> dispObj;
+      dispObj.CoCreateInstance(CLSID_PointDisplayObject);
+
+      // get the girder shape before it is made composite (we don't want the deck with the shape)
+      IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(thisSegmentKey);
+
+      CComPtr<IShape> shape;
+      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,&shape);
+
+      CComQIPtr<IXYPosition> position(shape);
+      CComPtr<IPoint2d> topCenter;
+      position->get_LocatorPoint(lpTopCenter,&topCenter);
+      dispObj->SetPosition(topCenter,FALSE,FALSE);
+
+      CComPtr<iShapeDrawStrategy> strategy;
+      strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+      strategy->SetShape(shape);
+      strategy->SetSolidLineColor(segment_border_color);
+      strategy->SetSolidFillColor(segment_fill_color);
+      strategy->SetVoidLineColor(VOID_BORDER_COLOR);
+      strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
+      strategy->DoFill(true);
+
+      dispObj->SetDrawingStrategy(strategy);
+
+      dispObj->SetSelectionType(stAll);
+
+      IDType ID = m_NextGirderID++;
+      m_GirderIDs.insert( std::make_pair(thisSegmentKey,ID) );
+
+      dispObj->SetID(ID);
+
+      girder_list->AddDisplayObject(dispObj);
+
+      // Display object for the girder label
+      if ( settings & IDB_CS_LABEL_GIRDERS )
+      {
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         CComPtr<IPoint2d> botCenter;
+         position->get_LocatorPoint(lpBottomCenter,&botCenter);
+         doText->SetPosition(botCenter);
+         CString strLabel;
+         strLabel.Format(_T("%s"),LABEL_GIRDER(thisSegmentKey.girderIndex));
+         doText->SetText(strLabel);
+         doText->SetBkMode(TRANSPARENT);
+         doText->SetTextAlign(TA_CENTER | TA_TOP);
+         girder_label_list->AddDisplayObject(doText);
+
+         //// Text block for debugging
+         //// labels the girder offset and top of girder elevation
+         //CComPtr<iTextBlock> doText2;
+         //doText2.CoCreateInstance(CLSID_TextBlock);
+         //doText2->SetPosition(topCenter);
+
+         //GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
+         //Float64 x,y;
+         //topCenter->get_X(&x);
+         //topCenter->get_Y(&y);
+         //CString strCoordinates;
+         //strCoordinates.Format(_T("Offset %s\nElev %s"),FormatDimension(x,pdisp_units->GetXSectionDimUnit()),
+         //                                           FormatDimension(y,pdisp_units->GetXSectionDimUnit()) );
+
+         //doText2->SetText(strCoordinates);
+         //doText2->SetTextAlign(TA_LEFT | TA_TOP);
+         //doText2->SetBkMode(TRANSPARENT);
+         //girder_label_list->AddDisplayObject(doText2);
+      } // end of if
+   
+
+      // Register an event sink with the girder display object so that we can handle dbl-clicks
+      // on the girder differently then a general dbl-click in the field of the window
+      CBridgeSectionViewGirderDisplayObjectEvents* pEvents = new CBridgeSectionViewGirderDisplayObjectEvents(thisSegmentKey,nGroups,nGirders,m_pFrame); // ref count = 1
+      IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents); // ref count = 1
+      CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk); // ref count = 2
+      dispObj->RegisterEventSink(events); // ref count = 3
+      unk->Release(); // removes the AddRef from new above // ref count = 2
+      events.Release(); // ref count = 1 ... i.e dispObj holds the only reference
+   } // next segment key
 }
 
 void CBridgeSectionView::BuildDeckDisplayObjects()
@@ -2026,9 +2199,23 @@ GroupIndexType CBridgeSectionView::GetGroupIndex()
       Float64 prev_pier_station = pStartPier->GetStation();
       Float64 next_pier_station = pEndPier->GetStation();
 
-      if ( prev_pier_station <= cut_station && cut_station <= next_pier_station )
+      if ( grpIdx == nGroups-1 )
       {
-         return pGroup->GetIndex();
+         // Include end station for last group
+         if ( prev_pier_station <= cut_station && cut_station <= next_pier_station )
+         {
+            return pGroup->GetIndex();
+         }
+      }
+      else
+      {
+         // Exclue end station for all other groups
+         // Section cuts look ahead on station so if we are cutting at a group
+         // boundary, we want the next group
+         if ( prev_pier_station <= cut_station && cut_station < next_pier_station )
+         {
+            return pGroup->GetIndex();
+         }
       }
    }
 

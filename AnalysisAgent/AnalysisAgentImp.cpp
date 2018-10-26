@@ -842,9 +842,27 @@ PoiIDType CAnalysisAgentImp::AddPointOfInterest(CamberModelData& models,const pg
 //
 pgsTypes::BridgeAnalysisType CAnalysisAgentImp::GetBridgeAnalysisType(pgsTypes::AnalysisType analysisType,pgsTypes::OptimizationType optimization)
 {
-   pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple     ? pgsTypes::SimpleSpan : 
-                                       analysisType == pgsTypes::Continuous ? pgsTypes::ContinuousSpan : 
-                                       optimization == pgsTypes::Maximize ? pgsTypes::MaxSimpleContinuousEnvelope : pgsTypes::MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat;
+   if ( analysisType == pgsTypes::Simple )
+   {
+      bat = pgsTypes::SimpleSpan;
+   }
+   else if ( analysisType == pgsTypes::Continuous )
+   {
+      bat = pgsTypes::ContinuousSpan;
+   }
+   else
+   {
+      if ( optimization == pgsTypes::Maximize )
+      {
+         bat = pgsTypes::MaxSimpleContinuousEnvelope;
+      }
+      else
+      {
+         bat = pgsTypes::MinSimpleContinuousEnvelope;
+      }
+   }
+
    return bat;
 }
 
@@ -1229,6 +1247,38 @@ LPCTSTR CAnalysisAgentImp::GetLimitStateName(pgsTypes::LimitState limitState)
    return strNames[limitState];
 }
 
+bool CAnalysisAgentImp::ReportAxialResults()
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   PierIndexType nPiers = pBridgeDesc->GetPierCount();
+   for ( PierIndexType pierIdx = 1; pierIdx < nPiers-1; pierIdx++ )
+   {
+      const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
+      if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical )
+      {
+         return true;
+      }
+   }
+
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         if ( 0 < pGirder->GetPostTensioning()->GetDuctCount() )
+         {
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+
 void CAnalysisAgentImp::GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad)
 {
    m_pGirderModelManager->GetGirderSelfWeightLoad(segmentKey,pDistLoad,pPointLoad);
@@ -1396,14 +1446,19 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    *pRz = rotation;
 }
 
-void CAnalysisAgentImp::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,VehicleIndexType* pMminTruck,VehicleIndexType* pMmaxTruck)
+void CAnalysisAgentImp::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,VehicleIndexType* pMminTruck,VehicleIndexType* pMmaxTruck)
 {
-   m_pGirderModelManager->GetLiveLoadMoment(intervalIdx,llType,poi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMminTruck,pMmaxTruck);
+   m_pGirderModelManager->GetLiveLoadAxial(intervalIdx,llType,poi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMminTruck,pMmaxTruck);
 }
 
 void CAnalysisAgentImp::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,VehicleIndexType* pMminTruck,VehicleIndexType* pMmaxTruck)
 {
    return m_pGirderModelManager->GetLiveLoadShear(intervalIdx,llType,poi,bat,bIncludeImpact,bIncludeLLDF,pVmin,pVmax,pMminTruck,pMmaxTruck);
+}
+
+void CAnalysisAgentImp::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,VehicleIndexType* pMminTruck,VehicleIndexType* pMmaxTruck)
+{
+   m_pGirderModelManager->GetLiveLoadMoment(intervalIdx,llType,poi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMminTruck,pMmaxTruck);
 }
 
 void CAnalysisAgentImp::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,VehicleIndexType* pMinConfig,VehicleIndexType* pMaxConfig)
@@ -1436,14 +1491,19 @@ std::vector<std::_tstring> CAnalysisAgentImp::GetVehicleNames(pgsTypes::LiveLoad
    return m_pGirderModelManager->GetVehicleNames(llType,girderKey);
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
+void CAnalysisAgentImp::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
 {
-   m_pGirderModelManager->GetVehicularLiveLoadMoment(intervalIdx,llType,vehicleIndex,poi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMinAxleConfig,pMaxAxleConfig);
+   m_pGirderModelManager->GetVehicularLiveLoadAxial(intervalIdx,llType,vehicleIndex,poi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMinAxleConfig,pMaxAxleConfig);
 }
 
 void CAnalysisAgentImp::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,AxleConfiguration* pMinLeftAxleConfig,AxleConfiguration* pMinRightAxleConfig,AxleConfiguration* pMaxLeftAxleConfig,AxleConfiguration* pMaxRightAxleConfig)
 {
    m_pGirderModelManager->GetVehicularLiveLoadShear(intervalIdx,llType,vehicleIndex,poi,bat,bIncludeImpact,bIncludeLLDF,pVmin,pVmax,pMinLeftAxleConfig,pMinRightAxleConfig,pMaxLeftAxleConfig,pMaxRightAxleConfig);
+}
+
+void CAnalysisAgentImp::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
+{
+   m_pGirderModelManager->GetVehicularLiveLoadMoment(intervalIdx,llType,vehicleIndex,poi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMinAxleConfig,pMaxAxleConfig);
 }
 
 void CAnalysisAgentImp::GetVehicularLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
@@ -1749,11 +1809,11 @@ std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressAxial(IntervalIndexT
       Float64 dP = 0;
       if ( resultsType == rtIncremental )
       {
-         dP = tsDetails.dMi[pfType]; // incremental
+         dP = tsDetails.dPi[pfType]; // incremental
       }
       else
       {
-         dP = tsDetails.Mi[pfType]; // cumulative
+         dP = tsDetails.Pi[pfType]; // cumulative
       }
       P.push_back(dP);
    }
@@ -1898,10 +1958,13 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
          if ( pfType == pgsTypes::pftPretension )
          {
             // for elastic analysis, force effects due to pretensioning are always those at release
-            CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
-            GET_IFACE(IIntervals,pIntervals);
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-            intervalIdx = releaseIntervalIdx;
+            if ( resultsType == rtCumulative )
+            {
+               CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
+               GET_IFACE(IIntervals,pIntervals);
+               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+               intervalIdx = releaseIntervalIdx;
+            }
          }
 
          // Post-tensioning is not modeled for linear elastic analysis, so the
@@ -1947,6 +2010,29 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
       // reset all of our data.
       Invalidate(false);
       throw;
+   }
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
+      {
+         GET_IFACE(ILosses,pLosses);
+         std::vector<Float64>::iterator resultsIter = results.begin();
+         std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+         std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+         for ( ; poiIter != poiIterEnd; poiIter++, resultsIter++ )
+         {
+            const pgsPointOfInterest& poi(*poiIter);
+            const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intervalIdx);
+            const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intervalIdx];
+            Float64& result = *resultsIter;
+            
+            result -= tsDetails.Pr[pfType - pgsTypes::pftCreep];
+         }
+      }
    }
 
    return results;
@@ -2032,10 +2118,13 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
          if ( pfType == pgsTypes::pftPretension )
          {
             // for elastic analysis, force effects due to pretensioning are always those at release
-            CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
-            GET_IFACE(IIntervals,pIntervals);
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-            intervalIdx = releaseIntervalIdx;
+            if ( resultsType == rtCumulative )
+            {
+               CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
+               GET_IFACE(IIntervals,pIntervals);
+               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+               intervalIdx = releaseIntervalIdx;
+            }
          }
 
          // Post-tensioning is not modeled for linear elastic analysis, so the
@@ -2075,12 +2164,39 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       {
          results = m_pGirderModelManager->GetMoment(intervalIdx,pfType,vPoi,bat,resultsType);
       }
+
    }
    catch(...)
    {
       // reset all of our data.
       Invalidate(false);
       throw;
+   }
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
+      {
+         GET_IFACE(ILosses,pLosses);
+         for ( IntervalIndexType intIdx = (resultsType == rtCumulative ? 0 : intervalIdx); intIdx <= intervalIdx; intIdx++ )
+         {
+            std::vector<Float64>::iterator resultsIter = results.begin();
+            std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+            std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+            for ( ; poiIter != poiIterEnd; poiIter++, resultsIter++ )
+            {
+               const pgsPointOfInterest& poi(*poiIter);
+               const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
+               const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
+               Float64& result = *resultsIter;
+               
+               result -= tsDetails.Mr[pfType - pgsTypes::pftCreep];
+            }
+         }
+      }
    }
 
    return results;
@@ -2236,14 +2352,19 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,pgsTypes::Produc
    }
 }
 
-void CAnalysisAgentImp::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck)
+void CAnalysisAgentImp::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck)
 {
-   m_pGirderModelManager->GetLiveLoadMoment(intervalIdx,llType,vPoi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMminTruck,pMmaxTruck);
+   m_pGirderModelManager->GetLiveLoadAxial(intervalIdx,llType,vPoi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMminTruck,pMmaxTruck);
 }
 
 void CAnalysisAgentImp::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<VehicleIndexType>* pMinTruck,std::vector<VehicleIndexType>* pMaxTruck)
 {
    m_pGirderModelManager->GetLiveLoadShear(intervalIdx,llType,vPoi,bat,bIncludeImpact,bIncludeLLDF,pVmin,pVmax,pMinTruck,pMaxTruck);
+}
+
+void CAnalysisAgentImp::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck)
+{
+   m_pGirderModelManager->GetLiveLoadMoment(intervalIdx,llType,vPoi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMminTruck,pMmaxTruck);
 }
 
 void CAnalysisAgentImp::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<VehicleIndexType>* pMinConfig,std::vector<VehicleIndexType>* pMaxConfig)
@@ -2261,14 +2382,19 @@ void CAnalysisAgentImp::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes
    m_pGirderModelManager->GetLiveLoadStress(intervalIdx,llType,vPoi,bat,bIncludeImpact,bIncludeLLDF,topLocation,botLocation,pfTopMin,pfTopMax,pfBotMin,pfBotMax,pTopMinIndex,pTopMaxIndex,pBotMinIndex,pBotMaxIndex);
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
+void CAnalysisAgentImp::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
-   m_pGirderModelManager->GetVehicularLiveLoadMoment(intervalIdx,llType,vehicleIndex,vPoi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMinAxleConfig,pMaxAxleConfig);
+   m_pGirderModelManager->GetVehicularLiveLoadAxial(intervalIdx,llType,vehicleIndex,vPoi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMinAxleConfig,pMaxAxleConfig);
 }
 
 void CAnalysisAgentImp::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<AxleConfiguration>* pMinLeftAxleConfig,std::vector<AxleConfiguration>* pMinRightAxleConfig,std::vector<AxleConfiguration>* pMaxLeftAxleConfig,std::vector<AxleConfiguration>* pMaxRightAxleConfig)
 {
    m_pGirderModelManager->GetVehicularLiveLoadShear(intervalIdx,llType,vehicleIndex,vPoi,bat,bIncludeImpact,bIncludeLLDF,pVmin,pVmax,pMinLeftAxleConfig,pMinRightAxleConfig,pMaxLeftAxleConfig,pMaxRightAxleConfig);
+}
+
+void CAnalysisAgentImp::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
+{
+   m_pGirderModelManager->GetVehicularLiveLoadMoment(intervalIdx,llType,vehicleIndex,vPoi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMinAxleConfig,pMaxAxleConfig);
 }
 
 void CAnalysisAgentImp::GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigTop,std::vector<AxleConfiguration>* pMaxAxleConfigTop,std::vector<AxleConfiguration>* pMinAxleConfigBot,std::vector<AxleConfiguration>* pMaxAxleConfigBot)
@@ -2289,6 +2415,15 @@ void CAnalysisAgentImp::GetVehicularLiveLoadRotation(IntervalIndexType intervalI
 /////////////////////////////////////////////////////////////////////////////
 // ICombinedForces
 //
+Float64 CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+{
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi.push_back(poi);
+   std::vector<Float64> results( GetAxial(intervalIdx,comboType,vPoi,bat,resultsType) );
+   ATLASSERT(results.size() == 1);
+   return results.front();
+}
+
 sysSectionValue CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<pgsPointOfInterest> vPoi;
@@ -2342,17 +2477,17 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,LoadingCombinati
    *pfBot = fBot.front();
 }
 
-void CAnalysisAgentImp::GetCombinedLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax)
+void CAnalysisAgentImp::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
-   std::vector<Float64> Mmin, Mmax;
-   GetCombinedLiveLoadMoment(intervalIdx,llType,vPoi,bat,&Mmin,&Mmax);
+   std::vector<Float64> Pmin, Pmax;
+   GetCombinedLiveLoadAxial(intervalIdx,llType,vPoi,bat,&Pmin,&Pmax);
 
-   ATLASSERT(Mmin.size() == 1 && Mmax.size() == 1);
-   *pMin = Mmin.front();
-   *pMax = Mmax.front();
+   ATLASSERT(Pmin.size() == 1 && Pmax.size() == 1);
+   *pMin = Pmin.front();
+   *pMax = Pmax.front();
 }
 
 void CAnalysisAgentImp::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,sysSectionValue* pVmin,sysSectionValue* pVmax)
@@ -2366,6 +2501,19 @@ void CAnalysisAgentImp::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,p
    ATLASSERT( Vmin.size() == 1 && Vmax.size() == 1 );
    *pVmin = Vmin.front();
    *pVmax = Vmax.front();
+}
+
+void CAnalysisAgentImp::GetCombinedLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax)
+{
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi.push_back(poi);
+
+   std::vector<Float64> Mmin, Mmax;
+   GetCombinedLiveLoadMoment(intervalIdx,llType,vPoi,bat,&Mmin,&Mmax);
+
+   ATLASSERT(Mmin.size() == 1 && Mmax.size() == 1);
+   *pMin = Mmin.front();
+   *pMax = Mmax.front();
 }
 
 void CAnalysisAgentImp::GetCombinedLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pDmin,Float64* pDmax)
@@ -2429,6 +2577,95 @@ void CAnalysisAgentImp::ComputeTimeDependentEffects(const CGirderKey& girderKey,
       ATLASSERT(poi.GetID() != INVALID_ID);
       pLosses->GetLossDetails(poi,intervalIdx);
    }
+}
+
+std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+{
+   USES_CONVERSION;
+
+   std::vector<Float64> results;
+   if ( comboType == lcPS )
+   {
+      // secondary effects were requested... the LBAM doesn't have secondary effects... get the product load
+      // effects that feed into lcPS
+      results.resize(vPoi.size(),0.0); // initilize the results vector with 0.0
+      std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
+      std::vector<pgsTypes::ProductForceType>::iterator pfIter(pfTypes.begin());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(pfTypes.end());
+      for ( ; pfIter != pfIterEnd; pfIter++ )
+      {
+         pgsTypes::ProductForceType pfType = *pfIter;
+         std::vector<Float64> A = GetAxial(intervalIdx,pfType,vPoi,bat,resultsType);
+
+         // add A to results and assign answer to results
+         std::transform(A.begin(),A.end(),results.begin(),results.begin(),std::plus<Float64>());
+      }
+
+      return results;
+   }
+
+   //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
+   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
+   {
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+   }
+
+   try
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
+      if (intervalIdx < erectionIntervalIdx )
+      {
+         results = m_pSegmentModelManager->GetAxial(intervalIdx,comboType,vPoi,resultsType);
+      }
+      else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
+      {
+         // the incremental result at the time of erection is being requested. this is when
+         // we switch between segment models and girder models. the incremental results
+         // is the cumulative result this interval minus the cumulative result in the previous interval
+         std::vector<Float64> Aprev = GetAxial(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
+         std::vector<Float64> Athis = GetAxial(intervalIdx,  comboType,vPoi,bat,rtCumulative);
+         std::transform(Athis.begin(),Athis.end(),Aprev.begin(),std::back_inserter(results),std::minus<Float64>());
+      }
+      else
+      {
+         results = m_pGirderModelManager->GetAxial(intervalIdx,comboType,vPoi,bat,resultsType);
+      }
+   }
+   catch(...)
+   {
+      // reset all of our data.
+      Invalidate(false);
+      throw;
+   }
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
+      {
+         GET_IFACE(ILosses,pLosses);
+         for ( IntervalIndexType intIdx = (resultsType == rtCumulative ? 0 : intervalIdx); intIdx <= intervalIdx; intIdx++ )
+         {
+            std::vector<Float64>::iterator resultsIter = results.begin();
+            std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+            std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+            for ( ; poiIter != poiIterEnd; poiIter++, resultsIter++ )
+            {
+               const pgsPointOfInterest& poi(*poiIter);
+               const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
+               const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
+               Float64& result = *resultsIter;
+               
+               result -= tsDetails.Pr[comboType - lcCR];
+            }
+         }
+      }
+   }
+
+   return results;
 }
 
 std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
@@ -2552,6 +2789,32 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       // reset all of our data.
       Invalidate(false);
       throw;
+   }
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
+      {
+         GET_IFACE(ILosses,pLosses);
+         for ( IntervalIndexType intIdx = (resultsType == rtCumulative ? 0 : intervalIdx); intIdx <= intervalIdx; intIdx++ )
+         {
+            std::vector<Float64>::iterator resultsIter = results.begin();
+            std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+            std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+            for ( ; poiIter != poiIterEnd; poiIter++, resultsIter++ )
+            {
+               const pgsPointOfInterest& poi(*poiIter);
+               const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
+               const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
+               Float64& result = *resultsIter;
+               
+               result -= tsDetails.Mr[comboType - lcCR];
+            }
+         }
+      }
    }
 
    return results;
@@ -2690,14 +2953,19 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,LoadingCombinati
    }
 }
 
-void CAnalysisAgentImp::GetCombinedLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax)
+void CAnalysisAgentImp::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax)
 {
-   m_pGirderModelManager->GetCombinedLiveLoadMoment(intervalIdx,llType,vPoi,bat,pMmin,pMmax);
+   m_pGirderModelManager->GetCombinedLiveLoadAxial(intervalIdx,llType,vPoi,bat,pMmin,pMmax);
 }
 
 void CAnalysisAgentImp::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax)
 {
    m_pGirderModelManager->GetCombinedLiveLoadShear(intervalIdx,llType,vPoi,bat,bIncludeImpact,pVmin,pVmax);
+}
+
+void CAnalysisAgentImp::GetCombinedLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax)
+{
+   m_pGirderModelManager->GetCombinedLiveLoadMoment(intervalIdx,llType,vPoi,bat,pMmin,pMmax);
 }
 
 void CAnalysisAgentImp::GetCombinedLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax)
@@ -2718,6 +2986,21 @@ void CAnalysisAgentImp::GetCombinedLiveLoadStress(IntervalIndexType intervalIdx,
 /////////////////////////////////////////////////////////////////////////////
 // ILimitStateForces
 //
+void CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax)
+{
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi.push_back(poi);
+
+   std::vector<Float64> Pmin, Pmax;
+   GetAxial(intervalIdx,limitState,vPoi,bat,&Pmin,&Pmax);
+
+   ATLASSERT(Pmin.size() == 1);
+   ATLASSERT(Pmax.size() == 1);
+
+   *pMin = Pmin.front();
+   *pMax = Pmax.front();
+}
+
 void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax)
 {
    std::vector<pgsPointOfInterest> vPoi;
@@ -2830,6 +3113,74 @@ bool CAnalysisAgentImp::IsStrengthIIApplicable(const CGirderKey& girderKey)
 /////////////////////////////////////////////////////////////////////////////
 // ILimitStateForces2
 //
+void CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
+{
+   USES_CONVERSION;
+
+   const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
+
+   // need to do the time-step analysis because it adds loads to the LBAM
+   ComputeTimeDependentEffects(segmentKey,intervalIdx);
+
+   pMin->clear();
+   pMax->clear();
+
+   try
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
+      if (intervalIdx < erectionIntervalIdx )
+      {
+         m_pSegmentModelManager->GetAxial(intervalIdx,limitState,vPoi,pMin,pMax);
+      }
+      else
+      {
+         m_pGirderModelManager->GetAxial(intervalIdx,limitState,vPoi,bat,pMin,pMax);
+      }
+   }
+   catch(...)
+   {
+      // reset all of our data.
+      Invalidate(false);
+      throw;
+   }
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      GET_IFACE(ILoadFactors,pILoadFactors);
+      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+      Float64 gCRMax = pLoadFactors->CRmax[limitState];
+      Float64 gCRMin = pLoadFactors->CRmin[limitState];
+      Float64 gSHMax = pLoadFactors->SHmax[limitState];
+      Float64 gSHMin = pLoadFactors->SHmin[limitState];
+      Float64 gREMax = pLoadFactors->REmax[limitState];
+      Float64 gREMin = pLoadFactors->REmin[limitState];
+
+      GET_IFACE(ILosses,pLosses);
+      for ( IntervalIndexType intIdx = 0; intIdx <= intervalIdx; intIdx++ )
+      {
+         std::vector<Float64>::iterator minResultsIter = pMin->begin();
+         std::vector<Float64>::iterator maxResultsIter = pMax->begin();
+         std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+         std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+         for ( ; poiIter != poiIterEnd; poiIter++, minResultsIter++, maxResultsIter++ )
+         {
+            const pgsPointOfInterest& poi(*poiIter);
+            const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
+            const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
+            Float64& Pmin = *minResultsIter;
+            Float64& Pmax = *maxResultsIter;
+
+            Pmin -= gCRMin*tsDetails.Pr[TIMESTEP_CR] + gSHMin*tsDetails.Pr[TIMESTEP_SH] + gREMin*tsDetails.Pr[TIMESTEP_RE];
+            Pmax -= gCRMax*tsDetails.Pr[TIMESTEP_CR] + gSHMax*tsDetails.Pr[TIMESTEP_SH] + gREMax*tsDetails.Pr[TIMESTEP_RE];
+         }
+      }
+   }
+}
+
 void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax)
 {
    USES_CONVERSION;
@@ -2893,6 +3244,41 @@ void CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitS
       // reset all of our data.
       Invalidate(false);
       throw;
+   }
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      GET_IFACE(ILoadFactors,pILoadFactors);
+      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+      Float64 gCRMax = pLoadFactors->CRmax[limitState];
+      Float64 gCRMin = pLoadFactors->CRmin[limitState];
+      Float64 gSHMax = pLoadFactors->SHmax[limitState];
+      Float64 gSHMin = pLoadFactors->SHmin[limitState];
+      Float64 gREMax = pLoadFactors->REmax[limitState];
+      Float64 gREMin = pLoadFactors->REmin[limitState];
+
+      GET_IFACE(ILosses,pLosses);
+      for ( IntervalIndexType intIdx = 0; intIdx <= intervalIdx; intIdx++ )
+      {
+         std::vector<Float64>::iterator minResultsIter = pMin->begin();
+         std::vector<Float64>::iterator maxResultsIter = pMax->begin();
+         std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+         std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+         for ( ; poiIter != poiIterEnd; poiIter++, minResultsIter++, maxResultsIter++ )
+         {
+            const pgsPointOfInterest& poi(*poiIter);
+            const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
+            const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
+            Float64& Mmin = *minResultsIter;
+            Float64& Mmax = *maxResultsIter;
+
+            Mmin -= gCRMin*tsDetails.Mr[TIMESTEP_CR] + gSHMin*tsDetails.Mr[TIMESTEP_SH] + gREMin*tsDetails.Mr[TIMESTEP_RE];
+            Mmax -= gCRMax*tsDetails.Mr[TIMESTEP_CR] + gSHMax*tsDetails.Mr[TIMESTEP_SH] + gREMax*tsDetails.Mr[TIMESTEP_RE];
+         }
+      }
    }
 }
 
@@ -4980,7 +5366,8 @@ void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi,Cam
          thePOI = poi;
       }
 
-      ATLASSERT( thePOI.GetID() != INVALID_ID );
+// This assert is not necessary. New pois are created by the FEM engine to deal with temporary POI's.
+//      ATLASSERT( thePOI.GetID() != INVALID_ID );
 
       femPoiID = AddPointOfInterest(modelData,thePOI);
       ATLASSERT( 0 <= femPoiID );
@@ -7219,12 +7606,10 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes
    Float64 gCRMin = pLoadFactors->CRmin[limitState];
    Float64 gSHMax = pLoadFactors->SHmax[limitState];
    Float64 gSHMin = pLoadFactors->SHmin[limitState];
+   Float64 gREMax = pLoadFactors->REmax[limitState];
+   Float64 gREMin = pLoadFactors->REmin[limitState];
    Float64 gPSMax = pLoadFactors->PSmax[limitState]; // this is for secondary effects due to PT
    Float64 gPSMin = pLoadFactors->PSmin[limitState]; // this is for secondary effects due to PT
-
-   // LRFD doesn't have a relaxation load case... creep is it's closest cousin
-   Float64 gREMax = gCRMax;
-   Float64 gREMin = gCRMin;
 
    // Use half prestress if Service IA or Fatigue I (See LRFD Table 5.9.4.2.1-1)
    Float64 k = (limitState == pgsTypes::ServiceIA || limitState == pgsTypes::FatigueI) ? 0.5 : 1.0;

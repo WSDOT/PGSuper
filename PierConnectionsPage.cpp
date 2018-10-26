@@ -164,8 +164,8 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    }
 
    // Diaphragms
-   DDX_UnitValueAndTag(pDX,IDC_BACK_DIAPHRAGM_HEIGHT,IDC_BACK_DIAPHRAGM_HEIGHT_T,m_DiaphragmHeight[pgsTypes::Back],pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_BACK_DIAPHRAGM_WIDTH, IDC_BACK_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
+   DDX_KeywordUnitValueAndTag(pDX,IDC_BACK_DIAPHRAGM_HEIGHT,IDC_BACK_DIAPHRAGM_HEIGHT_T,_T("Compute"),m_DiaphragmHeight[pgsTypes::Back],pDisplayUnits->GetComponentDimUnit());
+   DDX_KeywordUnitValueAndTag(pDX,IDC_BACK_DIAPHRAGM_WIDTH, IDC_BACK_DIAPHRAGM_WIDTH_T, _T("Compute"),m_DiaphragmWidth[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
    DDX_CBItemData(pDX,IDC_BACK_DIAPHRAGM_LOAD,m_DiaphragmLoadType[pgsTypes::Back]);
    DDX_Tag( pDX, IDC_BACK_DIAPHRAGM_OFFSET_UNITS, pDisplayUnits->GetComponentDimUnit() );
    if ( m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation )
@@ -177,8 +177,8 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-   DDX_UnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_HEIGHT,IDC_AHEAD_DIAPHRAGM_HEIGHT_T,m_DiaphragmHeight[pgsTypes::Ahead],pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_WIDTH, IDC_AHEAD_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
+   DDX_KeywordUnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_HEIGHT,IDC_AHEAD_DIAPHRAGM_HEIGHT_T,_T("Compute"),m_DiaphragmHeight[pgsTypes::Ahead],pDisplayUnits->GetComponentDimUnit());
+   DDX_KeywordUnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_WIDTH, IDC_AHEAD_DIAPHRAGM_WIDTH_T, _T("Compute"),m_DiaphragmWidth[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
    DDX_CBItemData(pDX,IDC_AHEAD_DIAPHRAGM_LOAD,m_DiaphragmLoadType[pgsTypes::Ahead]);
    DDX_Tag( pDX, IDC_AHEAD_DIAPHRAGM_OFFSET_UNITS, pDisplayUnits->GetComponentDimUnit() );
    if ( m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation )

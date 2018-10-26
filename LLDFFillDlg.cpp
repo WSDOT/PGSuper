@@ -123,9 +123,9 @@ BOOL CLLDFFillDlg::OnInitDialog()
 
    m_PierCB.AddString(_T("None"));
    m_PierCB.AddString(_T("All"));
-   for (PierIndexType ipier=0; ipier<=nspans; ipier++)
+   for (PierIndexType pierIdx = 0; pierIdx <= nspans; pierIdx++)
    {
-      str.Format(_T("%d"),LABEL_PIER(ipier));
+      str.Format(_T("%d"),LABEL_PIER(pierIdx));
       m_PierCB.AddString(str);
    }
 
@@ -340,25 +340,25 @@ PierGirderList CLLDFFillDlg::GetPierGirders()
       {
          // all Piers
          PierIndexType nPiers = m_pBridgeDesc->GetPierCount();
-         for (PierIndexType iPier=0; iPier<nPiers; iPier++)
+         for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
          {
             int gdrsel = m_PIER_GIRDER_INT;
             if (gdrsel==0)
             {
                // all girders
-               const CPierData2* pPier = m_pBridgeDesc->GetPier(iPier);
+               const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
                GirderIndexType ngdrs = GetPierGirderCount(pPier);
 
                for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
                {
-                  theList.push_back( PierGirderType(iPier, igdr) );
+                  theList.push_back( PierGirderType(pierIdx, igdr) );
                }
             }
             else
             {
                // single girder
                GirderIndexType gdr = gdrsel-1;
-               theList.push_back( PierGirderType(iPier, gdr) );
+               theList.push_back( PierGirderType(pierIdx, gdr) );
             }
          }
       }

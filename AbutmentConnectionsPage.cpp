@@ -115,8 +115,8 @@ void CAbutmentConnectionsPage::DoDataExchange(CDataExchange* pDX)
    }
 
    // Diaphragm
-   DDX_UnitValueAndTag(pDX,IDC_DIAPHRAGM_HEIGHT,IDC_DIAPHRAGM_HEIGHT_T,m_DiaphragmHeight,pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth, pDisplayUnits->GetComponentDimUnit());
+   DDX_KeywordUnitValueAndTag(pDX,IDC_DIAPHRAGM_HEIGHT,IDC_DIAPHRAGM_HEIGHT_T,_T("Compute"),m_DiaphragmHeight,pDisplayUnits->GetComponentDimUnit());
+   DDX_KeywordUnitValueAndTag(pDX,IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, _T("Compute"),m_DiaphragmWidth, pDisplayUnits->GetComponentDimUnit());
    DDX_CBItemData(pDX,IDC_DIAPHRAGM_LOAD,m_DiaphragmLoadType);
    DDX_Tag( pDX, IDC_DIAPHRAGM_OFFSET_UNITS, pDisplayUnits->GetComponentDimUnit() );
    if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_DiaphragmLoadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation) )

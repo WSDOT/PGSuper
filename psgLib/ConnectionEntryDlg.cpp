@@ -74,10 +74,8 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_SUPPORT_WIDTH, IDC_SUPPORT_WIDTH_T, m_SupportWidth, pDisplayUnits->ComponentDim );
    DDV_UnitValueZeroOrMore(pDX, IDC_SUPPORT_WIDTH, m_SupportWidth, pDisplayUnits->ComponentDim );
 
-   DDX_UnitValueAndTag(pDX, IDC_DIAPHRAGM_HEIGHT, IDC_DIAPHRAGM_HEIGHT_T, m_DiaphragmHeight, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, IDC_DIAPHRAGM_HEIGHT, m_DiaphragmHeight, pDisplayUnits->ComponentDim );
-   DDX_UnitValueAndTag(pDX, IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, IDC_DIAPHRAGM_WIDTH,m_DiaphragmWidth, pDisplayUnits->ComponentDim );
+   DDX_KeywordUnitValueAndTag(pDX, IDC_DIAPHRAGM_HEIGHT, IDC_DIAPHRAGM_HEIGHT_T, _T("Compute"), m_DiaphragmHeight, pDisplayUnits->ComponentDim );
+   DDX_KeywordUnitValueAndTag(pDX, IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, _T("Compute"), m_DiaphragmWidth, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag( pDX, IDC_DIAPHRAGM_OFFSET, IDC_DIAPHRAGM_OFFSET_UNITS, m_DiaphragmLoadLocation, pDisplayUnits->ComponentDim );
    DDV_UnitValueZeroOrMore(pDX, IDC_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation, pDisplayUnits->ComponentDim );
 
@@ -138,7 +136,6 @@ LRESULT CConnectionEntryDlg::OnCommandHelp(WPARAM, LPARAM lParam)
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_CONNECTION_DIALOG );
    return TRUE;
 }
-
 
 BOOL CConnectionEntryDlg::OnInitDialog() 
 {

@@ -25,15 +25,18 @@
 #include <Reporting\MVRChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 #include <Reporting\CastingYardMomentsTable.h>
+#include <Reporting\ProductAxialTable.h>
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ProductShearTable.h>
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\ProductDisplacementsTable.h>
 #include <Reporting\ProductRotationTable.h>
+#include <Reporting\CombinedAxialTable.h>
 #include <Reporting\CombinedMomentsTable.h>
 #include <Reporting\CombinedShearTable.h>
 #include <Reporting\CombinedReactionTable.h>
 #include <Reporting\ConcurrentShearTable.h>
+#include <Reporting\UserAxialTable.h>
 #include <Reporting\UserMomentsTable.h>
 #include <Reporting\UserShearTable.h>
 #include <Reporting\UserReactionTable.h>
@@ -103,7 +106,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    rptParagraph* p = NULL;
@@ -138,9 +140,11 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
+   bool bReportAxial = pProductLoads->ReportAxialResults();
 
    bool bIndicateControllingLoad = true;
 
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2( pBroker, ILibrary, pLib );
@@ -214,6 +218,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
+      bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
+
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
       IntervalIndexType lastIntervalIdx = nIntervals-1;
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
@@ -225,6 +231,38 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       *p << _T("Load Responses - Bridge Site")<<rptNewLine;
       p->SetName(_T("Bridge Site Results"));
       *pChapter << p;
+
+      // Product Axial
+      if ( bReportAxial )
+      {
+         p = new rptParagraph;
+         *pChapter << p;
+         *p << CProductAxialTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+         if ( bPedestrian )
+         {
+            *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+         }
+
+         *p << LIVELOAD_PER_LANE << rptNewLine;
+         LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+
+         if (bAreThereUserLoads)
+         {
+            std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+            std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+            for ( ; iter != end; iter++ )
+            {
+               IntervalIndexType intervalIdx = *iter;
+               if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
+               {
+                  *p << CUserAxialTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+               }
+            }
+         }
+      }
+
+      // Product Moments
       p = new rptParagraph;
       *pChapter << p;
       *p << CProductMomentsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
@@ -237,7 +275,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       *p << LIVELOAD_PER_LANE << rptNewLine;
       LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
 
-      bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
       if (bAreThereUserLoads)
       {
          std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
@@ -431,6 +468,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,thisGirderKey,pDisplayUnits);
          }
 
+         CCombinedAxialTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
          CCombinedMomentsTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
          CCombinedShearTable().Build(  pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
          if ( castDeckIntervalIdx <= intervalIdx )

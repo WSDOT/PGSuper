@@ -130,7 +130,7 @@ void pgsTruckStiffnessStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString msg;
-   msg.Format(_T("%s\n\nThe truck roll stiffness is specified in the Hauling Parameters of the Design Criteria\nDesign Criteria may be viewed in the Library Editor"),pStatusItem->GetDescription().c_str());
+   msg.Format(_T("%s\n\nThe truck roll stiffness is specified in the Hauling Parameters of the Design Criteria\nDesign Criteria may be viewed in the Library Editor"),pStatusItem->GetDescription());
    AfxMessageBox(msg);
 }
 

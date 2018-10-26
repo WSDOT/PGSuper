@@ -82,6 +82,13 @@ CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
    m_StdToolBarID = -1;
    m_LibToolBarID = -1;
    m_HelpToolBarID = -1;
+
+   m_BridgeModelEditorViewKey = -1;
+   m_GirderModelEditorViewKey = -1;
+   m_LibraryEditorViewKey = -1;
+   m_ReportViewKey = -1;
+   m_GraphingViewKey = -1;
+   m_LoadsViewKey = -1;
 }
 
 CPGSuperDocProxyAgent::~CPGSuperDocProxyAgent()
@@ -388,6 +395,36 @@ void CPGSuperDocProxyAgent::BuildGraphMenu(CEAFMenu* pMenu)
    m_pMyDocument->BuildGraphMenu(pMenu);
 }
 
+long CPGSuperDocProxyAgent::GetBridgeModelEditorViewKey()
+{
+   return m_BridgeModelEditorViewKey;
+}
+
+long CPGSuperDocProxyAgent::GetGirderModelEditorViewKey()
+{
+   return m_GirderModelEditorViewKey;
+}
+
+long CPGSuperDocProxyAgent::GetLibraryEditorViewKey()
+{
+   return m_LibraryEditorViewKey;
+}
+
+long CPGSuperDocProxyAgent::GetReportViewKey()
+{
+   return m_ReportViewKey;
+}
+
+long CPGSuperDocProxyAgent::GetGraphingViewKey()
+{
+   return m_GraphingViewKey;
+}
+
+long CPGSuperDocProxyAgent::GetLoadsViewKey()
+{
+   return m_LoadsViewKey;
+}
+
 void CPGSuperDocProxyAgent::OnStatusChanged()
 {
    if ( m_pBroker )
@@ -420,11 +457,6 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
          break;
       }
    }
-}
-
-long CPGSuperDocProxyAgent::GetReportViewKey()
-{
-   return m_ReportViewKey;
 }
 
 void CPGSuperDocProxyAgent::OnResetHints()
@@ -905,9 +937,13 @@ void CPGSuperDocProxyAgent::HoldEvents(bool bHold)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    if ( bHold )
+   {
       m_EventHoldCount++;
+   }
    else
+   {
       m_EventHoldCount--;
+   }
 
    if ( m_EventHoldCount <= 0 && !m_bFiringEvents )
    {
@@ -1272,6 +1308,11 @@ IDType CPGSuperDocProxyAgent::RegisterEditBridgeCallback(IEditBridgeCallback* pC
    return m_pMyDocument->RegisterEditBridgeCallback(pCallback);
 }
 
+IDType CPGSuperDocProxyAgent::RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback)
+{
+   return m_pMyDocument->RegisterEditLoadRatingOptionsCallback(pCallback);
+}
+
 bool CPGSuperDocProxyAgent::UnregisterEditPierCallback(IDType ID)
 {
    return m_pMyDocument->UnregisterEditPierCallback(ID);
@@ -1310,6 +1351,11 @@ bool CPGSuperDocProxyAgent::UnregisterEditClosureJointCallback(IDType ID)
 bool CPGSuperDocProxyAgent::UnregisterEditBridgeCallback(IDType ID)
 {
    return m_pMyDocument->UnregisterEditBridgeCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditLoadRatingOptionsCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditLoadRatingOptionsCallback(ID);
 }
 
 bool CPGSuperDocProxyAgent::IsPGSuperDocument()

@@ -25,6 +25,7 @@
 
 #include "stdafx.h"
 #include <psgLib\psgLib.h>
+#include <psgLib\ShearSteelPage.h>
 #include "LongSteelGrid.h"
 #include "LongSteelPage.h"
 #include <system\tokenizer.h>
@@ -331,12 +332,28 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-	this->SetStyleRange(CGXRange(nRow,6), CGXStyle()
-			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#7\n#8\n#9\n#10\n#11\n#14\n#18"))
-			.SetValue(_T("#4"))
-         .SetHorizontalAlignment(DT_RIGHT)
-         );
+
+   CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
+   matRebar::Type type;
+   matRebar::Grade grade;
+   pParent->GetRebarMaterial(&type,&grade);
+   CString strBarSizeChoiceList;
+   lrfdRebarIter rebarIter(type,grade);
+   for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
+   {
+      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      strBarSizeChoiceList += pRebar->GetName().c_str();
+      strBarSizeChoiceList += _T("\n");
+   }
+
+   SetStyleRange(CGXRange(nRow,6), CGXStyle()
+      .SetEnabled(TRUE)
+      .SetReadOnly(FALSE)
+      .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+      .SetChoiceList(strBarSizeChoiceList)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetValue(lrfdRebarPool::GetBarSize(matRebar::bs4).c_str())
+      );
 
 	this->SetStyleRange(CGXRange(nRow,7), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("1"))

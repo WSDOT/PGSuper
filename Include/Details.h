@@ -886,22 +886,6 @@ struct STRANDDEVLENGTHDETAILS
     Float64 lt; // transfer length
 };
 
-struct REBARDEVLENGTHDETAILS
-{
-   Float64 Ab;
-   Float64 fy;
-   Float64 fc;
-   Float64 db;
-   Float64 lambdaRl;  // Lambda's for location and lightweight concrete (only used for LRFD 2015 and later)
-   Float64 lambdaLw;
-   Float64 factor; // Total Factor applied to equation
-
-   // Two equations for #11 or smaller (before 2015)
-   Float64 ldb1;
-   Float64 ldb2;
-   Float64 ldb; // controlling value
-};
-
 #define NO_TTS          0 // lifting without TTS
 #define PS_TTS          1 // lifting with prestressed TTS
 #define PT_TTS_OPTIONAL 2 // post-tensioned TTS, lifting at NO_TTS lift point (if f'ci < lifting strength for NO_TTS, can lift at a lower strength if PT_TTS used)

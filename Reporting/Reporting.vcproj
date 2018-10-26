@@ -668,6 +668,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CombinedAxialTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CombinedMomentsTable.cpp"
 				>
 			</File>
@@ -1037,6 +1041,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ProductAxialTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ProductDisplacementsTable.cpp"
 				>
 			</File>
@@ -1249,6 +1257,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UserAxialTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UserDefinedLoadsChapterBuilder.cpp"
 				>
 			</File>
@@ -1426,6 +1438,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\ColumnPropertiesTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\CombinedAxialTable.h"
 				>
 			</File>
 			<File
@@ -1753,6 +1769,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\ProductAxialTable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\ProductDisplacementsTable.h"
 				>
 			</File>
@@ -1922,6 +1942,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\TimeStepParametersChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\UserAxialTable.h"
 				>
 			</File>
 			<File

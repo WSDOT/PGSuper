@@ -94,6 +94,8 @@ interface IRoadway : IUnknown
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) = 0;
 
    virtual void GetRoadwaySurface(Float64 station,IPoint2dCollection** ppPoints) = 0;
+
+   virtual Float64 GetCrownPointOffset(Float64 station) = 0;
 };
 
 #endif // INCLUDED_IFACE_ALIGNMENT_H_

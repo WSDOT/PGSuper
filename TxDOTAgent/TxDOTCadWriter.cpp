@@ -250,12 +250,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
 	/* 12. CONCRETE RELEASE STRENGTH */
-   value = pMaterial->GetSegmentFc(segmentKey,releaseIntervalIdx);
+   value = pMaterial->GetSegmentDesignFc(segmentKey,releaseIntervalIdx);
 
 	Float64 concreteRelStrength = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 
 	/* 13. MINIMUM 28 DAY COMP. STRENGTH */
-	value = pMaterial->GetSegmentFc(segmentKey,liveLoadIntervalIdx);
+	value = pMaterial->GetSegmentDesignFc(segmentKey,liveLoadIntervalIdx);
 
 	Float64 min28dayCompStrength = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 

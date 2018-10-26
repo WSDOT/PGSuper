@@ -20,56 +20,65 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_STATUSMESSAGEDIALOG_H__E371357F_A5AF_4D06_AEEF_60EDC174B783__INCLUDED_)
-#define AFX_STATUSMESSAGEDIALOG_H__E371357F_A5AF_4D06_AEEF_60EDC174B783__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// StatusMessageDialog.h : header file
+
+#include <PgsExt\PierData2.h>
+
+// ColumnLayoutGrid.h : header file
 //
 
-#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
-// CStatusMessageDialog dialog
+// CColumnLayoutGrid window
 
-class CStatusMessageDialog : public CDialog
+class CColumnLayoutGrid : public CGXGridWnd
 {
+	GRID_DECLARE_REGISTER()
 // Construction
 public:
-	CStatusMessageDialog(CWnd* pParent = NULL);   // standard constructor
+	CColumnLayoutGrid();
+	virtual ~CColumnLayoutGrid();
 
-// Dialog Data
-	//{{AFX_DATA(CStatusMessageDialog)
-	enum { IDD = IDD_STATUS_DIALOG };
-	CButton	m_CancelBtn;
-	CString	m_Message;
-	//}}AFX_DATA
+// Attributes
+public:
 
+// Operations
+public:
+   void AddColumn();
+   void RemoveSelectedColumns();
+
+   void GetColumnData(CPierData2& pier);
+   void SetColumnData(const CPierData2& pier);
+
+   void SetHeightMeasurementType(CColumnData::ColumnHeightMeasurementType measure);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CStatusMessageDialog)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//{{AFX_VIRTUAL(CColumnLayoutGrid)
 	//}}AFX_VIRTUAL
 
-public:
-   UINT m_HelpID;
-   bool m_IsSevere;
 // Implementation
-protected:
+public:
+   void CustomInit();
 
 	// Generated message map functions
-	//{{AFX_MSG(CStatusMessageDialog)
-	afx_msg void OnHelp();
-	virtual BOOL OnInitDialog();
+protected:
+	//{{AFX_MSG(CColumnLayoutGrid)
+		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+   
+   virtual void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
+   virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
+
+private:
+   void AddColumn(const CColumnData& column,Float64 S);
+   void SetColumnData(ROWCOL row,const CColumnData& column,Float64 S);
+   void GetColumnData(ROWCOL row,CColumnData* pColumn,Float64* pS);
+   CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 };
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+/////////////////////////////////////////////////////////////////////////////
 
-#endif // !defined(AFX_STATUSMESSAGEDIALOG_H__E371357F_A5AF_4D06_AEEF_60EDC174B783__INCLUDED_)
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Developer Studio will insert additional declarations immediately before the previous line.

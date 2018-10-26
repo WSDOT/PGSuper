@@ -1239,8 +1239,9 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
          CPierData2* pEndPier   = m_pPier[pgsTypes::metEnd];
          CPierData2* pPier = pStartPier;
-         bool bDone = false;
-         while ( !bDone )
+         PierIndexType startPierIdx = pStartPier->GetIndex();
+         PierIndexType endPierIdx   = pEndPier->GetIndex();
+         for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
          {
             if ( pPier == pStartPier )
             {
@@ -1260,10 +1261,14 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                pPier->GetGirderSpacing(pgsTypes::Back )->SetGirderSpacing(0,bridgeSpacing);
             }
 
-            pPier = pPier->GetNextSpan()->GetNextPier();
-            if ( pPier == pEndPier )
+            CSpanData2* pSpan = pPier->GetNextSpan();
+            if ( pSpan )
             {
-               bDone = true;
+               pPier = pSpan->GetNextPier();
+            }
+            else
+            {
+               ATLASSERT(pPier->GetIndex() == endPierIdx); // if there isn't next span, we better be at the last pier
             }
          }
       }
@@ -1279,8 +1284,9 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
          CPierData2* pEndPier   = m_pPier[pgsTypes::metEnd];
          CPierData2* pPier = pStartPier;
-         bool bDone = false;
-         while ( !bDone )
+         PierIndexType startPierIdx = pStartPier->GetIndex();
+         PierIndexType endPierIdx   = pEndPier->GetIndex();
+         for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
          {
             if ( pPier == pStartPier )
             {
@@ -1296,10 +1302,14 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                ATLASSERT(pPier->GetGirderSpacing(pgsTypes::Back)->GetSpacingCount()+1 == m_Girders.size());
             }
 
-            pPier = pPier->GetNextSpan()->GetNextPier();
-            if ( pPier == pEndPier )
+            CSpanData2* pSpan = pPier->GetNextSpan();
+            if ( pSpan )
             {
-               bDone = true;
+               pPier = pSpan->GetNextPier();
+            }
+            else
+            {
+               ATLASSERT(pPier->GetIndex() == endPierIdx); // if there isn't next span, we better be at the last pier
             }
          }
       }
@@ -1585,12 +1595,15 @@ void CGirderGroupData::AssertValid()
       ATLASSERT(m_GirderTypeGroups.size() != 0);
       ATLASSERT(m_GirderTypeGroups.back().second - m_GirderTypeGroups.front().first == m_Girders.size()-1);
 
-      std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());
-      std::vector<std::vector<Float64>>::iterator end(m_SlabOffsets.end());
-      for ( ; iter != end; iter++ )
+      if ( m_pBridge && m_pBridge->GetSlabOffsetType() == pgsTypes::sotGirder )
       {
-         std::vector<Float64>& vSlabOffsets(*iter);
-         ATLASSERT(vSlabOffsets.size() == m_Girders.size());
+         std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());
+         std::vector<std::vector<Float64>>::iterator end(m_SlabOffsets.end());
+         for ( ; iter != end; iter++ )
+         {
+            std::vector<Float64>& vSlabOffsets(*iter);
+            ATLASSERT(vSlabOffsets.size() == m_Girders.size());
+         }
       }
    }
 

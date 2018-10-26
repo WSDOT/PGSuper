@@ -94,6 +94,11 @@ LineIDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,S
    return ::make_Int32((Int16)grpIdx,(Int16)id);
 }
 
+LineIDType GetGirderSegmentLineID(const CSegmentKey& segmentKey)
+{
+   return GetGirderSegmentLineID(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex);
+}
+
 LineIDType GetGirderLineID(const CSpanKey& spanKey)
 {
    ATLASSERT( spanKey.spanIndex < Int16_Max && spanKey.girderIndex < Int16_Max );

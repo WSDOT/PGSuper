@@ -192,4 +192,11 @@ protected:
    friend CSplicedGirderData;
    SpanIndexType m_SpanIdx[2]; // contains the span index of the span that will be referenced by
                                // m_pSpanData. This value will be INVALID_INDEX with m_pSpanData is defined
+
+   // cache the segment height and bottom flange thickness.
+   // they are computed many times and don't ever change.
+   mutable bool m_bHeightComputed;
+   mutable Float64 m_Height;
+   mutable bool m_bBottomFlangeThicknessComputed;
+   mutable Float64 m_BottomFlangeThickness;
 };

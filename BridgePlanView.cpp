@@ -1624,7 +1624,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
             strategy1->SetEndSkew(end_skew);
 
             strategy1->SetColor(SEGMENT_BORDER_COLOR);
-            strategy1->SetDoFill(TRUE);
+            strategy1->DoFill(TRUE);
             strategy1->SetFillColor(SEGMENT_FILL_COLOR);
 
             // this strategy doubles as a gravity well.. get its interface and give it to 
@@ -1721,8 +1721,8 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -1993,7 +1993,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
       strategy_pier.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
       strategy_pier->SetColor(PIER_BORDER_COLOR);
       strategy_pier->SetFillColor(PIER_FILL_COLOR);
-      strategy_pier->SetDoFill(TRUE);
+      strategy_pier->DoFill(TRUE);
 
       // make the pier outline just a bit wider
       SpanIndexType prev_span_idx = pierIdx - 1;
@@ -2536,7 +2536,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          strategy_pier->SetColor(SB_BORDER_COLOR);
          strategy_pier->SetFillColor(SB_FILL_COLOR);
       }
-      strategy_pier->SetDoFill(TRUE);
+      strategy_pier->DoFill(TRUE);
 
       Float64 support_width = pTS->GetSupportWidth();
       
@@ -2859,7 +2859,7 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
             strategy1->SetEndSkew(end_skew);
 
             strategy1->SetColor(CLOSURE_BORDER_COLOR);
-            strategy1->SetDoFill(TRUE);
+            strategy1->DoFill(TRUE);
             strategy1->SetFillColor(CLOSURE_FILL_COLOR);
 
             // this strategy doubles as a gravity well.. get its interface and give it to 
@@ -3238,7 +3238,7 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 	            strategy.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
 	            strategy->SetColor(DIAPHRAGM_BORDER_COLOR);
 	            strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
-	            strategy->SetDoFill(TRUE);
+	            strategy->DoFill(TRUE);
 	
 	            Float64 width = (left_diaphragm.T + right_diaphragm.T)/2;
 	            strategy->SetLeftOffset(width/2);

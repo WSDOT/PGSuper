@@ -820,6 +820,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ColumnLayoutGrid.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ConfigurePGSuperDlg.cpp"
 				>
 			</File>
@@ -1898,6 +1902,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ColumnLayoutGrid.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ConfigurePGSuperDlg.h"
 				>
 			</File>
@@ -2696,11 +2704,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2876,11 +2884,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -3084,11 +3092,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3096,11 +3104,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>

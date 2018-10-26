@@ -78,19 +78,19 @@ public:
    void SetIndex(SupportIndexType idx);
    SupportIndexType GetIndex() const;
 
-   void SetSpan(CSpanData2* pSpan);
-   CSpanData2* GetSpan();
-   const CSpanData2* GetSpan() const;
-
-   CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
-   const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
-
    // returns the station where the temporary support is located
    void SetStation(Float64 station);
    Float64 GetStation() const;
 
    LPCTSTR GetOrientation() const;
    void SetOrientation(LPCTSTR strOrientation);
+
+   void SetSpan(CSpanData2* pSpan);
+   CSpanData2* GetSpan();
+   const CSpanData2* GetSpan() const;
+
+   CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
+   const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
 
    void SetGirderEndDistance(Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure);
    void GetGirderEndDistance(Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const;

@@ -1926,7 +1926,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                   EquivPretensionLoad& equivLoad = *loadIter;
                   Float64 X = equivLoad.Xs;
                   Float64 M = equivLoad.M;
-                  ATLASSERT(IsZero(equivLoad.P));
+                  ATLASSERT(IsZero(equivLoad.N));
 
                   *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
                }
@@ -1956,7 +1956,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                   EquivPretensionLoad& equivLoad = *loadIter;
                   if ( IsZero(equivLoad.M) )
                   {
-                     *pPara << _T("P = ") << force.SetValue(equivLoad.P) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                     *pPara << _T("N = ") << force.SetValue(equivLoad.N) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                   }
                   else
                   {
@@ -1979,7 +1979,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                   EquivPretensionLoad& equivLoad = *loadIter;
                   Float64 X = equivLoad.Xs;
                   Float64 M = equivLoad.M;
-                  ATLASSERT(IsZero(equivLoad.P));
+                  ATLASSERT(IsZero(equivLoad.N));
 
                   *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
                }

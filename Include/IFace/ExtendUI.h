@@ -22,10 +22,21 @@
 
 #pragma once
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// User interface extension callback interfaces are defined in this header file. 
+//
+// These are prototype interfaces. That means they are subject to change. It is unclear
+// as to exactly which events extenions need to receive and how they are to be broadcast.
+//
+// Be warned that these interfaces may change in the future and your extension agents
+// are likely to break.
+/////////////////////////////////////////////////////////////////////////////////////////
+
 class txnTransaction;
 
 interface IEditBridgeCallback;
 interface IEditSplicedGirderCallback;
+interface IEditLoadRatingOptionsCallback;
 
 class CPierData2;
 
@@ -47,15 +58,13 @@ struct EditSplicedGirderExtension
    bool operator<(const EditSplicedGirderExtension& other) const { return callbackID < other.callbackID; }
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// User interface extension callback interfaces are defined in this header file. 
-//
-// These are prototype interfaces. That means they are subject to change. It is unclear
-// as to exactly which events extenions need to receive and how they are to be broadcast.
-//
-// Be warned that these interfaces may change in the future and your extension agents
-// are likely to break.
-//
+struct EditLoadRatingOptionsExtension
+{
+   IDType callbackID;
+   IEditLoadRatingOptionsCallback* pCallback;
+   CPropertyPage* pPage;
+   bool operator<(const EditLoadRatingOptionsExtension& other) const { return callbackID < other.callbackID; }
+};
 
 // Extend the Edit Pier Dialog
 interface IEditPierData
@@ -247,6 +256,17 @@ interface ICopyGirderPropertiesCallback
    virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
 };
 
+// Callback interface for editing load rating options
+interface IEditLoadRatingOptions
+{
+   virtual void LRDummy() = 0;
+};
+
+interface IEditLoadRatingOptionsCallback
+{
+   virtual CPropertyPage* CreatePropertyPage(IEditLoadRatingOptions* pLoadRatingOptions) = 0;
+   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditLoadRatingOptions* pLoadRatingOptions) = 0;
+};
 
 /////////////////////////////////////////////////////////
 // IExtendUI
@@ -261,10 +281,12 @@ interface IExtendUI : IUnknown
    virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback) = 0;
    virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback) = 0;
    virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback) = 0;
+   virtual IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback) = 0;
 
    virtual bool UnregisterEditPierCallback(IDType ID) = 0;
    virtual bool UnregisterEditSpanCallback(IDType ID) = 0;
    virtual bool UnregisterEditBridgeCallback(IDType ID) = 0;
+   virtual bool UnregisterEditLoadRatingOptionsCallback(IDType ID) = 0;
 };
 
 /////////////////////////////////////////////////////////

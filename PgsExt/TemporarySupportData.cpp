@@ -641,11 +641,19 @@ void CTemporarySupportData::SetSegmentSpacing(const CGirderSpacing2& spacing)
 
 CGirderSpacing2* CTemporarySupportData::GetSegmentSpacing()
 {
+   ATLASSERT( m_ConnectionType != pgsTypes::tsctContinuousSegment );
+   // this is just a warning... spacing doesn't make sence in if the connection is continuous
+   // spacing is ignored if this assert fires
+
    return &m_Spacing;
 }
 
 const CGirderSpacing2* CTemporarySupportData::GetSegmentSpacing() const
 {
+   ATLASSERT( m_ConnectionType != pgsTypes::tsctContinuousSegment );
+   // this is just a warning... spacing doesn't make sence in if the connection is continuous
+   // spacing is ignored if this assert fires
+
    return &m_Spacing;
 }
 

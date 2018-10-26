@@ -2467,7 +2467,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 
    // Need separate strand mover for all-straight adjustable strand case
    CComPtr<IStrandMover> straight_strand_mover;
-   bool do_all_straight = this->IsVerticalAdjustmentAllowedStraight();
+   bool do_all_straight = (IsVerticalAdjustmentAllowedStraight() && m_AdjustableStrandType != pgsTypes::asHarped ? true : false);
    if (do_all_straight)
    {
       Float64 straight_increment = this->GetStraightStrandIncrement();
@@ -2601,7 +2601,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          // All straight case, if pertinant
          if (do_all_straight)
          {
-            straight_strand_mover->TestHpStrandLocation(strandLocation.m_Xhp, strandLocation.m_Yhp, 0.0, &is_within);
+            straight_strand_mover->TestHpStrandLocation(strandLocation.m_Xhp, strandLocation.m_Yhp-height, 0.0, &is_within);
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
@@ -2681,7 +2681,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             }
 
 
-            strand_mover->TestEndStrandLocation(strandLocation.m_Xstart, strandLocation.m_Ystart, 0.0, &is_within);
+            strand_mover->TestEndStrandLocation(strandLocation.m_Xstart, strandLocation.m_Ystart-height, 0.0, &is_within);
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
@@ -2702,7 +2702,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                   pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
                }
 
-               strand_mover->TestEndStrandLocation(0.0, strandLocation.m_Ystart, 0.0, &is_within);
+               strand_mover->TestEndStrandLocation(0.0, strandLocation.m_Ystart-height, 0.0, &is_within);
                if (is_within!=VARIANT_TRUE)
                {
                   std::_tostringstream os;

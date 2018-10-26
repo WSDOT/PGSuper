@@ -778,14 +778,14 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             {
                b     = pGdr->GetTopFlangeWidth(poi);
                hf    = pGdr->GetMinTopFlangeThickness(poi);
-               fc    = pMaterial->GetSegmentFc(segmentKey,intervalIdx);
+               fc    = pMaterial->GetSegmentDesignFc(segmentKey,intervalIdx);
                Beta1 = lrfdConcreteUtil::Beta1(fc);
             }
             else
             {
                b     = pProps->GetEffectiveFlangeWidth(poi);
                hf    = pBridge->GetStructuralSlabDepth(poi);
-               fc    = pMaterial->GetDeckFc(intervalIdx);
+               fc    = pMaterial->GetDeckDesignFc(intervalIdx);
                Beta1 = lrfdConcreteUtil::Beta1(fc);
             }
          }
@@ -795,7 +795,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             hf = pGdr->GetMinBottomFlangeThickness(poi);
             b  = pGdr->GetBottomWidth(poi);
             bw = pGdr->GetWebWidth(poi);
-            fc = pMaterial->GetSegmentFc(segmentKey,intervalIdx);
+            fc = pMaterial->GetSegmentDesignFc(segmentKey,intervalIdx);
             Beta1 = lrfdConcreteUtil::Beta1(fc);
          }
 
@@ -1662,11 +1662,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       if ( bIsInClosure )
       {
          // poi is in a closure joint
-         matGirder->put_fc( pMaterial->GetClosureJointFc(closureKey,intervalIdx) );
+         matGirder->put_fc( pMaterial->GetClosureJointDesignFc(closureKey,intervalIdx) );
       }
       else if ( bIsOnSegment )
       {
-         matGirder->put_fc( pMaterial->GetSegmentFc(segmentKey,intervalIdx) );
+         matGirder->put_fc( pMaterial->GetSegmentDesignFc(segmentKey,intervalIdx) );
       }
       else
       {
@@ -1674,7 +1674,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          // this means the POI is in a cast-in-place diaphragm between girder groups
          // assume cast in place diaphragms between groups is the same material as the deck
          // because they are typically cast together
-         matGirder->put_fc( pMaterial->GetDeckFc(intervalIdx) );
+         matGirder->put_fc( pMaterial->GetDeckDesignFc(intervalIdx) );
       }
    }
    CComQIPtr<IStressStrain> ssGirder(matGirder);
@@ -1682,7 +1682,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    // slab concrete
    CComPtr<IUnconfinedConcrete> matSlab;
    matSlab.CoCreateInstance(CLSID_UnconfinedConcrete);
-   matSlab->put_fc( pMaterial->GetDeckFc(intervalIdx) );
+   matSlab->put_fc( pMaterial->GetDeckDesignFc(intervalIdx) );
    CComQIPtr<IStressStrain> ssSlab(matSlab);
 
    // girder rebar

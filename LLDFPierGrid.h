@@ -95,7 +95,7 @@ private:
 
 public:
    // custom stuff for grid
-   void CustomInit(PierIndexType iPier);
+   void CustomInit(PierIndexType pierIdx);
 
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);

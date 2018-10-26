@@ -519,7 +519,7 @@ STDMETHODIMP_(BOOL) CSectionCutDisplayImpl::XDragData::PrepareForDrag(iDisplayOb
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
    pSink->Write(ms_Format,&pThis->m_Color,sizeof(COLORREF));
    pSink->Write(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSink->Write(ms_Format,&pThis->m_GirderKey,sizeof(CSegmentKey));
+   pSink->Write(ms_Format,&pThis->m_GirderKey,sizeof(CGirderKey));
    pSink->Write(ms_Format,&pThis->m_MinCutLocation,sizeof(Float64));
    pSink->Write(ms_Format,&pThis->m_MaxCutLocation,sizeof(Float64));
    pSink->Write(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
@@ -544,7 +544,7 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObject* pD
 
    pSource->Read(ms_Format,&pThis->m_Color,sizeof(COLORREF));
    pSource->Read(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSource->Read(ms_Format,&pThis->m_GirderKey,sizeof(CSegmentKey));
+   pSource->Read(ms_Format,&pThis->m_GirderKey,sizeof(CGirderKey));
    pSource->Read(ms_Format,&pThis->m_MinCutLocation,sizeof(Float64));
    pSource->Read(ms_Format,&pThis->m_MaxCutLocation,sizeof(Float64));
    pSource->Read(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));

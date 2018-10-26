@@ -177,6 +177,28 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Ahead]);
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      pgsTypes::MeasurementLocation ml;
+      pgsTypes::MeasurementType     mt;
+
+      CGirderSpacing2* pGirderSpacing = pParent->m_pPier->GetGirderSpacing(pgsTypes::Back);
+      UnhashGirderSpacing(m_GirderSpacingMeasure[pgsTypes::Back],&ml,&mt);
+      pGirderSpacing->SetMeasurementLocation(ml);
+      pGirderSpacing->SetMeasurementType(mt);
+      pGirderSpacing->SetRefGirder(m_RefGirderIdx[pgsTypes::Back]);
+      pGirderSpacing->SetRefGirderOffset(m_RefGirderOffset[pgsTypes::Back]);
+      pGirderSpacing->SetRefGirderOffsetType(m_RefGirderOffsetType[pgsTypes::Back]);
+
+      pGirderSpacing = pParent->m_pPier->GetGirderSpacing(pgsTypes::Ahead);
+      UnhashGirderSpacing(m_GirderSpacingMeasure[pgsTypes::Ahead],&ml,&mt);
+      pGirderSpacing->SetMeasurementLocation(ml);
+      pGirderSpacing->SetMeasurementType(mt);
+      pGirderSpacing->SetRefGirder(m_RefGirderIdx[pgsTypes::Ahead]);
+      pGirderSpacing->SetRefGirderOffset(m_RefGirderOffset[pgsTypes::Ahead]);
+      pGirderSpacing->SetRefGirderOffsetType(m_RefGirderOffsetType[pgsTypes::Ahead]);
+   }
 }
 
 
@@ -223,11 +245,17 @@ void CPierGirderSpacingPage::Init(CPierDetailsDlg* pParent)
       // Pier is at the start or end of a group
       // Spacing is defined on both sides of the pier (unless it is the first or last pier in the bridge)
       if ( pParent->m_pSpan[pgsTypes::Back] && pParent->m_pSpan[pgsTypes::Ahead] )
+      {
          m_SpacingTypeMode = Both;
+      }
       else if ( pParent->m_pSpan[pgsTypes::Back] && !pParent->m_pSpan[pgsTypes::Ahead] )
+      {
          m_SpacingTypeMode = Back;
+      }
       else if ( !pParent->m_pSpan[pgsTypes::Back] && pParent->m_pSpan[pgsTypes::Ahead] )
+      {
          m_SpacingTypeMode = Ahead;
+      }
    }
 
    if ( m_SpacingTypeMode == None )

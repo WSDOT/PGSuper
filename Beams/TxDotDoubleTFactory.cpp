@@ -181,7 +181,6 @@ void CTxDotDoubleTFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
 
    // Build up the beam shape
    GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

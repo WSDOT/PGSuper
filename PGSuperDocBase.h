@@ -252,6 +252,10 @@ public:
    bool UnregisterEditBridgeCallback(IDType ID);
    const std::map<IDType,IEditBridgeCallback*>& GetEditBridgeCallbacks();
 
+   IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback);
+   bool UnregisterEditLoadRatingOptionsCallback(IDType ID);
+   const std::map<IDType,IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
+
    virtual UINT GetStandardToolbarResourceID() = 0;
 
    long GetReportViewKey();
@@ -261,6 +265,7 @@ protected:
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
    IDType m_CallbackID;
+   // View Notification Callbacks
    std::map<IDType,IBridgePlanViewEventCallback*>       m_BridgePlanViewCallbacks;
    std::map<IDType,IBridgeSectionViewEventCallback*>    m_BridgeSectionViewCallbacks;
    std::map<IDType,IAlignmentPlanViewEventCallback*>    m_AlignmentPlanViewCallbacks;
@@ -268,16 +273,18 @@ protected:
    std::map<IDType,IGirderElevationViewEventCallback*>  m_GirderElevationViewCallbacks;
    std::map<IDType,IGirderSectionViewEventCallback*>    m_GirderSectionViewCallbacks;
 
-   std::map<IDType,IEditPierCallback*>             m_EditPierCallbacks;
-   std::map<IDType,IEditTemporarySupportCallback*> m_EditTemporarySupportCallbacks;
-   std::map<IDType,IEditSpanCallback*>             m_EditSpanCallbacks;
-   std::map<IDType,IEditGirderCallback*>           m_EditGirderCallbacks;
-   std::map<IDType,ICopyGirderPropertiesCallback*> m_CopyGirderPropertiesCallbacks;
-   std::map<IDType,IEditSplicedGirderCallback*>    m_EditSplicedGirderCallbacks;
-   std::map<IDType,ICopyGirderPropertiesCallback*> m_CopySplicedGirderPropertiesCallbacks;
-   std::map<IDType,IEditSegmentCallback*>          m_EditSegmentCallbacks;
-   std::map<IDType,IEditClosureJointCallback*>     m_EditClosureJointCallbacks;
-   std::map<IDType,IEditBridgeCallback*>           m_EditBridgeCallbacks;
+   // UI/Dialog Extension Callbacks
+   std::map<IDType,IEditPierCallback*>              m_EditPierCallbacks;
+   std::map<IDType,IEditTemporarySupportCallback*>  m_EditTemporarySupportCallbacks;
+   std::map<IDType,IEditSpanCallback*>              m_EditSpanCallbacks;
+   std::map<IDType,IEditGirderCallback*>            m_EditGirderCallbacks;
+   std::map<IDType,ICopyGirderPropertiesCallback*>  m_CopyGirderPropertiesCallbacks;
+   std::map<IDType,IEditSplicedGirderCallback*>     m_EditSplicedGirderCallbacks;
+   std::map<IDType,ICopyGirderPropertiesCallback*>  m_CopySplicedGirderPropertiesCallbacks;
+   std::map<IDType,IEditSegmentCallback*>           m_EditSegmentCallbacks;
+   std::map<IDType,IEditClosureJointCallback*>      m_EditClosureJointCallbacks;
+   std::map<IDType,IEditBridgeCallback*>            m_EditBridgeCallbacks;
+   std::map<IDType,IEditLoadRatingOptionsCallback*> m_EditLoadRatingOptionsCallbacks;
 
    // these are the standard copy girder callbacks
    CCopyGirderType         m_CopyGirderType;

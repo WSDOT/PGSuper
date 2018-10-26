@@ -78,7 +78,7 @@ void pgsAlignmentDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    pgsAlignmentDescriptionStatusItem* pItem = dynamic_cast<pgsAlignmentDescriptionStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
-   if ( AfxMessageBox( pStatusItem->GetDescription().c_str(), MB_OK ) == IDOK )
+   if ( AfxMessageBox( pStatusItem->GetDescription(), MB_OK ) == IDOK )
    {
       GET_IFACE(IEditByUI,pEdit);
       pEdit->EditAlignmentDescription(pItem->m_DlgPage);
@@ -181,7 +181,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CDealWithLoadDlg dlg;
-   dlg.m_Message = pItem->GetDescription().c_str();
+   dlg.m_Message = pItem->GetDescription();
 
    INT_PTR result = dlg.DoModal();
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
@@ -250,7 +250,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CDealWithLoadDlg dlg;
-   dlg.m_Message = pItem->GetDescription().c_str();
+   dlg.m_Message = pItem->GetDescription();
 
    INT_PTR result = dlg.DoModal();
 
@@ -319,7 +319,7 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CDealWithLoadDlg dlg;
-   dlg.m_Message = pItem->GetDescription().c_str();
+   dlg.m_Message = pItem->GetDescription();
 
    INT_PTR result = dlg.DoModal();
 

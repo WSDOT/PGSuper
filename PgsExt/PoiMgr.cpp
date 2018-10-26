@@ -404,9 +404,9 @@ pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,F
    return poi;
 }
 
-pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart) 
+pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) 
 {
-   // get the poi just for this span/girder
+   // get the poi just for this segment
    std::vector<pgsPointOfInterest> vPOI;
    std::vector<pgsPointOfInterest>::const_iterator iter(m_Poi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
@@ -435,10 +435,10 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segme
       ATLASSERT( prevPOI.GetSegmentKey() == segmentKey);
       ATLASSERT( nextPOI.GetSegmentKey() == segmentKey);
 
-      if ( InRange(prevPOI.GetDistFromStart(),distFromStart,nextPOI.GetDistFromStart()) )
+      if ( InRange(prevPOI.GetDistFromStart(),Xpoi,nextPOI.GetDistFromStart()) )
       {
-         Float64 d1 = distFromStart - prevPOI.GetDistFromStart();
-         Float64 d2 = nextPOI.GetDistFromStart() - distFromStart;
+         Float64 d1 = Xpoi - prevPOI.GetDistFromStart();
+         Float64 d2 = nextPOI.GetDistFromStart() - Xpoi;
 
          if ( d1 < d2 )
          {

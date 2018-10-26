@@ -509,7 +509,7 @@ void concrete(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKe
    (*pTable)(1,1) << stress.SetValue( pMaterial->GetSegmentFc(segmentKey,releaseIntervalIdx) );
 
    (*pTable)(2,0) << _T("Slab");
-   (*pTable)(2,1) << stress.SetValue( pMaterial->GetDeckFc(liveLoadIntervalIdx) );
+   (*pTable)(2,1) << stress.SetValue( pMaterial->GetDeckDesignFc(liveLoadIntervalIdx) );
 }
 
 void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)

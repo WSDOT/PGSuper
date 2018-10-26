@@ -210,7 +210,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row++,1) << modE.SetValue( pMaterial->GetSegmentEc(fabrSegmentKey,liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << RPT_FC <<_T(" Slab");
-   (*p_table)(row++,1) << stress.SetValue( pMaterial->GetDeckFc(liveLoadIntervalIdx) );
+   (*p_table)(row++,1) << stress.SetValue( pMaterial->GetDeckDesignFc(liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << _T("Project Criteria");
    (*p_table)(row++,1) << pProjectData->GetSelectedProjectCriteriaLibrary();

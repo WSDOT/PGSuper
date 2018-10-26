@@ -27,6 +27,16 @@
 #define PIERTYPE_INTERMEDIATE 1
 #define PIERTYPE_END 2
 
+// Usage notes:
+// Add the following members to your dialog
+// CBoundaryConditionComboBox m_cbBoundaryCondition
+// pgsTypes::BoundaryConditionType m_BoundaryCondition
+//
+// In DoDataExchange, add the following
+//   DDX_Control(pDX,IDC_BOUNDARY_CONDITION,m_cbBoundaryCondition);
+//   DDX_CBItemData(pDX, IDC_BOUNDARY_CONDITION, m_BoundaryCondition);
+
+
 class PGSEXTCLASS CBoundaryConditionComboBox : public CComboBox
 {
 public:

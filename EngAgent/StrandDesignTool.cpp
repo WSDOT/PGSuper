@@ -1680,7 +1680,7 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    m_pArtifact->SetHarpStrandOffsetHp(offsetHP);
    m_pArtifact->SetHarpStrandOffsetEnd(offsetEnd);
 
-   m_pArtifact->SetReleaseStrength(pMaterial->GetSegmentFc(m_SegmentKey,releaseIntervalIdx));
+   m_pArtifact->SetReleaseStrength(pMaterial->GetSegmentDesignFc(m_SegmentKey,releaseIntervalIdx));
 
    PierIndexType startPierIdx, endPierIdx;
    pBridge->GetGirderGroupPiers(m_SegmentKey.groupIndex,&startPierIdx,&endPierIdx);

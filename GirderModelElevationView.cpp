@@ -2778,7 +2778,7 @@ void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSuperDocBase* p
    disp_obj->GetEventSink(&sink);
 
    CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
-   point_disp->SetToolTipText(_T("Click on me and drag to move section cut"));
+   point_disp->SetToolTipText(_T("Click drag to move section cut"));
 
    CComQIPtr<iSectionCutDrawStrategy,&IID_iSectionCutDrawStrategy> sc_strat(sink);
    sc_strat->Init(point_disp, pBroker, girderKey, m_pFrame);

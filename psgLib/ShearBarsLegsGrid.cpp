@@ -268,12 +268,23 @@ void CShearBarsLegsGrid::SetRowStyle(ROWCOL nRow)
 {
 	GetParam()->EnableUndo(FALSE);
 
-	SetStyleRange(CGXRange(nRow,1), CGXStyle()
-			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#7\n#8\n#9\n"))
-			.SetValue(_T("#3"))
-         .SetHorizontalAlignment(DT_RIGHT)
-         );
+   CString strBarSizeChoiceList;
+   lrfdRebarIter rebarIter(matRebar::A615,matRebar::Grade60,true);
+   for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
+   {
+      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      strBarSizeChoiceList += pRebar->GetName().c_str();
+      strBarSizeChoiceList += _T("\n");
+   }
+
+   SetStyleRange(CGXRange(nRow,1), CGXStyle()
+      .SetEnabled(TRUE)
+      .SetReadOnly(FALSE)
+      .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+      .SetChoiceList(strBarSizeChoiceList)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetValue(lrfdRebarPool::GetBarSize(matRebar::bs3).c_str())
+      );
 
 	SetStyleRange(CGXRange(nRow,2), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWN)

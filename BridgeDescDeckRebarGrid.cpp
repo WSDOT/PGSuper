@@ -326,12 +326,27 @@ void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-	this->SetStyleRange(CGXRange(nRow,3), CGXStyle()
-			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("None\n#4\n#5\n#6\n#7\n#8\n#9"))
-			.SetValue(_T("None"))
-         .SetHorizontalAlignment(DT_RIGHT)
-         );
+   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+   matRebar::Type type;
+   matRebar::Grade grade;
+   pParent->GetRebarMaterial(&type,&grade);
+   CString strBarSizeChoiceList(_T("None\n"));
+   lrfdRebarIter rebarIter(type,grade);
+   for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
+   {
+      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      strBarSizeChoiceList += pRebar->GetName().c_str();
+      strBarSizeChoiceList += _T("\n");
+   }
+
+   SetStyleRange(CGXRange(nRow,3), CGXStyle()
+      .SetEnabled(TRUE)
+      .SetReadOnly(FALSE)
+      .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+      .SetChoiceList(strBarSizeChoiceList)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetValue(_T("None"))
+      );
 
 
    this->SetStyleRange(CGXRange(nRow,4), CGXStyle()

@@ -202,22 +202,26 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
 
       EquivPretensionLoad startMoment;
       startMoment.Xs = 0;
-      startMoment.P = 0;
-      startMoment.M = Mhl;
+      startMoment.P  = Ph;
+      startMoment.N  = 0;
+      startMoment.M  = Mhl;
 
       EquivPretensionLoad leftHpLoad;
       leftHpLoad.Xs = hp1;
-      leftHpLoad.P  = Nl;
+      leftHpLoad.P  = 0;
+      leftHpLoad.N  = Nl;
       leftHpLoad.M  = 0;
 
       EquivPretensionLoad rightHpLoad;
       rightHpLoad.Xs = hp2;
-      rightHpLoad.P  = Nr;
+      rightHpLoad.P  = 0;
+      rightHpLoad.N  = Nr;
       rightHpLoad.M  = 0;
 
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
-      endMoment.P = 0;
+      endMoment.P = -Ph;
+      endMoment.N = 0;
       endMoment.M = -Mhr;
 
       equivLoads.push_back(startMoment);
@@ -239,14 +243,16 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
 
       EquivPretensionLoad startMoment;
       startMoment.Xs = 0;
-      startMoment.P  = 0;
+      startMoment.P  = Ps;
+      startMoment.N  = 0;
       startMoment.M  = Msl;
 
       equivLoads.push_back(startMoment);
 
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
-      endMoment.P  = 0;
+      endMoment.P  = -Ps;
+      endMoment.N  = 0;
       endMoment.M  = -Msr;
 
       equivLoads.push_back(endMoment);
@@ -279,7 +285,8 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
 
             EquivPretensionLoad debondLocationLoad;
             debondLocationLoad.Xs = location;
-            debondLocationLoad.P  = 0;
+            debondLocationLoad.P  = sign*Ps;
+            debondLocationLoad.N  = 0;
             debondLocationLoad.M  = Ms;
 
             equivLoads.push_back(debondLocationLoad);
@@ -300,12 +307,14 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
 
       EquivPretensionLoad startMoment;
       startMoment.Xs = 0;
-      startMoment.P  = 0;
+      startMoment.P  = Pt;
+      startMoment.N  = 0;
       startMoment.M  = Mtl;
 
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
-      endMoment.P  = 0;
+      endMoment.P  = -Pt;
+      endMoment.N  = 0;
       endMoment.M  = -Mtr;
 
       equivLoads.push_back(endMoment);
@@ -710,6 +719,16 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Pro
    }
 }
 
+Float64 CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType)
+{
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi.push_back(poi);
+
+   std::vector<Float64> forces = GetAxial(intervalIdx,comboType,vPoi,resultsType);
+   ATLASSERT(forces.size() == 1);
+   return forces.front();
+}
+
 sysSectionValue CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType)
 {
    std::vector<pgsPointOfInterest> vPoi;
@@ -800,6 +819,62 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombin
 
    *pfTop = fTop.front();
    *pfBot = fBot.front();
+}
+
+std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType)
+{
+   std::vector<Float64> vF;
+
+   // before release, there aren't any results
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+   if ( intervalIdx < releaseIntervalIdx )
+   {
+      vF.resize(vPoi.size(),0.0);
+      return vF;
+   }
+
+   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().GetSegmentKey(),intervalIdx);
+
+   LoadCombinationMap& loadCombinationMap(GetLoadCombinationMap(vPoi.front().GetSegmentKey()));
+   std::pair<LoadCombinationMap::iterator,LoadCombinationMap::iterator> range = loadCombinationMap.equal_range(comboType);
+   if ( range.first != loadCombinationMap.end() )
+   {
+      if ( range.second != loadCombinationMap.end() )
+      {
+         range.second++; // makes it one past where we want to stop... makes the loop work correctly
+      }
+
+      for ( LoadCombinationMap::iterator iter = range.first; iter != range.second; iter++ )
+      {
+         const std::_tstring& strLoadingName(iter->second);
+         std::vector<Float64> vf = GetAxial(intervalIdx,strLoadingName.c_str(),vPoi,resultsType);
+         if ( vF.size() == 0 )
+         {
+            vF = vf;
+         }
+         else
+         {
+            std::transform(vf.begin(),vf.end(),vF.begin(),vF.begin(),std::plus<Float64>());
+         }
+      }
+   }
+
+   std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
+   BOOST_FOREACH(pgsTypes::ProductForceType pfType,pfTypes)
+   {
+      std::vector<Float64> vf = GetAxial(intervalIdx,pfType,vPoi,resultsType);
+      if ( vF.size() == 0 )
+      {
+         vF = vf;
+      }
+      else
+      {
+         std::transform(vf.begin(),vf.end(),vF.begin(),vF.begin(),std::plus<Float64>());
+      }
+   }
+
+   return vF;
 }
 
 std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType)
@@ -1142,6 +1217,19 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Lim
 
    *pMin = vMin.front();
    *pMax = vMax.front();
+}
+
+void CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
+{
+   std::vector<Float64> forces = GetAxial(intervalIdx,lcDC,vPoi,rtCumulative);
+
+   GET_IFACE(ILoadFactors,pILoadFactors);
+   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+   Float64 gDCMin = pLoadFactors->DCmin[ls];
+   Float64 gDCMax = pLoadFactors->DCmax[ls];
+
+   std::transform(forces.begin(),forces.end(),std::back_inserter(*pMin),FactorElements<Float64>(gDCMin));
+   std::transform(forces.begin(),forces.end(),std::back_inserter(*pMax),FactorElements<Float64>(gDCMax));
 }
 
 void CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax)
@@ -2053,7 +2141,7 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ec,lcid,true,vPOI,&model_data.Model,&model_data.PoiMap);
 
    // create loadings for all product load types
-   // this may seems silly because may of these loads aren't applied
+   // this may seems silly because many of these loads aren't applied
    // to the segment models. however, it is easier to treat everything
    // uniformly then to check for special exceptions
    //AddLoading(model_data,pgsTypes::pftGirder); // taken care of in CreateGirderModel
@@ -2116,7 +2204,7 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
          MemberIDType mbrID;
          Float64 x;
          pgsGirderModelFactory::FindMember(pModelData->Model,equivLoad.Xs,&mbrID,&x);
-         pointLoads->Create(ptLoadID++,mbrID,x,0.00,equivLoad.P,equivLoad.M,lotGlobal,&ptLoad);
+         pointLoads->Create(ptLoadID++,mbrID,x,equivLoad.P,equivLoad.N,equivLoad.M,lotGlobal,&ptLoad);
       }
    }
 }

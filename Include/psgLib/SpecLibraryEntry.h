@@ -310,6 +310,10 @@ public:
    void SetTruckSupportLocationAccuracy(Float64 x);
    Float64 GetTruckSupportLocationAccuracy() const;
 
+   // Set/Get concrete strength type
+   void SetLimitStateConcreteStrength(pgsTypes::LimitStateConcreteStrength lsFc);
+   pgsTypes::LimitStateConcreteStrength GetLimitStateConcreteStrength() const;
+
    //////////////////////////////////////
    //
    // Precast Elements
@@ -1383,6 +1387,8 @@ private:
 
    bool m_bCheckBottomFlangeClearance;
    Float64 m_Cmin;
+
+   pgsTypes::LimitStateConcreteStrength m_LimitStateConcreteStrength;
 };
 
 #endif // INCLUDED_PSGLIB_SPECLIBRARYENTRY_H_

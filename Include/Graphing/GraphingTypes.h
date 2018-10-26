@@ -24,8 +24,9 @@
 
 enum ActionType 
 {
-   actionMoment, 
+   actionAxial,
    actionShear,
+   actionMoment, 
    actionReaction,
    actionDeflection, 
    actionRotation,

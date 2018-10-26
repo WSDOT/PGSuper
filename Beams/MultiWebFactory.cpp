@@ -127,7 +127,7 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType st
    }
    else
    {
-#pragma Reminder("UPDATE: Assuming uniform spacing")
+      // NOTE: Assuming uniform spacing
       // uniform spacing is required for this type of girder so maybe this is ok
 
       // use raw input here because requesting it from the bridge will cause an infite loop.

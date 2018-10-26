@@ -27,8 +27,8 @@
 #include <IFace\EditByUI.h>
 #include <IFace\StatusCenter.h>
 #include <EAF\EAFTransactions.h>
+#include <EAF\EAFUtilities.h>
 
-#include "StatusMessageDialog.h"
 #include "RefinedAnalysisOptionsDlg.h"
 #include "BoundaryConditionDlg.h"
 
@@ -75,7 +75,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CRefinedAnalysisOptionsDlg dlg;
-   dlg.m_strDescription = pStatusItem->GetDescription().c_str();
+   dlg.m_strDescription = pStatusItem->GetDescription();
    dlg.m_strDescription.Replace(_T("\n"),_T("\r\n")); // this makes the text wrap correctly in the dialog
 
    if ( dlg.DoModal() == IDOK )
@@ -233,7 +233,7 @@ bool pgsInformationalStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   if ( GetDescription() != other->GetDescription())
+   if ( CString(GetDescription()) != CString(other->GetDescription()) )
    {
       return false;
    }
@@ -254,34 +254,7 @@ eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
 
 void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   std::_tstring msg = pStatusItem->GetDescription();
-
-   if (m_HelpID != 0)
-   {
-      msg += std::_tstring(_T("\r\n\r\nPress the Help button for more details."));
-   }
-
-   bool is_severe = m_Severity==eafTypes::statusError;
-   if (!is_severe)
-   {
-      msg += std::_tstring(_T("\r\n\r\nPress the OK to remove this message."));
-   }
-
-   pgsInformationalStatusItem* pItem = dynamic_cast<pgsInformationalStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=NULL);
-
-   CStatusMessageDialog dlg;
-   dlg.m_Message = msg.c_str();
-   dlg.m_IsSevere = is_severe;
-   dlg.m_HelpID = m_HelpID;
-
-   INT_PTR st = dlg.DoModal();
-   if (!is_severe && st==IDOK) // allow non-severe messages to be removed by user
-   {
-      pStatusItem->RemoveAfterEdit(true);
-   }
+   EAFShowStatusMessage(pStatusItem,m_Severity,FALSE,0);
 }
 
 
@@ -399,7 +372,7 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString strMessage;
-   strMessage.Format(_T("%s\n\r%s"),pItem->GetDescription().c_str(),_T("Would you like to edit the girder?"));
+   strMessage.Format(_T("%s\n\r%s"),pItem->GetDescription(),_T("Would you like to edit the girder?"));
    int result = AfxMessageBox(strMessage,MB_YESNO);
 
    if ( result == IDYES )
@@ -447,7 +420,7 @@ eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverit
 
 void pgsStructuralAnalysisTypeStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AfxMessageBox(pStatusItem->GetDescription().c_str(),MB_OK);
+   AfxMessageBox(pStatusItem->GetDescription(),MB_OK);
 }
 
 pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,pgsBridgeDescriptionStatusItem::IssueType issueType,LPCTSTR strDescription) :

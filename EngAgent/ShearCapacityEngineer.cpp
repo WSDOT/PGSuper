@@ -570,7 +570,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // material props
    if ( pConfig == NULL )
    {
-      pscd->fc = pMaterial->GetSegmentFc(segmentKey,intervalIdx);
+      pscd->fc = pMaterial->GetSegmentDesignFc(segmentKey,intervalIdx);
       pscd->Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
    }
    else

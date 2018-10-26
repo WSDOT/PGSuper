@@ -192,7 +192,7 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
    {
       // Not using the configuration, or the configuration applies only for the overhang
 
-      Fc = pMaterial->GetSegmentFc(segmentKey,haulSegmentIntervalIdx);
+      Fc = pMaterial->GetSegmentDesignFc(segmentKey,haulSegmentIntervalIdx);
       Ec = pMaterial->GetSegmentEc(segmentKey,haulSegmentIntervalIdx);
       concType = pMaterial->GetSegmentConcreteType(segmentKey);
    }

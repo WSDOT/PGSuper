@@ -72,6 +72,11 @@ CPrecastSegmentData::~CPrecastSegmentData()
 
 void CPrecastSegmentData::Init()
 {
+   m_bHeightComputed = false;
+   m_Height = -1;
+   m_bBottomFlangeThicknessComputed = false;
+   m_BottomFlangeThickness = -1;
+
    m_SegmentIndex = INVALID_INDEX;
    m_SegmentID    = INVALID_ID;
 
@@ -1042,14 +1047,21 @@ void CPrecastSegmentData::MakeAssignment(const CPrecastSegmentData& rOther)
 
 Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
 {
+   if ( bSegmentHeight && m_bHeightComputed )
+   {
+      return m_Height;
+   }
+
+   if ( !bSegmentHeight && m_bBottomFlangeThicknessComputed )
+   {
+      return m_BottomFlangeThickness;
+   }
+
    // Gets the segment height based on the data in the girder library entry
    const GirderLibraryEntry* pGdrEntry = GetGirder()->GetGirderLibraryEntry();
    CComPtr<IBeamFactory> factory;
    pGdrEntry->GetBeamFactory(&factory);
 
-#pragma Reminder("UPDATE: this could be more efficient if the girder section was cached somewhere")
-   // it is also kind of kludgy that we have to access the broker way down in a plain-old-data type
-   // of class
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    CComPtr<IGirderSection> gdrSection;
@@ -1057,11 +1069,15 @@ Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
    Float64 height;
    if ( bSegmentHeight )
    {
-      gdrSection->get_GirderHeight(&height);
+      m_bHeightComputed = true;
+      gdrSection->get_GirderHeight(&m_Height);
+      height = m_Height;
    }
    else
    {
-      gdrSection->get_MinBottomFlangeThickness(&height);
+      m_bBottomFlangeThicknessComputed = true;
+      gdrSection->get_MinBottomFlangeThickness(&m_BottomFlangeThickness);
+      height = m_BottomFlangeThickness;
    }
 
    return height;
@@ -1196,23 +1212,5 @@ void CPrecastSegmentData::AssertValid()
    Float64 startStation, endStation;
    GetStations(&startStation,&endStation);
    ATLASSERT( startStation < endStation );
-
-#pragma Reminder("UPDATE: validate segment geometry")
-   //CComPtr<IBroker> pBroker;
-   //EAFGetBroker(&pBroker);
-   //GET_IFACE2(pBroker,IGirderSegment,pISegment);
-
-   //const CGirderGroupData* pGroup = m_pGirder->GetGirderGroup();
-
-   //GroupIndexType grpIdx   = pGroup->GetGroupIndex();
-   //GirderIndexType gdrIdx  = m_pGirder->GetGirderIndex();
-   //SegmentIndexType segIdx = GetIndex();
-   //CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-
-   //Float64 segmentLength = pISegment->GetSegmentLayoutLength(segmentKey);
-
-   //Float64 x = segmentLength - (m_VariationLength[0]+m_VariationLength[1]+m_VariationLength[2]+m_VariationLength[3]);
-   //_ASSERT(0 <= x);
-
 }
 #endif

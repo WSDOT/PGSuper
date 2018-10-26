@@ -1,0 +1,29 @@
+// IEPluginExample.idl : IDL source for IEPluginExample.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (IEPluginExample.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+import "PGSuperIEPlugin.idl";  // for the Importer/Exporter plugins
+
+[
+	uuid(A923A888-A08B-4255-867E-BDF4D1200D7B),
+	version(1.0),
+	helpstring("KDOTExport 1.0 Type Library")
+]
+library KDOTExport
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(775F87BC-07DF-4177-B001-F98E011C6AB4),
+		helpstring("KDOT DataExporter Class")
+	]
+	coclass PGSuperDataExporter
+	{
+		[default] interface IPGSuperDataExporter;
+	};
+};

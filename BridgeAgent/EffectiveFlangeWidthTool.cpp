@@ -20,22 +20,6 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-#pragma Reminder("BUG: Deal with this")
-//******************************************************************
-//******************************************************************
-//
-//  NOTE! NOTE! NOTE! Read this note!!!
-//
-//******************************************************************
-//******************************************************************
-//
-// There are lots of "bugs" in this file. The code is still heavily
-// based on a Span/Girder reference system which doesn't
-// work for spliced girder bridges. As the POI and GirderID reference
-// system take over, this will have to be updated for spliced girder
-// bridges
-
 // EffectiveFlangeWidthTool.cpp : Implementation of CEffectiveFlangeWidthTool
 #include "stdafx.h"
 
@@ -1075,7 +1059,6 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -1159,6 +1142,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    }
    else
    {
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       if ( IsSpreadSpacing(pIBridgeDesc->GetGirderSpacingType()) )
       {
          if ( 1 < pBridge->GetGirderCount(poi.GetSegmentKey().groupIndex) )

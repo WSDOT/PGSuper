@@ -948,6 +948,22 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    // The design artifact
    pgsGirderDesignArtifact artifact(girderKey);
 
+   // on occasion, the LLDF range of applicability is violated and it halts the design.
+   // this usually happens with f'c is at its max value which impacts n and Kg.
+   // this is undesirable.
+   // to get around this, set the LLDF ROA action to ignore the ROA.. then reset it to the
+   // current value when design is done.
+   // 
+   // we don't want events to fire so we'll hold events and then cancel any pending events
+   // when design is done
+   GET_IFACE(IEvents,pEvents);
+   pEvents->HoldEvents();
+
+   GET_IFACE(ILiveLoads,pLiveLoads);
+   LldfRangeOfApplicabilityAction old_roa = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+   pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+
+
    GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    try 
@@ -997,6 +1013,9 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
          pSegmentDesignArtifact->SetOutcome(outcome);
       }
    }
+
+   pLiveLoads->SetLldfRangeOfApplicabilityAction(old_roa);
+   pEvents->CancelPendingEvents();
 
    return artifact;
 }
@@ -2298,7 +2317,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    Float64 fci;
    if ( pConfig == NULL )
    {
-      fci = pMaterials->GetSegmentFc(segmentKey,releaseIntervalIdx);
+      fci = pMaterials->GetSegmentDesignFc(segmentKey,releaseIntervalIdx);
    }
    else
    {
@@ -4073,12 +4092,12 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
 
    ATLASSERT(pStirrupArtifact != NULL);
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc_slab = pMaterials->GetDeckFc(intervalIdx);
+   Float64 fc_slab = pMaterials->GetDeckDesignFc(intervalIdx);
 
    Float64 fc_girder;
    if ( pConfig == NULL )
    {
-      fc_girder = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
+      fc_girder = pMaterials->GetSegmentDesignFc(segmentKey,intervalIdx);
    }
    else
    {

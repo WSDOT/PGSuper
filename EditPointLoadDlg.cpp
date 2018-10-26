@@ -173,7 +173,7 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
          m_Load.m_bLoadOnCantilever[pgsTypes::metEnd]   = false;
       }
 
-      if ( m_Load.m_bLoadOnCantilever )
+      if ( m_Load.m_bLoadOnCantilever[pgsTypes::metStart] || m_Load.m_bLoadOnCantilever[pgsTypes::metEnd] )
       {
          ATLASSERT(m_Load.m_SpanKey.spanIndex == 0 || m_Load.m_SpanKey.spanIndex == nSpans-1);
          const CSpanData2* pSpan = pBridgeDesc->GetSpan(m_Load.m_SpanKey.spanIndex);

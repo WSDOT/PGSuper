@@ -49,5 +49,5 @@ eafTypes::StatusSeverityType pgsRebarStrengthStatusCallback::GetSeverity()
 
 void pgsRebarStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AfxMessageBox(pStatusItem->GetDescription().c_str());
+   AfxMessageBox(pStatusItem->GetDescription());
 }

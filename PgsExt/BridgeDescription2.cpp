@@ -2679,7 +2679,6 @@ pgsTypes::DistributionFactorMethod CBridgeDescription2::GetDistributionFactorMet
 
 CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID)
 {
-#pragma Reminder("UPDATE: this is a good method of parallelize")
    std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
@@ -2697,7 +2696,6 @@ CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID)
 
 const CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID) const
 {
-#pragma Reminder("UPDATE: this is a good method of parallelize")
    std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
@@ -2715,7 +2713,6 @@ const CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID) 
 
 CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID)
 {
-#pragma Reminder("UPDATE: this is a good method of parallelize")
    std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
@@ -2738,7 +2735,6 @@ CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID)
 
 const CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID) const
 {
-#pragma Reminder("UPDATE: this is a good method of parallelize")
    std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
@@ -2761,7 +2757,6 @@ const CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID) co
 
 CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID)
 {
-#pragma Reminder("UPDATE: this is a good method of parallelize")
    std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
@@ -3093,6 +3088,53 @@ const CPrecastSegmentData* CBridgeDescription2::GetSegment(const CSegmentKey& se
    return pSegment;
 }
 
+void CBridgeDescription2::GetSegmentsAtTemporarySupport(SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) const
+{
+   const CTemporarySupportData* pTS = GetTemporarySupport(tsIdx);
+   const CClosureJointData* pClosure = pTS->GetClosureJoint(0);
+   const CSpanData2* pSpan = pTS->GetSpan();
+   const CGirderGroupData* pGroup = GetGirderGroup(pSpan);
+
+   GroupIndexType grpIdx = pGroup->GetIndex();
+
+   if ( pClosure )
+   {
+      const CPrecastSegmentData* pLeftSegment = pClosure->GetLeftSegment();
+      const CPrecastSegmentData* pRightSegment = pClosure->GetRightSegment();
+
+      CSegmentKey leftSegKey(grpIdx,INVALID_INDEX,pLeftSegment->GetIndex());
+      CSegmentKey rightSegKey(grpIdx,INVALID_INDEX,pRightSegment->GetIndex());
+
+      *pLeftSegmentKey = leftSegKey;
+      *pRightSegmentKey = rightSegKey;
+   }
+   else
+   {
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+         std::vector<const CTemporarySupportData*> tempSupports(pSegment->GetTemporarySupports());
+         std::vector<const CTemporarySupportData*>::iterator tsIter(tempSupports.begin());
+         std::vector<const CTemporarySupportData*>::iterator tsIterEnd(tempSupports.end());
+         for ( ; tsIter != tsIterEnd; tsIter++ )
+         {
+            const CTemporarySupportData* pTempSupport = *tsIter;
+            if ( pTS->GetIndex() == pTempSupport->GetIndex() )
+            {
+               CSegmentKey segKey(grpIdx,INVALID_INDEX,segIdx);
+
+               *pLeftSegmentKey = segKey;
+               *pRightSegmentKey = segKey;
+
+               return;
+            }
+         }
+      }
+   }
+}
+
 bool CBridgeDescription2::IsStable() const
 {
    // Check the stability of each segment. The structure is stable if all segments are stable.
@@ -3422,7 +3464,7 @@ bool CBridgeDescription2::MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Fl
 
    // since the overall length of the bridge doesn't change, there is no need to adjust
    // the location of the temporary supports
-#pragma Reminder("REVIEW/UPDATE: pier could move such that the temporary support effective change spans")
+#pragma Reminder("REVIEW/UPDATE: pier could move such that the temporary support effectively changes spans")
    // if this happens the span/temp support referencing would get messed up (I think). review this case
    // and update as needed.
 

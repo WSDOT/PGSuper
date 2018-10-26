@@ -31,6 +31,8 @@
 
 #include "PGSuperAppPlugin\resource.h"
 #include <PgsExt\PierData2.h>
+#include "ColumnLayoutGrid.h"
+#include <PgsExt\ColumnFixityComboBox.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierLayoutPage dialog
@@ -75,19 +77,21 @@ protected:
    afx_msg void OnPierModelTypeChanged();
    afx_msg void OnColumnShapeChanged();
    afx_msg void OnColumnCountChanged(NMHDR* pNMHDR, LRESULT* pResult);
+   afx_msg void OnHeightMeasureChanged();
+   afx_msg void OnAddColumn();
+   afx_msg void OnRemoveColumns();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    CMetaFileStatic m_LayoutPicture;
-   CCacheEdit m_SpacingControl;
+   CColumnLayoutGrid m_ColumnLayoutGrid;
+   CColumnFixityComboBox m_cbColumnFixity;
 
    void FillPierModelTypeComboBox();
-   void FillRefColumnComboBox();
+   void FillRefColumnComboBox(ColumnIndexType nColumns=INVALID_INDEX);
    void FillHeightMeasureComboBox();
-   void FillColumnShapeComboBox();
    void FillTransverseLocationComboBox();
 
-   void UpdateColumnSpacingControls();
    void UpdateEcControls();
 
    CPierData2* m_pPier;
@@ -98,7 +102,6 @@ protected:
    void UpdateConcreteTypeLabel();
    void UpdateEc();
 
-   ColumnIndexType m_nColumns;
    ColumnIndexType m_RefColumnIdx;
    Float64 m_TransverseOffset;
    pgsTypes::OffsetMeasurementType m_TransverseOffsetMeasurement;
@@ -106,15 +109,9 @@ protected:
    Float64 m_XBeamHeight[2];
    Float64 m_XBeamTaperHeight[2];
    Float64 m_XBeamTaperLength[2];
+   Float64 m_XBeamEndSlopeOffset[2];
    Float64 m_XBeamOverhang[2];
-
-   CColumnData::ColumnHeightMeasurementType m_ColumnHeightMeasurementType;
-   Float64 m_ColumnHeight;
-   Float64 m_ColumnSpacing;
-
-   CColumnData::ColumnShapeType m_ColumnShape;
-   Float64 m_B;
-   Float64 m_D;
+   pgsTypes::ColumnFixityType m_ColumnFixity;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -343,6 +343,20 @@ void CShearSteelGrid::SetRowStyle(ROWCOL nRow)
 {
 	GetParam()->EnableUndo(FALSE);
 
+   CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
+   matRebar::Type type;
+   matRebar::Grade grade;
+   pParent->GetRebarMaterial(&type,&grade);
+   CString strBarSizeChoiceList(_T("None\n"));
+   lrfdRebarIter rebarIter(type,grade,true);
+   for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
+   {
+      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      strBarSizeChoiceList += pRebar->GetName().c_str();
+      strBarSizeChoiceList += _T("\n");
+   }
+
+
 	SetStyleRange(CGXRange(nRow,1), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0.0e01"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
@@ -350,12 +364,14 @@ void CShearSteelGrid::SetRowStyle(ROWCOL nRow)
          .SetHorizontalAlignment(DT_RIGHT)
 		);
 
-	SetStyleRange(CGXRange(nRow,2), CGXStyle()
-			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("None\n#3\n#4\n#5\n#6\n#7\n#8\n#9\n"))
-			.SetValue(_T("None"))
-         .SetHorizontalAlignment(DT_RIGHT)
-         );
+   SetStyleRange(CGXRange(nRow,2), CGXStyle()
+      .SetEnabled(TRUE)
+      .SetReadOnly(FALSE)
+      .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+      .SetChoiceList(strBarSizeChoiceList)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetValue(_T("None"))
+      );
 
 	SetStyleRange(CGXRange(nRow,3), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0.0e01"))
@@ -378,12 +394,14 @@ void CShearSteelGrid::SetRowStyle(ROWCOL nRow)
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-	SetStyleRange(CGXRange(nRow,6), CGXStyle()
-			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("None\n#3\n#4\n#5\n#6\n#7\n#8\n#9\n"))
-			.SetValue(_T("None"))
-         .SetHorizontalAlignment(DT_RIGHT)
-         );
+   SetStyleRange(CGXRange(nRow,6), CGXStyle()
+      .SetEnabled(TRUE)
+      .SetReadOnly(FALSE)
+      .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+      .SetChoiceList(strBarSizeChoiceList)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetValue(_T("None"))
+      );
 
    GetParam()->EnableUndo(TRUE);
 }

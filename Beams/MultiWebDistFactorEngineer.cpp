@@ -56,6 +56,7 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 {
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IPointOfInterest,pPoi);
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -137,10 +138,12 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
+      pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(CSpanKey(spanIdx,girderKey.girderIndex),span_lldf.ControllingLocation);
+      const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
       Float64 station,offset;
-#pragma Reminder("UPDATE: need to figure out the actual group, girder, and segment")
-      pBridge->GetStationAndOffset(pgsPointOfInterest(CSegmentKey(spanIdx,gdrIdx,0),span_lldf.ControllingLocation),&station, &offset);
-      Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetSegmentStartEndDistance(CSegmentKey(spanIdx,gdrIdx,0));
+      pBridge->GetStationAndOffset(poi,&station, &offset);
+      Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetSegmentStartEndDistance(segmentKey);
       (*pPara) << _T("Deck Width, Girder Spacing and Slab Overhang are measured along a line that is normal to the alignment and passing through a point ") << location.SetValue(supp_dist) << _T(" from the left support along the centerline of girder. ");
       (*pPara) << _T("The measurement line passes through Station ") << rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << _T(" (") << RPT_OFFSET(offset,offsetFormatter) << _T(")") << rptNewLine;
       (*pPara) << _T("Bridge Width: W = ") << xdim.SetValue(span_lldf.W) << rptNewLine;

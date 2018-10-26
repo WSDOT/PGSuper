@@ -65,9 +65,6 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
    m_OverlayIntervalIdx       = INVALID_INDEX;
    m_RailingSystemIntervalIdx = INVALID_INDEX;
 
-#pragma Reminder("UPDATE: need zero duration interval for installation of temporary strands if they are post-tensioned")
-   // also need generic TemporaryStrandInstallationInterval method
-
    m_StressStrandIntervals.clear();
    m_ReleaseIntervals.clear();
 

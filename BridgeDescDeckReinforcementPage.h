@@ -89,6 +89,8 @@ private:
    CRebarMaterialComboBox m_cbRebar;
    CDeckRebarData m_RebarData;
    friend CBridgeDescDeckRebarGrid;
+
+   void GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
 };
 
 //{{AFX_INSERT_LOCATION}}

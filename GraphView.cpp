@@ -30,7 +30,8 @@
 
 #include "PGSuperCalculationSheet.h"
 #include <IFace\VersionInfo.h>
-#include <IFace\DocumentType.h>
+
+#include <EAF\EAFAppPlugin.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -101,19 +102,19 @@ void CGraphView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IVersionInfo,pVerInfo);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
 
    // get paper size
    PGSuperCalculationSheet border(pBroker);
+
+   CDocument* pDoc = GetDocument();
+   CEAFDocTemplate* pDocTemplate = (CEAFDocTemplate*)pDoc->GetDocTemplate();
+   CComPtr<IEAFAppPlugin> appPlugin;
+   pDocTemplate->GetPlugin(&appPlugin);
    CString strBottomTitle;
-   if ( pDocType->IsPGSuperDocument() )
-      strBottomTitle.Format(_T("PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pVerInfo->GetVersion(true),sysDate().Year());
-   else
-      strBottomTitle.Format(_T("PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pVerInfo->GetVersion(true),sysDate().Year());
+   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),appPlugin->GetName(),pVerInfo->GetVersion(true),sysDate().Year());
 
    border.SetTitle(strBottomTitle);
-   CDocument* pdoc = GetDocument();
-   CString path = pdoc->GetPathName();
+   CString path = pDoc->GetPathName();
    border.SetFileName(path);
    CRect rcPrint = border.Print(pDC, 1);
 

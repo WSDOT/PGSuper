@@ -89,10 +89,13 @@ CPierData2::CPierData2()
    m_XBeamTaperHeight[pgsTypes::pstRight] = 0;
    m_XBeamTaperLength[pgsTypes::pstLeft]  = 0;
    m_XBeamTaperLength[pgsTypes::pstRight] = 0;
+   m_XBeamEndSlopeOffset[pgsTypes::pstLeft] = 0;
+   m_XBeamEndSlopeOffset[pgsTypes::pstRight] = 0;
    m_XBeamOverhang[pgsTypes::pstLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
    m_XBeamOverhang[pgsTypes::pstRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
    m_XBeamWidth = ::ConvertToSysUnits(5,unitMeasure::Feet);
 
+   m_ColumnFixity = pgsTypes::cftFixed;
    CColumnData defaultColumn(this);
    m_Columns.push_back(defaultColumn);
 
@@ -241,6 +244,11 @@ bool CPierData2::operator==(const CPierData2& rOther) const
          return false;
       }
 
+      if ( m_ColumnFixity != rOther.m_ColumnFixity )
+      {
+         return false;
+      }
+
       if ( m_ColumnSpacing != rOther.m_ColumnSpacing )
       {
          return false;
@@ -269,6 +277,11 @@ bool CPierData2::operator==(const CPierData2& rOther) const
          }
 
          if ( !IsEqual(m_XBeamTaperLength[side],rOther.m_XBeamTaperLength[side]) )
+         {
+            return false;
+         }
+
+         if ( !IsEqual(m_XBeamEndSlopeOffset[side],rOther.m_XBeamEndSlopeOffset[side]) )
          {
             return false;
          }
@@ -378,7 +391,6 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       }
    }
 
-
    return true;
 }
 
@@ -457,7 +469,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierDataDetails"),15.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),17.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -492,9 +504,13 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("XBeamTaperHeight_Right"),CComVariant(m_XBeamTaperHeight[pgsTypes::pstRight]));
       pStrSave->put_Property(_T("XBeamTaperLength_Left"),CComVariant(m_XBeamTaperLength[pgsTypes::pstLeft]));
       pStrSave->put_Property(_T("XBeamTaperLength_Right"),CComVariant(m_XBeamTaperLength[pgsTypes::pstRight]));
+      pStrSave->put_Property(_T("XBeamEndSlopeOffset_Left"), CComVariant(m_XBeamEndSlopeOffset[pgsTypes::pstLeft])); // added version 17
+      pStrSave->put_Property(_T("XBeamEndSlopeOffset_Right"), CComVariant(m_XBeamEndSlopeOffset[pgsTypes::pstRight])); // added version 17
       pStrSave->put_Property(_T("XBeamOverhang_Left"),CComVariant(m_XBeamOverhang[pgsTypes::pstLeft]));
       pStrSave->put_Property(_T("XBeamOverhang_Right"),CComVariant(m_XBeamOverhang[pgsTypes::pstRight]));
       pStrSave->put_Property(_T("XBeamWidth"),CComVariant(m_XBeamWidth));
+
+      pStrSave->put_Property(_T("ColumnFixity"),CComVariant(m_ColumnFixity)); // added version 16
 
       pStrSave->put_Property(_T("ColumnCount"),CComVariant(m_Columns.size()));
       std::vector<Float64>::iterator spacingIter = m_ColumnSpacing.begin();
@@ -771,6 +787,16 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             hr = pStrLoad->get_Property(_T("XBeamTaperLength_Right"),&var);
             m_XBeamTaperLength[pgsTypes::pstRight] = var.dblVal;
 
+            if ( 16 < version )
+            {
+               // Added version 17
+               hr = pStrLoad->get_Property(_T("XBeamEndSlopeOffset_Left"), &var);
+               m_XBeamEndSlopeOffset[pgsTypes::pstLeft] = var.dblVal;
+
+               hr = pStrLoad->get_Property(_T("XBeamEndSlopeOffset_Right"), &var);
+               m_XBeamEndSlopeOffset[pgsTypes::pstRight] = var.dblVal;
+            }
+
             hr = pStrLoad->get_Property(_T("XBeamOverhang_Left"),&var);
             m_XBeamOverhang[pgsTypes::pstLeft] = var.dblVal;
 
@@ -779,6 +805,14 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             hr = pStrLoad->get_Property(_T("XBeamWidth"),&var);
             m_XBeamWidth = var.dblVal;
+
+            if ( 15 < version )
+            {
+               // added int version 16
+               var.vt = VT_I4;
+               hr = pStrLoad->get_Property(_T("ColumnFixity"),&var);
+               m_ColumnFixity = (pgsTypes::ColumnFixityType)var.lVal;
+            }
 
 
             m_Columns.clear();
@@ -1181,6 +1215,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    m_TransverseOffset = rOther.m_TransverseOffset;
    m_TransverseOffsetMeasurement = rOther.m_TransverseOffsetMeasurement;
 
+   m_ColumnFixity = rOther.m_ColumnFixity;
    m_ColumnSpacing = rOther.m_ColumnSpacing;
    m_Columns = rOther.m_Columns;
 
@@ -1192,6 +1227,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
       m_XBeamHeight[i] = rOther.m_XBeamHeight[i];
       m_XBeamTaperHeight[i] = rOther.m_XBeamTaperHeight[i];
       m_XBeamTaperLength[i] = rOther.m_XBeamTaperLength[i];
+      m_XBeamEndSlopeOffset[i] = rOther.m_XBeamEndSlopeOffset[i];
       m_XBeamOverhang[i]    = rOther.m_XBeamOverhang[i];
 
       m_GirderEndDistance[i]            = rOther.m_GirderEndDistance[i];
@@ -1662,18 +1698,20 @@ void CPierData2::GetTransverseOffset(ColumnIndexType* pRefColumnIdx,Float64* pOf
    *pOffsetType = m_TransverseOffsetMeasurement;
 }
 
-void CPierData2::SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,Float64 taperHeight,Float64 taperLength)
+void CPierData2::SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,Float64 taperHeight,Float64 taperLength,Float64 endSlopeOffset)
 {
-   m_XBeamHeight[side]      = height;
-   m_XBeamTaperHeight[side] = taperHeight;
-   m_XBeamTaperLength[side] = taperLength;
+   m_XBeamHeight[side]         = height;
+   m_XBeamTaperHeight[side]    = taperHeight;
+   m_XBeamTaperLength[side]    = taperLength;
+   m_XBeamEndSlopeOffset[side] = endSlopeOffset;
 }
 
-void CPierData2::GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength) const
+void CPierData2::GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength,Float64* pEndSlopeOffset) const
 {
-   *pHeight      = m_XBeamHeight[side];
-   *pTaperHeight = m_XBeamTaperHeight[side];
-   *pTaperLength = m_XBeamTaperLength[side];
+   *pHeight         = m_XBeamHeight[side];
+   *pTaperHeight    = m_XBeamTaperHeight[side];
+   *pTaperLength    = m_XBeamTaperLength[side];
+   *pEndSlopeOffset = m_XBeamEndSlopeOffset[side];
 }
 
 void CPierData2::SetXBeamWidth(Float64 width)
@@ -1706,6 +1744,16 @@ void CPierData2::GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhan
 {
    *pLeftOverhang  = m_XBeamOverhang[pgsTypes::pstLeft];
    *pRightOverhang = m_XBeamOverhang[pgsTypes::pstRight];
+}
+
+void CPierData2::SetColumnFixity(pgsTypes::ColumnFixityType fixityType)
+{
+   m_ColumnFixity = fixityType;
+}
+
+pgsTypes::ColumnFixityType CPierData2::GetColumnFixity() const
+{
+   return m_ColumnFixity;
 }
 
 void CPierData2::RemoveColumns()
@@ -1767,6 +1815,26 @@ Float64 CPierData2::GetColumnSpacing(SpacingIndexType spaceIdx) const
 {
    ATLASSERT(spaceIdx < m_ColumnSpacing.size());
    return m_ColumnSpacing[spaceIdx];
+}
+
+Float64 CPierData2::GetColumnSpacingWidth() const
+{
+   Float64 w = 0;
+   BOOST_FOREACH(Float64 s,m_ColumnSpacing)
+   {
+      w += s;
+   }
+   return w;
+}
+
+Float64 CPierData2::GetColumnSpacingWidthToColumn(ColumnIndexType colIdx) const
+{
+   Float64 w = 0;
+   for ( ColumnIndexType idx = 0; idx < colIdx; idx++ )
+   {
+      w += m_ColumnSpacing[idx];
+   }
+   return w;
 }
 
 const CColumnData& CPierData2::GetColumnData(ColumnIndexType colIdx) const
@@ -2080,7 +2148,7 @@ CPierData2::LLDF& CPierData2::GetLLDF(GirderIndexType igs) const
    }
 
    // Next: let's deal with retrieval
-   if (igs<0)
+   if (igs < 0)
    {
       ATLASSERT(false); // problemo in calling routine - let's not crash
       return m_LLDFs.front();
@@ -2193,7 +2261,10 @@ void CPierData2::SetPierData(CPierData* pPier)
       m_LLDFs.push_back(lldf2);
    }
 
-   m_bDistributionFactorsFromOlderVersion = true;
+   if ( 0 < pPier->m_LLDFs.size() )
+   {
+      m_bDistributionFactorsFromOlderVersion = true;
+   }
 }
 
 void CPierData2::ValidateBoundaryConditionType()
