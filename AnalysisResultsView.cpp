@@ -107,6 +107,8 @@ END_MESSAGE_MAP()
 
 void CAnalysisResultsView::OnDraw(CDC* pDC)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    int save = pDC->SaveDC();
 
    // deal with printing and reentrant behavior

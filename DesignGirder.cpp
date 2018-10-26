@@ -258,7 +258,7 @@ void txnDesignGirder::CacheFlexureDesignResults()
       m_GirderData[1].Material.Eci = lrfdConcreteUtil::ModE( m_GirderData[1].Material.Fci, 
                                                              m_GirderData[1].Material.StrengthDensity, 
                                                              false /* ignore LRFD range checks */ );
-      m_GirderData[1].Material.Eci *= m_GirderData[1].Material.K1;
+      m_GirderData[1].Material.Eci *= (m_GirderData[1].Material.EcK1*m_GirderData[1].Material.EcK2);
    }
 
    m_GirderData[1].Material.Fc  = m_DesignArtifact.GetConcreteStrength();
@@ -267,7 +267,7 @@ void txnDesignGirder::CacheFlexureDesignResults()
       m_GirderData[1].Material.Ec = lrfdConcreteUtil::ModE( m_GirderData[1].Material.Fc, 
                                                             m_GirderData[1].Material.StrengthDensity, 
                                                             false /* ignore LRFD range checks */ );
-      m_GirderData[1].Material.Ec *= m_GirderData[1].Material.K1;
+      m_GirderData[1].Material.Ec *= (m_GirderData[1].Material.EcK1*m_GirderData[1].Material.EcK2);
    }
 
    // deck offset

@@ -87,9 +87,9 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    *pParagraph << "[5.9.5.4.2b] Creep of Girder Concrete : " << symbol(DELTA) << Sub2("f","pCRH") << rptNewLine;
 
    if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH_PT.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH_PT.png") << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH.png") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -98,6 +98,8 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    *pParagraph << Sub2("k","td") << " = " << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetKtd()) << rptNewLine;
    *pParagraph << Sub2("t","i")  << " = " << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge())   << rptNewLine;
    *pParagraph << Sub2("t","h")  << " = " << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
+   *pParagraph << Sub2("K","1")  << " = " << details.RefinedLosses2005.GetGdrK1Creep() << rptNewLine;
+   *pParagraph << Sub2("K","2")  << " = " << details.RefinedLosses2005.GetGdrK2Creep() << rptNewLine;
    *pParagraph << Sub2(symbol(psi),"b") << "(" << Sub2("t","h") << "," << Sub2("t","i") << ")" << " = " << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
    table->time.ShowUnitTag(false);
 

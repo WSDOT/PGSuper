@@ -767,6 +767,27 @@ interface ILimits : IUnknown
 
 /*****************************************************************************
 INTERFACE
+   ILimits
+
+   Interface to get information about limits
+
+DESCRIPTION
+   Interface to get information about limits
+*****************************************************************************/
+// {797998B4-FE8C-4ad1-AE9E-167A193CC296}
+DEFINE_GUID(IID_ILimits2, 
+0x797998b4, 0xfe8c, 0x4ad1, 0xae, 0x9e, 0x16, 0x7a, 0x19, 0x3c, 0xc2, 0x96);
+interface ILimits2 : IUnknown
+{
+   virtual double GetMaxSlabFc(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxGirderFci(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxGirderFc(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxConcreteAggSize(pgsTypes::ConcreteType concType) = 0;
+};
+
+/*****************************************************************************
+INTERFACE
    ILoadFactors
 
    Interface for getting information about user defined load factors

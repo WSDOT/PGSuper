@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="SpecAgent"
 	ProjectGUID="{E9ACC1B7-6DE0-492E-A16B-0E5075074116}"
+	RootNamespace="SpecAgent"
 	Keyword="AtlProj"
 	TargetFrameworkVersion="0"
 	>
@@ -399,6 +400,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\IFace\PrecastIGirderDetailsSpec.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\ResistanceFactors.h"
 				>
 			</File>
 			<File

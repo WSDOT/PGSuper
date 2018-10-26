@@ -256,7 +256,7 @@ interface IBridgeMaterial : IUnknown
    virtual Float64 GetMaxAggrSizeGdr(SpanIndexType span, GirderIndexType gdr) = 0;
    virtual Float64 GetFlexureFrGdr(SpanIndexType span, GirderIndexType gdr) = 0;
    virtual Float64 GetShearFrGdr(SpanIndexType span, GirderIndexType gdr) = 0;
-   virtual Float64 GetK1Gdr(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual Float64 GetK1Gdr(SpanIndexType span,GirderIndexType gdr) = 0; // obsolete
 
    // Girder Concrete at release
    virtual Float64 GetEciGdr(SpanIndexType span, GirderIndexType gdr) = 0;
@@ -271,7 +271,7 @@ interface IBridgeMaterial : IUnknown
    virtual Float64 GetMaxAggrSizeSlab() = 0;
    virtual Float64 GetFlexureFrSlab() = 0;
    virtual Float64 GetShearFrSlab() = 0;
-   virtual Float64 GetK1Slab() = 0;
+   virtual Float64 GetK1Slab() = 0; // obsolete
 
    // Traffic Barrier and Sidewalk Density
    virtual Float64 GetDensityRailing(pgsTypes::TrafficBarrierOrientation orientation) = 0;
@@ -292,14 +292,50 @@ interface IBridgeMaterial : IUnknown
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy) = 0;
    virtual std::string GetDeckRebarName() = 0;
 
-   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1) = 0;
-   virtual Float64 GetFlexureModRupture(Float64 fc) = 0;
-   virtual Float64 GetShearModRupture(Float64 fc) = 0;
-   virtual Float64 GetFlexureFrCoefficient() = 0;
-   virtual Float64 GetShearFrCoefficient() = 0;
+   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1) = 0; /// obsolete
+
+   virtual Float64 GetFlexureModRupture(Float64 fc) = 0; // obsolete
+   virtual Float64 GetShearModRupture(Float64 fc) = 0; // obsolete
+   virtual Float64 GetFlexureFrCoefficient() = 0; // obsolete
+   virtual Float64 GetShearFrCoefficient() = 0; // obsolete
 
    virtual Float64 GetNWCDensityLimit() = 0; // returns the minimum density for normal weight concrete
-                                             // densities below this value are considered to be LWC
+};
+
+// {E7DBBC86-9DD7-41e1-8D78-D28FD8316C5D}
+DEFINE_GUID(IID_IBridgeMaterialEx, 
+0xe7dbbc86, 0x9dd7, 0x41e1, 0x8d, 0x78, 0xd2, 0x8f, 0xd8, 0x31, 0x6c, 0x5d);
+interface IBridgeMaterialEx : IBridgeMaterial
+{
+   virtual Float64 GetLWCDensityLimit() = 0; // returns the maximum density for lightweight concrete
+   virtual pgsTypes::ConcreteType GetGdrConcreteType(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual bool DoesGdrConcreteHaveAggSplittingStrength(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetGdrConcreteAggSplittingStrength(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual pgsTypes::ConcreteType GetSlabConcreteType() = 0;
+   virtual bool DoesSlabConcreteHaveAggSplittingStrength() = 0;
+   virtual Float64 GetSlabConcreteAggSplittingStrength() = 0;
+   virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) = 0;
+   virtual Float64 GetFlexureFrCoefficient(pgsTypes::ConcreteType type) = 0;
+   virtual Float64 GetFlexureFrCoefficient(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) = 0;
+   virtual Float64 GetShearFrCoefficient(pgsTypes::ConcreteType type) = 0;
+   virtual Float64 GetShearFrCoefficient(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+
+   virtual Float64 GetEccK1Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetEccK2Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetCreepK1Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetCreepK2Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetShrinkageK1Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetShrinkageK2Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+
+   virtual Float64 GetEccK1Slab() = 0;
+   virtual Float64 GetEccK2Slab() = 0;
+   virtual Float64 GetCreepK1Slab() = 0;
+   virtual Float64 GetCreepK2Slab() = 0;
+   virtual Float64 GetShrinkageK1Slab() = 0;
+   virtual Float64 GetShrinkageK2Slab() = 0;
+
+   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) = 0;
 };
 
 /*****************************************************************************

@@ -79,7 +79,7 @@ CRelaxationAtFinalTable* CRelaxationAtFinalTable::PrepareTable(rptChapter* pChap
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_2005.gif") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_2005.png") << rptNewLine;
 
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );

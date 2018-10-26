@@ -145,7 +145,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    *p << symbol(DELTA)<<Sub("ps")<<" = camber due to prestress mid-span = "<<dim.SetValue(pLift->GetCamberDueToPrestress())<<" "<<dim.GetUnitTag()<<rptNewLine;
    *p << symbol(DELTA)<<Sub("total")<< "= total camber at lifting = "<<symbol(DELTA)<<Sub("mid")<<" - "<<symbol(DELTA)<<Sub("end")<<" + "<<symbol(DELTA)<<Sub("ps")<<" ="<<dim.SetValue(pLift->GetTotalCamberAtLifting())<<" "<<dim.GetUnitTag()<<rptNewLine;
    *p << "Adjusted y"<<Sub("r")<<" = y"<<Sub("t")<<" - "<< Sub2("F","o") << "(" << symbol(DELTA)<<Sub("total")<<") = "<<dim.SetValue(pLift->GetAdjustedYr())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Zo - Lifting.jpg" )<<" = "<<dim.SetValue(pLift->GetZo())<<" "<<dim.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "zo.png" )<<" = "<<dim.SetValue(pLift->GetZo())<<" "<<dim.GetUnitTag()<<rptNewLine;
    *p << Sub2("z","o") << " is based on average girder unit weight and mid-span section properties" << rptNewLine;
    *p << symbol(theta)<<Sub("i")<<" = initial tilt angle = e"<<Sub("i")<<" / y"<<Sub("r")<<" = "<<angle.SetValue(pLift->GetInitialTiltAngle())<<" "<<angle.GetUnitTag()<<rptNewLine;
 
@@ -291,9 +291,9 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    p_table = pgsReportStyleHolder::CreateDefaultTable(7,"Factor of Safety Against Cracking");
    *p << p_table << rptNewLine;
    *p << Sub2("f","t") << " = governing tension stress"<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mlat - Lifting.jpg" )<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Theta Max - Lifting.jpg" )<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FS Cracking - Lifting.jpg" )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mlat.png" )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaMax.png" )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FScrLifting.png" )<<rptNewLine;
 
    (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Pick Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*p_table)(0,1) << COLHDR("f"<<Sub("t"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -332,9 +332,9 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    p = new rptParagraph;
    *pChapter << p;
    // FS Failure
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Theta Prime Max - Lifting.jpg" )<<" = "<< angle.SetValue(pLift->GetThetaFailureMax())<<" "<<angle.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Zo Prime - Lifting.jpg" )<<" = "<<dim.SetValue(pLift->GetZoPrime())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FS Failure - Lifting.jpg" )<<" = "<< scalar.SetValue(pLift->GetBasicFsFailure())<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaPrimeMaxLifting.png" )<<" = "<< angle.SetValue(pLift->GetThetaFailureMax())<<" "<<angle.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "zo_prime_lifting.png" )<<" = "<<dim.SetValue(pLift->GetZoPrime())<<" "<<dim.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FSfLifting.png" )<<" = "<< scalar.SetValue(pLift->GetBasicFsFailure())<<rptNewLine;
    *p << rptNewLine;
    *p << "If " << Sub2("FS","f") << " < Minimum " << Sub2("FS","cr") << ", " << Sub2("FS","f") << " = Minimum " << Sub2("FS","cr") << rptNewLine;
    *p << Sub2("FS","f") << " = " << scalar.SetValue(pLift->GetFsFailure()) << rptNewLine;

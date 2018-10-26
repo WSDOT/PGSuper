@@ -25,6 +25,8 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperAppPlugin\Resource.h"
+
 #include "PGSuperDoc.h"
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDlg.h"
@@ -383,6 +385,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 	
    OnWearingSurfaceTypeChanged();
    UpdateSlabOffsetControls();
+   UpdateConcreteControls();
 
    EnableToolTips(TRUE);
 
@@ -544,7 +547,7 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       m_ctrlEc.SetWindowText(strEc);
 
       // need to manually parse strength and density values
-      CString strFc, strDensity, strK1;
+      CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
       CComPtr<IBroker> pBroker;
@@ -552,9 +555,10 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       strDensity.Format("%s",FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format("%f",pParent->m_BridgeDesc.GetDeckDescription()->SlabK1);
+      strK1.Format("%f",pParent->m_BridgeDesc.GetDeckDescription()->SlabEcK1);
+      strK2.Format("%f",pParent->m_BridgeDesc.GetDeckDescription()->SlabEcK2);
 
-      strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1);
+      strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }
@@ -627,25 +631,44 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
 
-   dlg.m_Fc      = pParent->m_BridgeDesc.GetDeckDescription()->SlabFc;
-   dlg.m_AggSize = pParent->m_BridgeDesc.GetDeckDescription()->SlabMaxAggregateSize;
-   dlg.m_bUserEc = pParent->m_BridgeDesc.GetDeckDescription()->SlabUserEc;
-   dlg.m_Ds      = pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity;
-   dlg.m_Dw      = pParent->m_BridgeDesc.GetDeckDescription()->SlabWeightDensity;
-   dlg.m_Ec      = pParent->m_BridgeDesc.GetDeckDescription()->SlabEc;
-   dlg.m_K1      = pParent->m_BridgeDesc.GetDeckDescription()->SlabK1;
+   CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+
+   dlg.m_Type    = pDeck->SlabConcreteType;
+   dlg.m_Fc      = pDeck->SlabFc;
+   dlg.m_AggSize = pDeck->SlabMaxAggregateSize;
+   dlg.m_bUserEc = pDeck->SlabUserEc;
+   dlg.m_Ds      = pDeck->SlabStrengthDensity;
+   dlg.m_Dw      = pDeck->SlabWeightDensity;
+   dlg.m_Ec      = pDeck->SlabEc;
+   dlg.m_EccK1   = pDeck->SlabEcK1;
+   dlg.m_EccK2   = pDeck->SlabEcK2;
+   dlg.m_CreepK1 = pDeck->SlabCreepK1;
+   dlg.m_CreepK2 = pDeck->SlabCreepK2;
+   dlg.m_ShrinkageK1 = pDeck->SlabShrinkageK1;
+   dlg.m_ShrinkageK2 = pDeck->SlabShrinkageK2;
+   dlg.m_bHasFct = pDeck->SlabHasFct;
+   dlg.m_Fct     = pDeck->SlabFct;
+
 
    dlg.m_strUserEc  = m_strUserEc;
 
    if ( dlg.DoModal() == IDOK )
    {
-      pParent->m_BridgeDesc.GetDeckDescription()->SlabFc               = dlg.m_Fc;
-      pParent->m_BridgeDesc.GetDeckDescription()->SlabMaxAggregateSize = dlg.m_AggSize;
-      pParent->m_BridgeDesc.GetDeckDescription()->SlabUserEc           = dlg.m_bUserEc;
-      pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity  = dlg.m_Ds;
-      pParent->m_BridgeDesc.GetDeckDescription()->SlabWeightDensity    = dlg.m_Dw;
-      pParent->m_BridgeDesc.GetDeckDescription()->SlabEc               = dlg.m_Ec;
-      pParent->m_BridgeDesc.GetDeckDescription()->SlabK1               = dlg.m_K1;
+      pDeck->SlabConcreteType     = dlg.m_Type;
+      pDeck->SlabFc               = dlg.m_Fc;
+      pDeck->SlabMaxAggregateSize = dlg.m_AggSize;
+      pDeck->SlabUserEc           = dlg.m_bUserEc;
+      pDeck->SlabStrengthDensity  = dlg.m_Ds;
+      pDeck->SlabWeightDensity    = dlg.m_Dw;
+      pDeck->SlabEc               = dlg.m_Ec;
+      pDeck->SlabEcK1             = dlg.m_EccK1;
+      pDeck->SlabEcK2             = dlg.m_EccK2;
+      pDeck->SlabCreepK1          = dlg.m_CreepK1;
+      pDeck->SlabCreepK2          = dlg.m_CreepK2;
+      pDeck->SlabShrinkageK1      = dlg.m_ShrinkageK1;
+      pDeck->SlabShrinkageK2      = dlg.m_ShrinkageK2;
+      pDeck->SlabHasFct           = dlg.m_bHasFct;
+      pDeck->SlabFct              = dlg.m_Fct;
 
       m_strUserEc  = dlg.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
@@ -665,6 +688,13 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteControls()
    BOOL bEnable = m_ctrlEcCheck.GetCheck();
    GetDlgItem(IDC_EC)->EnableWindow(bEnable);
    GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
+
+   CWnd* pWnd = GetDlgItem(IDC_CONCRETE_TYPE_LABEL);
+
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+   const CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+   pWnd->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str() );
 }
 
 BOOL CBridgeDescDeckDetailsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
@@ -706,23 +736,35 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
    const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
+   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
 
+   const CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
 
    CString strTip;
-   strTip.Format("%-20s %s\r\n%-20s %s\r\n%-20s %s",
-      "Density for Strength",FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity,density),
-      "Density for Weight",  FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabWeightDensity,density),
-      "Max Aggregate Size",  FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabMaxAggregateSize,aggsize)
+   strTip.Format("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s",
+      "Type", matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
+      "Unit Weight",FormatDimension(pDeck->SlabStrengthDensity,density),
+      "Unit Weight (w/ reinforcement)",  FormatDimension(pDeck->SlabWeightDensity,density),
+      "Max Aggregate Size",  FormatDimension(pDeck->SlabMaxAggregateSize,aggsize)
       );
 
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-   {
-      // add K1 parameter
-      CString strK1;
-      strK1.Format("\r\n%-20s %s",
-         "K1",FormatScalar(pParent->m_BridgeDesc.GetDeckDescription()->SlabK1,scalar));
+   //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   //{
+   //   // add K1 parameter
+   //   CString strK1;
+   //   strK1.Format("\r\n%-20s %s",
+   //      "K1",FormatScalar(pDeck->SlabK1,scalar));
 
-      strTip += strK1;
+   //   strTip += strK1;
+   //}
+
+   if ( pDeck->SlabConcreteType != pgsTypes::Normal && pDeck->SlabHasFct )
+   {
+      CString strLWC;
+      strLWC.Format("\r\n%-20s %s",
+         "fct",FormatDimension(pDeck->SlabFct,stress));
+
+      strTip += strLWC;
    }
 
    CString strPress("\r\n\r\nPress button to edit");

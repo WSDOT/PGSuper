@@ -94,16 +94,16 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    {
       if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
       {
-         *pParagraph << "Total Prestress Loss " << rptNewLine << rptRcImage(strImagePath + "DeltaFpt_PS_TTS" + strYear + ".gif") << rptNewLine;
+         *pParagraph << "Total Prestress Loss " << rptNewLine << rptRcImage(strImagePath + "DeltaFpt_PS_TTS" + strYear + ".png") << rptNewLine;
       }
       else
       {
-         *pParagraph << "Total Prestress Loss " << rptNewLine << rptRcImage(strImagePath + "DeltaFpt_PT_TTS" + strYear + ".gif") << rptNewLine;
+         *pParagraph << "Total Prestress Loss " << rptNewLine << rptRcImage(strImagePath + "DeltaFpt_PT_TTS" + strYear + ".png") << rptNewLine;
       }
    }
    else
    {
-      *pParagraph << "Total Prestress Loss " << rptNewLine << rptRcImage(strImagePath + "DeltaFpt" + strYear + ".gif") << rptNewLine;
+      *pParagraph << "Total Prestress Loss " << rptNewLine << rptRcImage(strImagePath + "DeltaFpt" + strYear + ".png") << rptNewLine;
    }
       
 

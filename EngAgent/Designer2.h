@@ -240,6 +240,7 @@ private:
                              const std::vector<pgsPointOfInterest>& vPoi, 
                              const std::vector<ShearDesignAvs>& avsAtPois);
    bool GetStirrupsForAvs(SpanIndexType span,GirderIndexType gdr, Float64 avs, Float64 sMax, BarSizeType* pBarSize, Float64 *pSpacing);
+   Float64 GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd);
 
    Float64 GetNormalFrictionForce(const pgsPointOfInterest& poi);
 

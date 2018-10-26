@@ -1635,7 +1635,12 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pDeck->SacrificialDepth       = xSectionData.SacrificialDepth;
       pDeck->SlabEc                 = xSectionData.SlabEc;
       pDeck->SlabFc                 = xSectionData.SlabFc;
-      pDeck->SlabK1                 = xSectionData.SlabK1;
+      pDeck->SlabEcK1               = xSectionData.SlabEcK1;
+      pDeck->SlabEcK2               = xSectionData.SlabEcK2;
+      pDeck->SlabCreepK1            = xSectionData.SlabCreepK1;
+      pDeck->SlabCreepK2            = xSectionData.SlabCreepK2;
+      pDeck->SlabShrinkageK1        = xSectionData.SlabShrinkageK1;
+      pDeck->SlabShrinkageK2        = xSectionData.SlabShrinkageK2;
       pDeck->SlabMaxAggregateSize   = xSectionData.SlabMaxAggregateSize;
       pDeck->SlabStrengthDensity    = xSectionData.SlabStrengthDensity;
       pDeck->SlabUserEc             = xSectionData.SlabUserEc;
@@ -1663,7 +1668,12 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pLeftRailingSystem->fc                 = pDeck->SlabFc;
       pLeftRailingSystem->bUserEc            = pDeck->SlabUserEc;
       pLeftRailingSystem->Ec                 = pDeck->SlabEc;
-      pLeftRailingSystem->K1                 = pDeck->SlabK1;
+      pLeftRailingSystem->EcK1               = pDeck->SlabEcK1;
+      pLeftRailingSystem->EcK2               = pDeck->SlabEcK2;
+      pLeftRailingSystem->CreepK1            = pDeck->SlabCreepK1;
+      pLeftRailingSystem->CreepK2            = pDeck->SlabCreepK2;
+      pLeftRailingSystem->ShrinkageK1        = pDeck->SlabShrinkageK1;
+      pLeftRailingSystem->ShrinkageK2        = pDeck->SlabShrinkageK2;
       pLeftRailingSystem->MaxAggSize         = pDeck->SlabMaxAggregateSize;
       pLeftRailingSystem->StrengthDensity    = pDeck->SlabStrengthDensity;
       pLeftRailingSystem->WeightDensity      = pDeck->SlabWeightDensity;
@@ -1674,7 +1684,12 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pRightRailingSystem->fc                 = pDeck->SlabFc;
       pRightRailingSystem->bUserEc            = pDeck->SlabUserEc;
       pRightRailingSystem->Ec                 = pDeck->SlabEc;
-      pRightRailingSystem->K1                 = pDeck->SlabK1;
+      pRightRailingSystem->EcK1               = pDeck->SlabEcK1;
+      pRightRailingSystem->EcK2               = pDeck->SlabEcK2;
+      pRightRailingSystem->CreepK1            = pDeck->SlabCreepK1;
+      pRightRailingSystem->CreepK2            = pDeck->SlabCreepK2;
+      pRightRailingSystem->ShrinkageK1        = pDeck->SlabShrinkageK1;
+      pRightRailingSystem->ShrinkageK2        = pDeck->SlabShrinkageK2;
       pRightRailingSystem->MaxAggSize         = pDeck->SlabMaxAggregateSize;
       pRightRailingSystem->StrengthDensity    = pDeck->SlabStrengthDensity;
       pRightRailingSystem->WeightDensity      = pDeck->SlabWeightDensity;
@@ -2939,6 +2954,7 @@ STDMETHODIMP CProjectAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IUserDefinedLoadData,  this );
    pBrokerInit->RegInterface( IID_IEvents,               this);
    pBrokerInit->RegInterface( IID_ILimits,               this);
+   pBrokerInit->RegInterface( IID_ILimits2,              this);
    pBrokerInit->RegInterface( IID_ILoadFactors,          this);
    pBrokerInit->RegInterface( IID_ILiveLoads,            this );
 
@@ -6209,30 +6225,62 @@ void CProjectAgentImp::FirePendingEvents()
 }
 
 ////////////////////////////////////////////////////////////////////////
-// Limits
+// ILimits
 double CProjectAgentImp::GetMaxSlabFc()
 {
-   return m_pSpecEntry->GetMaxSlabFc();
+   ATLASSERT(false); // obsolete - only applicable to normal weight concrete
+   return m_pSpecEntry->GetMaxSlabFc(pgsTypes::Normal);
 }
 
 double CProjectAgentImp::GetMaxGirderFci()
 {
-   return m_pSpecEntry->GetMaxGirderFci();
+   ATLASSERT(false); // obsolete - only applicable to normal weight concrete
+   return m_pSpecEntry->GetMaxGirderFci(pgsTypes::Normal);
 }
 
 double CProjectAgentImp::GetMaxGirderFc()
 {
-   return m_pSpecEntry->GetMaxGirderFc();
+   ATLASSERT(false); // obsolete - only applicable to normal weight concrete
+   return m_pSpecEntry->GetMaxGirderFc(pgsTypes::Normal);
 }
 
 double CProjectAgentImp::GetMaxConcreteUnitWeight()
 {
-   return m_pSpecEntry->GetMaxConcreteUnitWeight();
+   ATLASSERT(false); // obsolete - only applicable to normal weight concrete
+   return m_pSpecEntry->GetMaxConcreteUnitWeight(pgsTypes::Normal);
 }
 
 double CProjectAgentImp::GetMaxConcreteAggSize()
 {
-   return m_pSpecEntry->GetMaxConcreteAggSize();
+   ATLASSERT(false); // obsolete - only applicable to normal weight concrete
+   return m_pSpecEntry->GetMaxConcreteAggSize(pgsTypes::Normal);
+}
+
+////////////////////////////////////////////////////////////////////////
+// ILimits2
+double CProjectAgentImp::GetMaxSlabFc(pgsTypes::ConcreteType concType)
+{
+   return m_pSpecEntry->GetMaxSlabFc(concType);
+}
+
+double CProjectAgentImp::GetMaxGirderFci(pgsTypes::ConcreteType concType)
+{
+   return m_pSpecEntry->GetMaxGirderFci(concType);
+}
+
+double CProjectAgentImp::GetMaxGirderFc(pgsTypes::ConcreteType concType)
+{
+   return m_pSpecEntry->GetMaxGirderFc(concType);
+}
+
+double CProjectAgentImp::GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType)
+{
+   return m_pSpecEntry->GetMaxConcreteUnitWeight(concType);
+}
+
+double CProjectAgentImp::GetMaxConcreteAggSize(pgsTypes::ConcreteType concType)
+{
+   return m_pSpecEntry->GetMaxConcreteAggSize(concType);
 }
 
 ////////////////////////////////////////////////////////////////////////

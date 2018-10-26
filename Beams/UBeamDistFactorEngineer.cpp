@@ -532,7 +532,7 @@ void CUBeamDistFactorEngineer::ReportMoment(Uint32 spanOrPier, rptParagraph* pPa
             {
                // Using WSDOT spec's, and the slab overhang is <= half the girder spacing
                (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 MI Type C SI.gif" : "mg 1 MI Type C US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_C_SI.png" : "mg_1_MI_Type_C_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("ME") << Sub("1") << " = " << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
             }
 
@@ -583,13 +583,13 @@ void CUBeamDistFactorEngineer::ReportMoment(Uint32 spanOrPier, rptParagraph* pPa
                Float64 so = lldf.Side==dfLeft ? lldf.leftSlabOverhang: lldf.rightSlabOverhang;
                if ( pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_WSDOT && so <= lldf.Savg/2 )
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type C SI.gif" : "mg 2 MI Type C US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_C_SI.png" : "mg_2_MI_Type_C_US.png")) << rptNewLine;
                   (*pPara) << "mg" << Super("ME") << Sub("2+") << " = " << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 ME Type C SI.gif" : "mg 2 ME Type C US.gif")) << rptNewLine;
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type C SI.gif" : "mg 2 MI Type C US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_C_SI.png" : "mg_2_ME_Type_C_US.png")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_C_SI.png" : "mg_2_MI_Type_C_US.png")) << rptNewLine;
                   (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
                   (*pPara) << "e = " << gM2.EqnData.e << rptNewLine;
                   (*pPara) << "mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg * gM2.EqnData.e) << rptNewLine;
@@ -642,7 +642,7 @@ void CUBeamDistFactorEngineer::ReportMoment(Uint32 spanOrPier, rptParagraph* pPa
          (*pPara) << Bold("Skew Correction") << rptNewLine;
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + "SkewCorrection_Moment_TypeC.png") << rptNewLine;
 
          (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
          (*pPara) << rptNewLine;
@@ -661,7 +661,7 @@ void CUBeamDistFactorEngineer::ReportMoment(Uint32 spanOrPier, rptParagraph* pPa
       if (gM1.EqnData.bWasUsed )
       {
          (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 MI Type C SI.gif" : "mg 1 MI Type C US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_C_SI.png" : "mg_1_MI_Type_C_US.png")) << rptNewLine;
          (*pPara) << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
       }
 
@@ -686,7 +686,7 @@ void CUBeamDistFactorEngineer::ReportMoment(Uint32 spanOrPier, rptParagraph* pPa
          if (gM2.EqnData.bWasUsed )
          {
             (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type C SI.gif" : "mg 2 MI Type C US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_C_SI.png" : "mg_2_MI_Type_C_US.png")) << rptNewLine;
             (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
          }
 
@@ -723,7 +723,7 @@ void CUBeamDistFactorEngineer::ReportMoment(Uint32 spanOrPier, rptParagraph* pPa
          (*pPara) << Bold("Skew Correction") << rptNewLine;
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + "SkewCorrection_Moment_TypeC.png") << rptNewLine;
 
          (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
          (*pPara) << rptNewLine;
@@ -778,7 +778,7 @@ void CUBeamDistFactorEngineer::ReportShear(Uint32 spanOrPier,rptParagraph* pPara
             if ( gV1.EqnData.bWasUsed )
             {
                (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 VI Type C SI.gif" : "mg 1 VI Type C US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_C_SI.png" : "mg_1_VI_Type_C_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("VE") << Sub("1") << " = " << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
             }
 
@@ -828,13 +828,13 @@ void CUBeamDistFactorEngineer::ReportShear(Uint32 spanOrPier,rptParagraph* pPara
                Float64 so = lldf.Side==dfLeft ? lldf.leftSlabOverhang: lldf.rightSlabOverhang;
                if ( pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_WSDOT && so <= lldf.Savg/2 )
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type C SI.gif" : "mg 2 VI Type C US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_C_SI.png" : "mg_2_VI_Type_C_US.png")) << rptNewLine;
                   (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VE Type C SI.gif" : "mg 2 VE Type C US.gif")) << rptNewLine;
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type C SI.gif" : "mg 2 VI Type C US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_C_SI.png" : "mg_2_VE_Type_C_US.png")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_C_SI.png" : "mg_2_VI_Type_C_US.png")) << rptNewLine;
                   (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
                   (*pPara) << "e = " << gV2.EqnData.e << rptNewLine;
                   (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg * gV2.EqnData.e) << rptNewLine;
@@ -886,7 +886,7 @@ void CUBeamDistFactorEngineer::ReportShear(Uint32 spanOrPier,rptParagraph* pPara
       else
       {
          (*pPara) << Bold("Skew Correction") << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Shear Type C SI.gif" : "Skew Correction for Shear Type C US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Shear_TypeC_SI.png" : "SkewCorrection_Shear_TypeC_US.png")) << rptNewLine;
          (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
          (*pPara) << rptNewLine;
          (*pPara) << "Skew Corrected Factor: mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
@@ -904,7 +904,7 @@ void CUBeamDistFactorEngineer::ReportShear(Uint32 spanOrPier,rptParagraph* pPara
       if ( gV1.EqnData.bWasUsed )
       {
          (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 VI Type C SI.gif" : "mg 1 VI Type C US.gif")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_C_SI.png" : "mg_1_VI_Type_C_US.png")) << rptNewLine;
          (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
       }
 
@@ -928,7 +928,7 @@ void CUBeamDistFactorEngineer::ReportShear(Uint32 spanOrPier,rptParagraph* pPara
          if ( gV2.EqnData.bWasUsed )
          {
             (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type C SI.gif" : "mg 2 VI Type C US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_C_SI.png" : "mg_2_VI_Type_C_US.png")) << rptNewLine;
             (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
          }
 
@@ -962,7 +962,7 @@ void CUBeamDistFactorEngineer::ReportShear(Uint32 spanOrPier,rptParagraph* pPara
       }
       else
       {
-         (*pPara) << Bold("Skew Correction") << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Shear Type C SI.gif" : "Skew Correction for Shear Type C US.gif")) << rptNewLine;
+         (*pPara) << Bold("Skew Correction") << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Shear_TypeC_SI.png" : "SkewCorrection_Shear_TypeC_US.png")) << rptNewLine;
          (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
          (*pPara) << rptNewLine;
          (*pPara) << "Skew Corrected Factor: mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.mg);

@@ -31,6 +31,7 @@
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\ResistanceFactors.h>
 
 #include <PgsExt\statusitem.h>
 #include <PgsExt\GirderLabel.h>
@@ -309,7 +310,13 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
    pmcd->PPR = (bPositiveMoment ? pLongRebarGeom->GetPPRBottomHalf(poi,config) : 0.0);
 
-   pmcd->Phi = 0.9 + 0.1*(pmcd->PPR);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
+   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
+
+   GET_IFACE(IResistanceFactors,pResistanceFactors);
+   Float64 PhiRC,PhiPS,PhiC;
+   pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiC);
+   pmcd->Phi = PhiRC + (PhiPS-PhiRC)*pmcd->PPR; // generalized form of 5.5.4.2.1-3
 
    Float64 C,T;
    solution->get_CompressionResultant(&C);
@@ -487,11 +494,11 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    {
       // WSDOT method 2005... LRFD 2006 and later
       if ( IsZero(pmcd->c) ) 
-         pmcd->Phi = 0.9; // there is no moment capacity, use 0.9 for phi instead of dividing by zero
+         pmcd->Phi = PhiRC; // there is no moment capacity, use PhiRC for phi instead of dividing by zero
       else
-         pmcd->Phi = 0.65 + 0.15*(pmcd->dt/pmcd->c - 1) + pmcd->PPR*(0.1*(pmcd->dt/pmcd->c - 1) - 0.067);
+         pmcd->Phi = (PhiRC + (PhiPS-PhiRC)*pmcd->PPR - PhiC)*(pmcd->dt/pmcd->c - 5./3.) + PhiC; // generalized form of transition between 5.5.4.2.1-1 and -2
 
-      pmcd->Phi = ForceIntoRange(0.75,pmcd->Phi,0.9 + 0.1*pmcd->PPR);
+      pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiRC + (PhiPS-PhiRC)*pmcd->PPR);
    }
 
    pmcd->fpe = fpe;
@@ -782,9 +789,9 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(const pgsPointOfInterest&
    Float64 fr;   // Rupture stress
    // Compute modulus of rupture
    if ( bPositiveMoment )
-      fr = pMaterial->GetFlexureModRupture(pMaterial->GetFcGdr(poi.GetSpan(),poi.GetGirder()));
+      fr = pMaterial->GetFlexureFrGdr(poi.GetSpan(),poi.GetGirder());
    else
-      fr = pMaterial->GetFlexureModRupture(pMaterial->GetFcSlab());
+      fr = pMaterial->GetFlexureFrSlab();
 
    return fr;
 }
@@ -792,16 +799,16 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(const pgsPointOfInterest&
 Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(const GDRCONFIG& config,bool bPositiveMoment)
 {
    GET_IFACE(IProductForces,pProductForces);
-   GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
    GET_IFACE(ISectProp2,pSectProp2);
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
    Float64 fr;   // Rupture stress
    // Compute modulus of rupture
    if ( bPositiveMoment )
-      fr = pMaterial->GetFlexureModRupture(config.Fc);
+      fr = pMaterial->GetFlexureModRupture(config.Fc,config.ConcType);
    else
-      fr = pMaterial->GetFlexureModRupture(pMaterial->GetFcSlab());
+      fr = pMaterial->GetFlexureFrSlab();
 
    return fr;
 }

@@ -170,61 +170,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
 
    *pPara <<Bold("Name: ")<< spec_name << rptNewLine;
    *pPara <<Bold("Description: ")<<pSpecEntry->GetDescription()<<rptNewLine;
-   *pPara <<Bold("Based on:  ");
-
-   lrfdVersionMgr::Version vers = pSpecEntry->GetSpecificationType();
-   switch(vers)
-   {
-      case lrfdVersionMgr::FirstEdition1994:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 1st Edition, 1994";
-         break;
-      case lrfdVersionMgr::FirstEditionWith1996Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 1st Edition, 1994 with 1996 interim provisions";
-         break;
-      case lrfdVersionMgr::FirstEditionWith1997Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 1st Edition, 1994 with 1996 and 1997 interim provisions";
-         break;
-      case lrfdVersionMgr::SecondEdition1998:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 2nd Edition, 1998";
-         break;
-      case lrfdVersionMgr::SecondEditionWith1999Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 2nd Edition, 1998 with 1999 interim provisions";
-         break;
-      case lrfdVersionMgr::SecondEditionWith2000Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 2nd Edition, 1998 with 1999 and 2000 interim provisions";
-         break;
-      case lrfdVersionMgr::SecondEditionWith2001Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 2nd Edition, 1998 with 1999 - 2001 interim provisions";
-         break;
-      case lrfdVersionMgr::SecondEditionWith2002Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 2nd Edition, 1998 with 1999 - 2002 interim provisions";
-         break;
-      case lrfdVersionMgr::SecondEditionWith2003Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 2nd Edition, 1998 with 1999 - 2003 interim provisions";
-         break;
-      case lrfdVersionMgr::ThirdEdition2004:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 3rd Edition, 2004";
-         break;
-      case lrfdVersionMgr::ThirdEditionWith2005Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 3rd Edition, 2004 with 2005 interim provisions";
-         break;
-      case lrfdVersionMgr::ThirdEditionWith2006Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 3rd Edition, 2004 with 2005 - 2006 interim provisions";
-         break;
-      case lrfdVersionMgr::FourthEdition2007:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 4th Edition, 2007";
-         break;
-      case lrfdVersionMgr::FourthEditionWith2008Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 4th Edition, 2007 with 2008 interim provisions";
-         break;
-      case lrfdVersionMgr::FourthEditionWith2009Interims:
-         *pPara <<"AASHTO LRFD Bridge Design Specifications, 4th Edition, 2007 with 2008 - 2009 interim provisions";
-         break;
-      default:
-         ATLASSERT(false);
-         *pPara <<"Unknown";
-         break;
-   }
+   *pPara <<Bold("Based on: ") << "AASHTO LRFD Bridge Design Specifications, " << lrfdVersionMgr::GetVersionString();
    
    lrfdVersionMgr::Units units = pSpecEntry->GetSpecificationUnits();
    if (units==lrfdVersionMgr::SI)
@@ -232,10 +178,9 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
    else
       *pPara<<" - US Units"<<rptNewLine;
 
-
-   write_load_modifiers(pChapter, pBroker, pDisplayUnits);
+   write_load_modifiers(          pChapter, pBroker, pDisplayUnits);
    write_environmental_conditions(pChapter, pBroker, pDisplayUnits);
-   write_structural_analysis(pChapter, pBroker, pDisplayUnits);
+   write_structural_analysis(     pChapter, pBroker, pDisplayUnits);
 
    if ( !bRating )
    {
@@ -476,7 +421,6 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    *pPara<<"Min. angle of inclination of lifting cables = "<<angle.SetValue(pSpecEntry->GetMinCableInclination())<<rptNewLine;
 
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
 
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -492,7 +436,7 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
       {
          *pPara << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
 
-         Float64 fr = pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(pMaterial->GetFcGdr(spanIdx,gdrIdx));
+         Float64 fr = pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(spanIdx,gdrIdx);
          *pPara << "Modulus of rupture = " << stress.SetValue(fr) << rptNewLine;
          
          Float64 fccy = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(spanIdx,gdrIdx);
@@ -552,7 +496,6 @@ void write_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    *pPara<<"Increase of girder camber for CG = "<<pHauling->GetIncreaseInCgForCamber()<<rptNewLine;
    *pPara<<"Max. girder weight = "<< force.SetValue(pHauling->GetMaxGirderWgt())<<rptNewLine;
 
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
@@ -566,7 +509,7 @@ void write_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
       {
          *pPara << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
 
-         Float64 fr = pHauling->GetHaulingModulusOfRupture(pMaterial->GetFciGdr(spanIdx,gdrIdx));
+         Float64 fr = pHauling->GetHaulingModulusOfRupture(spanIdx,gdrIdx);
          *pPara << "Modulus of rupture = " << stress.SetValue(fr) << rptNewLine;
 
          Float64 fccy = pHauling->GetHaulingAllowableCompressiveConcreteStress(spanIdx,gdrIdx);

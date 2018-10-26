@@ -194,14 +194,27 @@ public:
    Float64 GetAggregateSize()const;
 
    //------------------------------------------------------------------------
-   // SetK1 - correction factor for modulus of elasticity introduced in 2005
-   // AASHTO
-   void SetK1(Float64 k1);
+   void SetModEK1(Float64 k1);
+   Float64 GetModEK1() const;
+   void SetModEK2(Float64 k2);
+   Float64 GetModEK2() const;
 
-   //------------------------------------------------------------------------
-   // GetK1 - correction factor for modulus of elasticity introduced in 2005
-   // AASHTO
-   Float64 GetK1() const;
+   void SetCreepK1(Float64 k1);
+   Float64 GetCreepK1() const;
+   void SetCreepK2(Float64 k2);
+   Float64 GetCreepK2() const;
+
+   void SetShrinkageK1(Float64 k1);
+   Float64 GetShrinkageK1() const;
+   void SetShrinkageK2(Float64 k2);
+   Float64 GetShrinkageK2() const;
+
+   void SetType(pgsTypes::ConcreteType type);
+   pgsTypes::ConcreteType GetType() const;
+   void HasAggSplittingStrength(bool bHasFct);
+   bool HasAggSplittingStrength() const;
+   void SetAggSplittingStrength(Float64 fct);
+   Float64 GetAggSplittingStrength() const;
 
    //------------------------------------------------------------------------
    // Equality - test if two entries are equal. Ignore names by default
@@ -227,9 +240,17 @@ private:
    Float64 m_Ds;
    Float64 m_Dw;
    Float64 m_AggSize;
-   Float64 m_K1;
+   Float64 m_EccK1;
+   Float64 m_EccK2;
+   Float64 m_CreepK1;
+   Float64 m_CreepK2;
+   Float64 m_ShrinkageK1;
+   Float64 m_ShrinkageK2;
    bool m_bUserEc;
    Float64 m_Ec;
+   pgsTypes::ConcreteType m_Type;
+   bool m_bHasFct;
+   Float64 m_Fct;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

@@ -125,7 +125,7 @@ private:
    // GROUP: OPERATIONS
    void AnalyzeLifting(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,const HANDLINGCONFIG& liftConfig,IGirderLiftingDesignPointsOfInterest* pPoiD,pgsLiftingAnalysisArtifact* pArtifact);
    void PrepareLiftingCheckArtifact(SpanIndexType span,GirderIndexType gdr,pgsLiftingCheckArtifact* pArtifact);
-   void PrepareLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fci,Float64 Eci,pgsLiftingAnalysisArtifact* pArtifact);
+   void PrepareLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fci,Float64 Eci,pgsTypes::ConcreteType concType,pgsLiftingAnalysisArtifact* pArtifact);
    void ComputeLiftingMoments(SpanIndexType span,GirderIndexType gdr,
                               const pgsLiftingAnalysisArtifact& rArtifact, 
                               const std::vector<pgsPointOfInterest>& rpoiVec,
@@ -147,7 +147,7 @@ private:
 
 
    void AnalyzeHauling(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,const HANDLINGCONFIG& config,IGirderHaulingDesignPointsOfInterest* pPOId,pgsHaulingAnalysisArtifact* pArtifact);
-   void PrepareHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fc,Float64 Ec,pgsHaulingAnalysisArtifact* pArtifact);
+   void PrepareHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fc,Float64 Ec,pgsTypes::ConcreteType concType,pgsHaulingAnalysisArtifact* pArtifact);
 
    void ComputeHaulingMoments(SpanIndexType span,GirderIndexType gdr,
                               const pgsHaulingAnalysisArtifact& rArtifact, 

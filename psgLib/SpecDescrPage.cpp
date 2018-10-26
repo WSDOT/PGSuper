@@ -128,6 +128,9 @@ BOOL CSpecDescrPage::OnInitDialog()
    idx = pSpec->AddString("4th Edition, 2007 with 2008 - 2009 interim provisions");
    pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FourthEditionWith2009Interims);
 
+   idx = pSpec->AddString("5th Edition, 2010");
+   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FifthEdition2010);
+
 
    CPropertyPage::OnInitDialog();
 

@@ -100,9 +100,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    *pChapter << pBody;
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation 2005.gif")<<rptNewLine;
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear2005.png")<<rptNewLine;
    else
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation.gif")<<rptNewLine;
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear.png")<<rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"");
    *pBody << table;
@@ -212,9 +212,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    *pChapter << pBody;
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation 2005.gif")<<rptNewLine;
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear2005.png")<<rptNewLine;
    else
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation.gif")<<rptNewLine;
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear.png")<<rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"");
    *pBody << table;

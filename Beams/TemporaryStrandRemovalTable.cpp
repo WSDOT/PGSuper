@@ -92,20 +92,20 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
    {
       if ( bIgnoreInitialRelaxation )
-         *pParagraph << rptRcImage(strImagePath + "Ptr_LRFD.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "Ptr_LRFD.png") << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + "Ptr_WSDOT.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "Ptr_WSDOT.png") << rptNewLine;
    }
    else if (girderData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping )
    {
-      *pParagraph << rptRcImage(strImagePath + "Ptr_PTBeforeShipping.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Ptr_PTBeforeShipping.png") << rptNewLine;
    }
    else
    {
-      *pParagraph << rptRcImage(strImagePath + "Ptr_PT.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Ptr_PT.png") << rptNewLine;
    }
 
-   *pParagraph << rptRcImage(strImagePath + "Delta_Fptr.gif") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_Fptr.png") << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
    table->ecc.ShowUnitTag(true);

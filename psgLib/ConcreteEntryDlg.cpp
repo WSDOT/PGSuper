@@ -50,11 +50,9 @@ CConcreteEntryDlg::CConcreteEntryDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CConcreteEntryDlg)
 	m_EntryName = _T("");
 	//}}AFX_DATA_INIT
-   CEAFApp* pApp = EAFGetApp();
 
-   m_MinNWCDensity = pApp->GetUnitsMode() == eafTypes::umUS ? ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3) : ::ConvertToSysUnits(2150.,unitMeasure::KgPerMeter3);
-   m_bIsStrengthNWC = true;
-   m_bIsDensityNWC = true;
+   m_MinNWCDensity = ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3);
+   m_MaxLWCDensity = ::ConvertToSysUnits(120.0,unitMeasure::LbfPerFeet3);
 }
 
 
@@ -80,6 +78,8 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
          }
       }
 
+      DDX_CBItemData(pDX, IDC_CONCRETE_TYPE, m_Type);
+
       DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_T, m_Fc, pDisplayUnits->Stress );
       DDV_UnitValueGreaterThanZero(pDX, IDC_FC, m_Fc, pDisplayUnits->Stress );
 
@@ -96,24 +96,47 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
          }
       }
 
+      DDX_Check_Bool(pDX, IDC_HAS_AGG_STRENGTH, m_bHasFct );
+      DDX_UnitValueAndTag(pDX, IDC_AGG_STRENGTH, IDC_AGG_STRENGTH_T, m_Fct, pDisplayUnits->Stress );
+      if ( m_bHasFct || !pDX->m_bSaveAndValidate )
+      {
+         if ( !pDX->m_bSaveAndValidate )
+         {
+            CWnd* pWnd = GetDlgItem(IDC_AGG_STRENGTH);
+            pWnd->GetWindowText(m_strFct);
+         }
+      }
+
+
       DDX_UnitValueAndTag(pDX, IDC_DS, IDC_DS_T, m_Ds, pDisplayUnits->Density);
       DDV_UnitValueGreaterThanZero(pDX, IDC_DS, m_Ds, pDisplayUnits->Density );
+
       DDX_UnitValueAndTag(pDX, IDC_DW, IDC_DW_T, m_Dw, pDisplayUnits->Density );
       DDV_UnitValueGreaterThanZero(pDX, IDC_DW, m_Dw, pDisplayUnits->Density );
+
+      // Ds <= Dw
+      DDV_UnitValueLimitOrMore(pDX, IDC_DW, m_Dw, m_Ds, pDisplayUnits->Density );
+
       DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_T, m_AggSize, pDisplayUnits->ComponentDim );
       DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_SIZE, m_AggSize, pDisplayUnits->ComponentDim );
-      DDX_Text(pDX, IDC_K1, m_K1 );
-      DDV_GreaterThanZero(pDX,IDC_K1,m_K1);
 
-      if ( m_Ds < m_MinNWCDensity )
-      {
-         m_bIsStrengthNWC = false;
-      }
+      DDX_Text(pDX, IDC_EC_K1, m_EccK1 );
+      DDV_GreaterThanZero(pDX,IDC_EC_K1,m_EccK1);
 
-      if ( m_Dw < m_MinNWCDensity )
-      {
-         m_bIsDensityNWC = false;
-      }
+      DDX_Text(pDX, IDC_EC_K2, m_EccK2 );
+      DDV_GreaterThanZero(pDX,IDC_EC_K2,m_EccK2);
+
+      DDX_Text(pDX, IDC_CREEP_K1, m_CreepK1 );
+      DDV_GreaterThanZero(pDX,IDC_CREEP_K1,m_CreepK1);
+
+      DDX_Text(pDX, IDC_CREEP_K2, m_CreepK2 );
+      DDV_GreaterThanZero(pDX,IDC_CREEP_K2,m_CreepK2);
+
+      DDX_Text(pDX, IDC_SHRINKAGE_K1, m_ShrinkageK1 );
+      DDV_GreaterThanZero(pDX,IDC_SHRINKAGE_K1,m_ShrinkageK1);
+
+      DDX_Text(pDX, IDC_SHRINKAGE_K2, m_ShrinkageK2 );
+      DDV_GreaterThanZero(pDX,IDC_SHRINKAGE_K2,m_ShrinkageK2);
    }
    catch(...)
    {
@@ -127,9 +150,9 @@ BEGIN_MESSAGE_MAP(CConcreteEntryDlg, CDialog)
 	//{{AFX_MSG_MAP(CConcreteEntryDlg)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 	ON_BN_CLICKED(IDC_MOD_E, OnModE)
+   ON_BN_CLICKED(IDC_HAS_AGG_STRENGTH,OnAggSplittingStrengthClicked)
+   ON_CBN_SELCHANGE(IDC_CONCRETE_TYPE,OnConcreteType)
 	//}}AFX_MSG_MAP
-   ON_EN_CHANGE(IDC_DS, &CConcreteEntryDlg::OnChangeDs)
-   ON_EN_CHANGE(IDC_DW, &CConcreteEntryDlg::OnChangeDw)
    ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
@@ -144,6 +167,16 @@ LRESULT CConcreteEntryDlg::OnCommandHelp(WPARAM, LPARAM lParam)
 
 BOOL CConcreteEntryDlg::OnInitDialog() 
 {
+   CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
+   int idx = pcbConcreteType->AddString("Normal weight");
+   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
+
+   idx = pcbConcreteType->AddString("All lightweight");
+   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
+
+   idx = pcbConcreteType->AddString("Sand lightweight");
+   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
+
 	CDialog::OnInitDialog();
 	
    // disable OK button if editing not allowed
@@ -160,7 +193,9 @@ BOOL CConcreteEntryDlg::OnInitDialog()
    }
    SetWindowText(head);
 	
+   OnConcreteType();
    OnModE();
+   OnAggSplittingStrengthClicked();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -188,16 +223,37 @@ void CConcreteEntryDlg::OnModE()
    }
 }
 
-void CConcreteEntryDlg::OnChangeDs()
+void CConcreteEntryDlg::OnAggSplittingStrengthClicked()
 {
-   CWnd* pWnd = GetDlgItem(IDC_NWC_NOTE);
-   pWnd->Invalidate();
+   CButton* pButton = (CButton*)GetDlgItem(IDC_HAS_AGG_STRENGTH);
+   ASSERT(pButton);
+   BOOL bIsChecked = pButton->GetCheck();
+   GetDlgItem(IDC_AGG_STRENGTH)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_AGG_STRENGTH_T)->EnableWindow(bIsChecked);
 }
 
-void CConcreteEntryDlg::OnChangeDw()
+pgsTypes::ConcreteType CConcreteEntryDlg::GetConreteType()
 {
-   CWnd* pWnd = GetDlgItem(IDC_NWC_NOTE);
-   pWnd->Invalidate();
+   CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
+   pgsTypes::ConcreteType type = (pgsTypes::ConcreteType)pcbConcreteType->GetItemData(pcbConcreteType->GetCurSel());
+   return type;
+}
+
+void CConcreteEntryDlg::OnConcreteType()
+{
+   CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
+   pgsTypes::ConcreteType type = (pgsTypes::ConcreteType)pcbConcreteType->GetItemData(pcbConcreteType->GetCurSel());
+
+   BOOL bEnable = (type == pgsTypes::Normal ? FALSE : TRUE);
+   GetDlgItem(IDC_HAS_AGG_STRENGTH)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AGG_STRENGTH)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AGG_STRENGTH_T)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_DS)->Invalidate();
+   GetDlgItem(IDC_DW)->Invalidate();
+
+   if ( bEnable )
+      OnAggSplittingStrengthClicked();
 }
 
 HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
@@ -225,7 +281,6 @@ HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		   Float64 d;
    		if (_sntscanf_s(szBuffer, _countof(szBuffer), _T("%lf"), &d) != 1)
          {
-            m_bIsStrengthNWC = false;
             pDC->SetTextColor( RED );
          }
          else
@@ -235,60 +290,15 @@ HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
             Float64 value;
             DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->Density );
 
-            if (value < m_MinNWCDensity )
+            if ( !IsDensityInRange(value,GetConreteType()) )
             {
-               m_bIsStrengthNWC = false;
                pDC->SetTextColor( RED );
-            }
-            else
-            {
-               m_bIsStrengthNWC = true;
             }
          }
       }
       catch(...)
       {
       }
-   }
-   else if ( pWnd->GetDlgCtrlID() == IDC_DW && 0 < pWnd->GetWindowTextLength() )
-   {
-      try
-      {
-	      const int TEXT_BUFFER_SIZE = 400;
-	      TCHAR szBuffer[TEXT_BUFFER_SIZE];
-         ::GetWindowText(GetDlgItem(IDC_DW)->GetSafeHwnd(), szBuffer, _countof(szBuffer));
-		   Float64 d;
-   		if (_sntscanf_s(szBuffer, _countof(szBuffer), _T("%lf"), &d) != 1)
-         {
-            m_bIsDensityNWC = false;
-            pDC->SetTextColor( RED );
-         }
-         else
-         {
-            CDataExchange dx(this,TRUE);
-
-            Float64 value;
-            DDX_UnitValue(&dx, IDC_DW, value, pDisplayUnits->Density);
-
-            if (value < m_MinNWCDensity )
-            {
-               m_bIsDensityNWC = false;
-               pDC->SetTextColor( RED );
-            }
-            else
-            {
-               m_bIsDensityNWC = true;
-            }
-         }
-      }
-      catch(...)
-      {
-      }
-   }
-   else if ( pWnd->GetDlgCtrlID() == IDC_NWC_NOTE )
-   {
-      if ( !(m_bIsStrengthNWC && m_bIsDensityNWC) )
-         pDC->SetTextColor( RED );
    }
 
    return hbr;
@@ -298,6 +308,24 @@ void CConcreteEntryDlg::OnOK()
 {
    CDialog::OnOK();
 
-   if ( !m_bErrorInDDX && !(m_bIsStrengthNWC && m_bIsDensityNWC) )
-      AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+   if ( !m_bErrorInDDX && !IsDensityInRange(m_Ds,m_Type))
+   {
+      if (m_Type == pgsTypes::Normal)
+         AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+      else
+         AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+   }
+}
+
+bool CConcreteEntryDlg::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
+{
+   CEAFApp* pApp = EAFGetApp();
+   if ( type == pgsTypes::Normal )
+   {
+      return IsLE(m_MinNWCDensity,density);
+   }
+   else
+   {
+      return IsLE(density,m_MaxLWCDensity);
+   }
 }

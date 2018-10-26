@@ -71,16 +71,24 @@ class PGSEXTCLASS CGirderMaterial
 {
 public:
    // girder concrete material properties
+   pgsTypes::ConcreteType Type;
    Float64 Fci;             // f'c at release
    Float64 Fc;
    Float64 WeightDensity;
    Float64 StrengthDensity;
    Float64 MaxAggregateSize;
-   Float64 K1;
+   Float64 EcK1;
+   Float64 EcK2;
+   Float64 CreepK1;
+   Float64 CreepK2;
+   Float64 ShrinkageK1;
+   Float64 ShrinkageK2;
    Float64 Eci;
    bool    bUserEci;
    Float64 Ec;
    bool    bUserEc;
+   bool    bHasFct;
+   Float64 Fct;
 
    // strand
    const matPsStrand* pStrandMaterial;
@@ -110,6 +118,9 @@ public:
 
    //------------------------------------------------------------------------
    bool operator!=(const CGirderMaterial& rOther) const;
+
+	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
+	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
 protected:
    // GROUP: DATA MEMBERS

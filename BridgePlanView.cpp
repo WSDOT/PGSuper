@@ -510,7 +510,7 @@ void CBridgePlanView::UpdateGirderTooltips()
    pDoc->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pBridgeMaterial);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -561,7 +561,8 @@ void CBridgePlanView::UpdateGirderTooltips()
          fci = pBridgeMaterial->GetFciGdr(spanIdx,girderIdx);
 
          CString strMsg3;
-         strMsg3.Format("\r\n\r\nf'ci: %s\r\nf'c: %s",
+         strMsg3.Format("\r\n\r\n%s\r\nf'ci: %s\r\nf'c: %s",
+                        matConcrete::GetTypeName((matConcrete::Type)pBridgeMaterial->GetGdrConcreteType(spanIdx,girderIdx),true).c_str(),
                         FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                         FormatDimension(fc, pDisplayUnits->GetStressUnit())
                         );

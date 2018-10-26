@@ -138,10 +138,10 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    *p << Sub2("e","s")<<" = eccentricity due to sweep = "<<dim.SetValue(pHaul->GetEccentricityDueToSweep())<<" "<<dim.GetUnitTag()<<rptNewLine;
    *p << Sub2("F","o")<<" = offset factor = " << "(" << Sub2("l","l") << "/" << Sub2("l","g") << ")" << Super("2") << " - 1/3 = " << pHaul->GetOffsetFactor()<<rptNewLine;
    *p << Sub2("e","i")<<" = total initial eccentricity = " << Sub2("e","s")<<"*" << Sub2("F","o")<<" + " << Sub2("e","truck")<<" = "<<dim.SetValue(pHaul->GetTotalInitialEccentricity())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Zo - Lifting.jpg" )<<" = "<<dim.SetValue(pHaul->GetZo())<<" "<<dim.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "zo.png" )<<" = "<<dim.SetValue(pHaul->GetZo())<<" "<<dim.GetUnitTag()<<rptNewLine;
    *p << Sub2("z","o") << " is based on average girder unit weight and mid-span section properties" << rptNewLine;
    *p << "r = Radius of stability = " << Sub2("K",symbol(theta))<<"/W = "<<dim.SetValue(pHaul->GetRadiusOfStability())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << "Equilibrium angle = "<<rptRcImage(pgsReportStyleHolder::GetImagePath() + "EquilAngleEqn.jpg" )<<" = "<<angle.SetValue(pHaul->GetEqualibriumAngle())<<" "<<angle.GetUnitTag()<<rptNewLine;
+   *p << "Equilibrium angle = "<<rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaHauling.png" )<<" = "<<angle.SetValue(pHaul->GetEqualibriumAngle())<<" "<<angle.GetUnitTag()<<rptNewLine;
    *p << "Lateral Moment = (Vertical Moment)(Equilibrium Angle)" << rptNewLine;
 
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -360,9 +360,9 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       row++;
    }
 
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mlat - Lifting.jpg" )<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Theta Max - Lifting.jpg" )<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FS Cracking - Hauling.jpg" )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mlat.png" )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaMax.png" )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FScrHauling.png" )<<rptNewLine;
 
    // FS Rollover
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -371,9 +371,9 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    p = new rptParagraph;
    *pChapter << p;
 
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Theta prime Max - Hauilng.jpg" )<<" = "<<angle.SetValue(pHaul->GetThetaRolloverMax())<<" "<<angle.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Zo Prime - Hauling.jpg" )<<" = "<<dim.SetValue(pHaul->GetZoPrime())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FS Rollover - Hauling.jpg" )<<" = "<<scalar.SetValue(pHaul->GetFsRollover())<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaPrimeMaxHauling.png" )<<" = "<<angle.SetValue(pHaul->GetThetaRolloverMax())<<" "<<angle.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "zo_prime_hauling.png" )<<" = "<<dim.SetValue(pHaul->GetZoPrime())<<" "<<dim.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FSrHauling.png" )<<" = "<<scalar.SetValue(pHaul->GetFsRollover())<<rptNewLine;
 
    return pChapter;
 }

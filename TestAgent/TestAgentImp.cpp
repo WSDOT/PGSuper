@@ -1318,6 +1318,12 @@ bool CTestAgentImp::RunDesignTest(std::ofstream& resultsFile, std::ofstream& poi
       return false;
    }
 
+   if ( pArtifact == NULL )
+   {
+      resultsFile << "Design was cancelled for span " << span << " girder " << gdr << std::endl;
+      return false;
+   }
+
    if ( pArtifact->GetOutcome() != pgsDesignArtifact::Success )
    {
       resultsFile << "Design not successful for span " << span << " girder " << gdr << std::endl;

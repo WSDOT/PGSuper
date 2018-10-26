@@ -157,22 +157,15 @@ void txnEditGirder::DoExecute(int i)
    else
    {
       // by girder
-      if ( i == 1 && m_SlabOffsetType[0] != m_SlabOffsetType[1] )
-      {
-         // we are changing the slab offset type from something to "by girder"
 
-         // need to make sure the "by girder" values are match the current slab offset for the girder
-         // the current value is the value for this girder
+      // get the current value of the slab offset
+      Float64 start, end;
+      pIBridgeDesc->GetSlabOffset(m_SpanIdx,m_GirderIdx,&start,&end);
 
-         // get the current value of the slab offset
-         Float64 start, end;
-         pIBridgeDesc->GetSlabOffset(m_SpanIdx,m_GirderIdx,&start,&end);
-
-         // set the value for each girder to this current value
-         GirderIndexType nGirders = pIBridgeDesc->GetSpan(m_SpanIdx)->GetGirderCount();
-         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-            pIBridgeDesc->SetSlabOffset( m_SpanIdx, gdrIdx, start, end );
-      }
+      // set the value for each girder to this current value
+      GirderIndexType nGirders = pIBridgeDesc->GetSpan(m_SpanIdx)->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         pIBridgeDesc->SetSlabOffset( m_SpanIdx, gdrIdx, start, end );
       
       // change the girder that was edited
       pIBridgeDesc->SetSlabOffset( m_SpanIdx, m_GirderIdx, m_SlabOffset[i][pgsTypes::metStart], m_SlabOffset[i][pgsTypes::metEnd] );

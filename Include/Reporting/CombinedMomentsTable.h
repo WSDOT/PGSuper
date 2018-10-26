@@ -213,7 +213,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
          (*pTable)(min_max_row,min_max_col++) << COLHDR("Min", M, unitT );
          if ( bMoment )
          {
-            (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+            (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
          }
 
@@ -228,7 +228,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++)<< COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++)<< COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -272,7 +272,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -288,7 +288,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -304,7 +304,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -320,7 +320,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -343,7 +343,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -366,7 +366,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -419,7 +419,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
          if ( bMoment )
          {
-            (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+            (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
             pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
          }
 
@@ -434,7 +434,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -478,7 +478,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -494,7 +494,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -510,7 +510,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -526,7 +526,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -549,7 +549,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }
@@ -572,7 +572,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 
             if ( bMoment )
             {
-               (*pTable)(min_max_row,min_max_col++) << COLHDR("Slab", M, unitT );
+               (*pTable)(min_max_row,min_max_col++) << COLHDR("* Deck", M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,-1);
             }
          }

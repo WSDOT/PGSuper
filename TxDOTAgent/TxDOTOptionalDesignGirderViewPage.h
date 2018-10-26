@@ -5,7 +5,6 @@
 #include "TogaSectionCutDrawStrategy.h"
 
 #include "resource.h"
-#include "afxwin.h"
 
 class CTogaGirderModelElevationView;
 class CTogaGirderModelSectionView;
@@ -76,8 +75,6 @@ public:
    void UpdateCutLocation(CutLocation cutLoc,Float64 cut = 0.0);
    void UpdateBar();
 
-   void DisplayErrorMode(TxDOTBrokerRetrieverException& exc);
-
 private:
    bool m_bCutLocationInitialized;
 
@@ -91,9 +88,6 @@ public:
    CTogaGirderModelElevationView* m_pElevationView;
    afx_msg void OnCbnSelchangeSelectedGirder();
    afx_msg void OnBnClickedSectionCut();
-   CStatic m_ErrorMsgStatic;
-   CComboBox m_GirderCtrl;
-   CButton m_SectionBtn;
-   afx_msg void OnViewSectioncutlocation();
+   afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
    afx_msg void OnHelpFinder();
 };

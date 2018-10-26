@@ -72,46 +72,53 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
 
 
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
-   
+
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << "[5.9.5.4.3a] Shrinkage of Girder Concrete : " << symbol(DELTA) << Sub2("f","pSD") << rptNewLine;
 
-   
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
+
+   *pParagraph << rptRcImage(strImagePath + "Delta_FpSD.png") << rptNewLine;
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-          *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_SI.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2005.png") << rptNewLine;
       else
-          *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_US.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2005.png") << rptNewLine;
    }
 #if defined IGNORE_2007_CHANGES
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-          *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_SI_2006.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2006.png") << rptNewLine;
       else
-          *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_US_2006.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2006.png") << rptNewLine;
    }
 #else
    else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
    {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-          *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_SI_2006.gif") << rptNewLine;
+      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+         *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2006.png") << rptNewLine;
       else
-          *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_US_2006.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2006.png") << rptNewLine;
    }
    else
    {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-          *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_SI_2007.gif") << rptNewLine;
+      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+         *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2007.png") << rptNewLine;
       else
-          *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_US_2007.gif") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2007.png") << rptNewLine;
    }
 #endif // IGNORE_2007_CHANGES
+   *pParagraph << rptRcImage(strImagePath + "HumidityFactor.png") << rptNewLine;
+   if ( IS_SI_UNITS(pDisplayUnits) )
+      *pParagraph << rptRcImage(strImagePath + "ConcreteFactors_SI.png") << rptNewLine;
+   else
+      *pParagraph << rptRcImage(strImagePath + "ConcreteFactors_US.png") << rptNewLine;
+   
 
    // parameters for calculations (two tables to keep the width printable)
    rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,"");
@@ -128,17 +135,38 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(1,3) << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge());
    (*pParamTable)(1,4) << table->time.SetValue(details.RefinedLosses2005.GetFinalAge());
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(4,"");
+   pParamTable = pgsReportStyleHolder::CreateDefaultTable(8,"");
    *pParagraph << pParamTable << rptNewLine;
+   pParamTable->SetNumberOfHeaderRows(2);
+   pParamTable->SetRowSpan(0,0,2);
+   pParamTable->SetRowSpan(1,0,-1);
    (*pParamTable)(0,0) << COLHDR(Sub2("E","p"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   pParamTable->SetRowSpan(0,1,2);
+   pParamTable->SetRowSpan(1,1,-1);
    (*pParamTable)(0,1) << COLHDR(Sub2("E","ci"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pParamTable)(0,2) << Sub2(symbol(epsilon),"bdf") << "x 1000";
-   (*pParamTable)(0,3) << Sub2(symbol(psi),"b") << "(" << Sub2("t","f") << "," << Sub2("t","i") << ")";
+   pParamTable->SetColumnSpan(0,2,3);
+   pParamTable->SetColumnSpan(0,3,-1);
+   pParamTable->SetColumnSpan(0,4,-1);
+   (*pParamTable)(0,2) << "Shrinkage";
+   (*pParamTable)(1,2) << Sub2("K","1");
+   (*pParamTable)(1,3) << Sub2("K","2");
+   (*pParamTable)(1,4) << Sub2(symbol(epsilon),"bdf") << "x 1000";
+   pParamTable->SetColumnSpan(0,5,3);
+   pParamTable->SetColumnSpan(0,6,-1);
+   pParamTable->SetColumnSpan(0,7,-1);
+   (*pParamTable)(0,5) << "Creep";
+   (*pParamTable)(1,5) << Sub2("K","1");
+   (*pParamTable)(1,6) << Sub2("K","2");
+   (*pParamTable)(1,7) << Sub2(symbol(psi),"b") << "(" << Sub2("t","f") << "," << Sub2("t","i") << ")";
 
-   (*pParamTable)(1,0) << table->mod_e.SetValue(details.RefinedLosses2005.GetEp());
-   (*pParamTable)(1,1) << table->mod_e.SetValue(details.RefinedLosses2005.GetEci());
-   (*pParamTable)(1,2) << table->strain.SetValue(details.RefinedLosses2005.Get_ebdf() * 1000);
-   (*pParamTable)(1,3) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(2,0) << table->mod_e.SetValue(details.RefinedLosses2005.GetEp());
+   (*pParamTable)(2,1) << table->mod_e.SetValue(details.RefinedLosses2005.GetEci());
+   (*pParamTable)(2,2) << details.RefinedLosses2005.GetGdrK1Shrinkage();
+   (*pParamTable)(2,3) << details.RefinedLosses2005.GetGdrK2Shrinkage();
+   (*pParamTable)(2,4) << table->strain.SetValue(details.RefinedLosses2005.Get_ebdf() * 1000);
+   (*pParamTable)(2,5) << details.RefinedLosses2005.GetGdrK1Creep();
+   (*pParamTable)(2,6) << details.RefinedLosses2005.GetGdrK2Creep();
+   (*pParamTable)(2,7) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
 
    // intermediate results
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,"");

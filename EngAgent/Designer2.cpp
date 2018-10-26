@@ -37,6 +37,7 @@
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandling.h>
+#include <IFace\ResistanceFactors.h>
 
 #include "Designer2.h"
 #include "PsForceEng.h"
@@ -538,23 +539,16 @@ pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
    return gdr_artifact;
 }
 
-#define CHECK_PROGRESS \
-if ( pProgress->Continue() != S_OK ) \
-{ \
-   artifact.SetOutcome(pgsDesignArtifact::DesignCancelled); \
-   LOG("*#*#*#*#* DESIGN CANCELLED BY USER *#*#*#*#*"); \
-   return artifact; \
+void CheckProgress(IProgress* pProgress)
+{
+   if ( pProgress->Continue() != S_OK )
+   {
+      //LOG("*#*#*#*#* DESIGN CANCELLED BY USER *#*#*#*#*");
+      throw pgsDesignArtifact::DesignCancelled;
+   }
 }
 
-#define CHECK_PROGRESS_RET \
-if ( pProgress->Continue() != S_OK ) \
-{ \
-   artifact.SetOutcome(pgsDesignArtifact::DesignCancelled); \
-   LOG("*#*#*#*#* DESIGN CANCELLED BY USER *#*#*#*#*"); \
-   m_DesignerOutcome.AbortDesign(); \
-   return; \
-}
-
+#define CHECK_PROGRESS CheckProgress(pProgress)
 
 pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,arDesignOptions options)
 {
@@ -568,7 +562,7 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress,0,PW_ALL | PW_NOGAUGE); // progress window has a cancel button
 
    std::ostringstream os;
    os << "Designing Span " << LABEL_SPAN(span) << " Girder " << LABEL_GIRDER(gdr) << std::ends;
@@ -1484,7 +1478,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
    GET_IFACE(ISectProp2,pSectProp2);
    GET_IFACE(IGirder,pGdr);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
    GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
@@ -1573,10 +1567,12 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
 
    // friction and cohesion factors
    bool is_roughened = pBridge->AreGirderTopFlangesRoughened();
-   Float64 c = lrfdConcreteUtil::ShearCohesionFactor(is_roughened);
-   Float64 u = lrfdConcreteUtil::ShearFrictionFactor(is_roughened);
+   lrfdConcreteUtil::DensityType girderDensityType = (lrfdConcreteUtil::DensityType)pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
+   lrfdConcreteUtil::DensityType slabDensityType   = (lrfdConcreteUtil::DensityType)pMaterial->GetSlabConcreteType();
+   Float64 c  = lrfdConcreteUtil::ShearCohesionFactor(is_roughened,girderDensityType,slabDensityType);
+   Float64 u  = lrfdConcreteUtil::ShearFrictionFactor(is_roughened);
    Float64 K1 = lrfdConcreteUtil::HorizShearK1(is_roughened);
-   Float64 K2 = lrfdConcreteUtil::HorizShearK2(is_roughened);
+   Float64 K2 = lrfdConcreteUtil::HorizShearK2(is_roughened,girderDensityType,slabDensityType);
 
    pArtifact->SetCohesionFactor(c);
    pArtifact->SetFrictionFactor(u);
@@ -1589,7 +1585,11 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
                                                 &Vn1, &Vn2, &Vn3);
    pArtifact->SetVn(Vn1, Vn2, Vn3);
 
-   Float64 phi = 0.9;
+   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
+   GET_IFACE(IResistanceFactors,pResistanceFactors);
+   Float64 PhiRC,PhiPS,PhiC;
+   pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiC);
+   Float64 phi = min(PhiRC,PhiPS); // use min of PS and RC (see LRFD 5.8.4.1)
    pArtifact->SetPhi(phi);
 
    // Minimum steel check 5.8.4.1-4
@@ -1746,11 +1746,10 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
 
    // Minimum transverse reinforcement 5.8.2.5
    // Set to zero if not applicable
-   GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    Float64 avs_min = 0.0;
    if (is_app)
    {
-      avs_min = pTransverseReinforcementSpec->GetAvOverSMin(fcGdr, bv, fy);
+      avs_min = GetAvsOverMin(poi,scd);
    }
    pArtifact->SetAvsMin(avs_min);
 
@@ -1760,6 +1759,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    // max bar spacing
    Float64 s_max;
    Float64 s_under, s_over;
+   GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    pTransverseReinforcementSpec->GetMaxStirrupSpacing(&s_under, &s_over);
 
    GET_IFACE(ILibrary,pLib);
@@ -1792,7 +1792,66 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    pArtifact->SetSMin(s_min);
 }
 
+Float64 pgsDesigner2::GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd)
+{
+   const unitLength* pLengthUnit;
+   const unitStress* pStressUnit;
+   const unitAreaPerLength* pAvsUnit;
+   Float64 K;
+   Float64 Kfct;
+   if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+   {
+      pLengthUnit = &unitMeasure::Inch;
+      pStressUnit = &unitMeasure::KSI;
+      pAvsUnit    = &unitMeasure::Inch2PerInch;
+      K = 0.0316;
+      Kfct = 4.7;
+   }
+   else
+   {
+      pLengthUnit = &unitMeasure::Millimeter;
+      pStressUnit = &unitMeasure::MPa;
+      pAvsUnit    = &unitMeasure::Millimeter2PerMillimeter;
+      K = 0.083;
+      Kfct = 1.8;
+   }
 
+   Float64 bv = ::ConvertFromSysUnits(scd.bv,*pLengthUnit);
+   Float64 fc = ::ConvertFromSysUnits(scd.fc,*pStressUnit);
+   Float64 fy = ::ConvertFromSysUnits(scd.fy,*pStressUnit);
+   Float64 fct= ::ConvertFromSysUnits(scd.fct,*pStressUnit);
+   Float64 avs = K*bv/fy;
+
+   switch( scd.ConcreteType )
+   {
+   case pgsTypes::Normal:
+      avs *= sqrt(fc);
+      break;
+
+   case pgsTypes::AllLightweight:
+      if ( scd.bHasFct )
+         avs *= min(Kfct*fct,sqrt(fc));
+      else
+         avs *= 0.75*sqrt(fc);
+      break;
+
+   case pgsTypes::SandLightweight:
+      if ( scd.bHasFct )
+         avs *= min(Kfct*fct,sqrt(fc));
+      else
+         avs *= 0.85*sqrt(fc);
+      break;
+
+   default:
+      ATLASSERT(false); // is there a new concrete type?
+      avs *= sqrt(fc); 
+      break;
+   }
+
+   avs = ::ConvertToSysUnits(avs,*pAvsUnit);
+
+   return avs;
+}
 
 void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi, 
                                       pgsTypes::Stage stage,
@@ -2866,7 +2925,7 @@ void pgsDesigner2::DesignEndZoneDebonding(bool firstPass, arDesignOptions option
       LOG("*** Design debonding and release strength for Simple Release Condition at endzone");
       debond_demand = DesignEndZoneReleaseDebonding(pProgress);
 
-      CHECK_PROGRESS_RET;
+      CHECK_PROGRESS;
 
       if ( m_DesignerOutcome.WasDesignAborted() )
       {
@@ -2908,7 +2967,7 @@ void pgsDesigner2::DesignEndZoneDebonding(bool firstPass, arDesignOptions option
    {
       DesignForShipping(pProgress);
       
-      CHECK_PROGRESS_RET;
+      CHECK_PROGRESS;
 
       if( m_DesignerOutcome.WasDesignAborted() )
       {
@@ -3019,7 +3078,7 @@ void pgsDesigner2::DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifa
       LOG("*** Design for simple release condition at endzone");
       DesignEndZoneReleaseHarping(pProgress);
 
-      CHECK_PROGRESS_RET;
+      CHECK_PROGRESS;
 
       if ( m_DesignerOutcome.WasDesignAborted() )
          return;
@@ -3036,7 +3095,7 @@ void pgsDesigner2::DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifa
       // and possibly the final concrete strength
       DesignForShipping(pProgress);
       
-      CHECK_PROGRESS_RET;
+      CHECK_PROGRESS;
 
       if( m_DesignerOutcome.WasDesignAborted() )
       {
@@ -3057,7 +3116,7 @@ void pgsDesigner2::DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifa
       LOG("=================================");
       DesignForLiftingHarping(false,pProgress);
 
-      CHECK_PROGRESS_RET;
+      CHECK_PROGRESS;
 
       if ( m_DesignerOutcome.WasDesignAborted() )
       {
@@ -3098,8 +3157,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
    bool bConverged = false;
    do 
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       m_DesignerOutcome.Reset();
 
@@ -3183,7 +3241,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          }
          else if ( m_DesignerOutcome.DidConcreteChange() )
          {
-               continue; // back to the start of the loop
+            continue; // back to the start of the loop
          }
       }
       else if (cIter<=nIterEarlyStage && m_DesignerOutcome.DidConcreteChange() )
@@ -3198,7 +3256,8 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
       {
          DesignMidZoneFinalConcrete( pProgress );
 
-         if (  m_DesignerOutcome.WasDesignAborted() || pProgress->Continue() != S_OK )
+         CHECK_PROGRESS;
+         if (  m_DesignerOutcome.WasDesignAborted() )
          {
             return;
          }
@@ -3211,7 +3270,8 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
 
          DesignMidZoneAtRelease( pProgress );
 
-         if (  m_DesignerOutcome.WasDesignAborted() || pProgress->Continue() != S_OK )
+         CHECK_PROGRESS;
+         if (  m_DesignerOutcome.WasDesignAborted() )
          {
             return;
          }
@@ -3227,7 +3287,8 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
       {
          DesignSlabOffset( pProgress );
 
-         if (  m_DesignerOutcome.WasDesignAborted() || pProgress->Continue() != S_OK )
+         CHECK_PROGRESS;
+         if (  m_DesignerOutcome.WasDesignAborted() )
          {
             return;
          }
@@ -3343,8 +3404,7 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
 
       for (std::vector<pgsPointOfInterest>::iterator it=vPOI.begin(); it!=vPOI.end(); it++)
       {
-         if ( pProgress->Continue() != S_OK )
-            return;
+         CHECK_PROGRESS;
 
          const pgsPointOfInterest& poi = *it;
          double min,max;
@@ -3441,8 +3501,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
    std::vector<pgsPointOfInterest>::iterator it;
    for (it=vPOI.begin(); it!=vPOI.end(); it++)
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *it;
       double min, max;
@@ -3521,8 +3580,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
 
    for (it=vPOI.begin(); it!=vPOI.end(); it++)
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *it;
       double mine, maxe;
@@ -3726,8 +3784,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
    double tolerance = ::ConvertToSysUnits(0.125,unitMeasure::Inch);
    do
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       Float64 AoldStart = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
       Float64 AoldEnd   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
@@ -3958,8 +4015,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    
    do
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       LOG("");
       LOG("Strand Configuration Trial # " << cIter);
@@ -4097,8 +4153,8 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
             if ( ConcFailed != m_StrandDesignTool.ComputeRequiredConcreteStrength(f_allow_required,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,&fc_rqd) )
             {
                // Use user-defined practical upper limit here - if we are going for 15ksi, we are wasting time
-               GET_IFACE(ILimits,pLimits);
-               double max_girder_fc = pLimits->GetMaxGirderFc();
+               GET_IFACE(ILimits2,pLimits);
+               double max_girder_fc = pLimits->GetMaxGirderFc(config.ConcType);
                LOG("User-defined upper limit for final girder concrete = " << ::ConvertFromSysUnits(max_girder_fc,unitMeasure::KSI) << " KSI. Computed required strength = "<< ::ConvertFromSysUnits(fc_rqd,unitMeasure::KSI) << " KSI");
 
                if (fc_rqd <= max_girder_fc)
@@ -4290,8 +4346,7 @@ void pgsDesigner2::DesignEndZoneReleaseStrength(IProgress* pProgress)
 
    for (std::vector<pgsPointOfInterest>::iterator it=vPOI.begin(); it!=vPOI.end(); it++)
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *it;
       double mine,maxe,bogus;
@@ -4359,8 +4414,7 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(IProgress* pProgress)
 
    for (std::vector<pgsPointOfInterest>::iterator it=vPOI.begin(); it!=vPOI.end(); it++)
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *it;
       double mine,maxe,bogus;
@@ -4503,8 +4557,7 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(IProgress* pProgress)
       }
    }
 
-   if ( pProgress->Continue() != S_OK )
-      return;
+   CHECK_PROGRESS;
 
    config = m_StrandDesignTool.GetGirderConfiguration();
 
@@ -4787,8 +4840,7 @@ void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress*
 
    m_StrandDesignTool.SetLiftingLocations(artifact.GetLeftOverhang(),artifact.GetRightOverhang());
 
-   if ( pProgress->Continue() != S_OK )
-      return;
+   CHECK_PROGRESS;
 
    m_DesignerOutcome.SetOutcome(result);
    if ( m_DesignerOutcome.WasDesignAborted() )
@@ -5160,8 +5212,7 @@ std::vector<Int16> pgsDesigner2::DesignForLiftingDebonding(bool bProportioningSt
 //   LOG("-- End Dump of Lifting Artifact --");
 //#endif
 
-   if ( pProgress->Continue() != S_OK )
-      return debond_demand;
+   CHECK_PROGRESS;
 
    m_DesignerOutcome.SetOutcome(result);
    if ( m_DesignerOutcome.WasDesignAborted() )
@@ -5505,8 +5556,7 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    } while ( !bResult );
 
 
-   if ( pProgress->Continue() != S_OK )
-      return;
+   CHECK_PROGRESS;
 
 #if defined _DEBUG
    LOG("-- Dump of Hauling Artifact After Design --");
@@ -5547,8 +5597,7 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
 
    LOG("Shipping Results : f'c (unrounded) tens = " << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << " KSI, Comp = " << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI)<<"KSI, Left Bunk Point = " << ::ConvertFromSysUnits(artifact.GetTrailingOverhang(),unitMeasure::Feet) << " ft" << "    Right Bunk Point = " << ::ConvertFromSysUnits(artifact.GetLeadingOverhang(),unitMeasure::Feet) << " ft");
 
-   if ( pProgress->Continue() != S_OK )
-      return;
+   CHECK_PROGRESS;
 
    if (fc_tens>fc_max || fc_comp>fc_max )
    {
@@ -5572,8 +5621,7 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
       }
    }
 
-   if ( pProgress->Continue() != S_OK )
-      return;
+   CHECK_PROGRESS;
 
    // NOTE: Using bogus stress location
    bool bFcUpdated = m_StrandDesignTool.UpdateConcreteStrength(fc_tens,pgsTypes::Hauling,pgsTypes::ServiceI,pgsTypes::Tension,pgsTypes::TopGirder);
@@ -5673,8 +5721,7 @@ std::vector<Int16> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pPro
       GET_IFACE(IPrestressStresses, pPrestress);
       for (pgsHaulingAnalysisArtifact::MaxHaulingStressIterator it=max_applied_stresses.begin(); it!=max_applied_stresses.end(); it++)
       {
-         if ( pProgress->Continue() != S_OK )
-            return shipping_debond_levels;
+         CHECK_PROGRESS;
 
          const pgsHaulingAnalysisArtifact::MaxdHaulingStresses& max_stresses = *it;
 
@@ -5746,7 +5793,8 @@ void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
 
       RefineDesignForAllowableStress(task,pProgress);
 
-      if (m_DesignerOutcome.WasDesignAborted() || pProgress->Continue() != S_OK )
+      CHECK_PROGRESS;
+      if (m_DesignerOutcome.WasDesignAborted() )
       {
          return;
       }
@@ -5831,8 +5879,7 @@ void pgsDesigner2::RefineDesignForAllowableStress(ALLOWSTRESSCHECKTASK task,IPro
    std::vector<pgsPointOfInterest>::iterator iter;
    for ( iter = vPoi.begin(); iter < vPoi.end(); iter++ )
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *iter;
 
@@ -5988,8 +6035,7 @@ void pgsDesigner2::RefineDesignForUltimateMoment(pgsTypes::Stage stage,pgsTypes:
    std::vector<pgsPointOfInterest>::iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
    {
-      if ( pProgress->Continue() != S_OK )
-         return;
+      CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *iter;
 
@@ -6872,9 +6918,9 @@ void pgsDesigner2::DesignForHorizontalShear(const pgsPointOfInterest& poi, Float
    CHECK(alpha!=0.0);
 
    Float64 fy = scd.fy;
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
    if ( IsZero(fy) )
    {
-      GET_IFACE(IBridgeMaterial,pMaterial);
       Float64 Es;
       pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy);
       CHECK(fy!=0.0);
@@ -6882,7 +6928,6 @@ void pgsDesigner2::DesignForHorizontalShear(const pgsPointOfInterest& poi, Float
 
    // determine shear demand
    GET_IFACE(ISectProp2,pSectProp2);
-   GET_IFACE(IBridgeMaterial,pMaterial);
    GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(IGirder, pGdr);
 
@@ -6915,7 +6960,9 @@ void pgsDesigner2::DesignForHorizontalShear(const pgsPointOfInterest& poi, Float
       Float64 fy_u =  ::ConvertFromSysUnits(fy, unitMeasure::MPa);
 
       bool is_roughened = pBridge->AreGirderTopFlangesRoughened();
-      Float64 c = lrfdConcreteUtil::ShearCohesionFactor(is_roughened);
+      lrfdConcreteUtil::DensityType girderDensityType = (lrfdConcreteUtil::DensityType)pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
+      lrfdConcreteUtil::DensityType slabDensityType   = (lrfdConcreteUtil::DensityType)pMaterial->GetSlabConcreteType();
+      Float64 c = lrfdConcreteUtil::ShearCohesionFactor(is_roughened,girderDensityType,slabDensityType);
       Float64 c_u = ::ConvertFromSysUnits(c, unitMeasure::MPa);
       Float64 nu = lrfdConcreteUtil::ShearFrictionFactor(is_roughened);
       CHECK(nu>0.0);

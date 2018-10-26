@@ -79,7 +79,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpES.gif") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_FpES.png") << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
    table->area.ShowUnitTag(true);

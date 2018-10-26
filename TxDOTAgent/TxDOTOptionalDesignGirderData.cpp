@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include "resource.h"
 #include "TxDOTOptionalDesignGirderData.h"
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
@@ -451,9 +450,8 @@ std::vector<StrandIndexType> CTxDOTOptionalDesignGirderData::ComputeAvailableNum
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
    if (pGdrEntry==NULL)
    {
-      CString msg, stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
-      msg.Format(stmp,girder_name);
+      CString msg;
+      msg.Format("The girder with name: \"%s\" does not exist in the master library. Cannot continue",girder_name);
       ::AfxMessageBox(msg);
    }
    else
@@ -484,9 +482,8 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
    if (pGdrEntry==NULL)
    {
       ASSERT(0);
-      CString msg, stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
-      msg.Format(stmp,girder_name);
+      CString msg;
+      msg.Format("The girder with name: \"%s\" does not exist in the master library. Cannot continue",girder_name);
       ::AfxMessageBox(msg);
    }
    else
@@ -562,9 +559,8 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
    if (pGdrEntry==NULL)
    {
-      CString msg, stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
-      msg.Format(stmp,girder_name);
+      CString msg;
+      msg.Format("The girder with name: \"%s\" does not exist in the master library. Cannot continue",girder_name);
       ::AfxMessageBox(msg);
       return false;
    }

@@ -160,12 +160,12 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexT
       {
          (*pPara) << "Polar Moment of Inertia: I" << Sub("p") << " = " << inertia.SetValue(span_lldf.Jsolid.Ip) << rptNewLine;
          (*pPara) << "Area: A" << " = " << area.SetValue(span_lldf.Jsolid.A) << rptNewLine;
-         (*pPara) << "Torsional Constant: " << rptRcImage(strImagePath + "J Equation.gif") << rptTab
+         (*pPara) << "Torsional Constant: " << rptRcImage(strImagePath + "J.png") << rptTab
                   << "J" << " = " << inertia.SetValue(span_lldf.J) << rptNewLine;
       }
       else
       {
-         (*pPara) << rptRcImage(strImagePath + "J_Equation_closed_thin_walled.gif") << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + "J_closed_thin_wall.png") << rptNewLine;
          (*pPara) << rptRcImage(strImagePath + "VoidedSlab_TorsionalConstant.gif") << rptNewLine;
          (*pPara) << "Area enclosed by centerlines of elements: " << Sub2("A","o") << " = " << area.SetValue(span_lldf.Jvoid.Ao) << rptNewLine;
 
@@ -745,7 +745,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
          {
             (*pPara) << "For TxDOT Method, Use "<<"mg" << Super("MI") << Sub("1")<<". And,do not apply skew correction factor."<< rptNewLine;
 
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.gif" : "mg_1_MI_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
             ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
             (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
             (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
@@ -757,15 +757,15 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
          }
          else
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_ME_Type_G_SI.gif" : "mg_1_ME_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_ME_Type_G_SI.png" : "mg_1_ME_Type_G_US.png")) << rptNewLine;
  
             if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.gif" : "mg_1_MI_Type_F_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.png" : "mg_1_MI_Type_F_US.png")) << rptNewLine;
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.gif" : "mg_1_MI_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
                ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
                (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
                (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
@@ -809,15 +809,15 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
             else
             {
                (*pPara) << Bold("2+ Loaded Lane") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_G_SI.gif" : "mg_2_ME_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_G_SI.png" : "mg_2_ME_Type_G_US.png")) << rptNewLine;
 
                if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.gif" : "mg_2_MI_Type_F_US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.png" : "mg_2_MI_Type_F_US.png")) << rptNewLine;
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.gif" : "mg_2_MI_Type_G_US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.png" : "mg_2_MI_Type_G_US.png")) << rptNewLine;
                   ATLASSERT(gM2.ControllingMethod & S_OVER_D_METHOD);
                   (*pPara)<< "K = "<< gM2.EqnData.K << rptNewLine;
                   (*pPara)<< "C = "<< gM2.EqnData.C << rptNewLine;
@@ -846,7 +846,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
       {
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + "SkewCorrection_Moment_TypeC.png") << rptNewLine;
       }
 
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
@@ -874,7 +874,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
          {
             (*pPara) << "For TxDOT Method, do not apply skew correction factor."<< rptNewLine;
 
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.gif" : "mg_1_MI_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
             ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
             (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
             (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
@@ -887,11 +887,11 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
          {
             if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.gif" : "mg_1_MI_Type_F_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.png" : "mg_1_MI_Type_F_US.png")) << rptNewLine;
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.gif" : "mg_1_MI_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
                ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
                (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
                (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
@@ -938,11 +938,11 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
 
                if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit )
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.gif" : "mg_2_MI_Type_F_US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.png" : "mg_2_MI_Type_F_US.png")) << rptNewLine;
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.gif" : "mg_2_MI_Type_G_US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.png" : "mg_2_MI_Type_G_US.png")) << rptNewLine;
                   ATLASSERT(gM2.ControllingMethod & S_OVER_D_METHOD);
                   (*pPara)<< "K = "<< gM2.EqnData.K << rptNewLine;
                   (*pPara)<< "C = "<< gM2.EqnData.C << rptNewLine;
@@ -969,7 +969,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
       {
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + "SkewCorrection_Moment_TypeC.png") << rptNewLine;
       }
 
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
@@ -1008,7 +1008,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
          {
             (*pPara) << "For TxDOT Method, Use "<<"mg" << Super("MI") << Sub("1")<<". And,do not apply skew correction factor."<< rptNewLine;
 
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.gif" : "mg_1_MI_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
             ATLASSERT(gV1.ControllingMethod & S_OVER_D_METHOD);
             (*pPara)<< "K = "<< gV1.EqnData.K << rptNewLine;
             (*pPara)<< "C = "<< gV1.EqnData.C << rptNewLine;
@@ -1027,8 +1027,8 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VE_Type_G_SI.gif" : "mg_1_VE_Type_G_US.gif")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_G_SI.gif" : "mg_1_VI_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VE_Type_G_SI.png" : "mg_1_VE_Type_G_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_G_SI.png" : "mg_1_VI_Type_G_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
                (*pPara) << "e = " << gV1.EqnData.e << rptNewLine;
                (*pPara) << "mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
@@ -1078,8 +1078,8 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_G_SI.gif" : "mg_2_VE_Type_G_US.gif")) << rptNewLine;
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_G_SI.gif" : "mg_2_VI_Type_G_US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_G_SI.png" : "mg_2_VE_Type_G_US.png")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_G_SI.png" : "mg_2_VI_Type_G_US.png")) << rptNewLine;
                   (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
                   (*pPara) << "e = " << gV2.EqnData.e << rptNewLine;
                   (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
@@ -1099,7 +1099,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
          (*pPara) << Bold("Skew Correction") << rptNewLine;
          if(lldf.Method != LLDF_TXDOT)
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.gif" : "Skew_Correction_for_Shear_Type_F_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.png" : "Skew_Correction_for_Shear_Type_F_US.png")) << rptNewLine;
          }
 
          (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
@@ -1126,7 +1126,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
          {
             (*pPara) << "For TxDOT Method, Use "<<"mg" << Super("MI") << Sub("1")<<". And,do not apply shear correction factor."<< rptNewLine;
 
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.gif" : "mg_1_MI_Type_G_US.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
             ATLASSERT(gV1.ControllingMethod &   S_OVER_D_METHOD);
             (*pPara)<< "K = "<< gV1.EqnData.K << rptNewLine;
             (*pPara)<< "C = "<< gV1.EqnData.C << rptNewLine;
@@ -1144,7 +1144,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_G_SI.gif" : "mg_1_VI_Type_G_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_G_SI.png" : "mg_1_VI_Type_G_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
             }
          }
@@ -1183,7 +1183,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_G_SI.gif" : "mg_2_VI_Type_G_US.gif")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_G_SI.png" : "mg_2_VI_Type_G_US.png")) << rptNewLine;
                   (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
                }
             }
@@ -1206,7 +1206,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
       (*pPara) << rptNewLine;
 
       (*pPara) << Bold("Skew Correction") << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.gif" : "Skew_Correction_for_Shear_Type_F_US.gif")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.png" : "Skew_Correction_for_Shear_Type_F_US.png")) << rptNewLine;
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
       (*pPara) << "Skew Corrected Factor: mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.mg);

@@ -34,6 +34,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Project.h>
+#include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
 
 #include <Reporter\ReportingUtils.h>
@@ -464,7 +465,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strPicture);
 
    *pParagraph << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "dv Equation.jpg") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "dv.png") << rptNewLine;
    *pParagraph << rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,"");
@@ -571,9 +572,9 @@ void write_shear_stress_table(IBroker* pBroker,
 
    *pParagraph << Italic("v") << strEquation << rptNewLine;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "v Equation.jpg") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "vu.png") << rptNewLine;
    else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "v Equation 2005.gif") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "vu_2005.png") << rptNewLine;
 
    *pParagraph << rptNewLine;
 
@@ -671,7 +672,7 @@ void write_fpc_table(IBroker* pBroker,
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Fpc Pic.jpg") << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fpc_2007.gif") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fpc_2007.png") << rptNewLine;
 
    *pParagraph << rptNewLine;
 
@@ -753,7 +754,7 @@ void write_fpce_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IStageMap,pStageMap);
    *pParagraph << Sub2("M","cre") << OLE2A(pStageMap->GetLimitStateName(ls)) << " [Eqn 5.8.3.4.3-2]" << rptNewLine;
 
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mcre.gif") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mcre.png") << rptNewLine;
    *pParagraph << rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,"");
@@ -815,11 +816,11 @@ void write_fpce_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   *pParagraph << Sub2("f","r") << " = " << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient()) << symbol(ROOT) << RPT_FC << rptNewLine;
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+   *pParagraph << Sub2("f","r") << " = " << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
 
    *pParagraph << Sub2("f","cpe") << " = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads." << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fcpe.gif") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fcpe.png") << rptNewLine;
    *pParagraph << Sub2("S","nc") << " = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads" << rptNewLine;
    *pParagraph << Sub2("S","c") << " = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads" << rptNewLine;
    *pParagraph << Sub2("M","dnc") << " = total unfactored dead load moment acting on the monolithic or noncomposite section" << rptNewLine;
@@ -854,9 +855,9 @@ void write_fpo_table(IBroker* pBroker,
    *pParagraph << " - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
    if ( bAfter1999 )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fpo Equation 2000.gif") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fpo_2000.png") << rptNewLine;
    else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fpo Equation.jpg") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fpo.png") << rptNewLine;
 
    *pParagraph << rptNewLine;
 
@@ -953,7 +954,7 @@ void write_Fe_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IStageMap,pStageMap);
    *pParagraph << Sub2("F",symbol(epsilon)) << " [Eqn 5.8.3.4.2-3] - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Fe Equation.jpg") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Fe.png") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -1070,47 +1071,47 @@ void write_ex_table(IBroker* pBroker,
    {
       if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation 2008.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2008.png") << rptNewLine;
       }
       else if ( shear_capacity_method == scmWSDOT2001 )
       {
          // tables with WSDOT modifications
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation WSDOT 2003.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2003_WSDOT.png") << rptNewLine;
       }
       else
       {
          // tables
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation 2005.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2005.png") << rptNewLine;
       }
    }
    else if ( bAfter2004 )
    {
       if ( shear_capacity_method == scmWSDOT2007 )
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation 2008.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2008.png") << rptNewLine;
       else if ( shear_capacity_method == scmWSDOT2001 )
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation WSDOT 2003.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2003_WSDOT.png") << rptNewLine;
       else
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation 2005.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2005.png") << rptNewLine;
    }
    else if ( bAfter2003 )
    {
       ATLASSERT(shear_capacity_method != scmWSDOT2007);
 
       if ( shear_capacity_method == scmWSDOT2001 )
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation WSDOT 2003.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2003_WSDOT.png") << rptNewLine;
       else
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation 2003.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2003.png") << rptNewLine;
    }
    else if ( bAfter1999 )
    {
       if ( shear_capacity_method == scmWSDOT2001 )
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation WSDOT 2000.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2000_WSDOT.png") << rptNewLine;
       else
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation 2000.gif") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex_2000.png") << rptNewLine;
    }
    else
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex Equation.jpg") << rptNewLine; // 1999 and earlier
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ex.png") << rptNewLine; // 1999 and earlier
    }
 
    pParagraph = new rptParagraph;
@@ -1320,8 +1321,8 @@ void write_btsummary_table(IBroker* pBroker,
 
    if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "BetaEquation.gif") << rptNewLine;
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaEquation.gif") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "BetaEquation.png") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaEquation.png") << rptNewLine;
    }
 
 
@@ -1459,7 +1460,7 @@ void write_Vs_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IStageMap,pStageMap);
    *pParagraph << "Shear Resistance Provided By Shear Reinforcement - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vs Equation.jpg") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vs.png") << rptNewLine;
    *pParagraph << rptNewLine;
    
 
@@ -1562,14 +1563,40 @@ void write_Vc_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IStageMap,pStageMap);
    *pParagraph << "Shear Resistance Provided By Tensile Stress in the Concrete - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vc Equation -SI.jpg") << rptNewLine;
-   else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vc Equation -US.jpg") << rptNewLine;
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+   std::string strImage;
+   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+   bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
+   switch( concType )
+   {
+   case pgsTypes::Normal:
+      strImage = (IS_US_UNITS(pDisplayUnits) ? "VcEquation_NWC_US.png" : "VcEquation_NWC_SI.png");
+      break;
+
+   case pgsTypes::AllLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = (IS_US_UNITS(pDisplayUnits) ? "VcEquation_LWC_US.png" : "VcEquation_LWC_SI.png");
+      else
+         strImage = (IS_US_UNITS(pDisplayUnits) ? "VcEquation_ALWC_US.png" : "VcEquation_ALWC_SI.png");
+      break;
+
+   case pgsTypes::SandLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = (IS_US_UNITS(pDisplayUnits) ? "VcEquation_LWC_US.png" : "VcEquation_LWC_SI.png");
+      else
+         strImage = (IS_US_UNITS(pDisplayUnits) ? "VcEquation_SLWC_US.png" : "VcEquation_SLWC_SI.png");
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
 
    *pParagraph << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6,"");
+   ColumnIndexType nCols = (concType != pgsTypes::Normal && bHasAggSplittingStrength ? 7 : 6);
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
 
    if ( span == ALL_SPANS )
    {
@@ -1579,16 +1606,21 @@ void write_Vc_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
+   ColumnIndexType colIdx = 0;
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*table)(0,colIdx++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*table)(0,colIdx++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1) << symbol(beta);
-   (*table)(0,2) << COLHDR( RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR( Sub2("b","v"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR( Sub2("d","v"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5) << COLHDR( Sub2("V","c"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   (*table)(0,colIdx++) << symbol(beta);
+   (*table)(0,colIdx++) << COLHDR( RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
+      (*table)(0,colIdx++) << COLHDR( Sub2("f","ct"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   (*table)(0,colIdx++) << COLHDR( Sub2("b","v"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,colIdx++) << COLHDR( Sub2("d","v"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,colIdx++) << COLHDR( Sub2("V","c"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false );
@@ -1613,24 +1645,39 @@ void write_Vc_table(IBroker* pBroker,
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
+      colIdx = 0;
       const pgsPointOfInterest& poi = *i;
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
-      (*table)(row,0) << location.SetValue( stage, poi, end_size );
-      (*table)(row,2) << stress.SetValue( scd.fc );
-      (*table)(row,3) << dim.SetValue( scd.bv );
-      (*table)(row,4) << dim.SetValue( scd.dv );
+      (*table)(row,colIdx++) << location.SetValue( stage, poi, end_size );
+
       if (scd.ShearInRange)
       {
-         (*table)(row,1) << scalar.SetValue( scd.Beta );
-         (*table)(row,5) << shear.SetValue( scd.Vc );
+         (*table)(row,colIdx++) << scalar.SetValue( scd.Beta );
       }
       else
       {
          print_footnote=true;
-         (*table)(row,1) << "*";
-         (*table)(row,5) << "*";
+         (*table)(row,colIdx++) << "*";
+      }
+
+      (*table)(row,colIdx++) << stress.SetValue( scd.fc );
+
+      if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
+         (*table)(row,colIdx++) << stress.SetValue( scd.fct );
+
+      (*table)(row,colIdx++) << dim.SetValue( scd.bv );
+      (*table)(row,colIdx++) << dim.SetValue( scd.dv );
+
+      if (scd.ShearInRange)
+      {
+         (*table)(row,colIdx++) << shear.SetValue( scd.Vc );
+      }
+      else
+      {
+         print_footnote=true;
+         (*table)(row,colIdx++) << "*";
       }
       row++;
    }
@@ -1665,11 +1712,35 @@ void write_Vci_table(IBroker* pBroker,
    *pParagraph << OLE2A(pStageMap->GetLimitStateName(ls)) << " - ";
 
    *pParagraph << "Shear Resistance Provided by Concrete when inclined cracking results from combined shear and moment" << rptNewLine;
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+   std::string strImage;
+   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+   bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
+   switch( concType )
+   {
+   case pgsTypes::Normal:
+      strImage = "Vci_NWC.png";
+      break;
 
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vci_SI.gif") << rptNewLine;
-   else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vci_US.gif") << rptNewLine;
+   case pgsTypes::AllLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = "Vci_LWC.png";
+      else
+         strImage = "Vci_ALWC.png";
+      break;
+
+   case pgsTypes::SandLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = "Vci_LWC.png";
+      else
+         strImage = "Vci_SLWC.png";
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
 
    *pParagraph << rptNewLine;
 
@@ -1694,12 +1765,7 @@ void write_Vci_table(IBroker* pBroker,
    (*table)(0,4) << COLHDR( Sub2("V","i"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    (*table)(0,5) << COLHDR( Sub2("M","max"), rptMomentUnitTag,  pDisplayUnits->GetMomentUnit() );
    (*table)(0,6) << COLHDR( Sub2("M","cre"), rptMomentUnitTag,  pDisplayUnits->GetMomentUnit() );
-
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      (*table)(0,7) << COLHDR( Sub2("V","ci min") << rptNewLine << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vcimin_SI.gif"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
-   else
-      (*table)(0,7) << COLHDR( Sub2("V","ci min") << rptNewLine << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vcimin_US.gif"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
-
+   (*table)(0,7) << COLHDR( Sub2("V","ci min"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    (*table)(0,8) << COLHDR( Sub2("V","ci"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -1757,10 +1823,35 @@ void write_Vcw_table(IBroker* pBroker,
 
    *pParagraph << "Shear Resistance Provided by Concrete when inclined cracking results from excessive principal tension in the web." << rptNewLine;
 
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vcw_SI.gif") << rptNewLine;
-   else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vcw_US.gif") << rptNewLine;
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+   std::string strImage;
+   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+   bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
+   switch( concType )
+   {
+   case pgsTypes::Normal:
+      strImage = "Vcw_NWC.png";
+      break;
+
+   case pgsTypes::AllLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = "Vcw_LWC.png";
+      else
+         strImage = "Vcw_ALWC.png";
+      break;
+
+   case pgsTypes::SandLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = "Vcw_LWC.png";
+      else
+         strImage = "Vcw_SLWC.png";
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
 
    *pParagraph << rptNewLine;
 
@@ -1836,10 +1927,35 @@ void write_theta_table(IBroker* pBroker,
 
    *pParagraph << "Angle of inclination of diagonal compressive stress [LRFD 5.8.3.3 and 5.8.3.4.3]" << rptNewLine;
 
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "cotan_Theta_SI.gif") << rptNewLine;
-   else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "cotan_Theta_US.gif") << rptNewLine;
+   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+   std::string strImage;
+   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+   bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
+   switch( concType )
+   {
+   case pgsTypes::Normal:
+      strImage = "cotan_theta_NWC.png";
+      break;
+
+   case pgsTypes::AllLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = "cotan_theta_LWC.png";
+      else
+         strImage = "cotan_theta_ALWC.png";
+      break;
+
+   case pgsTypes::SandLightweight:
+      if ( bHasAggSplittingStrength )
+         strImage = "cotan_theta_LWC.png";
+      else
+         strImage = "cotan_theta_SLWC.png";
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
 
    *pParagraph << rptNewLine;
 
@@ -1926,7 +2042,7 @@ void write_Vn_table(IBroker* pBroker,
 
    *pChapter << pParagraph;
 
-   int nCol = (shear_capacity_method == scmVciVcw ? 10 : 11);
+   int nCol = (shear_capacity_method == scmVciVcw ? 11 : 12);
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,std::string(strName));
 
@@ -1960,6 +2076,7 @@ void write_Vn_table(IBroker* pBroker,
    (*table)(0,col++) << COLHDR( Sub2("V","n1") << Super("$"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << COLHDR( Sub2("V","n2") << Super("#"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << COLHDR( Sub2("V","n"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++) << symbol(phi);
    (*table)(0,col++) << COLHDR( symbol(phi) << Sub2("V","n"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -1971,8 +2088,8 @@ void write_Vn_table(IBroker* pBroker,
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Automatic );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(3);
+   scalar.SetWidth(5);
+   scalar.SetPrecision(2);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
@@ -2015,6 +2132,7 @@ void write_Vn_table(IBroker* pBroker,
 
       (*table)(row,col++) << shear.SetValue( scd.Vn2 );
       (*table)(row,col++) << shear.SetValue( scd.Vn );
+      (*table)(row,col++) << scalar.SetValue( scd.Phi );
       (*table)(row,col++) << shear.SetValue( scd.pVn );
 
       row++;
@@ -2082,9 +2200,9 @@ void write_Avs_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    if ( shear_capacity_method != scmVciVcw )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "RequiredShearReinforcement1.gif");
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "RequiredShearReinforcement1.png");
    else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "RequiredShearReinforcement2.gif");
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "RequiredShearReinforcement2.png");
 
    int nCol = (shear_capacity_method == scmVciVcw ? 8 : 9);
 

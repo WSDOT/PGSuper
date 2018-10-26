@@ -54,7 +54,7 @@ class ATL_NO_VTABLE CBridgeAgentImp :
    public IAgentEx,
    public IRoadway,
    public IBridge,
-   public IBridgeMaterial,
+   public IBridgeMaterialEx,
    public IStrandGeometry,
    public ILongRebarGeometry,
    public IStirrupGeometry,
@@ -93,6 +93,7 @@ BEGIN_COM_MAP(CBridgeAgentImp)
    COM_INTERFACE_ENTRY(IRoadway)
    COM_INTERFACE_ENTRY(IBridge)
    COM_INTERFACE_ENTRY(IBridgeMaterial)
+   COM_INTERFACE_ENTRY(IBridgeMaterialEx)
    COM_INTERFACE_ENTRY(IStrandGeometry)
    COM_INTERFACE_ENTRY(ILongRebarGeometry)
    COM_INTERFACE_ENTRY(IStirrupGeometry)
@@ -150,8 +151,8 @@ public:
    virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve);
    virtual CollectionIndexType GetVertCurveCount();
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve);
-   virtual void GetCrownPoint(Float64 station,IDirection* dir,IPoint2d** ppPoint);
-   virtual void GetCrownPoint(Float64 station,IDirection* dir,IPoint3d** ppPoint);
+   virtual void GetCrownPoint(Float64 station,IDirection* pDirection,IPoint2d** ppPoint);
+   virtual void GetCrownPoint(Float64 station,IDirection* pDirection,IPoint3d** ppPoint);
 
 // IBridge
 public:
@@ -290,6 +291,35 @@ public:
    virtual Float64 GetShearFrSlab();
    virtual Float64 GetK1Slab();
    virtual Float64 GetNWCDensityLimit();
+
+// IBridgeMaterialEx
+public:
+   virtual Float64 GetLWCDensityLimit();
+   virtual pgsTypes::ConcreteType GetGdrConcreteType(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual bool DoesGdrConcreteHaveAggSplittingStrength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetGdrConcreteAggSplittingStrength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual pgsTypes::ConcreteType GetSlabConcreteType();
+   virtual bool DoesSlabConcreteHaveAggSplittingStrength();
+   virtual Float64 GetSlabConcreteAggSplittingStrength();
+   virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type);
+   virtual Float64 GetFlexureFrCoefficient(pgsTypes::ConcreteType type);
+   virtual Float64 GetFlexureFrCoefficient(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type);
+   virtual Float64 GetShearFrCoefficient(pgsTypes::ConcreteType type);
+   virtual Float64 GetShearFrCoefficient(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetEccK1Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetEccK2Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetCreepK1Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetCreepK2Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetShrinkageK1Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetShrinkageK2Gdr(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetEccK1Slab();
+   virtual Float64 GetEccK2Slab();
+   virtual Float64 GetCreepK1Slab();
+   virtual Float64 GetCreepK2Slab();
+   virtual Float64 GetShrinkageK1Slab();
+   virtual Float64 GetShrinkageK2Slab();
+   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2);
 
 // IStageMap
 public:
@@ -630,7 +660,12 @@ private:
    std::map< SpanGirderHashType, boost::shared_ptr<matConcreteEx> > m_pGdrConc;
    std::map< SpanGirderHashType, boost::shared_ptr<matConcreteEx> > m_pGdrReleaseConc;
 
-   double m_SlabK1; // K1 parameter for LRFD equations introduced in 2005
+   Float64 m_SlabEcK1;
+   Float64 m_SlabEcK2;
+   Float64 m_SlabCreepK1;
+   Float64 m_SlabCreepK2;
+   Float64 m_SlabShrinkageK1;
+   Float64 m_SlabShrinkageK2;
    std::auto_ptr<matConcreteEx> m_pSlabConc;
 
    std::auto_ptr<matConcreteEx> m_pRailingConc[2]; // index is pgsTypes::TrafficBarrierOrientation
@@ -748,6 +783,7 @@ private:
 
    void InvalidateConcrete();
    bool ValidateConcrete();
+   bool IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type);
 
    Float64 GetHalfElevation(const pgsPointOfInterest& poi); // returns location of half height of composite girder
 

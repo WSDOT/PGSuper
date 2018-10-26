@@ -78,7 +78,7 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpR1.gif") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_FpR1.png") << rptNewLine;
 
    table->stress.ShowUnitTag(true);
    table->time.ShowUnitTag(true);

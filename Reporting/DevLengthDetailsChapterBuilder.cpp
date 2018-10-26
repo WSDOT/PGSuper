@@ -131,7 +131,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          if (pSpecEntry->GetPrestressTransferComputationType()!=pgsTypes::ptMinuteValue)
          {
             *pParagraph_h << "Transfer Length [5.11.4.1]" << rptNewLine;
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "TransferLength.gif") << rptNewLine;
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "TransferLength.png") << rptNewLine;
             *pParagraph << Sub2("d","b") << " = " << length.SetValue(bonded_details.db) << rptNewLine;
             *pParagraph << Sub2("l","t") << " = " << length.SetValue(bonded_details.lt) << rptNewLine;
          }
@@ -156,9 +156,9 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          }
 
          if ( IS_US_UNITS(pDisplayUnits) )
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_US.gif") << rptNewLine;
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_US.png") << rptNewLine;
          else
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_SI.gif") << rptNewLine;
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_SI.png") << rptNewLine;
 
 
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLengthReduction.png") << rptNewLine;

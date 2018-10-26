@@ -1,7 +1,5 @@
 IDH_GIRDER_VIEW=Girder_View_Tab.htm
 IDH_BRIDGE_DESCRIPTION=Bridge_Description_Tab.htm
-IDH_VIEW_SETTINGS=Girder_View_Tab.htm
-IDH_WELCOME=Welcome.htm
-IDH_REPORT_TAB=Analysis_Report_Tab.htm
 IDH_GIRDER_INPUT=Girder_Description_Tab.htm
+IDH_REPORT_TAB=Analysis_Report_Tab.htm
 IDH_LICENSE=License_Agreement.htm

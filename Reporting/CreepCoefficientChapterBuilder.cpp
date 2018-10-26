@@ -165,10 +165,10 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          if ( details.Spec == CREEP_SPEC_PRE_2005 )
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn.jpg") << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn.png") << rptNewLine;
             *pPara << Bold("for which:") << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn-SI.jpg" : "KfEqn-US.jpg") ) << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KcEqn-SI.jpg" : "KcEqn-US.jpg") ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn-SI.png" : "KfEqn-US.png") ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KcEqn-SI.png" : "KcEqn-US.png") ) << rptNewLine;
 
             *pPara << Bold("where:") << rptNewLine;
             *pPara << "H = " << details.H << "%" << rptNewLine;
@@ -181,33 +181,36 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
          else
          {
 #if defined IGNORE_2007_CHANGES
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.gif") << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.png") << rptNewLine;
             *pPara << Bold("for which:") << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.gif" : "KvsEqn-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.png" : "KvsEqn-US.png") ) << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.gif" : "KvsEqn2006-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.png" : "KvsEqn2006-US.png") ) << rptNewLine;
 #else
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2007.gif") << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2007.png") << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.gif") << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.png") << rptNewLine;
+
             *pPara << Bold("for which:") << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.gif" : "KvsEqn-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.png" : "KvsEqn-US.png") ) << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.gif" : "KvsEqn2006-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.png" : "KvsEqn2006-US.png") ) << rptNewLine;
 #endif // IGNORE_2007_CHANGES
 
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "KhcEqn.gif" ) << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn2005-SI.gif" : "KfEqn2005-US.gif") ) << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KtdEqn-SI.gif" : "KtdEqn-US.gif") ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "KhcEqn.png" ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn2005-SI.png" : "KfEqn2005-US.png") ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KtdEqn-SI.png" : "KtdEqn-US.png") ) << rptNewLine;
 
             *pPara << Bold("where:") << rptNewLine;
             *pPara << "H = " << details.H << "%" << rptNewLine;
             *pPara << "V/S = " << length.SetValue(details.VSratio) << rptNewLine;
+            *pPara << Sub2("K","1") << " = " << details.K1 << rptNewLine;
+            *pPara << Sub2("K","2") << " = " << details.K2 << rptNewLine;
 #if defined IGNORE_2007_CHANGES
            *pPara << "In determining the maturity of concrete at initial load, t" << Sub("i")
                   << ", one day of accelerated curing may be taken as equal to seven days of normal curing." << rptNewLine;
@@ -380,10 +383,10 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
 
          if ( details.Spec == CREEP_SPEC_PRE_2005 )
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn.jpg") << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn.png") << rptNewLine;
             *pPara << Bold("for which:") << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn-SI.jpg" : "KfEqn-US.jpg") ) << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KcEqn-SI.jpg" : "KcEqn-US.jpg") ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn-SI.png" : "KfEqn-US.png") ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KcEqn-SI.png" : "KcEqn-US.png") ) << rptNewLine;
 
             *pPara << Bold("where:") << rptNewLine;
             *pPara << "H = " << details.H << "%" << rptNewLine;
@@ -396,33 +399,35 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
          else
          {
 #if defined IGNORE_2007_CHANGES
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.gif") << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.png") << rptNewLine;
             *pPara << Bold("for which:") << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.gif" : "KvsEqn-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.png" : "KvsEqn-US.png") ) << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.gif" : "KvsEqn2006-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.png" : "KvsEqn2006-US.png") ) << rptNewLine;
 #else
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2007.gif") << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2007.png") << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.gif") << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.png") << rptNewLine;
             *pPara << Bold("for which:") << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.gif" : "KvsEqn-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.png" : "KvsEqn-US.png") ) << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.gif" : "KvsEqn2006-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.png" : "KvsEqn2006-US.png") ) << rptNewLine;
 #endif // IGNORE_2007_CHANGES
 
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "KhcEqn.gif" ) << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn2005-SI.gif" : "KfEqn2005-US.gif") ) << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KtdEqn-SI.gif" : "KtdEqn-US.gif") ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "KhcEqn.png" ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn2005-SI.png" : "KfEqn2005-US.png") ) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KtdEqn-SI.png" : "KtdEqn-US.png") ) << rptNewLine;
 
             *pPara << Bold("where:") << rptNewLine;
             *pPara << "H = " << details.H << "%" << rptNewLine;
             *pPara << "V/S = " << length.SetValue(details.VSratio) << rptNewLine;
+            *pPara << Sub2("K","1") << " = " << details.K1 << rptNewLine;
+            *pPara << Sub2("K","2") << " = " << details.K2 << rptNewLine;
 #if defined IGNORE_2007_CHANGES
            *pPara << "In determining the maturity of concrete at initial load, t" << Sub("i")
                   << ", one day of accelerated curing may be taken as equal to seven days of normal curing." << rptNewLine;
@@ -541,10 +546,10 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
         if ( details.Spec == CREEP_SPEC_PRE_2005 )
         {
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn.jpg") << rptNewLine;
+           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn.png") << rptNewLine;
            *pPara << Bold("for which:") << rptNewLine;
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn-SI.jpg" : "KfEqn-US.jpg") ) << rptNewLine;
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KcEqn-SI.jpg" : "KcEqn-US.jpg") ) << rptNewLine;
+           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn-SI.png" : "KfEqn-US.png") ) << rptNewLine;
+           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KcEqn-SI.png" : "KcEqn-US.png") ) << rptNewLine;
 
            *pPara << Bold("where:") << rptNewLine;
            *pPara << "H = " << details.H << "%" << rptNewLine;
@@ -557,32 +562,34 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
         else
         {
 #if defined IGNORE_2007_CHANGES
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.gif") << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.png") << rptNewLine;
             *pPara << Bold("for which:") << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.gif" : "KvsEqn-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.png" : "KvsEqn-US.png") ) << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.gif" : "KvsEqn2006-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.png" : "KvsEqn2006-US.png") ) << rptNewLine;
 #else
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2007.gif") << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2007.png") << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.gif") << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LRFDCreepEqn2005.png") << rptNewLine;
             *pPara << Bold("for which:") << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.gif" : "KvsEqn-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn-SI.png" : "KvsEqn-US.png") ) << rptNewLine;
             else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.gif" : "KvsEqn2006-US.gif") ) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KvsEqn2006-SI.png" : "KvsEqn2006-US.png") ) << rptNewLine;
 #endif // IGNORE_2007_CHANGES
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "KhcEqn.gif" ) << rptNewLine;
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn2005-SI.gif" : "KfEqn2005-US.gif") ) << rptNewLine;
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KtdEqn-SI.gif" : "KtdEqn-US.gif") ) << rptNewLine;
+           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "KhcEqn.png" ) << rptNewLine;
+           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KfEqn2005-SI.png" : "KfEqn2005-US.png") ) << rptNewLine;
+           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? "KtdEqn-SI.png" : "KtdEqn-US.png") ) << rptNewLine;
 
            *pPara << Bold("where:") << rptNewLine;
            *pPara << "H = " << details.H << "%" << rptNewLine;
            *pPara << "V/S = " << length.SetValue(details.VSratio) << rptNewLine;
+            *pPara << Sub2("K","1") << " = " << details.K1 << rptNewLine;
+            *pPara << Sub2("K","2") << " = " << details.K2 << rptNewLine;
 #if defined IGNORE_2007_CHANGES
            *pPara << "In determining the maturity of concrete at initial load, t" << Sub("i")
                   << ", one day of accelerated curing may be taken as equal to seven days of normal curing." << rptNewLine;

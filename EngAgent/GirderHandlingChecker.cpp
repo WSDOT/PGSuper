@@ -129,9 +129,10 @@ void pgsGirderHandlingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType
 void pgsGirderHandlingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,const HANDLINGCONFIG& liftConfig,IGirderLiftingDesignPointsOfInterest* pPoiD,pgsLiftingAnalysisArtifact* pArtifact)
 {
    // calc some initial information
-   GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
 
    Float64 Loh, Roh, Eci, Fci;
+   pgsTypes::ConcreteType concType;
 
    std::vector<pgsPointOfInterest> poi_vec;
    if ( bUseConfig )
@@ -142,9 +143,10 @@ void pgsGirderHandlingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType
       if ( liftConfig.GdrConfig.bUserEci )
          Eci = liftConfig.GdrConfig.Eci;
       else
-         Eci = pMaterial->GetEconc(liftConfig.GdrConfig.Fci, pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetK1Gdr(span,gdr));
+         Eci = pMaterial->GetEconc(liftConfig.GdrConfig.Fci, pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetEccK1Gdr(span,gdr),pMaterial->GetEccK2Gdr(span,gdr));
 
       Fci = liftConfig.GdrConfig.Fci;
+      concType = liftConfig.GdrConfig.ConcType;
 
       poi_vec = pPoiD->GetLiftingDesignPointsOfInterest(span,gdr,Loh,POI_FLEXURESTRESS);
    }
@@ -154,15 +156,16 @@ void pgsGirderHandlingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType
       Loh = pGirderLifting->GetLeftLiftingLoopLocation(span,gdr);
       Roh = pGirderLifting->GetRightLiftingLoopLocation(span,gdr);
 
-      GET_IFACE(IBridgeMaterial,pMaterial);
+      GET_IFACE(IBridgeMaterialEx,pMaterial);
       Eci = pMaterial->GetEciGdr(span,gdr);
       Fci = pMaterial->GetFciGdr(span,gdr);
+      concType = pMaterial->GetGdrConcreteType(span,gdr);
 
       GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
       poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,gdr,POI_FLEXURESTRESS);
    }
    
-   PrepareLiftingAnalysisArtifact(span,gdr,Loh,Roh,Fci,Eci,pArtifact);
+   PrepareLiftingAnalysisArtifact(span,gdr,Loh,Roh,Fci,Eci,concType,pArtifact);
 
    pArtifact->SetLiftingPointsOfInterest(poi_vec);
 
@@ -200,9 +203,10 @@ void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType
 void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,const HANDLINGCONFIG& haulConfig,IGirderHaulingDesignPointsOfInterest* pPOId,pgsHaulingAnalysisArtifact* pArtifact)
 {
    // calc some initial information
-   GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
 
    Float64 Loh, Roh, Ec, Fc;
+   pgsTypes::ConcreteType concType;
 
    std::vector<pgsPointOfInterest> poi_vec;
    if ( bUseConfig )
@@ -213,9 +217,10 @@ void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType
       if ( haulConfig.GdrConfig.bUserEc )
          Ec = haulConfig.GdrConfig.Ec;
       else
-         Ec = pMaterial->GetEconc(haulConfig.GdrConfig.Fc, pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetK1Gdr(span,gdr));
+         Ec = pMaterial->GetEconc(haulConfig.GdrConfig.Fc, pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetEccK1Gdr(span,gdr),pMaterial->GetEccK2Gdr(span,gdr));
 
       Fc = haulConfig.GdrConfig.Fc;
+      concType = haulConfig.GdrConfig.ConcType;
 
       poi_vec = pPOId->GetHaulingDesignPointsOfInterest(span,gdr,Loh,Roh,POI_FLEXURESTRESS);
    }
@@ -227,12 +232,13 @@ void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType
 
       Fc = pMaterial->GetFcGdr(span,gdr);
       Ec = pMaterial->GetEcGdr(span,gdr);
+      concType = pMaterial->GetGdrConcreteType(span,gdr);
 
       GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
       poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,gdr,POI_FLEXURESTRESS);
    }
 
-   PrepareHaulingAnalysisArtifact(span,gdr,Loh,Roh,Fc,Ec,pArtifact);
+   PrepareHaulingAnalysisArtifact(span,gdr,Loh,Roh,Fc,Ec,concType,pArtifact);
 
 
    pArtifact->SetHaulingPointsOfInterest(poi_vec);
@@ -544,7 +550,7 @@ void pgsGirderHandlingChecker::PrepareLiftingCheckArtifact(SpanIndexType span,Gi
    pArtifact->SetAlternativeTensionAllowableStress(pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(span,gdr));
 }
 
-void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fci,Float64 Eci,pgsLiftingAnalysisArtifact* pArtifact)
+void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fci,Float64 Eci,pgsTypes::ConcreteType concType,pgsLiftingAnalysisArtifact* pArtifact)
 {
    GET_IFACE(IBridge, pBridge);
    Float64 girder_length = pBridge->GetGirderLength(span,gdr);
@@ -577,7 +583,7 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
       THROW_UNWIND(str.c_str(),-1);
    }
 
-   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+   GET_IFACE(IGirderLiftingSpecCriteriaEx,pGirderLiftingSpecCriteria);
    Float64 min_lift_point_start = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(span,gdr,pgsTypes::metStart);
    Float64 min_lift_point_end   = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(span,gdr,pgsTypes::metEnd);
    if ( Loh < min_lift_point_start )
@@ -619,8 +625,8 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
    pArtifact->SetLiftingDeviceTolerance(pGirderLiftingSpecCriteria->GetLiftingLoopPlacementTolerance());
 
    pArtifact->SetConcreteStrength(Fci);
-   pArtifact->SetModRupture( pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(Fci) );
-   pArtifact->SetModRuptureCoefficient( pGirderLiftingSpecCriteria->GetLiftingModulusOfRuptureCoefficient() );
+   pArtifact->SetModRupture( pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(Fci,concType) );
+   pArtifact->SetModRuptureCoefficient( pGirderLiftingSpecCriteria->GetLiftingModulusOfRuptureCoefficient(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Eci);
 
@@ -1036,7 +1042,7 @@ void pgsGirderHandlingChecker::ComputeLiftingFsAgainstFailure(SpanIndexType span
 ////////////////////////////////////////////////////////
 // hauling
 ////////////////////////////////////////////////////////
-void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fc,Float64 Ec,pgsHaulingAnalysisArtifact* pArtifact)
+void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fc,Float64 Ec,pgsTypes::ConcreteType concType,pgsHaulingAnalysisArtifact* pArtifact)
 {
    GET_IFACE(IBridge, pBridge);
    Float64 girder_length = pBridge->GetGirderLength(span,gdr);
@@ -1065,7 +1071,7 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
       THROW_UNWIND(str.c_str(),-1);
    }
 
-   GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   GET_IFACE(IGirderHaulingSpecCriteriaEx,pGirderHaulingSpecCriteria);
    Float64 min_bunk_point_start = pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metStart);
    Float64 min_bunk_point_end   = pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metEnd);
    if ( Loh < min_bunk_point_start )
@@ -1133,8 +1139,8 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
 
 
    pArtifact->SetConcreteStrength(Fc);
-   pArtifact->SetModRupture( pGirderHaulingSpecCriteria->GetHaulingModulusOfRupture(Fc) );
-   pArtifact->SetModRuptureCoefficient( pGirderHaulingSpecCriteria->GetHaulingModulusOfRuptureCoefficient() );
+   pArtifact->SetModRupture( pGirderHaulingSpecCriteria->GetHaulingModulusOfRupture(Fc,concType) );
+   pArtifact->SetModRuptureCoefficient( pGirderHaulingSpecCriteria->GetHaulingModulusOfRuptureCoefficient(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Ec);
 

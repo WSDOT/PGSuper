@@ -210,7 +210,7 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignGirderInputPage, CPropertyPage)
    ON_BN_CLICKED(IDC_ORIG_USE_DEPRESSED, &CTxDOTOptionalDesignGirderInputPage::OnBnClickedOrigUseDepressed)
    ON_WM_ERASEBKGND()
    ON_WM_CTLCOLOR()
-   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignGirderInputPage::OnHelpFinder)
+   ON_WM_HELPINFO()
    ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignGirderInputPage::OnHelpFinder)
 END_MESSAGE_MAP()
 
@@ -612,10 +612,16 @@ HBRUSH CTxDOTOptionalDesignGirderInputPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UIN
    return (HBRUSH)backBrush;
 }
 
+BOOL CTxDOTOptionalDesignGirderInputPage::OnHelpInfo(HELPINFO* pHelpInfo)
+{
+   CWinApp* papp = AfxGetApp();
+   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_INPUT );
+
+   return TRUE;
+}
 
 void CTxDOTOptionalDesignGirderInputPage::OnHelpFinder()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_INPUT );
+   CWinApp* papp = AfxGetApp();
+   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_INPUT );
 }

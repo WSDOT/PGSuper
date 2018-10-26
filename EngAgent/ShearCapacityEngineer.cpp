@@ -32,6 +32,7 @@
 #include <IFace\PrestressForce.h> 
 #include <IFace\MomentCapacity.h>
 #include <IFace\StatusCenter.h>
+#include <IFace\ResistanceFactors.h>
 #include <lrfd\Rebar.h>
 #include <psglib\SpecLibraryEntry.h>
 #include <pgsext\statusitem.h>
@@ -454,14 +455,15 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    }
 
    // phi factor for shear
-   pscd->Phi = 0.9;
+   GET_IFACE(IResistanceFactors,pResistanceFactors);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
+   pscd->Phi = pResistanceFactors->GetShearResistanceFactor( pMaterial->GetGdrConcreteType(span,gdr) );
 
    // shear area (bv and dv)
    pscd->bv = pGdr->GetShearWidth(poi);
 
 
    // material props
-   GET_IFACE(IBridgeMaterial,pMaterial);
    pscd->fc = pMaterial->GetFcGdr(span,gdr);
    pscd->Ec = pMaterial->GetEcGdr(span,gdr);
 
@@ -504,6 +506,9 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
 						   const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd)
 {
    GetGeneralInformation(ls,stage,poi,pscd);
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IPrestressForce,pPsForce);
    GET_IFACE(IMomentCapacity,pMomentCapacity);
@@ -577,15 +582,55 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
    CRACKINGMOMENTDETAILS mcr_details;
    pMomentCapacity->GetCrackingMomentDetails(stage,poi,(pscd->bTensionBottom ? true : false),&mcr_details);
 
-   GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterial);
 
    pscd->McrDetails = mcr_details;
    if ( (pscd->bTensionBottom ? true : false) )
-      pscd->McrDetails.fr = pMaterial->GetShearModRupture(pMaterial->GetFcGdr(poi.GetSpan(),poi.GetGirder()));
+      pscd->McrDetails.fr = pMaterial->GetShearFrGdr(poi.GetSpan(),poi.GetGirder());
    else
-      pscd->McrDetails.fr = pMaterial->GetShearModRupture(pMaterial->GetFcSlab());
+      pscd->McrDetails.fr = pMaterial->GetShearFrSlab();
 
    pscd->McrDetails.Mcr = pscd->McrDetails.Sbc*(pscd->McrDetails.fr + pscd->McrDetails.fcpe - pscd->McrDetails.Mdnc/pscd->McrDetails.Sb);
+
+   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+   pscd->ConcreteType = concType;
+   switch( concType )
+   {
+   case pgsTypes::Normal:
+      pscd->bHasFct = false;
+      pscd->fct = 0;
+      break;
+
+   case pgsTypes::AllLightweight:
+      if ( pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr) )
+      {
+         pscd->bHasFct = true;
+         pscd->fct = pMaterial->GetGdrConcreteAggSplittingStrength(span,gdr);
+      }
+      else
+      {
+         pscd->bHasFct = false;
+         pscd->fct = 0;
+      }
+      break;
+
+   case pgsTypes::SandLightweight:
+      if ( pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr) )
+      {
+         pscd->bHasFct = true;
+         pscd->fct = pMaterial->GetGdrConcreteAggSplittingStrength(span,gdr);
+      }
+      else
+      {
+         pscd->bHasFct = false;
+         pscd->fct = 0;
+      }
+      break;
+
+   default:
+      ATLASSERT(false); // is there a new concrete type
+      break;
+   }
 
    return true;
 }
@@ -672,9 +717,9 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
 
    pscd->McrDetails = mcr_details;
    if ( (pscd->bTensionBottom ? true : false) )
-      pscd->McrDetails.fr = pMaterial->GetShearModRupture(pMaterial->GetFcGdr(poi.GetSpan(),poi.GetGirder()));
+      pscd->McrDetails.fr = pMaterial->GetShearFrGdr(poi.GetSpan(),poi.GetGirder());
    else
-      pscd->McrDetails.fr = pMaterial->GetShearModRupture(pMaterial->GetFcSlab());
+      pscd->McrDetails.fr = pMaterial->GetShearFrSlab();
 
    pscd->McrDetails.Mcr = pscd->McrDetails.Sbc*(pscd->McrDetails.fr + pscd->McrDetails.fcpe - pscd->McrDetails.Mdnc/pscd->McrDetails.Sb);
 
@@ -708,6 +753,9 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    data.Vd   = pscd->Vd;
    data.Mcre = pscd->McrDetails.Mcr;
    data.fpc  = pscd->fpc;
+   data.ConcreteType = (matConcrete::Type)pscd->ConcreteType;
+   data.bHasfct = pscd->bHasFct;
+   data.fct = pscd->fct;
 
 
    GET_IFACE(ISpecification, pSpec);
@@ -799,15 +847,71 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          Float64 dv    = pscd->dv;
          Float64 bv    = pscd->bv;
 
-         dv = ::ConvertFromSysUnits( dv, unitMeasure::Millimeter);
-         bv = ::ConvertFromSysUnits( bv, unitMeasure::Millimeter);
+         const unitLength* pLengthUnit = NULL;
+         const unitStress* pStressUnit = NULL;
+         const unitForce*  pForceUnit  = NULL;
+         Float64 K; // main coefficient in equaion 5.8.3.3-3
+         Float64 Kfct; // coefficient for fct if LWC
+         if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+         {
+            pLengthUnit = &unitMeasure::Inch;
+            pStressUnit = &unitMeasure::KSI;
+            pForceUnit  = &unitMeasure::Kip;
+            K = 0.0316;
+            Kfct = 4.7;
+         }
+         else
+         {
+            pLengthUnit = &unitMeasure::Millimeter;
+            pStressUnit = &unitMeasure::MPa;
+            pForceUnit  = &unitMeasure::Newton;
+            K = 0.083;
+            Kfct = 1.8;
+         }
 
-         Float64 fc = pscd->fc;
-         fc = ::ConvertFromSysUnits( fc, unitMeasure::MPa );
+         dv = ::ConvertFromSysUnits( dv, *pLengthUnit);
+         bv = ::ConvertFromSysUnits( bv, *pLengthUnit);
+
+         Float64 fc =  ::ConvertFromSysUnits( pscd->fc,  *pStressUnit );
+         Float64 fct = ::ConvertFromSysUnits( pscd->fct, *pStressUnit );
 
          // 5.8.3.3-3
-         Float64 Vc = 0.083 * Beta * sqrt( fc ) * bv * dv;
-         Vc = ::ConvertToSysUnits( Vc, unitMeasure::Newton );
+         Float64 Vc = K * Beta * bv * dv;
+         switch( pscd->ConcreteType )
+         {
+         case pgsTypes::Normal:
+            Vc *= sqrt(fc);
+            break;
+
+         case pgsTypes::AllLightweight:
+            if ( pscd->bHasFct )
+            {
+               Vc *= min(Kfct*fct,sqrt(fc));
+            }
+            else
+            {
+               Vc *= 0.75*sqrt(fc);
+            }
+            break;
+
+         case pgsTypes::SandLightweight:
+            if ( pscd->bHasFct )
+            {
+               Vc *= min(Kfct*fct,sqrt(fc));
+            }
+            else
+            {
+               Vc *= 0.85*sqrt(fc);
+            }
+            break;
+
+         default:
+            ATLASSERT(false); // is there a new concrete type
+            Vc *= sqrt(fc);
+            break;
+         }
+
+         Vc = ::ConvertToSysUnits( Vc, *pForceUnit);
          pscd->Vc = Vc;
       }
       else
@@ -858,18 +962,35 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
       }
       else
       {
+         Float64 fc, fpc, fct, Kfct, K;
          if (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI )
          {
-            Float64 fc =  ::ConvertFromSysUnits(pscd->fc,  unitMeasure::MPa);
-            Float64 fpc = ::ConvertFromSysUnits(pscd->fpc, unitMeasure::MPa);
-            cot_theta = _cpp_min(1.0+1.14*(fpc/sqrt(fc)),1.8);
+            fc  = ::ConvertFromSysUnits(pscd->fc,  unitMeasure::MPa);
+            fpc = ::ConvertFromSysUnits(pscd->fpc, unitMeasure::MPa);
+            fct = ::ConvertFromSysUnits(pscd->fct, unitMeasure::MPa);
+            Kfct = 1.8;
+            K = 1.14;
          }
          else
          {
-            Float64 fc =  ::ConvertFromSysUnits(pscd->fc,  unitMeasure::KSI);
+            Float64 fc  = ::ConvertFromSysUnits(pscd->fc,  unitMeasure::KSI);
             Float64 fpc = ::ConvertFromSysUnits(pscd->fpc, unitMeasure::KSI);
-            cot_theta = _cpp_min(1.0+3.0*(fpc/sqrt(fc)),1.8);
+            Float64 fct = ::ConvertFromSysUnits(pscd->fct, unitMeasure::KSI);
+            Kfct = 4.7;
+            K = 3.0;
          }
+
+         Float64 sqrt_fc;
+         if ( pscd->ConcreteType == pgsTypes::Normal )
+            sqrt_fc = sqrt(fc);
+         else if ( (pscd->ConcreteType == pgsTypes::AllLightweight || pscd->ConcreteType == pgsTypes::SandLightweight) && pscd->bHasFct )
+            sqrt_fc = min(Kfct*fct,sqrt(fc));
+         else if ( pscd->ConcreteType == pgsTypes::AllLightweight && !pscd->bHasFct )
+            sqrt_fc = 0.75*sqrt(fc);
+         else if ( pscd->ConcreteType == pgsTypes::SandLightweight && !pscd->bHasFct )
+            sqrt_fc = 0.85*sqrt(fc);
+
+         cot_theta = _cpp_min(1.0+K*(fpc/sqrt_fc),1.8);
       }
 
       pscd->Theta = atan(1/cot_theta);

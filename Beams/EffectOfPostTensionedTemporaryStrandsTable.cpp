@@ -82,9 +82,9 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    *pChapter << pParagraph;
 
    if ( tempStrandUsage == pgsTypes::ttsPTBeforeShipping )
-      *pParagraph << rptRcImage(strImagePath + "Delta_Fpp_BeforeShipping.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_Fpp_BeforeShipping.png") << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + "Delta_Fpp.gif") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_Fpp.png") << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
    table->ecc.ShowUnitTag(true);

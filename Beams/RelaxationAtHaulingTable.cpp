@@ -83,7 +83,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpR1H.gif") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_FpR1H.png") << rptNewLine;
 
    table->stress.ShowUnitTag(true);
    table->time.ShowUnitTag(true);

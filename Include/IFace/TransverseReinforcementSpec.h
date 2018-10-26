@@ -96,6 +96,7 @@ interface ITransverseReinforcementSpec : IUnknown
 
    //------------------------------------------------------------------------
    // Returns the minimum av/s for detailing per 5.8.2.5
+   // Obsolete.. only works for normal weight concrete
    virtual Float64 GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy)=0;
 
    //------------------------------------------------------------------------

@@ -217,6 +217,7 @@ STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnSelect(iDisplayObj
 {
    METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    pThis->m_pFrame->ClearSelection();
+   pThis->m_pFrame->SelectAlignment();
 }
 
 STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)

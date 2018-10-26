@@ -256,9 +256,15 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
    DDV_NonNegativeDouble(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
 
-   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt(f'ci MPa)" : "sqrt(f'ci KSI)");
+   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_SQRT,tag);
+
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_ALWC_FR_SQRT,tag);
+
+   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_SLWC_FR_SQRT,tag);
 
    DDX_UnitValueAndTag(pDX, IDC_PICK_POINT_HEIGHT, IDC_PICK_POINT_HEIGHT_UNITS, m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim);
    DDV_UnitValueZeroOrMore(pDX, IDC_PICK_POINT_HEIGHT,m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim );
@@ -316,11 +322,15 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_HAULING_ALLOW_COMP, m_Entry.m_CompStressHauling);
    DDV_GreaterThanZero(pDX, IDC_HAULING_ALLOW_COMP, m_Entry.m_CompStressHauling);
 
-
-   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt(f'c MPa)" : "sqrt(f'c KSI)");
+   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_SQRT,tag);
 
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_ALWC_FR_SQRT,tag);
+
+   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_SLWC_FR_SQRT,tag);
 
    DDX_UnitValueAndTag(pDX, IDC_HAULING_MAX_TENSSQRT, IDC_HAULING_MAX_TENSSQRT_UNITS, m_Entry.m_TensStressHauling, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAUL_TENS,tag);
@@ -470,9 +480,32 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
 
 
    CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
-   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
-   DDX_Text(pDX,IDC_FR_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_FR,m_Entry.m_FlexureModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+
+   DDX_Text(pDX,IDC_FR_UNIT,     tag);
+   DDX_Text(pDX,IDC_ALWC_FR_UNIT,tag);
+   DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
+
+   DDV_UnitValueZeroOrMore(pDX, IDC_FR,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+
+   DDX_Text(pDX,IDC_NWC_PHI_TENSION_RC,  m_Entry.m_PhiFlexureTensionRC[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_NWC_PHI_TENSION_PS,  m_Entry.m_PhiFlexureTensionPS[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_NWC_PHI_COMPRESSION, m_Entry.m_PhiFlexureCompression[pgsTypes::Normal]);
+
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_RC,  m_Entry.m_PhiFlexureTensionRC[pgsTypes::AllLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_PS,  m_Entry.m_PhiFlexureTensionPS[pgsTypes::AllLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION, m_Entry.m_PhiFlexureCompression[pgsTypes::AllLightweight]);
+
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_RC,  m_Entry.m_PhiFlexureTensionRC[pgsTypes::SandLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_PS,  m_Entry.m_PhiFlexureTensionPS[pgsTypes::SandLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION, m_Entry.m_PhiFlexureCompression[pgsTypes::SandLightweight]);
+
+   // NOTE: this looks goofy, but it is correct. There is only one LWC entry for both all and sand lightweight
+   // but it is easier to have 3 sets of values so the application is consistent.
 }
 
 void CSpecMainSheet::CheckShearCapacityMethod()
@@ -525,9 +558,21 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
       CheckShearCapacityMethod();
 
    CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
-   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_LABEL, m_Entry.m_ShearModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_FR,     IDC_FR_LABEL,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_FR_LABEL_SLWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+
    DDX_Text(pDX,IDC_FR_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_FR,m_Entry.m_ShearModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_ALWC_FR_UNIT,tag);
+   DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
+
+   DDV_UnitValueZeroOrMore(pDX, IDC_FR ,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
+
+   DDX_Text(pDX,IDC_NWC_PHI,m_Entry.m_PhiShear[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::SandLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::AllLightweight]);
 }
 
 void CSpecMainSheet::ExchangeDeflectionsData(CDataExchange* pDX)
@@ -731,11 +776,23 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   DDX_UnitValueAndTag(pDX, IDC_FC_SLAB, IDC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc, pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_GIRDER_FCI, IDC_GIRDER_FCI_UNIT, m_Entry.m_MaxGirderFci, pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_GIRDER_FC, IDC_GIRDER_FC_UNIT, m_Entry.m_MaxGirderFc, pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UNIT_WEIGHT, IDC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight, pDisplayUnits->Density);
-   DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_UNIT, m_Entry.m_MaxConcreteAggSize, pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_FC_SLAB,     IDC_NWC_FC_SLAB_UNIT,     m_Entry.m_MaxSlabFc[pgsTypes::Normal],             pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_GIRDER_FCI,  IDC_NWC_GIRDER_FCI_UNIT,  m_Entry.m_MaxGirderFci[pgsTypes::Normal],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_GIRDER_FC,   IDC_NWC_GIRDER_FC_UNIT,   m_Entry.m_MaxGirderFc[pgsTypes::Normal],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_UNIT_WEIGHT, IDC_NWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::Normal], pDisplayUnits->Density);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_AGG_SIZE,    IDC_NWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::Normal],    pDisplayUnits->ComponentDim);
+
+   DDX_UnitValueAndTag(pDX, IDC_LWC_FC_SLAB,     IDC_LWC_FC_SLAB_UNIT,     m_Entry.m_MaxSlabFc[pgsTypes::SandLightweight],             pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FCI,  IDC_LWC_GIRDER_FCI_UNIT,  m_Entry.m_MaxGirderFci[pgsTypes::SandLightweight],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FC,   IDC_LWC_GIRDER_FC_UNIT,   m_Entry.m_MaxGirderFc[pgsTypes::SandLightweight],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::SandLightweight], pDisplayUnits->Density);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::SandLightweight],    pDisplayUnits->ComponentDim);
+
+   DDX_UnitValueAndTag(pDX, IDC_LWC_FC_SLAB,     IDC_LWC_FC_SLAB_UNIT,     m_Entry.m_MaxSlabFc[pgsTypes::AllLightweight],             pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FCI,  IDC_LWC_GIRDER_FCI_UNIT,  m_Entry.m_MaxGirderFci[pgsTypes::AllLightweight],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FC,   IDC_LWC_GIRDER_FC_UNIT,   m_Entry.m_MaxGirderFc[pgsTypes::AllLightweight],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
 }
 
 void CSpecMainSheet::ExchangeLoadFactorData(CDataExchange* pDX)

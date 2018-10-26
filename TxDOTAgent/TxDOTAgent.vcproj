@@ -346,10 +346,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TOGAStatusBar.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\TogaStressChecksChapterBuilder.cpp"
 				>
 			</File>
@@ -565,10 +561,6 @@
 			</File>
 			<File
 				RelativePath=".\TogaSpecCheckSummaryChapterBuilder.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TOGAStatusBar.h"
 				>
 			</File>
 			<File

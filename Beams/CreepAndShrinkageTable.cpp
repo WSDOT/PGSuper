@@ -67,11 +67,11 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + "Delta FpCR Equation.jpg") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + "Delta_FpCR_2004.png") << rptNewLine;
    if ( IS_SI_UNITS(pDisplayUnits) )
-      *pParagraph << rptRcImage(strImagePath + "Delta FpSR Equation SI.jpg") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpSR_2004_SI.png") << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + "Delta FpSR Equation US.jpg") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpSR_2004_US.png") << rptNewLine;
 
    GET_IFACE2(pBroker,IEnvironment,pEnv);
    *pParagraph << "H = " << pEnv->GetRelHumidity() << "%" << rptNewLine;

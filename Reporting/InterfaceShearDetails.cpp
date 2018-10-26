@@ -377,9 +377,9 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       (*table)(0,3)<<COLHDR(Sub2("a","vf min"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "AvfMin_SI.gif") << rptNewLine;
+         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "AvfMin_SI.png") << rptNewLine;
       else
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "AvfMin_US.gif") << rptNewLine;
+         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "AvfMin_US.png") << rptNewLine;
    }
    else
    {

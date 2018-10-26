@@ -222,7 +222,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    *pPara << "Profile Effect = Deck Elevation - Girder Chord Elevation" << rptNewLine;
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ProfileEffect.gif");
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GirderOrientationEffect.gif")  << rptNewLine;
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GirderOrientationEffectEquation.gif")  << rptNewLine;
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GirderOrientationEffectEquation.png")  << rptNewLine;
 
    return pChapter;
 }

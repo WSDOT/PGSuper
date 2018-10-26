@@ -598,6 +598,10 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    *pPara << pTable << rptNewLine;
 
    Int16 row = 0;
+   (*pTable)(row,0) << "Type";
+   (*pTable)(row,1) << matConcrete::GetTypeName( (matConcrete::Type)pGirderMaterial->Type, true );
+   row++;
+
    (*pTable)(row,0) << RPT_FC;
    (*pTable)(row,1) << stress.SetValue( pGirderMaterial->Fc );
    row++;
@@ -606,24 +610,17 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    (*pTable)(row,1) << stress.SetValue( pGirderMaterial->Fci );
    row++;
 
-   (*pTable)(row,0) << "Density for Weight Calculations " << Sub2("w","c");
-   (*pTable)(row,1) << density.SetValue( pGirderMaterial->WeightDensity );
+   (*pTable)(row,0) << "Unit Weight " << Sub2("w","c");
+   (*pTable)(row,1) << density.SetValue( pGirderMaterial->StrengthDensity );
    row++;
 
-   (*pTable)(row,0) << "Density for Strength Calculations " << Sub2("w","c");
-   (*pTable)(row,1) << density.SetValue( pGirderMaterial->StrengthDensity );
+   (*pTable)(row,0) << "Unit Weight with Reinforcement " << Sub2("w","c");
+   (*pTable)(row,1) << density.SetValue( pGirderMaterial->WeightDensity );
    row++;
 
    (*pTable)(row,0) << "Max Aggregate Size";
    (*pTable)(row,1) << cmpdim.SetValue( pGirderMaterial->MaxAggregateSize );
    row++;
-
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-   {
-      (*pTable)(row,0) << Sub2("K","1");
-      (*pTable)(row,1) << pGirderMaterial->K1;
-      row++;
-   }
 
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
 
@@ -633,18 +630,45 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    }
    else
    {
-   if ( b2005Edition )
+      if ( b2005Edition )
       {
-         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI_2005.gif" : "ModE_US_2005.gif")) << rptNewLine;
+         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI_2005.png" : "ModE_US_2005.png")) << rptNewLine;
       }
       else
       {
-         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI.gif" : "ModE_US.gif")) << rptNewLine;
+         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI.png" : "ModE_US.png")) << rptNewLine;
       }
    }
    (*pTable)(row,1) << Sub2("E","c") << " = " << modE.SetValue(pMaterial->GetEcGdr(span,gdr)) << rptNewLine;
    (*pTable)(row,1) << Sub2("E","ci") << " = " << modE.SetValue(pMaterial->GetEciGdr(span,gdr));
    row++;
+
+   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   {
+      (*pTable)(row,0) << Sub2("E","c") << " " << Sub2("K","1");
+      (*pTable)(row,1) << pGirderMaterial->EcK1;
+      row++;
+
+      (*pTable)(row,0) << Sub2("E","c") << " " << Sub2("K","2");
+      (*pTable)(row,1) << pGirderMaterial->EcK2;
+      row++;
+
+      (*pTable)(row,0) << "Creep" << " " << Sub2("K","1");
+      (*pTable)(row,1) << pGirderMaterial->CreepK1;
+      row++;
+
+      (*pTable)(row,0) << "Creep" << " " << Sub2("K","2");
+      (*pTable)(row,1) << pGirderMaterial->CreepK2;
+      row++;
+
+      (*pTable)(row,0) << "Shrinkage" << " " << Sub2("K","1");
+      (*pTable)(row,1) << pGirderMaterial->ShrinkageK1;
+      row++;
+
+      (*pTable)(row,0) << "Shrinkage" << " " << Sub2("K","2");
+      (*pTable)(row,1) << pGirderMaterial->ShrinkageK2;
+      row++;
+   }
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -655,28 +679,25 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       pTable = pgsReportStyleHolder::CreateTableNoHeading(2,"Deck Concrete");
       *pPara << pTable << rptNewLine;
 
+      (*pTable)(row,0) << "Type";
+      (*pTable)(row,1) << matConcrete::GetTypeName( (matConcrete::Type)pDeck->SlabConcreteType, true );
+      row++;
+
       (*pTable)(row,0) << RPT_FC;
       (*pTable)(row,1) << stress.SetValue( pDeck->SlabFc );
       row++;
 
-      (*pTable)(row,0) << "Unit Weight for Weight Calculations " << Sub2("w","c");
-      (*pTable)(row,1) << density.SetValue( pDeck->SlabWeightDensity );
+      (*pTable)(row,0) << "Unit Weight " << Sub2("w","c");
+      (*pTable)(row,1) << density.SetValue( pDeck->SlabStrengthDensity );
       row++;
 
-      (*pTable)(row,0) << "Unit Weight for Strength Calculations " << Sub2("w","c");
-      (*pTable)(row,1) << density.SetValue( pDeck->SlabStrengthDensity );
+      (*pTable)(row,0) << "Unit Weight including Reinforcement " << Sub2("w","c");
+      (*pTable)(row,1) << density.SetValue( pDeck->SlabWeightDensity );
       row++;
 
       (*pTable)(row,0) << "Max Aggregate Size";
       (*pTable)(row,1) << cmpdim.SetValue( pDeck->SlabMaxAggregateSize );
       row++;
-
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         (*pTable)(row,0) << Sub2("K","1");
-         (*pTable)(row,1) << pDeck->SlabK1;
-         row++;
-      }
 
       if ( pDeck->SlabUserEc )
       {
@@ -686,16 +707,43 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       {
          if ( b2005Edition )
          {
-            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI_2005.gif" : "ModE_US_2005.gif")) << rptNewLine;
+            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI_2005.png" : "ModE_US_2005.png")) << rptNewLine;
          }
          else
          {
-            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI.gif" : "ModE_US.gif")) << rptNewLine;
+            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI.png" : "ModE_US.png")) << rptNewLine;
          }
       }
       (*pTable)(row,1) << Sub2("E","c") << " = " << modE.SetValue(pMaterial->GetEcSlab());
       row++;
+
+      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         (*pTable)(row,0) << Sub2("E","c") << " " << Sub2("K","1");
+         (*pTable)(row,1) << pDeck->SlabEcK1;
+         row++;
+
+         (*pTable)(row,0) << Sub2("E","c") << " " << Sub2("K","2");
+         (*pTable)(row,1) << pDeck->SlabEcK2;
+         row++;
+
+         (*pTable)(row,0) << "Creep" << " " << Sub2("K","1");
+         (*pTable)(row,1) << pDeck->SlabCreepK1;
+         row++;
+
+         (*pTable)(row,0) << "Creep" << " " << Sub2("K","2");
+         (*pTable)(row,1) << pDeck->SlabCreepK2;
+         row++;
+
+         (*pTable)(row,0) << "Shrinkage" << " " << Sub2("K","1");
+         (*pTable)(row,1) << pDeck->SlabShrinkageK1;
+         row++;
+
+         (*pTable)(row,0) << "Shrinkage" << " " << Sub2("K","2");
+         (*pTable)(row,1) << pDeck->SlabShrinkageK2;
+         row++;
       }
+   }
 }
 
 void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)

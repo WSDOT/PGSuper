@@ -72,22 +72,22 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
-         *pParagraph << rptRcImage(strImagePath + "Delta FpR2 Equation for Low Relax Strands SI.jpg") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_LR_SI.png") << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + "Delta FpR2 Equation for Low Relax Strands US.jpg") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_LR_US.png") << rptNewLine;
       }
    }
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
-         *pParagraph << rptRcImage(strImagePath + "Delta FpR2 Equation for Stress Rel Strands SI.jpg") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_SR_SI.png") << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + "Delta FpR2 Equation for Stress Rel Strands US.jpg") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_SR_US.png") << rptNewLine;
       }
    }
 
