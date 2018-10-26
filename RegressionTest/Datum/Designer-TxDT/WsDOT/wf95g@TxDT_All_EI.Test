@@ -1,29 +1,29 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     1    WF95G  *    43  0.60  270 42.55 21.33  11 90.5  5.200  6.500    4.045   -3.756  15164  0.568  0.671  0.31 -0.13  0.00 -0.01 -0.14 156.41 324.62   2.75  15.00  20.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 34.25    6   6.00                   1      1     WF95G    *    43   0.6  270  42.55  21.33                                              11  90.5  3.0  5.200  6.500   4.045    -3.756    15164   0.568  0.671   0.31  -0.13   0.00  -0.01  -0.14  156.41  324.62    2.75   15.00   20.00 
 
 
 The Specification Check was Not Successful
-Confinement zone checks failed.
+Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     2    WF95G  *    43  0.60  270 42.55 21.33  11 90.5  5.200  6.500    4.068   -3.777  15165  0.566  0.671  0.30 -0.13  0.00 -0.01 -0.14 156.41 322.84   2.75  15.00  20.00
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Confinement zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     4    WF95G  *    43  0.60  270 42.55 21.33  11 90.5  5.200  6.500    4.068   -3.777  15165  0.566  0.671  0.30 -0.13  0.00 -0.01 -0.14 156.41 322.84   2.75  15.00  20.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 34.25    6   6.00                   1      2     WF95G    *    43   0.6  270  42.55  21.33                                              11  90.5  3.0  5.200  6.500   4.068    -3.777    15165   0.566  0.671   0.30  -0.13   0.00  -0.01  -0.14  156.41  322.84    2.75   15.00   20.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Confinement zone checks failed.
+Confinement zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 34.25    6   6.00                   1      4     WF95G    *    43   0.6  270  42.55  21.33                                              11  90.5  3.0  5.200  6.500   4.068    -3.777    15165   0.566  0.671   0.30  -0.13   0.00  -0.01  -0.14  156.41  322.84    2.75   15.00   20.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Confinement zone check failed.
 
 

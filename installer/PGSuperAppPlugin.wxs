@@ -746,6 +746,114 @@
          <ComponentRef Id="TxDOTTogaTemplates"/>
       </Feature>
 
+      <!-- KDOT PGSuper Extensions -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource="$(var.PGSuperSourceRoot)\Extensions\KDOT\$(var.PlatformFolder)">
+         <Component Id="KDOTExport"
+                    Guid="{D6744B7F-AD5B-489d-AF7F-D37ACE59E0D5}"
+                    Win64="$(var.IsWin64)">
+            <File Id="KDOTExport.dll"
+                  Name="KDOTExport.dll"
+                  KeyPath="yes" />
+
+            <!-- Data Exporter -->
+            <?define KDOTDataExporterCLSID={B03DA246-D6F6-4d35-91D1-B93FFAE7241A}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                       Root="HKCR"
+                       Key ="CLSID\$(var.KDOTDataExporterCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.KDOTDataExporterCLSID)"
+                           Value="KDOT CAD Exporter"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.KDOTDataExporterCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]KDOTExport.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.KDOTDataExporterCLSID)\Implemented Categories\$(var.PGSuperDataExporterCATID)"
+                           Value=""
+                           Type="string" />
+
+            <!-- KDOT Component Information Object -->
+            <!-- 
+            <?define PGSuperKDOTInfoCLSID={}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperKDOTInfoCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTxDOTInfoCLSID)"
+                           Value="KDOT Component Information"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperKDOTInfoCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]KDOTExport.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperKDOTInfoCLSID)\Implemented Categories\$(var.BridgeLinkComponentInfoCATID)"
+                           Value=""
+                           Type="string" />
+            -->
+
+         </Component>
+      </DirectoryRef>
+
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource="$(var.PGSuperSourceRoot)\Extensions\KDOT">
+         <Component Id="KDOTHelp"
+                    Guid="{927A3C55-7C41-4225-989A-B665ED908F4F}"
+                    Win64="$(var.IsWin64)">
+            <File Id="KDOT_Export.chm"
+                  Name="KDOT_Export.chm"
+                  KeyPath ="yes"/>
+         </Component>
+      </DirectoryRef>
+
+      <!-- KDOT Start Menu Shortcut-->
+      <DirectoryRef Id="BridgeLinkStartMenuFolder">
+         <Component Id="KDOTShortcut"
+                    Guid="{B4F97785-A582-47d2-97D9-74B6E72B0ECB}"
+                    Win64="$(var.IsWin64)">
+
+            <Shortcut Id="KDOTHelpShortcut"
+                      Name="KDOT Export Documentation"
+                      Description="KDOT Exporter Documentation"
+                      Target="[APPLICATIONFOLDER]KDOT_Export.chm"
+                      WorkingDirectory="APPLICATIONFOLDER"
+                  />
+            <RegistryValue Root="HKCU"
+                           Key="Software\Microsoft\[ProductName]"
+                           Name="installed"
+                           Type="integer"
+                           Value="1"
+                           KeyPath="yes"/>
+         </Component>
+      </DirectoryRef>
+
+      <!-- KDOT Schema Files -->
+      <DirectoryRef Id="KDOTSchemaFiles"
+                    FileSource ="$(var.PGSuperSourceRoot)\Extensions\KDOT\">
+
+         <Component Id="KDOTSchema"
+                    Guid="{7C7EF718-4539-4347-A313-B146750558C1}"
+                    Win64="$(var.IsWin64)">
+            <File Id="KDOTExporter.xsd" Name="KDOTExporter.xsd" KeyPath="yes"/>
+         </Component>
+      </DirectoryRef>
+
+
+      <Feature Id="KDOTExtensions"
+               Absent="allow"
+               ConfigurableDirectory="APPLICATIONFOLDER"
+               Description="Extend PGSuper with KDOT specific features"
+               Display="expand"
+               Title="KDOT Extensions (Optional)"
+               Level="1">
+         <ComponentRef Id="KDOTExporter"/>
+         <ComponentRef Id="KDOTHelp"/>
+         <ComponentRef Id="KDOTShortcut"/>
+         <ComponentRef Id="KDOTSchemaFiles"/>
+      </Feature>
+
       <Feature Id="PGSuper"
                Absent="allow"
                ConfigurableDirectory="APPLICATIONFOLDER"

@@ -1503,6 +1503,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    CShrinkageAtFinalTable*      pSD = CShrinkageAtFinalTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CCreepAtFinalTable*          pCD = CCreepAtFinalTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CRelaxationAtFinalTable*     pR2 = CRelaxationAtFinalTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CElasticGainDueToDeckShrinkageTable*   pSS   = CElasticGainDueToDeckShrinkageTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
 
    CTimeDependentLossFinalTable* pLTdf = CTimeDependentLossFinalTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    CTimeDependentLossesTable*    pLT   = CTimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
@@ -1514,7 +1515,6 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    CElasticGainDueToDeckPlacementTable*   pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    CElasticGainDueToSIDLTable*            pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    CElasticGainDueToLiveLoadTable*        pLLIM = CElasticGainDueToLiveLoadTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
-   CElasticGainDueToDeckShrinkageTable*   pSS   = CElasticGainDueToDeckShrinkageTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CEffectivePrestressTable*              pPE   = CEffectivePrestressTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
 
    ///////////////////////////////////////////////////////////////////////
@@ -1596,6 +1596,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
          ReportRow(pSD,  pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
          ReportRow(pCD,  pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
          ReportRow(pR2,  pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
+         ReportRow(pSS,  pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
          ReportRow(pLTdf,pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
          ReportRow(pLT,  pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
          ReportRow(pT,   pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
@@ -1603,7 +1604,6 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
          ReportRow(pED,  pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
          ReportRow(pSIDL,pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
          ReportRow(pLLIM,pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
-         ReportRow(pSS,  pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
          ReportRow(pPE,  pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
 
          row2++;

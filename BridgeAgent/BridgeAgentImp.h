@@ -473,7 +473,8 @@ public:
    virtual Float64 GetHarpedHpOffsetIncrement(LPCTSTR strGirderName, pgsTypes::AdjustableStrandType adjType);
 
    virtual void GetHarpingPointLocations(SpanIndexType span,GirderIndexType gdr,Float64* lhp,Float64* rhp);
-   virtual void GetHighestHarpedStrandLocation(SpanIndexType span,GirderIndexType gdr,Float64* pElevation);
+   virtual void GetHighestHarpedStrandLocationEnds(SpanIndexType span,GirderIndexType gdr,Float64* pElevation);
+   virtual void GetHighestHarpedStrandLocationCL(SpanIndexType span,GirderIndexType gdr,Float64* pElevation);
    virtual Uint16 GetNumHarpPoints(SpanIndexType span,GirderIndexType gdr);
 
    virtual StrandIndexType GetMaxNumPermanentStrands(SpanIndexType span,GirderIndexType gdr);
@@ -509,16 +510,16 @@ public:
    virtual bool IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const PRESTRESSCONFIG& config,Float64* pStart,Float64* pEnd);
    virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType);
    virtual StrandIndexType GetNumDebondedStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
-   virtual RowIndexType GetNumRowsWithStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType );
-   virtual StrandIndexType GetNumStrandInRow(SpanIndexType span,GirderIndexType gdr,RowIndexType rowIdx,pgsTypes::StrandType strandType );
-   virtual std::vector<StrandIndexType> GetStrandsInRow(SpanIndexType span,GirderIndexType gdr, RowIndexType rowIdx, pgsTypes::StrandType strandType );
+   virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType );
+   virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType );
+   virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType );
    virtual StrandIndexType GetNumDebondedStrandsInRow(SpanIndexType span,GirderIndexType gdr,RowIndexType rowIdx,pgsTypes::StrandType strandType );
    virtual bool IsExteriorStrandDebondedInRow(SpanIndexType span,GirderIndexType gdr,RowIndexType rowIdx,pgsTypes::StrandType strandType);
    virtual bool IsDebondingSymmetric(SpanIndexType span,GirderIndexType gdr);
 
-   virtual RowIndexType GetNumRowsWithStrand(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,pgsTypes::StrandType strandType );
-   virtual StrandIndexType GetNumStrandInRow(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx,pgsTypes::StrandType strandType );
-   virtual std::vector<StrandIndexType> GetStrandsInRow(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx, pgsTypes::StrandType strandType );
+   virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig,pgsTypes::StrandType strandType );
+   virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx,pgsTypes::StrandType strandType );
+   virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx, pgsTypes::StrandType strandType );
 
    virtual Float64 GetDebondSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType);
    virtual SectionIndexType GetNumDebondSections(SpanIndexType span,GirderIndexType gdr,GirderEnd end,pgsTypes::StrandType strandType);
@@ -924,6 +925,8 @@ private:
    void CreateCompositeOverlayEdgePaths(IPath** ppLeftPath,IPath** ppRightPath);
 
    REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
+
+   void ComputeHpFill(const GirderLibraryEntry* pGdrEntry,IStrandGridFiller* pStrandGridFiller, IIndexArray* pFill, IIndexArray** ppHPfill);
 };
 
 #endif //__BRIDGEAGENT_H_

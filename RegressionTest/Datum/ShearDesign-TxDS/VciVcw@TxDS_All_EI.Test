@@ -1,25 +1,25 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     Tx46       48   1/2  270 15.10  9.77   8 40.5  4.800  5.500    3.379   -3.534   5749  0.642  0.814  0.26 -0.12  0.00 -0.01 -0.13 141.40 378.72   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      1      Tx46         48   1/2  270  15.10   9.77                                               8  40.5  8.5  4.800  5.500   3.379    -3.534     5749   0.642  0.814   0.26  -0.12   0.00  -0.01  -0.13  141.40  378.72    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     Tx46       52   1/2  270 14.83  9.91   8 40.5  5.200  5.900    3.526   -3.752   6063  0.642  0.814  0.27 -0.14  0.00 -0.01 -0.15 159.66 426.71   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      2      Tx46         52   1/2  270  14.83   9.91                                               8  40.5  8.5  5.200  5.900   3.526    -3.752     6063   0.642  0.814   0.27  -0.14   0.00  -0.01  -0.15  159.66  426.71    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     Tx46       50   1/2  270 14.96 10.48   8 36.5  5.200  5.900    3.514   -3.713   6001  0.642  0.814  0.27 -0.14  0.00 -0.01 -0.15 148.13 397.91   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      4      Tx46         50   1/2  270  14.96  10.48                                               8  36.5  8.5  5.200  5.900   3.514    -3.713     6001   0.642  0.814   0.27  -0.14   0.00  -0.01  -0.15  148.13  397.91    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength I Limit State
 
 

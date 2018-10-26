@@ -463,6 +463,7 @@ void CFactorOfSafetyView::DoUpdateNow()
 
    GET_IFACE(IArtifact,pArtifact);
    GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE(IBridge,pBridge);
    
    SpanIndexType   span = m_pFrame->GetSpanIdx();
    GirderIndexType gdr  = m_pFrame->GetGirderIdx();
@@ -473,6 +474,14 @@ void CFactorOfSafetyView::DoUpdateNow()
 
    Float64 hp1,hp2;
    pStrandGeom->GetHarpingPointLocations(span,gdr,&hp1,&hp2);
+
+   // if the harp point is at mid-span, move it back just a little
+   // we can't do a lifting analysis with both lifting points at mid-span
+   Float64 girder_length = pBridge->GetGirderLength(span,gdr);
+   if ( IsEqual(hp1,girder_length/2) )
+   {
+      hp1 -= 0.005;
+   }
 
    if ( m_pFrame->GetStage() == CFactorOfSafetyChildFrame::Lifting )
    {

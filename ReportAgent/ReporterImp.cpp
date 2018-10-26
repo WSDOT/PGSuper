@@ -132,6 +132,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Design Outcome
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Design Outcome Report"),true); // hidden report
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    //pRptBuilder->AddTitlePageBuilder(NULL); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDesignOutcomeChapterBuilder) );
@@ -139,6 +142,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Geometry Report
    pRptBuilder = new CReportBuilder(_T("Bridge Geometry Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pBrokerRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
@@ -149,6 +155,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Details Report
    pRptBuilder = new CReportBuilder(_T("Details Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
@@ -189,6 +198,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Bearing Design Report
    pRptBuilder = new CReportBuilder(_T("Bearing Design Parameters Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBearingDesignParametersChapterBuilder) );
@@ -196,6 +208,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Spec Check Report
    pRptBuilder = new CReportBuilder(_T("Spec Check Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(false)) );
@@ -204,6 +219,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Multi-Girder Spec Summary
    pRptBuilder = new CReportBuilder(_T("Multi-Girder Spec Check Summary"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(false)) );
@@ -211,6 +229,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Load Rating Report
    pRptBuilder = new CReportBuilder(_T("Load Rating Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
@@ -243,6 +264,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Girder Comparison Report
    pRptBuilder = new CReportBuilder(_T("Girder Comparison Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderComparisonChapterBuilder) );
@@ -250,6 +274,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Lifting Report
    pRptBuilder = new CReportBuilder(_T("Lifting Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiftingCheckChapterBuilder) );
@@ -258,6 +285,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Hauling Report
    pRptBuilder = new CReportBuilder(_T("Hauling Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CHaulingCheckChapterBuilder) );
@@ -266,6 +296,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Bridge Analysis Report
    pRptBuilder = new CReportBuilder(_T("Bridge Analysis Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pBridgeAnalysisRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBridgeAnalysisChapterBuilder(_T("Simple Span"),pgsTypes::Simple)) );
@@ -275,6 +308,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Fabrication Options Report
    pRptBuilder = new CReportBuilder(_T("Fabrication Options Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COptimizedFabricationChapterBuilder) );
@@ -282,6 +318,9 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Distribution Factors Summary Report
    pRptBuilder = new CReportBuilder(_T("Live Load Distribution Factors Summary"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pBrokerRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorSummaryChapterBuilder) );
@@ -290,6 +329,7 @@ HRESULT CReporterImp::InitReportBuilders()
    // Distribution Factors
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder = new CReportBuilder(_T("Live Load Distribution Factors Report"));
+   pRptBuilder->IncludeTimingChapter();
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );

@@ -1,20 +1,20 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.98   4  0.02  1     1     7T36        8   1/2  270 21.82 21.82   0  0.0  4.000  5.000    0.581   -1.111    767  0.666  0.666  0.03 -0.00 -0.00 -0.00 -0.00  12.33  41.29   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.98    4   0.02    4-7T36, 30     1      1      7T36          8   1/2  270  21.82  21.82   0   2.00    4     0    0   0   0   0   0   4.000  5.000   0.581    -1.111      767   0.666  0.666   0.03  -0.00  -0.00  -0.00  -0.00   12.33   41.29    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Confinement zone checks failed.
+Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.98   4  0.02  1     2     7T36        8   1/2  270 21.79 21.79   0  0.0  4.000  5.000    0.584   -1.112    766  0.666  0.666  0.03 -0.00 -0.00 -0.00 -0.00  12.34  41.32   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.98    4   0.02    4-7T36, 30     1      2      7T36          8   1/2  270  21.79  21.79   0   2.00    4     0    0   0   0   0   0   4.000  5.000   0.584    -1.112      766   0.666  0.666   0.03  -0.00  -0.00  -0.00  -0.00   12.34   41.32    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Confinement zone checks failed.
+Confinement zone check failed.
 
 

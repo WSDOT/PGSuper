@@ -1,33 +1,33 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     1    Girde  *    29  0.60  270 10.33  1.00  29 22.0  6.700  7.900    2.905   -4.980   2066  0.625  0.625  0.21  0.00 -0.01 -0.01 -0.03 111.44 246.97   3.00   2.25   2.25
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      1     Girde         29   0.6  270  10.33   1.00   0   0.00    0     0    0   0   0   0   0   6.700  7.900   2.905    -4.980     2066   0.625  0.625   0.21   0.00  -0.01  -0.01  -0.03  111.44  246.97    3.00    2.25    2.25 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     2    Girde  *    29  0.60  270 10.33  1.00  29 22.0  6.700  7.900    2.612   -4.524   1832  0.518  0.667  0.21  0.00 -0.01 -0.01 -0.03 111.44 246.97   3.00   2.25   2.25
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      2     Girde         29   0.6  270  10.33   1.00   0   0.00    0     0    0   0   0   0   0   6.700  7.900   2.612    -4.524     1832   0.518  0.667   0.21   0.00  -0.01  -0.01  -0.03  111.44  246.97    3.00    2.25    2.25 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     3    Girde        0  0.60  270  0.00  0.00   0  0.0  5.000  6.000    2.612   -4.524   1832  0.518  0.667 -0.18  0.00 -0.02 -0.02 -0.03   0.00   0.00   1.75   5.00   5.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      3     Girde          0   0.6  270   0.00   0.00   0   0.00    0     0    0   0   0   0   0   5.000  6.000   2.612    -4.524     1832   0.518  0.667  -0.18   0.00  -0.02  -0.02  -0.03    0.00    0.00    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Confinement zone checks failed.
+Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 

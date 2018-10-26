@@ -1596,6 +1596,11 @@ void pgsStrandDesignTool::DumpDesignParameters()
 #endif
 }
 
+Float64 pgsStrandDesignTool::GetPoiTolerance() const
+{
+   return m_PoiMgr.GetTolerance();
+}
+
 void pgsStrandDesignTool::FillArtifactWithFlexureValues()
 {
    GET_IFACE(IBridge,pBridge);

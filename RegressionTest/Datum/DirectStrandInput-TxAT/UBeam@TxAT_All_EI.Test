@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 59.25   6 10.25  1     1    U54         0   1/2  270  0.00  0.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    4.242   -3.788   10031 0.655  0.936 -0.52 -0.19  0.00 -0.02 -0.20   0.00   0.00   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                   1      1      U54           0   1/2  270   0.00   0.00   0   0.00    0     0    0   0   0   0   0   4.000  5.000   4.242    -3.788    10031   0.655  0.936  -0.52  -0.19   0.00  -0.02  -0.20    0.00    0.00    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -11,14 +11,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 59.25   6 10.25  1     2    U54        26   1/2  270 16.20 16.20   0  2.17  20   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    4.227   -3.724    9850 0.655  0.936 -0.21 -0.19  0.00 -0.01 -0.20  12.45  65.68   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                   1      2      U54          26   1/2  270  16.20  16.20   0   2.17   20     0    0   0   0   0   0   4.000  5.000   4.227    -3.724     9850   0.655  0.936  -0.21  -0.19   0.00  -0.01  -0.20   12.45   65.68    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -27,14 +27,14 @@ Tensile stress check failed for Service I for the Deck and Diaphragm Placement S
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 59.25   6 10.25  1     4    U54         0   1/2  270  0.00  0.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    4.190   -3.626    9571 0.655  0.936 -0.52 -0.19  0.00  0.00 -0.19   0.00   0.00   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                   1      4      U54           0   1/2  270   0.00   0.00   0   0.00    0     0    0   0   0   0   0   4.000  5.000   4.190    -3.626     9571   0.655  0.936  -0.52  -0.19   0.00   0.00  -0.19    0.00    0.00    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -45,7 +45,7 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 

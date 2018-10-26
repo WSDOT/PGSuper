@@ -513,7 +513,7 @@ public:
 
    // returns the maximum girder dead load stress at the top and bottom of the girder at the controlling
    // location of point of prestress transfer and lift point.
-   void GetEndZoneMinMaxRawStresses(Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const;
+   void GetEndZoneMinMaxRawStresses(Float64 poiTolerance,Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const;
 
    // get max top (tension) and bottom (compression) stresses (minus prestress) at all analysis points along girder
    struct MaxdLiftingStresses

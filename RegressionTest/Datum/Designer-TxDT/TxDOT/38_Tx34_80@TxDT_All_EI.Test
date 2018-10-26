@@ -1,27 +1,27 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     1     Tx34       40   1/2  270 11.11  7.51   6 30.5  5.500  5.800    3.070   -3.671   3742  0.666  0.849  0.34 -0.11  0.00 -0.01 -0.12 117.32 327.60   0.00   0.00   0.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                   1      1      Tx34         40   1/2  270  11.11   7.51                                               6  30.5  6.5  5.500  5.800   3.070    -3.671     3742   0.666  0.849   0.34  -0.11   0.00  -0.01  -0.12  117.32  327.60    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
-Bursting zone checks failed.
+Bursting zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     2     Tx34       44   1/2  270 10.74  6.74   8 30.5  5.800  6.000    3.232   -3.846   3861  0.666  0.849  0.35 -0.13  0.00 -0.01 -0.14 135.98 378.99   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Bursting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     3     Tx34       44   1/2  270 10.74  6.74   8 30.5  5.800  6.000    3.232   -3.846   3861  0.666  0.849  0.35 -0.13  0.00 -0.01 -0.14 135.98 378.99   0.00   0.00   0.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                   1      2      Tx34         44   1/2  270  10.74   6.74                                               8  30.5  8.5  5.800  6.000   3.232    -3.846     3861   0.666  0.849   0.35  -0.13   0.00  -0.01  -0.14  135.98  378.99    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
-Bursting zone checks failed.
+Bursting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                   1      3      Tx34         44   1/2  270  10.74   6.74                                               8  30.5  8.5  5.800  6.000   3.232    -3.846     3861   0.666  0.849   0.35  -0.13   0.00  -0.01  -0.14  135.98  378.99    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Bursting zone check failed.
 
 

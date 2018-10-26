@@ -156,6 +156,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    bool bSidewalk = pProduct->HasSidewalkLoad(span,girder);
    bool bShearKey = pProduct->HasShearKeyLoad(span,girder);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -165,7 +166,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
@@ -206,7 +207,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -282,7 +283,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
 
-      if ( !pBridge->IsFutureOverlay() )
+      if ( bOverlay )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -296,7 +297,15 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D6 = D5 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D6 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D6 += Doverlay;
+      }
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -364,6 +373,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
    bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -373,7 +383,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0)+ (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0)+ (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
@@ -411,7 +421,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
    {
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    }
@@ -481,7 +491,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier);
 
-      if ( !pBridge->IsFutureOverlay() )
+      if ( bOverlay )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -493,7 +503,16 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       Float64 D1 = Dgirder + Dps;
       Float64 D2 = D1 + Dcreep;
       Float64 D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
-      Float64 D4 = D3 + Dsidewalk + Dbarrier + Duser2 + Doverlay;
+      Float64 D4 = D3 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D4 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D4 += Doverlay;
+      }
+
 
       (*table3)(row3,col++) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -561,6 +580,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
    bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    // create the tables
    rptRcTable* table1;
@@ -568,7 +588,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
@@ -610,7 +630,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -690,7 +710,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
    
-      if (!pBridge->IsFutureOverlay() )
+      if ( bOverlay )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -704,7 +724,16 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Float64 D3 = D2 + Ddiaphragm + + Dshearkey + Dtpsr + Dpanel;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dbarrier + Dsidewalk + Doverlay + Duser2;
+      Float64 D6 = D5 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D6 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D6 += Doverlay;
+      }
+
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -774,6 +803,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
    bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    // create the tables
    rptRcTable* table1;
@@ -781,7 +811,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
@@ -820,7 +850,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -891,7 +921,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
 
-      if (!pBridge->IsFutureOverlay() )
+      if ( bOverlay )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -903,7 +933,15 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       Float64 D1 = Dgirder + Dps;
       Float64 D2 = D1 + Dcreep;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
-      Float64 D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D4 = D3 + Ddeck + Duser1 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D4 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D4 += Doverlay;
+      }
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -970,6 +1008,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
    bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    // create the tables
    rptRcTable* table1;
@@ -977,7 +1016,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
@@ -1018,7 +1057,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -1096,7 +1135,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
 
-      if (!pBridge->IsFutureOverlay())
+      if (bOverlay)
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -1110,7 +1149,15 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Duser1;
       Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D5 = D4 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D5 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D5 += Doverlay;
+      }
       Float64 D6 = D5 + Dcreep3;
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
@@ -1179,6 +1226,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
    bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    // create the tables
    rptRcTable* table1;
@@ -1186,7 +1234,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
@@ -1224,7 +1272,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -1296,7 +1344,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
 
-      if (!pBridge->IsFutureOverlay() )
+      if ( bOverlay )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -1310,7 +1358,15 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Duser1;
       Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D5 = D4 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D5 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D5 += Doverlay;
+      }
       Float64 D6 = D5 + Dcreep3;
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );

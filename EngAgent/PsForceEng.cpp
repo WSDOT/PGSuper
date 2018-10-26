@@ -996,8 +996,11 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
    ATLASSERT( 0 <= fps ); // strand stress must be greater than or equal to zero.
 
    // Reduce for transfer effect
-   Float64 adjust = GetXferLengthAdjustment(poi,strandType,config);
-   fps *= adjust;
+   if ( stage != pgsTypes::Jacking )
+   {
+      Float64 adjust = GetXferLengthAdjustment(poi,strandType,config);
+      fps *= adjust;
+   }
 
    return fps;
 }

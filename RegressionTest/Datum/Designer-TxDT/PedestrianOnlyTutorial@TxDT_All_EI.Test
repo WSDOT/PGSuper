@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 14.25   1 12.00  1     1    U54G6  *    86  0.60  270 14.68  1.37  30 50.0  6.200 13.800    8.974   -4.979  15964  1.000  1.000  0.38 -0.23  0.00 -0.03 -0.27 398.42 655.44   3.00   4.50   4.50
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 14.25    1  12.00                   1      1     U54G6         86   0.6  270  14.68   1.37   0   2.00   28     0    0   0   0   0   0   6.200 13.800   8.974    -4.979    15964   1.000  1.000   0.38  -0.23   0.00  -0.03  -0.27  398.42  655.44    3.00    4.50    4.50 
 
 
 The Specification Check was Not Successful
@@ -9,9 +9,9 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 14.25   1 12.00  2     1    U54G6  *    84  0.60  270 14.74  1.50  28 50.0  6.000 13.700    8.967   -4.977  15599  1.000  1.000  0.37 -0.24  0.00 -0.03 -0.27 385.45 640.62   3.00   4.50   4.50
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 14.25    1  12.00                   2      1     U54G6         84   0.6  270  14.74   1.50   0   2.00   28     0    0   0   0   0   0   6.000 13.700   8.967    -4.977    15599   1.000  1.000   0.37  -0.24   0.00  -0.03  -0.27  385.45  640.62    3.00    4.50    4.50 
 
 
 The Specification Check was Not Successful

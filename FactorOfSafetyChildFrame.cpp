@@ -33,6 +33,7 @@
 #include <PgsExt\PointOfInterest.h>
 #include "PGSuperTypes.h"
 #include "htmlhelp\HelpTopics.hh"
+#include <IFace\GirderHandlingSpecCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -163,6 +164,18 @@ int CFactorOfSafetyChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    pstg_ctrl->AddString(_T("Transportation"));
    pstg_ctrl->SetCurSel(0);
    m_Stage = Lifting;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pSpec);
+   if ( pSpec->GetHaulingAnalysisMethod() == pgsTypes::hmKDOT )
+   {
+      // transportation stability isn't valid for KDOT method.
+      // disable and hide the control so the mode can't be changed
+      pstg_ctrl->EnableWindow(FALSE);
+      pstg_ctrl->ShowWindow(SW_HIDE);
+   }
+
 
    // grid buttton
    CButton* pgrid_btn = (CButton*)m_SettingsBar.GetDlgItem(IDC_GRID);

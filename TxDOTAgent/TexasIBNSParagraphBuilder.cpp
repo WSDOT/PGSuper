@@ -178,11 +178,12 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          // no debonded strands, just write one row
          row++;
 
-         std::vector<StrandIndexType> vss  = m_pStrandGeometry->GetStrandsInRow(m_Span,m_Girder,0,pgsTypes::Straight);
+         pgsPointOfInterest poi(m_Span,m_Girder, m_GirderLength/2.0);
+
+         std::vector<StrandIndexType> vss  = m_pStrandGeometry->GetStrandsInRow(poi,0,pgsTypes::Straight);
          ATLASSERT(vss.size()>0);
 
          // get y of any strand in row
-         pgsPointOfInterest poi(m_Span,m_Girder, m_GirderLength/2.0);
          CComPtr<IPoint2dCollection> coords;
          m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
@@ -206,6 +207,8 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          // Finished writing Header, now write table, row by row
          ATLASSERT(!m_Rows.empty()); // we have debonds - we gotta have rows?
 
+         pgsPointOfInterest poi(m_Span,m_Girder, m_GirderLength/2.0);
+
          RowIndexType nrow = 0;
          RowListIter riter = m_Rows.begin();
          while(riter != m_Rows.end())
@@ -218,7 +221,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
 
                (*p_table)(row,0) << ucomp.SetValue(rowdata.m_Elevation);
 
-               StrandIndexType nsrow = m_pStrandGeometry->GetNumStrandInRow(m_Span,m_Girder,nrow,pgsTypes::Straight);
+               StrandIndexType nsrow = m_pStrandGeometry->GetNumStrandInRow(poi,nrow,pgsTypes::Straight);
                (*p_table)(row,1) << nsrow;
 
                Int16 ndbr = CountDebondsInRow(rowdata);
@@ -662,7 +665,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
 
          Float64 TO;
-         pStrandGeometry->GetHighestHarpedStrandLocation(span,girder,&TO);
+         pStrandGeometry->GetHighestHarpedStrandLocationEnds(span,girder,&TO);
          (*p_table)(row++,col) << ecc.SetValue(TO);
       }
 

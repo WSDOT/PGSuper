@@ -2162,7 +2162,8 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 
    // Need separate strand mover for all-straight adjustable strand case
    CComPtr<IStrandMover> straight_strand_mover;
-   bool do_all_straight = this->IsVerticalAdjustmentAllowedStraight();
+   bool do_all_straight = (IsVerticalAdjustmentAllowedStraight() && m_AdjustableStrandType != pgsTypes::asHarped ? true : false);
+
    if (do_all_straight)
    {
       Float64 straight_increment = this->GetStraightStrandIncrement();

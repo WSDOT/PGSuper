@@ -364,8 +364,17 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,0) << _T("\"A\" Dimension at End");
    (*pTable)(row++,1) << component.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd));
 
-   (*pTable)(row,0) << _T("Overlay");
-   (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+
+   if ( pDeck->WearingSurface == pgsTypes::wstOverlay )
+   {
+      (*pTable)(row,0) << _T("Overlay");
+      (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+   }
+   else if ( pDeck->WearingSurface == pgsTypes::wstFutureOverlay )
+   {
+      (*pTable)(row,0) << _T("Future Overlay");
+      (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+   }
 
 #pragma Reminder("#*#*#*#*#*# WSDOT girder summary - Diaphragms #*#*#*#*#*#")
 //   (*pTable)(row,0) << _T("Intermediate Diaphragm (H x W)");

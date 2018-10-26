@@ -72,14 +72,14 @@ CTimeDependentLossesAtDeckPlacementTable* CTimeDependentLossesAtDeckPlacementTab
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+   *pParagraph << symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("id") << subscript(OFF) << subscript(OFF) << italic(OFF) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSR")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1")) << rptNewLine;
+
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,1) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,4) << COLHDR(symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("id") << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-   *pParagraph << symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("id") << subscript(OFF) << subscript(OFF) << italic(OFF) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSR")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1")) << rptNewLine;
 
    return table;
 }

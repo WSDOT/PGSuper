@@ -11031,7 +11031,7 @@ void CBridgeAgentImp::GetHarpingPointLocations(SpanIndexType span,GirderIndexTyp
    girder->GetHarpingPointLocations(lhp,rhp);
 }
 
-void CBridgeAgentImp::GetHighestHarpedStrandLocation(SpanIndexType span,GirderIndexType gdr,Float64* pElevation)
+void CBridgeAgentImp::GetHighestHarpedStrandLocationEnds(SpanIndexType span,GirderIndexType gdr,Float64* pElevation)
 {
    // determine distance from bottom of girder to highest harped strand at end of girder 
    // to compute the txdot ibns TO value
@@ -11048,6 +11048,31 @@ void CBridgeAgentImp::GetHighestHarpedStrandLocation(SpanIndexType span,GirderIn
 
    CComPtr<IRect2d> boxEnd;
    hr = girder->HarpedEndStrandBoundingBox(etEnd,&boxEnd);
+   ATLASSERT(SUCCEEDED(hr));
+
+   Float64 endTop;
+   boxEnd->get_Top(&endTop);
+
+   *pElevation = max(startTop,endTop);
+}
+
+void CBridgeAgentImp::GetHighestHarpedStrandLocationCL(SpanIndexType span,GirderIndexType gdr,Float64* pElevation)
+{
+   // determine distance from bottom of girder to highest harped strand at end of girder 
+   // to compute the txdot ibns TO value
+   VALIDATE( GIRDER );
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span,gdr,&girder);
+
+   CComPtr<IRect2d> boxStart;
+   HRESULT hr = girder->HarpedHpStrandBoundingBox(etStart,&boxStart);
+   ATLASSERT(SUCCEEDED(hr));
+
+   Float64 startTop;
+   boxStart->get_Top(&startTop);
+
+   CComPtr<IRect2d> boxEnd;
+   hr = girder->HarpedHpStrandBoundingBox(etEnd,&boxEnd);
    ATLASSERT(SUCCEEDED(hr));
 
    Float64 endTop;
@@ -11335,13 +11360,16 @@ StrandIndexType CBridgeAgentImp::GetNumDebondedStrands(SpanIndexType span,
 }
 
 //-----------------------------------------------------------------------------
-RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,
-                                             GirderIndexType gdr,
+RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const pgsPointOfInterest& poi,
                                              pgsTypes::StrandType strandType )
 {
    VALIDATE( GIRDER );
 
    RowIndexType nRows = 0;
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+   Float64 distFromStart = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
@@ -11354,7 +11382,7 @@ RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,
       break;
 
    case pgsTypes::Harped:
-      hr = girder->get_HarpedStrandRowsWithStrand(&nRows);
+      hr = girder->get_HarpedStrandRowsWithStrand(distFromStart,&nRows);
       break;
 
    case pgsTypes::Temporary:
@@ -11370,12 +11398,15 @@ RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,
 }
 
 //-----------------------------------------------------------------------------
-StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,
-                                                   GirderIndexType gdr,
+StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const pgsPointOfInterest& poi,
                                                    RowIndexType rowIdx,
                                                    pgsTypes::StrandType strandType )
 {
    VALIDATE( GIRDER );
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+   Float64 distFromStart = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
@@ -11389,7 +11420,7 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,
       break;
 
    case pgsTypes::Harped:
-      hr = girder->get_NumHarpedStrandsInRow(rowIdx,&cStrands);
+      hr = girder->get_NumHarpedStrandsInRow(distFromStart,rowIdx,&cStrands);
       break;
 
    case pgsTypes::Temporary:
@@ -11405,7 +11436,7 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,
    return cStrands;
 }
 
-std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span,GirderIndexType gdr, RowIndexType rowIdx, pgsTypes::StrandType strandType )
+std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType )
 {
    std::vector<StrandIndexType> strandIdxs;
    if ( strandType == pgsTypes::Temporary )
@@ -11415,6 +11446,10 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span
    }
 
    VALIDATE( GIRDER );
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+   Float64 distFromStart = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
@@ -11426,7 +11461,7 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span
    }
    else
    {
-      girder->get_HarpedStrandsInRow(rowIdx,&array);
+      girder->get_HarpedStrandsInRow(distFromStart,rowIdx,&array);
    }
 
    CollectionIndexType nItems;
@@ -11918,9 +11953,13 @@ bool CBridgeAgentImp::IsDebondingSymmetric(SpanIndexType span,GirderIndexType gd
    return true;
 }
 
-RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,pgsTypes::StrandType strandType )
+RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig,pgsTypes::StrandType strandType )
 {
    VALIDATE( GIRDER );
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+   Float64 distFromStart = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
@@ -11946,7 +11985,7 @@ RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,GirderInde
          CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Harped));
          girder->get_HarpedStrandFill(&oldFill);
          girder->put_HarpedStrandFill(&fill);
-         hr = girder->get_HarpedStrandRowsWithStrand(&nRows);
+         hr = girder->get_HarpedStrandRowsWithStrand(distFromStart,&nRows);
          girder->put_HarpedStrandFill(oldFill);
       }
       break;
@@ -11964,9 +12003,13 @@ RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,GirderInde
    return nRows;
 }
 
-StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx,pgsTypes::StrandType strandType )
+StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx,pgsTypes::StrandType strandType )
 {
    VALIDATE( GIRDER );
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+   Float64 distFromStart = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
@@ -11992,7 +12035,7 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,GirderInde
          CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Harped));
          girder->get_HarpedStrandFill(&oldFill);
          girder->put_HarpedStrandFill(&fill);
-         hr = girder->get_NumHarpedStrandsInRow(rowIdx,&cStrands);
+         hr = girder->get_NumHarpedStrandsInRow(distFromStart,rowIdx,&cStrands);
          girder->put_HarpedStrandFill(oldFill);
       }
       break;
@@ -12010,7 +12053,7 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,GirderInde
    return cStrands;
 }
 
-std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx, pgsTypes::StrandType strandType )
+std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx, pgsTypes::StrandType strandType )
 {
    std::vector<StrandIndexType> strandIdxs;
    if ( strandType == pgsTypes::Temporary )
@@ -12020,6 +12063,10 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span
    }
 
    VALIDATE( GIRDER );
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+   Float64 distFromStart = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
@@ -12040,7 +12087,7 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span
       CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Harped));
       girder->get_HarpedStrandFill(&oldFill);
       girder->put_HarpedStrandFill(&fill);
-      girder->get_HarpedStrandsInRow(rowIdx,&array);
+      girder->get_HarpedStrandsInRow(distFromStart,rowIdx,&array);
       girder->put_HarpedStrandFill(oldFill);
    }
 
@@ -12688,8 +12735,12 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName, pg
 
       CIndexArrayWrapper fill(rHarpedFillArray);
 
+      CComPtr<IIndexArray> hp_fill;
+      CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
+      ComputeHpFill(pGdrEntry, startGridFiller, &fill, &hp_fill);
+
       CComPtr<IPoint2dCollection> points;
-      hpGridFiller->GetStrandPositionsEx(&fill,&points);
+      hpGridFiller->GetStrandPositionsEx(hp_fill,&points);
 
       Float64 cg=0.0;
 
@@ -17045,7 +17096,20 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
    const CDeckRebarData& rebarData = pDeck->DeckRebarData;
 
+   // The reinforcing in this section is the amount of reinforcing within
+   // the rebar section width. The rebar section width is the lessor of
+   // the effective flange width and the tributary width.
+   // Effective flange width can be greater than the tributary flange width
+   // when the traffic barrier is structurally continuous and additional
+   // width, based on barrier stiffness, is added to the effective flange width
    Float64 Weff = GetEffectiveFlangeWidth(poi);
+   Float64 rebarSectionWidth = Weff;
+
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2008Interims )
+   {
+      Float64 Wtrib = GetTributaryFlangeWidth(poi);
+      rebarSectionWidth = min(Weff,Wtrib);
+   }
 
    //
    // full length reinforcement
@@ -17170,7 +17234,7 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
       }
    }
 
-   Float64 As = (As_Top + As_Bottom)*Weff;
+   Float64 As = (As_Top + As_Bottom)*rebarSectionWidth;
 
    return As;
 }
@@ -17317,4 +17381,83 @@ void CBridgeAgentImp::InitializeStrandFiller(const GirderLibraryEntry* pGirderEn
       std::pair<StrandFillerCollection::iterator, bool>  sit = m_StrandFillerColl.insert(std::make_pair(hash,filler));
       ATLASSERT(sit.second);
    }
+}
+
+void CBridgeAgentImp::ComputeHpFill(const GirderLibraryEntry* pGdrEntry,IStrandGridFiller* pStrandGridFiller, IIndexArray* pFill, IIndexArray** ppHPfill)
+{
+   // Fill for harped strands at harping points can be different than at girder ends
+   // if the odd number of strands option is activated
+   if ( pGdrEntry->OddNumberOfHarpedStrands() )
+   {
+      StrandIndexType nStrands;
+      pStrandGridFiller->GetStrandCountEx(pFill, &nStrands);
+
+      if (1 < nStrands && nStrands%2 != 0) // if there is more than 1 harped strand and the number of strands is odd
+      {
+         // we allow, and have, an odd number of strands.
+
+         // we are in business, start alternate fill of hp grid
+         CComPtr<IIndexArray> oddHpFill;
+         oddHpFill.CoCreateInstance(CLSID_IndexArray);
+         CollectionIndexType fill_size;
+         pFill->get_Count(&fill_size);
+         oddHpFill->Reserve(fill_size);
+
+         // put two strands in the first hp location
+#if defined _DEBUG
+         IndexType first_row;
+         pFill->get_Item(0,&first_row);
+         ASSERT(first_row == 1); // only one strand at the bottom... but we need it to be 2 for odd fill at top
+#endif
+
+         StrandIndexType running_cnt = (pGdrEntry->IsDifferentHarpedGridAtEndsUsed() ? 2 : 1);
+         oddHpFill->Add(running_cnt); 
+
+         for (CollectionIndexType is = 1; is < fill_size; is++)
+         {
+            if (running_cnt < nStrands)
+            {
+               // there are still strands to fill
+
+               StrandIndexType fill_val;
+               pFill->get_Item(is, &fill_val);
+               
+               running_cnt += fill_val;
+               
+               if (running_cnt <= nStrands)
+               {
+                  // not at the end yet, just fill it up
+                  oddHpFill->Add(fill_val);
+               }
+               else
+               {
+                  // we are at the end... add the odd strand
+                  if ( pGdrEntry->IsDifferentHarpedGridAtEndsUsed() )
+                  {
+                     oddHpFill->Add(fill_val-1);
+                  }
+                  else
+                  {
+                     oddHpFill->Add(fill_val);
+                  }
+
+                  running_cnt--;
+               }
+            }
+            else
+            {
+               oddHpFill->Add(0);
+            }
+         }
+
+         // Return with modified grid
+         ATLASSERT(running_cnt==nStrands);
+         oddHpFill.CopyTo(ppHPfill);
+         return;
+      }
+   }
+
+   // if we get to here, hp grid is same as end
+   *ppHPfill = pFill;
+   (*ppHPfill)->AddRef();
 }

@@ -1,22 +1,22 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     1     Tx54       10   1/2  270 21.01 21.01   0  0.0  4.000  5.000    0.496   -0.590   1933  0.896  0.849  0.02 -0.00  0.00 -0.00 -0.00  11.00  40.97   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                   1      1      Tx54         10   1/2  270  21.01  21.01                                               0   0.0  0.0  4.000  5.000   0.496    -0.590     1933   0.896  0.849   0.02  -0.00   0.00  -0.00  -0.00   11.00   40.97    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     2     Tx54       10   1/2  270 21.01 21.01   0  0.0  4.000  5.000    0.503   -0.606   1970  0.896  0.849  0.02 -0.00  0.00 -0.00 -0.00  11.00  40.78   0.00   0.00   0.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                   1      2      Tx54         10   1/2  270  21.01  21.01                                               0   0.0  0.0  4.000  5.000   0.503    -0.606     1970   0.896  0.849   0.02  -0.00   0.00  -0.00  -0.00   11.00   40.78    0.00    0.00    0.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     3     Tx54       10   1/2  270 21.01 21.01   0  0.0  4.000  5.000    0.503   -0.606   1970  0.896  0.849  0.02 -0.00  0.00 -0.00 -0.00  11.00  40.78   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                   1      3      Tx54         10   1/2  270  21.01  21.01                                               0   0.0  0.0  4.000  5.000   0.503    -0.606     1970   0.896  0.849   0.02  -0.00   0.00  -0.00  -0.00   11.00   40.78    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

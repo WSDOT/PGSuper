@@ -114,6 +114,9 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
    // Texas Girder Schedule - use compacted title page
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("TxDOT Girder Schedule Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasIBNSChapterBuilder) );
@@ -122,6 +125,9 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
    // Texas Summary report - short
    pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report (Short Form)"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
@@ -134,6 +140,9 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
    // Texas Summary report - long form
    pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report (Long Form)"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
@@ -150,6 +159,9 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
    // TOGA Long Form
    pRptBuilder = new CReportBuilder(_T("TxDOT Optional Girder Analysis (TOGA) - Long Report"),true);
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
@@ -168,6 +180,9 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
    // TOGA Short Form
    pRptBuilder = new CReportBuilder(_T("TxDOT Optional Girder Analysis (TOGA) - Short Report"),true);
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );

@@ -108,6 +108,36 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+
+
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pH")) << _T(" = ");
+
+   if ( !bIgnoreInitialRelaxation )
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
+
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
+
+   if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
+
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << rptNewLine;
+
+
+   if ( bTemporaryStrands )
+   {
+      if ( method == LOSSES_WSDOT_REFINED || method == LOSSES_AASHTO_REFINED || method == LOSSES_TXDOT_REFINED_2004 )
+      {
+         *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
+      }
+   }
+   else
+   {
+      if ( method == LOSSES_WSDOT_REFINED || method == LOSSES_AASHTO_REFINED || method == LOSSES_TXDOT_REFINED_2004 )
+      {
+         *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
+      }
+   }
+
    *pParagraph << table << rptNewLine;
 
    int col = 0;
@@ -159,11 +189,6 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-      if ( method == LOSSES_WSDOT_REFINED || method == LOSSES_AASHTO_REFINED || method == LOSSES_TXDOT_REFINED_2004 )
-      {
-         *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
-      }
    }
    else
    {
@@ -179,28 +204,8 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       }
 
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-      if ( method == LOSSES_WSDOT_REFINED || method == LOSSES_AASHTO_REFINED || method == LOSSES_TXDOT_REFINED_2004 )
-      {
-         *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
-      }
    }
 
-
-   if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
-   {
-      if ( bIgnoreInitialRelaxation )
-         *pParagraph << rptRcImage(strImagePath + _T("PrestressLossAtHaulingWithPT_LRFD.png")) << rptNewLine;
-      else
-         *pParagraph << rptRcImage(strImagePath + _T("PrestressLossAtHaulingWithPT_WSDOT.png")) << rptNewLine;
-   }
-   else
-   {
-      if ( bIgnoreInitialRelaxation )
-         *pParagraph << rptRcImage(strImagePath + _T("PrestressLossAtHauling_LRFD.png")) << rptNewLine;
-      else
-         *pParagraph << rptRcImage(strImagePath + _T("PrestressLossAtHauling_WSDOT.png")) << rptNewLine;
-   }
 
 
    return table;

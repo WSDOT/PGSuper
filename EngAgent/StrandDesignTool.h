@@ -365,6 +365,8 @@ public:
    // GROUP: INQUIRY
    void DumpDesignParameters();
 
+   Float64 GetPoiTolerance() const;
+
 protected:
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE

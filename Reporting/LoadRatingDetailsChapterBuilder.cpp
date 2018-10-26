@@ -120,7 +120,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
 
       if ( pRatingArtifact )
       {
-         std::_tstring strVehicleName = pProductLoads->GetLiveLoadName(llType,vehIdx);
+         std::_tstring strVehicleName = pProductLoads->GetLiveLoadName(llType,(ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? INVALID_INDEX : vehIdx);
 
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;

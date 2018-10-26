@@ -62,7 +62,7 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
    // Create and configure the table
-   ColumnIndexType numColumns = 5;
+   ColumnIndexType numColumns = 6;
    CTimeDependentLossFinalTable* table = new CTimeDependentLossFinalTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
@@ -76,14 +76,15 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+   *pParagraph << symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR2")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pSS")) << rptNewLine;
+
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,1) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-   *pParagraph << symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR2")) << rptNewLine;
+   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,5) << COLHDR(symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }
@@ -101,5 +102,6 @@ void CTimeDependentLossFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,
    (*this)(row,1) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
    (*this)(row,2) << stress.SetValue(ptl->CreepLossAfterDeckPlacement());
    (*this)(row,3) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
-   (*this)(row,4) << stress.SetValue(ptl->TimeDependentLossesAfterDeck());
+   (*this)(row,4) << stress.SetValue(ptl->ElasticGainDueToDeckShrinkage());
+   (*this)(row,5) << stress.SetValue(ptl->TimeDependentLossesAfterDeck());
 }

@@ -1,0 +1,26 @@
+HKCR
+{
+	KDOT.PGSuperDataExporter.1 = s 'KDOT CAD Data Exporter'
+	{
+		CLSID = s '{B03DA246-D6F6-4d35-91D1-B93FFAE7241A}'
+	}
+	KDOT.PGSuperDataExporter = s 'KDOT CAD Data Exporter'
+	{
+		CLSID = s '{B03DA246-D6F6-4d35-91D1-B93FFAE7241A}'
+		CurVer = s 'KDOT.PGSuperDataExporter.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {B03DA246-D6F6-4d35-91D1-B93FFAE7241A} = s 'KDOT CAD  Data Exporter'
+		{
+			ProgID = s 'KDOT.PGSuperDataExporter.1'
+			VersionIndependentProgID = s 'KDOT.PGSuperDataExporter'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{1C5B5FB1-1643-4b4f-983F-F7B680709018}'
+		}
+	}
+}

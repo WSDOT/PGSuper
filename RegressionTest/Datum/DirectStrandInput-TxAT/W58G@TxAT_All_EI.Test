@@ -1,29 +1,29 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     1    WF58G  *    44  0.60  270 24.60 10.69  14 54.0  5.500  6.800    4.659   -4.581   8851  0.547  0.671  0.49 -0.18  0.00 -0.02 -0.20 206.57 343.49   3.00   4.83   4.83
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      1     WF58G    *    44   0.6  270  24.60  10.69                                              14  54.0  6.0  5.500  6.800   4.659    -4.581     8851   0.547  0.671   0.49  -0.18   0.00  -0.02  -0.20  206.57  343.49    3.00    4.83    4.83 
 
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Splitting zone checks failed.
+Splitting zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     2    WF58G  *    44  0.60  270 24.60 10.69  14 54.0  5.500  6.800    4.661   -4.581   8844  0.545  0.671  0.49 -0.18  0.00 -0.02 -0.20 206.57 343.22   3.00   4.83   4.83
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      2     WF58G    *    44   0.6  270  24.60  10.69                                              14  54.0  6.0  5.500  6.800   4.661    -4.581     8844   0.545  0.671   0.49  -0.18   0.00  -0.02  -0.20  206.57  343.22    3.00    4.83    4.83 
 
 
 The Specification Check was Not Successful
-Splitting zone checks failed.
+Splitting zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     3    WF58G        0  0.60  270  0.00  0.00   0  0.0  5.000  6.000    4.595   -4.558   8824  0.542  0.671 -0.51 -0.19  0.00 -0.02 -0.21   0.00   0.00   1.75   5.00   5.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      3     WF58G          0   0.6  270   0.00   0.00                                               0   0.0  0.0  5.000  6.000   4.595    -4.558     8824   0.542  0.671  -0.51  -0.19   0.00  -0.02  -0.21    0.00    0.00    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -33,9 +33,9 @@ Tensile stress check failed for Service I for the Deck and Diaphragm Placement S
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed

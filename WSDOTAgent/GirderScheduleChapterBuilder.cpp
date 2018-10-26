@@ -110,11 +110,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
-   StrandIndexType NhMax = pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Harped);
-   if ( CLSID_SlabBeamFamily == familyCLSID && 0 < NhMax )
+   StrandIndexType Nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
+   if ( CLSID_SlabBeamFamily == familyCLSID && 0 < Nh )
    {
       rptParagraph* pPara = new rptParagraph;
-      *pPara << _T("Cannot create girder schedule. WSDOT Slab Beams do not use harped strands and this girder has harped strand locations") << rptNewLine;
+      *pPara << _T("Cannot create girder schedule. WSDOT Slab Beams do not use harped strands and this girder has harped strands") << rptNewLine;
       *pChapter << pPara;
       return pChapter;
    }
@@ -125,8 +125,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    bool bCanReportPrestressInformation = true;
 
-   // WsDOT reports don't support Straight-Web strand option
-   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(span, girder))
+   // WsDOT reports don't support Straight-Web strand option (except for slab beams)
+   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(span,girder) && CLSID_SlabBeamFamily != familyCLSID)
    {
       bCanReportPrestressInformation = false;
    }
@@ -345,7 +345,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    
    StrandIndexType Ns = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
-   StrandIndexType Nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
    if ( bCanReportPrestressInformation )
    {
       (*pTable)(++row,0) << _T("Number of Straight Strands");

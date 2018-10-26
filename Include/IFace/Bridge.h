@@ -597,7 +597,8 @@ interface IStrandGeometry : IUnknown
    virtual Float64 GetHarpedHpOffsetIncrement(LPCTSTR strGirderName, pgsTypes::AdjustableStrandType adjType) = 0;
 
    virtual void GetHarpingPointLocations(SpanIndexType span,GirderIndexType gdr,Float64* lhp,Float64* rhp) = 0;
-   virtual void GetHighestHarpedStrandLocation(SpanIndexType span,GirderIndexType gdr,Float64* pElevation) = 0;
+   virtual void GetHighestHarpedStrandLocationEnds(SpanIndexType span,GirderIndexType gdr,Float64* pElevation) = 0;
+   virtual void GetHighestHarpedStrandLocationCL(SpanIndexType span,GirderIndexType gdr,Float64* pElevation) = 0;
 
    virtual Uint16 GetNumHarpPoints(SpanIndexType span,GirderIndexType gdr) = 0;
 
@@ -613,18 +614,18 @@ interface IStrandGeometry : IUnknown
    virtual bool IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const PRESTRESSCONFIG& config,Float64* pStart,Float64* pEnd) = 0;
    virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;
    virtual StrandIndexType GetNumDebondedStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
-   virtual RowIndexType GetNumRowsWithStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType ) = 0;
-   virtual StrandIndexType GetNumStrandInRow(SpanIndexType span,GirderIndexType gdr,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
-   virtual std::vector<StrandIndexType> GetStrandsInRow(SpanIndexType span,GirderIndexType gdr, RowIndexType rowIdx, pgsTypes::StrandType strandType ) = 0;
+   virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType ) = 0;
+   virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
+   virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) = 0;
    virtual StrandIndexType GetNumDebondedStrandsInRow(SpanIndexType span,GirderIndexType gdr,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
    virtual bool IsExteriorStrandDebondedInRow(SpanIndexType span,GirderIndexType gdr,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
    virtual bool IsDebondingSymmetric(SpanIndexType span,GirderIndexType gdr) = 0;
 
    // These functions return the data for the number of strands given (used during design)
    // StrandIndex used in these functions is same order as those retured by GetStrandPositions
-   virtual RowIndexType GetNumRowsWithStrand(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strandType ) = 0;
-   virtual StrandIndexType GetNumStrandInRow(SpanIndexType span,GirderIndexType gdr,const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
-   virtual std::vector<StrandIndexType> GetStrandsInRow(SpanIndexType span,GirderIndexType gdr,const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx, pgsTypes::StrandType strandType ) = 0;
+   virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strandType ) = 0;
+   virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
+   virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi,const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx, pgsTypes::StrandType strandType ) = 0;
 
    // Section locations measured from left end to right
    virtual Float64 GetDebondSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType) = 0;

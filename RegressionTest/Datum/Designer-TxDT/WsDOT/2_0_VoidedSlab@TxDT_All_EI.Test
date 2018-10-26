@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.17   7  0.00  1     1    Slab       24  0.60  270 10.50 10.40   4  2.00  18   4  2  0  2  0  0  0  0  0  0  0  4.300  8.200    2.942   -2.791    2205 0.324  0.558  0.23 -0.03  0.00 -0.01 -0.04  72.87 194.93   1.75   5.00   5.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.17    7   0.00                   1      1      Slab         24   0.6  270  10.50  10.40   4   2.00   18     4    2   0   2   0   0   4.300  8.200   2.942    -2.791     2205   0.324  0.558   0.23  -0.03   0.00  -0.01  -0.04   72.87  194.93    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -8,14 +8,15 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.17   7  0.00  1     2    Slab       24  0.60  270 10.50 10.40   4  2.00  18   4  2  0  2  0  0  0  0  0  0  0  4.300  8.200    2.940   -2.788    2205 0.323  0.474  0.23 -0.03  0.00 -0.01 -0.04  72.87 194.93   1.75   5.00   5.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.17    7   0.00                   1      2      Slab         24   0.6  270  10.50  10.40   4   2.00   18     4    2   0   2   0   0   4.300  8.200   2.940    -2.788     2205   0.323  0.474   0.23  -0.03   0.00  -0.01  -0.04   72.87  194.93    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -23,14 +24,15 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.17   7  0.00  1     4    Slab       24  0.60  270 10.50 10.40   4  2.00  18   4  0  2  0  2  0  0  0  0  0  0  4.100  8.100    2.873   -2.677    2175 0.323  0.474  0.24 -0.03  0.00  0.00 -0.03  74.25 205.50   1.75   5.00   5.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 25.17    7   0.00                   1      4      Slab         24   0.6  270  10.50  10.40   4   2.00   18     4    0   2   0   2   0   4.100  8.100   2.873    -2.677     2175   0.323  0.474   0.24  -0.03   0.00   0.00  -0.03   74.25  205.50    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -38,7 +40,8 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 

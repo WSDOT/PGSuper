@@ -379,32 +379,30 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
          Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(item, conc_type, fci, isfct, fct);
 
-         if (dev_length_factor >= 1.0-1.0e-05) // Bars must be fully developed before higher 
-                                               // allowable stress can be used.
-                                               // Apply a small tolerance.
+         // Adjust effect of bars for development
+         as *= dev_length_factor;
+
+         if (stressLoc == slAllTens)
          {
-            if (stressLoc == slAllTens)
+            // all bars in tension - just add
+            AsProvd += as;
+         }
+         else
+         {
+            CComPtr<IPoint2d> location;
+            item->get_Location(&location);
+
+            Float64 x,y;
+            location->get_X(&x);
+            location->get_Y(&y);
+            // Add bar if it's on right side of NA
+            if ( stressLoc == slTopTens && y > Yna)
             {
-               // all bars in tension - just add
                AsProvd += as;
             }
-            else
+            else if ( stressLoc == slBotTens && y < Yna)
             {
-               CComPtr<IPoint2d> location;
-               item->get_Location(&location);
-
-               Float64 x,y;
-               location->get_X(&x);
-               location->get_Y(&y);
-               // Add bar if it's on right side of NA
-               if ( stressLoc == slTopTens && y > Yna)
-               {
-                  AsProvd += as;
-               }
-               else if ( stressLoc == slBotTens && y < Yna)
-               {
-                  AsProvd += as;
-               }
+               AsProvd += as;
             }
          }
 

@@ -810,6 +810,21 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,co
    // The design artifact
    pgsDesignArtifact artifact(span,gdr);
 
+   // on occasion, the LLDF range of applicability is violated and it halts the design.
+   // this usually happens with f'c is at its max value which impacts n and Kg.
+   // this is undesirable.
+   // to get around this, set the LLDF ROA action to ignore the ROA.. then reset it to the
+   // current value when design is done.
+   // 
+   // we don't want events to fire so we'll hold events and then cancel any pending events
+   // when design is done
+   GET_IFACE(IEvents,pEvents);
+   pEvents->HoldEvents();
+
+   GET_IFACE(ILiveLoads,pLiveLoads);
+   LldfRangeOfApplicabilityAction old_roa = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+   pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+
    try 
    {
       IndexType do_cnt = desOptionsColl.size();
@@ -839,6 +854,9 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,co
    {
       artifact.SetOutcome(outcome);
    }
+
+   pLiveLoads->SetLldfRangeOfApplicabilityAction(old_roa);
+   pEvents->CancelPendingEvents();
 
    return artifact;
 }
@@ -1565,12 +1583,12 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span, GirderIndexType gdr, 
       }
 
       fHighAllowable = talt*sqrt(fc);
-   }
 
       if ( task.stage == pgsTypes::CastingYard )
          pGdrArtifact->SetCastingYardCapacityWithMildRebar( fHighAllowable );
       else if ( task.stage == pgsTypes::TemporaryStrandRemoval )
          pGdrArtifact->SetTempStrandRemovalCapacityWithMildRebar( fHighAllowable );
+   }
 
 
    // Use calculator object to deal with casting yard higher allowable stress
@@ -3614,10 +3632,11 @@ void pgsDesigner2::CheckDebonding(SpanIndexType span,GirderIndexType gdr,pgsType
    pArtifact->SetNumDebondedStrands(nDebonded);
 
    // Number of debonded strands in row
-   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(span,gdr,strandType);
+   pgsPointOfInterest poi(span,gdr,0.0); // it is ok to use a dummy poi because all debonding is on straight strands and straight strands rows don't change with position
+   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi,strandType);
    for ( RowIndexType row = 0; row < nRows; row++ )
    {
-      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(span,gdr,row,strandType);
+      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi,row,strandType);
       StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(span,gdr,row,strandType);
       fra = (nStrandsInRow == 0 ? 0 : (Float64)nDebondStrandsInRow/(Float64)nStrandsInRow);
       bool bExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(span,gdr,row,strandType);
@@ -6051,7 +6070,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
 
       // get controlling stress at xfer/lift point
       Float64 fbot, bot_loc, ftop, top_loc;
-      artifact.GetEndZoneMinMaxRawStresses(&ftop, &fbot, &top_loc, &bot_loc);
+      artifact.GetEndZoneMinMaxRawStresses(m_StrandDesignTool.GetPoiTolerance(),&ftop, &fbot, &top_loc, &bot_loc);
       LOG(_T("Max applied top stress at lifting point or transfer location    = ") << ::ConvertFromSysUnits(ftop,unitMeasure::KSI) << _T(" KSI at ")<< ::ConvertFromSysUnits(top_loc,unitMeasure::Feet) << _T(" ft"));
       LOG(_T("Max applied bottom stress at lifting point or transfer location = ") << ::ConvertFromSysUnits(fbot,unitMeasure::KSI) << _T(" KSI at ")<< ::ConvertFromSysUnits(bot_loc,unitMeasure::Feet) << _T(" ft"));
       

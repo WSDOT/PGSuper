@@ -228,12 +228,12 @@ inline void list_momcap_failures(IBroker* pBroker,FailureList& rFailures,SpanInd
 {
    if ( momcap_failures(pBroker,span,girder,pgsTypes::BridgeSite3,ls,pArtifact,true) )
    {
-      rFailures.push_back(std::_tstring(_T("Ultimate moment capacity (positive moment) check failed for ")) + LimitStateName(ls) + std::_tstring(_T(" Limit State for the Bridge Site Stage 3.")));
+      rFailures.push_back(std::_tstring(_T("Ultimate moment capacity (positive moment) check failed for ")) + LimitStateName(ls) + std::_tstring(_T(" Limit State")));
    }
 
    if ( momcap_failures(pBroker,span,girder,pgsTypes::BridgeSite3,ls,pArtifact,false) )
    {
-      rFailures.push_back(std::_tstring(_T("Ultimate moment capacity (negative moment) check failed for ")) + LimitStateName(ls) + std::_tstring(_T(" Limit State for the Bridge Site Stage 3.")));
+      rFailures.push_back(std::_tstring(_T("Ultimate moment capacity (negative moment) check failed for ")) + LimitStateName(ls) + std::_tstring(_T(" Limit State")));
    }
 }
 
@@ -260,13 +260,13 @@ inline void list_vertical_shear_failures(IBroker* pBroker,FailureList& rFailures
 
       if ( bContinue1 && !pShear->Passed() )
       {
-         rFailures.push_back(_T("Ultimate vertical shear capacity check failed for ") + LimitStateName(ls) + _T(" Limit State for the Bridge Site Stage 3."));
+         rFailures.push_back(_T("Ultimate vertical shear capacity check failed for ") + LimitStateName(ls) + _T(" Limit State"));
          bContinue1 = false;
       }
 
       if ( bContinue2 && /*pLongReinf->IsApplicable() &&*/ !pLongReinf->Passed() )
       {
-         rFailures.push_back(_T("Longitudinal Reinforcement for Shear check failed for ") + LimitStateName(ls) + _T(" Limit State for the Bridge Site Stage 3."));
+         rFailures.push_back(_T("Longitudinal Reinforcement for Shear check failed for ") + LimitStateName(ls) + _T(" Limit State"));
          bContinue2 = false;
       }
 
@@ -337,9 +337,9 @@ inline void list_splitting_zone_failures(IBroker* pBroker,FailureList& rFailures
    if ( !pBZArtifact->Passed() )
    {
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
-         rFailures.push_back(_T("Splitting zone checks failed."));
+         rFailures.push_back(_T("Splitting zone check failed."));
       else
-         rFailures.push_back(_T("Bursting zone checks failed."));
+         rFailures.push_back(_T("Bursting zone check failed."));
    }
 }
 
@@ -351,7 +351,7 @@ inline void list_confinement_zone_failures(IBroker* pBroker,FailureList& rFailur
 
    if ( !rShear.Passed() )
    {
-      rFailures.push_back(_T("Confinement zone checks failed."));
+      rFailures.push_back(_T("Confinement zone check failed."));
       return;
    }
 }

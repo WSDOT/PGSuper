@@ -496,10 +496,10 @@ inline StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBrok
    CComPtr<IPoint2dCollection> ss_points;
    pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Straight, &ss_points);
 
-   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSpan(),midPoi.GetGirder(),pgsTypes::Straight);
+   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi,pgsTypes::Straight);
    for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
    {
-      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSpan(), midPoi.GetGirder(), rowIdx, pgsTypes::Straight);
+      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi, rowIdx, pgsTypes::Straight);
       for (std::vector<StrandIndexType>::iterator sit=sstrands.begin(); sit!=sstrands.end(); sit++)
       {
          StrandIndexType idx = *sit;
@@ -525,10 +525,10 @@ inline StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBrok
    CComPtr<IPoint2dCollection> hs_points;
    pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Harped, &hs_points);
 
-   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSpan(),midPoi.GetGirder(),pgsTypes::Harped);
+   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi,pgsTypes::Harped);
    for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
    {
-      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSpan(), midPoi.GetGirder(), rowIdx, pgsTypes::Harped);
+      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi, rowIdx, pgsTypes::Harped);
       for (std::vector<StrandIndexType>::iterator sit=hstrands.begin(); sit!=hstrands.end(); sit++)
       {
          StrandIndexType idx = *sit;

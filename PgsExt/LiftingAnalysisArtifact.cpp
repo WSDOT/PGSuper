@@ -1121,7 +1121,7 @@ void pgsLiftingAnalysisArtifact::GetGirderStress(
    }
 }
 
-void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const
+void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64 poiTolerance,Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const
 {
    ATLASSERT(0 < m_LiftingStressAnalysisArtifacts.size());
 
@@ -1157,7 +1157,7 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress,
       Float64 distFromStart = is->first;
       const pgsLiftingStressAnalysisArtifact& rart = is->second;
 
-      if ( IsEqual(distFromStart,left_loc) || IsEqual(distFromStart,right_loc))
+      if ( IsEqual(distFromStart,left_loc,poiTolerance) || IsEqual(distFromStart,right_loc,poiTolerance))
       {
          found++;
 

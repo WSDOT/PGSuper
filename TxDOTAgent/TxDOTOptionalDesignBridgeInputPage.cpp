@@ -332,8 +332,8 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
       return false;
    }
 
-   if (pGdrEntry->GetNumHarpedStrandCoordinates() > 0 &&
-       pGdrEntry->GetAdjustableStrandType() != pgsTypes::asHarped)
+   if (false)/* pGdrEntry->GetNumHarpedStrandCoordinates() > 0 &&
+       pGdrEntry->GetAdjustableStrandType() != pgsTypes::asHarped) */
    {
       // Entry must have harped strands
       ASSERT(0);

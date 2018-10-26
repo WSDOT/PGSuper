@@ -101,6 +101,22 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
    }
 
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   if(pLimitStateForces->IsStrengthIIApplicable(span, girder))
+   {
+      rptParagraph* p = new rptParagraph;
+      bool write_note;
+      *p << CStirrupDetailingCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,&write_note) << rptNewLine;
+      *pChapter << p;
+
+      if (write_note)
+      {
+         *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
+         *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
+      }
+   }
+
+
    if (!m_BasicVersion)
    {
       // Only report stirrup length/zone incompatibility if user requests it

@@ -1,22 +1,22 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.17   6  0.13  1     1   5B40c       66   1/2  270 12.81 12.07  12  2.50  28  12  2  4  2  2  2  0  0  0  0  0  4.900  6.200    3.956   -3.735    5830 0.352  0.615  0.17 -0.10  0.00 -0.03 -0.13 148.27 431.51   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.17    6   0.13  B40-24, B40-28   1      1     5B40c         66   1/2  270  12.81  12.07  12   2.50   28    12    2   4   2   2   2   4.900  6.200   3.956    -3.735     5830   0.352  0.615   0.17  -0.10   0.00  -0.03  -0.13  148.27  431.51    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.17   6  0.13  1     2   5B40c       74   1/2  270 11.77 10.74  14  2.50  28  14  4  2  4  2  2  0  0  0  0  0  5.300  7.100    4.173   -3.933    6059 0.346  0.614  0.15 -0.11  0.00 -0.03 -0.13 178.58 517.78   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.17    6   0.13  B40-24, B40-28   1      2     5B40c         74   1/2  270  11.77  10.74  14   2.50   28    14    4   2   4   2   2   5.300  7.100   4.173    -3.933     6059   0.346  0.614   0.15  -0.11   0.00  -0.03  -0.13  178.58  517.78    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.17   6  0.13  1     4   5B40c       74   1/2  270 11.77 10.74  14  2.50  28  14  4  2  4  2  2  0  0  0  0  0  5.300  7.100    4.173   -3.933    6059 0.346  0.614  0.15 -0.11  0.00 -0.03 -0.13 178.58 517.78   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.17    6   0.13  B40-24, B40-28   1      4     5B40c         74   1/2  270  11.77  10.74  14   2.50   28    14    4   2   4   2   2   5.300  7.100   4.173    -3.933     6059   0.346  0.614   0.15  -0.11   0.00  -0.03  -0.13  178.58  517.78    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

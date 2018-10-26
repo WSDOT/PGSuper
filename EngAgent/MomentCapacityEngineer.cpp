@@ -598,9 +598,9 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       {
          pmcd->et = (pmcd->dt - pmcd->c)*0.003/(pmcd->c);
          if ( bPositiveMoment )
-            pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);
+            pmcd->Phi = PhiC + (PhiPS - PhiC)*(pmcd->et - ecl)/(etl-ecl);
          else
-            pmcd->Phi = PhiC + 0.15*(pmcd->et - ecl)/(etl-ecl);
+            pmcd->Phi = PhiC + (PhiRC - PhiC)*(pmcd->et - ecl)/(etl-ecl);
       }
 
       pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiRC + (PhiPS-PhiRC)*pmcd->PPR);
@@ -1085,7 +1085,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 
    CComPtr<ICrackedSectionSolution> solution;
    m_CrackedSectionSolver->putref_Section(beam_section);
-   m_CrackedSectionSolver->put_Slices(20);
+   m_CrackedSectionSolver->put_Slices(1);
    m_CrackedSectionSolver->put_SliceGrowthFactor(2);
    m_CrackedSectionSolver->put_CGTolerance(0.001);
    HRESULT hr = m_CrackedSectionSolver->Solve(na_angle,&solution);
@@ -1390,14 +1390,14 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          // Create a single "lump of strand" for each row instead of modeling each strand 
          // individually. This will spead up the solver by quite a bit
 
-         RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(span,gdr,config.PrestressConfig,strandType);
+         RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(poi,config.PrestressConfig,strandType);
          for ( RowIndexType rowIdx = 0; rowIdx < nStrandRows; rowIdx++ )
          {
             Float64 rowArea = 0;
-            std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(span,gdr,config.PrestressConfig,rowIdx,strandType);
+            std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(poi,config.PrestressConfig,rowIdx,strandType);
 
 #if defined _DEBUG
-            StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(span,gdr,config.PrestressConfig,rowIdx,strandType);
+            StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(poi,config.PrestressConfig,rowIdx,strandType);
             ATLASSERT( nStrandsInRow == strandIdxs.size() );
 #endif
 
@@ -1428,43 +1428,46 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             }
 
             // create a single equivalent rectangle for the area of reinforcement in this row
-            Float64 h = dps; // height is diamter of strand
-            Float64 w = rowArea/dps;
+            if ( 0 < rowArea )
+            {
+               Float64 h = dps; // height is diamter of strand
+               Float64 w = rowArea/dps;
 
-            CComPtr<IRectangle> bar_shape;
-            bar_shape.CoCreateInstance(CLSID_Rect);
-            bar_shape->put_Width(w);
-            bar_shape->put_Height(h);
+               CComPtr<IRectangle> bar_shape;
+               bar_shape.CoCreateInstance(CLSID_Rect);
+               bar_shape->put_Width(w);
+               bar_shape->put_Height(h);
 
-            // get one strand from the row and get it's Y value
-            CComPtr<IPoint2d> point;
-            points->get_Item(strandIdxs[0],&point);
-            Float64 rowY;
-            point->get_Y(&rowY);
-            point.Release();
+               // get one strand from the row and get it's Y value
+               CComPtr<IPoint2d> point;
+               points->get_Item(strandIdxs[0],&point);
+               Float64 rowY;
+               point->get_Y(&rowY);
+               point.Release();
 
-            // position the "strand" rectangle
-            CComQIPtr<IXYPosition> position(bar_shape);
-            CComPtr<IPoint2d> hp;
-            position->get_LocatorPoint(lpHookPoint,&hp);
-            hp->Move(0,rowY);
-            hp->Offset(-dx,-dy);
+               // position the "strand" rectangle
+               CComQIPtr<IXYPosition> position(bar_shape);
+               CComPtr<IPoint2d> hp;
+               position->get_LocatorPoint(lpHookPoint,&hp);
+               hp->Move(0,rowY);
+               hp->Offset(-dx,-dy);
 
-            // determine depth to lowest layer of strand
-            Float64 cy;
-            hp->get_Y(&cy);
-            dt = _cpp_max(dt,fabs(Yc-cy));
+               // determine depth to lowest layer of strand
+               Float64 cy;
+               hp->get_Y(&cy);
+               dt = _cpp_max(dt,fabs(Yc-cy));
 
-            CComQIPtr<IShape> shape(bar_shape);
-            AddShape2Section(section,shape,ssStrand,ssGirder,e_initial);
+               CComQIPtr<IShape> shape(bar_shape);
+               AddShape2Section(section,shape,ssStrand,ssGirder,e_initial);
 
-#if defined _DEBUG
-            CComPtr<IShapeProperties> props;
-            shape->get_ShapeProperties(&props);
-            Float64 area;
-            props->get_Area(&area);
-            ATLASSERT( IsEqual(area,rowArea) );
-#endif // _DEBUG
+   #if defined _DEBUG
+               CComPtr<IShapeProperties> props;
+               shape->get_ShapeProperties(&props);
+               Float64 area;
+               props->get_Area(&area);
+               ATLASSERT( IsEqual(area,rowArea) );
+   #endif // _DEBUG
+            }
          }
 
       } // next strand type

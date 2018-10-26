@@ -68,8 +68,11 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 {
    *pWriteNote = false; // 
 
+   USES_CONVERSION;
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(" "));
-   table->TableLabel() << _T("Stirrup Detailing Check [5.8.2.5, 5.8.2.7, 5.10.3.1.2]");
+   table->TableLabel() << _T("Stirrup Detailing Check: ") << OLE2T(pStageMap->GetLimitStateName(ls)) << _T(" [5.8.2.5, 5.8.2.7, 5.10.3.1.2]");
   
    if ( span == ALL_SPANS )
    {

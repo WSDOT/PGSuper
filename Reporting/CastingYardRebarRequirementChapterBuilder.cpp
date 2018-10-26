@@ -227,7 +227,7 @@ void CCastingYardRebarRequirementChapterBuilder::Build(rptChapter* pChapter,IBro
       row++;
    }
 
-   *p << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.");
+   *p << _T("* Bar areas are ajusted for development, and bars must lie within tension portion of section before they are considered.");
 }
 
 
